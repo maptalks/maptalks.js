@@ -3033,855 +3033,97 @@ var GLProgram_1 = createCommonjsModule(function (module) {
     module.exports = GLProgram;
 });
 
+var _OVERRAL_ENUM;
+
 /**
- * reference:
- * https://github.com/pixijs/pixi.js/blob/dev/src/core/ticker/TickerListener.js
- * 
- * 
- * Internal class for handling the priority sorting of ticker handlers.
- * @class
- * 
+ * 操作分类
  */
-var TickerListener = function () {
+
+/**
+* 与program相关的操作
+*/
+var INTERNAL_ENUM = {
+  'lineWidth': true,
+  'deleteBuffer': true,
+  'deleteShader': true,
+  'deleteProgram': true,
+  'deleteFramebuffer': true,
+  'deleteRenderbuffer': true,
+  //
+  'bindFramebuffer': true,
+  'framebufferTexture2D': true,
+  'readPixels': true,
+  //buffer-uinform-attrib
+  'bindBuffer': true,
+  'bufferData': true,
+  'bufferSubData': true,
+  'disableVertexAttribArray': true,
+  'enableVertexAttribArray': true,
+  'vertexAttribPointer': true,
+  //uniformMatrix
+  'uniformMatrix2fv': true,
+  'uniformMatrix3fv': true,
+  'uniformMatrix4fv': true,
+  //uniform1[f][i][v]
+  'uniform1f': true,
+  'uniform1fv': true,
+  'uniform1i': true,
+  'uniform1iv': true,
+  //uniform2[f][i][v]
+  'uniform2f': true,
+  'uniform2fv': true,
+  'uniform2i': true,
+  'uniform2iv': true,
+  //uniform3[f][i][v]
+  'uniform3f': true,
+  'uniform3fv': true,
+  'uniform3i': true,
+  'uniform3iv': true,
+  //uniform4[f][i][v]
+  'uniform4f': true,
+  'uniform4fv': true,
+  'uniform4i': true,
+  'uniform4iv': true,
+  //vertexAttrib1f
+  'vertexAttrib1f': true,
+  'vertexAttrib2f': true,
+  'vertexAttrib3f': true,
+  'vertexAttrib4f': true,
+  //vertexAttrib1fv
+  'vertexAttrib1fv': true,
+  'vertexAttrib2fv': true,
+  'vertexAttrib3fv': true,
+  'vertexAttrib4fv': true
   /**
-   * Constructor
-   *
-   * @param {Function} fn - The listener function to be added for one update
-   * @param {Function} [context=null] - The listener context
-   * @param {number} [priority=0] - The priority for emitting
-   * @param {boolean} [once=false] - If the handler should fire once
+   * 需要记住前序状态的webgl操作
    */
-  function TickerListener(fn) {
-    var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-    var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-    var once = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-    classCallCheck(this, TickerListener);
-
-    /**
-     * The handler function to execute.
-     * @member {Function}
-     */
-    this.fn = fn;
-    /**
-     * The calling to execute.
-     * @member {Function}
-     */
-    this.context = context;
-    /**
-     * The current priority.
-     * @member {number}
-     */
-    this.priority = priority;
-    /**
-     * If this should only execute once.
-     * @member {boolean}
-     */
-    this.once = once;
-    /**
-     * The next item in chain.
-     * @member {TickerListener}
-     */
-    this.next = null;
-    /**
-     * The previous item in chain.
-     * @member {TickerListener}
-     */
-    this.previous = null;
-    /**
-     * `true` if this listener has been destroyed already.
-     * @member {boolean}
-     * @private
-     */
-    this._destroyed = false;
-    /**
-     * 
-     */
-    this._data = data || [];
-  }
-  /**
-   * Simple compare function to figure out if a function and context match.
-   *
-   * @param {Function} fn - The listener function to be added for one update
-   * @param {Function} context - The listener context
-   * @return {boolean} `true` if the listener match the arguments
-   */
-
-
-  createClass(TickerListener, [{
-    key: "match",
-    value: function match(fn, context) {
-      context = context || null;
-      return this.fn === fn && this.context === context;
-    }
-    /**
-     * Emit by calling the current function.
-     * @param {number} deltaTime - time since the last emit.
-     * @return {TickerListener} Next ticker
-     */
-
-  }, {
-    key: "emit",
-    value: function emit(deltaTime) {
-      if (this.fn) {
-        if (this.context) {
-          this.fn.apply(this.context, [deltaTime].concat([this._data]));
-        } else {
-          this.fn(deltaTime, this._data);
-        }
-      }
-      var redirect = this.next;
-      if (this.once) {
-        this.destroy(true);
-      }
-      // Soft-destroying should remove
-      // the next reference
-      if (this._destroyed) {
-        this.next = null;
-      }
-      return redirect;
-    }
-    /**
-     * Connect to the list.
-     * @param {TickerListener} previous - Input node, previous listener
-     */
-
-  }, {
-    key: "connect",
-    value: function connect(previous) {
-      this.previous = previous;
-      if (previous.next) {
-        previous.next.previous = this;
-      }
-      this.next = previous.next;
-      previous.next = this;
-    }
-    /**
-     * Destroy and don't use after this.
-     * @param {boolean} [hard = false] `true` to remove the `next` reference, this
-     *        is considered a hard destroy. Soft destroy maintains the next reference.
-     * @return {TickerListener} The listener to redirect while emitting or removing.
-     */
-
-  }, {
-    key: "destroy",
-    value: function destroy() {
-      var hard = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-      this._destroyed = true;
-      this.fn = null;
-      this.context = null;
-      // Disconnect, hook up next and previous
-      if (this.previous) {
-        this.previous.next = this.next;
-      }
-      if (this.next) {
-        this.next.previous = this.previous;
-      }
-      // Redirect to the next item
-      var redirect = this.previous;
-      // Remove references
-      this.next = hard ? null : redirect;
-      this.previous = null;
-      return redirect;
-    }
-  }]);
-  return TickerListener;
-}();
-
-var TickerListener_1 = TickerListener;
-
+};var OVERRAL_ENUM = (_OVERRAL_ENUM = {
+  'texParameterf': true,
+  'texParameteri': true,
+  'bindTexture': true,
+  'compressedTexImage2D': true,
+  'compressedTexSubImage2D': true,
+  // 'viewport': true,
+  'scissor': true,
+  'enable': true,
+  'disable': true
+}, defineProperty(_OVERRAL_ENUM, 'texParameteri', true), defineProperty(_OVERRAL_ENUM, 'texImage2D', true), defineProperty(_OVERRAL_ENUM, 'texSubImage2D', true), defineProperty(_OVERRAL_ENUM, 'depthFunc', true), defineProperty(_OVERRAL_ENUM, 'depthMask', true), defineProperty(_OVERRAL_ENUM, 'colorMask', true), defineProperty(_OVERRAL_ENUM, 'clearColor', true), defineProperty(_OVERRAL_ENUM, 'clearDepth', true), defineProperty(_OVERRAL_ENUM, 'clear', true), defineProperty(_OVERRAL_ENUM, 'clearStencil', true), defineProperty(_OVERRAL_ENUM, 'frontFace', true), defineProperty(_OVERRAL_ENUM, 'cullFace', true), defineProperty(_OVERRAL_ENUM, 'blendEquationSeparate', true), defineProperty(_OVERRAL_ENUM, 'blendFuncSeparate', true), defineProperty(_OVERRAL_ENUM, 'pixelStorei', true), defineProperty(_OVERRAL_ENUM, 'generateMipmap', true), defineProperty(_OVERRAL_ENUM, 'activeTexture', true), defineProperty(_OVERRAL_ENUM, 'blendEquation', true), defineProperty(_OVERRAL_ENUM, 'blendFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilOp', true), defineProperty(_OVERRAL_ENUM, 'stencilFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilMask', true), defineProperty(_OVERRAL_ENUM, 'texParameterf', true), defineProperty(_OVERRAL_ENUM, 'hint', true), _OVERRAL_ENUM);
 /**
- * reference:
- * https://github.com/pixijs/pixi.js/blob/dev/src/core/ticker/index.js
+ * 加入ticker操作
  */
-
-var TARGET_FPMS = 0.06;
-
-var UPDATE_PRIORITY = {
-    INTERACTION: 50,
-    HIGH: 25,
-    NORMAL: 0,
-    LOW: -25,
-    UTILITY: -50
+var TIKCER_ENUM = {
+  'drawElements': true,
+  'drawArrays': true
 };
 
-var Ticker = function () {
-    /**
-     * 
-     * @param {Object} [options] 
-     */
-    function Ticker() {
-        var _this = this;
+var ALL_ENUM$1 = merge_1({}, INTERNAL_ENUM, OVERRAL_ENUM, TIKCER_ENUM);
 
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        classCallCheck(this, Ticker);
-
-        /**
-         * @type {boolean}
-         */
-        var autoStart = options.autoStart;
-        /**
-         * The first listener. All new listeners added are chained on this.
-         * @private
-         * @type {TickerListener}
-         */
-
-        this._head = new TickerListener_1(null, null, null, Infinity);
-        /**
-         * Internal current frame request ID
-         * @private
-         */
-        this._requestId = null;
-        /**
-         * Internal value managed by minFPS property setter and getter.
-         * This is the maximum allowed milliseconds between updates.
-         * @private
-         */
-        this._maxElapsedMS = 100;
-        /**
-         * Whether or not this ticker should invoke the method
-         * {@link PIXI.ticker.Ticker#start} automatically
-         * when a listener is added.
-         *
-         * @member {boolean}
-         * @default false
-         */
-        this.autoStart = autoStart || false;
-        /**
-         * Scalar time value from last frame to this frame.
-         * This value is capped by setting {@link PIXI.ticker.Ticker#minFPS}
-         * and is scaled with {@link PIXI.ticker.Ticker#speed}.
-         * **Note:** The cap may be exceeded by scaling.
-         *
-         * @member {number}
-         * @default 1
-         */
-        this.deltaTime = 1;
-        /**
-         * Time elapsed in milliseconds from last frame to this frame.
-         * Opposed to what the scalar {@link PIXI.ticker.Ticker#deltaTime}
-         * is based, this value is neither capped nor scaled.
-         * If the platform supports DOMHighResTimeStamp,
-         * this value will have a precision of 1 µs.
-         * Defaults to target frame time
-         *
-         * @member {number}
-         * @default 16.66
-         */
-        this.elapsedMS = 1 / TARGET_FPMS;
-        /**
-         * The last time {@link PIXI.ticker.Ticker#update} was invoked.
-         * This value is also reset internally outside of invoking
-         * update, but only when a new animation frame is requested.
-         * If the platform supports DOMHighResTimeStamp,
-         * this value will have a precision of 1 µs.
-         *
-         * @member {number}
-         * @default -1
-         */
-        this.lastTime = -1;
-        /**
-         * Factor of current {@link PIXI.ticker.Ticker#deltaTime}.
-         * @example
-         * // Scales ticker.deltaTime to what would be
-         * // the equivalent of approximately 120 FPS
-         * ticker.speed = 2;
-         *
-         * @member {number}
-         * @default 1
-         */
-        this.speed = 1;
-        /**
-         * Whether or not this ticker has been started.
-         * `true` if {@link PIXI.ticker.Ticker#start} has been called.
-         * `false` if {@link PIXI.ticker.Ticker#stop} has been called.
-         * While `false`, this value may change to `true` in the
-         * event of {@link PIXI.ticker.Ticker#autoStart} being `true`
-         * and a listener is added.
-         *
-         * @member {boolean}
-         * @default false
-         */
-        this.started = false;
-        /**
-         * Internal tick method bound to ticker instance.
-         * This is because in early 2015, Function.bind
-         * is still 60% slower in high performance scenarios.
-         * Also separating frame requests from update method
-         * so listeners may be called at any time and with
-         * any animation API, just invoke ticker.update(time).
-         *
-         * @private
-         * @param {number} time - Time since last tick.
-         */
-        this._tick = function (time) {
-            _this._requestId = null;
-            if (_this.started) {
-                // Invoke listeners now
-                _this.update(time);
-                // Listener side effects may have modified ticker state.
-                if (_this.started && _this._requestId === null && _this._head.next) {
-                    _this._requestId = requestAnimationFrame(_this._tick);
-                }
-            }
-        };
-    }
-    /**
-     * Conditionally requests a new animation frame.
-     * If a frame has not already been requested, and if the internal
-     * emitter has listeners, a new frame is requested.
-     *
-     * @private
-     */
-
-
-    createClass(Ticker, [{
-        key: '_requestIfNeeded',
-        value: function _requestIfNeeded() {
-            if (this._requestId === null && this._head.next) {
-                // ensure callbacks get correct delta
-                this.lastTime = performance.now();
-                this._requestId = requestAnimationFrame(this._tick);
-            }
-        }
-        /**
-         * Conditionally cancels a pending animation frame.
-         *
-         * @private
-         */
-
-    }, {
-        key: '_cancelIfNeeded',
-        value: function _cancelIfNeeded() {
-            if (this._requestId !== null) {
-                cancelAnimationFrame(this._requestId);
-                this._requestId = null;
-            }
-        }
-        /**
-         * Conditionally requests a new animation frame.
-         * If the ticker has been started it checks if a frame has not already
-         * been requested, and if the internal emitter has listeners. If these
-         * conditions are met, a new frame is requested. If the ticker has not
-         * been started, but autoStart is `true`, then the ticker starts now,
-         * and continues with the previous conditions to request a new frame.
-         *
-         * @private
-         */
-
-    }, {
-        key: '_startIfPossible',
-        value: function _startIfPossible() {
-            if (this.started) {
-                this._requestIfNeeded();
-            } else if (this.autoStart) {
-                this.start();
-            }
-        }
-        /**
-         * Register a handler for tick events. Calls continuously unless
-         * it is removed or the ticker is stopped.
-         *
-         * @param {Function} fn - The listener function to be added for updates
-         * @param {Function} [context] - The listener context
-         * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: 'add',
-        value: function add(fn, context) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-            var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
-
-            return this._addListener(new TickerListener_1(fn, context, data, priority));
-        }
-        /**
-         * Add a handler for the tick event which is only execute once.
-         *
-         * @param {Function} fn - The listener function to be added for one update
-         * @param {Function} [context] - The listener context
-         * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: 'addOnce',
-        value: function addOnce(fn, context) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-            var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
-
-            return this._addListener(new TickerListener_1(fn, context, data, priority, true));
-        }
-        /**
-         * Internally adds the event handler so that it can be sorted by priority.
-         * Priority allows certain handler (user, AnimatedSprite, Interaction) to be run
-         * before the rendering.
-         *
-         * @private
-         * @param {TickerListener} listener - Current listener being added.
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: '_addListener',
-        value: function _addListener(listener) {
-            // For attaching to head
-            var current = this._head.next;
-            var previous = this._head;
-            // Add the first item
-            if (!current) {
-                listener.connect(previous);
-            } else {
-                // Go from highest to lowest priority
-                while (current) {
-                    if (listener.priority > current.priority) {
-                        listener.connect(previous);
-                        break;
-                    }
-                    previous = current;
-                    current = current.next;
-                }
-                // Not yet connected
-                if (!listener.previous) {
-                    listener.connect(previous);
-                }
-            }
-            this._startIfPossible();
-            return this;
-        }
-        /**
-         * Removes any handlers matching the function and context parameters.
-         * If no handlers are left after removing, then it cancels the animation frame.
-         *
-         * @param {Function} fn - The listener function to be removed
-         * @param {Function} [context] - The listener context to be removed
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: 'remove',
-        value: function remove(fn, context) {
-            var listener = this._head.next;
-            while (listener) {
-                // We found a match, lets remove it
-                // no break to delete all possible matches
-                // incase a listener was added 2+ times
-                if (listener.match(fn, context)) {
-                    listener = listener.destroy();
-                } else {
-                    listener = listener.next;
-                }
-            }
-            if (!this._head.next) {
-                this._cancelIfNeeded();
-            }
-            return this;
-        }
-        /**
-         * Starts the ticker. If the ticker has listeners
-         * a new animation frame is requested at this point.
-         */
-
-    }, {
-        key: 'start',
-        value: function start() {
-            if (!this.started) {
-                this.started = true;
-                this._requestIfNeeded();
-            }
-        }
-        /**
-         * Stops the ticker. If the ticker has requested
-         * an animation frame it is canceled at this point.
-         */
-
-    }, {
-        key: 'stop',
-        value: function stop() {
-            if (this.started) {
-                this.started = false;
-                this._cancelIfNeeded();
-            }
-        }
-        /**
-         * Destroy the ticker and don't use after this. Calling
-         * this method removes all references to internal events.
-         */
-
-    }, {
-        key: 'destroy',
-        value: function destroy() {
-            this.stop();
-            var listener = this._head.next;
-            while (listener) {
-                listener = listener.destroy(true);
-            }
-            this._head.destroy();
-            this._head = null;
-        }
-        /**
-         * Triggers an update. An update entails setting the
-         * current {@link PIXI.ticker.Ticker#elapsedMS},
-         * the current {@link PIXI.ticker.Ticker#deltaTime},
-         * invoking all listeners with current deltaTime,
-         * and then finally setting {@link PIXI.ticker.Ticker#lastTime}
-         * with the value of currentTime that was provided.
-         * This method will be called automatically by animation
-         * frame callbacks if the ticker instance has been started
-         * and listeners are added.
-         *
-         * @param {number} [currentTime=performance.now()] - the current time of execution
-         */
-
-    }, {
-        key: 'update',
-        value: function update() {
-            var currentTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : performance.now();
-
-            var elapsedMS = void 0;
-            // If the difference in time is zero or negative, we ignore most of the work done here.
-            // If there is no valid difference, then should be no reason to let anyone know about it.
-            // A zero delta, is exactly that, nothing should update.
-            //
-            // The difference in time can be negative, and no this does not mean time traveling.
-            // This can be the result of a race condition between when an animation frame is requested
-            // on the current JavaScript engine event loop, and when the ticker's start method is invoked
-            // (which invokes the internal _requestIfNeeded method). If a frame is requested before
-            // _requestIfNeeded is invoked, then the callback for the animation frame the ticker requests,
-            // can receive a time argument that can be less than the lastTime value that was set within
-            // _requestIfNeeded. This difference is in microseconds, but this is enough to cause problems.
-            //
-            // This check covers this browser engine timing issue, as well as if consumers pass an invalid
-            // currentTime value. This may happen if consumers opt-out of the autoStart, and update themselves.
-            if (currentTime > this.lastTime) {
-                // Save uncapped elapsedMS for measurement
-                elapsedMS = this.elapsedMS = currentTime - this.lastTime;
-                // cap the milliseconds elapsed used for deltaTime
-                if (elapsedMS > this._maxElapsedMS) {
-                    elapsedMS = this._maxElapsedMS;
-                }
-                this.deltaTime = elapsedMS * TARGET_FPMS * this.speed;
-
-                // Cache a local reference, in-case ticker is destroyed
-                // during the emit, we can still check for head.next
-                var head = this._head;
-                // Invoke listeners added to internal emitter
-                var listener = head.next;
-                while (listener) {
-                    listener = listener.emit(this.deltaTime);
-                }
-                if (!head.next) {
-                    this._cancelIfNeeded();
-                }
-            } else {
-                this.deltaTime = this.elapsedMS = 0;
-            }
-            this.lastTime = currentTime;
-        }
-        /**
-         * The frames per second at which this ticker is running.
-         * The default is approximately 60 in most modern browsers.
-         * **Note:** This does not factor in the value of
-         * {@link PIXI.ticker.Ticker#speed}, which is specific
-         * to scaling {@link PIXI.ticker.Ticker#deltaTime}.
-         *
-         * @member {number}
-         * @readonly
-         */
-
-    }, {
-        key: 'FPS',
-        get: function get$$1() {
-            return 1000 / this.elapsedMS;
-        }
-        /**
-         * Manages the maximum amount of milliseconds allowed to
-         * elapse between invoking {@link PIXI.ticker.Ticker#update}.
-         * This value is used to cap {@link PIXI.ticker.Ticker#deltaTime},
-         * but does not effect the measured value of {@link PIXI.ticker.Ticker#FPS}.
-         * When setting this property it is clamped to a value between
-         * `0` and `PIXI.settings.TARGET_FPMS * 1000`.
-         *
-         * @member {number}
-         * @default 10
-         */
-
-    }, {
-        key: 'minFPS',
-        get: function get$$1() {
-            return 1000 / this._maxElapsedMS;
-        }
-        /**
-         * eslint-disable-line require-jsdoc
-         */
-        ,
-        set: function set$$1(fps) {
-            // Clamp: 0 to TARGET_FPMS
-            var minFPMS = Math.min(Math.max(0, fps) / 1000, TARGET_FPMS);
-
-            this._maxElapsedMS = 1 / minFPMS;
-        }
-    }]);
-    return Ticker;
-}();
-
-var Ticker_1 = Ticker;
-
-/**
- * gl中基于Programn的赋值操作
- * 需useProgram切换到当前program后才能实际赋值
- */
-/**
- * 存储gl中最简单的逻辑，即为当前program赋值操作，此操作没有:回滚，删除，覆盖
- * - uniforms
- * - attributes
- * - buffers,除了 createBuffer,deleteBuffer,getBufferParameter,isBuffer
- */
-var INTERNAL_TINY_ENUM = {
-    'lineWidth': true,
-    //'viewport': true,
-    //'enable': true,
-    //'disable': true,
-    'deleteBuffer': true,
-    //'deleteShader': true,
-    'deleteProgram': true,
-    'deleteFramebuffer': true,
-    'deleteRenderbuffer': true,
-    //
-    'bindFramebuffer': true,
-    'framebufferTexture2D': true,
-    'readPixels': true,
-    //buffer-uinform-attrib
-    'bindBuffer': true,
-    'bufferData': true,
-    'bufferSubData': true,
-    'disableVertexAttribArray': true,
-    'enableVertexAttribArray': true,
-    'vertexAttribPointer': true,
-    //uniformMatrix
-    'uniformMatrix2fv': true,
-    'uniformMatrix3fv': true,
-    'uniformMatrix4fv': true,
-    //uniform1[f][i][v]
-    'uniform1f': true,
-    'uniform1fv': true,
-    'uniform1i': true,
-    'uniform1iv': true,
-    //uniform2[f][i][v]
-    'uniform2f': true,
-    'uniform2fv': true,
-    'uniform2i': true,
-    'uniform2iv': true,
-    //uniform3[f][i][v]
-    'uniform3f': true,
-    'uniform3fv': true,
-    'uniform3i': true,
-    'uniform3iv': true,
-    //uniform4[f][i][v]
-    'uniform4f': true,
-    'uniform4fv': true,
-    'uniform4i': true,
-    'uniform4iv': true,
-    //vertexAttrib1f
-    'vertexAttrib1f': true,
-    'vertexAttrib2f': true,
-    'vertexAttrib3f': true,
-    'vertexAttrib4f': true,
-    //vertexAttrib1fv
-    'vertexAttrib1fv': true,
-    'vertexAttrib2fv': true,
-    'vertexAttrib3fv': true,
-    'vertexAttrib4fv': true
+var handle = {
+  INTERNAL_ENUM: INTERNAL_ENUM,
+  OVERRAL_ENUM: OVERRAL_ENUM,
+  TIKCER_ENUM: TIKCER_ENUM,
+  ALL_ENUM: ALL_ENUM$1
 };
-
-var InternalTiny = function () {
-    function InternalTiny(glProgram, name) {
-        classCallCheck(this, InternalTiny);
-
-        this._glProgram = glProgram;
-        this._name = name;
-
-        for (var _len = arguments.length, rest = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-            rest[_key - 2] = arguments[_key];
-        }
-
-        this._rest = rest;
-    }
-
-    createClass(InternalTiny, [{
-        key: 'apply',
-        value: function apply() {
-            var gl = this._glProgram.gl;
-            var name = this._name;
-            gl[name].apply(gl, this._rest);
-        }
-    }]);
-    return InternalTiny;
-}();
-
-var InternallTiny = {
-    INTERNAL_TINY_ENUM: INTERNAL_TINY_ENUM,
-    InternalTiny: InternalTiny
-};
-
-/**
- * 处理改变全局状态的操心
- * 需要在draw执行完后，复原之前的状态
- */
-/**
- * 需要记录前序状态的操作
- */
-var OVERRAL_TINY_ENUM = {
-    //'texParameteri': true,
-    //'texImage2D': true,
-    //'depthFunc': true,
-    //'clearColor': true,
-    //'clearDepth': true,
-    //'clear': true,
-    //'clearStencil': true,
-    //'frontFace': true,
-    //'cullFace': true,
-    //'generateMipmap': true,
-    //'pixelStorei': true,
-    'activeTexture': true,
-    //'blendEquationSeparate': true,
-    //'blendFuncSeparate': true,
-    'blendEquation': true,
-    'blendFunc': true,
-    'scissor': true,
-    'stencilOp': true,
-    'stencilFunc': true,
-    'stencilMask': true,
-    //'depthMask': true,
-    //'colorMask': true,
-    'texParameterf': true,
-    'hint': true
-};
-
-var OverrallTiny = function OverrallTiny() {
-    classCallCheck(this, OverrallTiny);
-};
-
-var OverrallTiny_1 = {
-    OVERRAL_TINY_ENUM: OVERRAL_TINY_ENUM,
-    OverrallTiny: OverrallTiny
-};
-
-var createTiny_1 = createCommonjsModule(function (module) {
-    /**
-     * reference:
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext
-     * 
-     * 总线进行调度时，生产系列的block
-     * tiny分为三种：
-     * 
-     * 
-     * -1.非全局影响式，例如 bufferData
-     * -2.全局影响式，例如 gl.Clear
-     * -3.全局转换容器式，例如 readPixel（可合并到2）
-     * 
-     * 
-     * 流程：
-     * 1、当glContext进行赋值等操作的时候，根据不同的操作，讲非全局影响操作暂存插入执行区
-     * 2、当操作为 drawBuffer,drawElement和draw的时候，将队列包装成task插入raf待处理
-     * 3、待全部glProgram都执行完毕后，写入frameBuffer
-     * 4、最后统一调度全局影响操作
-     * 5、复制结果图层到实际可视区
-     * 
-     */
-    var stamp = stamp_1.stamp;
-    /**
-     * tiny
-     */
-    var InternalTiny = InternallTiny.InternalTiny,
-        OverrallTiny = OverrallTiny_1.OverrallTiny;
-    /**
-     * tiny_Enum
-     */
-    var INTERNAL_TINY_ENUM = InternallTiny.INTERNAL_TINY_ENUM,
-        OVERRAL_TINY_ENUM = OverrallTiny_1.OVERRAL_TINY_ENUM;
-    /**
-     * Tiny Cache
-     */
-    var Tinys = {};
-    /**
-     * 
-     * @param {GLProgram} glProgram 
-     * @param {*} tiny 
-     */
-    var enQueue = function enQueue(glProgram, tiny) {
-        var head = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-
-        var id = glProgram.id;
-        if (!Tinys[id]) Tinys[id] = [];
-        var queue = Tinys[id];
-        queue.push(tiny);
-    };
-    /**
-     * 
-     * @param {*} id 
-     */
-    var acquireQueue = function acquireQueue(id) {
-        var queue = Tinys[id];
-        Tinys[id] = [];
-        return queue;
-    };
-
-    /**
-     * 
-     */
-    var ticker = new Ticker_1({
-        autoStart: true
-    });
-    /**
-     * tinys which needs to render
-     */
-    var TICK_TINY_ENUM = {
-        'drawArrays': true,
-        'drawElements': true
-        /**
-         * @type {enum}
-         */
-    };var TINY_ENUM = merge_1({}, OVERRAL_TINY_ENUM, INTERNAL_TINY_ENUM, TICK_TINY_ENUM);
-    /**
-     * @func
-     */
-    var createTiny = function createTiny(glProgram, name) {
-        //1.加入正序处理队列
-        if (TINY_ENUM[name]) {
-            for (var _len = arguments.length, rest = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-                rest[_key - 2] = arguments[_key];
-            }
-
-            var tiny = new (Function.prototype.bind.apply(InternalTiny, [null].concat([glProgram, name], rest)))();
-            enQueue(glProgram, tiny);
-        }
-        //2.加入反序执行队列
-        if (OVERRAL_TINY_ENUM[name]) {}
-        //3.加入ticker
-        if (TICK_TINY_ENUM[name]) {
-            ticker.addOnce(function (deltaTime, data) {
-                data.tickPrgoram.useProgram();
-                var queue = data.queue;
-                var tiny = queue.shift();
-                while (!!tiny) {
-                    tiny.apply();
-                    tiny = queue.shift();
-                }
-            }, glProgram.handle, {
-                tickPrgoram: glProgram,
-                queue: acquireQueue(glProgram.id)
-            });
-        }
-    };
-
-    module.exports = {
-        TINY_ENUM: TINY_ENUM,
-        createTiny: createTiny
-    };
-});
 
 /**
  * warpped the WebGLRenderingContext
@@ -3904,398 +3146,356 @@ var createTiny_1 = createCommonjsModule(function (module) {
  * 
  */
 var stamp$1 = stamp_1.stamp;
-/**
- * supported tiny operation
- */
-var TINY_ENUM = createTiny_1.TINY_ENUM;
-var createTiny = createTiny_1.createTiny;
 
-// humpToContinuous = require('./../utils/strManipulate').humpToContinuous,
-// 
-
+var ALL_ENUM = handle.ALL_ENUM;
 /**
  * 实时处理的函数,多为直接获取结果函数
  * needs to be executing in real time1
  */
-var BRIDGE_ENUM = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'deleteBuffer', 'createBuffer', 'createFramebuffer', 'getBufferParameter', 'getProgramParameter', 'getShaderParameter', 'getParameter', 'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset', 'getTexParameter'];
-/**
- * - State information
- * - Textures
- */
-var BRIDGE_VOID_ENUM = ['texParameterf', 'texParameteri', 'bindTexture', 'compressedTexImage2D', 'compressedTexSubImage2D', 'viewport', 'scissor', 'enable', 'disable', 'texParameteri', 'texImage2D', 'texSubImage2D', 'depthFunc', 'depthMask', 'colorMask', 'deleteShader', 'deleteTexture', 'clearColor', 'clearDepth', 'clear', 'clearStencil', 'frontFace', 'cullFace', 'blendEquationSeparate', 'blendFuncSeparate', 'pixelStorei', 'generateMipmap', 'activeTexture'];
-
+var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getShaderParameter', 'getParameter', 'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset', 'getTexParameter'];
 /**
  * @class
  * @example
  */
 
 var GLContext = function (_Dispose) {
-    inherits(GLContext, _Dispose);
+  inherits(GLContext, _Dispose);
+
+  /**
+   * @param {Object} options
+   * @param {HTMLCanvasElement} options.canvas
+   * @param {WebGLRenderingContext} options.gl
+   * @param {String} options.renderType 'webgl'、'webgl2'
+   * @param {GLExtension} [options.glExtension] 
+   * @param {GLLimits} [options.glLimits]
+   */
+  function GLContext() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    classCallCheck(this, GLContext);
 
     /**
-     * @param {Object} options
-     * @param {HTMLCanvasElement} options.canvas
-     * @param {WebGLRenderingContext} options.gl
-     * @param {String} options.renderType 'webgl'、'webgl2'
-     * @param {GLExtension} [options.glExtension] 
-     * @param {GLLimits} [options.glLimits]
+     * @type {HTMLCanvasElement}
      */
-    function GLContext() {
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        classCallCheck(this, GLContext);
+    var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this));
 
-        /**
-         * @type {HTMLCanvasElement}
-         */
-        var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this));
+    _this._canvas = options.canvas || null;
+    /**
+     *  @type {WebGLRenderingContext}
+     */
+    _this._gl = options.gl;
+    /**
+     * webgl扩展
+     * @type {GLExtension}
+     */
+    _this._glExtension = options.glExtension;
+    /**
+     * get parameter and extensions
+     * @type {GLLimits}
+     */
+    _this._glLimits = options.glLimits;
+    /**
+     * the program cache
+     * @type {Object}
+     */
+    _this._programCache = {};
+    /**
+     * the shader cache
+     * @type {Object}
+     */
+    _this._shaderCache = {};
+    /**
+     * the texture cache
+     */
+    _this._textureCache = {};
+    /**
+     * current using program
+     * @type {GLProgram}
+     */
+    _this._glProgram = null;
+    /**
+     * setup env
+     */
+    _this._setup();
+    /**
+     * map glContext to Context
+     */
+    _this._map();
+    return _this;
+  }
 
-        _this._canvas = options.canvas || null;
-        /**
-         *  @type {WebGLRenderingContext}
-         */
-        _this._gl = options.gl;
-        /**
-         * webgl扩展
-         * @type {GLExtension}
-         */
-        _this._glExtension = options.glExtension;
-        /**
-         * get parameter and extensions
-         * @type {GLLimits}
-         */
-        _this._glLimits = options.glLimits;
-        /**
-         * the program cache
-         * @type {Object}
-         */
-        _this._programCache = {};
-        /**
-         * the shader cache
-         * @type {Object}
-         */
-        _this._shaderCache = {};
-        /**
-         * the texture cache
-         */
-        _this._textureCache = {};
-        /**
-         * current using program
-         * @type {GLProgram}
-         */
-        _this._glProgram = null;
-        /**
-         * setup env
-         */
-        _this._setup();
-        /**
-         * map glContext to Context
-         */
-        _this._map();
-        return _this;
+  createClass(GLContext, [{
+    key: '_setup',
+
+    /**
+     * 设置绘制区域的规则
+     * 1. 混合颜色
+     * 2. 深度
+     * 3.
+     */
+    value: function _setup() {
+      var gl = this._gl;
+      //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
+      //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
+      //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，
+      //作用为：源颜色的alpha作为不透明度，即源颜色alpha值越大，混合时占比越高，混合时最常用的方式
+      gl.enable(GLConstants_1.BLEND);
+      gl.blendFunc(GLConstants_1.ONE, GLConstants_1.ONE_MINUS_SRC_ALPHA);
+      //为了模仿真实物体和透明物体的混合颜色，需要使用深度信息
+      //http://www.cnblogs.com/aokman/archive/2010/12/13/1904723.html
+      //模版缓存区测试，用来对比当前值与预设值，用以判断是否更新此值
+      //顺序为：(framment + associated data) - pixel ownership test - scissor test
+      //       - alpha test - stencil test - depth test
+      //       - blending - dithering - logic op - framebuffer
+      //在模板测试的过程中，可以先使用一个比较用掩码（comparison mask）与模板缓冲区中的值进行位与运算，
+      //再与参考值进行比较，从而实现对模板缓冲区中的值的某一位上的置位状态的判断。
+      gl.enable(GLConstants_1.STENCIL_TEST);
+      //gl.stencilFunc(gl)
+      gl.enable(GLConstants_1.DEPTH_TEST);
+      //深度参考值小于模版值时，测试通过
+      gl.depthFunc(GLConstants_1.LEQUAL);
+      gl.depthMask(false);
     }
+    /**
+     * map相关属性与方法
+     */
 
-    createClass(GLContext, [{
-        key: '_setup',
+  }, {
+    key: '_map',
+    value: function _map() {
+      var _this2 = this;
 
-        /**
-         * 设置绘制区域的规则
-         * 1. 混合颜色
-         * 2. 深度
-         * 3.
-         */
-        value: function _setup() {
-            var gl = this._gl;
-            //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
-            //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
-            //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，
-            //作用为：源颜色的alpha作为不透明度，即源颜色alpha值越大，混合时占比越高，混合时最常用的方式
-            gl.enable(GLConstants_1.BLEND);
-            gl.blendFunc(GLConstants_1.ONE, GLConstants_1.ONE_MINUS_SRC_ALPHA);
-            //为了模仿真实物体和透明物体的混合颜色，需要使用深度信息
-            //http://www.cnblogs.com/aokman/archive/2010/12/13/1904723.html
-            //模版缓存区测试，用来对比当前值与预设值，用以判断是否更新此值
-            //顺序为：(framment + associated data) - pixel ownership test - scissor test
-            //       - alpha test - stencil test - depth test
-            //       - blending - dithering - logic op - framebuffer
-            //在模板测试的过程中，可以先使用一个比较用掩码（comparison mask）与模板缓冲区中的值进行位与运算，
-            //再与参考值进行比较，从而实现对模板缓冲区中的值的某一位上的置位状态的判断。
-            gl.enable(GLConstants_1.STENCIL_TEST);
-            //gl.stencilFunc(gl)
-            gl.enable(GLConstants_1.DEPTH_TEST);
-            //深度参考值小于模版值时，测试通过
-            gl.depthFunc(GLConstants_1.LEQUAL);
-            gl.depthMask(false);
+      var that = this;
+      //get the WebGLRenderingContext
+      var gl = this._gl;
+      //map constant
+      for (var key in GLConstants_1) {
+        if (!this.hasOwnProperty(key)) {
+          var target = GLConstants_1[key];
+          if (!this[key] && !!target) this[key] = target;
         }
-        /**
-         * map相关属性与方法
-         */
+      }
+      //map ImplementBridge
 
-    }, {
-        key: '_map',
-        value: function _map() {
-            var _this2 = this;
+      var _loop = function _loop(i, len) {
+        var key = BRIDGE_ARRAY[i];
+        _this2[key] = function () {
+          for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
+            rest[_key2] = arguments[_key2];
+          }
 
-            var that = this;
-            //get the WebGLRenderingContext
-            var gl = this._gl;
-            //map constant
-            for (var key in GLConstants_1) {
-                if (!this.hasOwnProperty(key)) {
-                    var target = GLConstants_1[key];
-                    if (!this[key] && !!target) this[key] = target;
-                }
-            }
-            //map ImplementBridge
+          return gl[key].apply(gl, rest);
+        };
+      };
 
-            var _loop = function _loop(i, len) {
-                var key = BRIDGE_ENUM[i];
-                _this2[key] = function () {
-                    for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
-                        rest[_key2] = arguments[_key2];
-                    }
+      for (var i = 0, len = BRIDGE_ARRAY.length; i < len; i++) {
+        _loop(i, len);
+      }
+      //map internalTinyOperation
 
-                    return gl[key].apply(gl, rest);
-                };
-            };
+      var _loop2 = function _loop2(_key) {
+        _this2[_key] = function () {
+          for (var _len2 = arguments.length, rest = Array(_len2), _key3 = 0; _key3 < _len2; _key3++) {
+            rest[_key3] = arguments[_key3];
+          }
 
-            for (var i = 0, len = BRIDGE_ENUM.length; i < len; i++) {
-                _loop(i, len);
-            }
-            //map BRIDGE_VOID_ENUM
+          gl[_key].apply(gl, rest);
+          //const glProgram = this._glProgram;
+          //createTiny(this,glProgram,key,...rest);
+        };
+      };
 
-            var _loop2 = function _loop2(i, len) {
-                var key = BRIDGE_VOID_ENUM[i];
-                _this2[key] = function () {
-                    for (var _len2 = arguments.length, rest = Array(_len2), _key3 = 0; _key3 < _len2; _key3++) {
-                        rest[_key3] = arguments[_key3];
-                    }
+      for (var _key in ALL_ENUM) {
+        _loop2(_key);
+      }
+    }
+    /**
+     * 获取canvas
+     */
 
-                    gl[key].apply(gl, rest);
-                };
-            };
+  }, {
+    key: 'createProgram',
 
-            for (var i = 0, len = BRIDGE_VOID_ENUM.length; i < len; i++) {
-                _loop2(i, len);
-            }
-            //map internalTinyOperation
+    /**
+     * @return {WebGLProgram}
+     */
+    value: function createProgram() {
+      var gl = this._gl;
+      //1.创建GLProgram
+      var glProgram = new GLProgram_1(gl);
+      //2.缓存program
+      this._programCache[glProgram.id] = glProgram;
+      //3.返回句柄
+      return glProgram.handle;
+    }
+    /**
+     * create shader
+     * @param {number} type
+     * @return {WebGLShader}
+     */
 
-            var _loop3 = function _loop3(_key) {
-                _this2[_key] = function () {
-                    for (var _len3 = arguments.length, rest = Array(_len3), _key4 = 0; _key4 < _len3; _key4++) {
-                        rest[_key4] = arguments[_key4];
-                    }
+  }, {
+    key: 'createShader',
+    value: function createShader(type) {
+      var gl = this._gl,
+          glExtension = this._glExtension;
+      var glShader = null;
+      if (type === GLConstants_1.VERTEX_SHADER) {
+        glShader = new GLVertexShader_1(gl, null, glExtension);
+      } else if (type === GLConstants_1.FRAGMENT_SHADER) {
+        glShader = new GLFragmentShader_1(gl, null, glExtension);
+      }
+      if (!!glShader) {
+        this._shaderCache[glShader.id] = glShader;
+        return glShader.handle;
+      }
+      return null;
+    }
+    /**
+     * @return {WebGLTexture}
+     */
 
-                    var glProgram = _this2._glProgram;
-                    createTiny.apply(undefined, [glProgram, _key].concat(rest));
-                };
-            };
+  }, {
+    key: 'createTexture',
+    value: function createTexture() {
+      var gl = this._gl;
+      var glTexture = new GLTexture_1(gl);
+      this._textureCache[glTexture.id] = glTexture;
+      return glTexture.handle;
+    }
+    /**
+     * @return {WebGLBuffer}
+     */
 
-            for (var _key in TINY_ENUM) {
-                _loop3(_key);
-            }
-        }
-        /**
-         * 获取canvas
-         */
+  }, {
+    key: 'createBuffer',
+    value: function createBuffer() {
+      var gl = this._gl;
+      return gl.createBuffer();
+    }
+    /**
+     * @type {WebGLFramebuffer}
+     */
 
-    }, {
-        key: 'createProgram',
+  }, {
+    key: 'createFramebuffer',
+    value: function createFramebuffer() {
+      var gl = this._gl;
+      return gl.createFramebuffer();
+    }
+    /**
+     * 注意在处理tiny的时候，需先useProgram
+     * @param {WebGLProgram} program
+     */
 
-        /**
-         * @return {WebGLProgram}
-         */
-        value: function createProgram() {
-            var gl = this._gl;
-            //1.创建GLProgram
-            var glProgram = new GLProgram_1(gl);
-            //2.缓存program
-            this._programCache[glProgram.id] = glProgram;
-            //3.返回句柄
-            return glProgram.handle;
-        }
-        /**
-         * create shader
-         * @param {number} type
-         * @return {WebGLShader}
-         */
+  }, {
+    key: 'useProgram',
+    value: function useProgram(program) {
+      var id = stamp$1(program);
+      var glProgram = this._programCache[id];
+      this._glProgram = glProgram;
+      glProgram.useProgram();
+    }
+    /**
+     * 获取extension
+     */
 
-    }, {
-        key: 'createShader',
-        value: function createShader(type) {
-            var gl = this._gl,
-                glExtension = this._glExtension;
-            var glShader = null;
-            if (type === GLConstants_1.VERTEX_SHADER) {
-                glShader = new GLVertexShader_1(gl, null, glExtension);
-            } else if (type === GLConstants_1.FRAGMENT_SHADER) {
-                glShader = new GLFragmentShader_1(gl, null, glExtension);
-            }
-            if (!!glShader) {
-                this._shaderCache[glShader.id] = glShader;
-                return glShader.handle;
-            }
-            return null;
-        }
-        /**
-         * @return {WebGLTexture}
-         */
+  }, {
+    key: 'getExtension',
+    value: function getExtension(name) {
+      var glExtension = this._glExtension;
+      return glExtension.getExtension(name);
+    }
+    /**
+     * 
+     * @param {WebGLProgram} program 
+     * @param {WebGLShader} shader 
+     */
 
-    }, {
-        key: 'createTexture',
-        value: function createTexture() {
-            var gl = this._gl;
-            var glTexture = new GLTexture_1(gl);
-            this._textureCache[glTexture.id] = glTexture;
-            return glTexture.handle;
-        }
-        /**
-         * 注意在处理tiny的时候，需先useProgram
-         * @param {WebGLProgram} program
-         */
+  }, {
+    key: 'attachShader',
+    value: function attachShader(program, shader) {
+      var glProgram = this._programCache[stamp$1(program)];
+      var glShader = this._shaderCache[stamp$1(shader)];
+      glProgram.attachShader(glShader);
+    }
+    /**
+     * 
+     * @param {WebGLShader} shader 
+     * @param {String} source 
+     */
 
-    }, {
-        key: 'useProgram',
-        value: function useProgram(program) {
-            var id = stamp$1(program);
-            var glProgram = this._programCache[id];
-            this._glProgram = glProgram;
-        }
-        /**
-         * 获取extension
-         */
+  }, {
+    key: 'shaderSource',
+    value: function shaderSource(shader, source) {
+      var gl = this._gl;
+      gl.shaderSource(shader, source);
+    }
+    /**
+     * no need to implement
+     */
 
-    }, {
-        key: 'getExtension',
-        value: function getExtension(name) {
-            var glExtension = this._glExtension;
-            return glExtension.getExtension(name);
-        }
-        /**
-         * 
-         * @param {WebGLProgram} program 
-         * @param {WebGLShader} shader 
-         */
+  }, {
+    key: 'compileShader',
+    value: function compileShader(shader) {
+      var gl = this._gl;
+      gl.compileShader(shader);
+    }
+    /**
+     * no needs to implement this function
+     * @param {WebGLProgram} program 
+     */
 
-    }, {
-        key: 'attachShader',
-        value: function attachShader(program, shader) {
-            var glProgram = this._programCache[stamp$1(program)];
-            var glShader = this._shaderCache[stamp$1(shader)];
-            glProgram.attachShader(glShader);
-        }
-        /**
-         * 
-         * @param {WebGLShader} shader 
-         * @param {String} source 
-         */
+  }, {
+    key: 'linkProgram',
+    value: function linkProgram(program) {
+      var gl = this._gl;
+      gl.linkProgram(program);
+    }
+    /**
+     * 
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} width 
+     * @param {*} height 
+     */
 
-    }, {
-        key: 'shaderSource',
-        value: function shaderSource(shader, source) {
-            var gl = this._gl;
-            gl.shaderSource(shader, source);
-            //const glShader = this._shaderCache[stamp(shader)];
-            //glShader.source = source;
-        }
-        /**
-         * no need to implement
-         */
+  }, {
+    key: 'viewport',
+    value: function viewport(x, y, width, height) {
+      var gl = this._gl;
+      gl.viewport(x, y, width, height);
+    }
+  }, {
+    key: 'canvas',
+    get: function get$$1() {
+      var gl = this._gl;
+      return gl.canvas;
+    }
+    /**
+     * 获取drawingBuffer的width
+     */
 
-    }, {
-        key: 'compileShader',
-        value: function compileShader(shader) {
-            var gl = this._gl;
-            gl.compileShader(shader);
-        }
-        /**
-         * no needs to implement this function
-         * @param {WebGLProgram} program 
-         */
+  }, {
+    key: 'drawingBufferWidth',
+    get: function get$$1() {
+      var gl = this._gl;
+      return gl.drawingBufferWidth;
+    }
+    /**
+     * 获取drawingBuffer的height
+     */
 
-    }, {
-        key: 'linkProgram',
-        value: function linkProgram(program) {
-            var gl = this._gl;
-            gl.linkProgram(program);
-        }
-    }, {
-        key: 'canvas',
-        get: function get$$1() {
-            var gl = this._gl;
-            return gl.canvas;
-        }
-        /**
-         * 获取drawingBuffer的width
-         */
-
-    }, {
-        key: 'drawingBufferWidth',
-        get: function get$$1() {
-            var gl = this._gl;
-            return gl.drawingBufferWidth;
-        }
-        /**
-         * 获取drawingBuffer的height
-         */
-
-    }, {
-        key: 'drawingBufferHeight',
-        get: function get$$1() {
-            var gl = this._gl;
-            return gl.drawingBufferHeight;
-        }
-    }]);
-    return GLContext;
+  }, {
+    key: 'drawingBufferHeight',
+    get: function get$$1() {
+      var gl = this._gl;
+      return gl.drawingBufferHeight;
+    }
+  }]);
+  return GLContext;
 }(Dispose_1);
 
 var GLContext_1 = GLContext;
-
-var raf_1 = createCommonjsModule(function (module) {
-    /**
-     * 
-     * 兼容不同的写法
-     * 提供 requestAnimationFrame 和 cancelAnimationFrame
-     * @author yellow date 2017/6/29
-     */
-
-    var vendors = ['webkit', 'moz', 'o', 'ms'];
-
-    var _raf = window.requestAnimationFrame,
-        _craf = window.cancelAnimationFrame;
-
-    var raf = function () {
-        for (var i = 0, len = vendors.length; i < len && _raf && _craf; i++) {
-            var reqKey = vendors[i] + 'RequestAnimationFrame',
-                celKeyO = vendors[i] + 'CancelAnimationFrame',
-                celKeyN = vendors[i] + 'CancelRequestAnimationFrame';
-            _raf = window[reqKey];
-            _craf = window[celKeyO] || window[celKeyN];
-        }
-
-        if (!_raf) {
-            _raf = function _raf(callback, element) {
-                var currTime = new Date().getTime();
-                var timeToCall = Math.max(0, 16.7 - (currTime - lastTime));
-                var id = window.setTimeout(function () {
-                    callback(currTime + timeToCall);
-                }, timeToCall);
-                lastTime = currTime + timeToCall;
-                return id;
-            };
-        }
-
-        if (!_craf) {
-            _craf = function _craf(id) {
-                clearTimeout(id);
-            };
-        }
-    }();
-
-    module.exports = {
-        requestAnimationFrame: requestAnimationFrame,
-        cancelAnimationFrame: cancelAnimationFrame
-    };
-});
 
 /**
  *  
@@ -4485,6 +3685,29 @@ var init = {
         GLShaderFactory: GLShaderFactory_1,
         GLVertexArrayObject: GLVertexArrayObject_1
     }
+
+    ////
+    //// const GL = require('gl');
+    // /**
+    //  * @type {WebGLRenderingContext}
+    //  */
+    // const gl = new GL(600,400);
+    // //
+    // const texture = gl.createTexture();
+    // gl.bindTexture(gl.TEXTURE_2D,texture);
+
+    // const paramter1 = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
+
+    // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+    // gl.bindTexture(gl.TEXTURE_2D,null);
+
+    // gl.deleteTexture(texture);
+
+    // const texture2 = gl.createTexture();
+    // gl.bindTexture(gl.TEXTURE_2D,texture2);
+
+    // const paramter2 = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
+
 };
 
 return init;

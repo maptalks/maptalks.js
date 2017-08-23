@@ -4,134 +4,84 @@
  * 
  * -
  */
-const Ticker = require('./Ticker');
-/**
- * internal ticker
- */
-const ticker = new Ticker({
-    autoStart: true
-});
-/**
- * 与program相关的操作
- */
-const INTERNAL_TINY_ENUM = {
-    'lineWidth': true,
-    //'viewport': true,
-    //'enable': true,
-    //'disable': true,
-    'deleteBuffer': true,
-    //'deleteShader': true,
-    'deleteProgram': true,
-    'deleteFramebuffer': true,
-    'deleteRenderbuffer': true,
-    //
-    'bindFramebuffer': true,
-    'framebufferTexture2D': true,
-    'readPixels': true,
-    //buffer-uinform-attrib
-    'bindBuffer': true,
-    'bufferData': true,
-    'bufferSubData': true,
-    'disableVertexAttribArray': true,
-    'enableVertexAttribArray': true,
-    'vertexAttribPointer': true,
-    //uniformMatrix
-    'uniformMatrix2fv': true,
-    'uniformMatrix3fv': true,
-    'uniformMatrix4fv': true,
-    //uniform1[f][i][v]
-    'uniform1f': true,
-    'uniform1fv': true,
-    'uniform1i': true,
-    'uniform1iv': true,
-    //uniform2[f][i][v]
-    'uniform2f': true,
-    'uniform2fv': true,
-    'uniform2i': true,
-    'uniform2iv': true,
-    //uniform3[f][i][v]
-    'uniform3f': true,
-    'uniform3fv': true,
-    'uniform3i': true,
-    'uniform3iv': true,
-    //uniform4[f][i][v]
-    'uniform4f': true,
-    'uniform4fv': true,
-    'uniform4i': true,
-    'uniform4iv': true,
-    //vertexAttrib1f
-    'vertexAttrib1f': true,
-    'vertexAttrib2f': true,
-    'vertexAttrib3f': true,
-    'vertexAttrib4f': true,
-    //vertexAttrib1fv
-    'vertexAttrib1fv': true,
-    'vertexAttrib2fv': true,
-    'vertexAttrib3fv': true,
-    'vertexAttrib4fv': true
-};
-/**
- * 需要记住前序状态的webgl操作
- */
-const OVERRAL_TINY_ENUM = {
-    //'texParameteri': true,
-    //'texImage2D': true,
-    //'depthFunc': true,
-    //'clearColor': true,
-    //'clearDepth': true,
-    //'clear': true,
-    //'clearStencil': true,
-    //'frontFace': true,
-    //'cullFace': true,
-    //'generateMipmap': true,
-    //'pixelStorei': true,
-    'activeTexture': true,
-    //'blendEquationSeparate': true,
-    //'blendFuncSeparate': true,
-    'blendEquation': true,
-    'blendFunc': true,
-    'scissor': true,
-    'stencilOp': true,
-    'stencilFunc': true,
-    'stencilMask': true,
-    //'depthMask': true,
-    //'colorMask': true,
-    'texParameterf': true,
-    'hint': true
-};
+const stamp = require('./../utils/stamp').stamp,
+    ticker = require('./handle').ticker,
+    INTERNAL_ENUM = require('./handle').INTERNAL_ENUM,
+    OVERRAL_ENUM = require('./handle').OVERRAL_ENUM,
+    TICKER_ENUM = require('./handle').TICKER_ENUM;
 
- /**
-  * @class
-  */
-class Tiny{
+    const popAll
+
+/**
+ * @class
+ */
+class Tiny {
     /**
      * 
-     * @param {GLContext} glCOntext 
+     * @param {GLContext} glContext 
      */
-    constructor(glCOntext){
+    constructor(glContext) {
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
         /**
          * the operations which need's to be updated all without program context change
          */
-        this._overrall=[];
+        this._overrall = [];
         /**
          * the operations which need's to be updated in a tick combine with program context 
          */
-        this._internal=[];
+        this._programInternal = null;
+        /**
+         * 
+         */
+        this._tinyProgramCache = {};
     }
     /**
      * indicate wether it's need to be updated
      */
-    get isEmpty(){
-        return this._internal.length === 0;
+    get isEmpty() {
+        return this._programInternal.length === 0;
+    }
+    /**
+     * useProgram
+     * @returns {Array} []
+     */
+    switchPorgarm(glProgram) {
+        const id = stamp(glProgram),
+            tinyProgramCache = this._tinyProgramCache;
+        if (tinyProgramCache[id])
+            tinyProgramCache[id] = [];
+        this._programInternal = tinyProgramCache[id];
     }
     /**
      * 
      */
-    add(){
-        
+    push(name, ...rest) {
+        const programInternal = this._programInternal;
+        if (programInternal === null) {
+            this._overrall.push({
+                name,
+                ...rest
+            });
+        } else {
+            programInternal.push({
+                name,
+                ...rest
+            });
+        }
+        //如果是TICKER_ENUM,则需要加入ticker
+        if(TICKER_ENUM[name]){
+            ticker.addOnce(function(detialTime,data){
+                alert(data);
+            },this,{
+                overrall:this._overrall.slice(0,this._overrall.length-1),//重复取
+                internal:programInternal.splice(0,programInternal.length)//清空取
+            })
+        }
+        //
     }
-    
-    
 
 }
 
