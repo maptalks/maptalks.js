@@ -720,6 +720,794 @@ var stamp_1 = createCommonjsModule(function (module) {
 });
 
 /**
+ * reference:
+ * https://github.com/pixijs/pixi.js/blob/dev/src/core/ticker/TickerListener.js
+ * 
+ * 
+ * Internal class for handling the priority sorting of ticker handlers.
+ * @class
+ * 
+ */
+var TickerListener = function () {
+  /**
+   * Constructor
+   *
+   * @param {Function} fn - The listener function to be added for one update
+   * @param {Function} [context=null] - The listener context
+   * @param {number} [priority=0] - The priority for emitting
+   * @param {boolean} [once=false] - If the handler should fire once
+   */
+  function TickerListener(fn) {
+    var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+    var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+    var once = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+    classCallCheck(this, TickerListener);
+
+    /**
+     * The handler function to execute.
+     * @member {Function}
+     */
+    this.fn = fn;
+    /**
+     * The calling to execute.
+     * @member {Function}
+     */
+    this.context = context;
+    /**
+     * The current priority.
+     * @member {number}
+     */
+    this.priority = priority;
+    /**
+     * If this should only execute once.
+     * @member {boolean}
+     */
+    this.once = once;
+    /**
+     * The next item in chain.
+     * @member {TickerListener}
+     */
+    this.next = null;
+    /**
+     * The previous item in chain.
+     * @member {TickerListener}
+     */
+    this.previous = null;
+    /**
+     * `true` if this listener has been destroyed already.
+     * @member {boolean}
+     * @private
+     */
+    this._destroyed = false;
+    /**
+     * 
+     */
+    this._data = data || [];
+  }
+  /**
+   * Simple compare function to figure out if a function and context match.
+   *
+   * @param {Function} fn - The listener function to be added for one update
+   * @param {Function} context - The listener context
+   * @return {boolean} `true` if the listener match the arguments
+   */
+
+
+  createClass(TickerListener, [{
+    key: "match",
+    value: function match(fn, context) {
+      context = context || null;
+      return this.fn === fn && this.context === context;
+    }
+    /**
+     * Emit by calling the current function.
+     * @param {number} deltaTime - time since the last emit.
+     * @return {TickerListener} Next ticker
+     */
+
+  }, {
+    key: "emit",
+    value: function emit(deltaTime) {
+      if (this.fn) {
+        if (this.context) {
+          this.fn.apply(this.context, [deltaTime].concat([this._data]));
+        } else {
+          this.fn(deltaTime, this._data);
+        }
+      }
+      var redirect = this.next;
+      if (this.once) {
+        this.destroy(true);
+      }
+      // Soft-destroying should remove
+      // the next reference
+      if (this._destroyed) {
+        this.next = null;
+      }
+      return redirect;
+    }
+    /**
+     * Connect to the list.
+     * @param {TickerListener} previous - Input node, previous listener
+     */
+
+  }, {
+    key: "connect",
+    value: function connect(previous) {
+      this.previous = previous;
+      if (previous.next) {
+        previous.next.previous = this;
+      }
+      this.next = previous.next;
+      previous.next = this;
+    }
+    /**
+     * Destroy and don't use after this.
+     * @param {boolean} [hard = false] `true` to remove the `next` reference, this
+     *        is considered a hard destroy. Soft destroy maintains the next reference.
+     * @return {TickerListener} The listener to redirect while emitting or removing.
+     */
+
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      var hard = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      this._destroyed = true;
+      this.fn = null;
+      this.context = null;
+      // Disconnect, hook up next and previous
+      if (this.previous) {
+        this.previous.next = this.next;
+      }
+      if (this.next) {
+        this.next.previous = this.previous;
+      }
+      // Redirect to the next item
+      var redirect = this.previous;
+      // Remove references
+      this.next = hard ? null : redirect;
+      this.previous = null;
+      return redirect;
+    }
+  }]);
+  return TickerListener;
+}();
+
+var TickerListener_1 = TickerListener;
+
+/**
+ * reference:
+ * https://github.com/pixijs/pixi.js/blob/dev/src/core/ticker/index.js
+ */
+
+var TARGET_FPMS = 0.06;
+
+var UPDATE_PRIORITY = {
+    INTERACTION: 50,
+    HIGH: 25,
+    NORMAL: 0,
+    LOW: -25,
+    UTILITY: -50
+};
+
+var Ticker = function () {
+    /**
+     * 
+     * @param {Object} [options] 
+     */
+    function Ticker() {
+        var _this = this;
+
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        classCallCheck(this, Ticker);
+
+        /**
+         * @type {boolean}
+         */
+        var autoStart = options.autoStart;
+        /**
+         * The first listener. All new listeners added are chained on this.
+         * @private
+         * @type {TickerListener}
+         */
+
+        this._head = new TickerListener_1(null, null, null, Infinity);
+        /**
+         * Internal current frame request ID
+         * @private
+         */
+        this._requestId = null;
+        /**
+         * Internal value managed by minFPS property setter and getter.
+         * This is the maximum allowed milliseconds between updates.
+         * @private
+         */
+        this._maxElapsedMS = 100;
+        /**
+         * Whether or not this ticker should invoke the method
+         * {@link PIXI.ticker.Ticker#start} automatically
+         * when a listener is added.
+         *
+         * @member {boolean}
+         * @default false
+         */
+        this.autoStart = autoStart || false;
+        /**
+         * Scalar time value from last frame to this frame.
+         * This value is capped by setting {@link PIXI.ticker.Ticker#minFPS}
+         * and is scaled with {@link PIXI.ticker.Ticker#speed}.
+         * **Note:** The cap may be exceeded by scaling.
+         *
+         * @member {number}
+         * @default 1
+         */
+        this.deltaTime = 1;
+        /**
+         * Time elapsed in milliseconds from last frame to this frame.
+         * Opposed to what the scalar {@link PIXI.ticker.Ticker#deltaTime}
+         * is based, this value is neither capped nor scaled.
+         * If the platform supports DOMHighResTimeStamp,
+         * this value will have a precision of 1 µs.
+         * Defaults to target frame time
+         *
+         * @member {number}
+         * @default 16.66
+         */
+        this.elapsedMS = 1 / TARGET_FPMS;
+        /**
+         * The last time {@link PIXI.ticker.Ticker#update} was invoked.
+         * This value is also reset internally outside of invoking
+         * update, but only when a new animation frame is requested.
+         * If the platform supports DOMHighResTimeStamp,
+         * this value will have a precision of 1 µs.
+         *
+         * @member {number}
+         * @default -1
+         */
+        this.lastTime = -1;
+        /**
+         * Factor of current {@link PIXI.ticker.Ticker#deltaTime}.
+         * @example
+         * // Scales ticker.deltaTime to what would be
+         * // the equivalent of approximately 120 FPS
+         * ticker.speed = 2;
+         *
+         * @member {number}
+         * @default 1
+         */
+        this.speed = 1;
+        /**
+         * Whether or not this ticker has been started.
+         * `true` if {@link PIXI.ticker.Ticker#start} has been called.
+         * `false` if {@link PIXI.ticker.Ticker#stop} has been called.
+         * While `false`, this value may change to `true` in the
+         * event of {@link PIXI.ticker.Ticker#autoStart} being `true`
+         * and a listener is added.
+         *
+         * @member {boolean}
+         * @default false
+         */
+        this.started = false;
+        /**
+         * Internal tick method bound to ticker instance.
+         * This is because in early 2015, Function.bind
+         * is still 60% slower in high performance scenarios.
+         * Also separating frame requests from update method
+         * so listeners may be called at any time and with
+         * any animation API, just invoke ticker.update(time).
+         *
+         * @private
+         * @param {number} time - Time since last tick.
+         */
+        this._tick = function (time) {
+            _this._requestId = null;
+            if (_this.started) {
+                // Invoke listeners now
+                _this.update(time);
+                // Listener side effects may have modified ticker state.
+                if (_this.started && _this._requestId === null && _this._head.next) {
+                    _this._requestId = requestAnimationFrame(_this._tick);
+                }
+            }
+        };
+    }
+    /**
+     * Conditionally requests a new animation frame.
+     * If a frame has not already been requested, and if the internal
+     * emitter has listeners, a new frame is requested.
+     *
+     * @private
+     */
+
+
+    createClass(Ticker, [{
+        key: '_requestIfNeeded',
+        value: function _requestIfNeeded() {
+            if (this._requestId === null && this._head.next) {
+                // ensure callbacks get correct delta
+                this.lastTime = performance.now();
+                this._requestId = requestAnimationFrame(this._tick);
+            }
+        }
+        /**
+         * Conditionally cancels a pending animation frame.
+         *
+         * @private
+         */
+
+    }, {
+        key: '_cancelIfNeeded',
+        value: function _cancelIfNeeded() {
+            if (this._requestId !== null) {
+                cancelAnimationFrame(this._requestId);
+                this._requestId = null;
+            }
+        }
+        /**
+         * Conditionally requests a new animation frame.
+         * If the ticker has been started it checks if a frame has not already
+         * been requested, and if the internal emitter has listeners. If these
+         * conditions are met, a new frame is requested. If the ticker has not
+         * been started, but autoStart is `true`, then the ticker starts now,
+         * and continues with the previous conditions to request a new frame.
+         *
+         * @private
+         */
+
+    }, {
+        key: '_startIfPossible',
+        value: function _startIfPossible() {
+            if (this.started) {
+                this._requestIfNeeded();
+            } else if (this.autoStart) {
+                this.start();
+            }
+        }
+        /**
+         * Register a handler for tick events. Calls continuously unless
+         * it is removed or the ticker is stopped.
+         *
+         * @param {Function} fn - The listener function to be added for updates
+         * @param {Function} [context] - The listener context
+         * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
+         * @returns {PIXI.ticker.Ticker} This instance of a ticker
+         */
+
+    }, {
+        key: 'add',
+        value: function add(fn, context) {
+            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+            var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
+
+            return this._addListener(new TickerListener_1(fn, context, data, priority));
+        }
+        /**
+         * Add a handler for the tick event which is only execute once.
+         *
+         * @param {Function} fn - The listener function to be added for one update
+         * @param {Function} [context] - The listener context
+         * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
+         * @returns {PIXI.ticker.Ticker} This instance of a ticker
+         */
+
+    }, {
+        key: 'addOnce',
+        value: function addOnce(fn, context) {
+            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+            var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
+
+            return this._addListener(new TickerListener_1(fn, context, data, priority, true));
+        }
+        /**
+         * Internally adds the event handler so that it can be sorted by priority.
+         * Priority allows certain handler (user, AnimatedSprite, Interaction) to be run
+         * before the rendering.
+         *
+         * @private
+         * @param {TickerListener} listener - Current listener being added.
+         * @returns {PIXI.ticker.Ticker} This instance of a ticker
+         */
+
+    }, {
+        key: '_addListener',
+        value: function _addListener(listener) {
+            // For attaching to head
+            var current = this._head.next;
+            var previous = this._head;
+            // Add the first item
+            if (!current) {
+                listener.connect(previous);
+            } else {
+                // Go from highest to lowest priority
+                while (current) {
+                    if (listener.priority > current.priority) {
+                        listener.connect(previous);
+                        break;
+                    }
+                    previous = current;
+                    current = current.next;
+                }
+                // Not yet connected
+                if (!listener.previous) {
+                    listener.connect(previous);
+                }
+            }
+            this._startIfPossible();
+            return this;
+        }
+        /**
+         * Removes any handlers matching the function and context parameters.
+         * If no handlers are left after removing, then it cancels the animation frame.
+         *
+         * @param {Function} fn - The listener function to be removed
+         * @param {Function} [context] - The listener context to be removed
+         * @returns {PIXI.ticker.Ticker} This instance of a ticker
+         */
+
+    }, {
+        key: 'remove',
+        value: function remove(fn, context) {
+            var listener = this._head.next;
+            while (listener) {
+                // We found a match, lets remove it
+                // no break to delete all possible matches
+                // incase a listener was added 2+ times
+                if (listener.match(fn, context)) {
+                    listener = listener.destroy();
+                } else {
+                    listener = listener.next;
+                }
+            }
+            if (!this._head.next) {
+                this._cancelIfNeeded();
+            }
+            return this;
+        }
+        /**
+         * Starts the ticker. If the ticker has listeners
+         * a new animation frame is requested at this point.
+         */
+
+    }, {
+        key: 'start',
+        value: function start() {
+            if (!this.started) {
+                this.started = true;
+                this._requestIfNeeded();
+            }
+        }
+        /**
+         * Stops the ticker. If the ticker has requested
+         * an animation frame it is canceled at this point.
+         */
+
+    }, {
+        key: 'stop',
+        value: function stop() {
+            if (this.started) {
+                this.started = false;
+                this._cancelIfNeeded();
+            }
+        }
+        /**
+         * Destroy the ticker and don't use after this. Calling
+         * this method removes all references to internal events.
+         */
+
+    }, {
+        key: 'destroy',
+        value: function destroy() {
+            this.stop();
+            var listener = this._head.next;
+            while (listener) {
+                listener = listener.destroy(true);
+            }
+            this._head.destroy();
+            this._head = null;
+        }
+        /**
+         * Triggers an update. An update entails setting the
+         * current {@link PIXI.ticker.Ticker#elapsedMS},
+         * the current {@link PIXI.ticker.Ticker#deltaTime},
+         * invoking all listeners with current deltaTime,
+         * and then finally setting {@link PIXI.ticker.Ticker#lastTime}
+         * with the value of currentTime that was provided.
+         * This method will be called automatically by animation
+         * frame callbacks if the ticker instance has been started
+         * and listeners are added.
+         *
+         * @param {number} [currentTime=performance.now()] - the current time of execution
+         */
+
+    }, {
+        key: 'update',
+        value: function update() {
+            var currentTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : performance.now();
+
+            var elapsedMS = void 0;
+            // If the difference in time is zero or negative, we ignore most of the work done here.
+            // If there is no valid difference, then should be no reason to let anyone know about it.
+            // A zero delta, is exactly that, nothing should update.
+            //
+            // The difference in time can be negative, and no this does not mean time traveling.
+            // This can be the result of a race condition between when an animation frame is requested
+            // on the current JavaScript engine event loop, and when the ticker's start method is invoked
+            // (which invokes the internal _requestIfNeeded method). If a frame is requested before
+            // _requestIfNeeded is invoked, then the callback for the animation frame the ticker requests,
+            // can receive a time argument that can be less than the lastTime value that was set within
+            // _requestIfNeeded. This difference is in microseconds, but this is enough to cause problems.
+            //
+            // This check covers this browser engine timing issue, as well as if consumers pass an invalid
+            // currentTime value. This may happen if consumers opt-out of the autoStart, and update themselves.
+            if (currentTime > this.lastTime) {
+                // Save uncapped elapsedMS for measurement
+                elapsedMS = this.elapsedMS = currentTime - this.lastTime;
+                // cap the milliseconds elapsed used for deltaTime
+                if (elapsedMS > this._maxElapsedMS) {
+                    elapsedMS = this._maxElapsedMS;
+                }
+                this.deltaTime = elapsedMS * TARGET_FPMS * this.speed;
+
+                // Cache a local reference, in-case ticker is destroyed
+                // during the emit, we can still check for head.next
+                var head = this._head;
+                // Invoke listeners added to internal emitter
+                var listener = head.next;
+                while (listener) {
+                    listener = listener.emit(this.deltaTime);
+                }
+                if (!head.next) {
+                    this._cancelIfNeeded();
+                }
+            } else {
+                this.deltaTime = this.elapsedMS = 0;
+            }
+            this.lastTime = currentTime;
+        }
+        /**
+         * The frames per second at which this ticker is running.
+         * The default is approximately 60 in most modern browsers.
+         * **Note:** This does not factor in the value of
+         * {@link PIXI.ticker.Ticker#speed}, which is specific
+         * to scaling {@link PIXI.ticker.Ticker#deltaTime}.
+         *
+         * @member {number}
+         * @readonly
+         */
+
+    }, {
+        key: 'FPS',
+        get: function get$$1() {
+            return 1000 / this.elapsedMS;
+        }
+        /**
+         * Manages the maximum amount of milliseconds allowed to
+         * elapse between invoking {@link PIXI.ticker.Ticker#update}.
+         * This value is used to cap {@link PIXI.ticker.Ticker#deltaTime},
+         * but does not effect the measured value of {@link PIXI.ticker.Ticker#FPS}.
+         * When setting this property it is clamped to a value between
+         * `0` and `PIXI.settings.TARGET_FPMS * 1000`.
+         *
+         * @member {number}
+         * @default 10
+         */
+
+    }, {
+        key: 'minFPS',
+        get: function get$$1() {
+            return 1000 / this._maxElapsedMS;
+        }
+        /**
+         * eslint-disable-line require-jsdoc
+         */
+        ,
+        set: function set$$1(fps) {
+            // Clamp: 0 to TARGET_FPMS
+            var minFPMS = Math.min(Math.max(0, fps) / 1000, TARGET_FPMS);
+
+            this._maxElapsedMS = 1 / minFPMS;
+        }
+    }]);
+    return Ticker;
+}();
+
+var Ticker_1 = Ticker;
+
+var _OVERRAL_ENUM;
+
+/**
+ * 操作分类
+ */
+
+/**
+* 与program相关的操作
+*/
+var INTERNAL_ENUM$1 = {
+    'lineWidth': true,
+    'deleteBuffer': true,
+    'deleteShader': true,
+    'deleteProgram': true,
+    'deleteFramebuffer': true,
+    'deleteRenderbuffer': true,
+    //
+    'bindFramebuffer': true,
+    'framebufferTexture2D': true,
+    'readPixels': true,
+    //buffer-uinform-attrib
+    'bindBuffer': true,
+    'bufferData': true,
+    'bufferSubData': true,
+    'disableVertexAttribArray': true,
+    'enableVertexAttribArray': true,
+    'vertexAttribPointer': true,
+    //uniformMatrix
+    'uniformMatrix2fv': true,
+    'uniformMatrix3fv': true,
+    'uniformMatrix4fv': true,
+    //uniform1[f][i][v]
+    'uniform1f': true,
+    'uniform1fv': true,
+    'uniform1i': true,
+    'uniform1iv': true,
+    //uniform2[f][i][v]
+    'uniform2f': true,
+    'uniform2fv': true,
+    'uniform2i': true,
+    'uniform2iv': true,
+    //uniform3[f][i][v]
+    'uniform3f': true,
+    'uniform3fv': true,
+    'uniform3i': true,
+    'uniform3iv': true,
+    //uniform4[f][i][v]
+    'uniform4f': true,
+    'uniform4fv': true,
+    'uniform4i': true,
+    'uniform4iv': true,
+    //vertexAttrib1f
+    'vertexAttrib1f': true,
+    'vertexAttrib2f': true,
+    'vertexAttrib3f': true,
+    'vertexAttrib4f': true,
+    //vertexAttrib1fv
+    'vertexAttrib1fv': true,
+    'vertexAttrib2fv': true,
+    'vertexAttrib3fv': true,
+    'vertexAttrib4fv': true
+    /**
+     * 需要记住前序状态的webgl操作
+     */
+};var OVERRAL_ENUM$1 = (_OVERRAL_ENUM = {
+    'texParameterf': true,
+    'texParameteri': true,
+    'bindTexture': true,
+    'compressedTexImage2D': true,
+    'compressedTexSubImage2D': true,
+    'viewport': true,
+    'scissor': true,
+    'enable': true,
+    'disable': true
+}, defineProperty(_OVERRAL_ENUM, 'texParameteri', true), defineProperty(_OVERRAL_ENUM, 'texImage2D', true), defineProperty(_OVERRAL_ENUM, 'texSubImage2D', true), defineProperty(_OVERRAL_ENUM, 'depthFunc', true), defineProperty(_OVERRAL_ENUM, 'depthMask', true), defineProperty(_OVERRAL_ENUM, 'colorMask', true), defineProperty(_OVERRAL_ENUM, 'clearColor', true), defineProperty(_OVERRAL_ENUM, 'clearDepth', true), defineProperty(_OVERRAL_ENUM, 'clear', true), defineProperty(_OVERRAL_ENUM, 'clearStencil', true), defineProperty(_OVERRAL_ENUM, 'frontFace', true), defineProperty(_OVERRAL_ENUM, 'cullFace', true), defineProperty(_OVERRAL_ENUM, 'blendEquationSeparate', true), defineProperty(_OVERRAL_ENUM, 'blendFuncSeparate', true), defineProperty(_OVERRAL_ENUM, 'pixelStorei', true), defineProperty(_OVERRAL_ENUM, 'generateMipmap', true), defineProperty(_OVERRAL_ENUM, 'activeTexture', true), defineProperty(_OVERRAL_ENUM, 'blendEquation', true), defineProperty(_OVERRAL_ENUM, 'blendFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilOp', true), defineProperty(_OVERRAL_ENUM, 'stencilFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilMask', true), defineProperty(_OVERRAL_ENUM, 'texParameterf', true), defineProperty(_OVERRAL_ENUM, 'hint', true), _OVERRAL_ENUM);
+
+var TICKER_ENUM$1 = {
+    'drawElements': true,
+    'drawArrays': true
+};
+
+var ALL_ENUM$1 = merge_1({}, INTERNAL_ENUM$1, OVERRAL_ENUM$1, TICKER_ENUM$1);
+
+/**
+ * internal ticker
+ */
+var ticker$1 = new Ticker_1({ autoStart: true });
+
+var handle = {
+    INTERNAL_ENUM: INTERNAL_ENUM$1,
+    OVERRAL_ENUM: OVERRAL_ENUM$1,
+    TICKER_ENUM: TICKER_ENUM$1,
+    ALL_ENUM: ALL_ENUM$1,
+    ticker: ticker$1
+};
+
+/**
+ * Tiny的作用与策略，详情请参见：
+ * https://github.com/axmand/fusion.gl/wiki/Tiny
+ * 
+ * -
+ */
+var stamp$2 = stamp_1.stamp;
+var ticker = handle.ticker;
+var TICKER_ENUM = handle.TICKER_ENUM;
+
+/**
+ * @class
+ */
+
+var Tiny = function () {
+    /**
+     * 
+     * @param {GLContext} glContext 
+     */
+    function Tiny(glContext) {
+        classCallCheck(this, Tiny);
+
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
+        /**
+         * the operations which need's to be updated all without program context change
+         */
+        this._overrall = [];
+        /**
+         * the operations which need's to be updated in a tick combine with program context 
+         */
+        this._programInternal = null;
+        /**
+         * 
+         */
+        this._tinyProgramCache = {};
+    }
+    /**
+     * indicate wether it's need to be updated
+     */
+
+
+    createClass(Tiny, [{
+        key: 'switchPorgarm',
+
+        /**
+         * useProgram
+         * @returns {Array} []
+         */
+        value: function switchPorgarm(glProgram) {
+            var id = stamp$2(glProgram),
+                tinyProgramCache = this._tinyProgramCache;
+            if (!tinyProgramCache[id]) tinyProgramCache[id] = [];
+            this._programInternal = tinyProgramCache[id];
+        }
+        /**
+         * 
+         */
+
+    }, {
+        key: 'push',
+        value: function push(name) {
+            for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+                rest[_key - 1] = arguments[_key];
+            }
+
+            var programInternal = this._programInternal;
+            if (programInternal === null) {
+                this._overrall.push({ name: name, rest: rest });
+            } else {
+                programInternal.push({ name: name, rest: rest });
+            }
+            //如果是TICKER_ENUM,则需要加入ticker
+            if (TICKER_ENUM[name]) {
+                ticker.addOnce(function (detialTime, data) {
+                    alert(data);
+                }, this, {
+                    overrall: this._overrall.slice(0, this._overrall.length - 1), //重复取
+                    internal: programInternal.splice(0, programInternal.length) //清空取
+                });
+            }
+            //
+        }
+    }, {
+        key: 'isEmpty',
+        get: function get$$1() {
+            return this._programInternal.length === 0;
+        }
+    }]);
+    return Tiny;
+}();
+
+var Tiny_1 = Tiny;
+
+/**
  * 设计思路为.net framework 的 IDispose接口
  * 除此之外提供额外的属性：
  * -id
@@ -728,7 +1516,7 @@ var stamp_1 = createCommonjsModule(function (module) {
  * -dispose
  */
 
-var stamp$2 = stamp_1.stamp;
+var stamp$3 = stamp_1.stamp;
 
 /**
  * @class
@@ -741,7 +1529,7 @@ var Dispose = function () {
   function Dispose() {
     classCallCheck(this, Dispose);
 
-    this._id = stamp$2(this);
+    this._id = stamp$3(this);
   }
   /**
    * 资源销毁方法，执行完一段后，统一调用
@@ -3033,98 +3821,6 @@ var GLProgram_1 = createCommonjsModule(function (module) {
     module.exports = GLProgram;
 });
 
-var _OVERRAL_ENUM;
-
-/**
- * 操作分类
- */
-
-/**
-* 与program相关的操作
-*/
-var INTERNAL_ENUM = {
-  'lineWidth': true,
-  'deleteBuffer': true,
-  'deleteShader': true,
-  'deleteProgram': true,
-  'deleteFramebuffer': true,
-  'deleteRenderbuffer': true,
-  //
-  'bindFramebuffer': true,
-  'framebufferTexture2D': true,
-  'readPixels': true,
-  //buffer-uinform-attrib
-  'bindBuffer': true,
-  'bufferData': true,
-  'bufferSubData': true,
-  'disableVertexAttribArray': true,
-  'enableVertexAttribArray': true,
-  'vertexAttribPointer': true,
-  //uniformMatrix
-  'uniformMatrix2fv': true,
-  'uniformMatrix3fv': true,
-  'uniformMatrix4fv': true,
-  //uniform1[f][i][v]
-  'uniform1f': true,
-  'uniform1fv': true,
-  'uniform1i': true,
-  'uniform1iv': true,
-  //uniform2[f][i][v]
-  'uniform2f': true,
-  'uniform2fv': true,
-  'uniform2i': true,
-  'uniform2iv': true,
-  //uniform3[f][i][v]
-  'uniform3f': true,
-  'uniform3fv': true,
-  'uniform3i': true,
-  'uniform3iv': true,
-  //uniform4[f][i][v]
-  'uniform4f': true,
-  'uniform4fv': true,
-  'uniform4i': true,
-  'uniform4iv': true,
-  //vertexAttrib1f
-  'vertexAttrib1f': true,
-  'vertexAttrib2f': true,
-  'vertexAttrib3f': true,
-  'vertexAttrib4f': true,
-  //vertexAttrib1fv
-  'vertexAttrib1fv': true,
-  'vertexAttrib2fv': true,
-  'vertexAttrib3fv': true,
-  'vertexAttrib4fv': true
-  /**
-   * 需要记住前序状态的webgl操作
-   */
-};var OVERRAL_ENUM = (_OVERRAL_ENUM = {
-  'texParameterf': true,
-  'texParameteri': true,
-  'bindTexture': true,
-  'compressedTexImage2D': true,
-  'compressedTexSubImage2D': true,
-  // 'viewport': true,
-  'scissor': true,
-  'enable': true,
-  'disable': true
-}, defineProperty(_OVERRAL_ENUM, 'texParameteri', true), defineProperty(_OVERRAL_ENUM, 'texImage2D', true), defineProperty(_OVERRAL_ENUM, 'texSubImage2D', true), defineProperty(_OVERRAL_ENUM, 'depthFunc', true), defineProperty(_OVERRAL_ENUM, 'depthMask', true), defineProperty(_OVERRAL_ENUM, 'colorMask', true), defineProperty(_OVERRAL_ENUM, 'clearColor', true), defineProperty(_OVERRAL_ENUM, 'clearDepth', true), defineProperty(_OVERRAL_ENUM, 'clear', true), defineProperty(_OVERRAL_ENUM, 'clearStencil', true), defineProperty(_OVERRAL_ENUM, 'frontFace', true), defineProperty(_OVERRAL_ENUM, 'cullFace', true), defineProperty(_OVERRAL_ENUM, 'blendEquationSeparate', true), defineProperty(_OVERRAL_ENUM, 'blendFuncSeparate', true), defineProperty(_OVERRAL_ENUM, 'pixelStorei', true), defineProperty(_OVERRAL_ENUM, 'generateMipmap', true), defineProperty(_OVERRAL_ENUM, 'activeTexture', true), defineProperty(_OVERRAL_ENUM, 'blendEquation', true), defineProperty(_OVERRAL_ENUM, 'blendFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilOp', true), defineProperty(_OVERRAL_ENUM, 'stencilFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilMask', true), defineProperty(_OVERRAL_ENUM, 'texParameterf', true), defineProperty(_OVERRAL_ENUM, 'hint', true), _OVERRAL_ENUM);
-/**
- * 加入ticker操作
- */
-var TIKCER_ENUM = {
-  'drawElements': true,
-  'drawArrays': true
-};
-
-var ALL_ENUM$1 = merge_1({}, INTERNAL_ENUM, OVERRAL_ENUM, TIKCER_ENUM);
-
-var handle = {
-  INTERNAL_ENUM: INTERNAL_ENUM,
-  OVERRAL_ENUM: OVERRAL_ENUM,
-  TIKCER_ENUM: TIKCER_ENUM,
-  ALL_ENUM: ALL_ENUM$1
-};
-
 /**
  * warpped the WebGLRenderingContext
  * reference:
@@ -3194,6 +3890,11 @@ var GLContext = function (_Dispose) {
      */
     _this._glLimits = options.glLimits;
     /**
+     * the ticker datasource
+     * @type {Tiny}
+     */
+    _this._tiny = new Tiny_1(_this);
+    /**
      * the program cache
      * @type {Object}
      */
@@ -3211,7 +3912,7 @@ var GLContext = function (_Dispose) {
      * current using program
      * @type {GLProgram}
      */
-    _this._glProgram = null;
+    //this._glProgram = null;
     /**
      * setup env
      */
@@ -3264,9 +3965,10 @@ var GLContext = function (_Dispose) {
     value: function _map() {
       var _this2 = this;
 
-      var that = this;
       //get the WebGLRenderingContext
       var gl = this._gl;
+      //get tiny
+      var tiny = this._tiny;
       //map constant
       for (var key in GLConstants_1) {
         if (!this.hasOwnProperty(key)) {
@@ -3298,7 +4000,7 @@ var GLContext = function (_Dispose) {
             rest[_key3] = arguments[_key3];
           }
 
-          gl[_key].apply(gl, rest);
+          tiny.push.apply(tiny, [_key].concat(rest));
           //const glProgram = this._glProgram;
           //createTiny(this,glProgram,key,...rest);
         };
@@ -3390,10 +4092,11 @@ var GLContext = function (_Dispose) {
   }, {
     key: 'useProgram',
     value: function useProgram(program) {
-      var id = stamp$1(program);
-      var glProgram = this._programCache[id];
-      this._glProgram = glProgram;
-      glProgram.useProgram();
+      var id = stamp$1(program),
+          tiny = this._tiny,
+          glProgram = this._programCache[id];
+      //this._glProgram = glProgram;
+      tiny.switchPorgarm(glProgram);
     }
     /**
      * 获取extension
@@ -3450,20 +4153,6 @@ var GLContext = function (_Dispose) {
     value: function linkProgram(program) {
       var gl = this._gl;
       gl.linkProgram(program);
-    }
-    /**
-     * 
-     * @param {*} x 
-     * @param {*} y 
-     * @param {*} width 
-     * @param {*} height 
-     */
-
-  }, {
-    key: 'viewport',
-    value: function viewport(x, y, width, height) {
-      var gl = this._gl;
-      gl.viewport(x, y, width, height);
     }
   }, {
     key: 'canvas',

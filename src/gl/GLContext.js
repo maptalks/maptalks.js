@@ -116,7 +116,7 @@ class GLContext extends Dispose {
          * current using program
          * @type {GLProgram}
          */
-        this._glProgram = null;
+        //this._glProgram = null;
         /**
          * setup env
          */
@@ -268,10 +268,11 @@ class GLContext extends Dispose {
      * @param {WebGLProgram} program
      */
     useProgram(program) {
-        const id = stamp(program);
-        const glProgram = this._programCache[id];
-        this._glProgram = glProgram;
-        glProgram.useProgram();
+        const id = stamp(program),
+            tiny = this._tiny,
+            glProgram = this._programCache[id];
+        //this._glProgram = glProgram;
+        tiny.switchPorgarm(glProgram);
     }
     /**
      * 获取extension

@@ -10,8 +10,6 @@ const stamp = require('./../utils/stamp').stamp,
     OVERRAL_ENUM = require('./handle').OVERRAL_ENUM,
     TICKER_ENUM = require('./handle').TICKER_ENUM;
 
-    const popAll
-
 /**
  * @class
  */
@@ -51,7 +49,7 @@ class Tiny {
     switchPorgarm(glProgram) {
         const id = stamp(glProgram),
             tinyProgramCache = this._tinyProgramCache;
-        if (tinyProgramCache[id])
+        if (!tinyProgramCache[id])
             tinyProgramCache[id] = [];
         this._programInternal = tinyProgramCache[id];
     }
@@ -61,15 +59,9 @@ class Tiny {
     push(name, ...rest) {
         const programInternal = this._programInternal;
         if (programInternal === null) {
-            this._overrall.push({
-                name,
-                ...rest
-            });
+            this._overrall.push({name,rest});
         } else {
-            programInternal.push({
-                name,
-                ...rest
-            });
+            programInternal.push({name,rest});
         }
         //如果是TICKER_ENUM,则需要加入ticker
         if(TICKER_ENUM[name]){
@@ -78,6 +70,7 @@ class Tiny {
             },this,{
                 overrall:this._overrall.slice(0,this._overrall.length-1),//重复取
                 internal:programInternal.splice(0,programInternal.length)//清空取
+                //glProgram :this._gl
             })
         }
         //
