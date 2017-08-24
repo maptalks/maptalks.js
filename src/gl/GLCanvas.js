@@ -39,8 +39,8 @@ class GLCanvas extends Dispose {
             stencil: options.stencil || true,
             antialias: options.antialias || false,
             premultipliedAlpha: options.premultipliedAlpha || true,
-            preserveDrawingBuffer: options.preserveDrawingBuffer || false,
-            failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
+            preserveDrawingBuffer: options.preserveDrawingBuffer || false
+            //failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
         }
     }
     /**
@@ -90,6 +90,26 @@ class GLCanvas extends Dispose {
     addEventListener(type, Listener, useCapture) {
         const id = this._rootId;
         CANVASES[id].addEventListener(type, Listener, useCapture);
+    }
+
+    set width(v){
+        const id = this._rootId;
+        CANVASES[id].width = v;
+    }
+
+    set height(v){
+        const id = this._rootId;
+        CANVASES[id].height = v;
+    }
+
+    get width(){
+        const id = this._rootId;
+        return CANVASES[id].width;
+    }
+    
+    get height(){
+        const id = this._rootId;
+        return CANVASES[id].height;
     }
 
 }

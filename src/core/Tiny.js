@@ -97,9 +97,7 @@ class Tiny {
                 });
         }
         //
-
     }
-
 }
 
 module.exports = Tiny;

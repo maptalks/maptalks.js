@@ -54,6 +54,7 @@ const BRIDGE_ARRAY = [
     'getProgramInfoLog ',
     'getShaderParameter',
     'getParameter',
+    'getExtension',
     'getError',
     'getProgramInfoLog',
     'getShaderInfoLog',
@@ -264,13 +265,13 @@ class GLContext extends Dispose {
         //this._glProgram = glProgram;
         tiny.switchPorgarm(glProgram);
     }
-    /**
-     * 获取extension
-     */
-    getExtension(name) {
-        const glExtension = this._glExtension;
-        return glExtension.getExtension(name);
-    }
+    // /**
+    //  * 获取extension
+    //  */
+    // getExtension(name) {
+    //     const glExtension = this._glExtension;
+    //     return glExtension.getExtension(name);
+    // }
     /**
      * 
      * @param {WebGLProgram} program 

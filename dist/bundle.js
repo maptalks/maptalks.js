@@ -1550,8 +1550,7 @@ var Tiny = function () {
                         task = queue.pop();
                     }
                 }, this, {
-                    //overrall: this._overrall.slice(0, this._overrall.length - 1), //重复取
-                    overrall: overrall.splice(0, this._overrall.length), //重复取
+                    overrall: overrall.splice(0, overrall.length), //重复取
                     internal: programInternal.splice(0, programInternal.length), //清空取
                     glProgram: glProgram
                 });
@@ -3881,7 +3880,7 @@ var GLTEXTURES = util.GLTEXTURES;
  * 实时处理的函数,多为直接获取结果函数
  * needs to be executing in real time1
  */
-var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getProgramInfoLog ', 'getShaderParameter', 'getParameter', 'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset', 'getTexParameter'];
+var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getProgramInfoLog ', 'getShaderParameter', 'getParameter', 'getExtension', 'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset', 'getTexParameter'];
 /**
  * @class
  * @example
@@ -4115,16 +4114,13 @@ var GLContext = function (_Dispose) {
             //this._glProgram = glProgram;
             tiny.switchPorgarm(glProgram);
         }
-        /**
-         * 获取extension
-         */
-
-    }, {
-        key: 'getExtension',
-        value: function getExtension(name) {
-            var glExtension = this._glExtension;
-            return glExtension.getExtension(name);
-        }
+        // /**
+        //  * 获取extension
+        //  */
+        // getExtension(name) {
+        //     const glExtension = this._glExtension;
+        //     return glExtension.getExtension(name);
+        // }
         /**
          * 
          * @param {WebGLProgram} program 
@@ -4251,8 +4247,8 @@ var GLCanvas = function (_Dispose) {
                 stencil: options.stencil || true,
                 antialias: options.antialias || false,
                 premultipliedAlpha: options.premultipliedAlpha || true,
-                preserveDrawingBuffer: options.preserveDrawingBuffer || false,
-                failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false
+                preserveDrawingBuffer: options.preserveDrawingBuffer || false
+                //failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
             };
         }
         /**
@@ -4310,6 +4306,26 @@ var GLCanvas = function (_Dispose) {
         get: function get$$1() {
             var id = this._rootId;
             return CANVASES[id].style;
+        }
+    }, {
+        key: 'width',
+        set: function set$$1(v) {
+            var id = this._rootId;
+            CANVASES[id].width = v;
+        },
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id].width;
+        }
+    }, {
+        key: 'height',
+        set: function set$$1(v) {
+            var id = this._rootId;
+            CANVASES[id].height = v;
+        },
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id].height;
         }
     }]);
     return GLCanvas;

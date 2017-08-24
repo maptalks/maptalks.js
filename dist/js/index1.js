@@ -92,8 +92,9 @@ scene.add(mesh);
 renderer = new THREE.WebGLRenderer({
     //canvas:canvas
     canvas: glCanvas1,
-    context: glCanvas1.getContext('webgl')
 });
+
+renderer.setSize(800, 600);
 
 function animate() {
     requestAnimationFrame(animate);
