@@ -16,7 +16,7 @@ class TickerListener {
      * @param {number} [priority=0] - The priority for emitting
      * @param {boolean} [once=false] - If the handler should fire once
      */
-    constructor(fn, context = null, priority = 0, once = false) {
+    constructor(fn, context = null, data=[],priority = 0, once = false) {
         /**
          * The handler function to execute.
          * @member {Function}
@@ -53,6 +53,10 @@ class TickerListener {
          * @private
          */
         this._destroyed = false;
+        /**
+         * 
+         */
+        this._data =data||[];
     }
     /**
      * Simple compare function to figure out if a function and context match.
@@ -63,7 +67,6 @@ class TickerListener {
      */
     match(fn, context) {
         context = context || null;
-
         return this.fn === fn && this.context === context;
     }
     /**
@@ -74,10 +77,10 @@ class TickerListener {
     emit(deltaTime) {
         if (this.fn) {
             if (this.context) {
-                this.fn.call(this.context, deltaTime);
+                this.fn.apply(this.context, [deltaTime].concat([this._data]));
             }
             else {
-                this.fn(deltaTime);
+                this.fn(deltaTime,this._data);
             }
         }
         const redirect = this.next;

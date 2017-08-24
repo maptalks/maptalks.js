@@ -10,8 +10,10 @@
  * -支持非2的n次方规格的textures
  * 
  */
-const Dispose = require('./../utils/Dispose'),
-    GLConstants = require('./GLConstants');
+const setId = require('./../utils/stamp').setId,
+    Dispose = require('./../utils/Dispose'),
+    GLConstants = require('./GLConstants'),
+    GLTEXTURES = require('./../utils/util').GLTEXTURES;
 
 /**
  * @class
@@ -30,6 +32,7 @@ class GLTexture extends Dispose {
      */
     constructor(gl, options = {}) {
         super();
+        GLTEXTURES[this._id] = this;
         const {width, height, extension, limits, format, type} = options;
         this._gl = gl;
         this._extension = extension || null;
@@ -44,13 +47,17 @@ class GLTexture extends Dispose {
      * overwrite
      */
     _createHandle() {
-        return this._gl.createTexture();
+        const gl = this._gl,
+            texture = gl.createTexture();
+        setId(texture, this.id);
+        return texture;
     };
     /**
      * 释放texture资源
      */
     dispose() {
-        this._gl.deleteTexture(this.handle);
+        const gl = this._gl;
+        gl.deleteTexture(this.handle);
     };
     /**
      * return the flag mipmap

@@ -1,22 +1,14 @@
 /**
- * gl中基于Programn的赋值操作
- * 需useProgram切换到当前program后才能实际赋值
+ * 操作分类
  */
+
+const merge = require('./../utils/merge'),
+    Ticker = require('./Ticker');
 /**
- * 存储gl中最简单的逻辑，即为当前program赋值操作，此操作没有:回滚，删除，覆盖
- * - uniforms
- * - attributes
- * - buffers,除了 createBuffer,deleteBuffer,getBufferParameter,isBuffer
- */
-const INTERNAL_TINY_ENUM = {
-    //
+* 与program相关的操作
+*/
+const INTERNAL_ENUM = {
     'lineWidth': true,
-    //
-    'scissor': true,
-    'viewport': true,
-    'enable': true,
-    'disable': true,
-    'deleteTexture': true,
     'deleteBuffer': true,
     'deleteShader': true,
     'deleteProgram': true,
@@ -25,7 +17,6 @@ const INTERNAL_TINY_ENUM = {
     //
     'bindFramebuffer': true,
     'framebufferTexture2D': true,
-    //
     'readPixels': true,
     //buffer-uinform-attrib
     'bindBuffer': true,
@@ -67,28 +58,63 @@ const INTERNAL_TINY_ENUM = {
     'vertexAttrib1fv': true,
     'vertexAttrib2fv': true,
     'vertexAttrib3fv': true,
-    'vertexAttrib4fv': true,
-    //texture
+    'vertexAttrib4fv': true
+}
+/**
+ * 需要记住前序状态的webgl操作
+ */
+const OVERRAL_ENUM = {
+    'texParameterf': true,
+    'texParameteri': true,
     'bindTexture': true,
+    'compressedTexImage2D': true,
+    'compressedTexSubImage2D': true,
+    'viewport': true,
+    'scissor': true,
+    'enable': true,
+    'disable': true,
+    'texParameteri': true,
+    'texImage2D': true,
+    'texSubImage2D': true,
+    'depthFunc': true,
+    'depthMask': true,
+    'colorMask': true,
+    'clearColor': true,
+    'clearDepth': true,
+    'clear': true,
+    'clearStencil': true,
+    'frontFace': true,
+    'cullFace': true,
+    'blendEquationSeparate': true,
+    'blendFuncSeparate': true,
+    'pixelStorei': true,
+    'generateMipmap': true,
+    'activeTexture': true,
+    'blendEquation': true,
+    'blendFunc': true,
+    'stencilOp': true,
+    'stencilFunc': true,
+    'stencilMask': true,
+    'texParameterf': true,
+    'hint': true
 };
 
-class InternalTiny {
-
-    constructor(glProgram, name, ...rest) {
-        this._glProgram = glProgram;
-        this._name = name;
-        this._rest = rest;
-    }
-
-    apply() {
-        const gl = this._glProgram.gl;
-        const name = this._name;
-        gl[name].apply(gl,this._rest);
-    }
-
+const TICKER_ENUM = {
+    'drawElements': true,
+    'drawArrays': true
 }
 
+const ALL_ENUM = merge({}, INTERNAL_ENUM, OVERRAL_ENUM, TICKER_ENUM);
+
+/**
+ * internal ticker
+ */
+const ticker = new Ticker({ autoStart: true });
+
 module.exports = {
-    INTERNAL_TINY_ENUM,
-    InternalTiny
+    INTERNAL_ENUM,
+    OVERRAL_ENUM,
+    TICKER_ENUM,
+    ALL_ENUM,
+    ticker
 }

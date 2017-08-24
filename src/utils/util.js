@@ -1,28 +1,43 @@
 /**
- * @type {HTMLCanvasElement[]|Object}
+ * 全局HTMLCanvasElement
  */
-const CANVAS={};
+const CANVASES={};
 /**
- * @type {Object}
+ * 全局GLCONTEXT
  */
-const GLCONTEXT={};
+const GLCONTEXTS={};
 /**
- * @type {Object}
+ * 全局WEBGLCONTEXT
  */
-const WEBGLCONTEXT={};
+const WEBGLCONTEXTS={};
 /**
- * @type {GLLimits[]}
+ * 全局limit存储
  */
 const GLLIMITS={};
 /**
- * @type {GLExtension[]}
+ * 全局扩展存储
  */
-const GLEXTENSION={};
+const GLEXTENSIONS={};
+/**
+ * 全局扩展，glShader存储
+ */
+const GLSHADERS={};
+/**
+ * 全局扩展，glTexture纹理存储
+ */
+const GLTEXTURES={};
+/**
+ * 全局扩展，GLPrograms存储
+ */
+const GLPROGRAMS = {};
 
 module.exports = {
-    CANVAS,
-    GLCONTEXT,
-    WEBGLCONTEXT,
-    GLEXTENSION,
-    GLLIMITS
+    CANVASES,
+    GLCONTEXTS,
+    WEBGLCONTEXTS,
+    GLEXTENSIONS,
+    GLLIMITS,
+    GLPROGRAMS,
+    GLSHADERS,
+    GLTEXTURES
 }
