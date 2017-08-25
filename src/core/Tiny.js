@@ -31,6 +31,10 @@ class Tiny {
          */
         this._glContext = glContext;
         /**
+         * @type {WebGLRenderingContext}
+         */
+        this._gl = glContext.gl;
+        /**
          * the operations which need's to be updated all without program context change
          */
         this._overrall = [];
@@ -73,9 +77,15 @@ class Tiny {
      */
     push(name, ...rest) {
         const glProgram = this._glPrgram,
+            gl = this._gl,
             overrall = this._overrall,
             programInternal = this._programInternal;
-        programInternal === null ? overrall.push({ name, rest }) : programInternal.push({ name, rest });
+        if(!glProgram){
+            //overrall.push({ name, rest })
+            gl[name].apply(gl,rest);
+        }else{
+            programInternal.push({ name, rest });
+        }
         //如果是TICKER_ENUM,则需要加入ticker
         if (TICKER_ENUM[name]) {
             ticker.addOnce(

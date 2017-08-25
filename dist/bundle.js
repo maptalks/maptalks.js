@@ -1485,6 +1485,10 @@ var Tiny = function () {
          */
         this._glContext = glContext;
         /**
+         * @type {WebGLRenderingContext}
+         */
+        this._gl = glContext.gl;
+        /**
          * the operations which need's to be updated all without program context change
          */
         this._overrall = [];
@@ -1535,9 +1539,15 @@ var Tiny = function () {
             }
 
             var glProgram = this._glPrgram,
+                gl = this._gl,
                 overrall = this._overrall,
                 programInternal = this._programInternal;
-            programInternal === null ? overrall.push({ name: name, rest: rest }) : programInternal.push({ name: name, rest: rest });
+            if (!glProgram) {
+                //overrall.push({ name, rest })
+                gl[name].apply(gl, rest);
+            } else {
+                programInternal.push({ name: name, rest: rest });
+            }
             //如果是TICKER_ENUM,则需要加入ticker
             if (TICKER_ENUM[name]) {
                 ticker.addOnce(function (deltaTime, bucket) {
@@ -3880,7 +3890,9 @@ var GLTEXTURES = util.GLTEXTURES;
  * 实时处理的函数,多为直接获取结果函数
  * needs to be executing in real time1
  */
-var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getProgramInfoLog ', 'getShaderParameter', 'getParameter', 'getExtension', 'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset', 'getTexParameter'];
+var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getShaderParameter', 'getTexParameter', 'getParameter',
+//'getExtension',
+'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset'];
 /**
  * @class
  * @example
@@ -4003,6 +4015,7 @@ var GLContext = function (_Dispose) {
                         rest[_key2] = arguments[_key2];
                     }
 
+                    console.log(key + ',birdge');
                     return gl[key].apply(gl, rest);
                 };
             };
@@ -4018,6 +4031,8 @@ var GLContext = function (_Dispose) {
                         rest[_key3] = arguments[_key3];
                     }
 
+                    console.log(_key + ',internal');
+                    //gl[key].apply(gl, rest);
                     tiny.push.apply(tiny, [_key].concat(rest));
                 };
             };
@@ -4027,7 +4042,7 @@ var GLContext = function (_Dispose) {
             }
         }
         /**
-         * 获取canvas
+         * @return {WebGLRenderingContext}
          */
 
     }, {
@@ -4042,6 +4057,7 @@ var GLContext = function (_Dispose) {
             var glProgram = new GLProgram_1(gl);
             //2.缓存program
             GLPROGRAMS[glProgram.id] = glProgram;
+            console.log('createProgram,birdge');
             //3.返回句柄
             return glProgram.handle;
         }
@@ -4057,6 +4073,7 @@ var GLContext = function (_Dispose) {
             var gl = this._gl,
                 glExtension = this._glExtension;
             var glShader = null;
+            console.log('createShader,birdge');
             if (type === GLConstants_1.VERTEX_SHADER) {
                 glShader = new GLVertexShader_1(gl, null, glExtension);
             } else if (type === GLConstants_1.FRAGMENT_SHADER) {
@@ -4078,6 +4095,7 @@ var GLContext = function (_Dispose) {
             var gl = this._gl;
             var glTexture = new GLTexture_1(gl);
             GLTEXTURES[glTexture.id] = glTexture;
+            console.log('createTexture,birdge');
             return glTexture.handle;
         }
         /**
@@ -4088,6 +4106,7 @@ var GLContext = function (_Dispose) {
         key: 'createBuffer',
         value: function createBuffer() {
             var gl = this._gl;
+            console.log('createBuffer,birdge');
             return gl.createBuffer();
         }
         /**
@@ -4098,6 +4117,7 @@ var GLContext = function (_Dispose) {
         key: 'createFramebuffer',
         value: function createFramebuffer() {
             var gl = this._gl;
+            console.log('createFramebuffer,birdge');
             return gl.createFramebuffer();
         }
         /**
@@ -4111,16 +4131,22 @@ var GLContext = function (_Dispose) {
             var id = stamp$1(program),
                 tiny = this._tiny,
                 glProgram = GLPROGRAMS[id];
+            glProgram.useProgram();
+            console.log('useProgram,birdge');
             //this._glProgram = glProgram;
             tiny.switchPorgarm(glProgram);
         }
-        // /**
-        //  * 获取extension
-        //  */
-        // getExtension(name) {
-        //     const glExtension = this._glExtension;
-        //     return glExtension.getExtension(name);
-        // }
+        /**
+         * 获取extension
+         */
+
+    }, {
+        key: 'getExtension',
+        value: function getExtension(name) {
+            var glExtension = this._glExtension;
+            console.log('getExtension,birdge');
+            return glExtension.getExtension(name);
+        }
         /**
          * 
          * @param {WebGLProgram} program 
@@ -4132,6 +4158,7 @@ var GLContext = function (_Dispose) {
         value: function attachShader(program, shader) {
             var glProgram = GLPROGRAMS[stamp$1(program)];
             var glShader = GLSHADERS[stamp$1(shader)];
+            console.log('attachShader,birdge');
             glProgram.attachShader(glShader);
         }
         /**
@@ -4144,6 +4171,7 @@ var GLContext = function (_Dispose) {
         key: 'shaderSource',
         value: function shaderSource(shader, source) {
             var gl = this._gl;
+            console.log('shaderSource,birdge');
             gl.shaderSource(shader, source);
         }
         /**
@@ -4154,6 +4182,7 @@ var GLContext = function (_Dispose) {
         key: 'compileShader',
         value: function compileShader(shader) {
             var gl = this._gl;
+            console.log('compileShader,birdge');
             gl.compileShader(shader);
         }
         /**
@@ -4165,12 +4194,23 @@ var GLContext = function (_Dispose) {
         key: 'linkProgram',
         value: function linkProgram(program) {
             var gl = this._gl;
+            console.log('linkProgram,birdge');
             gl.linkProgram(program);
         }
+    }, {
+        key: 'gl',
+        get: function get$$1() {
+            return this._gl;
+        }
+        /**
+         * 获取canvas
+         */
+
     }, {
         key: 'canvas',
         get: function get$$1() {
             var gl = this._gl;
+            console.log('canvas,birdge');
             return gl.canvas;
         }
         /**
@@ -4181,6 +4221,7 @@ var GLContext = function (_Dispose) {
         key: 'drawingBufferWidth',
         get: function get$$1() {
             var gl = this._gl;
+            console.log('drawingBufferWidth,birdge');
             return gl.drawingBufferWidth;
         }
         /**
@@ -4191,6 +4232,7 @@ var GLContext = function (_Dispose) {
         key: 'drawingBufferHeight',
         get: function get$$1() {
             var gl = this._gl;
+            console.log('drawingBufferHeight,birdge');
             return gl.drawingBufferHeight;
         }
     }]);
