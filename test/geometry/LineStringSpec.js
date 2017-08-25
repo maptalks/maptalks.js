@@ -223,16 +223,21 @@ describe('#LineString', function () {
                 'visible' : false
             });
             layer.once('layerload', function () {
+                var geojson = polyline.toGeoJSON();
                 expect(layer._getRenderer().isBlank()).to.be.ok();
                 polyline.animateShow({
                     'duration' : 100,
                     'easing' : 'out'
+                }, function (frame) {
+                    if (frame.state.playState !== 'finished') {
+                        expect(polyline.toGeoJSON()).not.to.be.eql(geojson);
+                    } else {
+                        expect(layer).to.be.painted(0, 0);
+                        expect(polyline.toGeoJSON()).to.be.eql(geojson);
+                        done();
+                    }
                 });
-                // polyline.show();
-                setTimeout(function () {
-                    expect(layer).to.be.painted(0, 0);
-                    done();
-                }, 80);
+
             });
             layer.addGeometry(polyline).addTo(map);
 

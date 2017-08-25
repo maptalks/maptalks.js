@@ -1,4 +1,4 @@
-import { isNumber, mapArrayRecursively, sign, pushIn } from 'core/util';
+import { isNumber, mapArrayRecursively, sign, pushIn, hasOwn } from 'core/util';
 import { clipPolygon, clipLine } from 'core/util/path';
 import Class from 'core/Class';
 import Size from 'geo/Size';
@@ -132,7 +132,9 @@ export default class Painter extends Class {
             points = paintParams[0];
 
         const containerPoints = this._getContainerPoints(points, dx, dy);
-
+        if (!containerPoints) {
+            return null;
+        }
         tPaintParams.push(containerPoints);
         for (let i = 1, len = paintParams.length; i < len; i++) {
             if (isNumber(paintParams[i]) || (paintParams[i] instanceof Size)) {
@@ -155,13 +157,17 @@ export default class Painter extends Class {
             containerExtent = map.getContainerExtent(),
             extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom)),
             height = this.getHeight(),
-            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
+            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest),
+            cExtent = this.getContainerExtent();
 
+        if (!cExtent) {
+            return null;
+        }
         let containerPoints;
         //convert view points to container points needed by canvas
         if (Array.isArray(points)) {
             let clipPoints = points;
-            if (!this.getContainerExtent().within(containerExtent) && this.geometry.options['clipToPaint']) {
+            if (!cExtent.within(containerExtent) && this.geometry.options['clipToPaint']) {
                 if (this.geometry.getJSONType() === 'Polygon') {
                     // clip the polygon to draw less and improve performance
                     if (!Array.isArray(points[0])) {
@@ -219,11 +225,13 @@ export default class Painter extends Class {
         if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
             return;
         }
+        this._beforePaint();
         const contexts = [renderer.context, renderer.resources];
         this._prepareShadow(renderer.context);
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
+        this._afterPaint();
         this._painted = true;
         this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
     }
@@ -442,5 +450,31 @@ export default class Painter extends Class {
             this.removeCache();
         }
         this._projCode = projection.code;
+    }
+
+    _beforePaint() {
+        const textcache = this.geometry[Symbolizers.TextMarkerSymbolizer.CACHE_KEY];
+        if (!textcache) {
+            return;
+        }
+        for (const p in textcache) {
+            if (hasOwn(textcache, p)) {
+                textcache[p].active = false;
+            }
+        }
+    }
+
+    _afterPaint() {
+        const textcache = this.geometry[Symbolizers.TextMarkerSymbolizer.CACHE_KEY];
+        if (!textcache) {
+            return;
+        }
+        for (const p in textcache) {
+            if (hasOwn(textcache, p)) {
+                if (!textcache[p].active) {
+                    delete textcache[p];
+                }
+            }
+        }
     }
 }

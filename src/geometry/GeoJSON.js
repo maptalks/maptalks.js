@@ -79,7 +79,7 @@ const GeoJSON = {
         if (Array.isArray(geoJSON)) {
             const resultGeos = [];
             for (let i = 0, len = geoJSON.length; i < len; i++) {
-                const geo = this._convert(geoJSON[i]);
+                const geo = GeoJSON._convert(geoJSON[i]);
                 if (Array.isArray(geo)) {
                     pushIn(resultGeos, geo);
                 } else {
@@ -88,7 +88,7 @@ const GeoJSON = {
             }
             return resultGeos;
         } else {
-            const resultGeo = this._convert(geoJSON);
+            const resultGeo = GeoJSON._convert(geoJSON);
             return resultGeo;
         }
 
@@ -108,7 +108,7 @@ const GeoJSON = {
         const type = json['type'];
         if (type === 'Feature') {
             const g = json['geometry'];
-            const geometry = this._convert(g);
+            const geometry = GeoJSON._convert(g);
             if (!geometry) {
                 return null;
             }
@@ -120,8 +120,7 @@ const GeoJSON = {
             if (!features) {
                 return null;
             }
-            //返回geometry数组
-            const result = this.toGeometry(features);
+            const result = GeoJSON.toGeometry(features);
             return result;
         } else if (['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon'].indexOf(type) >= 0) {
             const clazz = (type === 'Point' ? 'Marker' : type);
@@ -134,7 +133,7 @@ const GeoJSON = {
             const mGeos = [];
             const size = geometries.length;
             for (let i = 0; i < size; i++) {
-                mGeos.push(this._convert(geometries[i]));
+                mGeos.push(GeoJSON._convert(geometries[i]));
             }
             return new GeometryCollection(mGeos);
         }

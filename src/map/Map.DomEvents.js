@@ -197,20 +197,26 @@ Map.include(/** @lends Map.prototype */ {
         if (type === 'contextmenu') {
             preventDefault(e);
         }
-        let oneMoreEvent = null;
+        let mimicClick = false;
         // ignore click lasted for more than 300ms.
         if (type === 'mousedown' || (type === 'touchstart' && e.touches.length === 1)) {
             this._mouseDownTime = now();
-        } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu') && this._mouseDownTime) {
-            const downTime = this._mouseDownTime;
-            delete this._mouseDownTime;
-            const time = now();
-            if (time - downTime > 300) {
-                if (type === 'click' || type === 'contextmenu') {
-                    return;
+        } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu')) {
+            if (!this._mouseDownTime) {
+                //mousedown | touchstart propogation is stopped
+                //ignore the click/touchend/contextmenu
+                return;
+            } else {
+                const downTime = this._mouseDownTime;
+                delete this._mouseDownTime;
+                const time = now();
+                if (time - downTime > 300) {
+                    if (type === 'click' || type === 'contextmenu') {
+                        return;
+                    }
+                } else if (type === 'touchend') {
+                    mimicClick = true;
                 }
-            } else if (type === 'touchend') {
-                oneMoreEvent = 'click';
             }
         }
         if (type === 'click') {
@@ -220,8 +226,18 @@ Map.include(/** @lends Map.prototype */ {
             }
         }
         this._fireDOMEvent(this, e, type);
-        if (oneMoreEvent) {
-            this._fireDOMEvent(this, e, oneMoreEvent);
+        if (mimicClick) {
+            let mimicDblClick = false;
+            this._fireDOMEvent(this, e, 'click');
+            if (this._clickTime && (now() - this._clickTime <= 300)) {
+                mimicDblClick = true;
+                delete this._clickTime;
+            } else {
+                this._clickTime = now();
+            }
+            if (mimicDblClick) {
+                this._fireDOMEvent(this, e, 'dblclick');
+            }
         }
     },
 

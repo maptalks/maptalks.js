@@ -156,7 +156,7 @@ export default class TileLayerDomRenderer extends Class {
         }
         const map = this.getMap(),
             mapRenderer = map._getRenderer();
-        return map.isInteracting() || mapRenderer.isStateChanged();
+        return map.isInteracting() || mapRenderer.isViewChanged();
     }
 
     setToRedraw() {
@@ -719,6 +719,7 @@ export default class TileLayerDomRenderer extends Class {
             '_zoomstart'    : this.onZoomStart,
             //prune tiles before drag rotating to reduce tiles when rotating
             '_touchzoomstart _dragrotatestart' : this._pruneTiles,
+            '_movestart' : this.onMoveStart,
             '_zooming'      : this.onZooming,
             '_zoomend'      : this.onZoomEnd,
             '_dragrotateend' : this.render
@@ -741,6 +742,12 @@ export default class TileLayerDomRenderer extends Class {
     _posTileImage(tileImage, pos) {
         tileImage.style.left = pos.x + 'px';
         tileImage.style.top = pos.y + 'px';
+    }
+
+    onMoveStart() {
+        if (this.getMap().getPitch()) {
+            this._pruneLevels();
+        }
     }
 
     onZoomStart(param) {

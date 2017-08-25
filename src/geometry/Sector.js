@@ -143,6 +143,10 @@ class Sector extends CenterMixin(Polygon) {
         return [];
     }
 
+    animateShow() {
+        return this.show();
+    }
+
     _containsPoint(point, tolerance) {
         if (this.getMap().isTransforming()) {
             return super._containsPoint(point, tolerance);

@@ -1,5 +1,5 @@
 import Point from './Point';
-import { round, isNumber } from 'core/util';
+import { isNumber } from 'core/util';
 
 /**
  * Represents a size.
@@ -72,8 +72,8 @@ class Size {
     }
 
     _round() {
-        this['width'] = round(this['width']);
-        this['height'] = round(this['height']);
+        this['width'] = Math.round(this['width']);
+        this['height'] = Math.round(this['height']);
         return this;
     }
 

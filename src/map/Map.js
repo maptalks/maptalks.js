@@ -26,7 +26,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
  * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
- * @property {Boolean} [options.zoomInCentger=false]            - whether to fix in the center when zooming
+ * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
  * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
@@ -41,6 +41,9 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
+ *
+ * @property {Extent}  [options.viewHistory=true]               -  whether to record view history
+ * @property {Extent}  [options.viewHistoryCount=10]            -  the count of view history record.
  *
  * @property {Boolean} [options.draggable=true]                         - disable the map dragging if set to false.
  * @property {Boolean} [options.dragPan=true]                           - if true, map can be dragged to pan.
@@ -756,7 +759,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.setCenter(view['center']);
         }
         if (view['zoom']) {
-            this.setZoom(view['zoom']);
+            this.setZoom(view['zoom'], { 'animation' : false });
         }
         if (view['pitch']) {
             this.setPitch(view['pitch']);
@@ -970,6 +973,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             const id = layer.getId();
             if (isNil(id)) {
                 throw new Error('Invalid id for the layer: ' + id);
+            }
+            if (layer.getMap() === this) {
+                continue;
             }
             if (this._layerCache[id]) {
                 throw new Error('Duplicate layer id in the map: ' + id);

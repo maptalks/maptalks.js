@@ -272,4 +272,38 @@ describe('#Polygon', function () {
 
         // expect(vector.getArea()).to.be.eql(comparison.getArea());
     });
+
+    describe('animateShow', function () {
+        it('animateShow', function (done) {
+            var polygon = new maptalks.Polygon([[
+                new maptalks.Coordinate([center.x, center.y + 0.001]),
+                new maptalks.Coordinate([center.x, center.y]),
+                new maptalks.Coordinate([center.x + 0.002, center.y])
+            ]], {
+                symbol: {
+                    'lineWidth': 6
+                },
+                visible : false
+            });
+            layer.once('layerload', function () {
+                var geojson = polygon.toGeoJSON();
+                expect(layer._getRenderer().isBlank()).to.be.ok();
+                polygon.animateShow({
+                    'duration' : 100,
+                    'easing' : 'out'
+                }, function (frame) {
+                    if (frame.state.playState !== 'finished') {
+                        expect(polygon.toGeoJSON()).not.to.be.eql(geojson);
+                    } else {
+                        expect(layer).to.be.painted(0, 0);
+                        expect(polygon.toGeoJSON()).to.be.eql(geojson);
+                        done();
+                    }
+                });
+
+            });
+            layer.addGeometry(polygon).addTo(map);
+
+        });
+    });
 });

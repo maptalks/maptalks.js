@@ -136,6 +136,10 @@ class Rectangle extends Polygon {
         return [];
     }
 
+    animateShow() {
+        return this.show();
+    }
+
     _getPrjCoordinates() {
         const projection = this._getProjection();
         if (!projection) {

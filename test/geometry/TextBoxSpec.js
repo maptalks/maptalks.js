@@ -48,7 +48,6 @@ describe('#TextBox', function () {
         });
     });
 
-
     describe('get/set', function () {
         it('content', function () {
             var content = '中文标签';
@@ -250,5 +249,24 @@ describe('#TextBox', function () {
         vector.endEditText();
         expect(vector.isEditingText()).not.to.be.ok();
         expect(vector.getContent()).to.be.eql('textbox');
+    });
+
+    it('clear unused text caches', function (done) {
+        var cachekey = maptalks.symbolizer.TextMarkerSymbolizer.CACHE_KEY;
+
+        var vector = new maptalks.TextBox('test label', center, 100, 40);
+
+        layer = new maptalks.VectorLayer('id', vector);
+        layer.once('layerload', function () {
+            expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
+            layer.once('layerload', function () {
+                expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
+                done();
+            });
+            vector.setContent('1');
+            expect(Object.keys(vector[cachekey]).length).to.be.eql(2);
+        });
+        map.addLayer(layer);
+
     });
 });

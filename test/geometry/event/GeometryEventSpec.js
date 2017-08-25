@@ -31,6 +31,10 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
         var spy2 = sinon.spy();
         map.on('click', spy2);
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
@@ -38,6 +42,7 @@ describe('Geometry.Events', function () {
         expect(spy.called).to.be.ok();
         expect(spy2.called).to.be.ok();
     });
+
 
     it('can stop event\'s propagation', function () {
         var circle = new maptalks.Circle(map.getCenter(), 10);

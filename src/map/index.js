@@ -15,5 +15,6 @@ import './Map.Profile';
 import './Map.Topo';
 import './Map.Zoom';
 import './Map.Camera';
+import './Map.ViewHistory';
 
 export { Map };

@@ -129,6 +129,10 @@ class Ellipse extends CenterMixin(Polygon) {
         return [];
     }
 
+    animateShow() {
+        return this.show();
+    }
+
     _containsPoint(point, tolerance) {
         const map = this.getMap();
         if (map.isTransforming()) {

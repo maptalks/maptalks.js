@@ -183,16 +183,23 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         if (!this.geometry[CACHE_KEY]) {
             this.geometry[CACHE_KEY] = {};
         }
-        this.geometry[CACHE_KEY][this._cacheKey] = textDesc;
+        this.geometry[CACHE_KEY][this._cacheKey] = { 'desc' : textDesc, 'active' : true };
     }
 
     _loadFromCache() {
         if (!this.geometry[CACHE_KEY]) {
             return null;
         }
-        return this.geometry[CACHE_KEY][this._cacheKey];
+        const cache = this.geometry[CACHE_KEY][this._cacheKey];
+        if (!cache) {
+            return null;
+        }
+        cache.active = true;
+        return cache.desc;
     }
 }
+
+TextMarkerSymbolizer.CACHE_KEY = CACHE_KEY;
 
 function genCacheKey(textContent, style) {
     const key = [textContent];

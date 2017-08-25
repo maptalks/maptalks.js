@@ -1,4 +1,4 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame } from 'core/util';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from 'core/util';
 import { createEl, preventSelection, computeDomPosition } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
@@ -37,7 +37,8 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return false;
         }
-        this.map._fireEvent('framestart');
+        const map = this.map;
+        map._fireEvent('framestart');
         this.updateMapDOM();
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers);
@@ -46,10 +47,11 @@ export default class MapCanvasRenderer extends MapRenderer {
         // fire frameend before layerload, reason:
         // 1. frameend is often used internally by maptalks and plugins
         // 2. layerload is often used externally by tests or user apps
-        this.map._fireEvent('frameend');
+        map._fireEvent('frameend');
+        this._recordView();
         // refresh map's state
         // It must be before events and frame callback, because map state may be changed in callbacks.
-        this._state = this._getMapState();
+        this._mapview = this._getMapView();
         delete this._spatialRefChanged;
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
@@ -176,7 +178,7 @@ export default class MapCanvasRenderer extends MapRenderer {
                 return true;
             }
             // dom layers, redraw it if map is interacting or state is changed
-            return map.isInteracting() || this.isStateChanged();
+            return map.isInteracting() || this.isViewChanged();
         }
     }
 
@@ -270,7 +272,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return;
         }
-        if (!this._needToRedraw() && !this.isStateChanged()) {
+        if (!this._needToRedraw() && !this.isViewChanged()) {
             return;
         }
         if (!this.canvas) {
@@ -483,20 +485,30 @@ export default class MapCanvasRenderer extends MapRenderer {
      * Is current map's state changed?
      * @return {Boolean}
      */
-    isStateChanged() {
-        const previous = this._state;
-        const state = this._getMapState();
-        if (!previous || !equalState(previous, state)) {
+    isViewChanged() {
+        const previous = this._mapview;
+        const view = this._getMapView();
+        if (!previous || !equalMapView(previous, view)) {
             return true;
         }
         return false;
+    }
+
+    _recordView() {
+        const map = this.map;
+        if (!map._onViewChange || map.isInteracting() || map.isAnimating()) {
+            return;
+        }
+        if (!equalMapView(map.getView(), map._getCurrentView())) {
+            map._onViewChange(map.getView());
+        }
     }
 
     isSpatialReferenceChanged() {
         return this._spatialRefChanged;
     }
 
-    _getMapState() {
+    _getMapView() {
         const map = this.map;
         const center = map._getPrjCenter();
         return {
@@ -722,11 +734,3 @@ export default class MapCanvasRenderer extends MapRenderer {
 
 Map.registerRenderer('canvas', MapCanvasRenderer);
 
-function equalState(obj1, obj2) {
-    for (const p in obj1) {
-        if (obj1[p] !== obj2[p]) {
-            return false;
-        }
-    }
-    return true;
-}

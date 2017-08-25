@@ -164,6 +164,14 @@ class DrawTool extends MapTool {
         return this;
     }
 
+    /**
+     * Get geometry is currently drawing
+     * @return {Geometry} geometry currently drawing
+     */
+    getCurrentGeometry() {
+        return this._geometry;
+    }
+
     onAdd() {
         this._checkMode();
     }
@@ -187,10 +195,6 @@ class DrawTool extends MapTool {
         return this;
     }
 
-    _checkMode() {
-        this._getRegisterMode();
-    }
-
     onDisable() {
         const map = this.getMap();
         map.config({
@@ -208,6 +212,39 @@ class DrawTool extends MapTool {
         return this;
     }
 
+    /**
+     * Undo drawing, only applicable for click/dblclick mode
+     * @return {DrawTool} this
+     */
+    undo() {
+        const registerMode = this._getRegisterMode();
+        const action = registerMode.action;
+        if (action !== 'clickDblclick' || !this._historyPointer) {
+            return this;
+        }
+        const coords = this._clickCoords.slice(0, --this._historyPointer);
+        registerMode.update(coords, this._geometry);
+        return this;
+    }
+
+    /**
+     * Redo drawing, only applicable for click/dblclick mode
+     * @return {DrawTool} this
+     */
+    redo() {
+        const registerMode = this._getRegisterMode();
+        const action = registerMode.action;
+        if (action !== 'clickDblclick' || isNil(this._historyPointer) || this._historyPointer === this._clickCoords.length) {
+            return this;
+        }
+        const coords = this._clickCoords.slice(0, ++this._historyPointer);
+        registerMode.update(coords, this._geometry);
+        return this;
+    }
+
+    _checkMode() {
+        this._getRegisterMode();
+    }
 
     _loadResources() {
         const symbol = this.getSymbol();
@@ -290,7 +327,11 @@ class DrawTool extends MapTool {
              */
             this._fireEvent('drawstart', param);
         } else {
+            if (!isNil(this._historyPointer)) {
+                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+            }
             this._clickCoords.push(coordinate);
+            this._historyPointer = this._clickCoords.length;
             registerMode['update'](this._clickCoords, this._geometry, param);
             /**
              * drawvertex event.
@@ -321,7 +362,7 @@ class DrawTool extends MapTool {
         }
         const coordinate = param['coordinate'];
         const registerMode = this._getRegisterMode();
-        const path = this._clickCoords;
+        const path = this._clickCoords.slice(0, this._historyPointer);
         if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
             return;
         }
@@ -608,22 +649,23 @@ DrawTool.registerMode('polygon', {
     'update': function (path, geometry) {
         const symbol = geometry.getSymbol();
         geometry.setCoordinates(path);
-        if (path.length >= 3) {
-            const layer = geometry.getLayer();
-            if (layer) {
-                let polygon = layer.getGeometryById('polygon');
-                if (!polygon) {
-                    polygon = new Polygon([path], {
-                        'id': 'polygon'
+
+        const layer = geometry.getLayer();
+        if (layer) {
+            let polygon = layer.getGeometryById('polygon');
+            if (!polygon && path.length >= 3) {
+                polygon = new Polygon([path], {
+                    'id': 'polygon'
+                });
+                if (symbol) {
+                    const pSymbol = extendSymbol(symbol, {
+                        'lineOpacity': 0
                     });
-                    if (symbol) {
-                        const pSymbol = extendSymbol(symbol, {
-                            'lineOpacity': 0
-                        });
-                        polygon.setSymbol(pSymbol);
-                    }
-                    polygon.addTo(layer);
+                    polygon.setSymbol(pSymbol);
                 }
+                polygon.addTo(layer);
+            }
+            if (polygon) {
                 polygon.setCoordinates(path);
             }
         }
