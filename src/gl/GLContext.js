@@ -174,7 +174,6 @@ class GLContext extends Dispose {
         //map internalTinyOperation
         for (const key in ALL_ENUM) {
             this[key] = (...rest) => {
-                console.log(`${key},internal`);
                 //gl[key].apply(gl, rest);
                 tiny.push(key,...rest);
             }
