@@ -1465,121 +1465,120 @@ var util = {
  * 
  */
 var stamp$2 = stamp_1.stamp;
+var ticker = handle.ticker;
+var TICKER_ENUM = handle.TICKER_ENUM;
 
 /**
  * @class
  */
 
 var Tiny = function () {
-  /**
-   * 
-   * @param {GLContext} glContext 
-   */
-  function Tiny(glContext) {
-    classCallCheck(this, Tiny);
-
-    /**
-     * @type {GLContext}
-     */
-    this._glContext = glContext;
-    /**
-     * @type {WebGLRenderingContext}
-     */
-    this._gl = glContext.gl;
-    /**
-     * the operations which need's to be updated all without program context change
-     */
-    this._overrall = [];
-    /**
-     * the operations which need's to be updated in a tick combine with program context 
-     */
-    this._programInternal = null;
     /**
      * 
+     * @param {GLContext} glContext 
      */
-    this._tinyProgramCache = {};
-    /**
-     * @type {GLProgram}
-     */
-    this._glPrgram = null;
-  }
-  /**
-   * indicate wether it's need to be updated
-   */
+    function Tiny(glContext) {
+        classCallCheck(this, Tiny);
 
-
-  createClass(Tiny, [{
-    key: 'switchPorgarm',
-
-    /**
-     * 
-     * @param {GLProgram} glProgram
-     * @returns {Array} [] 
-     */
-    value: function switchPorgarm(glProgram) {
-      this._glPrgram = glProgram;
-      var id = stamp$2(glProgram),
-          tinyProgramCache = this._tinyProgramCache;
-      if (!tinyProgramCache[id]) tinyProgramCache[id] = [];
-      this._programInternal = tinyProgramCache[id];
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
+        /**
+         * @type {WebGLRenderingContext}
+         */
+        this._gl = glContext.gl;
+        /**
+         * the operations which need's to be updated all without program context change
+         */
+        this._overrall = [];
+        /**
+         * the operations which need's to be updated in a tick combine with program context 
+         */
+        this._programInternal = null;
+        /**
+         * 
+         */
+        this._tinyProgramCache = {};
+        /**
+         * @type {GLProgram}
+         */
+        this._glPrgram = null;
     }
     /**
-     * 
-     * @param {String} name 
-     * @param {[]} rest 
+     * indicate wether it's need to be updated
      */
 
-  }, {
-    key: 'push',
-    value: function push(name) {
-      var glProgram = this._glPrgram,
-          gl = this._gl,
-          overrall = this._overrall,
-          programInternal = this._programInternal;
-      console.log(name + ',bridge tiny');
 
-      for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        rest[_key - 1] = arguments[_key];
-      }
+    createClass(Tiny, [{
+        key: 'switchPorgarm',
 
-      gl[name].apply(gl, rest);
-      // if(!glProgram){
-      //     console.log(`${name},bridge tiny`);
-      //     //overrall.push({ name, rest })
-      //     gl[name].apply(gl,rest);
-      // }else{
-      //     console.log(`${name},internal tiny`);
-      //     programInternal.push({ name, rest });
-      // }
-      // //如果是TICKER_ENUM,则需要加入ticker
-      // if (TICKER_ENUM[name]) {
-      //     ticker.addOnce(
-      //         function (deltaTime, bucket) {
-      //             bucket.glProgram.useProgram();
-      //             const gl = bucket.glProgram.gl;
-      //             const queue = bucket.overrall.concat(bucket.internal).reverse();
-      //             let task = queue.pop();
-      //             while(task!=null){
-      //                 gl[task.name].apply(gl,task.rest);
-      //                 task = queue.pop();
-      //             }
-      //         },
-      //         this,
-      //         {
-      //             overrall: overrall.splice(0, overrall.length),//重复取
-      //             internal: programInternal.splice(0, programInternal.length),//清空取
-      //             glProgram: glProgram
-      //         });
-      // }
-      //
-    }
-  }, {
-    key: 'isEmpty',
-    get: function get$$1() {
-      return this._programInternal.length === 0;
-    }
-  }]);
-  return Tiny;
+        /**
+         * 
+         * @param {GLProgram} glProgram
+         * @returns {Array} [] 
+         */
+        value: function switchPorgarm(glProgram) {
+            this._glPrgram = glProgram;
+            var id = stamp$2(glProgram),
+                tinyProgramCache = this._tinyProgramCache;
+            if (!tinyProgramCache[id]) tinyProgramCache[id] = [];
+            this._programInternal = tinyProgramCache[id];
+        }
+        /**
+         * 
+         * @param {String} name 
+         * @param {[]} rest 
+         */
+
+    }, {
+        key: 'push',
+        value: function push(name) {
+            for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+                rest[_key - 1] = arguments[_key];
+            }
+
+            var glProgram = this._glPrgram,
+                gl = this._gl,
+                overrall = this._overrall,
+                programInternal = this._programInternal;
+            if (!glProgram) {
+                console.log(name + ',bridge tiny');
+                //overrall.push({ name, rest })
+                gl[name].apply(gl, rest);
+            } else {
+                glProgram.useProgram();
+                console.log(name + ',' + rest + ' internal tiny');
+                gl[name].apply(gl, rest);
+                programInternal.push({ name: name, rest: rest });
+            }
+            //如果是TICKER_ENUM,则需要加入ticker
+            if (TICKER_ENUM[name]) {
+                ticker.addOnce(function (deltaTime, bucket) {
+                    console.log('--------------------------------------');
+                    console.log(programInternal);
+                    bucket.glProgram.useProgram();
+                    var queue = bucket.overrall.concat(bucket.internal).reverse();
+                    var task = queue.pop();
+                    while (task != null) {
+                        console.log(task.name + '|' + task.rest + '|do internal tiny');
+                        gl[task.name].apply(gl, task.rest);
+                        task = queue.pop();
+                    }
+                }, this, {
+                    overrall: overrall.splice(0, overrall.length), //重复取
+                    internal: programInternal, //清空取
+                    glProgram: glProgram
+                });
+            }
+        }
+    }, {
+        key: 'isEmpty',
+        get: function get$$1() {
+            return this._programInternal.length === 0;
+        }
+    }]);
+    return Tiny;
 }();
 
 var Tiny_1 = Tiny;
@@ -4136,9 +4135,7 @@ var GLContext = function (_Dispose) {
             var id = stamp$1(program),
                 tiny = this._tiny,
                 glProgram = GLPROGRAMS[id];
-            glProgram.useProgram();
             console.log('useProgram,birdge');
-            //this._glProgram = glProgram;
             tiny.switchPorgarm(glProgram);
         }
         /**

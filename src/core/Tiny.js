@@ -80,38 +80,47 @@ class Tiny {
             gl = this._gl,
             overrall = this._overrall,
             programInternal = this._programInternal;
-        console.log(`${name},bridge tiny`);
-        gl[name].apply(gl,rest);
-        // if(!glProgram){
-        //     console.log(`${name},bridge tiny`);
-        //     //overrall.push({ name, rest })
-        //     gl[name].apply(gl,rest);
-        // }else{
-        //     console.log(`${name},internal tiny`);
-        //     programInternal.push({ name, rest });
-        // }
-        // //如果是TICKER_ENUM,则需要加入ticker
-        // if (TICKER_ENUM[name]) {
-        //     ticker.addOnce(
-        //         function (deltaTime, bucket) {
-        //             bucket.glProgram.useProgram();
-        //             const gl = bucket.glProgram.gl;
-        //             const queue = bucket.overrall.concat(bucket.internal).reverse();
-        //             let task = queue.pop();
-        //             while(task!=null){
-        //                 gl[task.name].apply(gl,task.rest);
-        //                 task = queue.pop();
-        //             }
-        //         },
-        //         this,
-        //         {
-        //             overrall: overrall.splice(0, overrall.length),//重复取
-        //             internal: programInternal.splice(0, programInternal.length),//清空取
-        //             glProgram: glProgram
-        //         });
-        // }
-        //
+        if(!glProgram){
+             console.log(`${name},bridge tiny`);
+            //overrall.push({ name, rest })
+            gl[name].apply(gl,rest);
+        }else{
+            glProgram.useProgram();
+            console.log(`${name},${rest} internal tiny`);
+            gl[name].apply(gl,rest);
+            programInternal.push({ name, rest.clone() });
+        }
+        //如果是TICKER_ENUM,则需要加入ticker
+        if (TICKER_ENUM[name]) {
+            ticker.addOnce(
+                function (deltaTime, bucket) {
+                    console.log(`--------------------------------------`);
+                    console.log(programInternal);
+                    bucket.glProgram.useProgram();
+                    const queue = bucket.overrall.concat(bucket.internal).reverse();
+                    let task = queue.pop();
+                    while(task!=null){
+                        console.log(`${task.name}|${task.rest}|do internal tiny`);
+                        gl[task.name].apply(gl,task.rest);
+                        task = queue.pop();
+                    }
+                },
+                this,
+                {
+                    overrall: overrall.splice(0, overrall.length),//重复取
+                    internal: programInternal,//清空取
+                    glProgram: glProgram
+                });
+        }
     }
+    /**
+     * 处理数组参数，引用值clone
+     * @param {Array} arr 
+     */
+    _explainArray(arr){
+
+    }
+
 }
 
 module.exports = Tiny;

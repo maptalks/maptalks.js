@@ -277,9 +277,7 @@ class GLContext extends Dispose {
         const id = stamp(program),
             tiny = this._tiny,
             glProgram = GLPROGRAMS[id];
-        glProgram.useProgram();
         console.log(`useProgram,birdge`);
-        //this._glProgram = glProgram;
         tiny.switchPorgarm(glProgram);
     }
     /**
