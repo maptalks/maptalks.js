@@ -8,6 +8,7 @@
  * 
  */
 const stamp = require('./../utils/stamp').stamp,
+    isArray = require('./../utils/isArray'),
     ticker = require('./handle').ticker,
     INTERNAL_ENUM = require('./handle').INTERNAL_ENUM,
     OVERRAL_ENUM = require('./handle').OVERRAL_ENUM,
@@ -30,6 +31,10 @@ class Tiny {
          * @type {GLContext}
          */
         this._glContext = glContext;
+        /**
+         * @type {WebGLRenderingContext}
+         */
+        this._gl = glContext.gl;
         /**
          * the operations which need's to be updated all without program context change
          */
@@ -73,9 +78,16 @@ class Tiny {
      */
     push(name, ...rest) {
         const glProgram = this._glPrgram,
+            gl = this._gl,
             overrall = this._overrall,
             programInternal = this._programInternal;
-        programInternal === null ? overrall.push({ name, rest }) : programInternal.push({ name, rest });
+        if(!glProgram){
+            console.log(`${name},bridge tiny`);
+            gl[name].apply(gl,rest);
+        }else{
+            console.log(`${name},internal tiny`);
+            programInternal.push({ name, rest });
+        }
         //如果是TICKER_ENUM,则需要加入ticker
         if (TICKER_ENUM[name]) {
             ticker.addOnce(
@@ -85,7 +97,7 @@ class Tiny {
                     const queue = bucket.overrall.concat(bucket.internal).reverse();
                     let task = queue.pop();
                     while(task!=null){
-                        gl[task.name].apply(gl,task.rest);
+                        gl[task.name].apply(gl,this._exact(task.rest));
                         task = queue.pop();
                     }
                 },
@@ -98,6 +110,17 @@ class Tiny {
         }
         //
     }
+
+    _exact(rest){
+        for(let i=0,len = rest.length;i<len;i++){
+            let target = rest[i];
+            if(target instanceof Float32Array){
+                rest[i] = Float32Array.from(target);
+            }
+        }
+        return rest;
+    }
+
 }
 
 module.exports = Tiny;
