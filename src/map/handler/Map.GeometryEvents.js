@@ -55,7 +55,7 @@ class MapGeometryEventsHandler extends Handler {
 
         const actual = domEvent.touches && domEvent.touches.length > 0 ?
             domEvent.touches[0] : domEvent.changedTouches && domEvent.changedTouches.length > 0 ?
-            domEvent.changedTouches[0] : domEvent;
+                domEvent.changedTouches[0] : domEvent;
         if (!actual) {
             return;
         }

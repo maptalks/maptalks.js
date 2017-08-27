@@ -68,7 +68,7 @@ describe('VectorLayer with GeoJSON', function () {
                     'geometry': {
                         'type': 'LineString',
                         'coordinates': [
-                          [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
+                            [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
                         ]
                     },
                     'properties': {
@@ -81,7 +81,7 @@ describe('VectorLayer with GeoJSON', function () {
                         'type': 'Polygon',
                         'coordinates': [
                             [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-                            [100.0, 1.0], [100.0, 0.0]]
+                                [100.0, 1.0], [100.0, 0.0]]
                         ]
                     },
                     'properties': {

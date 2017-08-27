@@ -60,9 +60,9 @@ describe('#GeometryAnimation', function () {
                     'markerHeight' : 30
                 }
             },
-                {
-                    duration : animSpeed
-                },
+            {
+                duration : animSpeed
+            },
             step);
         });
 

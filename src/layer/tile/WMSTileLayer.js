@@ -84,8 +84,8 @@ class WMSTileLayer extends TileLayer {
             min = tileExtent.getMin();
 
         const bbox = (this._wmsVersion >= 1.3  && this.wmsParams.crs === 'EPSG:4326' ?
-                [min.y, min.x, max.y, max.x] :
-                [min.x, min.y, max.x, max.y]).join(',');
+            [min.y, min.x, max.y, max.x] :
+            [min.x, min.y, max.x, max.y]).join(',');
 
         const url = super.getTileUrl(x, y, z);
 

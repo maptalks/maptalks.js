@@ -27,19 +27,19 @@ function compile(filter) {
     if (filter.length <= 1) return op === 'any' ? 'false' : 'true';
     var str =
         op === '==' ? compileComparisonOp(filter[1], filter[2], '===', false) :
-        op === '!=' ? compileComparisonOp(filter[1], filter[2], '!==', false) :
-        op === '<' ||
+            op === '!=' ? compileComparisonOp(filter[1], filter[2], '!==', false) :
+                op === '<' ||
         op === '>' ||
         op === '<=' ||
         op === '>=' ? compileComparisonOp(filter[1], filter[2], op, true) :
-        op === 'any' ? compileLogicalOp(filter.slice(1), '||') :
-        op === 'all' ? compileLogicalOp(filter.slice(1), '&&') :
-        op === 'none' ? compileNegation(compileLogicalOp(filter.slice(1), '||')) :
-        op === 'in' ? compileInOp(filter[1], filter.slice(2)) :
-        op === '!in' ? compileNegation(compileInOp(filter[1], filter.slice(2))) :
-        op === 'has' ? compileHasOp(filter[1]) :
-        op === '!has' ? compileNegation(compileHasOp([filter[1]])) :
-        'true';
+                    op === 'any' ? compileLogicalOp(filter.slice(1), '||') :
+                        op === 'all' ? compileLogicalOp(filter.slice(1), '&&') :
+                            op === 'none' ? compileNegation(compileLogicalOp(filter.slice(1), '||')) :
+                                op === 'in' ? compileInOp(filter[1], filter.slice(2)) :
+                                    op === '!in' ? compileNegation(compileInOp(filter[1], filter.slice(2))) :
+                                        op === 'has' ? compileHasOp(filter[1]) :
+                                            op === '!has' ? compileNegation(compileHasOp([filter[1]])) :
+                                                'true';
     return '(' + str + ')';
 }
 

@@ -200,7 +200,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             map.isZooming() && layer.options['forceRenderOnZooming'] ||
             map.isMoving() && layer.options['forceRenderOnMoving'] ||
             map.isRotating() && layer.options['forceRenderOnRotating'])
-            ) {
+        ) {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
             renderer.prepareCanvas();

@@ -98,7 +98,7 @@ const Ajax = {
                     if (client.status === 0) {
                         return;
                     }
-                    cb(null, '{"success":false,"error":\"Status:' + client.status + ',' + client.statusText + '\"}');
+                    cb(null, '{"success":false,"error":"Status:' + client.status + ',' + client.statusText + '"}');
                 }
             }
         };

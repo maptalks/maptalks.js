@@ -237,9 +237,9 @@ export function isURL(url) {
 
 // match: url('x'), url("x").
 // TODO: url(x)
-const cssUrlReWithQuote = /^url\(([\'\"])(.+)\1\)$/i;
+const cssUrlReWithQuote = /^url\((['"])(.+)\1\)$/i;
 
-const cssUrlRe = /^url\(([^\'\"].*[^\'\"])\)$/i;
+const cssUrlRe = /^url\(([^'"].*[^'"])\)$/i;
 
 export function isCssUrl(str) {
     if (!isString(str)) {

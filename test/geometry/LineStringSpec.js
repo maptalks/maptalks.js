@@ -20,8 +20,8 @@ describe('#LineString', function () {
 
     it('getCenter', function () {
         var polyline = new maptalks.LineString([
-          { x: 0, y: 0 },
-          { x: 120, y: 0 }
+            { x: 0, y: 0 },
+            { x: 120, y: 0 }
         ]);
         var got = polyline.getCenter();
         expect(got.x).to.eql(60);
@@ -30,8 +30,8 @@ describe('#LineString', function () {
 
     it('getExtent', function () {
         var polyline = new maptalks.LineString([
-          { x: 0, y: 0 },
-          { x: 120, y: 10 }
+            { x: 0, y: 0 },
+            { x: 120, y: 10 }
         ]);
 
         var extent = polyline.getExtent();
@@ -41,9 +41,9 @@ describe('#LineString', function () {
 
     it('getSize', function () {
         var polyline = new maptalks.LineString([
-          { x: 0, y: 0 },
-          { x: 10, y: 10 },
-          { x: 20, y: 30 }
+            { x: 0, y: 0 },
+            { x: 10, y: 10 },
+            { x: 20, y: 30 }
         ]);
         layer.addGeometry(polyline);
         var size = polyline.getSize();
@@ -55,9 +55,9 @@ describe('#LineString', function () {
 
     it('getCoordinates', function () {
         var path = [
-          { x: 0, y: 0 },
-          { x: 10, y: 10 },
-          { x: 20, y: 30 }
+            { x: 0, y: 0 },
+            { x: 10, y: 10 },
+            { x: 20, y: 30 }
         ];
         var polyline = new maptalks.LineString(path);
         layer.addGeometry(polyline);
@@ -71,9 +71,9 @@ describe('#LineString', function () {
 
     it('setCoordinates', function () {
         var path = [
-          { x: 0, y: 0 },
-          { x: 10, y: 10 },
-          { x: 20, y: 30 }
+            { x: 0, y: 0 },
+            { x: 10, y: 10 },
+            { x: 20, y: 30 }
         ];
         var polyline = new maptalks.LineString([]);
         layer.addGeometry(polyline);
@@ -139,9 +139,9 @@ describe('#LineString', function () {
 
     it('can have various symbols', function (done) {
         var points = [
-                { x: 0, y: 0 },
-                { x: 0, y: 10 },
-                { x: 0, y: 80 }
+            { x: 0, y: 0 },
+            { x: 0, y: 10 },
+            { x: 0, y: 80 }
         ];
         var vector = new maptalks.LineString(points);
         COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
@@ -202,9 +202,9 @@ describe('#LineString', function () {
         // fix:
         // forbidden to getPainter when geometry is not added to a map.
         var points = [
-                { x: 0, y: 0 },
-                { x: 0, y: 10 },
-                { x: 0, y: 80 }
+            { x: 0, y: 0 },
+            { x: 0, y: 10 },
+            { x: 0, y: 80 }
         ];
         var symbol = { 'lineWidth':1, 'lineColor':'#000', 'textName':'{count}', 'textSize':{ 'type':'interval', 'stops':[[0, 0], [16, 5], [17, 10], [18, 20], [19, 40]] }};
         new maptalks.LineString(points, {

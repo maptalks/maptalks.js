@@ -35,9 +35,9 @@ describe('#ContextMenu', function () {
         var target = new maptalks.Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
-                { item: 'item1', click: function () {} },
+            { item: 'item1', click: function () {} },
             '-',
-                { item: 'item2', click: function () {} }
+            { item: 'item2', click: function () {} }
         ];
 
         target.setMenu({
@@ -58,9 +58,9 @@ describe('#ContextMenu', function () {
         var target = new maptalks.Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
-                { item: 'item1', click: function () {} },
+            { item: 'item1', click: function () {} },
             '-',
-                { item: 'item2', click: function () {} }
+            { item: 'item2', click: function () {} }
         ];
 
         target.setMenu({
@@ -85,9 +85,9 @@ describe('#ContextMenu', function () {
         var target = new maptalks.Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
-                { item: 'item1', click: function () {} },
+            { item: 'item1', click: function () {} },
             '-',
-                { item: 'item2', click: function () {} }
+            { item: 'item2', click: function () {} }
         ];
 
         target.setMenu({
@@ -108,19 +108,19 @@ describe('#ContextMenu', function () {
         var target = new maptalks.Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
-                { item: 'item1', click: function () {} },
-                { item: 'item2', click: function () {} },
+            { item: 'item1', click: function () {} },
+            { item: 'item2', click: function () {} },
             '-',
-                { item: 'item3', click: function () {} },
-                { item: 'item4', click: function () {} },
-                { item: 'item5', click: function () {} },
-                { item: 'item6', click: function () {} },
+            { item: 'item3', click: function () {} },
+            { item: 'item4', click: function () {} },
+            { item: 'item5', click: function () {} },
+            { item: 'item6', click: function () {} },
             '-',
-                { item: 'item7', click: function () {} },
+            { item: 'item7', click: function () {} },
             '-',
-                { item: 'item8', click: function () {} },
-                { item: 'item9', click: function () {} },
-                { item: 'item10', click: function () {} }
+            { item: 'item8', click: function () {} },
+            { item: 'item9', click: function () {} },
+            { item: 'item10', click: function () {} }
         ];
 
         target.setMenu({
@@ -142,9 +142,9 @@ describe('#ContextMenu', function () {
         var target = new maptalks.Marker(map.getCenter());
         layer.addGeometry(target).addTo(map);
         var items = [
-                { item: 'item1', click: function () {} },
+            { item: 'item1', click: function () {} },
             '-',
-                { item: 'item2', click: function () {} }
+            { item: 'item2', click: function () {} }
         ];
 
 
@@ -184,9 +184,9 @@ function runTests(target, _context) {
     }
 
     var items = [
-                { item: 'item1', click: function () {} },
+        { item: 'item1', click: function () {} },
         '-',
-                { item: 'item2', click: function () {} }
+        { item: 'item2', click: function () {} }
     ];
 
     function assertItems() {
@@ -379,19 +379,19 @@ function runTests(target, _context) {
         });
 
         it('openMenu by click when target is being edited', function (done) {
-                // if (target instanceof maptalks.Sector) {
-                //     return;
-                // }
-                // prepareGeometry();
-                // target.setMenuItems(items);
-                // target.startEdit();
-                // setTimeout(function() {
-                //     rightclick();
-                //     assertItems();
-                //     target.closeMenu();
-                //     expect(target._menu.getDOM().style.display).to.be.eql('none');
-                //     done();
-                // }, 20);
+            // if (target instanceof maptalks.Sector) {
+            //     return;
+            // }
+            // prepareGeometry();
+            // target.setMenuItems(items);
+            // target.startEdit();
+            // setTimeout(function() {
+            //     rightclick();
+            //     assertItems();
+            //     target.closeMenu();
+            //     expect(target._menu.getDOM().style.display).to.be.eql('none');
+            //     done();
+            // }, 20);
             done();
         });
 
@@ -402,9 +402,9 @@ function runTests(target, _context) {
             map.setCenter(target.getFirstCoordinate());
             prepareGeometry();
             target.setMenuItems([
-                    { item: 'item1', click: spy1 },
+                { item: 'item1', click: spy1 },
                 '-',
-                    { item: 'item2', click: spy2 }
+                { item: 'item2', click: spy2 }
             ]);
             target.openMenu();
             var itemEles = document.getElementsByTagName('li');

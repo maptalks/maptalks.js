@@ -54,8 +54,8 @@ describe('#Map Profile', function () {
             var style = {
                 condition : [
                     'all',
-                                ['==', '$type', 'Point'],
-                                ['!=', '$subType', 'Label']
+                    ['==', '$type', 'Point'],
+                    ['!=', '$subType', 'Label']
                 ],
                 symbol: {
                     markerFile : 'http://www.foo.com/foo.png'

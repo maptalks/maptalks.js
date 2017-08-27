@@ -162,7 +162,7 @@ class Path extends Geometry {
             zoom = map.getZoom();
         }
         let p, pre, current, dx, dy, my;
-            // for anit-meridian splits
+        // for anit-meridian splits
         const part1 = [], part2 = [];
         let part = part1;
         for (let i = 0, len = prjCoords.length; i < len; i++) {

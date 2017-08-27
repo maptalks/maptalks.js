@@ -34,30 +34,30 @@ describe('#AntiMeridianSpec', function () {
                 { antiMeridian : 'split', arrowStyle:'classic', arrowPlacement : 'point' }
             ),
             new maptalks.QuadBezierCurve(
-                    //线端点坐标数组
-                    [[179, 10], [-170, 10], [-169, -10], [179, -10]],
-                    //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                    { arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'split' }
+                //线端点坐标数组
+                [[179, 10], [-170, 10], [-169, -10], [179, -10]],
+                //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
+                { arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'split' }
             ),
             new maptalks.CubicBezierCurve(
-                    //线端点坐标数组
-                    [[179, 10], [-170, 10], [-169, -10], [179, -10]],
-                    //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-                    { arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'continuous' }
+                //线端点坐标数组
+                [[179, 10], [-170, 10], [-169, -10], [179, -10]],
+                //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
+                { arrowStyle:'classic', arrowPlacement:'point', antiMeridian : 'continuous' }
             ),
             //a continuous anti-meridian polygon with a hole
             new maptalks.Polygon([
-                    [[179, 10], [-170, 10], [-169, -10], [179, -10]],
-                    [[180, 5], [-175, 5], [-171, -5], [180, -5]]
+                [[179, 10], [-170, 10], [-169, -10], [179, -10]],
+                [[180, 5], [-175, 5], [-171, -5], [180, -5]]
             ],
-                { antiMeridian : 'continuous' }
+            { antiMeridian : 'continuous' }
             ),
             //a split anti-meridian polygon with a hole
             new maptalks.Polygon([
-                    [[179, 10], [-170, 10], [-169, -10], [179, -10]],
-                    [[180, 5], [-175, 5], [-171, -5], [180, -5]]
+                [[179, 10], [-170, 10], [-169, -10], [179, -10]],
+                [[180, 5], [-175, 5], [-171, -5], [180, -5]]
             ],
-                { antiMeridian : 'split' }
+            { antiMeridian : 'split' }
             )
         ];
     }

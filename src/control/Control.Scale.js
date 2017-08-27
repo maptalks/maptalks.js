@@ -2,7 +2,7 @@ import { createEl, createElOn } from 'core/util/dom';
 import Map from 'map/Map';
 import Control from './Control';
 
- /**
+/**
  * @property {Object} [options=null] - options
  * @property {String|Object}   [options.position="bottom-left"]  - position of the scale control.
  * @property {Number} [options.maxWidth=100]               - max width of the scale control.
@@ -114,8 +114,8 @@ class Scale extends Control {
 
         d = d >= 10 ? 10 :
             d >= 5 ? 5 :
-            d >= 3 ? 3 :
-            d >= 2 ? 2 : 1;
+                d >= 3 ? 3 :
+                    d >= 2 ? 2 : 1;
 
         return pow10 * d;
     }

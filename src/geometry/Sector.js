@@ -161,7 +161,7 @@ class Sector extends CenterMixin(Polygon) {
             atan2 = Math.atan2(y, x),
             // [0.0, 360.0)
             angle = atan2 < 0 ? (atan2 + 2 * Math.PI) * 360 / (2 * Math.PI) :
-            atan2 * 360 / (2 * Math.PI);
+                atan2 * 360 / (2 * Math.PI);
         const sAngle = this.startAngle % 360,
             eAngle = this.endAngle % 360;
         let between = false;

@@ -41,7 +41,7 @@ class Coordinate {
         }
     }
 
-     /**
+    /**
      * Convert one or more Coordinate objects to GeoJSON style coordinates
      * @param  {Coordinate|Coordinate[]} coordinates - coordinates to convert
      * @return {Number[]|Number[][]}

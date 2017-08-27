@@ -113,7 +113,7 @@ export default class Painter extends Class {
             (params._zoom !== undefined && params._zoom !== zoom) ||
             (this._pitched !== pitched && this.geometry._redrawWhenPitch()) ||
             (this._rotated !== rotated && this.geometry._redrawWhenRotate())
-            ) {
+        ) {
             //render resources geometry returned are based on 2d points.
             params = this.geometry._getPaintParams();
             if (this.geometry._simplified) {

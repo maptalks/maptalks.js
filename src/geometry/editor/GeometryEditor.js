@@ -988,7 +988,7 @@ class GeometryEditor extends Eventable(Class) {
         this._geometry.fire('editrecord');
     }
 
-        /**
+    /**
      * Get previous map view in view history
      * @return {Object} map view
      */

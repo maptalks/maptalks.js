@@ -335,7 +335,7 @@ describe('#Marker', function () {
                 expect(layer).to.be.painted(5, -5);
                 done();
             })
-            .addTo(map);
+                .addTo(map);
         });
 
         it('rotate vector marker', function (done) {
@@ -353,7 +353,7 @@ describe('#Marker', function () {
                 expect(layer).to.be.painted(5, -5);
                 done();
             })
-            .addTo(map);
+                .addTo(map);
         });
 
         it('rotate vector marker', function (done) {
@@ -371,7 +371,7 @@ describe('#Marker', function () {
                 expect(layer).to.be.painted(5, -5);
                 done();
             })
-            .addTo(map);
+                .addTo(map);
         });
 
         it('rotate vector path marker', function (done) {
@@ -400,7 +400,7 @@ describe('#Marker', function () {
                 expect(layer).to.be.painted(5, -5);
                 done();
             })
-            .addTo(map);
+                .addTo(map);
         });
 
         it('rotate text marker', function (done) {
@@ -418,7 +418,7 @@ describe('#Marker', function () {
                 expect(layer).to.be.painted(-11, -11);
                 done();
             })
-            .addTo(map);
+                .addTo(map);
         });
     });
 

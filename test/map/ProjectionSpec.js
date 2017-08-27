@@ -105,7 +105,7 @@ describe('#Projection', function () {
             var circle = new maptalks.Circle([10, 10], 1);
             expect(map.computeGeometryArea(circle)).to.be.eql(Math.PI);
             var polygon = new maptalks.Polygon([
-                    [0, 0], [0, 10], [10, 10], [10, 0]
+                [0, 0], [0, 10], [10, 10], [10, 0]
             ]);
             expect(map.computeGeometryArea(polygon)).to.be.eql(100);
             expect(map.locate([0, 0], 10, 10)).to.be.eql(new maptalks.Coordinate(10, 10));

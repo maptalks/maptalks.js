@@ -452,8 +452,8 @@ describe('#OverlayLayer', function () {
             var points = genPoints();
             var selection = layer.addGeometry(points).filter([
                 'all',
-                                                                ['==', '$type', 'Point'],
-                                                                ['>', 'foo1', 0]
+                ['==', '$type', 'Point'],
+                ['>', 'foo1', 0]
             ]);
 
             expect(selection).to.be.an(maptalks.GeometryCollection);

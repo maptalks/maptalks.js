@@ -131,7 +131,7 @@ describe('#VectorLayer', function () {
                         'geometry': {
                             'type': 'LineString',
                             'coordinates': [
-                              [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
+                                [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
                             ]
                         },
                         'properties': {
@@ -144,7 +144,7 @@ describe('#VectorLayer', function () {
                             'type': 'Polygon',
                             'coordinates': [
                                 [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
-                                [100.0, 1.0], [100.0, 0.0]]
+                                    [100.0, 1.0], [100.0, 0.0]]
                             ]
                         },
                         'properties': {
@@ -429,8 +429,8 @@ describe('#VectorLayer', function () {
             testStyle({
                 filter : [
                     'all',
-                            ['==', 'foo1', 2],
-                            ['==', '$type', 'Point']
+                    ['==', 'foo1', 2],
+                    ['==', '$type', 'Point']
                 ],
                 symbol : symbol
             }, [1], [symbol]);
@@ -451,8 +451,8 @@ describe('#VectorLayer', function () {
                 {
                     filter : [
                         'all',
-                                ['!=', '$type', 'Polygon'],
-                                ['==', 'foo1', 3]
+                        ['!=', '$type', 'Polygon'],
+                        ['==', 'foo1', 3]
                     ],
                     symbol : symbol2
                 },
@@ -468,11 +468,11 @@ describe('#VectorLayer', function () {
                 'markerFile' : 'http://www.foo.com/foo.png'
             };
             var vectors = new maptalks.VectorLayer('symbol-style', { 'drawImmediate' : true })
-                        .setStyle({
-                            filter : ['==', '$type', 'Point'],
-                            symbol : styleSymbol
-                        })
-                        .addTo(map);
+                .setStyle({
+                    filter : ['==', '$type', 'Point'],
+                    symbol : styleSymbol
+                })
+                .addTo(map);
             var geometries = [
                 new maptalks.Marker(map.getCenter(), {
                     'symbol' : symbol

@@ -186,7 +186,7 @@ class Rectangle extends Polygon {
             sp = map.coordinateToPoint(this._coordinates),
             pxSize = map.distanceToPixel(this._width, this._height);
         const pxExtent = new PointExtent(sp.x - t, sp.y - t,
-                sp.x + pxSize.width + t, sp.y + pxSize.height + t);
+            sp.x + pxSize.width + t, sp.y + pxSize.height + t);
         return pxExtent.contains(point);
     }
     _computeExtent(measurer) {
