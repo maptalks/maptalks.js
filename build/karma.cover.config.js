@@ -14,7 +14,7 @@ module.exports = function (config) {
         },
         singleRun: true
     });
-    options.rollupPreprocessor.sourceMap = 'inline';
+    options.rollupPreprocessor.sourcemap = 'inline';
     const plugins = options.rollupPreprocessor.plugins;
     const idx = plugins.findIndex(plugin => {
         return plugin.name === 'babel';
