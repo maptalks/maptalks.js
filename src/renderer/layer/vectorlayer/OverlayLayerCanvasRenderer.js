@@ -54,6 +54,11 @@ class OverlayLayerRenderer extends CanvasRenderer {
         return resources;
     }
 
+    render() {
+        this.layer._sortGeometries();
+        return super.render.apply(this, arguments);
+    }
+
     _addGeoToCheckRes(res) {
         if (!res) {
             return;

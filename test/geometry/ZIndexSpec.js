@@ -1,4 +1,4 @@
-describe('#Geometry.zindex', function () {
+describe('Geometry.zindex', function () {
 
     var container;
     var map;
@@ -53,9 +53,9 @@ describe('#Geometry.zindex', function () {
             if (counter === 0) {
                 expect(layer).to.be.painted(0, 0, [0, 0, 255]);
                 red.bringToFront();
-                expect(layer.getGeometries()).to.be.eql([green, blue, red]);
                 counter++;
             } else {
+                expect(layer.getGeometries()).to.be.eql([green, blue, red]);
                 expect(layer).to.be.painted(0, 0, [255, 0, 0]);
                 done();
             }
@@ -70,9 +70,9 @@ describe('#Geometry.zindex', function () {
             if (counter === 0) {
                 expect(layer).to.be.painted(0, 0, [0, 0, 255]);
                 blue.bringToBack();
-                expect(layer.getGeometries()).to.be.eql([blue, red, green]);
                 counter++;
             } else {
+                expect(layer.getGeometries()).to.be.eql([blue, red, green]);
                 expect(layer).to.be.painted(0, 0, [0, 255, 0]);
                 done();
             }
@@ -88,9 +88,9 @@ describe('#Geometry.zindex', function () {
                 expect(layer).to.be.painted(0, 0, [0, 0, 255]);
                 blue.setZIndexSilently(-1);
                 red.setZIndex(1);
-                expect(layer.getGeometries()).to.be.eql([blue, green, red]);
                 counter++;
             } else {
+                expect(layer.getGeometries()).to.be.eql([blue, green, red]);
                 expect(layer).to.be.painted(0, 0, [255, 0, 0]);
                 done();
             }

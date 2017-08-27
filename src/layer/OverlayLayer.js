@@ -21,6 +21,7 @@ class OverlayLayer extends Layer {
             geometries = null;
         }
         super(id, options);
+        this._maxZIndex = 0;
         this._initCache();
         if (geometries) {
             this.addGeometry(geometries);
@@ -180,7 +181,8 @@ class OverlayLayer extends Layer {
         if (fitView === true) {
             extent = new Extent();
         }
-        for (let i = 0, len = geometries.length; i < len; i++) {
+        this._toSort = this._maxZIndex > 0;
+        for (let i = 0, l = geometries.length; i < l; i++) {
             let geo = geometries[i];
             if (!geo) {
                 throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
@@ -188,14 +190,15 @@ class OverlayLayer extends Layer {
             if (!(geo instanceof Geometry)) {
                 geo = Geometry.fromJSON(geo);
                 if (Array.isArray(geo)) {
-                    geo.forEach(g => this._add(g, extent, i));
+                    for (let ii = 0, ll = geo.length; ii < ll; ii++) {
+                        this._add(geo[ii], extent, i);
+                    }
                 }
             }
             if (!Array.isArray(geo)) {
                 this._add(geo, extent, i);
             }
         }
-        this._sortGeometries();
         const map = this.getMap();
         if (map) {
             this._getRenderer().onGeometryAdd(geometries);
@@ -220,6 +223,9 @@ class OverlayLayer extends Layer {
     }
 
     _add(geo, extent, i) {
+        if (!this._toSort) {
+            this._toSort = geo.getZIndex() !== 0;
+        }
         const geoId = geo.getId();
         if (!isNil(geoId)) {
             if (!isNil(this._geoMap[geoId])) {
@@ -228,7 +234,6 @@ class OverlayLayer extends Layer {
             this._geoMap[geoId] = geo;
         }
         const internalId = UID();
-        //内部全局唯一的id
         geo._setInternalId(internalId);
         this._geoList.push(geo);
         if (this.onAddGeometry) {
@@ -398,9 +403,15 @@ class OverlayLayer extends Layer {
     }
 
     _sortGeometries() {
+        if (!this._toSort) {
+            return;
+        }
+        this._maxZIndex = 0;
         this._geoList.sort((a, b) => {
+            this._maxZIndex = Math.max(a.getZIndex(), b.getZIndex());
             return this._compare(a, b);
         });
+        this._toSort = false;
     }
 
     _compare(a, b) {
@@ -476,7 +487,7 @@ class OverlayLayer extends Layer {
 
     _onGeometryZIndexChange(param) {
         if (param['old'] !== param['new']) {
-            this._sortGeometries();
+            this._toSort = true;
             if (this._getRenderer()) {
                 this._getRenderer().onGeometryZIndexChange(param);
             }
