@@ -1,5 +1,5 @@
 const config = require('./rollup.config').config;
-config.moduleName = 'maptalks';
+config.name = 'maptalks';
 config.format = 'umd';
 
 module.exports = {

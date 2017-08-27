@@ -1,5 +1,4 @@
 const rollup = require('rollup'),
-    watch = require('rollup-watch'),
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
@@ -23,7 +22,7 @@ const config = {
             plugins : ['transform-proto-to-assign']
         })
     ],
-    'sourceMap': false
+    'sourcemap': false
 };
 
 module.exports = {
@@ -31,19 +30,23 @@ module.exports = {
 
         const year = new Date().getFullYear();
         const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${year} maptalks.org\n */`;
-        config.entry = 'src/index.js';
-        config.dest = 'dist/maptalks.js';
-        config.format = 'umd';
-        config.moduleName = 'maptalks';
+        config.input = 'src/index.js';
         config.banner = banner;
-        config.outro = `typeof console !== \'undefined\' && console.log('${pkg.name} v${pkg.version}');`;
-        const watcher = watch(rollup, config);
+        config.outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
+        config.output = [
+            {
+                file: 'dist/maptalks.js',
+                format: 'umd',
+                name: 'maptalks'
+            }
+        ];
+        const watcher = rollup.watch(config);
         let startTime = 0;
         watcher.on('event', e => {
-            if (e.code === 'BUILD_START') {
+            if (e.code === 'START') {
                 console.log('[' + new Date().toLocaleTimeString() + '] [ROLLUP] Starting to build');
                 startTime = +new Date();
-            } else if (e.code === 'BUILD_END') {
+            } else if (e.code === 'END') {
                 console.log('[' + new Date().toLocaleTimeString() + '] [ROLLUP] Complete building in ' + (+new Date() - startTime) / 1000 + 's.');
                 if (cb) {
                     cb();
