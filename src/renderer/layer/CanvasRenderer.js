@@ -347,6 +347,11 @@ class CanvasRenderer extends Class {
         }
     }
 
+    resetCanvasTransform() {
+        const r = Browser.retina ? 2 : 1;
+        this.context.setTransform(r, 0, 0, r, 0, 0);
+    }
+
     /**
      * Resize the canvas
      * @param  {Size} canvasSize the size resizing to
@@ -434,7 +439,7 @@ class CanvasRenderer extends Class {
         return maskExtent2D;
     }
 
-     /**
+    /**
      * Get renderer's current view extent in 2d point
      * @return {Object} view.extent, view.maskExtent, view.zoom, view.northWest
      */

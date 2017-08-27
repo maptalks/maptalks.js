@@ -68,9 +68,10 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
         if (!this.canvas) {
             this.createCanvas();
+        } else {
+            // reset current transformation matrix to the identity matrix
+            this.resetCanvasTransform();
         }
-        // reset current transformation matrix to the identity matrix
-        this.context.setTransform(1, 0, 0, 1, 0, 0);
 
         //visit all the tiles
         this._totalTileToLoad = this._tileToLoadCounter = 0;
