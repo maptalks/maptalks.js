@@ -3189,10 +3189,11 @@ map-stream@~0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/map-stream/-/map-stream-0.1.0.tgz#e56aa94c4c8055a16404a0674b78f215f7c8e194"
 
-maptalks-build-helpers@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/maptalks-build-helpers/-/maptalks-build-helpers-0.4.0.tgz#42dca51f6f96fcd5eda24e3b4ee1dc5259fa8ad4"
+maptalks-build-helpers@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/maptalks-build-helpers/-/maptalks-build-helpers-0.4.1.tgz#eb3e75818e55d2cbf2bef32723611e8b0df662cc"
   dependencies:
+    babel-core "^6.26.0"
     babel-plugin-transform-proto-to-assign "^6.26.0"
     karma "^1.7.0"
     maptalks-rollup-plugin-babel "^3.0.2"
