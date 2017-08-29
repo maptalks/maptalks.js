@@ -9,8 +9,8 @@ var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(45, 800/600, 0.1, 1000);
 
 var renderer = new THREE.WebGLRenderer({
-    //canvas:canvas
-    canvas: glCanvas
+    canvas:canvas
+    //canvas: glCanvas
 });
 renderer.setSize(800,600);
 
@@ -22,14 +22,14 @@ scene.add(cube);
 camera.position.z = 5;
 renderer.render(scene, camera);
 
-//var animate = function () {
-//    requestAnimationFrame(animate);
-//    cube.rotation.x += 0.1;
-//    cube.rotation.y += 0.1;
-//    renderer.render(scene, camera);
-//};
+var animate = function () {
+    requestAnimationFrame(animate);
+    cube.rotation.x += 0.1;
+    cube.rotation.y += 0.1;
+    renderer.render(scene, camera);
+};
 
-//animate();
+animate();
 
 
 //var scene2 = new THREE.Scene();

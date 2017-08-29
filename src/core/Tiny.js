@@ -86,7 +86,10 @@ class Tiny {
             gl[name].apply(gl,rest);
         }else{
             console.log(`${name},internal tiny`);
-            programInternal.push({ name, rest });
+            programInternal.push({ 
+                name:name,
+                rest:this._exact(rest)
+            });
         }
         //如果是TICKER_ENUM,则需要加入ticker
         if (TICKER_ENUM[name]) {
@@ -97,7 +100,7 @@ class Tiny {
                     const queue = bucket.overrall.concat(bucket.internal).reverse();
                     let task = queue.pop();
                     while(task!=null){
-                        gl[task.name].apply(gl,this._exact(task.rest));
+                        gl[task.name].apply(gl,task.rest);
                         task = queue.pop();
                     }
                 },
@@ -110,12 +113,15 @@ class Tiny {
         }
         //
     }
-
+    /**
+     * 拷贝float32数组
+     * @param {number} rest 
+     */
     _exact(rest){
         for(let i=0,len = rest.length;i<len;i++){
             let target = rest[i];
             if(target instanceof Float32Array){
-                rest[i] = Float32Array.from(target);
+                rest[i] = new Float32Array(target);
             }
         }
         return rest;
