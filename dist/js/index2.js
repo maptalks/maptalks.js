@@ -9,8 +9,8 @@ var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(45, 800/600, 0.1, 1000);
 
 var renderer = new THREE.WebGLRenderer({
-    canvas:canvas
-    //canvas: glCanvas
+    //canvas:canvas
+    canvas: glCanvas
 });
 renderer.setSize(800,600);
 
