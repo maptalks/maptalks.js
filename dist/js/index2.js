@@ -22,14 +22,14 @@ scene.add(cube);
 camera.position.z = 5;
 renderer.render(scene, camera);
 
-//var animate = function () {
-//    requestAnimationFrame(animate);
-//    cube.rotation.x += 0.1;
-//    cube.rotation.y += 0.1;
-//    renderer.render(scene, camera);
-//};
+var animate = function () {
+    requestAnimationFrame(animate);
+    cube.rotation.x += 0.1;
+    cube.rotation.y += 0.1;
+    renderer.render(scene, camera);
+};
 
-//animate();
+animate();
 
 
 //var scene2 = new THREE.Scene();
