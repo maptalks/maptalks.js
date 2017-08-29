@@ -33,11 +33,10 @@ module.exports = {
     }
 }
 
-////
-//// const GL = require('gl');
-// /**
-//  * @type {WebGLRenderingContext}
-//  */
+// const GL = require('gl');
+/**
+ * @type {WebGLRenderingContext}
+ */
 // const gl = new GL(600,400);
 // //
 // const texture = gl.createTexture();
