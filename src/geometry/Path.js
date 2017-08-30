@@ -1,9 +1,8 @@
-import { isNil, isNumber, isArrayHasData, isFunction } from 'core/util';
+import { isNil, isNumber, isArrayHasData, isFunction, mapArrayRecursively } from 'core/util';
 import { Animation } from 'core/Animation';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Geometry from './Geometry';
-import { Measurer } from 'geo/measurer';
 import simplify from 'simplify-js';
 
 /**
@@ -56,7 +55,8 @@ class Path extends Geometry {
         }
         const isPolygon = !!this.getShell;
         const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : this.getCoordinates();
-        this._aniShowCenter = this.getExtent().getCenter();
+        const projection = this._getProjection();
+        this._aniShowCenter = projection.unproject(this._getPrjExtent().getCenter());
         const duration = options['duration'] || 1000,
             length = this.getLength(),
             easing = options['easing'] || 'out';
@@ -140,15 +140,10 @@ class Path extends Geometry {
      * @private
      */
     _getPath2DPoints(prjCoords, disableSimplify, zoom) {
-        let result = [];
         if (!isArrayHasData(prjCoords)) {
-            return result;
+            return [];
         }
         const map = this.getMap(),
-            fullExtent = map.getFullExtent(),
-            projection = this._getProjection();
-        const anti = Measurer.isSphere(projection) ? this.options['antiMeridian'] : false,
-            isClip = map.options['clipFullExtent'],
             isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
             tolerance = 2 * map._getResolution(),
             isMulti = Array.isArray(prjCoords[0]);
@@ -161,63 +156,7 @@ class Path extends Geometry {
         if (isNil(zoom)) {
             zoom = map.getZoom();
         }
-        let p, pre, current, dx, dy, my;
-        // for anit-meridian splits
-        const part1 = [], part2 = [];
-        let part = part1;
-        for (let i = 0, len = prjCoords.length; i < len; i++) {
-            p = prjCoords[i];
-            if (isMulti) {
-                part.push(this._getPath2DPoints(p, disableSimplify, zoom));
-                continue;
-            }
-            if (isNil(p) || (isClip && !fullExtent.contains(p))) {
-                continue;
-            }
-            if (i > 0 && (anti === 'continuous' || anti === 'split')) {
-                current = projection.unproject(p);
-                if (anti === 'split' || !pre) {
-                    pre = projection.unproject(prjCoords[i - 1]);
-                }
-                if (pre && current) {
-                    dx = current.x - pre.x;
-                    dy = current.y - pre.y;
-                    if (Math.abs(dx) > 180) {
-                        if (anti === 'continuous') {
-                            current = this._anti(current, dx);
-                            pre = current;
-                            p = projection.project(current);
-                        } else if (anti === 'split') {
-                            if (dx > 0) {
-                                my = pre.y + dy * (pre.x - (-180)) / (360 - dx) * (pre.y > current.y ? -1 : 1);
-                                part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToPoint(new Coordinate(180, my), zoom));
-                            } else {
-                                my = pre.y + dy * (180 - pre.x) / (360 + dx) * (pre.y > current.y ? 1 : -1);
-                                part.push(map.coordinateToPoint(new Coordinate(180, my), zoom));
-                                part = part === part1 ? part2 : part1;
-                                part.push(map.coordinateToPoint(new Coordinate(-180, my), zoom));
-                            }
-                        }
-                    }
-                }
-            }
-            part.push(map._prjToPoint(p, zoom));
-        }
-        if (part2.length > 0) {
-            result = [part1, part2];
-        } else {
-            result = part;
-        }
-        return result;
-    }
-
-    _anti(c, dx) {
-        if (dx > 0) {
-            return c.sub(180 * 2, 0);
-        } else {
-            return c.add(180 * 2, 0);
-        }
+        return mapArrayRecursively(prjCoords, c => map._prjToPoint(c, zoom));
     }
 
     _setPrjCoordinates(prjPoints) {
@@ -300,39 +239,15 @@ class Path extends Geometry {
         if (this.hasHoles && this.hasHoles()) {
             rings.push.apply(rings, this.getHoles());
         }
-        return this._computeCoordsExtent(rings);
+        return coords2Extent(rings);
     }
 
-    /**
-     * Compute extent of a group of coordinates
-     * @param  {Coordinate[]} coords  - coordinates
-     * @returns {Extent}
-     * @private
-     */
-    _computeCoordsExtent(coords) {
-        const projection = this._getProjection();
-        const anti = this.options['antiMeridian'] && Measurer.isSphere(projection);
-        let result = null;
-        let ext, p, dx, pre;
-        for (let i = 0, len = coords.length; i < len; i++) {
-            for (let j = 0, jlen = coords[i].length; j < jlen; j++) {
-                p = coords[i][j];
-                if (j > 0 && anti) {
-                    if (!pre) {
-                        pre = coords[i][j - 1];
-                    }
-                    dx = p.x - pre.x;
-                    if (Math.abs(dx) > 180) {
-                        p = this._anti(p, dx);
-                        pre = p;
-                    }
-                }
-                ext = new Extent(p, p);
-                result = ext.combine(result);
-            }
-
+    _computePrjExtent() {
+        const coords = [this._getPrjCoordinates()];
+        if (this.hasHoles && this.hasHoles()) {
+            coords.push.apply(coords, this._getPrjHoles());
         }
-        return result;
+        return coords2Extent(coords);
     }
 
     _get2DLength() {
@@ -364,5 +279,15 @@ class Path extends Geometry {
 }
 
 Path.mergeOptions(options);
+
+function coords2Extent(coords) {
+    const result = new Extent();
+    for (let i = 0, l = coords.length; i < l; i++) {
+        for (let j = 0, ll = coords[i].length; j < ll; j++) {
+            result._combine(coords[i][j]);
+        }
+    }
+    return result;
+}
 
 export default Path;

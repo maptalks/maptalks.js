@@ -79,11 +79,11 @@ class Marker extends CenterMixin(Geometry) {
     }
 
     _computeExtent() {
-        const coordinates = this.getCenter();
-        if (!coordinates) {
-            return null;
-        }
-        return new Extent(coordinates, coordinates);
+        return computeExtent.call(this, 'getCenter');
+    }
+
+    _computePrjExtent() {
+        return computeExtent.call(this, '_getPrjCoordinates');
     }
 
     _computeGeodesicLength() {
@@ -107,3 +107,11 @@ Marker.mergeOptions(options);
 Marker.registerJSONType('Marker');
 
 export default Marker;
+
+function computeExtent(fn) {
+    const coordinates = this[fn]();
+    if (!coordinates) {
+        return null;
+    }
+    return new Extent(coordinates, coordinates);
+}

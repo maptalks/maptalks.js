@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend, wrap } from 'core/util';
 import Common from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere } from '../measurer';
@@ -52,6 +52,6 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
             c = y / metersPerDegree;
             c = (2 * Math.atan(Math.exp(c * rad)) - Math.PI / 2) / rad;
         }
-        return new Coordinate(x / metersPerDegree, c);
+        return new Coordinate(wrap(x / metersPerDegree, -180, 180), wrap(c, -90, 90));
     }
 }, WGS84Sphere);

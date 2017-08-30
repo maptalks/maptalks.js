@@ -1,4 +1,5 @@
 import { extend, isNil } from 'core/util';
+import { withInEllipse } from 'core/util/path';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import CenterMixin from './CenterMixin';
@@ -106,28 +107,29 @@ class Circle extends CenterMixin(Polygon) {
 
     _containsPoint(point, tolerance) {
         const map = this.getMap();
-        const coord = map.pointToCoordinate(point);
-        if (map.computeLength(this.getCenter(), coord) <= this.getRadius()) {
-            return true;
-        }
         if (map.getPitch()) {
             return super._containsPoint(point, tolerance);
         }
         const center = this._getCenter2DPoint(),
             size = this.getSize(),
-            t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
-        return center.distanceTo(point) <= size.width / 2 + t;
+            t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            se = center.add(size.width / 2, size.height / 2);
+        return withInEllipse(point, center, se, t);
     }
 
-    _computeExtent(measurer) {
-        if (!measurer || !this._coordinates || isNil(this._radius)) {
+    _computePrjExtent(projection) {
+        if (!projection || !this._coordinates || isNil(this._radius)) {
             return null;
         }
-
         const radius = this._radius;
-        const p1 = measurer.locate(this._coordinates, radius, radius);
-        const p2 = measurer.locate(this._coordinates, -radius, -radius);
-        return new Extent(p1, p2);
+        const p1 = projection.locate(this._coordinates, -radius, -radius),
+            p2 = projection.locate(this._coordinates, radius, radius);
+        const prjs = projection.projectCoords([p1, p2]);
+        return new Extent(prjs[0], prjs[1]);
+    }
+
+    _computeExtent() {
+        return null;
     }
 
     _computeGeodesicLength() {

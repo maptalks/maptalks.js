@@ -1,8 +1,8 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
 import CenterMixin from './CenterMixin';
 import Polygon from './Polygon';
+import Circle from './Circle';
 
 /**
  * @property {Object} options -
@@ -170,20 +170,15 @@ class Sector extends CenterMixin(Polygon) {
         } else {
             between = (angle >= sAngle && angle <= eAngle);
         }
-
-        // TODO: tolerance
         return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
     }
 
-    _computeExtent(measurer) {
-        if (!measurer || !this._coordinates || isNil(this._radius)) {
-            return null;
-        }
+    _computePrjExtent(projection) {
+        return Circle.prototype._computePrjExtent.call(this, projection);
+    }
 
-        const radius = this._radius;
-        const p1 = measurer.locate(this._coordinates, radius, radius);
-        const p2 = measurer.locate(this._coordinates, -radius, -radius);
-        return new Extent(p1, p2);
+    _computeExtent() {
+        return null;
     }
 
     _computeGeodesicLength() {

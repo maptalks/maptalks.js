@@ -1,6 +1,10 @@
-import { extend } from 'core/util';
+import { extend, wrap } from 'core/util';
 import Coordinate from '../Coordinate';
 import Common from './Common';
+
+function rad(a) {
+    return a * Math.PI / 180;
+}
 
 /**
  * A helper class with common measure methods for Sphere.
@@ -15,18 +19,14 @@ class Sphere {
         this.radius = radius;
     }
 
-    rad(a) {
-        return a * Math.PI / 180;
-    }
-
     measureLenBetween(c1, c2) {
         if (!c1 || !c2) {
             return 0;
         }
-        let b = this.rad(c1.y);
-        const d = this.rad(c2.y),
+        let b = rad(c1.y);
+        const d = rad(c2.y),
             e = b - d,
-            f = this.rad(c1.x) - this.rad(c2.x);
+            f = rad(c1.x) - rad(c2.x);
         b = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(e / 2), 2) + Math.cos(b) * Math.cos(d) * Math.pow(Math.sin(f / 2), 2)));
         b *= this.radius;
         return Math.round(b * 1E5) / 1E5;
@@ -67,13 +67,14 @@ class Sphere {
         }
         const dx = Math.abs(xDist);
         const dy = Math.abs(yDist);
-        let ry = this.rad(c.y);
-        let rx = this.rad(c.x);
+        let ry = rad(c.y);
+        let rx = rad(c.x);
         const sy = Math.sin(dy / (2 * this.radius)) * 2;
         ry = ry + sy * (yDist > 0 ? 1 : -1);
+        // distance per degree
         const sx = 2 * Math.sqrt(Math.pow(Math.sin(dx / (2 * this.radius)), 2) / Math.pow(Math.cos(ry), 2));
         rx = rx + sx * (xDist > 0 ? 1 : -1);
-        return new Coordinate(rx * 180 / Math.PI, ry * 180 / Math.PI);
+        return new Coordinate(wrap(rx * 180 / Math.PI, -180, 180), wrap(ry * 180 / Math.PI, -90, 90));
     }
 }
 

@@ -1,6 +1,6 @@
 import { extend, isNil } from 'core/util';
+import { withInEllipse } from 'core/util/path';
 import Coordinate from 'geo/Coordinate';
-import Point from 'geo/Point';
 import Extent from 'geo/Extent';
 import CenterMixin from './CenterMixin';
 import Polygon from './Polygon';
@@ -138,44 +138,28 @@ class Ellipse extends CenterMixin(Polygon) {
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
         }
+        const projection = map.getProjection();
         const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
-            pa = map.distanceToPixel(this.width / 2, 0),
-            pb = map.distanceToPixel(0, this.height / 2),
-            a = pa.width,
-            b = pb.height,
-            c = Math.sqrt(Math.abs(a * a - b * b)),
-            xfocus = a >= b;
-        const center = this._getCenter2DPoint();
-        let f1, f2, d;
-        if (xfocus) {
-            f1 = new Point(center.x - c, center.y);
-            f2 = new Point(center.x + c, center.y);
-            d = a * 2;
-        } else {
-            f1 = new Point(center.x, center.y - c);
-            f2 = new Point(center.x, center.y + c);
-            d = b * 2;
-        }
-        point = new Point(point.x, point.y);
-
-        /*
-         L1 + L2 = D
-         L1 + t >= L1'
-         L2 + t >= L2'
-         D + 2t >= L1' + L2'
-         */
-        return point.distanceTo(f1) + point.distanceTo(f2) <= d + 2 * t;
+            pps = projection.projectCoords([this._coordinates, map.locate(this._coordinates, this.getWidth() / 2, this.getHeight() / 2)]),
+            p0 = map._prjToPoint(pps[0]),
+            p1 = map._prjToPoint(pps[1]);
+        return withInEllipse(point, p0, p1, t);
     }
 
-    _computeExtent(measurer) {
-        if (!measurer || !this._coordinates || isNil(this.width) || isNil(this.height)) {
+    _computePrjExtent(projection) {
+        if (!projection || !this._coordinates || isNil(this.width) || isNil(this.height)) {
             return null;
         }
         const width = this.getWidth(),
             height = this.getHeight();
-        const p1 = measurer.locate(this._coordinates, width / 2, height / 2);
-        const p2 = measurer.locate(this._coordinates, -width / 2, -height / 2);
-        return new Extent(p1, p2);
+        const p1 = projection.locate(this._coordinates, -width / 2, -height / 2),
+            p2 = projection.locate(this._coordinates, width / 2, height / 2);
+        const prjs = projection.projectCoords([p1, p2]);
+        return new Extent(prjs[0], prjs[1]);
+    }
+
+    _computeExtent() {
+        return null;
     }
 
     _computeGeodesicLength() {

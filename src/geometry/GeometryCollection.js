@@ -332,26 +332,15 @@ class GeometryCollection extends Geometry {
                 return true;
             }
         }
-
         return false;
     }
 
     _computeExtent(projection) {
-        if (this.isEmpty()) {
-            return null;
-        }
-        const geometries = this.getGeometries();
-        let result = null;
-        for (let i = 0, l = geometries.length; i < l; i++) {
-            if (!geometries[i]) {
-                continue;
-            }
-            const geoExtent = geometries[i]._computeExtent(projection);
-            if (geoExtent) {
-                result = geoExtent.combine(result);
-            }
-        }
-        return result;
+        return computeExtent(projection, this, '_computeExtent');
+    }
+
+    _computePrjExtent(projection) {
+        return computeExtent(projection, this, '_computePrjExtent');
     }
 
     _computeGeodesicLength(projection) {
@@ -513,3 +502,22 @@ class GeometryCollection extends Geometry {
 GeometryCollection.registerJSONType('GeometryCollection');
 
 export default GeometryCollection;
+
+function computeExtent(projection, collection, fn) {
+    if (this.isEmpty()) {
+        return null;
+    }
+    const geometries = collection.getGeometries();
+    let result = null;
+    for (let i = 0, l = geometries.length; i < l; i++) {
+        const geo = geometries[i];
+        if (!geo) {
+            continue;
+        }
+        const geoExtent = geo[fn](projection);
+        if (geoExtent) {
+            result = geoExtent.combine(result);
+        }
+    }
+    return result;
+}

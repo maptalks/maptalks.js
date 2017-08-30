@@ -311,6 +311,21 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    // _syncWorld() {
+    //     const projection = this.getProjection();
+    //     if (!projection) {
+    //         return false;
+    //     }
+    //     const pcenter = this._getPrjCenter();
+    //     if (projection.isOutSphere(pcenter)) {
+    //         const wrapped = projection.wrapCoord(pcenter);
+    //         this._setPrjCenter(wrapped);
+    //         this._fireEvent('syncworld', { 'old' : pcenter.toArray(), 'new' : wrapped.toArray() });
+    //         return true;
+    //     }
+    //     return false;
+    // }
+
     /**
      * Callback when any option is updated
      * @private
@@ -414,16 +429,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const _pcenter = projection.project(center);
         this._setPrjCenter(_pcenter);
         this.onMoveEnd();
-        return this;
-    }
-
-    setCoordinateAtContainerPoint(coordinate, point) {
-        if (point.x === this.width / 2 && point.y === this.height / 2) {
-            return this;
-        }
-        const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
-        const pcenter = this._pointToPrj(this.coordinateToPoint(coordinate).sub(t));
-        this._setPrjCenter(pcenter);
         return this;
     }
 
@@ -1787,6 +1792,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._mapViewCoord = pcenter;
         }
         this._calcMatrices();
+    }
+
+    _setPrjCoordAtContainerPoint(coordinate, point) {
+        if (point.x === this.width / 2 && point.y === this.height / 2) {
+            return this;
+        }
+        const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
+        const pcenter = this._pointToPrj(this._prjToPoint(coordinate).sub(t));
+        this._setPrjCenter(pcenter);
+        return this;
     }
 
     _verifyExtent(center) {

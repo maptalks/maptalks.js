@@ -327,7 +327,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             const p = this._getProjection();
             return new Extent(p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax'])));
         } else {
-            return this._computeExtent(this._getMeasurer());
+            return this._computeExtent();
         }
     }
 
@@ -876,30 +876,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const p = this._getProjection();
         this._verifyProjection();
         if (!this._extent && p) {
-            const ext = this._computeExtent(p);
-            if (ext) {
-                const isAnti = Measurer.isSphere(p) ? this.options['antiMeridian'] : false;
-                if (isAnti && isAnti !== 'default') {
-                    const firstCoordinate = this.getFirstCoordinate();
-                    if (isAnti === 'continuous') {
-                        if (ext['xmax'] - ext['xmin'] > 180) {
-                            if (firstCoordinate.x > 0) {
-                                ext['xmin'] += 360;
-                            } else {
-                                ext['xmax'] -= 360;
-                            }
-                        }
-                    }
-                    if (ext['xmax'] < ext['xmin']) {
-                        const tmp = ext['xmax'];
-                        ext['xmax'] = ext['xmin'];
-                        ext['xmin'] = tmp;
-                    }
-                }
-                this._extent = new Extent(p.project(new Coordinate(ext['xmin'], ext['ymin'])),
-                    p.project(new Coordinate(ext['xmax'], ext['ymax'])));
-            }
-
+            this._extent = this._computePrjExtent(p);
         }
         return this._extent;
     }

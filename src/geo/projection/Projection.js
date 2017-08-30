@@ -1,4 +1,6 @@
-import { mapArrayRecursively } from 'core/util';
+import { mapArrayRecursively, sign, wrap } from 'core/util';
+import Coordinate from 'geo/Coordinate';
+import Extent from 'geo/Extent';
 
 /**
  * Common Methods of Projections.
@@ -32,7 +34,53 @@ export default /** @lends projection.Common */ {
         if (!coordinates) {
             return [];
         }
-        return mapArrayRecursively(coordinates, this.project, this);
+        if (!Array.isArray(coordinates)) {
+            return this.project(coordinates);
+        }
+        if (coordinates.length === 0) {
+            return [];
+        }
+        if (!this.isSphere()) {
+            return mapArrayRecursively(coordinates, this.project, this);
+        }
+        if (Array.isArray(coordinates[0])) {
+            return coordinates.map(coords => this.projectCoords(coords));
+        } else {
+            const circum = this.getCircum();
+            const extent = this.getFullExtent(),
+                sx = extent.sx,
+                sy = extent.sy;
+            let wrapX, wrapY;
+            let pre = coordinates[0], current, dx, dy, p;
+            const prj = [this.project(pre)];
+            for (let i = 1, l = coordinates.length; i < l; i++) {
+                current = coordinates[i];
+                dx = current.x - pre.x;
+                dy = current.y - pre.y;
+                p = this.project(current);
+                if (Math.abs(dx) > 180) {
+                    if (wrapX === undefined) {
+                        wrapX = current.x < pre.x;
+                    }
+                    if (wrapX) {
+                        p._add(-circum.x * sign(dx) * sx, 0);
+                        current._add(-360 * sign(dx), 0);
+                    }
+                }
+                if (Math.abs(dy) > 90) {
+                    if (wrapY === undefined) {
+                        wrapY = current.y < pre.y;
+                    }
+                    if (wrapY) {
+                        p._add(0, -circum.y * sign(dy) * sy);
+                        current._add(0, -180 * sign(dy));
+                    }
+                }
+                pre = current;
+                prj.push(p);
+            }
+            return prj;
+        }
     },
 
     /**
@@ -45,6 +93,67 @@ export default /** @lends projection.Common */ {
         if (!projCoords) {
             return [];
         }
+        if (!Array.isArray(projCoords)) {
+            return this.unproject(projCoords);
+        }
         return mapArrayRecursively(projCoords, this.unproject, this);
+    },
+
+    /**
+     * Whether the projection is spherical
+     * @return {Boolean}
+     */
+    isSphere() {
+        return !!this.sphere;
+    },
+
+    /**
+     * If the projected coord out of the sphere
+     * @param  {Coordinate}  pcoord projected coord
+     * @return {Boolean}
+     */
+    isOutSphere(pcoord) {
+        if (!this.isSphere()) {
+            return false;
+        }
+        const extent = this.getFullExtent();
+        return !extent.contains(pcoord);
+    },
+
+    /**
+     * Wrap the projected coord in the sphere
+     * @param  {Coordinate} pcoord projected coord
+     * @return {Coordinate} wrapped projected coord
+     */
+    wrapCoord(pcoord) {
+        const extent = this.getFullExtent();
+        const wrapped = new Coordinate(pcoord);
+        if (!extent.contains(wrapped)) {
+            wrapped.x = wrap(pcoord.x, extent.xmin, extent.xmax);
+            wrapped.y = wrap(pcoord.y, extent.ymin, extent.ymax);
+        }
+        return wrapped;
+    },
+
+    getCircum() {
+        if (!this.circum && this.isSphere()) {
+            const extent = this.getFullExtent();
+            this.circum = {
+                x : extent.getWidth(),
+                y : extent.getHeight()
+            };
+        }
+        return this.circum;
+    },
+
+    getFullExtent() {
+        if (!this.extent && this.isSphere()) {
+            const max = this.project(new Coordinate(180, 90)),
+                min = this.project(new Coordinate(-180, -90));
+            this.extent = new Extent(min, max);
+            this.extent.sx = max.x > min.x ? 1 : -1;
+            this.extent.sy = max.y > min.y ? 1 : -1;
+        }
+        return this.extent;
     }
 };

@@ -62,19 +62,6 @@ export const Measurer = {
             }
         }
         return null;
-    },
-
-    /**
-     * Whether the measurer is based on earth sphere
-     * @param  {Object}  m
-     * @return {Boolean}
-     * @function measurer.Measurer.isSphere
-     */
-    isSphere(measure) {
-        if (!measure) {
-            return false;
-        }
-        return !isNil(measure.sphere);
     }
 };
 

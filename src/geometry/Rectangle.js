@@ -1,6 +1,5 @@
 import { extend, isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
-import PointExtent from 'geo/PointExtent';
 import Extent from 'geo/Extent';
 import Polygon from './Polygon';
 
@@ -159,6 +158,31 @@ class Rectangle extends Polygon {
         this.onPositionChanged();
     }
 
+    _getPrjShell() {
+        const shell = super._getPrjShell();
+        const projection = this._getProjection();
+        if (!projection.isSphere()) {
+            return shell;
+        }
+        const fullExtent = projection.getFullExtent(),
+            sx = fullExtent.sx,
+            sy = fullExtent.sy;
+        const circum = this._getProjection().getCircum();
+        const nw = shell[0];
+        for (let i = 1, l = shell.length; i < l; i++) {
+            const p = shell[i];
+            let dx = 0, dy = 0;
+            if (sx * (nw.x - p.x) > 0) {
+                dx = circum.x * sx;
+            }
+            if (sy * (nw.y - p.y) < 0) {
+                dy = circum.y * sy;
+            }
+            shell[i]._add(dx, dy);
+        }
+        return shell;
+    }
+
     //update cached variables if geometry is updated.
     _updateCache() {
         this._clearCache();
@@ -183,20 +207,28 @@ class Rectangle extends Polygon {
             return super._containsPoint(point, tolerance);
         }
         const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
-            sp = map.coordinateToPoint(this._coordinates),
-            pxSize = map.distanceToPixel(this._width, this._height);
-        const pxExtent = new PointExtent(sp.x - t, sp.y - t,
-            sp.x + pxSize.width + t, sp.y + pxSize.height + t);
-        return pxExtent.contains(point);
+            r = map._getResolution() * t;
+        const extent = this._getPrjExtent()._expand(r);
+        const p = map._pointToPrj(point);
+        return extent.contains(p);
     }
-    _computeExtent(measurer) {
-        if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
+
+    _computePrjExtent(projection) {
+        if (!projection || !this._coordinates || isNil(this._width) || isNil(this._height)) {
             return null;
         }
         const width = this.getWidth(),
             height = this.getHeight();
-        const p1 = measurer.locate(this._coordinates, width, -height);
-        return new Extent(p1, this._coordinates);
+        const se = projection.locate(this._coordinates, width, -height);
+        const prjs = projection.projectCoords([
+            new Coordinate(this._coordinates.x, se.y),
+            new Coordinate(se.x, this._coordinates.y)
+        ]);
+        return new Extent(prjs[0], prjs[1]);
+    }
+
+    _computeExtent() {
+        return null;
     }
 
     _computeGeodesicLength() {

@@ -49,24 +49,15 @@ const el = {
 
     _getRenderSize() {
         const map = this.getMap(),
-            scale = map.getScale(),
-            center = this.getCenter(),
-            radius = this.getRadius(),
-            target = map.locate(center, radius, 0);
-        let w = map.coordinateToContainerPoint(center).distanceTo(map.coordinateToContainerPoint(target));
-        w *= scale;
-        return new Size(w, w);
+            z = map.getMaxNativeZoom();
+        const prjExtent = this._getPrjExtent();
+        const pmin = map._prjToPoint(prjExtent.getMin(), z),
+            pmax = map._prjToPoint(prjExtent.getMax(), z);
+        return new Size(Math.abs(pmax.x - pmin.x) / 2, Math.abs(pmax.y - pmin.y) / 2);
     }
 };
 
-Ellipse.include(el, {
-    _getRenderSize() {
-        const w = this.getWidth(),
-            h = this.getHeight();
-        const map = this.getMap();
-        return map.distanceToPixel(w / 2, h / 2, map.getMaxNativeZoom());
-    }
-});
+Ellipse.include(el);
 
 Circle.include(el);
 //----------------------------------------------------
