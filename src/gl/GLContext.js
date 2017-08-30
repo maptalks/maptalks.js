@@ -326,6 +326,23 @@ class GLContext extends Dispose {
         console.log(`linkProgram,birdge`);
         gl.linkProgram(program);
     }
+
+    clearColor(){
+
+    }
+    
+    clearDepth(){
+
+    }
+
+    clear(){
+
+    }
+
+    clearStencil(){
+
+    }
+
 }
 
 module.exports = GLContext;

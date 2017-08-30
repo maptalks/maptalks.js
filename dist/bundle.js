@@ -1399,7 +1399,7 @@ var INTERNAL_ENUM$1 = {
     'scissor': true,
     'enable': true,
     'disable': true
-}, defineProperty(_OVERRAL_ENUM, 'texParameteri', true), defineProperty(_OVERRAL_ENUM, 'texImage2D', true), defineProperty(_OVERRAL_ENUM, 'texSubImage2D', true), defineProperty(_OVERRAL_ENUM, 'depthFunc', true), defineProperty(_OVERRAL_ENUM, 'depthMask', true), defineProperty(_OVERRAL_ENUM, 'colorMask', true), defineProperty(_OVERRAL_ENUM, 'clearColor', true), defineProperty(_OVERRAL_ENUM, 'clearDepth', true), defineProperty(_OVERRAL_ENUM, 'clear', true), defineProperty(_OVERRAL_ENUM, 'clearStencil', true), defineProperty(_OVERRAL_ENUM, 'frontFace', true), defineProperty(_OVERRAL_ENUM, 'cullFace', true), defineProperty(_OVERRAL_ENUM, 'blendEquationSeparate', true), defineProperty(_OVERRAL_ENUM, 'blendFuncSeparate', true), defineProperty(_OVERRAL_ENUM, 'pixelStorei', true), defineProperty(_OVERRAL_ENUM, 'generateMipmap', true), defineProperty(_OVERRAL_ENUM, 'activeTexture', true), defineProperty(_OVERRAL_ENUM, 'blendEquation', true), defineProperty(_OVERRAL_ENUM, 'blendFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilOp', true), defineProperty(_OVERRAL_ENUM, 'stencilFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilMask', true), defineProperty(_OVERRAL_ENUM, 'texParameterf', true), defineProperty(_OVERRAL_ENUM, 'hint', true), _OVERRAL_ENUM);
+}, defineProperty(_OVERRAL_ENUM, 'texParameteri', true), defineProperty(_OVERRAL_ENUM, 'texImage2D', true), defineProperty(_OVERRAL_ENUM, 'texSubImage2D', true), defineProperty(_OVERRAL_ENUM, 'depthFunc', true), defineProperty(_OVERRAL_ENUM, 'depthMask', true), defineProperty(_OVERRAL_ENUM, 'colorMask', true), defineProperty(_OVERRAL_ENUM, 'frontFace', true), defineProperty(_OVERRAL_ENUM, 'cullFace', true), defineProperty(_OVERRAL_ENUM, 'blendEquationSeparate', true), defineProperty(_OVERRAL_ENUM, 'blendFuncSeparate', true), defineProperty(_OVERRAL_ENUM, 'pixelStorei', true), defineProperty(_OVERRAL_ENUM, 'generateMipmap', true), defineProperty(_OVERRAL_ENUM, 'activeTexture', true), defineProperty(_OVERRAL_ENUM, 'blendEquation', true), defineProperty(_OVERRAL_ENUM, 'blendFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilOp', true), defineProperty(_OVERRAL_ENUM, 'stencilFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilMask', true), defineProperty(_OVERRAL_ENUM, 'texParameterf', true), defineProperty(_OVERRAL_ENUM, 'hint', true), _OVERRAL_ENUM);
 
 var TICKER_ENUM$1 = {
     'drawElements': true,
@@ -4225,6 +4225,18 @@ var GLContext = function (_Dispose) {
             console.log('linkProgram,birdge');
             gl.linkProgram(program);
         }
+    }, {
+        key: 'clearColor',
+        value: function clearColor() {}
+    }, {
+        key: 'clearDepth',
+        value: function clearDepth() {}
+    }, {
+        key: 'clear',
+        value: function clear() {}
+    }, {
+        key: 'clearStencil',
+        value: function clearStencil() {}
     }, {
         key: 'gl',
         get: function get$$1() {
