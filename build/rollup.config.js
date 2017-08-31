@@ -4,7 +4,7 @@ const rollup = require('rollup'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
     babel = require('maptalks-rollup-plugin-babel'),
-    alias = require('rollup-plugin-alias');
+    alias = require('maptalks-rollup-plugin-alias');
 const pkg = require('../package.json');
 
 
