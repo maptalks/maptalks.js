@@ -68,9 +68,9 @@
     "karma-sinon": "^1.0.5",
     "maptalks-build-helpers": "^0.4.2",
     "maptalks-jsdoc": "^0.2.0",
+    "maptalks-rollup-plugin-alias": "^1.3.3",
     "minimist": "^1.2.0",
     "mocha": "^3.5.0",
-    "rollup-plugin-alias": "github:wsw0108/rollup-plugin-alias",
     "sinon": "^3.2.1"
   }
 }

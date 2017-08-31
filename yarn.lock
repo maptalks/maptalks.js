@@ -3208,6 +3208,12 @@ maptalks-jsdoc@^0.2.0:
   version "0.2.0"
   resolved "https://registry.npmjs.org/maptalks-jsdoc/-/maptalks-jsdoc-0.2.0.tgz#f224b1fdbcc165eaaa85a32382fc62371b778286"
 
+maptalks-rollup-plugin-alias@^1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/maptalks-rollup-plugin-alias/-/maptalks-rollup-plugin-alias-1.3.3.tgz#49d6fa4dac6718f9d37d684214323c652f0a5a52"
+  dependencies:
+    slash "^1.0.0"
+
 maptalks-rollup-plugin-babel@^3.0.2:
   version "3.0.2"
   resolved "https://registry.npmjs.org/maptalks-rollup-plugin-babel/-/maptalks-rollup-plugin-babel-3.0.2.tgz#2cc9065857cd2daa9659ded63197576a95f64b3f"
@@ -4335,10 +4341,6 @@ rimraf@2, rimraf@^2.2.8, rimraf@^2.5.1, rimraf@^2.6.0, rimraf@^2.6.1:
 rndm@1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/rndm/-/rndm-1.2.0.tgz#f33fe9cfb52bbfd520aa18323bc65db110a1b76c"
-
-"rollup-plugin-alias@github:wsw0108/rollup-plugin-alias":
-  version "1.2.0"
-  resolved "https://codeload.github.com/wsw0108/rollup-plugin-alias/tar.gz/f9c37f0afa4285be4637d70577dddccbf07fcea8"
 
 rollup-plugin-commonjs@^8.2.0:
   version "8.2.0"
