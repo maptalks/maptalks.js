@@ -118,18 +118,35 @@ class Circle extends CenterMixin(Polygon) {
     }
 
     _computePrjExtent(projection) {
-        if (!projection || !this._coordinates || isNil(this._radius)) {
+        const minmax = this._getMinMax(projection);
+        if (!minmax) {
+            return null;
+        }
+        const pcenter = this._getPrjCoordinates();
+        const pminmax = minmax.map(c => projection.project(c));
+        const dx = Math.min(Math.abs(pminmax[0].x - pcenter.x), Math.abs(pminmax[1].x - pcenter.x)),
+            dy = Math.min(Math.abs(pminmax[2].y - pcenter.y), Math.abs(pminmax[3].y - pcenter.y));
+        return new Extent(pcenter.add(dx, dy), pcenter.sub(dx, dy));
+    }
+
+    _computeExtent(measurer) {
+        const minmax = this._getMinMax(measurer);
+        if (!minmax) {
+            return null;
+        }
+        return new Extent(minmax[0].x, minmax[2].y, minmax[1].x, minmax[3].y);
+    }
+
+    _getMinMax(measurer) {
+        if (!measurer || !this._coordinates || isNil(this._radius)) {
             return null;
         }
         const radius = this._radius;
-        const p1 = projection.locate(this._coordinates, -radius, -radius),
-            p2 = projection.locate(this._coordinates, radius, radius);
-        const prjs = projection.projectCoords([p1, p2]);
-        return new Extent(prjs[0], prjs[1]);
-    }
-
-    _computeExtent() {
-        return null;
+        const p1 = measurer.locate(this._coordinates, -radius, 0),
+            p2 = measurer.locate(this._coordinates, radius, 0),
+            p3 = measurer.locate(this._coordinates, 0, radius),
+            p4 = measurer.locate(this._coordinates, 0, -radius);
+        return [p1, p2, p3, p4];
     }
 
     _computeGeodesicLength() {

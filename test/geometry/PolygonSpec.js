@@ -1,4 +1,4 @@
-describe('#Polygon', function () {
+describe('Geometry.Polygon', function () {
 
     var container;
     var map;
@@ -237,13 +237,13 @@ describe('#Polygon', function () {
         geometry.on('click', spy);
 
         happen.click(canvasContainer, {
-            clientX: 400 + 8 - 4,
+            clientX: 400 + 8 - 3,
             clientY: 300 + 8
         });
         expect(spy.called).to.not.be.ok();
 
         happen.click(canvasContainer, {
-            clientX: 400 + 8 - 3,
+            clientX: 400 + 8 - 2,
             clientY: 300 + 8
         });
         expect(spy.called).to.be.ok();

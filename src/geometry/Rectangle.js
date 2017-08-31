@@ -214,12 +214,10 @@ class Rectangle extends Polygon {
     }
 
     _computePrjExtent(projection) {
-        if (!projection || !this._coordinates || isNil(this._width) || isNil(this._height)) {
+        const se = this._getSouthEast(projection);
+        if (!se) {
             return null;
         }
-        const width = this.getWidth(),
-            height = this.getHeight();
-        const se = projection.locate(this._coordinates, width, -height);
         const prjs = projection.projectCoords([
             new Coordinate(this._coordinates.x, se.y),
             new Coordinate(se.x, this._coordinates.y)
@@ -227,8 +225,22 @@ class Rectangle extends Polygon {
         return new Extent(prjs[0], prjs[1]);
     }
 
-    _computeExtent() {
-        return null;
+    _computeExtent(measurer) {
+        const se = this._getSouthEast(measurer);
+        if (!se) {
+            return null;
+        }
+        return new Extent(this._coordinates, se);
+    }
+
+    _getSouthEast(measurer) {
+        if (!measurer || !this._coordinates || isNil(this._width) || isNil(this._height)) {
+            return null;
+        }
+        const width = this.getWidth(),
+            height = this.getHeight();
+        const se = measurer.locate(this._coordinates, width, -height);
+        return se;
     }
 
     _computeGeodesicLength() {

@@ -336,11 +336,11 @@ class GeometryCollection extends Geometry {
     }
 
     _computeExtent(projection) {
-        return computeExtent(projection, this, '_computeExtent');
+        return computeExtent.call(this, projection, '_computeExtent');
     }
 
     _computePrjExtent(projection) {
-        return computeExtent(projection, this, '_computePrjExtent');
+        return computeExtent.call(this, projection, '_computePrjExtent');
     }
 
     _computeGeodesicLength(projection) {
@@ -503,11 +503,11 @@ GeometryCollection.registerJSONType('GeometryCollection');
 
 export default GeometryCollection;
 
-function computeExtent(projection, collection, fn) {
+function computeExtent(projection, fn) {
     if (this.isEmpty()) {
         return null;
     }
-    const geometries = collection.getGeometries();
+    const geometries = this.getGeometries();
     let result = null;
     for (let i = 0, l = geometries.length; i < l; i++) {
         const geo = geometries[i];

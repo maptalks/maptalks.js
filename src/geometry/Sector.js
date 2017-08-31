@@ -1,7 +1,4 @@
 import { extend, isNil } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import CenterMixin from './CenterMixin';
-import Polygon from './Polygon';
 import Circle from './Circle';
 
 /**
@@ -18,14 +15,13 @@ const options = {
  * @classdesc
  * Represents a sector Geometry.
  * @category geometry
- * @extends Polygon
- * @mixes CenterMixin
+ * @extends Circle
  * @example
  * var sector = new Sector([100, 0], 1000, 30, 120, {
  *     id : 'sector0'
  * });
  */
-class Sector extends CenterMixin(Polygon) {
+class Sector extends Circle {
 
     static fromJSON(json) {
         const feature = json['feature'];
@@ -42,33 +38,9 @@ class Sector extends CenterMixin(Polygon) {
      * @param {Object} [options=null]   - construct options defined in [Sector]{@link Sector#options}
      */
     constructor(coordinates, radius, startAngle, endAngle, opts) {
-        super(null, opts);
-        if (coordinates) {
-            this.setCoordinates(coordinates);
-        }
-        this._radius = radius;
+        super(coordinates, radius, opts);
         this.startAngle = startAngle;
         this.endAngle = endAngle;
-    }
-
-    /**
-     * Get radius of the sector
-     * @return {Number}
-     */
-    getRadius() {
-        return this._radius;
-    }
-
-    /**
-     * Set a new radius to the sector
-     * @param {Number} radius - new radius
-     * @return {Sector} this
-     * @fires Sector#shapechange
-     */
-    setRadius(radius) {
-        this._radius = radius;
-        this.onShapeChanged();
-        return this;
     }
 
     /**
@@ -135,18 +107,6 @@ class Sector extends CenterMixin(Polygon) {
         return shell;
     }
 
-    /**
-     * Sector won't have any holes, always returns null
-     * @return {Object[]} an empty array
-     */
-    getHoles() {
-        return [];
-    }
-
-    animateShow() {
-        return this.show();
-    }
-
     _containsPoint(point, tolerance) {
         if (this.getMap().isTransforming()) {
             return super._containsPoint(point, tolerance);
@@ -173,14 +133,6 @@ class Sector extends CenterMixin(Polygon) {
         return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
     }
 
-    _computePrjExtent(projection) {
-        return Circle.prototype._computePrjExtent.call(this, projection);
-    }
-
-    _computeExtent() {
-        return null;
-    }
-
     _computeGeodesicLength() {
         if (isNil(this._radius)) {
             return 0;
@@ -193,14 +145,6 @@ class Sector extends CenterMixin(Polygon) {
             return 0;
         }
         return Math.PI * Math.pow(this._radius, 2) * Math.abs(this.startAngle - this.endAngle) / 360;
-    }
-
-    _exportGeoJSONGeometry() {
-        const coordinates = Coordinate.toNumberArrays([this.getShell()]);
-        return {
-            'type': 'Polygon',
-            'coordinates': coordinates
-        };
     }
 
     _toJSON(options) {

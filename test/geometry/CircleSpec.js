@@ -1,6 +1,6 @@
 // var CommonSpec = require('./CommonSpec');
 
-describe('#Circle', function () {
+describe('Geometry.Circle', function () {
 
     var container;
     var map;

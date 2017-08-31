@@ -1,4 +1,4 @@
-describe('#MapBoxZoom', function () {
+describe('Map.BoxZoom', function () {
     var container, eventContainer;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -8,7 +8,7 @@ describe('#MapBoxZoom', function () {
         var size = map.getSize();
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
-        point = point.sub(size.toPoint().multi(1 / 2));
+        point = point.sub(size.toPoint().multi(1 / 4));
         happen.mousedown(eventContainer, {
             'clientX':point.x,
             'clientY':point.y,

@@ -1,5 +1,4 @@
-
-describe('#GeometryEdit', function () {
+describe('Geometry.Edit', function () {
     var container, eventContainer;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -194,12 +193,12 @@ describe('#GeometryEdit', function () {
             circle.startEdit();
             var size = circle.getSize();
             dragGeometry(circle, new maptalks.Point(size.width / 2, 0));
-            expect(circle.getRadius()).to.be.eql(1010.22151);
+            expect(circle.getRadius()).to.be.eql(1010.12334);
 
             circle.undoEdit();
             expect(circle.getRadius()).to.be.eql(1000);
             circle.redoEdit();
-            expect(circle.getRadius()).to.be.eql(1010.22151);
+            expect(circle.getRadius()).to.be.eql(1010.12334);
 
             circle.endEdit();
             expect(fired).to.be.ok();
@@ -214,14 +213,14 @@ describe('#GeometryEdit', function () {
             ellipse.startEdit();
             var size = ellipse.getSize();
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, size.height / 2));
-            expect(ellipse.getWidth()).to.be.approx(1020.27122);
+            expect(ellipse.getWidth()).to.be.approx(1020.24668);
             expect(ellipse.getHeight()).to.be.approx(520.2339);
 
             ellipse.undoEdit();
             expect(ellipse.getWidth()).to.be.approx(1000);
             expect(ellipse.getHeight()).to.be.approx(500);
             ellipse.redoEdit();
-            expect(ellipse.getWidth()).to.be.approx(1020.27122);
+            expect(ellipse.getWidth()).to.be.approx(1020.24668);
             expect(ellipse.getHeight()).to.be.approx(520.2339);
 
             ellipse.endEdit();
@@ -238,16 +237,16 @@ describe('#GeometryEdit', function () {
             var size = ellipse.getSize();
             var ratio = ellipse.getWidth() / ellipse.getHeight();
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, 0));
-            expect(ellipse.getWidth()).to.be.approx(120.24692);
-            expect(ellipse.getHeight()).to.be.approx(120.24692 / ratio);
+            expect(ellipse.getWidth()).to.be.approx(120.24668);
+            expect(ellipse.getHeight()).to.be.approx(120.24668 / ratio);
 
             ellipse.undoEdit();
             expect(ellipse.getWidth()).to.be.approx(100);
             expect(ellipse.getHeight()).to.be.approx(50);
 
             ellipse.redoEdit();
-            expect(ellipse.getWidth()).to.be.approx(120.24692);
-            expect(ellipse.getHeight()).to.be.approx(120.24692 / ratio);
+            expect(ellipse.getWidth()).to.be.approx(120.24668);
+            expect(ellipse.getHeight()).to.be.approx(120.24668 / ratio);
 
             ellipse.endEdit();
             expect(fired).to.be.ok();

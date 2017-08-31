@@ -1,4 +1,4 @@
-describe('#Geometry', function () {
+describe('Geometry.main', function () {
 
     var container;
     var map;

@@ -327,7 +327,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             const p = this._getProjection();
             return new Extent(p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax'])));
         } else {
-            return this._computeExtent();
+            return this._computeExtent(this._getMeasurer());
         }
     }
 

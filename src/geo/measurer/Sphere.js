@@ -65,16 +65,27 @@ class Sphere {
         if (!xDist && !yDist) {
             return c;
         }
-        const dx = Math.abs(xDist);
-        const dy = Math.abs(yDist);
+        let x, y;
         let ry = rad(c.y);
-        let rx = rad(c.x);
-        const sy = Math.sin(dy / (2 * this.radius)) * 2;
-        ry = ry + sy * (yDist > 0 ? 1 : -1);
-        // distance per degree
-        const sx = 2 * Math.sqrt(Math.pow(Math.sin(dx / (2 * this.radius)), 2) / Math.pow(Math.cos(ry), 2));
-        rx = rx + sx * (xDist > 0 ? 1 : -1);
-        return new Coordinate(wrap(rx * 180 / Math.PI, -180, 180), wrap(ry * 180 / Math.PI, -90, 90));
+        if (yDist !== 0) {
+            const dy = Math.abs(yDist);
+            const sy = Math.sin(dy / (2 * this.radius)) * 2;
+            ry = ry + sy * (yDist > 0 ? 1 : -1);
+            y = wrap(ry * 180 / Math.PI, -90, 90);
+        } else {
+            y = c.y;
+        }
+        if (xDist !== 0) {
+            // distance per degree
+            const dx = Math.abs(xDist);
+            let rx = rad(c.x);
+            const sx = 2 * Math.sqrt(Math.pow(Math.sin(dx / (2 * this.radius)), 2) / Math.pow(Math.cos(ry), 2));
+            rx = rx + sx * (xDist > 0 ? 1 : -1);
+            x = wrap(rx * 180 / Math.PI, -180, 180);
+        } else {
+            x = c.x;
+        }
+        return new Coordinate(x, y);
     }
 }
 

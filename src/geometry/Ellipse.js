@@ -1,9 +1,9 @@
 import { extend, isNil } from 'core/util';
 import { withInEllipse } from 'core/util/path';
 import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
 import CenterMixin from './CenterMixin';
 import Polygon from './Polygon';
+import Circle from './Circle';
 
 /**
  * @property {Object} [options=null]
@@ -146,20 +146,25 @@ class Ellipse extends CenterMixin(Polygon) {
         return withInEllipse(point, p0, p1, t);
     }
 
-    _computePrjExtent(projection) {
-        if (!projection || !this._coordinates || isNil(this.width) || isNil(this.height)) {
+    _computePrjExtent() {
+        return Circle.prototype._computePrjExtent.apply(this, arguments);
+    }
+
+    _computeExtent() {
+        return Circle.prototype._computeExtent.apply(this, arguments);
+    }
+
+    _getMinMax(measurer) {
+        if (!measurer || !this._coordinates || isNil(this.width) || isNil(this.height)) {
             return null;
         }
         const width = this.getWidth(),
             height = this.getHeight();
-        const p1 = projection.locate(this._coordinates, -width / 2, -height / 2),
-            p2 = projection.locate(this._coordinates, width / 2, height / 2);
-        const prjs = projection.projectCoords([p1, p2]);
-        return new Extent(prjs[0], prjs[1]);
-    }
-
-    _computeExtent() {
-        return null;
+        const p1 = measurer.locate(this._coordinates, -width / 2, 0),
+            p2 = measurer.locate(this._coordinates, width / 2, 0),
+            p3 = measurer.locate(this._coordinates, 0, -height / 2),
+            p4 = measurer.locate(this._coordinates, 0, height / 2);
+        return [p1, p2, p3, p4];
     }
 
     _computeGeodesicLength() {

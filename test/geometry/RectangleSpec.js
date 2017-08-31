@@ -1,4 +1,4 @@
-describe('#Rectangle', function () {
+describe('Geometry.Rectangle', function () {
 
     var container;
     var map;

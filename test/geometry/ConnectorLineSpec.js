@@ -1,4 +1,4 @@
-describe('#ConnectorLineSpec', function () {
+describe('Geometry.ConnectorLine', function () {
 
     var container;
     var map;

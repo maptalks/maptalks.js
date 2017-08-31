@@ -83,7 +83,7 @@ function GEN_GEOMETRIES_OF_ALL_TYPES() {
  * @param  {Coordinate} center
  * @return {Object}
  */
-function COMMON_CREATE_MAP(center, baseLayer) {
+function COMMON_CREATE_MAP(center, baseLayer, options) {
     var container = document.createElement('div');
     container.style.width = '800px';
     container.style.height = '600px';
@@ -94,8 +94,15 @@ function COMMON_CREATE_MAP(center, baseLayer) {
         center: center,
         // centerCross : true
     };
+    if (options) {
+        for (var p in options) {
+            if (options.hasOwnProperty(p)) {
+                option[p] = options[p];
+            }
+        }
+    }
     var map = new maptalks.Map(container, option);
-    if (baseLayer === undefined) {
+    if (baseLayer === undefined || baseLayer === null) {
         var tile = new maptalks.TileLayer('tile', {
             urlTemplate:'/resources/tile.png',
             subdomains: [1, 2, 3],

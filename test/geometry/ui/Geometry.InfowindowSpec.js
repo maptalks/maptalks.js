@@ -1,4 +1,4 @@
-describe('#Geometry.InfoWindow', function () {
+describe('Geometry.InfoWindow', function () {
 
     var container;
     var map;
@@ -123,10 +123,10 @@ describe('#Geometry.InfoWindow', function () {
             infoWindow.addTo(geo);
             infoWindow.show();
 
-            var c = map.coordinateToViewPoint(map.getCenter());
+            var c = map.coordinateToViewPoint(map.getCenter()).round();
 
             var dom = infoWindow.getDOM();
-            var offset = infoWindow.getOffset();
+            var offset = infoWindow.getOffset().round();
             expect(!offset._isNaN()).to.be.ok();
             var p = infoWindow.getPosition();
             expect(p.toArray()).to.be.eql([c.x + offset.x, c.y + offset.y]);

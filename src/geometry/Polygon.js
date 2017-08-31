@@ -269,7 +269,7 @@ class Polygon extends Path {
         }
 
         const projection = this.getMap().getProjection();
-        const shell = this.getShell().map(c => projection.project(c));
+        const shell = projection.projectCoords(this.getShell());
 
         const points = this._getPath2DPoints(shell),
             isSplitted = Array.isArray(points[0]);

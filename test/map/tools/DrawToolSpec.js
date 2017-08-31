@@ -1,7 +1,4 @@
-
-
-
-describe('#DrawTool', function () {
+describe('DrawTool', function () {
     var container, eventContainer;
     var map;
 
@@ -126,7 +123,9 @@ describe('#DrawTool', function () {
         it('can draw a marker', function (done) {
             function drawEnd(param) {
                 expect(param.geometry instanceof maptalks.Marker).to.be.ok();
-                expect(param.geometry.getCoordinates()).to.be.closeTo(map.getCenter());
+                var markerCoord = param.geometry.getCoordinates();
+                expect(markerCoord.x).to.be.approx(map.getCenter().x, 1E-4);
+                expect(markerCoord.y).to.be.approx(map.getCenter().y);
                 done();
             }
             var drawTool = new maptalks.DrawTool({

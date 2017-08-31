@@ -113,20 +113,10 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (!this._pxExtent) {
             this._pxExtent = new PointExtent(min, max);
         } else {
-            if (min.x < max.x) {
-                this._pxExtent['xmin'] = min.x;
-                this._pxExtent['xmax'] = max.x;
-            } else {
-                this._pxExtent['xmax'] = min.x;
-                this._pxExtent['xmin'] = max.x;
-            }
-            if (min.y < max.y) {
-                this._pxExtent['ymin'] = min.y;
-                this._pxExtent['ymax'] = max.y;
-            } else {
-                this._pxExtent['ymax'] = min.y;
-                this._pxExtent['ymin'] = max.y;
-            }
+            this._pxExtent['xmin'] = Math.min(min.x, max.x);
+            this._pxExtent['xmax'] = Math.max(min.x, max.x);
+            this._pxExtent['ymin'] = Math.min(min.y, max.y);
+            this._pxExtent['ymax'] = Math.max(min.y, max.y);
         }
         return this._pxExtent._expand(this.style['lineWidth'] / 2);
     }

@@ -1,6 +1,4 @@
-// var utils = require('../SpecUtils.js');
-
-describe('#ParticleLayer', function () {
+describe('ParticleLayer', function () {
 
     var container;
     var map;
@@ -159,10 +157,10 @@ describe('#ParticleLayer', function () {
         };
         layer.on('layerload', function () {
             if (count === 1) {
-                expect(layer).not.to.be.painted(7, 0);
+                expect(layer).not.to.be.painted(4, 0);
             }
             if (count === 2) {
-                expect(layer).to.be.painted(7, 0, [255, 0, 0]);
+                expect(layer).to.be.painted(4, 0, [255, 0, 0]);
                 done();
             }
         });
