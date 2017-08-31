@@ -8,7 +8,6 @@ const rollup = require('rollup'),
 const pkg = require('../package.json');
 
 
-
 const config = {
     plugins: [
         alias(require('./alias')),
@@ -36,7 +35,7 @@ module.exports = {
         config.format = 'umd';
         config.moduleName = 'maptalks';
         config.banner = banner;
-        config.outro = `typeof console !== \'undefined\' && console.log('${pkg.name} v${pkg.version}');`;
+        config.outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
         const watcher = watch(rollup, config);
         let startTime = 0;
         watcher.on('event', e => {
