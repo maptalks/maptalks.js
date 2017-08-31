@@ -4,9 +4,8 @@ const rollup = require('rollup'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
     babel = require('maptalks-rollup-plugin-babel'),
-    alias = require('rollup-plugin-alias');
+    alias = require('maptalks-rollup-plugin-alias');
 const pkg = require('../package.json');
-
 
 
 const config = {
@@ -36,7 +35,7 @@ module.exports = {
         config.format = 'umd';
         config.moduleName = 'maptalks';
         config.banner = banner;
-        config.outro = `typeof console !== \'undefined\' && console.log('${pkg.name} v${pkg.version}');`;
+        config.outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
         const watcher = watch(rollup, config);
         let startTime = 0;
         watcher.on('event', e => {
