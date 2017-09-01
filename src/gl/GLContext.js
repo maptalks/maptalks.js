@@ -261,6 +261,13 @@ class GLContext extends Dispose {
         return gl.createFramebuffer();
     }
     /**
+     * @type {WebGLRenderbuffer}
+     */
+    createRenderbuffer(){
+        const gl = this._gl;
+        return gl.createRenderbuffer();
+    }
+    /**
      * 注意在处理tiny的时候，需先useProgram
      * @param {WebGLProgram} program
      */
@@ -294,7 +301,9 @@ class GLContext extends Dispose {
      */
     shaderSource(shader, source) {
         const gl = this._gl;
-        gl.shaderSource(shader, source);
+        //1.如果不存在'precision mediump float;'则添加
+        const newSource = source.indexOf('precision') === -1?`precision mediump float;\n${source}`:source;
+        gl.shaderSource(shader, newSource);
     }
     /**
      * no need to implement

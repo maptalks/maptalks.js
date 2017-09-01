@@ -1477,6 +1477,8 @@ var stamp$2 = stamp_1.stamp;
 var ticker = handle.ticker;
 var TICKER_ENUM = handle.TICKER_ENUM;
 
+var GLPROGRAMS$1 = util.GLPROGRAMS;
+
 /**
  * @class
  */
@@ -1543,7 +1545,8 @@ var Tiny = function () {
     }, {
         key: 'push',
         value: function push(name) {
-            var glProgram = this._glPrgram,
+            var glPrograms = GLPROGRAMS$1,
+                glProgram = this._glPrgram,
                 gl = this._gl,
                 overrall = this._overrall,
                 programInternal = this._programInternal;
@@ -4144,6 +4147,16 @@ var GLContext = function (_Dispose) {
             return gl.createFramebuffer();
         }
         /**
+         * @type {WebGLRenderbuffer}
+         */
+
+    }, {
+        key: 'createRenderbuffer',
+        value: function createRenderbuffer() {
+            var gl = this._gl;
+            return gl.createRenderbuffer();
+        }
+        /**
          * 注意在处理tiny的时候，需先useProgram
          * @param {WebGLProgram} program
          */
@@ -4189,7 +4202,9 @@ var GLContext = function (_Dispose) {
         key: 'shaderSource',
         value: function shaderSource(shader, source) {
             var gl = this._gl;
-            gl.shaderSource(shader, source);
+            //1.如果不存在'precision mediump float;'则添加
+            var newSource = source.indexOf('precision') === -1 ? 'precision mediump float;\n' + source : source;
+            gl.shaderSource(shader, newSource);
         }
         /**
          * no need to implement
@@ -4213,12 +4228,9 @@ var GLContext = function (_Dispose) {
             gl.linkProgram(program);
         }
     }, {
-<<<<<<< HEAD
-=======
         key: 'clear',
         value: function clear() {}
     }, {
->>>>>>> cd84967769e1969bc655b7006b179fcb3e26a80c
         key: 'clearColor',
         value: function clearColor() {}
     }, {
@@ -4376,6 +4388,16 @@ var GLCanvas = function (_Dispose) {
             var id = this._rootId;
             return CANVASES[id].style;
         }
+        /**
+         * 
+         */
+
+    }, {
+        key: 'parentElement',
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id].parentElement;
+        }
     }, {
         key: 'width',
         set: function set$$1(v) {
@@ -4395,6 +4417,30 @@ var GLCanvas = function (_Dispose) {
         get: function get$$1() {
             var id = this._rootId;
             return CANVASES[id].height;
+        }
+    }, {
+        key: 'clientWidth',
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id].clientWidth;
+        }
+    }, {
+        key: 'clientHeight',
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id].clientHeight;
+        }
+    }, {
+        key: 'offsetLeft',
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id].offsetLeft;
+        }
+    }, {
+        key: 'offsetTop',
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id].offsetTop;
         }
     }]);
     return GLCanvas;

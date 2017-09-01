@@ -2,51 +2,14 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-    <script src="lib/promise.js"></script>
+    <title>demo</title>
 </head>
 <body>
-    <script class="renderer" type="x-shader/x-vertex">
-        #version 100
-        precision mediump int;
-        precision mediump float;
-        @use Camera;
-        attribute vec3 a_position;
-        attribute vec3 a_normal;
-        uniform Camera u_camera;
-        varying vec4 v_position;
-        varying vec3 v_normal;
-        void main()
-        {
-        vec4 position = vec4(a_position, 1);
-        gl_Position = u_camera.projectionMatrix * u_camera.modelViewMatrix * position;
-        gl_PointSize = 4.0;
-        v_position = position;
-        v_normal = u_camera.normalMatrix * a_normal;
-        }
-    </script>
-
-    <script class="renderer" type="x-shader/x-fragment">
-        #version 100
-        precision mediump int;
-        precision mediump float;
-        @use Material;
-        @use PointLight;
-        uniform Material u_material;
-        uniform PointLight u_light;
-        varying vec4 v_position;
-        varying vec3 v_normal;
-        void main()
-        {
-        vec3 lighting = PointLight_main(u_light, u_material, v_position, v_normal);
-        gl_FragColor = vec4(lighting, 1);
-        }
-    </script>
     <canvas id="cvs" style="width:800px;height:600px;"></canvas>
     <canvas id="cvs2" style="width:800px;height:600px;"></canvas>
+    <script src="lib/xeogl.js"></script>
     <script src="lib/three.js"></script>
-    <script src="lib/four.js"></script>
     <script src="bundle.js"></script>
     <script src="js/index2.js"></script>
 </body>
