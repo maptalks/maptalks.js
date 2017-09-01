@@ -378,7 +378,6 @@ class Ticker {
     set minFPS(fps) {
         // Clamp: 0 to TARGET_FPMS
         const minFPMS = Math.min(Math.max(0, fps) / 1000, TARGET_FPMS);
-
         this._maxElapsedMS = 1 / minFPMS;
     }
 }

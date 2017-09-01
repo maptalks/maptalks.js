@@ -79,10 +79,10 @@ const OVERRAL_ENUM = {
     'depthFunc': true,
     'depthMask': true,
     'colorMask': true,
-    'clearColor': true,
-    'clearDepth': true,
-    'clear': true,
-    'clearStencil': true,
+    // 'clearColor': true,
+    // 'clearDepth': true,
+    // 'clear': true,
+    // 'clearStencil': true,
     'frontFace': true,
     'cullFace': true,
     'blendEquationSeparate': true,
@@ -109,7 +109,7 @@ const ALL_ENUM = merge({}, INTERNAL_ENUM, OVERRAL_ENUM, TICKER_ENUM);
 /**
  * internal ticker
  */
-const ticker = new Ticker({ autoStart: true });
+const ticker = new Ticker();
 
 module.exports = {
     INTERNAL_ENUM,
