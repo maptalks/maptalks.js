@@ -101,7 +101,6 @@ class Tiny {
                         gl[task.name].apply(gl,task.rest);
                         task = queue.pop();
                     }
-                    console.log(`${ticker.FPS}`);
                 },
                 this,
                 {

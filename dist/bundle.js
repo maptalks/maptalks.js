@@ -1091,7 +1091,7 @@ var Ticker = function () {
             var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
             var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
 
-            return this._addListener(new TickerListener_1(fn, context, data, priority));
+            return this._addListener(new TickerListener_1(fn, context, data, priority, false));
         }
         /**
          * Add a handler for the tick event which is only execute once.
@@ -1571,7 +1571,6 @@ var Tiny = function () {
                         gl[task.name].apply(gl, task.rest);
                         task = queue.pop();
                     }
-                    console.log('' + ticker.FPS);
                 }, this, {
                     overrall: overrall.splice(0, overrall.length), //重复取
                     internal: programInternal.splice(0, programInternal.length), //清空取
