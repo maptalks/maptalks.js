@@ -35,9 +35,13 @@ var glCanvas2 = new Fusion.gl.GLCanvas(canvas);
 
 
 
-var context = new Four.Context();
-context.canvas = glCanvas2;
-context.gl = glCanvas2.getContext();
+//var context = new Four.Context({
+//    width : 800,
+//    height :600,
+//});
+//context.canvas = glCanvas2;
+//context.contextualise();cvs2
+var context = new Four.Context({ selector:'#cvs2'});
 var points = new Four.OBJMeshLoader({ path: 'asset/points.obj', indexed: true });
 var bundle = new Four.Bundle({ items: [points] });
 
