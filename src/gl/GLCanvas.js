@@ -52,6 +52,13 @@ class GLCanvas extends Dispose {
     }
     /**
      * 
+     */
+    get parentElement(){
+        const id = this._rootId;
+        return CANVASES[id].parentElement
+    }
+    /**
+     * 
      * @param {String} renderType ,default is 'webgl',experiment-webgl
      * @param {Object} [options]
      * @param {boolean} [options.alpha]
@@ -110,6 +117,26 @@ class GLCanvas extends Dispose {
     get height(){
         const id = this._rootId;
         return CANVASES[id].height;
+    }
+
+    get clientWidth(){
+        const id = this._rootId;
+        return CANVASES[id].clientWidth;
+    }
+
+    get clientHeight(){
+        const id = this._rootId;
+        return CANVASES[id].clientHeight;
+    }
+
+    get offsetLeft(){
+        const id = this._rootId;
+        return CANVASES[id].offsetLeft;
+    }
+
+    get offsetTop(){
+        const id = this._rootId;
+        return CANVASES[id].offsetTop;
     }
 
 }

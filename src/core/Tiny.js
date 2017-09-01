@@ -77,7 +77,8 @@ class Tiny {
      * @param {[]} rest 
      */
     push(name, ...rest) {
-        const glProgram = this._glPrgram,
+        const glPrograms = GLPROGRAMS,
+            glProgram = this._glPrgram,
             gl = this._gl,
             overrall = this._overrall,
             programInternal = this._programInternal;
@@ -101,7 +102,6 @@ class Tiny {
                         gl[task.name].apply(gl,task.rest);
                         task = queue.pop();
                     }
-                    console.log(`${ticker.FPS}`);
                 },
                 this,
                 {

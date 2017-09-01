@@ -87,6 +87,8 @@ camera1.position.z = 1000;
 geometry = new THREE.BoxGeometry(700, 700, 700);
 material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
 mesh = new THREE.Mesh(geometry, material);
+mesh.position.set(-700, 400, 0);
+
 scene.add(mesh);
 
 renderer = new THREE.WebGLRenderer({
@@ -95,6 +97,7 @@ renderer = new THREE.WebGLRenderer({
 });
 
 renderer.setSize(800, 600);
+
 
 function animate() {
     requestAnimationFrame(animate);
