@@ -151,6 +151,16 @@ class Panel extends Control {
     _onDragStart(param) {
         this._startPos = param['mousePos'];
         this._startPosition = extend({}, this.getPosition());
+        /**
+         * drag start event
+         * @event control.Panel#dragstart
+         * @type {Object}
+         * @property {String} type        - dragstart
+         * @property {UIMarker} target    - the panel control fires event
+         * @property {Point} mousePos     - mouse position
+         * @property {Event} domEvent     - dom event
+         */
+        this.fire('dragstart', param);
     }
 
     _onDragging(param) {
@@ -172,11 +182,31 @@ class Panel extends Control {
             position['right'] = parseInt(startPosition['right']) - offset.x;
         }
         this.setPosition(position);
+        /**
+         * dragging event
+         * @event control.Panel#dragging
+         * @type {Object}
+         * @property {String} type        - dragging
+         * @property {UIMarker} target    - the panel control fires event
+         * @property {Point} mousePos     - mouse position
+         * @property {Event} domEvent     - dom event
+         */
+        this.fire('dragging', param);
     }
 
-    _onDragEnd() {
+    _onDragEnd(param) {
         delete this._startPos;
         delete this._startPosition;
+        /**
+         * drag end event
+         * @event control.Panel#dragend
+         * @type {Object}
+         * @property {String} type        - dragend
+         * @property {UIMarker} target    - the panel control fires event
+         * @property {Point} mousePos     - mouse position
+         * @property {Event} domEvent     - dom event
+         */
+        this.fire('dragend', param);
     }
 
     /**

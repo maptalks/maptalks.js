@@ -79,6 +79,17 @@ describe('Control.Panel', function () {
         });
         map.addControl(panel);
 
+        var dragStart, dragging, dragEnd;
+        panel.on('dragstart dragging dragend', function (e) {
+            if (e.type === 'dragstart') {
+                dragStart = true;
+            } else if (e.type === 'dragging') {
+                dragging = true;
+            } else if (e.type === 'dragend') {
+                dragEnd = true;
+            }
+        });
+
         dragPanel(panel);
 
         var newpos = panel.getPosition();
@@ -87,6 +98,7 @@ describe('Control.Panel', function () {
         expect(panel.getPosition()).not.to.be.eql(position);
         expect(panel.getContainer().style.left).to.be.eql('159px');
         expect(panel.getContainer().style.top).to.be.eql('159px');
+        expect(dragStart && dragging && dragEnd).to.be.ok();
     });
 
     it('has connector points', function () {
