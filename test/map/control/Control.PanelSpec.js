@@ -81,7 +81,12 @@ describe('Control.Panel', function () {
 
         dragPanel(panel);
 
+        var newpos = panel.getPosition();
+        expect(newpos.top).to.be.eql('159');
+        expect(newpos.left).to.be.eql('159');
         expect(panel.getPosition()).not.to.be.eql(position);
+        expect(panel.getContainer().style.left).to.be.eql('159px');
+        expect(panel.getContainer().style.top).to.be.eql('159px');
     });
 
     it('has connector points', function () {

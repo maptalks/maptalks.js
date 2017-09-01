@@ -71,7 +71,8 @@ class Panel extends Control {
         }
 
         this.draggable = new DragHandler(dom, {
-            'cancelOn': this._cancelOn.bind(this)
+            'cancelOn': this._cancelOn.bind(this),
+            'ignoreMouseleave' : true
         });
 
         this.draggable.on('dragstart', this._onDragStart, this)
@@ -159,16 +160,16 @@ class Panel extends Control {
         const startPosition = this._startPosition;
         const position = this.getPosition();
         if (!isNil(position['top'])) {
-            position['top'] = +startPosition['top'] + offset.y;
+            position['top'] = parseInt(startPosition['top']) + offset.y;
         }
         if (!isNil(position['bottom'])) {
-            position['bottom'] = +startPosition['bottom'] - offset.y;
+            position['bottom'] = parseInt(startPosition['bottom']) - offset.y;
         }
         if (!isNil(position['left'])) {
-            position['left'] = +startPosition['left'] + offset.x;
+            position['left'] = parseInt(startPosition['left']) + offset.x;
         }
         if (!isNil(position['right'])) {
-            position['right'] = +startPosition['right'] - offset.x;
+            position['right'] = parseInt(startPosition['right']) - offset.x;
         }
         this.setPosition(position);
     }

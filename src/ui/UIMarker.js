@@ -446,7 +446,8 @@ class UIMarkerDragHandler extends Handler {
 
     _prepareDragHandler() {
         this._dragHandler = new DragHandler(this.target.getDOM(), {
-            'cancelOn': this._cancelOn.bind(this)
+            'cancelOn': this._cancelOn.bind(this),
+            'ignoreMouseleave' : true
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this);
         this._dragHandler.on('dragging', this._dragging, this);
