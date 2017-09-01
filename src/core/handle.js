@@ -109,7 +109,7 @@ const ALL_ENUM = merge({}, INTERNAL_ENUM, OVERRAL_ENUM, TICKER_ENUM);
 /**
  * internal ticker
  */
-const ticker = new Ticker({ autoStart: true });
+const ticker = new Ticker();
 
 module.exports = {
     INTERNAL_ENUM,

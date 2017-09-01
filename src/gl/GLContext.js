@@ -167,7 +167,6 @@ class GLContext extends Dispose {
         for (let i = 0, len = BRIDGE_ARRAY.length; i < len; i++) {
             const key = BRIDGE_ARRAY[i];
             this[key] = (...rest) => {
-                console.log(`${key},birdge`);
                 return gl[key].apply(gl, rest);
             }
         }
@@ -190,7 +189,6 @@ class GLContext extends Dispose {
      */
     get canvas() {
         const gl = this._gl;
-        console.log(`canvas,birdge`);
         return gl.canvas;
     }
     /**
@@ -198,7 +196,6 @@ class GLContext extends Dispose {
      */
     get drawingBufferWidth() {
         const gl = this._gl;
-        console.log(`drawingBufferWidth,birdge`);
         return gl.drawingBufferWidth;
     }
     /**
@@ -206,7 +203,6 @@ class GLContext extends Dispose {
      */
     get drawingBufferHeight() {
         const gl = this._gl;
-        console.log(`drawingBufferHeight,birdge`);
         return gl.drawingBufferHeight;
     }
     /**
@@ -218,7 +214,6 @@ class GLContext extends Dispose {
         const glProgram = new GLProgram(gl);
         //2.缓存program
         GLPROGRAMS[glProgram.id] = glProgram;
-        console.log(`createProgram,birdge`);
         //3.返回句柄
         return glProgram.handle;
     }
@@ -231,7 +226,6 @@ class GLContext extends Dispose {
         const gl = this._gl,
             glExtension = this._glExtension;
         let glShader = null;
-        console.log(`createShader,birdge`);
         if (type === GLConstants.VERTEX_SHADER) {
             glShader = new GLVertexShader(gl, null, glExtension);
         } else if (type === GLConstants.FRAGMENT_SHADER) {
@@ -250,7 +244,6 @@ class GLContext extends Dispose {
         const gl = this._gl;
         const glTexture = new GLTexture(gl);
         GLTEXTURES[glTexture.id] = glTexture;
-        console.log(`createTexture,birdge`);
         return glTexture.handle;
     }
     /**
@@ -258,7 +251,6 @@ class GLContext extends Dispose {
      */
     createBuffer(){
         const gl = this._gl;
-        console.log(`createBuffer,birdge`);
         return gl.createBuffer();
     }
     /**
@@ -266,7 +258,6 @@ class GLContext extends Dispose {
      */
     createFramebuffer(){
         const gl = this._gl;
-        console.log(`createFramebuffer,birdge`);
         return gl.createFramebuffer();
     }
     /**
@@ -277,7 +268,6 @@ class GLContext extends Dispose {
         const id = stamp(program),
             tiny = this._tiny,
             glProgram = GLPROGRAMS[id];
-        console.log(`useProgram,birdge`);
         tiny.switchPorgarm(glProgram);
     }
     /**
@@ -285,7 +275,6 @@ class GLContext extends Dispose {
      */
     getExtension(name) {
         const glExtension = this._glExtension;
-        console.log(`getExtension,birdge`);
         return glExtension.getExtension(name);
     }
     /**
@@ -296,7 +285,6 @@ class GLContext extends Dispose {
     attachShader(program, shader) {
         const glProgram = GLPROGRAMS[stamp(program)];
         const glShader = GLSHADERS[stamp(shader)];
-        console.log(`attachShader,birdge`);
         glProgram.attachShader(glShader);
     }
     /**
@@ -306,7 +294,6 @@ class GLContext extends Dispose {
      */
     shaderSource(shader, source) {
         const gl = this._gl;
-        console.log(`shaderSource,birdge`);
         gl.shaderSource(shader, source);
     }
     /**
@@ -314,7 +301,6 @@ class GLContext extends Dispose {
      */
     compileShader(shader) {
         const gl = this._gl;
-        console.log(`compileShader,birdge`);
         gl.compileShader(shader);
     }
     /**
@@ -323,26 +309,25 @@ class GLContext extends Dispose {
      */
     linkProgram(program) {
         const gl = this._gl;
-        console.log(`linkProgram,birdge`);
         gl.linkProgram(program);
-    }
-
-    clearColor(){
-
-    }
-    
-    clearDepth(){
-
     }
 
     clear(){
 
     }
 
-    clearStencil(){
+    clearColor(){
 
     }
 
+    clearDepth(){
+
+    }
+
+    clearStencil(){
+
+    }
+    
 }
 
 module.exports = GLContext;

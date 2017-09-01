@@ -183,7 +183,7 @@ class Ticker {
      * @returns {PIXI.ticker.Ticker} This instance of a ticker
      */
     add(fn, context, data = [], priority = UPDATE_PRIORITY.NORMAL) {
-        return this._addListener(new TickerListener(fn, context, data, priority, ));
+        return this._addListener(new TickerListener(fn, context, data, priority,false));
     }
     /**
      * Add a handler for the tick event which is only execute once.
@@ -378,7 +378,6 @@ class Ticker {
     set minFPS(fps) {
         // Clamp: 0 to TARGET_FPMS
         const minFPMS = Math.min(Math.max(0, fps) / 1000, TARGET_FPMS);
-
         this._maxElapsedMS = 1 / minFPMS;
     }
 }

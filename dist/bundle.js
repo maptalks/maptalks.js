@@ -1091,7 +1091,7 @@ var Ticker = function () {
             var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
             var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
 
-            return this._addListener(new TickerListener_1(fn, context, data, priority));
+            return this._addListener(new TickerListener_1(fn, context, data, priority, false));
         }
         /**
          * Add a handler for the tick event which is only execute once.
@@ -1316,7 +1316,6 @@ var Ticker = function () {
         set: function set$$1(fps) {
             // Clamp: 0 to TARGET_FPMS
             var minFPMS = Math.min(Math.max(0, fps) / 1000, TARGET_FPMS);
-
             this._maxElapsedMS = 1 / minFPMS;
         }
     }]);
@@ -1411,7 +1410,7 @@ var ALL_ENUM$1 = merge_1({}, INTERNAL_ENUM$1, OVERRAL_ENUM$1, TICKER_ENUM$1);
 /**
  * internal ticker
  */
-var ticker$1 = new Ticker_1({ autoStart: true });
+var ticker$1 = new Ticker_1();
 
 var handle = {
     INTERNAL_ENUM: INTERNAL_ENUM$1,
@@ -1554,10 +1553,8 @@ var Tiny = function () {
             }
 
             if (!glProgram) {
-                console.log(name + ',bridge tiny');
                 gl[name].apply(gl, rest);
             } else {
-                console.log(name + ',internal tiny');
                 programInternal.push({
                     name: name,
                     rest: this._exact(rest)
@@ -1579,6 +1576,8 @@ var Tiny = function () {
                     internal: programInternal.splice(0, programInternal.length), //清空取
                     glProgram: glProgram
                 });
+                //update RenderFrame
+                ticker.update();
             }
             //
         }
@@ -4046,7 +4045,6 @@ var GLContext = function (_Dispose) {
                         rest[_key2] = arguments[_key2];
                     }
 
-                    console.log(key + ',birdge');
                     return gl[key].apply(gl, rest);
                 };
             };
@@ -4087,7 +4085,6 @@ var GLContext = function (_Dispose) {
             var glProgram = new GLProgram_1(gl);
             //2.缓存program
             GLPROGRAMS[glProgram.id] = glProgram;
-            console.log('createProgram,birdge');
             //3.返回句柄
             return glProgram.handle;
         }
@@ -4103,7 +4100,6 @@ var GLContext = function (_Dispose) {
             var gl = this._gl,
                 glExtension = this._glExtension;
             var glShader = null;
-            console.log('createShader,birdge');
             if (type === GLConstants_1.VERTEX_SHADER) {
                 glShader = new GLVertexShader_1(gl, null, glExtension);
             } else if (type === GLConstants_1.FRAGMENT_SHADER) {
@@ -4125,7 +4121,6 @@ var GLContext = function (_Dispose) {
             var gl = this._gl;
             var glTexture = new GLTexture_1(gl);
             GLTEXTURES[glTexture.id] = glTexture;
-            console.log('createTexture,birdge');
             return glTexture.handle;
         }
         /**
@@ -4136,7 +4131,6 @@ var GLContext = function (_Dispose) {
         key: 'createBuffer',
         value: function createBuffer() {
             var gl = this._gl;
-            console.log('createBuffer,birdge');
             return gl.createBuffer();
         }
         /**
@@ -4147,7 +4141,6 @@ var GLContext = function (_Dispose) {
         key: 'createFramebuffer',
         value: function createFramebuffer() {
             var gl = this._gl;
-            console.log('createFramebuffer,birdge');
             return gl.createFramebuffer();
         }
         /**
@@ -4161,7 +4154,6 @@ var GLContext = function (_Dispose) {
             var id = stamp$1(program),
                 tiny = this._tiny,
                 glProgram = GLPROGRAMS[id];
-            console.log('useProgram,birdge');
             tiny.switchPorgarm(glProgram);
         }
         /**
@@ -4172,7 +4164,6 @@ var GLContext = function (_Dispose) {
         key: 'getExtension',
         value: function getExtension(name) {
             var glExtension = this._glExtension;
-            console.log('getExtension,birdge');
             return glExtension.getExtension(name);
         }
         /**
@@ -4186,7 +4177,6 @@ var GLContext = function (_Dispose) {
         value: function attachShader(program, shader) {
             var glProgram = GLPROGRAMS[stamp$1(program)];
             var glShader = GLSHADERS[stamp$1(shader)];
-            console.log('attachShader,birdge');
             glProgram.attachShader(glShader);
         }
         /**
@@ -4199,7 +4189,6 @@ var GLContext = function (_Dispose) {
         key: 'shaderSource',
         value: function shaderSource(shader, source) {
             var gl = this._gl;
-            console.log('shaderSource,birdge');
             gl.shaderSource(shader, source);
         }
         /**
@@ -4210,7 +4199,6 @@ var GLContext = function (_Dispose) {
         key: 'compileShader',
         value: function compileShader(shader) {
             var gl = this._gl;
-            console.log('compileShader,birdge');
             gl.compileShader(shader);
         }
         /**
@@ -4222,18 +4210,20 @@ var GLContext = function (_Dispose) {
         key: 'linkProgram',
         value: function linkProgram(program) {
             var gl = this._gl;
-            console.log('linkProgram,birdge');
             gl.linkProgram(program);
         }
     }, {
+<<<<<<< HEAD
+=======
+        key: 'clear',
+        value: function clear() {}
+    }, {
+>>>>>>> cd84967769e1969bc655b7006b179fcb3e26a80c
         key: 'clearColor',
         value: function clearColor() {}
     }, {
         key: 'clearDepth',
         value: function clearDepth() {}
-    }, {
-        key: 'clear',
-        value: function clear() {}
     }, {
         key: 'clearStencil',
         value: function clearStencil() {}
@@ -4250,7 +4240,6 @@ var GLContext = function (_Dispose) {
         key: 'canvas',
         get: function get$$1() {
             var gl = this._gl;
-            console.log('canvas,birdge');
             return gl.canvas;
         }
         /**
@@ -4261,7 +4250,6 @@ var GLContext = function (_Dispose) {
         key: 'drawingBufferWidth',
         get: function get$$1() {
             var gl = this._gl;
-            console.log('drawingBufferWidth,birdge');
             return gl.drawingBufferWidth;
         }
         /**
@@ -4272,7 +4260,6 @@ var GLContext = function (_Dispose) {
         key: 'drawingBufferHeight',
         get: function get$$1() {
             var gl = this._gl;
-            console.log('drawingBufferHeight,birdge');
             return gl.drawingBufferHeight;
         }
     }]);

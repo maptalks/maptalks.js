@@ -82,10 +82,8 @@ class Tiny {
             overrall = this._overrall,
             programInternal = this._programInternal;
         if(!glProgram){
-            console.log(`${name},bridge tiny`);
             gl[name].apply(gl,rest);
         }else{
-            console.log(`${name},internal tiny`);
             programInternal.push({ 
                 name:name,
                 rest:this._exact(rest)
@@ -110,6 +108,8 @@ class Tiny {
                     internal: programInternal.splice(0, programInternal.length),//清空取
                     glProgram: glProgram
                 });
+                //update RenderFrame
+                ticker.update();
         }
         //
     }
