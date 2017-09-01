@@ -366,3 +366,50 @@ function approx(val, expected, delta) {
     if (delta == null) { delta = 1e-6; }
     return val >= expected - delta && val <= expected + delta;
 }
+
+/**
+ * Flash something, show and hide by certain internal for times of count.
+ *
+ * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
+ * @param {Number} [count=4]          - flash times
+ * @param {Function} [cb=null]        - callback function when flash ended
+ * @param {*} [context=null]          - callback context
+ * @return {*} this
+ */
+export function flash(interval, count, cb, context) {
+    if (!interval) {
+        interval = 100;
+    }
+    if (!count) {
+        count = 4;
+    }
+    const me = this;
+    count *= 2;
+    if (this._flashTimeout) {
+        clearTimeout(this._flashTimeout);
+    }
+
+    function flashGeo() {
+        if (count === 0) {
+            me.show();
+            if (cb) {
+                if (context) {
+                    cb.call(context);
+                } else {
+                    cb();
+                }
+            }
+            return;
+        }
+
+        if (count % 2 === 0) {
+            me.hide();
+        } else {
+            me.show();
+        }
+        count--;
+        me._flashTimeout = setTimeout(flashGeo, interval);
+    }
+    this._flashTimeout = setTimeout(flashGeo, interval);
+    return this;
+}

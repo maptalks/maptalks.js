@@ -1,4 +1,4 @@
-import { isString } from 'core/util';
+import { isString, flash } from 'core/util';
 import { on, off, createEl, stopPropagation } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Handler from 'handler/Handler';
@@ -296,6 +296,19 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     show() {
         return super.show(this._markerCoord);
+    }
+
+    /**
+     * Flash the UIMarker, show and hide by certain internal for times of count.
+     *
+     * @param {Number} [interval=100]     - interval of flash, in millisecond (ms)
+     * @param {Number} [count=4]          - flash times
+     * @param {Function} [cb=null]        - callback function when flash ended
+     * @param {*} [context=null]          - callback context
+     * @return {UIMarker} this
+     */
+    flash(interval, count, cb, context) {
+        return flash.call(this, interval, count, cb, context);
     }
 
     /**

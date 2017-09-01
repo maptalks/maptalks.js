@@ -1,4 +1,4 @@
-describe('#UIMarker', function () {
+describe('UI.UIMarker', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -36,11 +36,12 @@ describe('#UIMarker', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             content : dom
         });
-        marker.addTo(map).show();
+        marker.addTo(map);
         var m = document.getElementById('uimarker');
         expect(m).to.be.ok();
         expect(m.clientHeight).to.be.above(0);
         expect(m.clientWidth).to.be.above(0);
+        expect(marker.isVisible()).to.be.ok();
     });
 
     it('show when zooming', function (done) {
@@ -56,6 +57,16 @@ describe('#UIMarker', function () {
             done();
         });
         map.zoomIn();
+    });
+
+    it('can flash', function (done) {
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content : '<div id="uimarker">marker</div>'
+        });
+        marker.addTo(map).flash(100, 1, function () {
+            expect(marker.isVisible()).to.be.ok();
+            done();
+        });
     });
 
     it('can hide', function () {

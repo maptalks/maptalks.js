@@ -9,7 +9,8 @@ import {
     isString,
     isNumber,
     isObject,
-    mapArrayRecursively
+    mapArrayRecursively,
+    flash
 } from 'core/util';
 import { extendSymbol } from 'core/util/style';
 import { convertResourceUrl, getExternalResources } from 'core/util/resource';
@@ -573,41 +574,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {Geometry} this
      */
     flash(interval, count, cb, context) {
-        if (!interval) {
-            interval = 100;
-        }
-        if (!count) {
-            count = 4;
-        }
-        const me = this;
-        count *= 2;
-        if (this._flashTimeout) {
-            clearTimeout(this._flashTimeout);
-        }
-
-        function flashGeo() {
-            if (count === 0) {
-                me.show();
-                if (cb) {
-                    if (context) {
-                        cb.call(context);
-                    } else {
-                        cb();
-                    }
-                }
-                return;
-            }
-
-            if (count % 2 === 0) {
-                me.hide();
-            } else {
-                me.show();
-            }
-            count--;
-            me._flashTimeout = setTimeout(flashGeo, interval);
-        }
-        this._flashTimeout = setTimeout(flashGeo, interval);
-        return this;
+        return flash.call(this, interval, count, cb, context);
     }
 
     /**
