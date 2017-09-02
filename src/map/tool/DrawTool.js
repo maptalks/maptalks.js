@@ -131,6 +131,8 @@ class DrawTool extends MapTool {
         this._checkMode();
         if (this.isEnabled()) {
             this._switchEvents('on');
+            this._restoreMapCfg();
+            this._saveMapCfg();
         }
         return this;
     }
@@ -177,18 +179,7 @@ class DrawTool extends MapTool {
     }
 
     onEnable() {
-        const map = this.getMap();
-        this._mapDoubleClickZoom = map.options['doubleClickZoom'];
-        map.config({
-            'doubleClickZoom': this.options['doubleClickZoom']
-        });
-        const action = this._getRegisterMode()['action'];
-        if (action === 'drag') {
-            this._mapDraggable = map.options['draggable'];
-            map.config({
-                'draggable' : false
-            });
-        }
+        this._saveMapCfg();
         this._drawToolLayer = this._getDrawLayer();
         this._clearStage();
         this._loadResources();
@@ -197,14 +188,7 @@ class DrawTool extends MapTool {
 
     onDisable() {
         const map = this.getMap();
-        map.config({
-            'doubleClickZoom': this._mapDoubleClickZoom
-        });
-        if (!isNil(this._mapDraggable)) {
-            map.config('draggable', this._mapDraggable);
-        }
-        delete this._mapDraggable;
-        delete this._mapDoubleClickZoom;
+        this._restoreMapCfg();
         this._endDraw();
         if (this._map) {
             map.removeLayer(this._getDrawLayer());
@@ -244,6 +228,34 @@ class DrawTool extends MapTool {
 
     _checkMode() {
         this._getRegisterMode();
+    }
+
+    _saveMapCfg() {
+        const map = this.getMap();
+        this._mapDoubleClickZoom = map.options['doubleClickZoom'];
+        map.config({
+            'doubleClickZoom': this.options['doubleClickZoom']
+        });
+        const action = this._getRegisterMode()['action'];
+        if (action === 'drag') {
+            const map = this.getMap();
+            this._mapDraggable = map.options['draggable'];
+            map.config({
+                'draggable' : false
+            });
+        }
+    }
+
+    _restoreMapCfg() {
+        const map = this.getMap();
+        map.config({
+            'doubleClickZoom': this._mapDoubleClickZoom
+        });
+        if (!isNil(this._mapDraggable)) {
+            map.config('draggable', this._mapDraggable);
+        }
+        delete this._mapDraggable;
+        delete this._mapDoubleClickZoom;
     }
 
     _loadResources() {
@@ -417,6 +429,7 @@ class DrawTool extends MapTool {
     }
 
     _mousedownToDraw(param) {
+        const map = this._map;
         const registerMode = this._getRegisterMode();
         const me = this,
             firstPoint = this._getMouseContainerPoint(param);
@@ -450,6 +463,11 @@ class DrawTool extends MapTool {
             return false;
         }
         const onMouseUp = function (evt) {
+            map.off('mousemove', onMouseMove, this);
+            map.off('mouseup', onMouseUp, this);
+            if (!this.options['ignoreMouseleave']) {
+                map.off('mouseleave', onMouseUp, this);
+            }
             if (!this._geometry) {
                 return false;
             }
@@ -457,21 +475,16 @@ class DrawTool extends MapTool {
             if (this._isValidContainerPoint(current)) {
                 genGeometry(evt);
             }
-            this._map.off('mousemove', onMouseMove, this);
-            this._map.off('mouseup', onMouseUp, this);
-            if (!this.options['ignoreMouseleave']) {
-                this._map.off('mouseleave', onMouseUp, this);
-            }
             this._endDraw(param);
             return false;
         };
 
         this._fireEvent('drawstart', param);
         genGeometry(param);
-        this._map.on('mousemove', onMouseMove, this);
-        this._map.on('mouseup', onMouseUp, this);
+        map.on('mousemove', onMouseMove, this);
+        map.on('mouseup', onMouseUp, this);
         if (!this.options['ignoreMouseleave']) {
-            this._map.on('mouseleave', onMouseUp, this);
+            map.on('mouseleave', onMouseUp, this);
         }
         return false;
     }
@@ -573,8 +586,7 @@ DrawTool.registerMode('circle', {
     },
     'update': function (coordinate, geometry) {
         const map = geometry.getMap();
-        const center = geometry.getCenter();
-        const radius = map.computeLength(center, coordinate);
+        const radius = map.computeLength(geometry.getCenter(), coordinate);
         geometry.setRadius(radius);
     },
     'generate': function (geometry) {
@@ -608,21 +620,24 @@ DrawTool.registerMode('ellipse', {
 
 DrawTool.registerMode('rectangle', {
     'action': 'drag',
-    'create': function (coordinate) {
+    'create': function (coordinate, param) {
         const rect = new Rectangle(coordinate, 0, 0);
-        rect._firstClick = coordinate;
+        rect._firstClick = param['containerPoint'];
+        rect._firstCoord = coordinate;
         return rect;
     },
-    'update': function (coordinate, geometry) {
-        const firstCoord = geometry._firstClick;
+    'update': function (coordinate, geometry, param) {
         const map = geometry.getMap();
-        const width = map.computeLength(firstCoord, new Coordinate(coordinate.x, firstCoord.y)),
-            height = map.computeLength(firstCoord, new Coordinate(firstCoord.x, coordinate.y));
-        const cnw = map.coordinateToPoint(firstCoord),
-            cc = map.coordinateToPoint(coordinate);
+        const firstCoord = geometry._firstCoord,
+            firstPoint = geometry._firstClick;
+
+        const cnw = firstPoint,
+            cc = param['containerPoint'];
         const x = Math.min(cnw.x, cc.x),
             y = Math.min(cnw.y, cc.y);
-        geometry.setCoordinates(map.pointToCoordinate(new Point(x, y)));
+        const width = map.computeLength(firstCoord, new Coordinate(coordinate.x, firstCoord.y)),
+            height = map.computeLength(firstCoord, new Coordinate(firstCoord.x, coordinate.y));
+        geometry.setCoordinates(map.containerPointToCoordinate(new Point(x, y)));
         geometry.setWidth(width);
         geometry.setHeight(height);
     },
