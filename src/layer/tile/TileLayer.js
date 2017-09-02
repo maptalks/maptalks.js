@@ -12,10 +12,17 @@ import Layer from '../Layer';
  * @property {String}              options.urlTemplate         - url templates
  * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
- * @property {String}              [options.crossOrigin=null]  - tile Image's corssOrigin
+ * @property {Boolean}             [options.renderOnMoving=false]    - render tiles when moving map
+ * @property {Boolean}             [options.renderOnRotating=false]  - render tiles when rotating map
+ * @property {String}              [options.cssFilter=null]    - css filter of tile image, only applicable for dom renderer, e.g. brightness(0.4)
+ * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
  * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
  * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
  * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
+ * @property {Boolean}             [options.cacheTiles=true]   - whether cache tiles
+ * @property {Number}              [options.keepBuffer=null]   - load more rows and columns of tiles when panning map
+ * @property {String}              [options.container=back]    - map container to place tile images, can be back or front.
+ * @property {String}              [options.baseLayerRenderer=dom]  - default renderer for TileLayer as baseLayer
  * @memberOf TileLayer
  * @instance
  */
@@ -29,7 +36,10 @@ const options = {
     'renderOnMoving': false,
     'renderOnRotating' : false,
 
+    //map's animation duration to start tilelayer's animation
     'durationToAnimate' : 2000,
+    //the update interval to render tiles during tilelayer's animation
+    'updateIntervalOnAnimating' : 400,
 
     'cssFilter': null,
 

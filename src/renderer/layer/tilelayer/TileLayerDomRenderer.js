@@ -106,8 +106,14 @@ export default class TileLayerDomRenderer extends Class {
             this._fadeAnimated = false;
             const tileZoom = this.layer._getTileZoom();
             if (map.isMoving()) {
-                this._abortLoading(false);
-                this._renderTiles();
+                const now = Date.now();
+                if (this._renderTime && now - this._renderTime > this.layer.options['updateIntervalOnAnimating']) {
+                    this._abortLoading(false);
+                    this._renderTiles();
+                } else {
+                    this._renderTiles(true);
+                }
+                this._pruneLevels();
             } else if (map.isZooming()) {
                 if (!this._curAnimZoom) {
                     this._curAnimZoom = this._startZoom;
@@ -200,22 +206,27 @@ export default class TileLayerDomRenderer extends Class {
         }
     }
 
-    _renderTiles() {
+    _renderTiles(escapeTileLoading) {
         this._redraw = false;
         if (!this._container) {
             this._createLayerContainer();
         }
-        const tileGrid = this.layer._getTiles();
+        const tileGrid = this.layer._getTiles(escapeTileLoading ? this._tileZoom : undefined);
         if (!tileGrid || tileGrid.tiles.length === 0) {
             return;
         }
 
         const queue = this._getTileQueue(tileGrid);
 
+        this._updateContainer();
+
+        if (escapeTileLoading) {
+            return;
+        }
+
         this._tileZoom = tileGrid['zoom'];
         this._tileExtent = tileGrid['extent'];
-
-        this._updateContainer();
+        this._renderTime = Date.now();
 
         if (queue.length > 0) {
             const container = this._getTileContainer(tileGrid['zoom']);

@@ -58,7 +58,11 @@ Map.include({
             if (hasOwn(view, p) && !isNil(currView[p])) {
                 empty = false;
                 if (p === 'center') {
-                    props[p] = [new Coordinate(currView[p]), new Coordinate(view[p])];
+                    const from = new Coordinate(currView[p]).toFixed(7),
+                        to = new Coordinate(view[p]).toFixed(7);
+                    if (!from.equals(to)) {
+                        props['center'] = [from, to];
+                    }
                 } else if (currView[p] !== view[p] && p !== 'around') {
                     props[p] = [currView[p], view[p]];
                 }
