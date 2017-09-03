@@ -13,7 +13,7 @@
 
     "opts": {
         "recurse" : true,
-        "template": "../maptalks-jsdoc/",
+        "template": "./node_modules/maptalks-jsdoc/",
         "encoding": "utf8",
         "destination": "./docs/api/",
         "access"  : "protected, undefined"
