@@ -218,15 +218,16 @@ export default class TileLayerDomRenderer extends Class {
 
         const queue = this._getTileQueue(tileGrid);
 
-        this._updateContainer();
-
         if (escapeTileLoading) {
+            this._updateContainer();
             return;
         }
 
         this._tileZoom = tileGrid['zoom'];
         this._tileExtent = tileGrid['extent'];
         this._renderTime = Date.now();
+
+        this._updateContainer();
 
         if (queue.length > 0) {
             const container = this._getTileContainer(tileGrid['zoom']);
