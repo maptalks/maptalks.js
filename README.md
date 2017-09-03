@@ -7,14 +7,14 @@
 > a drawing container,only provide sample geometry such as boll,cube and physics engine.
 
 ### Dependency ###
-> 1. headless-gl
+> 1. headless-gl [optional]
 ```
 npm install --global --production windows-build-tools
 ```
 ```
 npm install gl
 ```
-> 2. electron[optional]
+> 2. electron [optional]
 ```
 npm install electron
 ```
@@ -22,7 +22,7 @@ npm install electron
 ```
 const canvas = doucment.createElement('canvas');
 ```
->with three.js
+> with three.js
 ```
 
 const glCanvas = new Fusion.gl.GLCanvas(canvas);
@@ -35,9 +35,9 @@ const renderer = new THREE.WebGLRenderer({
 
 render.render(scene,camera);
 
-// other code
+/*other code*/
 ```
->with twgl
+> with twgl
 ```
 
 const glCanvas2 = new Fusion.gl.GLCanvas(canvas);
@@ -48,21 +48,21 @@ const programInfo = twgl.createProgramInfo(gl2, ["vs", "fs"]);
 
 const tex = twgl.createTexture(gl2,{...});
 
-//other code
+/*other code*/
 
 ```
->with xeogl
+> with xeogl
 ```
 
 const glCanvas2 = new GLCanvas(canvas);
         
 xeogl.scene = new xeogl.Scene({
     canvas: glCanvas2,
-    webgl2: false //specified webgl1/2 if needed
+    webgl2: false
 });
 
-//other code
+/*other code*/
 
 ```
-Creating GLCanvas instance every time when you want to mix with other WebGL library
+> creating instance of GLCanvas each time while you want to mix current library with others
 
