@@ -33,28 +33,6 @@ module.exports = {
     }
 }
 
-// const GL = require('gl');
-/**
- * @type {WebGLRenderingContext}
- */
-// const gl = new GL(600,400);
-// //
-// const texture = gl.createTexture();
-// gl.bindTexture(gl.TEXTURE_2D,texture);
-
-// const paramter1 = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
-
-// gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-// gl.bindTexture(gl.TEXTURE_2D,null);
-
-// gl.deleteTexture(texture);
-
-// const texture2 = gl.createTexture();
-// gl.bindTexture(gl.TEXTURE_2D,texture2);
-
-// const paramter2 = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
-
-
 
 
 

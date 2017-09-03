@@ -18,11 +18,11 @@ npm install gl
 ```
 npm install electron
 ```
-### User guide ###
+### Usage ###
 ```
 const canvas = doucment.createElement('canvas');
 ```
-with three
+>with three.js
 ```
 
 const glCanvas = new Fusion.gl.GLCanvas(canvas);
@@ -30,13 +30,14 @@ const glCanvas = new Fusion.gl.GLCanvas(canvas);
 const gl = glCavnas.getContext('webgl');
 
 const renderer = new THREE.WebGLRenderer({
-    canvas:glCanvas,
-    context:glCavnas.getContext('webgl');
+    canvas:glCanvas
 });
 
 render.render(scene,camera);
+
+// other code
 ```
-width twgl
+>with twgl
 ```
 
 const glCanvas2 = new Fusion.gl.GLCanvas(canvas);
@@ -46,6 +47,21 @@ const gl2 = glCanvas2.getContext('webgl');
 const programInfo = twgl.createProgramInfo(gl2, ["vs", "fs"]);
 
 const tex = twgl.createTexture(gl2,{...});
+
+//other code
+
+```
+>with xeogl
+```
+
+const glCanvas2 = new GLCanvas(canvas);
+        
+xeogl.scene = new xeogl.Scene({
+    canvas: glCanvas2,
+    webgl2: false //specified webgl1/2 if needed
+});
+
+//other code
 
 ```
 Creating GLCanvas instance every time when you want to mix with other WebGL library
