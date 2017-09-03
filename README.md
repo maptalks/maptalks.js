@@ -6,6 +6,10 @@
 ## Description ##
 > a drawing container,only provide sample geometry such as boll,cube and physics engine.
 
+### Install ###
+```
+npm install fusion.gl
+```
 ### Dependency ###
 > 1. headless-gl [optional]
 ```
