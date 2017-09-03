@@ -7,7 +7,7 @@ doc/**/*
 
 ### vscode
 .vscode/
-dist/**/*
+### dist/**/*
 
 ### bower
 vendor/
