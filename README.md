@@ -7,27 +7,27 @@
 > a drawing container,only provide sample geometry such as boll,cube and physics engine.
 
 ### Install ###
-```
+```shell
 npm install fusion.gl
 ```
 ### Dependency ###
 > 1. headless-gl [optional]
-```
+```shell
 npm install --global --production windows-build-tools
 ```
-```
+```shell
 npm install gl
 ```
 > 2. electron [optional]
-```
+```shell
 npm install electron
 ```
 ### Usage ###
-```
+```javascript
 const canvas = doucment.createElement('canvas');
 ```
 > with three.js
-```
+```javascript
 
 const glCanvas = new Fusion.gl.GLCanvas(canvas);
 
@@ -42,7 +42,7 @@ render.render(scene,camera);
 /*other code*/
 ```
 > with twgl
-```
+```javascript
 
 const glCanvas2 = new Fusion.gl.GLCanvas(canvas);
 
@@ -56,7 +56,7 @@ const tex = twgl.createTexture(gl2,{...});
 
 ```
 > with xeogl
-```
+```javascript
 
 const glCanvas2 = new GLCanvas(canvas);
         
