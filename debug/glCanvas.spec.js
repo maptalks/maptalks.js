@@ -2,12 +2,11 @@
  * @author yellow date 2017/8/3
  */
 // const polyfill = require('./../node_modules/babel-polyfill/dist/polyfill');
-
- const GLContext = require('./../src/gl/GLContext'),
+const GLContext = require('./../src/gl/GLContext'),
     GLCanvas = require('./../src/gl/GLCanvas');
 
-const THREE = require('./lib/three');
-const twgl = require('./lib/twgl');
+const THREE = require('three');
+const twgl = require('twgl.js');
 //const xeogl = require('./lib/xeogl');
 
 
@@ -80,7 +79,7 @@ describe('# threejs adapter', () => {
         varying vec3 v_normal;
         varying vec3 v_surfaceToLight;
         varying vec3 v_surfaceToView;
-       
+
         uniform vec4 u_lightColor;
         uniform vec4 u_ambient;
         uniform sampler2D u_diffuse;
@@ -131,7 +130,7 @@ describe('# threejs adapter', () => {
               255, 255, 255, 255,
             ],
           });
-          
+
           const uniforms = {
             u_lightWorldPos: [1, 8, -10],
             u_lightColor: [1, 0.8, 0.8, 1],
@@ -141,17 +140,17 @@ describe('# threejs adapter', () => {
             u_specularFactor: 1,
             u_diffuse: tex,
           };
-          
+
           twgl.resizeCanvasToDisplaySize(gl.canvas);
 
           gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-          
+
           const render = function(time) {
             time = time * 0.001;
             gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.CULL_FACE);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          
+
             const fov = 30 * Math.PI / 180;
             const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
             const zNear = 0.5;
@@ -160,17 +159,17 @@ describe('# threejs adapter', () => {
             const eye = [1, 4, -6];
             const target = [0, 0, 0];
             const up = [0, 1, 0];
-          
+
             const camera = m4.lookAt(eye, target, up);
             const view = m4.inverse(camera);
             const viewProjection = m4.multiply(projection, view);
             const world = m4.rotationY(time);
-          
+
             uniforms.u_viewInverse = camera;
             uniforms.u_world = world;
             uniforms.u_worldInverseTranspose = m4.transpose(m4.inverse(world));
             uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
-          
+
             gl.useProgram(programInfo.program);
             twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
             twgl.setUniforms(programInfo, uniforms);
@@ -182,7 +181,7 @@ describe('# threejs adapter', () => {
 
 /*     it('#3 xeogl', () => {
         var glCanvas2 = new GLCanvas(canvas);
-        
+
         xeogl.scene = new xeogl.Scene({
             canvas: glCanvas2,
             webgl2: false
@@ -202,5 +201,5 @@ describe('# threejs adapter', () => {
         });
         new xeogl.CameraControl();
     }); */
-    
+
 });

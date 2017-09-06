@@ -9,7 +9,7 @@ module.exports = function (config) {
 		browsers: ['ChromeDebugging'],
 		reporters: ['mocha', 'coverage'],
 		files: [
-			'test/**/*.spec.js',
+			'debug/**/*.spec.js',
 			// Watch src files for changes but
 			// don't load them into the browser.
 			{ pattern: 'src/**/*.js', included: false }
@@ -42,7 +42,7 @@ module.exports = function (config) {
 		cfg.browsers = ['Chrome_travis_ci'];
 		cfg.preprocessors = {
 			'src/init.js': ['rollupBabel', 'coverage'],
-			'test/**/*.spec.js': ['rollupBabel', 'coverage']
+			'debug/**/*.spec.js': ['rollupBabel', 'coverage']
 		};
 		//	https://docs.travis-ci.com/user/gui-and-headless-browsers/
 		// - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost
@@ -58,7 +58,7 @@ module.exports = function (config) {
 		cfg.processKillTimeout = 30000;
 		cfg.preprocessors = {
 			'src/init.js': ['rollupBabel'],
-			'test/**/*.spec.js': ['rollupBabel']
+			'debug/**/*.spec.js': ['rollupBabel']
 		};
 		cfg.customLaunchers = {
 			ChromeDebugging: {
