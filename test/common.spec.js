@@ -2,6 +2,7 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const Common = require('./common/common');
+const Fusion = require('./../src/init');
 
 describe('common.spec', () => {
     it('should create a canvas instance', () => {
@@ -35,6 +36,20 @@ describe('common.spec', () => {
         const gl = canvas.getContext('webgl');
         const filepath = path.join(__dirname, 'tmp.png');
         Common.writeGlImage(canvas, filepath, err => {
+            assert(err === null);
+            fs.accessSync(filepath);
+            fs.unlinkSync(filepath);
+            done();
+        });
+    });
+
+    it('shoud write glCanvas to file ',(done)=>{
+        const w = 30, h = 20;
+        const canvas = Common.createHeadlessCanvas(w, h);
+        const glCanvas = new Fusion.gl.GLCanvas(canvas);
+        const gl = glCanvas.getContext('webgl');
+        const filepath = path.join(__dirname, 'tmp.png');
+        Common.writeGlImage(glCanvas, filepath, err => {
             assert(err === null);
             fs.accessSync(filepath);
             fs.unlinkSync(filepath);

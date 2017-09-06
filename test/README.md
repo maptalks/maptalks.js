@@ -38,7 +38,7 @@ npm install
 ## Generate Test Fixtures
 
 ```shell
-cd ./test/common/fixtures
+cd ./test/fixtures
 node generate.js
 ```
 
