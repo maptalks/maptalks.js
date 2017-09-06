@@ -1,6 +1,16 @@
 # fusion.gl tests
 
+## Run tests
+```shell
+mocha
+```
+
 ## Install ##
+
+### Mocha
+```shell
+npm install --global mocha
+```
 
 ### windows-build-tools
 ```shell
