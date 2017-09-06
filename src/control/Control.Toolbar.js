@@ -143,9 +143,9 @@ class Toolbar extends Control {
         if (children) {
             const position = me.options.position,
                 height = children.length * 28;
-            if ((typeof position === 'string' && position.indexOf('bottom') > -1)
-                || (typeof position === 'object' && height > parseFloat(position.bottom))) {
-                menuUL.style.top = - height - 28;
+            if ((typeof position === 'string' && position.indexOf('bottom') > -1) ||
+                (typeof position === 'object' && height > parseFloat(position.bottom))) {
+                menuUL.style.top = -height - 28;
                 menuUL.style.position = 'absolute';
             }
         }
