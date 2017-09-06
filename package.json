@@ -7,7 +7,8 @@
     "report-coverage": "codecov",
     "compile": "rollup -c",
     "prepublish": "npm run compile",
-    "test": "karma start karma.conf.js --single-run",
+    "test": "mocha",
+    "debug" : "karma start karma.conf.js --single-run",
     "start": "karma start"
   },
   "repository": {
