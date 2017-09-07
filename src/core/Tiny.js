@@ -17,7 +17,6 @@ const stamp = require('./../utils/stamp').stamp,
 const GLPROGRAMS = require('./../utils/util').GLPROGRAMS,
     GLSHADERS = require('./../utils/util').GLSHADERS,
     GLTEXTURES = require('./../utils/util').GLTEXTURES;
-
 /**
  * @class
  */
@@ -64,6 +63,9 @@ class Tiny {
      * @returns {Array} [] 
      */
     switchPorgarm(glProgram) {
+        //如果在切换program的时候，上一个program的代码未执行，则先执行
+        if(!!this._glPrgram&&!!this._programInternal&&this._programInternal.length>0)
+            this._tick(this._glPrgram, this._programInternal.splice(0, this._programInternal.length), this._overrall.splice(0, this._overrall.length));
         this._glPrgram = glProgram;
         const id = stamp(glProgram),
             tinyProgramCache = this._tinyProgramCache;
@@ -82,46 +84,48 @@ class Tiny {
             gl = this._gl,
             overrall = this._overrall,
             programInternal = this._programInternal;
-        if(!glProgram){
-            gl[name].apply(gl,rest);
-        }else{
-            programInternal.push({ 
-                name:name,
-                rest:this._exact(rest)
-            });
-        }
+        if (!glProgram)
+            gl[name].apply(gl, rest);
+        else
+            programInternal.push({ name: name, rest: this._exact(rest) });
         //如果是TICKER_ENUM,则需要加入ticker
-        if (TICKER_ENUM[name]) {
-            ticker.addOnce(
-                function (deltaTime, bucket) {
-                    bucket.glProgram.useProgram();
-                    const gl = bucket.glProgram.gl;
-                    const queue = bucket.overrall.concat(bucket.internal).reverse();
-                    let task = queue.pop();
-                    while(task!=null){
-                        gl[task.name].apply(gl,task.rest);
-                        task = queue.pop();
-                    }
-                },
-                this,
-                {
-                    overrall: overrall.splice(0, overrall.length),//重复取
-                    internal: programInternal.splice(0, programInternal.length),//清空取
-                    glProgram: glProgram
-                });
-                //update RenderFrame
-                ticker.update();
-        }
+        if (TICKER_ENUM[name])
+            this._tick(glProgram, programInternal.splice(0, programInternal.length), overrall.splice(0, overrall.length));
+    }
+    /**
+     * 
+     * @param {*} glProgram 
+     * @param {*} internal 
+     * @param {*} overrall 
+     */
+    _tick(glProgram, internal, overrall) {
         //
+        ticker.addOnce(function (deltaTime, bucket) {
+            bucket.glProgram.useProgram();
+            const gl = bucket.glProgram.gl;
+            const queue = bucket.overrall.concat(bucket.internal).reverse();
+            let task = queue.pop();
+            while (task != null) {
+                gl[task.name].apply(gl, task.rest);
+                task = queue.pop();
+            }
+        }, this, 
+        {
+            overrall,
+            internal,
+            glProgram
+        });
+        //update RenderFrame
+        ticker.update();
     }
     /**
      * 拷贝float32数组
      * @param {number} rest 
      */
-    _exact(rest){
-        for(let i=0,len = rest.length;i<len;i++){
+    _exact(rest) {
+        for (let i = 0, len = rest.length; i < len; i++) {
             let target = rest[i];
-            if(target instanceof Float32Array){
+            if (target instanceof Float32Array) {
                 rest[i] = new Float32Array(target);
             }
         }

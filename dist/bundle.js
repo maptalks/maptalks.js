@@ -1483,7 +1483,6 @@ var ticker = handle.ticker;
 var TICKER_ENUM = handle.TICKER_ENUM;
 
 var GLPROGRAMS$1 = util.GLPROGRAMS;
-
 /**
  * @class
  */
@@ -1535,6 +1534,8 @@ var Tiny = function () {
          * @returns {Array} [] 
          */
         value: function switchPorgarm(glProgram) {
+            //如果在切换program的时候，上一个program的代码未执行，则先执行
+            if (!!this._glPrgram && !!this._programInternal && this._programInternal.length > 0) this._tick(this._glPrgram, this._programInternal.splice(0, this._programInternal.length), this._overrall.splice(0, this._overrall.length));
             this._glPrgram = glProgram;
             var id = stamp$2(glProgram),
                 tinyProgramCache = this._tinyProgramCache;
@@ -1560,34 +1561,37 @@ var Tiny = function () {
                 rest[_key - 1] = arguments[_key];
             }
 
-            if (!glProgram) {
-                gl[name].apply(gl, rest);
-            } else {
-                programInternal.push({
-                    name: name,
-                    rest: this._exact(rest)
-                });
-            }
+            if (!glProgram) gl[name].apply(gl, rest);else programInternal.push({ name: name, rest: this._exact(rest) });
             //如果是TICKER_ENUM,则需要加入ticker
-            if (TICKER_ENUM[name]) {
-                ticker.addOnce(function (deltaTime, bucket) {
-                    bucket.glProgram.useProgram();
-                    var gl = bucket.glProgram.gl;
-                    var queue = bucket.overrall.concat(bucket.internal).reverse();
-                    var task = queue.pop();
-                    while (task != null) {
-                        gl[task.name].apply(gl, task.rest);
-                        task = queue.pop();
-                    }
-                }, this, {
-                    overrall: overrall.splice(0, overrall.length), //重复取
-                    internal: programInternal.splice(0, programInternal.length), //清空取
-                    glProgram: glProgram
-                });
-                //update RenderFrame
-                ticker.update();
-            }
+            if (TICKER_ENUM[name]) this._tick(glProgram, programInternal.splice(0, programInternal.length), overrall.splice(0, overrall.length));
+        }
+        /**
+         * 
+         * @param {*} glProgram 
+         * @param {*} internal 
+         * @param {*} overrall 
+         */
+
+    }, {
+        key: '_tick',
+        value: function _tick(glProgram, internal, overrall) {
             //
+            ticker.addOnce(function (deltaTime, bucket) {
+                bucket.glProgram.useProgram();
+                var gl = bucket.glProgram.gl;
+                var queue = bucket.overrall.concat(bucket.internal).reverse();
+                var task = queue.pop();
+                while (task != null) {
+                    gl[task.name].apply(gl, task.rest);
+                    task = queue.pop();
+                }
+            }, this, {
+                overrall: overrall,
+                internal: internal,
+                glProgram: glProgram
+            });
+            //update RenderFrame
+            ticker.update();
         }
         /**
          * 拷贝float32数组
