@@ -3,8 +3,9 @@ const path = require('path');
 const Common = require('../common/common');
 
 function clearDir(dir) {
-    fs.readdirSync(dir).forEach(file => {
-        fs.unlinkSync(path.join(dir, file));
+    const _dir = __dirname +"\\" +dir+'\\';
+    fs.readdirSync(_dir).forEach(file => {
+        fs.unlinkSync(path.join(_dir, file));
     });
 }
 
@@ -17,7 +18,7 @@ function generate () {
         const gl = canvas.getContext('webgl');
         const filepath = path.join(__dirname, 'expected', 'fixture' + idx + '.png');
         const fn = require('./snippets/' + filename);
-        fn(gl);
+        fn(gl,canvas);
         return new Promise(function (resolve, reject) {
             Common.writeGlImage(canvas, filepath, err => {
                 if (err) {
@@ -29,7 +30,7 @@ function generate () {
         });
     });
 
-    Promise.all(promises).then(function () {
+    Promise.all(promises).then(function (data) {
         console.log(`All ${promises.length} fixtures are generated.`);
     });
 }

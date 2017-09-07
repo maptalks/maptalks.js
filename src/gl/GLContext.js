@@ -54,6 +54,7 @@ const BRIDGE_ARRAY = [
     'getShaderParameter',
     'getTexParameter',
     'getParameter',
+    'getContextAttributes',
     //'getExtension',
     'getError',
     'getProgramInfoLog',
@@ -64,7 +65,9 @@ const BRIDGE_ARRAY = [
     'getUniform',
     'getUniformLocation',
     'getVertexAttrib',
-    'getVertexAttribOffset'
+    'getVertexAttribOffset',
+    //
+    'checkFramebufferStatus'
 ];
 /**
  * @class
@@ -302,8 +305,10 @@ class GLContext extends Dispose {
     shaderSource(shader, source) {
         const gl = this._gl;
         //1.如果不存在'precision mediump float;'则添加
-        const newSource = source.indexOf('precision') === -1?`precision mediump float;\n${source}`:source;
-        gl.shaderSource(shader, newSource);
+        source = source.indexOf('precision') === -1?`precision mediump float;\n${source}`:source;
+        //指定glsl版本
+        //source = source.indexOf('#version') === -1?`#version 300 es\n${source}`:source;
+        gl.shaderSource(shader, source);
     }
     /**
      * no need to implement
@@ -319,6 +324,13 @@ class GLContext extends Dispose {
     linkProgram(program) {
         const gl = this._gl;
         gl.linkProgram(program);
+    }
+
+
+    //webgl2 
+    createTransformFeedback(){
+        const gl = this._gl;
+        gl.createTransformFeedback.apply(gl,arguments);
     }
 
     clear(){
