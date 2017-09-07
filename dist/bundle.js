@@ -1340,6 +1340,7 @@ var INTERNAL_ENUM$1 = {
     'deleteProgram': true,
     'deleteFramebuffer': true,
     'deleteRenderbuffer': true,
+    'deleteTexture': true,
     //
     'bindFramebuffer': true,
     'framebufferTexture2D': true,
@@ -1405,7 +1406,11 @@ var TICKER_ENUM$1 = {
     'drawArrays': true
 };
 
-var ALL_ENUM$1 = merge_1({}, INTERNAL_ENUM$1, OVERRAL_ENUM$1, TICKER_ENUM$1);
+var GL2_ENUM = {
+    'bindTransformFeedback': true
+};
+
+var ALL_ENUM$1 = merge_1({}, INTERNAL_ENUM$1, OVERRAL_ENUM$1, TICKER_ENUM$1, GL2_ENUM);
 
 /**
  * internal ticker
@@ -3923,9 +3928,11 @@ var GLTEXTURES = util.GLTEXTURES;
  * 实时处理的函数,多为直接获取结果函数
  * needs to be executing in real time1
  */
-var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getShaderParameter', 'getTexParameter', 'getParameter',
+var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getShaderParameter', 'getTexParameter', 'getParameter', 'getContextAttributes',
 //'getExtension',
-'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset'];
+'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset',
+//
+'checkFramebufferStatus'];
 /**
  * @class
  * @example
@@ -4203,8 +4210,10 @@ var GLContext = function (_Dispose) {
         value: function shaderSource(shader, source) {
             var gl = this._gl;
             //1.如果不存在'precision mediump float;'则添加
-            var newSource = source.indexOf('precision') === -1 ? 'precision mediump float;\n' + source : source;
-            gl.shaderSource(shader, newSource);
+            source = source.indexOf('precision') === -1 ? 'precision mediump float;\n' + source : source;
+            //指定glsl版本
+            //source = source.indexOf('#version') === -1?`#version 300 es\n${source}`:source;
+            gl.shaderSource(shader, source);
         }
         /**
          * no need to implement
@@ -4226,6 +4235,15 @@ var GLContext = function (_Dispose) {
         value: function linkProgram(program) {
             var gl = this._gl;
             gl.linkProgram(program);
+        }
+
+        //webgl2 
+
+    }, {
+        key: 'createTransformFeedback',
+        value: function createTransformFeedback() {
+            var gl = this._gl;
+            gl.createTransformFeedback.apply(gl, arguments);
         }
     }, {
         key: 'clear',

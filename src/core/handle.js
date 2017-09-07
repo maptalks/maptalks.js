@@ -14,6 +14,7 @@ const INTERNAL_ENUM = {
     'deleteProgram': true,
     'deleteFramebuffer': true,
     'deleteRenderbuffer': true,
+    'deleteTexture':true,
     //
     'bindFramebuffer': true,
     'framebufferTexture2D': true,
@@ -104,7 +105,12 @@ const TICKER_ENUM = {
     'drawArrays': true
 }
 
-const ALL_ENUM = merge({}, INTERNAL_ENUM, OVERRAL_ENUM, TICKER_ENUM);
+const GL2_ENUM={
+    'bindTransformFeedback':true
+}
+
+
+const ALL_ENUM = merge({}, INTERNAL_ENUM, OVERRAL_ENUM, TICKER_ENUM,GL2_ENUM);
 
 /**
  * internal ticker

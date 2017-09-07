@@ -21,7 +21,7 @@ export default {
         }),
         commonjs(),
         multidest([{
-            dest: 'debug/bundle.js',
+            dest: 'debug/karma/lib/bundle.js',
             format: 'umd'
         }]),
         babel({
