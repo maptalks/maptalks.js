@@ -343,6 +343,8 @@ export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQAB
  * @param  {Object} obj1
  * @param  {Object} obj2
  * @return {Boolean}
+ * @private
+ * @memberOf Util
  */
 export function equalMapView(obj1, obj2) {
     if (!obj1 && !obj2) {
@@ -375,6 +377,8 @@ function approx(val, expected, delta) {
  * @param {Function} [cb=null]        - callback function when flash ended
  * @param {*} [context=null]          - callback context
  * @return {*} this
+ * @private
+ * @memberOf Util
  */
 export function flash(interval, count, cb, context) {
     if (!interval) {

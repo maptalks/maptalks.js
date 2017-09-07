@@ -74,6 +74,7 @@ class CanvasRenderer extends Class {
      * @method checkResources
      * @instance
      * @returns {Array[]} an array of resource arrays [ [url1, width, height], [url2, width, height], [url3, width, height] .. ]
+     * @memberOf renderer.CanvasRenderer
      */
 
     /**
@@ -82,6 +83,7 @@ class CanvasRenderer extends Class {
      * @abstract
      * @instance
      * @method draw
+     * @memberOf renderer.CanvasRenderer
      */
 
     /**
@@ -91,6 +93,7 @@ class CanvasRenderer extends Class {
      * @instance
      * @method drawOnInteracting
      * @param {Object} eventParam event parameters
+     * @memberOf renderer.CanvasRenderer
      */
 
     /**
