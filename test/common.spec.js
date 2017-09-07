@@ -48,7 +48,7 @@ describe('common.spec', () => {
         const canvas = Common.createHeadlessCanvas(w, h);
         const glCanvas = new Fusion.gl.GLCanvas(canvas);
         const gl = glCanvas.getContext('webgl');
-        const filepath = path.join(__dirname, 'tmp.png');
+        const filepath = path.join(__dirname, 'tmp2.png');
         Common.writeGlImage(glCanvas, filepath, err => {
             assert(err === null);
             fs.accessSync(filepath);

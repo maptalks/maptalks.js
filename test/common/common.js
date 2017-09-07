@@ -70,6 +70,9 @@ function mock() {
                 return null;
             }
         }
+        global.window.addEventListener = function(){
+            
+        }
     }
 }
 
