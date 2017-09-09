@@ -58,14 +58,22 @@ const tex = twgl.createTexture(gl2,{...});
 > with xeogl
 ```javascript
 
-const glCanvas2 = new GLCanvas(canvas);
+const glCanvas3 = new Fusion.gl.GLCanvas(canvas);
         
 xeogl.scene = new xeogl.Scene({
-    canvas: glCanvas2,
+    canvas: glCanvas3,
     webgl2: false
 });
 
 /*other code*/
+
+```
+> with playcanvas
+```javascript
+const glCanvas4 = new Fusion.gl.GLCanvas(canvas);
+
+const app = new pc.Application(glCanvas, { });
+app.start();
 
 ```
 > creating instance of GLCanvas each time while you want to mix current library with others
