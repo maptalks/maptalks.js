@@ -48,7 +48,15 @@ const options = {
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     constructor(id, options) {
+        let canvas;
+        if (options) {
+            canvas = options.canvas;
+            delete options.canvas;
+        }
         super(options);
+        if (canvas) {
+            this._canvas = canvas;
+        }
         this.setId(id);
     }
 
