@@ -24,7 +24,8 @@
     "test": "gulp test --cov",
     "pretest": "npm run lint",
     "prepublish": "gulp minify",
-    "preversion": "npm run lint && npm run doc  && git add -A docs/api",
+    "preversion": "npm run lint",
+    "version" : "npm run doc && git add -A docs/api",
     "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",
