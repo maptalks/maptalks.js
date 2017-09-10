@@ -185,6 +185,8 @@ describe('#Sprite', function () {
             symbol : {
                 'textName' : '■■■■■■■■■',
                 'textSize' : 20,
+                'textHaloFill' : '#fff',
+                'textHaloRadius' : 3,
                 'textDx' : 10,
                 'textDy' : 20
             }

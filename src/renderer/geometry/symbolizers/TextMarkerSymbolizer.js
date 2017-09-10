@@ -89,11 +89,15 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
 
     getMarkerExtent() {
         const dxdy = this.getDxDy(),
-            style = this.style,
-            size = this.textDesc['size'];
+            style = this.style;
+        let size = this.textDesc['size'];
         const alignPoint = getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
         const alignW = alignPoint.x,
             alignH = alignPoint.y;
+        if (style['textHaloRadius']) {
+            const r = style['textHaloRadius'];
+            size = size.add(r * 2, r * 2);
+        }
         return new PointExtent(
             dxdy.add(alignW, alignH),
             dxdy.add(alignW + size['width'], alignH + size['height'])
