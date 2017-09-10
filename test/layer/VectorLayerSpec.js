@@ -1,4 +1,4 @@
-describe('#VectorLayer', function () {
+describe('VectorLayer', function () {
 
     var container;
     var map;
@@ -40,6 +40,19 @@ describe('#VectorLayer', function () {
             var layer = new maptalks.VectorLayer('v', [new maptalks.Marker(map.getCenter()), new maptalks.Marker(map.getCenter())], { 'cursor' : 'default' });
             expect(layer.getCount()).to.be.eql(2);
             expect(layer.options['cursor']).to.be.eql('default');
+        });
+
+        it('create on a given canvas', function (done) {
+            var canvas = document.createElement('canvas');
+            var layer = new maptalks.VectorLayer('v', [new maptalks.Marker(map.getCenter())], { 'canvas' : canvas });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, -2);
+                var w = canvas.width, h = canvas.height;
+                var color = canvas.getContext('2d').getImageData(w / 2, h / 2 - 2, 1, 1).data;
+                expect(color[3]).to.be.above(0);
+                done();
+            });
+            layer.addTo(map);
         });
     });
 
