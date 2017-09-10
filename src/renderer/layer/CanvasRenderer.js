@@ -427,7 +427,8 @@ class CanvasRenderer extends Class {
         }
         delete this._maskExtent;
         const mask = this.layer.getMask();
-        if (!mask) {
+        // this.context may be not available
+        if (!mask || !this.context) {
             this.layer.fire('renderstart', {
                 'context': this.context
             });
@@ -476,7 +477,7 @@ class CanvasRenderer extends Class {
      * call when rendering completes, this will fire necessary events and call setCanvasUpdated
      */
     completeRender() {
-        if (this.getMap() && this.context) {
+        if (this.getMap()) {
             this._renderComplete = true;
             /**
              * renderend event, fired when layer ends rendering.
