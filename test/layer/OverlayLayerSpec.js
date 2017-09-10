@@ -1,4 +1,4 @@
-describe('#OverlayLayer', function () {
+describe('OverlayLayer', function () {
 
     var container;
     var map;
