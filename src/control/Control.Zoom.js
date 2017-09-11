@@ -110,8 +110,8 @@ class Zoom extends Control {
         if (this._sliderBox) {
 
             const totalRange = (map.getMaxZoom() - map.getMinZoom()) * UNIT;
-            this._sliderBox.style.height = totalRange + 6 + 'px';
-            this._sliderRuler.style.height = totalRange + 'px';
+            this._sliderBox.style.height = totalRange + 16 + 'px';
+            this._sliderRuler.style.height = totalRange + 8 + 'px';
             this._sliderRuler.style.cursor = 'pointer';
             const zoomRange = (map.getMaxZoom() - map.getZoom()) * UNIT;
             this._sliderReading.style.height = (map.getZoom() - map.getMinZoom()) * UNIT + 'px';

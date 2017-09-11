@@ -139,6 +139,9 @@ class Toolbar extends Control {
         if (index === len - 1 && children) {
             menuDom.style = 'right: 0px;';
             menuUL.style = 'right: 0px;position: absolute;';
+            if (this.options['reverseMenu']) {
+                menuUL.style.bottom = 0;
+            }
         }
         menuDom.appendChild(createEl('em', 'maptalks-ico'));
 
