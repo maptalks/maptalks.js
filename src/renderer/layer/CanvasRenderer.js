@@ -74,6 +74,7 @@ class CanvasRenderer extends Class {
      * @method checkResources
      * @instance
      * @returns {Array[]} an array of resource arrays [ [url1, width, height], [url2, width, height], [url3, width, height] .. ]
+     * @memberOf renderer.CanvasRenderer
      */
 
     /**
@@ -82,6 +83,7 @@ class CanvasRenderer extends Class {
      * @abstract
      * @instance
      * @method draw
+     * @memberOf renderer.CanvasRenderer
      */
 
     /**
@@ -91,6 +93,7 @@ class CanvasRenderer extends Class {
      * @instance
      * @method drawOnInteracting
      * @param {Object} eventParam event parameters
+     * @memberOf renderer.CanvasRenderer
      */
 
     /**
@@ -333,8 +336,21 @@ class CanvasRenderer extends Class {
         }
         const map = this.getMap();
         const size = map.getSize();
-        const r = Browser.retina ? 2 : 1;
-        this.canvas = Canvas2D.createCanvas(r * size['width'], r * size['height'], map.CanvasClass);
+        const r = Browser.retina ? 2 : 1,
+            w = r * size.width,
+            h = r * size.height;
+        if (this.layer._canvas) {
+            const canvas = this.layer._canvas;
+            canvas.width = w;
+            canvas.height = h;
+            if (canvas.style) {
+                canvas.style.width = size.width + 'px';
+                canvas.style.height = size.height + 'px';
+            }
+            this.canvas = this.layer._canvas;
+        } else {
+            this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
+        }
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
@@ -368,14 +384,18 @@ class CanvasRenderer extends Class {
             size = canvasSize;
         }
         const r = Browser.retina ? 2 : 1;
-        if (this.canvas.width === r * size['width'] && this.canvas.height === r * size['height']) {
+        if (this.canvas.width === r * size.width && this.canvas.height === r * size.height) {
             return;
         }
         //retina support
-        this.canvas.height = r * size['height'];
-        this.canvas.width = r * size['width'];
+        this.canvas.height = r * size.height;
+        this.canvas.width = r * size.width;
         if (Browser.retina) {
             this.context.scale(r, r);
+        }
+        if (this.layer._canvas && this.canvas.style) {
+            this.canvas.style.width = size.width + 'px';
+            this.canvas.style.height = size.height + 'px';
         }
     }
 
@@ -407,7 +427,8 @@ class CanvasRenderer extends Class {
         }
         delete this._maskExtent;
         const mask = this.layer.getMask();
-        if (!mask) {
+        // this.context may be not available
+        if (!mask || !this.context) {
             this.layer.fire('renderstart', {
                 'context': this.context
             });
@@ -456,7 +477,7 @@ class CanvasRenderer extends Class {
      * call when rendering completes, this will fire necessary events and call setCanvasUpdated
      */
     completeRender() {
-        if (this.getMap() && this.context) {
+        if (this.getMap()) {
             this._renderComplete = true;
             /**
              * renderend event, fired when layer ends rendering.

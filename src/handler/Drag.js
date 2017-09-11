@@ -124,11 +124,15 @@ class DragHandler extends Handler {
 
     _offEvents() {
         const dom = this.dom;
+        off(dom, 'mouseleave', this.onMouseUp, this);
+        if ((typeof document === 'undefined') || (typeof window === 'undefined')) {
+            return;
+        }
         for (const i in MOVE_EVENTS) {
             off(document, MOVE_EVENTS[i], this.onMouseMove, this);
             off(document, END_EVENTS[i], this.onMouseUp, this);
         }
-        off(dom, 'mouseleave', this.onMouseUp, this);
+
         if (dom['releaseCapture']) {
             dom['releaseCapture']();
         } else if (window.captureEvents) {

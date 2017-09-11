@@ -53,6 +53,9 @@ class Path extends Geometry {
         if (coordinates.length === 0) {
             return this;
         }
+        this._animIdx = 0;
+        this._animLenSoFar = 0;
+        this.show();
         const isPolygon = !!this.getShell;
         const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : this.getCoordinates();
         const projection = this._getProjection();
@@ -78,6 +81,8 @@ class Path extends Geometry {
             if (frame.state.playState === 'finished') {
                 delete this._showPlayer;
                 delete this._aniShowCenter;
+                delete this._animIdx;
+                delete this._animLenSoFar;
                 this.setCoordinates(coordinates);
             }
             if (cb) {
@@ -94,11 +99,6 @@ class Path extends Geometry {
         }
         const map = this.getMap();
         const targetLength = t / duration * length;
-        if (!this._animIdx) {
-            this._animIdx = 0;
-            this._animLenSoFar = 0;
-            this.show();
-        }
         let segLen = 0;
         let i, l;
         for (i = this._animIdx, l = coordinates.length; i < l - 1; i++) {

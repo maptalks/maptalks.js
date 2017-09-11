@@ -29,6 +29,7 @@ const specialPattern = /[\b\t\r\v\f]/igm;
  * Including: \b \t \r \v \f
  * @param  {String} str string to escape
  * @return {String}
+ * @memberOf StringUtil
  */
 export function escapeSpecialChars(str) {
     if (!isString(str)) {

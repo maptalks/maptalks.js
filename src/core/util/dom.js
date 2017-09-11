@@ -310,6 +310,7 @@ export function offsetDom(dom, offset) {
  * Compute dom's position
  * @param  {HTMLElement} dom
  * @return {Number[]}
+ * @memberOf DomUtil
  */
 export function computeDomPosition(dom) {
     const style = window.getComputedStyle(dom);

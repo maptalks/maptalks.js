@@ -38,6 +38,10 @@ describe('#Size', function () {
             expect(c.height).to.be.eql(3);
             expect(t.width).to.be.eql(3);
             expect(t.height).to.be.eql(5);
+
+            t = c.add(1, 2);
+            expect(t.width).to.be.eql(3);
+            expect(t.height).to.be.eql(5);
         });
 
         it('can decide whether is equal', function () {

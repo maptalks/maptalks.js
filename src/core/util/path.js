@@ -227,6 +227,8 @@ function _getBitCode(p, bounds) {
  * @param {Point} southeast ellipse's southeast point
  * @param {Number} tolerance
  * @returns {Boolean}
+ * @private
+ * @memberOf Util
  */
 export function withInEllipse(point, center, southeast, tolerance) {
     point = new Point(point);

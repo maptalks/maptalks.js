@@ -111,6 +111,8 @@ export function hasOwn(obj, key) {
  * @param  {Object[]} arr       array to join
  * @param  {String} seperator  seperator
  * @return {String}           result string
+ * @private
+ * @memberOf Util
  */
 export function join(arr, seperator) {
     if (arr.join) {

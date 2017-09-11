@@ -43,8 +43,16 @@ class Size {
      * @param {Size} size - size to add
      * @return {Size} result
      */
-    add(size) {
-        return new Size(this['width'] + size['width'], this['height'] + size['height']);
+    add(x, y) {
+        let w, h;
+        if (x instanceof Size) {
+            w = this.width + x.width;
+            h = this.height + x.height;
+        } else {
+            w = this.width + x;
+            h = this.height + y;
+        }
+        return new Size(w, h);
     }
 
     /**
