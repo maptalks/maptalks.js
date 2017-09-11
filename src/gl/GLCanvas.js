@@ -1,5 +1,8 @@
 /**
- *  
+ * a virtual doom element
+ * -simulate HTMLCanvasElement action
+ * -using GLContext instead of WebGLRenderingContext
+ * @author yellow date 2017/8/23
  */
 const GLContext = require('./GLContext'),
     merge = require('./../utils/merge'),
@@ -14,16 +17,22 @@ const GLContext = require('./GLContext'),
     GLEXTENSIONS = require('./../utils/util').GLEXTENSIONS,
     GLLIMITS = require('./../utils/util').GLLIMITS;
 /**
+ * a virtual HTMLCanvasElement element
  * @class
  */
 class GLCanvas extends Dispose {
     /**
      * 
      * @param {HTMLCanvasElement} canvas 
+     * @param {Object} [options]
+     * @param {number} [options.width]
+     * @param {number} [options.height]
      */
-    constructor(canvas) {
+    constructor(canvas,options ={}) {
         super();
         this._rootId = stamp(canvas);
+        canvas.width = options.width || canvas.clientWidth;
+        canvas.height = options.height || canvas.clientHeight;
         CANVASES[this._rootId] = canvas;
     }
     /**
@@ -42,20 +51,6 @@ class GLCanvas extends Dispose {
             preserveDrawingBuffer: options.preserveDrawingBuffer || false
             //failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
         }
-    }
-    /**
-     * return HTMLCanvasElement.style 
-     */
-    get style() {
-        const id = this._rootId;
-        return CANVASES[id].style;
-    }
-    /**
-     * 
-     */
-    get parentElement(){
-        const id = this._rootId;
-        return CANVASES[id].parentElement
     }
     /**
      * 
@@ -88,57 +83,93 @@ class GLCanvas extends Dispose {
         }
         return GLCONTEXTS[id];
     }
-
+    /**
+     * return HTMLCanvasElement.style 
+     */
+    get style() {
+        const id = this._rootId;
+        return CANVASES[id].style;
+    }
+    /**
+     * 
+     */
+    get parentElement(){
+        const id = this._rootId;
+        return CANVASES[id].parentElement
+    }
+    /**
+     * 
+     */
     getBoundingClientRect() {
         const id = this._rootId;
         CANVASES[id].getBoundingClientRect();
     }
-
+    /**
+     * 
+     * @param {*} type 
+     * @param {*} Listener 
+     * @param {*} useCapture 
+     */
     addEventListener(type, Listener, useCapture) {
         const id = this._rootId;
         CANVASES[id].addEventListener(type, Listener, useCapture);
     }
-
+    /**
+     * 
+     */
     set width(v){
         const id = this._rootId;
         CANVASES[id].width = v;
     }
-
+    /**
+     * 
+     */
     set height(v){
         const id = this._rootId;
         CANVASES[id].height = v;
     }
-
+    /**
+     * 
+     */
     get width(){
         const id = this._rootId;
         return CANVASES[id].width;
     }
-    
+    /**
+     * 
+     */
     get height(){
         const id = this._rootId;
         return CANVASES[id].height;
     }
-
+    /**
+     * 
+     */
     get clientWidth(){
         const id = this._rootId;
         return CANVASES[id].clientWidth;
     }
-
+    /**
+     * 
+     */
     get clientHeight(){
         const id = this._rootId;
         return CANVASES[id].clientHeight;
     }
-
+    /**
+     * 
+     */
     get offsetLeft(){
         const id = this._rootId;
         return CANVASES[id].offsetLeft;
     }
-
+    /**
+     * 
+     */
     get offsetTop(){
         const id = this._rootId;
         return CANVASES[id].offsetTop;
     }
-
 }
 
 module.exports = GLCanvas;
