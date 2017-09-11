@@ -1,8 +1,8 @@
-﻿/// <reference path="karma/lib/three.js" />
-/// <reference path="karma/lib/bundle.js" />
-/// <reference path="karma/lib/twgl.js" />
-/// <reference path="karma/lib/xeogl.js" />
-/// <reference path="karma/lib/playcanvas.js" />
+﻿/// <reference path="lib/three.js" />
+/// <reference path="lib/bundle.js" />
+/// <reference path="lib/twgl.js" />
+/// <reference path="lib/xeogl.js" />
+/// <reference path="lib/playcanvas.js" />
 
 const canvas = document.getElementById('cvs');
 canvas.width = 800;
@@ -20,19 +20,19 @@ app.setCanvasResolution(pc.RESOLUTION_AUTO);
 
 // ensure canvas is resized when window changes size
 window.addEventListener('resize', function() {
-    app.resizeCanvas();
+   app.resizeCanvas();
 });
 
 // create box entity
 var cube = new pc.Entity('cube');
 cube.addComponent('model', {
-    type: 'box'
+   type: 'box'
 });
 
 // create camera entity
 var camera = new pc.Entity('camera');
 camera.addComponent('camera', {
-    clearColor: new pc.Color(0.1, 0.1, 0.1)
+   clearColor: new pc.Color(0.1, 0.1, 0.1)
 });
 
 // create directional light entity
@@ -50,5 +50,5 @@ light.setEulerAngles(45, 0, 0);
 
 // register a global update event
 app.on('update', function (deltaTime) {
-    cube.rotate(10 * deltaTime, 20 * deltaTime, 30 * deltaTime);
+   cube.rotate(10 * deltaTime, 20 * deltaTime, 30 * deltaTime);
 });
