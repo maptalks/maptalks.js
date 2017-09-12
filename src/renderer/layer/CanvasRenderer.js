@@ -351,15 +351,20 @@ class CanvasRenderer extends Class {
         } else {
             this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
         }
+        this.initContext();
+        if (this.onCanvasCreate) {
+            this.onCanvasCreate();
+        }
+    }
+
+    initContext() {
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
         }
         if (Browser.retina) {
+            const r = 2;
             this.context.scale(r, r);
-        }
-        if (this.onCanvasCreate) {
-            this.onCanvasCreate();
         }
     }
 
