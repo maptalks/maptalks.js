@@ -21,19 +21,19 @@ describe('TileConfig', function () {
         };
         map = new maptalks.Map(container, option);
 
-        const [z, x, y] = [13, 4093, 2724];
+        var [z, x, y] = [13, 4093, 2724];
 
         // getTileConfig
-        const size = 256;
-        const srs = map.getSpatialReference();
-        const projection = srs.getProjection();
-        const tileSystem = maptalks.TileSystem.getDefault(projection);
-        const fullExtent = srs.getFullExtent();
-        const tileConfig = new maptalks.TileConfig(tileSystem, fullExtent, new maptalks.Size(size, size));
+        var size = 256;
+        var srs = map.getSpatialReference();
+        var projection = srs.getProjection();
+        var tileSystem = maptalks.TileSystem.getDefault(projection);
+        var fullExtent = srs.getFullExtent();
+        var tileConfig = new maptalks.TileConfig(tileSystem, fullExtent, new maptalks.Size(size, size));
 
         // tileCoordToExtent
-        const res = srs.getResolution(z);
-        const extent = tileConfig.getTilePrjExtent(x, y, res);
+        var res = srs.getResolution(z);
+        var extent = tileConfig.getTilePrjExtent(x, y, res);
 
         expect(extent.contains(projection.project(new maptalks.Coordinate(-0.09, 51.5)))).to.be.ok();
     });
