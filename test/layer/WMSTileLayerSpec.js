@@ -1,4 +1,4 @@
-describe('#WMSTileLayer', function () {
+describe('WMSTileLayer', function () {
 
     var container;
     var map;
@@ -105,7 +105,7 @@ describe('#WMSTileLayer', function () {
             'renderer' : 'canvas'
         });
         tile.once('layerload', function () {
-            expect(tile.getTileUrl(0, 1, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
+            expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
             done();
         });
         map.addLayer(tile);
@@ -127,7 +127,7 @@ describe('#WMSTileLayer', function () {
             'renderer' : 'canvas'
         });
         tile.once('layerload', function () {
-            expect(tile.getTileUrl(0, 1, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
+            expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
             done();
         });
         map.addLayer(tile);
