@@ -174,14 +174,14 @@ class TileConfig {
      * @param  {Number} tileX
      * @param  {Number} tileY
      * @param  {Number} res
+     * @param  {Transformation} transformation
      * @return {Extent}
      */
     getTilePrjExtent(tileX, tileY, res) {
-        const tileSystem = this.tileSystem,
-            tileSize = this['tileSize'],
+        const tileSize = this['tileSize'],
             sw = new Coordinate(this.getTileProjectedSw(tileX, tileY, res));
-        const sx = tileSystem['scale']['x'],
-            sy = tileSystem['scale']['y'];
+        const sx = this.transformation.matrix[0],
+            sy = this.transformation.matrix[1];
         const x = sw.x + sx * (res * tileSize['width']),
             y = sw.y - sy * (res * tileSize['height']);
         return new Extent(sw, new Coordinate(x, y));
