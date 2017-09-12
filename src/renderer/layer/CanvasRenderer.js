@@ -614,9 +614,6 @@ class CanvasRenderer extends Class {
             // not to create canvas when layer is empty
             return;
         }
-        if (!this._painted && this.onAdd) {
-            this.onAdd();
-        }
         this._drawAndRecord();
     }
 
