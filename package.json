@@ -1,6 +1,6 @@
 {
   "name": "maptalks",
-  "version": "0.28.0-beta.2",
+  "version": "0.28.0-beta.3",
   "description": "An open-source javascript library for 2D/3D maps.",
   "license": "BSD-3-Clause",
   "author": "Fu Zhen",
@@ -25,7 +25,7 @@
     "pretest": "npm run lint",
     "prepublish": "gulp minify",
     "preversion": "npm run lint",
-    "version" : "npm run doc && git add -A docs/api",
+    "version": "npm run doc && git add -A docs/api",
     "doc": "gulp doc"
   },
   "main": "dist/maptalks.js",
