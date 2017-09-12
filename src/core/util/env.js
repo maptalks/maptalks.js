@@ -1,10 +1,9 @@
 /**
- * From https://github.com/abhirathore2006/detect-is-node/
+ * from detect-node
+ * https://github.com/iliakan/detect-node
  *
- * @property {boolean} IS_NODE - whether running in nodejs.
+ * @property {boolean} IS_NODE - whether running in nodejs but not on electron
  * @global
  * @name IS_NODE
  */
-export const IS_NODE = (function () {
-    return new Function('try { return this === global; } catch(e) { return false; }')();
-})();
+export const IS_NODE = Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]' && !process.versions['electron'];
