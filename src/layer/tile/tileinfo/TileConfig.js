@@ -174,7 +174,6 @@ class TileConfig {
      * @param  {Number} tileX
      * @param  {Number} tileY
      * @param  {Number} res
-     * @param  {Transformation} transformation
      * @return {Extent}
      */
     getTilePrjExtent(tileX, tileY, res) {
