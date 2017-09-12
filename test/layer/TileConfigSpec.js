@@ -20,8 +20,7 @@ describe('TileConfig', function () {
             center: [-0.09, 51.505]
         };
         map = new maptalks.Map(container, option);
-
-        var [z, x, y] = [13, 4093, 2724];
+        var z = 13, x = 4093, y = 2724;
 
         // getTileConfig
         var size = 256;
@@ -48,7 +47,7 @@ describe('TileConfig', function () {
         };
         map = new maptalks.Map(container, option);
 
-        var [z, x, y] = [13, 1644, 440];
+        var z = 13, x = 1644, y = 440;
 
         // getTileConfig
         var size = 256;
