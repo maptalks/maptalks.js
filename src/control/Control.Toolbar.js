@@ -137,8 +137,8 @@ class Toolbar extends Control {
             menuUL = createEl('ul'),
             children = items[index]['children'];
         if (index === len - 1 && children) {
-            menuDom.style = 'right: 0px;';
-            menuUL.style = 'right: 0px;position: absolute;';
+            menuDom.style.cssText = 'right: 0px;';
+            menuUL.style.cssText = 'right: 0px;position: absolute;';
             if (this.options['reverseMenu']) {
                 menuUL.style.bottom = 0;
             }
