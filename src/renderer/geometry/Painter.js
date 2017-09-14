@@ -184,11 +184,11 @@ export default class Painter extends Class {
                 } else if (this.geometry.getJSONType() === 'LineString') {
                     // clip the line string to draw less and improve performance
                     if (!Array.isArray(points[0])) {
-                        clipPoints = clipLine(points, extent2D, true);
+                        clipPoints = clipLine(points, extent2D);
                     } else {
                         clipPoints = [];
                         for (let i = 0; i < points.length; i++) {
-                            pushIn(clipPoints, clipLine(points[i], extent2D, true));
+                            pushIn(clipPoints, clipLine(points[i], extent2D));
                         }
                     }
                 }

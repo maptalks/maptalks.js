@@ -1,4 +1,4 @@
-describe('#MultiLineString', function () {
+describe('Geometry.MultiLineString', function () {
 
     var container;
     var map;
@@ -32,8 +32,28 @@ describe('#MultiLineString', function () {
             { x: 6, y: 5 }
         ];
         mp.setCoordinates(coords);
+        expect(mp.getCenter()).to.be.closeTo(new maptalks.Coordinate(4.333333333, 4.66666666));
+    });
 
-        expect(mp.getCenter()).to.not.be(null);
+    it('getCenterInExtent', function () {
+        var mp = new maptalks.MultiLineString([]);
+        var coords = [];
+        coords[0] = [
+            { x: 1, y: 2 },
+            { x: 3, y: 4 },
+            { x: 4, y: 3 }
+        ];
+        coords[1] = [
+            { x: 5, y: 6 },
+            { x: 7, y: 8 },
+            { x: 6, y: 5 }
+        ];
+        mp.setCoordinates(coords);
+        var center = mp.getCenterInExtent(new maptalks.Extent(100, 100, 100.5, 100.5));
+        expect(center === null).to.be.ok();
+        center = mp.getCenterInExtent(new maptalks.Extent(2, 3, 2.5, 3.5));
+        expect(center.x).to.be(2.25);
+        expect(center.y).to.be(3.25);
     });
 
     it('getExtent', function () {

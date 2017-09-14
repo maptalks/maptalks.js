@@ -1,4 +1,4 @@
-describe('#MultiPolygon', function () {
+describe('Geometry.MultiPolygon', function () {
 
     var container;
     var map;
@@ -36,7 +36,32 @@ describe('#MultiPolygon', function () {
             ]
         ];
         mp.setCoordinates(coords);
-        expect(mp.getCenter().toArray()).to.not.be([5, 5]);
+        expect(mp.getCenter().toArray()).to.be.eql([5, 5]);
+    });
+
+    it('getCenterInExtent', function () {
+        var mp = new maptalks.MultiPolygon([]);
+        var coords = [];
+        coords[0] = [
+            [
+                { x: 1, y: 2 },
+                { x: 3, y: 4 },
+                { x: 8, y: 5 }
+            ]
+        ];
+        coords[1] = [
+            [
+                { x: 5, y: 6 },
+                { x: 7, y: 8 },
+                { x: 6, y: 5 }
+            ]
+        ];
+        mp.setCoordinates(coords);
+        var center = mp.getCenterInExtent(new maptalks.Extent(100, 100, 100.5, 100.5));
+        expect(center === null).to.be.ok();
+        center = mp.getCenterInExtent(new maptalks.Extent(2, 3, 2.5, 3.5));
+        expect(center.x).to.be(2.25);
+        expect(center.y).to.be(3.125);
     });
 
     it('getExtent', function () {

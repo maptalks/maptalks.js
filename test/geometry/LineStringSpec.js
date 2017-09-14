@@ -1,4 +1,4 @@
-describe('#LineString', function () {
+describe('Geometry.LineString', function () {
 
     var container;
     var map;
@@ -25,6 +25,16 @@ describe('#LineString', function () {
         ]);
         var got = polyline.getCenter();
         expect(got.x).to.eql(60);
+        expect(got.y).to.eql(0);
+    });
+
+    it('getCenterInExtent', function () {
+        var polyline = new maptalks.LineString([
+            { x: 0, y: 0 },
+            { x: 120, y: 0 }
+        ]);
+        var got = polyline.getCenterInExtent(new maptalks.Extent(20, -20, 40, 50));
+        expect(got.x).to.eql(30);
         expect(got.y).to.eql(0);
     });
 

@@ -131,6 +131,34 @@ class Path extends Geometry {
         }
     }
 
+    _getCenterInExtent(extent, coordinates, clipFn) {
+        const meExtent = this.getExtent();
+        if (!extent.intersects(meExtent)) {
+            return null;
+        }
+        const clipped = clipFn(coordinates, extent);
+        if (clipped.length === 0) {
+            return null;
+        }
+        let [sumx, sumy, counter] = [0, 0, 0];
+        clipped.forEach(part => {
+            if (Array.isArray(part)) {
+                part.forEach(c => {
+                    sumx += c.x;
+                    sumy += c.y;
+                    counter++;
+                });
+            } else {
+                sumx += part.x;
+                sumy += part.y;
+                counter++;
+            }
+        });
+        const c = new Coordinate(sumx, sumy)._multi(1 / counter);
+        c.count = counter;
+        return c;
+    }
+
     /**
      * Transform projected coordinates to view points
      * @param  {Coordinate[]} prjCoords           - projected coordinates
@@ -239,7 +267,7 @@ class Path extends Geometry {
         if (this.hasHoles && this.hasHoles()) {
             rings.push.apply(rings, this.getHoles());
         }
-        return coords2Extent(rings);
+        return this._coords2Extent(rings);
     }
 
     _computePrjExtent() {
@@ -247,7 +275,7 @@ class Path extends Geometry {
         if (this.hasHoles && this.hasHoles()) {
             coords.push.apply(coords, this._getPrjHoles());
         }
-        return coords2Extent(coords);
+        return this._coords2Extent(coords);
     }
 
     _get2DLength() {
@@ -276,18 +304,18 @@ class Path extends Geometry {
         }
         return w ? w / 2 : 1.5;
     }
+
+    _coords2Extent(coords) {
+        const result = new Extent();
+        for (let i = 0, l = coords.length; i < l; i++) {
+            for (let j = 0, ll = coords[i].length; j < ll; j++) {
+                result._combine(coords[i][j]);
+            }
+        }
+        return result;
+    }
 }
 
 Path.mergeOptions(options);
-
-function coords2Extent(coords) {
-    const result = new Extent();
-    for (let i = 0, l = coords.length; i < l; i++) {
-        for (let j = 0, ll = coords[i].length; j < ll; j++) {
-            result._combine(coords[i][j]);
-        }
-    }
-    return result;
-}
 
 export default Path;

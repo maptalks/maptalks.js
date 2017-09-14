@@ -1,7 +1,7 @@
 import Point from 'geo/Point';
 
 
-export function clipLine(points, bounds, useLastCode, round) {
+export function clipLine(points, bounds, round) {
     const parts = [];
     let k = 0, segment;
     for (let j = 0, l = points.length; j < l - 1; j++) {

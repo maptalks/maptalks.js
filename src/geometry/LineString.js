@@ -1,7 +1,7 @@
 import { isNil } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
-import { pointInsidePolygon, distanceToSegment } from 'core/util/path';
+import { pointInsidePolygon, distanceToSegment, clipLine } from 'core/util/path';
 import Path from './Path';
 
 /**
@@ -73,6 +73,18 @@ class LineString extends Path {
      */
     getCoordinates() {
         return this._coordinates || [];
+    }
+
+    /**
+     * Get center of linestring's intersection with give extent
+     * @example
+     *  const extent = map.getExtent();
+     *  const center = line.getCenterInExtent(extent);
+     * @param {Extent} extent
+     * @return {Coordinate} center, null if line doesn't intersect with extent
+     */
+    getCenterInExtent(extent) {
+        return this._getCenterInExtent(extent, this.getCoordinates(), clipLine);
     }
 
     _computeGeodesicLength(measurer) {

@@ -1,4 +1,4 @@
-import MultiGeometry from './MultiGeometry';
+import MultiPath from './MultiPath';
 import Polygon from './Polygon';
 
 /**
@@ -42,7 +42,7 @@ import Polygon from './Polygon';
  *           draggable:true
  * }).addTo(layer);
  */
-class MultiPolygon extends MultiGeometry {
+class MultiPolygon extends MultiPath {
 
     /**
      * @param {Number[][][][]|Coordinate[][][]|Polygon[]} data - construct data, coordinates or an array of polygons

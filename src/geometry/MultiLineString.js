@@ -1,4 +1,4 @@
-import MultiGeometry from './MultiGeometry';
+import MultiPath from './MultiPath';
 import LineString from './LineString';
 
 /**
@@ -32,7 +32,7 @@ import LineString from './LineString';
  *      }
  * ).addTo(layer);
  */
-class MultiLineString extends MultiGeometry {
+class MultiLineString extends MultiPath {
 
     /**
      * @param {Number[][][]|Coordinate[][]|LineString[]} data - construct data, coordinates or an array of linestrings

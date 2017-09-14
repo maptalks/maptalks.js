@@ -35,6 +35,21 @@ describe('Geometry.Polygon', function () {
         expect(got).to.closeTo(new maptalks.Coordinate([0, 0]));
     });
 
+    it('get center in extent', function () {
+        var rings = [
+            [
+                { x: -1, y: 1 },
+                { x: 1, y: 1 },
+                { x: 1, y: -1 },
+                { x: -1, y: -1 }
+            ]
+        ];
+        var polygon = new maptalks.Polygon(rings);
+        var got = polygon.getCenterInExtent(new maptalks.Extent(0, 0, 0.5, 0.5));
+
+        expect(got).to.closeTo(new maptalks.Coordinate([0.25, 0.25]));
+    });
+
     it('getCenter of an empty polygon', function () {
         var polygon = new maptalks.Polygon([[]]);
         var got = polygon.getCenter();
