@@ -150,7 +150,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!options['center']) {
             throw new Error('Invalid center when creating map.');
         }
-        // copy options
+        // prepare options
         const opts = extend({}, options);
         const zoom = opts['zoom'];
         delete opts['zoom'];
@@ -165,26 +165,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         super(opts);
 
         this._loaded = false;
-        if (isString(container)) {
-            this._containerDOM = document.getElementById(container);
-            if (!this._containerDOM) {
-                throw new Error('invalid container when creating map: \'' + container + '\'');
-            }
-        } else {
-            this._containerDOM = container;
-            if (IS_NODE) {
-                //Reserve container's constructor in node for canvas creating.
-                this.CanvasClass = this._containerDOM.constructor;
-            }
-        }
-
-        if (!IS_NODE) {
-            if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
-                if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
-                    throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
-                }
-            }
-        }
+        this._initContainer(container);
 
         this._panels = {};
 
@@ -1523,6 +1504,28 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     //-----------------------------------------------------------
+
+    _initContainer(container) {
+        if (isString(container)) {
+            this._containerDOM = document.getElementById(container);
+            if (!this._containerDOM) {
+                throw new Error('Invalid container when creating map: \'' + container + '\'');
+            }
+        } else {
+            this._containerDOM = container;
+            if (IS_NODE) {
+                //Reserve container's constructor in node for canvas creating.
+                this.CanvasClass = this._containerDOM.constructor;
+            }
+        }
+
+        if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
+            if (this._containerDOM.childNodes[0].className === 'maptalks-wrapper') {
+                throw new Error('Container is already loaded with another map instance, use map.remove() to clear it.');
+            }
+        }
+    }
+
     /**
      * try to change cursor when map is not setCursored
      * @private
