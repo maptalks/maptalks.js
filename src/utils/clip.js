@@ -145,4 +145,4 @@ let clipPolyline = function (subLineString, bound) {
     return clipLines;
 }
 
-export default {clipPolygon,clipPolyline};
+module.exports = { clipPolygon, clipPolyline };
