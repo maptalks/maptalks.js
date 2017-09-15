@@ -1,9 +1,4 @@
-﻿/// <reference path="karma/lib/three.js" />
-/// <reference path="karma/lib/bundle.js" />
-/// <reference path="karma/lib/twgl.js" />
-/// <reference path="karma/lib/xeogl.js" />
-/// <reference path="karma/lib/playcanvas.js" />
-/// <reference path="karma/lib/qtek.js" />
+﻿
 
 
 const canvas = document.getElementById('cvs');

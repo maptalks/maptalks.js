@@ -1,11 +1,9 @@
-// use polyfill
-// import './../node_modules/babel-polyfill/dist/polyfill';
-//const polyfill = require('babel-polyfill');
 /**
- * import from namespace renderer
+ * -import from namespace renderer
+ * -const polyfill = require('babel-polyfill'); 
+ * @author yellow date 2017/6/20
+ * @modify yellow date 2017/9/11
  */
-//const GLCONTEXT = require('./gl/GLCanvas').GLCONTEXT;
-//const CANVAS = require('./gl/GLCanvas').CANVAS;
 
 const GLCanvas = require('./gl/GLCanvas');
 const GLContext = require('./gl/GLContext');
@@ -32,10 +30,3 @@ module.exports = {
         GLVertexArrayObject
     }
 }
-
-
-
-
-
-
-

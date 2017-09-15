@@ -4308,7 +4308,10 @@ var GLContext = function (_Dispose) {
 var GLContext_1 = GLContext;
 
 /**
- *  
+ * a virtual doom element
+ * -simulate HTMLCanvasElement action
+ * -using GLContext instead of WebGLRenderingContext
+ * @author yellow date 2017/8/23
  */
 var stamp = stamp_1.stamp;
 var CANVASES = util.CANVASES;
@@ -4317,6 +4320,7 @@ var WEBGLCONTEXTS = util.WEBGLCONTEXTS;
 var GLEXTENSIONS = util.GLEXTENSIONS;
 var GLLIMITS = util.GLLIMITS;
 /**
+ * a virtual HTMLCanvasElement element
  * @class
  */
 
@@ -4326,13 +4330,19 @@ var GLCanvas = function (_Dispose) {
     /**
      * 
      * @param {HTMLCanvasElement} canvas 
+     * @param {Object} [options]
+     * @param {number} [options.width]
+     * @param {number} [options.height]
      */
     function GLCanvas(canvas) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         classCallCheck(this, GLCanvas);
 
         var _this = possibleConstructorReturn(this, (GLCanvas.__proto__ || Object.getPrototypeOf(GLCanvas)).call(this));
 
         _this._rootId = stamp(canvas);
+        canvas.width = options.width || canvas.clientWidth;
+        canvas.height = options.height || canvas.clientHeight;
         CANVASES[_this._rootId] = canvas;
         return _this;
     }
@@ -4360,13 +4370,6 @@ var GLCanvas = function (_Dispose) {
             };
         }
         /**
-         * return HTMLCanvasElement.style 
-         */
-
-    }, {
-        key: 'getContext',
-
-        /**
          * 
          * @param {String} renderType ,default is 'webgl',experiment-webgl
          * @param {Object} [options]
@@ -4378,6 +4381,9 @@ var GLCanvas = function (_Dispose) {
          * @param {boolean} [options.preserveDrawingBuffer]
          * @param {boolean} [options.failIfMajorPerformanceCaveat]
          */
+
+    }, {
+        key: 'getContext',
         value: function getContext() {
             var renderType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'webgl';
             var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -4397,18 +4403,37 @@ var GLCanvas = function (_Dispose) {
             }
             return GLCONTEXTS[id];
         }
+        /**
+         * return HTMLCanvasElement.style 
+         */
+
     }, {
         key: 'getBoundingClientRect',
+
+        /**
+         * 
+         */
         value: function getBoundingClientRect() {
             var id = this._rootId;
             CANVASES[id].getBoundingClientRect();
         }
+        /**
+         * 
+         * @param {*} type 
+         * @param {*} Listener 
+         * @param {*} useCapture 
+         */
+
     }, {
         key: 'addEventListener',
         value: function addEventListener(type, Listener, useCapture) {
             var id = this._rootId;
             CANVASES[id].addEventListener(type, Listener, useCapture);
         }
+        /**
+         * 
+         */
+
     }, {
         key: 'style',
         get: function get$$1() {
@@ -4430,11 +4455,23 @@ var GLCanvas = function (_Dispose) {
         set: function set$$1(v) {
             var id = this._rootId;
             CANVASES[id].width = v;
-        },
+        }
+        /**
+         * 
+         */
+        ,
+
+        /**
+         * 
+         */
         get: function get$$1() {
             var id = this._rootId;
             return CANVASES[id].width;
         }
+        /**
+         * 
+         */
+
     }, {
         key: 'height',
         set: function set$$1(v) {
@@ -4445,24 +4482,40 @@ var GLCanvas = function (_Dispose) {
             var id = this._rootId;
             return CANVASES[id].height;
         }
+        /**
+         * 
+         */
+
     }, {
         key: 'clientWidth',
         get: function get$$1() {
             var id = this._rootId;
             return CANVASES[id].clientWidth;
         }
+        /**
+         * 
+         */
+
     }, {
         key: 'clientHeight',
         get: function get$$1() {
             var id = this._rootId;
             return CANVASES[id].clientHeight;
         }
+        /**
+         * 
+         */
+
     }, {
         key: 'offsetLeft',
         get: function get$$1() {
             var id = this._rootId;
             return CANVASES[id].offsetLeft;
         }
+        /**
+         * 
+         */
+
     }, {
         key: 'offsetTop',
         get: function get$$1() {
@@ -4526,15 +4579,12 @@ var GLShaderFactory = function () {
 
 var GLShaderFactory_1 = GLShaderFactory;
 
-// use polyfill
-// import './../node_modules/babel-polyfill/dist/polyfill';
-//const polyfill = require('babel-polyfill');
 /**
- * import from namespace renderer
+ * -import from namespace renderer
+ * -const polyfill = require('babel-polyfill'); 
+ * @author yellow date 2017/6/20
+ * @modify yellow date 2017/9/11
  */
-//const GLCONTEXT = require('./gl/GLCanvas').GLCONTEXT;
-//const CANVAS = require('./gl/GLCanvas').CANVAS;
-
 
 var init = {
     gl: {
