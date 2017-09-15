@@ -16,6 +16,11 @@ const INTERNAL_ENUM = {
     'deleteRenderbuffer': true,
     'deleteTexture':true,
     //
+    'bindAttribLocation':true,
+    'bindRenderbuffer':true,
+    'renderbufferStorage':true,
+    'framebufferRenderbuffer':true,
+    //
     'bindFramebuffer': true,
     'framebufferTexture2D': true,
     'readPixels': true,

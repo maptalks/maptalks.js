@@ -3,52 +3,78 @@
 /// <reference path="karma/lib/twgl.js" />
 /// <reference path="karma/lib/xeogl.js" />
 /// <reference path="karma/lib/playcanvas.js" />
+/// <reference path="karma/lib/qtek.js" />
+
 
 const canvas = document.getElementById('cvs');
 canvas.width = 800;
 canvas.height = 600;
-const glCanvas =new Fusion.gl.GLCanvas(canvas);
-//playcanvas
-var app = new pc.Application(glCanvas, { });
-app.start();
+const glCanvas = new Fusion.gl.GLCanvas(canvas);
 
-app.resizeCanvas(800, 600);
+var Shader = qtek.Shader;
+var Material = qtek.Material;
+var Mesh = qtek.Mesh;
+var Cube = qtek.geometry.Cube;
+var meshUtil = qtek.util.mesh;
+var shaderLibrary = qtek.shader.library;
+var animation = new qtek.animation.Animation;
+animation.start();
 
-// fill the available space at full resolution
-app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
-app.setCanvasResolution(pc.RESOLUTION_AUTO);
-
-// ensure canvas is resized when window changes size
-window.addEventListener('resize', function() {
-    app.resizeCanvas();
+var renderer = new qtek.Renderer({
+    canvas: glCanvas,
+    devicePixelRatio: 1.0
 });
 
-// create box entity
-var cube = new pc.Entity('cube');
-cube.addComponent('model', {
-    type: 'box'
+renderer.resize(window.innerWidth, window.innerHeight);
+var scene = new qtek.Scene;
+var camera = new qtek.camera.Perspective({
+    aspect: renderer.getViewportAspect(),
+    far: 500
 });
 
-// create camera entity
-var camera = new pc.Entity('camera');
-camera.addComponent('camera', {
-    clearColor: new pc.Color(0.1, 0.1, 0.1)
+var cube = new Cube();
+cube.generateTangents();
+var shader = shaderLibrary.get('qtek.standard', 'diffuseMap', 'normalMap');
+var material = new Material({
+    shader: shader
 });
+material.set('glossiness', 0.4);
+var diffuse = new qtek.Texture2D;
+diffuse.load("assets/textures/crate.gif");
+var normal = new qtek.Texture2D;
+normal.load("assets/textures/normal_map.jpg");
+material.set('diffuseMap', diffuse);
+material.set('normalMap', normal);
 
-// create directional light entity
-var light = new pc.Entity('light');
-light.addComponent('light');
+var root = new qtek.Node({
+    name: 'ROOT'
+});
+scene.add(root);
+for (var i = 0; i < 20; i++) {
+    for (var j = 0; j < 10; j++) {
+        for (var k = 0; k < 50; k++) {
+            var mesh = new qtek.Mesh({
+                geometry: cube,
+                material: material
+            });
+            mesh.position.set(50 - Math.random() * 100, 50 - Math.random() * 100, 50 - Math.random() * 100);
+            root.add(mesh);
+        }
+    }
+}
+var light = new qtek.light.Point({
+    range: 200
+});
+scene.add(light);
+scene.add(new qtek.light.Ambient({
+    intensity: 0.4
+}))
 
-// add to hierarchy
-app.root.addChild(cube);
-app.root.addChild(camera);
-app.root.addChild(light);
+camera.position.set(0, 0, 10);
 
-// set up initial positions and orientations
-camera.setPosition(0, 0, 3);
-light.setEulerAngles(45, 0, 0);
-
-// register a global update event
-app.on('update', function (deltaTime) {
-    cube.rotate(10 * deltaTime, 20 * deltaTime, 30 * deltaTime);
+animation.on('frame', function (deltaTime) {
+    var start = new Date().getTime();
+    var drawInfo = renderer.render(scene, camera);
+    var renderTime = new Date().getTime() - start;
+    root.rotation.rotateY(Math.PI / 500);
 });

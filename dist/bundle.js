@@ -1342,6 +1342,11 @@ var INTERNAL_ENUM$1 = {
     'deleteRenderbuffer': true,
     'deleteTexture': true,
     //
+    'bindAttribLocation': true,
+    'bindRenderbuffer': true,
+    'renderbufferStorage': true,
+    'framebufferRenderbuffer': true,
+    //
     'bindFramebuffer': true,
     'framebufferTexture2D': true,
     'readPixels': true,

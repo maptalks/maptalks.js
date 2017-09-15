@@ -73,8 +73,20 @@ xeogl.scene = new xeogl.Scene({
 const glCanvas4 = new Fusion.gl.GLCanvas(canvas);
 
 const app = new pc.Application(glCanvas, { });
+
 app.start();
 
 ```
+> with qtek
+```javascript
+const glCanvas5 = new Fusion.gl.GLCanvas(canvas);
+
+var renderer = new qtek.Renderer({
+    canvas: glCanvas5,
+    devicePixelRatio: 1.0
+});
+
+```
+
 > creating instance of GLCanvas each time while you want to mix current library with others
 
