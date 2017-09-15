@@ -7,7 +7,7 @@ Map.include(/** @lends Map.prototype */ {
     isFullScreen() {
         return !!(
             document.webkitIsFullScreen || document.mozFullScreen ||
-            document.msFullscreenElement || document.fullscreenElement;
+            document.msFullscreenElement || document.fullscreenElement
         );
     },
 
