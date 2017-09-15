@@ -27,7 +27,7 @@ function createHeadlessCanvas(w, h) {
 
 /**
  * Get image content of the canvas
- * @param {Canvas} canvas 
+ * @param {Canvas} canvas
  * @returns {Buffer} image
  */
 function getGlImage(canvas) {
@@ -39,7 +39,7 @@ function getGlImage(canvas) {
     }
     const pixels = new Uint8Array(4 * width * height);
     gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    
+
     const clamped = new Uint8ClampedArray(pixels),
         imageData = new Canvas.ImageData(clamped, width, height);
     const img = new Canvas(width, height),
@@ -60,8 +60,13 @@ function writeGlImage(canvas, path, cb) {
 }
 
 function mock() {
-    if (typeof global.window === 'undefined') {
-        global.window = {};
+    if (typeof global.window === 'undefined' || typeof global.document === 'undefined') {
+        global.window = {
+            requestAnimationFrame : requestAnimationFrame,
+            cancelAnimationFrame : cancelAnimationFrame,
+            setTimeout : setTimeout,
+            cancelTimeout : cancelTimeout
+        };
         global.document = {
             createElement(tagName) {
                 if (tagName === 'canvas') {
@@ -71,7 +76,7 @@ function mock() {
             }
         }
         global.window.addEventListener = function(){
-            
+
         }
     }
 }
