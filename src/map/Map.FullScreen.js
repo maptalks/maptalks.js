@@ -7,15 +7,16 @@ Map.include(/** @lends Map.prototype */ {
     isFullScreen() {
         return !!(
             document.webkitIsFullScreen || document.mozFullScreen ||
-            document.msFullscreenElement || document.fullscreenElement
+            document.msFullscreenElement || document.fullscreenElement;
         );
     },
 
     /**
      * Request for the full screen
+     * @property {Object} dom -containerDOM to requestFullScreen
      * @return {Map} this
      */
-    requestFullScreen() {
+    requestFullScreen(dom) {
         /**
          * fullscreenstart event
          * @event Map#fullscreenstart
@@ -24,7 +25,7 @@ Map.include(/** @lends Map.prototype */ {
          * @property {Map} target            - the map fires event
          */
         this._fireEvent('fullscreenstart');
-        this._requestFullScreen(this._containerDOM);
+        this._requestFullScreen(dom || this._containerDOM);
         /**
          * fullscreenend event
          * @event Map#fullscreenend
@@ -38,10 +39,11 @@ Map.include(/** @lends Map.prototype */ {
 
     /**
      * Cancel full screen
+     * @property {Object} dom -containerDOM to cancelFullScreen
      * @return {Map} this
      */
-    cancelFullScreen() {
-        this._cancelFullScreen(this._containerDOM);
+    cancelFullScreen(dom) {
+        this._cancelFullScreen(dom || this._containerDOM);
         /**
          * cancelfullscreen event
          * @event Map#cancelfullscreen
