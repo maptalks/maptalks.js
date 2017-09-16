@@ -39,11 +39,10 @@ Map.include(/** @lends Map.prototype */ {
 
     /**
      * Cancel full screen
-     * @property {Object} dom -containerDOM to cancelFullScreen
      * @return {Map} this
      */
-    cancelFullScreen(dom) {
-        this._cancelFullScreen(dom || this._containerDOM);
+    cancelFullScreen() {
+        this._cancelFullScreen();
         /**
          * cancelfullscreen event
          * @event Map#cancelfullscreen
