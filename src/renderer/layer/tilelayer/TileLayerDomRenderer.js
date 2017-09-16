@@ -19,7 +19,6 @@ import {
     removeDomNode,
     setOpacity,
     TRANSFORM,
-    TRANSITION,
     CSSFILTER
 } from 'core/util/dom';
 import Class from 'core/Class';
@@ -237,7 +236,7 @@ export default class TileLayerDomRenderer extends Class {
             }
             container.tile.appendChild(fragment);
         }
-        this._updateTileSize();
+
         if (queue.length === 0) {
             this.layer.fire('layerload');
         }
@@ -404,33 +403,6 @@ export default class TileLayerDomRenderer extends Class {
             tileSize[1]++;
         }
         return tileSize;
-    }
-
-    /**
-     * update tile images' size
-     */
-    _updateTileSize() {
-        if (this._tiles) {
-            const zooming = this.getMap().isZooming();
-            const size = this._getTileSize();
-            for (const p in this._tiles) {
-                if (this._tiles[p].current) {
-                    if (size[0] !== this._tiles[p]['size'][0]) {
-                        this._tiles[p]['size'] = size;
-                        const img = this._tiles[p]['el'];
-                        if (img) {
-                            img.width = size[0];
-                            img.height = size[1];
-                        }
-                        if (zooming) {
-                            img.style[TRANSITION] = null;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     _loadTile(tile) {
@@ -772,7 +744,6 @@ export default class TileLayerDomRenderer extends Class {
             this._hide();
         }
         this._pruneTiles();
-        this._updateTileSize();
     }
 
     onZooming(param) {
