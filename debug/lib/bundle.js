@@ -4450,6 +4450,16 @@ var GLCanvas = function (_Dispose) {
             var id = this._rootId;
             return CANVASES[id].parentElement;
         }
+        /**
+         * @type {HTMLCanvasElement}
+         */
+
+    }, {
+        key: 'HTMLCanvasElement',
+        get: function get$$1() {
+            var id = this._rootId;
+            return CANVASES[id];
+        }
     }, {
         key: 'width',
         set: function set$$1(v) {

@@ -98,6 +98,13 @@ class GLCanvas extends Dispose {
         return CANVASES[id].parentElement
     }
     /**
+     * @type {HTMLCanvasElement}
+     */
+    get HTMLCanvasElement(){
+        const id = this._rootId;
+        return CANVASES[id]
+    }
+    /**
      * 
      */
     getBoundingClientRect() {

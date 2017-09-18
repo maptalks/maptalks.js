@@ -15,10 +15,7 @@ export default {
         'path'
     ],
     plugins: [
-        resolve({
-            jsnext: true,
-            main: true
-        }),
+        resolve(),
         commonjs(),
         multidest([{
             dest: 'debug/lib/bundle.js',
