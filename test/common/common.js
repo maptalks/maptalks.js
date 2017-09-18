@@ -1,7 +1,27 @@
 const glCreateContext = require('gl'),
     fs = require('fs'),
     Canvas = require('canvas');
+/**
+ * reference:
+ * https://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+ */
+const requestAnimationFrame = function (callback, element) {
+    var currTime = new Date().getTime();
+    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+    var id = window.setTimeout(function () { callback(currTime + timeToCall); },
+        timeToCall);
+    lastTime = currTime + timeToCall;
+    return id;
+};
+/**
+ * 
+ * @param {*} id 
+ */
+const cancelAnimationFrame = function (id) {
+    clearTimeout(id);
+};
 
+const cancelTimeout = cancelAnimationFrame;
 /**
  * Create a headless canvas instance
  * @param {Number} w canvas width
@@ -62,10 +82,10 @@ function writeGlImage(canvas, path, cb) {
 function mock() {
     if (typeof global.window === 'undefined' || typeof global.document === 'undefined') {
         global.window = {
-            requestAnimationFrame : requestAnimationFrame,
-            cancelAnimationFrame : cancelAnimationFrame,
-            setTimeout : setTimeout,
-            cancelTimeout : cancelTimeout
+            requestAnimationFrame: requestAnimationFrame,
+            cancelAnimationFrame: cancelAnimationFrame,
+            setTimeout: setTimeout,
+            cancelTimeout: cancelTimeout
         };
         global.document = {
             createElement(tagName) {
@@ -75,7 +95,7 @@ function mock() {
                 return null;
             }
         }
-        global.window.addEventListener = function(){
+        global.window.addEventListener = function () {
 
         }
     }
