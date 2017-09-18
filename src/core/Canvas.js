@@ -611,6 +611,14 @@ const Canvas = {
         ctx.moveTo(p.x, p.y - 5);
         ctx.lineTo(p.x, p.y + 5);
         ctx.stroke();
+    },
+
+    copy(canvas) {
+        const target = createEl('canvas');
+        target.width = canvas.width;
+        target.height = canvas.height;
+        target.getContext('2d').drawImage(canvas, 0, 0);
+        return target;
     }
 };
 

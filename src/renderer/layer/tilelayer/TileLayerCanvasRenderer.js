@@ -1,6 +1,7 @@
 import {
     IS_NODE,
-    loadImage
+    loadImage,
+    emptyImageUrl
 } from 'core/util';
 import {
     on
@@ -68,9 +69,11 @@ export default class TileLayerRenderer extends CanvasRenderer {
             // reset current transformation matrix to the identity matrix
             this.resetCanvasTransform();
         }
-
+        this._drawBackground();
+        this._retireLoadingTiles();
         //visit all the tiles
         this._totalTileToLoad = this._tileToLoadCounter = 0;
+        let fading = false;
         for (let i = tiles.length - 1; i >= 0; i--) {
             const tile = tiles[i],
                 tileId = tiles[i]['id'];
@@ -83,18 +86,27 @@ export default class TileLayerRenderer extends CanvasRenderer {
             //load tile in cache at first if it has.
             const cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
             this._totalTileToLoad++;
+            if (this._tilesLoading && this._tilesLoading[tileId]) {
+                this._tilesLoading[tileId].current = true;
+            }
             if (cached) {
                 this._drawTile(tile['point'], cached, tileId);
+                if (this._getTileOpacity(cached) < 1) {
+                    fading = true;
+                }
                 this._tileRended[tileId] = cached;
             } else {
                 this._tileToLoadCounter++;
                 this._tileQueue[tileId + '@' + tile['point'].toString()] = tile;
             }
         }
-
+        this._abortLoading();
         if (this._tileToLoadCounter === 0) {
+            if (!fading && !map.options['zoomBackground']) {
+                delete this.background;
+            }
             this.completeRender();
-        } else if (!this.getMap().isInteracting()) {
+        } else {
             this._scheduleLoadTileQueue();
         }
     }
@@ -113,6 +125,9 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
         if (map.isZooming()) {
             return false;
+        }
+        if (map.isMoving()) {
+            return true;
         }
         return super.needToRedraw();
     }
@@ -165,6 +180,10 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (crossOrigin) {
             tileImage.crossOrigin = crossOrigin;
         }
+        if (!this._tilesLoading) {
+            this._tilesLoading = {};
+        }
+        this._tilesLoading[tile['id']] = tileImage;
         loadImage(tileImage, [tile['url']]);
     }
 
@@ -181,10 +200,12 @@ export default class TileLayerRenderer extends CanvasRenderer {
             this._tileRended[id] = tileImage;
         }
         tileImage.loadTime = Date.now();
+        delete this._tilesLoading[id];
         this._drawTileAndRequest(tileImage, tileInfo);
     }
 
     _onTileError(tileImage, tileInfo) {
+        delete this._tilesLoading[tileInfo['id']];
         this._clearTileRectAndRequest(tileImage, tileInfo['z']);
     }
 
@@ -283,7 +304,6 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     _onTileLoadComplete() {
-        delete this.background;
         this.completeRender();
     }
 
@@ -316,6 +336,56 @@ export default class TileLayerRenderer extends CanvasRenderer {
         delete this._tileZoom;
     }
 
+    _retireLoadingTiles() {
+        if (this._tilesLoading) {
+            for (const p in this._tilesLoading) {
+                this._tilesLoading[p].current = false;
+            }
+        }
+    }
+
+    _abortLoading() {
+        for (const i in this._tilesLoading) {
+            const tile = this._tilesLoading[i];
+            if (!tile.current) {
+                tile.onload = falseFn;
+                tile.onerror = falseFn;
+                tile.src = emptyImageUrl;
+                delete this._tilesLoading[i];
+            }
+        }
+    }
+
+    _drawBackground() {
+        if (this.background) {
+            const ctx = this.context,
+                back = this.background,
+                map = this.getMap();
+            const scale = map._getResolution(back.tileZoom) / map._getResolution();
+            const cp = map._pointToContainerPoint(back.nw, back.zoom);
+            ctx.save();
+            ctx.translate(cp.x, cp.y);
+            ctx.scale(scale, scale);
+            ctx.drawImage(back.canvas, 0, 0);
+            ctx.restore();
+        }
+    }
+
+    onZoomStart(e) {
+        const map = this.getMap();
+        const preserveBack = !IS_NODE && (map && this.layer === map.getBaseLayer());
+        if (preserveBack) {
+            this.background = {
+                canvas : Canvas2D.copy(this.canvas),
+                tileZoom : this._tileZoom,
+                zoom : map.getZoom(),
+                nw : this._northWest
+            };
+        }
+        super.onZoomStart(e);
+    }
 }
 
 TileLayer.registerRenderer('canvas', TileLayerRenderer);
+
+function falseFn() { return false; }
