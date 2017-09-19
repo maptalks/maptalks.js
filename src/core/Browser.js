@@ -32,6 +32,16 @@ if (!IS_NODE) {
     const touch = !phantomjs && (pointer || 'ontouchstart' in window ||
         (window.DocumentTouch && document instanceof window.DocumentTouch));
 
+    let webgl;
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') ||
+            canvas.getContext('experimental-webgl');
+        webgl = gl && gl instanceof WebGLRenderingContext;
+    } catch (err) {
+        webgl = false;
+    }
+
     Browser = {
         ie: ie,
         ielt9: ie && !document.addEventListener,
@@ -65,7 +75,9 @@ if (!IS_NODE) {
 
         language: navigator.browserLanguage ? navigator.browserLanguage : navigator.language,
         ie9: (ie && document.documentMode === 9),
-        ie10: (ie && document.documentMode === 10)
+        ie10: (ie && document.documentMode === 10),
+
+        webgl : webgl
     };
 }
 

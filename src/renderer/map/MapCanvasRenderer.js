@@ -196,7 +196,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             drawTime = renderer.getDrawTime(),
             inTime = timeLimit === 0 || timeLimit > 0 && t + drawTime <= timeLimit;
         if (renderer.drawOnInteracting &&
-            (inTime ||
+            (layer === map.getBaseLayer() || inTime ||
             map.isZooming() && layer.options['forceRenderOnZooming'] ||
             map.isMoving() && layer.options['forceRenderOnMoving'] ||
             map.isRotating() && layer.options['forceRenderOnRotating'])
@@ -450,7 +450,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
             mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;z-index:0', true),
             backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0 + 'z-index:0;', true),
-            back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;z-index:1;'),
+            back = createContainer('back', 'maptalks-back', POSITION0 + 'z-index:1;'),
             backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
             canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', POSITION0 + 'border:none;z-index:2;'),
             frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0 + 'z-index:3;', true),

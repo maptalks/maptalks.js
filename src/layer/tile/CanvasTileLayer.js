@@ -1,8 +1,7 @@
 import TileLayer from './TileLayer';
 
 const options = {
-    'renderer'  : 'canvas',
-    'baseLayerRenderer' : 'canvas'
+    'renderer'  : 'canvas'
 };
 
 /**

@@ -1,5 +1,6 @@
 export default class TileCache {
-    constructor(capacity) {
+    constructor(capacity, onDeleteTile) {
+        this.onDeleteTile = onDeleteTile;
         this._queue = [];
         this._cache = {};
         if (!capacity) {
@@ -31,6 +32,7 @@ export default class TileCache {
             if (len > this.capacity) {
                 const expir = this._queue.splice(0, len - this.capacity);
                 for (let i = expir.length - 1; i >= 0; i--) {
+                    this.onDeleteTile(this._cache[expir[i]]);
                     delete this._cache[expir[i]];
                 }
             }

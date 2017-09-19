@@ -1503,6 +1503,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return !!this._dragRotating;
     }
 
+    getRenderer() {
+        return this._getRenderer();
+    }
+
     //-----------------------------------------------------------
 
     _initContainer(container) {

@@ -1,4 +1,5 @@
-import { isNil, IS_NODE, isArrayHasData, isFunction, isInteger } from 'core/util';
+import { isNil, isArrayHasData, isFunction, isInteger } from 'core/util';
+import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import PointExtent from 'geo/PointExtent';
@@ -21,8 +22,6 @@ import Layer from '../Layer';
  * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
  * @property {Boolean}             [options.cacheTiles=true]   - whether cache tiles
  * @property {Number}              [options.keepBuffer=null]   - load more rows and columns of tiles when panning map
- * @property {String}              [options.container=back]    - map container to place tile images, can be back or front.
- * @property {String}              [options.baseLayerRenderer=dom]  - default renderer for TileLayer as baseLayer
  * @memberOf TileLayer
  * @instance
  */
@@ -54,10 +53,8 @@ const options = {
 
     'keepBuffer': null,
 
-    'container' : 'back',
-
-    'baseLayerRenderer': (() => {
-        return IS_NODE ? 'canvas' : 'dom';
+    'renderer' : (() => {
+        return Browser.webgl ? 'gl' : 'canvas';
     })()
 };
 
@@ -245,13 +242,7 @@ class TileLayer extends Layer {
     }
 
     _initRenderer() {
-        let renderer = this.options['renderer'];
-        if (this.getMap().getBaseLayer() === this) {
-            renderer = this.options['baseLayerRenderer'];
-            if (this.getMap()._getRenderer()._containerIsCanvas) {
-                renderer = 'canvas';
-            }
-        }
+        const renderer = this.options['renderer'];
         if (!this.constructor.getRendererClass) {
             return;
         }

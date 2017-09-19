@@ -216,9 +216,6 @@ Map.include(/** @lends Map.prototype */{
             this._angle = 0;
         }
 
-        const centerPoint = this._prjToPoint(this._prjCenter);
-        const x = centerPoint.x, y = centerPoint.y;
-
         this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
 
         // Find the distance from the center point [width/2, height/2] to the
@@ -246,6 +243,8 @@ Map.include(/** @lends Map.prototype */{
         //matrix for doms
         const domMat = mat4.copy(new Float64Array(16), m);
 
+        const centerPoint = this._prjToPoint(this._prjCenter);
+        const x = centerPoint.x, y = centerPoint.y;
         mat4.translate(m, m, [-x, -y, 0]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
