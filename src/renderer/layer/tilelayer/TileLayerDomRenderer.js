@@ -30,8 +30,11 @@ const POSITION0 = 'position:absolute;';
 
 /**
  * @classdesc
+ * @deprecated
  * A renderer based on HTML Doms for TileLayers.
  * It is implemented based on Leaflet's GridLayer.
+ *
+ * It is deprecated and replaced by {TileLayerGLRenderer}
  * @class
  * @protected
  * @memberOf tilelayer

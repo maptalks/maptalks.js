@@ -1,5 +1,4 @@
 import { IS_NODE, isString, parseJSON } from 'core/util';
-import Browser from 'core/Browser';
 
 /**
  * @classdesc
@@ -29,7 +28,7 @@ const Ajax = {
         if (IS_NODE && Ajax.get.node) {
             return Ajax.get.node(url, cb);
         }
-        const client = this._getClient(cb);
+        const client = Ajax._getClient(cb);
         client.open('GET', url, true);
         client.send(null);
         return this;
@@ -64,7 +63,7 @@ const Ajax = {
         if (IS_NODE && Ajax.post.node) {
             return Ajax.post.node(options, postData, cb);
         }
-        const client = this._getClient(cb);
+        const client = Ajax._getClient(cb);
         client.open('POST', options.url, true);
         if (!options.headers) {
             options.headers = {};
@@ -87,9 +86,8 @@ const Ajax = {
     },
 
     _wrapCallback: function (client, cb) {
-        const me = this;
         return function () {
-            if (client.withCredentials !== undefined || me._isIE8()) {
+            if (client.withCredentials !== undefined) {
                 cb(null, client.responseText);
             } else if (client.readyState === 4) {
                 if (client.status === 200) {
@@ -104,40 +102,102 @@ const Ajax = {
         };
     },
 
-    _isIE8: function () {
-        return Browser.ie && document.documentMode === 8;
-    },
-
     _getClient: function (cb) {
         /*eslint-disable no-empty, no-undef*/
         let client;
-        if (this._isIE8()) {
-            try {
-                client = new XDomainRequest();
-            } catch (e) {}
-        } else {
-            try {
-                client = new XMLHttpRequest();
-            } catch (e) {
-                try { client = new ActiveXObject('Msxml2.XMLHTTP'); } catch (e) {
-                    try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) {}
-                }
+        try {
+            client = new XMLHttpRequest();
+        } catch (e) {
+            try { client = new ActiveXObject('Msxml2.XMLHTTP'); } catch (e) {
+                try { client = new ActiveXObject('Microsoft.XMLHTTP'); } catch (e) {}
             }
-
         }
-
-        if (this._isIE8() || client.withCredentials !== undefined) {
-            //Cross Domain request in IE 8
-            client.onload = this._wrapCallback(client, cb);
-        } else {
-            client.onreadystatechange = this._wrapCallback(client, cb);
-        }
-
+        client.onreadystatechange = Ajax._wrapCallback(client, cb);
         return client;
         /*eslint-enable no-empty, no-undef*/
+    },
+
+    // from mapbox-gl-js
+    makeRequest(url, requestParameters = {}) {
+        const xhr = new window.XMLHttpRequest();
+
+        xhr.open('GET', url, true);
+        for (const k in requestParameters.headers) {
+            xhr.setRequestHeader(k, requestParameters.headers[k]);
+        }
+
+        xhr.withCredentials = requestParameters.credentials === 'include';
+        return xhr;
+    },
+
+    // from mapbox-gl-js
+    getArrayBuffer(url, requestParameters, callback) {
+        const xhr = Ajax.makeRequest(url, requestParameters);
+        xhr.responseType = 'arraybuffer';
+        xhr.onerror = function () {
+            callback(new Error(xhr.statusText));
+        };
+        xhr.onload = function () {
+            const response = xhr.response;
+            if (response.byteLength === 0 && xhr.status === 200) {
+                callback(new Error('http status 200 returned without content.'));
+            }
+            if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+                callback(null, {
+                    data: response,
+                    cacheControl: xhr.getResponseHeader('Cache-Control'),
+                    expires: xhr.getResponseHeader('Expires')
+                });
+            } else {
+                callback(new Error(xhr.statusText + ',' + xhr.status));
+            }
+        };
+        xhr.send();
+        return xhr;
+    },
+
+    // from mapbox-gl-js
+    getImage(img, url, requestParameters) {
+        return Ajax.getArrayBuffer(url, requestParameters, (err, imgData) => {
+            if (err) {
+                if (img.onerror) {
+                    img.onerror(err);
+                }
+            } else if (imgData) {
+                img.cacheControl = imgData.cacheControl;
+                img.expires = imgData.expires;
+                img.src = 'data:image/jpeg;base64,' + encode(new Uint8Array(imgData.data));
+            }
+        });
     }
 };
 
+function encode(input) {
+    const keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    let output = '';
+    let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+    let i = 0;
+
+    while (i < input.length) {
+        chr1 = input[i++];
+        chr2 = i < input.length ? input[i++] : Number.NaN; // Not sure if the index
+        chr3 = i < input.length ? input[i++] : Number.NaN; // checks are needed here
+
+        enc1 = chr1 >> 2;
+        enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+        enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+        enc4 = chr3 & 63;
+
+        if (isNaN(chr2)) {
+            enc3 = enc4 = 64;
+        } else if (isNaN(chr3)) {
+            enc4 = 64;
+        }
+        output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+                  keyStr.charAt(enc3) + keyStr.charAt(enc4);
+    }
+    return output;
+}
 
 /**
  * Fetch resource as a JSON Object.

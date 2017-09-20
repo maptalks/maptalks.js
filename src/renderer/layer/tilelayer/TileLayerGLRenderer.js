@@ -22,17 +22,17 @@ const shaders = {
             v_texCoord = a_texCoord;
         }
     `,
+    // fragment shader, can be replaced by layer.options.fragmentShader
     'fragmentShader' : `
         precision mediump float;
 
-        // our texture
         uniform sampler2D u_image;
+        uniform float u_opacity;
 
-        // the texCoords passed in from the vertex shader.
         varying vec2 v_texCoord;
 
         void main() {
-            gl_FragColor = texture2D(u_image, v_texCoord);
+            gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
         }
     `
 };
@@ -48,10 +48,12 @@ const shaders = {
  */
 export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 
+    //override to set to always drawable
     _isDrawable() {
         return true;
     }
 
+    // override TileLayerCanvasRenderer to initialize gl context
     initContext() {
         super.initContext();
         const map = this.getMap();
@@ -63,11 +65,12 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
     }
 
+    // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coords
     onCanvasCreate() {
         const gl = this.gl;
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.STENCIL_TEST);
-        this.program = this.createProgram(shaders['vertexShader'], shaders['fragmentShader'], ['u_matrix', 'u_image']);
+        this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'], ['u_matrix', 'u_image', 'u_opacity']);
         this.useProgram(this.program);
 
         // input texture vec data
@@ -81,11 +84,10 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             0.0,  1.0,
             1.0,  0.0,
             1.0,  1.0]), gl.STATIC_DRAW);
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
         this.enableSampler('u_image');
 
-        // Enable texture unit0
+        // Enable texture unit 0
         gl.activeTexture(gl['TEXTURE0']);
 
         this.posBuffer = this.createBuffer();
@@ -110,15 +112,28 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             return;
         }
         super.clearCanvas();
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        if (this._gl()) {
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+        }
     }
 
+    // decide whether the layer is renderer with gl.
+    // when map is pitching, or fragmentShader is set in options
     _gl() {
-        return !!this.getMap().getPitch();
+        return !!this.getMap().getPitch() || !!this.layer.options['fragmentShader'];
+    }
+
+    // limit tile number to load when map is interacting
+    _getTileLimitOnInteracting() {
+        if (this._gl()) {
+            return 10;
+        }
+        return 0;
     }
 
     getCanvasImage() {
         if (this._gl()) {
+            // draw gl canvas on layer canvas
             this.context.drawImage(this.glCanvas, 0, 0);
         }
         return super.getCanvasImage();
@@ -135,16 +150,15 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     _createTexture(tileImage) {
         const gl = this.gl;
         const texture = this._getTexture() || gl.createTexture();   // Create a texture object
-        if (!texture) {
-            throw new Error('Failed to create the texture object');
-        }
         // Bind the texture object to the target
         gl.bindTexture(gl.TEXTURE_2D, texture);
-
+        // from mapbox-gl-js
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tileImage);
 
@@ -178,7 +192,7 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             pp = map._pointToPoint(point, this._tileZoom),
             scale = map._getResolution(this._tileZoom) / map._getResolution(),
             tileSize = this.layer.getTileSize();
-        // const opacity = this._getTileOpacity(tileImage);
+        const opacity = this._getTileOpacity(tileImage);
         const x = pp.x,
             y = pp.y,
             w = tileSize['width'] * scale,
@@ -186,6 +200,7 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         this.loadTexture(tileImage);
         const matrix = this.getViewMatrix();
         gl.uniformMatrix4fv(this.program['u_matrix'], false, Float32Array.from(matrix));
+        gl.uniform1f(this.program['u_opacity'], opacity);
 
         const x1 = x;
         const x2 = x + w;
@@ -202,16 +217,8 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        // if (opacity < 1) {
-        //     this.setToRedraw();
-        // }
-    }
-
-    _getTileOpacity(tileImage) {
-        if (this._gl()) {
-            return 1;
-        } else {
-            return super._getTileOpacity(tileImage);
+        if (opacity < 1) {
+            this.setToRedraw();
         }
     }
 
@@ -222,17 +229,19 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     }
 
     _drawBackground() {
-        if (!this._gl() && this.background) {
-            const ctx = this.context,
-                back = this.background,
-                map = this.getMap();
-            const scale = map._getResolution(back.tileZoom) / map._getResolution();
-            const cp = map._pointToContainerPoint(back.nw, back.zoom);
-            ctx.save();
-            ctx.translate(cp.x, cp.y);
-            ctx.scale(scale, scale);
-            ctx.drawImage(back.canvas, 0, 0);
-            ctx.restore();
+        if (this.background) {
+            if (!this._gl()) {
+                const ctx = this.context,
+                    back = this.background,
+                    map = this.getMap();
+                const scale = map._getResolution(back.tileZoom) / map._getResolution();
+                const cp = map._pointToContainerPoint(back.nw, back.zoom);
+                ctx.save();
+                ctx.translate(cp.x, cp.y);
+                ctx.scale(scale, scale);
+                ctx.drawImage(back.canvas, 0, 0);
+                ctx.restore();
+            }
         }
     }
 
@@ -256,6 +265,7 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     }
 
     onRemove() {
+        // release resources
         const gl = this.gl;
         if (this._buffers) {
             this._buffers.forEach(function (b) {
@@ -263,17 +273,17 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             });
             delete this._buffers;
         }
-        const program = this.gl.program;
-        gl.deleteProgram(program);
-        gl.deleteShader(program.fragmentShader);
-        gl.deleteShader(program.vertexShader);
         if (this._textures) {
             this._textures.forEach(t => gl.deleteTexture(t));
             delete this._textures;
         }
+        const program = this.gl.program;
+        gl.deleteProgram(program);
+        gl.deleteShader(program.fragmentShader);
+        gl.deleteShader(program.vertexShader);
     }
 
-    //-------------------------------------------------------------------------------------------
+    //----------------------- webgl utils unlike to change ---------------------------------
 
     createBuffer() {
         const gl = this.gl;

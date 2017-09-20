@@ -1,3 +1,5 @@
+import Ajax from 'core/Ajax';
+import Browser from 'core/Browser';
 import {
     IS_NODE,
     loadImage,
@@ -6,11 +8,9 @@ import {
 import {
     on
 } from 'core/util/dom';
-import PointExtent from 'geo/PointExtent';
 import Canvas2D from 'core/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
-import TileCache from './TileCache';
 import Point from 'geo/Point';
 
 /**
@@ -27,10 +27,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
     constructor(layer) {
         super(layer);
         this._mapRender = layer.getMap()._getRenderer();
-        if (!IS_NODE && this.layer.options['cacheTiles']) {
-            this._tileCache = new TileCache(0, this._deleteTile.bind(this));
-        }
         this._tileRended = {};
+        this._tileLoading = {};
     }
 
     draw() {
@@ -46,15 +44,16 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
 
         const mask2DExtent = this.prepareCanvas();
-        if (mask2DExtent && !mask2DExtent.intersects(this._extent2D)) {
-            this.completeRender();
-            return;
+        let extent = map.getContainerExtent();
+        if (mask2DExtent) {
+            if (!mask2DExtent.intersects(this._extent2D)) {
+                this.completeRender();
+                return;
+            } else {
+                extent = mask2DExtent.intersection(this._extent2D).converTo(c => map._pointToContainerPoint(c));
+            }
         }
-        const tileRended = this._tileRended,
-            tiles = tileGrid['tiles'],
-            tileCache = this._tileCache,
-            tileSize = layer.getTileSize(),
-            zoom = map.getZoom();
+        const tiles = tileGrid['tiles'];
 
         this._tileZoom = tileGrid.zoom;
 
@@ -65,39 +64,35 @@ export default class TileLayerRenderer extends CanvasRenderer {
             this.resetCanvasTransform();
         }
         this._drawBackground();
-        this._markTiles();
-        //visit all the tiles
-        this._tileToLoadCounter = 0;
+        const loadingCount = this._markTiles(),
+            tileLimit = this._getTileLimitOnInteracting();
+
+        this._tileCountToLoad = 0;
         let fading = false;
+        //visit all the tiles
         const tileQueue = {};
         for (let i = tiles.length - 1; i >= 0; i--) {
             const tile = tiles[i],
                 tileId = tiles[i]['id'];
-            if (zoom === this._tileZoom) {
-                const tile2DExtent = new PointExtent(tile['point'], tile['point'].add(tileSize.toPoint()));
-                if (!this._extent2D.intersects(tile2DExtent) || (mask2DExtent && !mask2DExtent.intersects(tile2DExtent))) {
-                    continue;
-                }
-            }
             //load tile in cache at first if it has.
-            const cached = tileRended[tileId] || (tileCache ? tileCache.get(tileId) : null);
-
-            if (this._tilesLoading && this._tilesLoading[tileId]) {
-                this._tilesLoading[tileId].current = true;
+            const cached = this._getCachedTile(tileId);
+            if (!this.layer._isTileInExtent(tile, extent) || this._isLoadingTile(tileId)) {
+                continue;
             }
             if (cached) {
-                cached.current = true;
-                this._drawTile(tile['point'], tileId, cached);
                 if (this._getTileOpacity(cached) < 1) {
                     fading = true;
                 }
+                this._drawTile(tile['point'], tileId, cached);
             } else {
-                this._tileToLoadCounter++;
-                tileQueue[tileId + '@' + tile['point'].toString()] = tile;
+                const hitLimit = map.isInteracting() && tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
+                if (!hitLimit) {
+                    this._tileCountToLoad++;
+                    tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                }
             }
         }
-        this._retireTiles();
-        if (this._tileToLoadCounter === 0) {
+        if (this._tileCountToLoad === 0) {
             if (!fading && !map.options['zoomBackground']) {
                 delete this.background;
             }
@@ -105,6 +100,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
         } else {
             this._loadTileQueue(tileQueue);
         }
+        this._retireTiles();
     }
 
     drawOnInteracting() {
@@ -132,6 +128,10 @@ export default class TileLayerRenderer extends CanvasRenderer {
         return false;
     }
 
+    _getTileLimitOnInteracting() {
+        return 0;
+    }
+
     _isDrawable() {
         if (this.getMap().getPitch()) {
             if (console) {
@@ -141,6 +141,10 @@ export default class TileLayerRenderer extends CanvasRenderer {
             return false;
         }
         return true;
+    }
+
+    _isLoadingTile(tileId) {
+        return !!this._tileLoading[tileId];
     }
 
     _loadTileQueue(tileQueue) {
@@ -158,23 +162,30 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     _loadTile(tile) {
-        const crossOrigin = this.layer.options['crossOrigin'];
         const tileSize = this.layer.getTileSize();
         const tileImage = new Image();
+        tileImage.current = true;
         tileImage.width = tileSize['width'];
         tileImage.height = tileSize['height'];
 
         on(tileImage, 'load', this._onTileLoad.bind(this, tileImage, tile));
         on(tileImage, 'error', this._onTileError.bind(this, tileImage, tile));
+        on(tileImage, 'abort', this._onTileError.bind(this, tileImage, tile));
 
+        const crossOrigin = this.layer.options['crossOrigin'];
         if (crossOrigin) {
             tileImage.crossOrigin = crossOrigin;
         }
-        if (!this._tilesLoading) {
-            this._tilesLoading = {};
+        this._tileLoading[tile['id']] = tileImage;
+        this._loadImage(tileImage, tile['url']);
+    }
+
+    _loadImage(tileImage, url) {
+        if (IS_NODE || Browser.ie9) {
+            // ie9 doesn't support binary image
+            return loadImage(tileImage, [url]);
         }
-        this._tilesLoading[tile['id']] = tileImage;
-        loadImage(tileImage, [tile['url']]);
+        return Ajax.getImage(tileImage, url);
     }
 
     _onTileLoad(tileImage, tileInfo) {
@@ -186,14 +197,14 @@ export default class TileLayerRenderer extends CanvasRenderer {
             }
             tileImage.current = true;
             tileImage.loadTime = Date.now();
-            delete this._tilesLoading[id];
+            delete this._tileLoading[id];
             this._addTileToCache(id, tileImage);
         }
         this.setToRedraw();
     }
 
     _onTileError(tileImage, tileInfo) {
-        delete this._tilesLoading[tileInfo['id']];
+        delete this._tileLoading[tileInfo['id']];
         this._clearTileRectAndRequest(tileImage, tileInfo['z']);
     }
 
@@ -210,10 +221,7 @@ export default class TileLayerRenderer extends CanvasRenderer {
             transformed = bearing || zoom !== this._tileZoom;
         const opacity = this._getTileOpacity(tileImage);
         const alpha = ctx.globalAlpha;
-        if (opacity <= 0) {
-            this.setToRedraw();
-            return;
-        } else if (opacity < 1) {
+        if (opacity < 1) {
             ctx.globalAlpha = opacity;
             this.setToRedraw();
         }
@@ -260,6 +268,20 @@ export default class TileLayerRenderer extends CanvasRenderer {
         }
     }
 
+    _getCachedTile(tileId) {
+        const cached = this._tileRended[tileId] || (this._tileCache ? this._tileCache.get(tileId) : null);
+        if (this._tileRended[tileId]) {
+            this._tileRended[tileId].current = true;
+        }
+        if (this._tileCache && this._tileCache.get(tileId)) {
+            this._tileCache.get(tileId).current = true;
+        }
+        if (this._tileLoading && this._tileLoading[tileId]) {
+            this._tileLoading[tileId].current = true;
+        }
+        return cached;
+    }
+
     _addTileToCache(tileId, tileImage) {
         this._tileRended[tileId] = tileImage;
         tileImage.current = true;
@@ -286,13 +308,13 @@ export default class TileLayerRenderer extends CanvasRenderer {
             return;
         }
         const id = tileInfo['id'];
-        this._tileToLoadCounter--;
+        this._tileCountToLoad--;
         const point = tileInfo['point'];
         this._drawTile(point, id, tileImage);
         if (!IS_NODE) {
             this.setCanvasUpdated();
         }
-        if (this._tileToLoadCounter === 0) {
+        if (this._tileCountToLoad === 0) {
             this._onTileLoadComplete();
         }
     }
@@ -316,8 +338,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
         if (!IS_NODE) {
             this.setCanvasUpdated();
         }
-        this._tileToLoadCounter--;
-        if (this._tileToLoadCounter === 0) {
+        this._tileCountToLoad--;
+        if (this._tileCountToLoad === 0) {
             this._onTileLoadComplete();
         }
     }
@@ -327,30 +349,36 @@ export default class TileLayerRenderer extends CanvasRenderer {
         delete this._tileCache;
         delete this._tileRended;
         delete this._tileZoom;
+        delete this._tileLoading;
     }
 
     _markTiles() {
-        if (this._tilesLoading) {
-            for (const p in this._tilesLoading) {
-                this._tilesLoading[p].current = false;
+        let a = 0, b = 0;
+        if (this._tileLoading) {
+            for (const p in this._tileLoading) {
+                this._tileLoading[p].current = false;
+                a++;
             }
         }
         if (this._tileRended) {
             for (const p in this._tileRended) {
                 this._tileRended[p].current = false;
+                b++;
             }
         }
+        return [a, b];
     }
 
     _retireTiles() {
-        for (const i in this._tilesLoading) {
-            const tile = this._tilesLoading[i];
+        for (const i in this._tileLoading) {
+            const tile = this._tileLoading[i];
             if (!tile.current) {
+                // abort loading tiles
                 tile.onload = falseFn;
                 tile.onerror = falseFn;
                 tile.src = emptyImageUrl;
                 this._deleteTile(tile);
-                delete this._tilesLoading[i];
+                delete this._tileLoading[i];
             }
         }
         for (const i in this._tileRended) {
