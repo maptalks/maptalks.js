@@ -150,13 +150,8 @@ export default class TileLayerRenderer extends CanvasRenderer {
     _loadTileQueue(tileQueue) {
         for (const p in tileQueue) {
             if (tileQueue.hasOwnProperty(p)) {
-                const tileId = p.split('@')[0],
-                    tile = tileQueue[p];
-                if (!this._tileCache || !this._tileCache[tileId]) {
-                    this._loadTile(tile);
-                } else {
-                    this._drawTileAndRequest(this._tileCache[tileId], tile);
-                }
+                const tile = tileQueue[p];
+                this._loadTile(tile);
             }
         }
     }
@@ -269,12 +264,9 @@ export default class TileLayerRenderer extends CanvasRenderer {
     }
 
     _getCachedTile(tileId) {
-        const cached = this._tileRended[tileId] || (this._tileCache ? this._tileCache.get(tileId) : null);
+        const cached = this._tileRended[tileId];
         if (this._tileRended[tileId]) {
             this._tileRended[tileId].current = true;
-        }
-        if (this._tileCache && this._tileCache.get(tileId)) {
-            this._tileCache.get(tileId).current = true;
         }
         if (this._tileLoading && this._tileLoading[tileId]) {
             this._tileLoading[tileId].current = true;
@@ -285,9 +277,6 @@ export default class TileLayerRenderer extends CanvasRenderer {
     _addTileToCache(tileId, tileImage) {
         this._tileRended[tileId] = tileImage;
         tileImage.current = true;
-        if (this._tileCache) {
-            this._tileCache.add(tileId, tileImage);
-        }
     }
 
     _getTileOpacity(tile) {
@@ -346,7 +335,6 @@ export default class TileLayerRenderer extends CanvasRenderer {
 
     onRemove() {
         delete this._mapRender;
-        delete this._tileCache;
         delete this._tileRended;
         delete this._tileZoom;
         delete this._tileLoading;
