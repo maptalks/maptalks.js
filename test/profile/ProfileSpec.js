@@ -16,10 +16,10 @@ describe('#Map Profile', function () {
         };
         map = new maptalks.Map(container, option);
         tile = new maptalks.TileLayer('tile', {
-
             urlTemplate:'/resources/tile.png',
             subdomains: [1, 2, 3],
-            visible:false
+            visible:false,
+            renderer : 'canvas'
         });
     });
 

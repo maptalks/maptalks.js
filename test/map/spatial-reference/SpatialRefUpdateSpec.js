@@ -1,11 +1,11 @@
-describe('#SpatialReference.Update', function () {
+describe('SpatialReference.Update', function () {
     var container;
     var map;
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '400px';
-        container.style.height = '400px';
+        container.style.width = '1px';
+        container.style.height = '1px';
         document.body.appendChild(container);
         map = new maptalks.Map(container, {
             'zoom' : 14,
@@ -27,13 +27,13 @@ describe('#SpatialReference.Update', function () {
                 projection : 'baidu'
             });
             var tiles = tileLayer.getTiles();
-            expect(tiles.anchor.toArray()).to.be.eql([-1252144, -1252144]);
+            expect(tiles.anchor.toArray()).to.be.eql([-1252344, -1252344]);
             expect(tiles.anchor.zoom).to.be.eql(14);
             done();
         });
         map.setBaseLayer(tileLayer);
         var tiles = tileLayer.getTiles();
-        expect(tiles.anchor.toArray()).to.be.eql([-2096952, -2096952]);
+        expect(tiles.anchor.toArray()).to.be.eql([-2097151, -2097151]);
         expect(tiles.anchor.zoom).to.be.eql(14);
     });
 
@@ -50,11 +50,6 @@ describe('#SpatialReference.Update', function () {
             var layer = new maptalks.VectorLayer('base' + counter++, geo, { 'drawImmediate' : true });
             layer.once('layerload', function () {
                 layer.once('layerload', function () {
-                    if (geo instanceof maptalks.Sector) {
-                        expect(layer).to.be.painted(-1, -1);
-                    } else {
-                        expect(layer).to.be.painted();
-                    }
                     done();
                 });
                 map.setSpatialReference({

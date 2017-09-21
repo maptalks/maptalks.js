@@ -22,9 +22,34 @@ describe('CanvasTileLayer', function () {
     });
 
     describe('add to map', function () {
-        it('add', function (done) {
+        it('add as canvas renderer', function (done) {
             var tile = new maptalks.CanvasTileLayer('tile', {
-                urlTemplate : '/resources/tile.png'
+                fadeAnimation : false,
+                urlTemplate : '/resources/tile.png',
+                renderer: 'canvas'
+            });
+            tile.drawTile = function (canvas, tileContext, onComplete) {
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'Red';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                onComplete(null);
+            };
+            tile.once('layerload', function () {
+                expect(tile).to.be.painted(0, 0, [255, 0, 0]);
+                done();
+            });
+            map.addLayer(tile);
+        });
+
+        it('add as gl renderer', function (done) {
+            if (!maptalks.Browser.webgl) {
+                done();
+                return;
+            }
+            var tile = new maptalks.CanvasTileLayer('tile', {
+                fadeAnimation : false,
+                urlTemplate : '/resources/tile.png',
+                renderer : 'gl'
             });
             tile.drawTile = function (canvas, tileContext, onComplete) {
                 var ctx = canvas.getContext('2d');

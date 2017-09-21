@@ -1,5 +1,4 @@
-
-describe('#Ellipse', function () {
+describe('Geometry.Ellipse', function () {
 
     var container;
     var map;

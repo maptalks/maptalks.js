@@ -12,7 +12,7 @@ function loadTile(tile) {
     const r = Browser.retina ? 2 : 1;
     const tileCanvas = Canvas2D.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);
     tileCanvas['layer'] = this.layer;
-
+    const me = this;
     const extent = new Extent(map.pointToCoordinate(tile['point']), map.pointToCoordinate(tile['point'].add(tileSize.toPoint())));
     this.layer.drawTile(tileCanvas, {
         'url': tile['url'],
@@ -24,10 +24,10 @@ function loadTile(tile) {
         'y' : tile['y']
     }, error => {
         if (error) {
-            this.onTileError(tileCanvas, tile);
+            me.onTileError(tileCanvas, tile);
             return;
         }
-        this.onTileLoad(tileCanvas, tile);
+        me.onTileLoad(tileCanvas, tile);
     });
     return tileCanvas;
 }

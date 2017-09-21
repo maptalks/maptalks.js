@@ -1,4 +1,4 @@
-import { isNil, isArrayHasData, isFunction, isInteger } from 'core/util';
+import { IS_NODE, isNil, isArrayHasData, isFunction, isInteger } from 'core/util';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
@@ -16,10 +16,11 @@ import Layer from '../Layer';
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
  * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
- * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
- * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
- * @property {Boolean}             [options.cacheTiles=true]   - whether cache tiles
- * @property {Number}              [options.keepBuffer=null]   - load more rows and columns of tiles when panning map
+ * @property {Number[]}            [options.tileSystem=null]     - tile system number arrays
+ * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
+ * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
+ * @property {Boolean}             [options.cacheTiles=true]     - whether cache tiles
+ * @property {Number}              [options.keepBuffer=null]     - load more rows and columns of tiles when panning map
  * @property {Boolean}             [options.renderOnMoving=false]  - whether render layer when moving map
  * @memberOf TileLayer
  * @instance
@@ -43,6 +44,9 @@ const options = {
     'tileSize': [256, 256],
 
     'tileSystem': null,
+
+    'fadeAnimation' : !IS_NODE,
+
     'debug': false,
 
     'cacheTiles': true,

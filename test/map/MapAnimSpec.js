@@ -15,7 +15,8 @@ describe('Map.Anim', function () {
             center: center,
             baseLayer : new maptalks.TileLayer('tile', {
                 urlTemplate:'/resources/tile.png',
-                subdomains: [1, 2, 3]
+                subdomains: [1, 2, 3],
+                renderer:'canvas'
             })
         };
         map = new maptalks.Map(container, option);

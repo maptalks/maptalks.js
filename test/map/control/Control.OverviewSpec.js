@@ -67,6 +67,15 @@ describe('Control.Overview', function () {
         map.setCenter([0, 0]);
     });
 
+    it('change spatialreference', function () {
+        var overview = new maptalks.control.Overview();
+        overview.addTo(map);
+        map.setSpatialReference({
+            projection : 'baidu'
+        });
+        expect(overview._overview.options.spatialReference.projection).to.be.eql('baidu');
+    });
+
     it('zoom', function (done) {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);

@@ -113,6 +113,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 
         if (opacity < 1) {
             this.setToRedraw();
+        } else {
+            this.setCanvasUpdated();
         }
     }
 
@@ -205,7 +207,7 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     // decide whether the layer is renderer with gl.
     // when map is pitching, or fragmentShader is set in options
     _gl() {
-        return !!this.getMap().getPitch() || !!this.layer.options['fragmentShader'];
+        return this.getMap() && !!this.getMap().getPitch() || this.layer && !!this.layer.options['fragmentShader'];
     }
 
     // limit tile number to load when map is interacting
@@ -296,6 +298,9 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     onRemove() {
         // release resources
         const gl = this.gl;
+        if (!gl) {
+            return;
+        }
         if (this._buffers) {
             this._buffers.forEach(function (b) {
                 gl.deleteBuffer(b);
@@ -306,7 +311,7 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             this._textures.forEach(t => gl.deleteTexture(t));
             delete this._textures;
         }
-        const program = this.gl.program;
+        const program = gl.program;
         gl.deleteProgram(program);
         gl.deleteShader(program.fragmentShader);
         gl.deleteShader(program.vertexShader);

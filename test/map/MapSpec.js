@@ -1,9 +1,9 @@
-describe('#Map', function () {
+describe('Map.Spec', function () {
 
     var container;
     var eventContainer;
     var map;
-    var tile;
+    var baseLayer;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
@@ -19,11 +19,7 @@ describe('#Map', function () {
         map = new maptalks.Map(container, option);
         map.config('zoomAnimationDuration', 10);
         map._getRenderer()._setCheckSizeInterval(10);
-        tile = new maptalks.TileLayer('tile', {
-            urlTemplate:'/resources/tile.png',
-            subdomains: [1, 2, 3],
-            visible : false
-        });
+        baseLayer = new maptalks.VectorLayer('base_', new maptalks.Marker(center));
         eventContainer = map._panels.front;
     });
 
@@ -108,13 +104,12 @@ describe('#Map', function () {
         });
 
         it('center remains same after setBaseLayer', function () {
-            map.setBaseLayer(tile);
+            map.setBaseLayer(baseLayer);
 
             expect(map.getCenter()).to.closeTo(center);
         });
 
         it('center remains same after setZoom', function () {
-            map.setBaseLayer(tile);
             map.setZoom(13);
 
             expect(map.getCenter()).to.closeTo(center);
@@ -158,7 +153,7 @@ describe('#Map', function () {
         });
 
         it('center is changed after setCenter after setBaseLayer', function () {
-            map.setBaseLayer(tile);
+            map.setBaseLayer(baseLayer);
 
             var nc = new maptalks.Coordinate(122, 32);
             map.setCenter(nc);
@@ -167,8 +162,6 @@ describe('#Map', function () {
         });
 
         it('setCenter will trigger movestart event with the same center', function () {
-            map.setBaseLayer(tile);
-
             var spy = sinon.spy();
             map.on('movestart', spy);
             map.setCenter(center);
@@ -177,8 +170,6 @@ describe('#Map', function () {
         });
 
         it('setCenter will trigger moveend event with the same center', function () {
-            map.setBaseLayer(tile);
-
             var spy = sinon.spy();
             map.on('moveend', spy);
             map.setCenter(center);
@@ -187,8 +178,6 @@ describe('#Map', function () {
         });
 
         it('setCenter will trigger movestart event with a different center', function () {
-            map.setBaseLayer(tile);
-
             var spy = sinon.spy();
             map.on('movestart', spy);
             var nc = new maptalks.Coordinate(119, 32);
@@ -198,8 +187,6 @@ describe('#Map', function () {
         });
 
         it('setCenter will trigger moveend event with a different center', function () {
-            map.setBaseLayer(tile);
-
             var spy = sinon.spy();
             map.on('moveend', spy);
             var nc = new maptalks.Coordinate(119, 32);
@@ -211,16 +198,12 @@ describe('#Map', function () {
 
     describe('#Zoom Level', function () {
         it('get (min/max/current)zoom level', function () {
-            map.setBaseLayer(tile);
-
             expect(map.getZoom()).to.eql(17);
             expect(map.getMinZoom()).to.be.a('number');
             expect(map.getMaxZoom()).to.be.a('number');
         });
 
         it('set (min/max/current)zoom level', function () {
-            map.setBaseLayer(tile);
-
             var min = 3, max = 14, cur = max + 1;
             map.setMinZoom(min);
             map.setMaxZoom(max);
@@ -232,8 +215,6 @@ describe('#Map', function () {
         });
 
         it('set max zoom level to less than current zoom level', function () {
-            map.setBaseLayer(tile);
-
             var max = 14, cur = max + 1;
             map.setZoom(cur);
             map.setMaxZoom(max);
@@ -243,8 +224,6 @@ describe('#Map', function () {
         });
 
         it('zoom in/out', function () {
-            map.setBaseLayer(tile);
-
             var min = 3, max = 14, cur = 8;
             map.setMinZoom(min);
             map.setMaxZoom(max);
@@ -255,7 +234,6 @@ describe('#Map', function () {
         });
 
         it('zoom in/out with animation', function (done) {
-            map.setBaseLayer(tile);
             map.config('zoomAnimation', true);
             var cur = map.getZoom();
             map.on('zoomend', function () {
@@ -270,7 +248,6 @@ describe('#Map', function () {
         });
 
         it('setZoom with animation', function (done) {
-            map.setBaseLayer(tile);
             map.config('zoomAnimation', true);
             var cur = map.getZoom();
             map.on('zoomend', function () {
@@ -285,7 +262,6 @@ describe('#Map', function () {
         });
 
         it('setZoom without animation', function () {
-            map.setBaseLayer(tile);
             var cur = map.getZoom();
             map.setZoom(cur + 2, { animation : false });
             expect(map.isZooming()).not.to.be.ok();
@@ -361,14 +337,12 @@ describe('#Map', function () {
             expect(spy.called).to.be.ok();
 
             var spy2 = sinon.spy();
-            tile.on('add', spy2);
-            map.addLayer(tile);
+            baseLayer.on('add', spy2);
+            map.addLayer(baseLayer);
             expect(spy2.called).to.be.ok();
         });
 
         it('layer will trigger layerload event', function (done) {
-            map.setBaseLayer(tile);
-
             var layer = new maptalks.VectorLayer('id', new maptalks.Marker(map.getCenter()));
             layer.on('layerload', function () {
                 done();
@@ -383,7 +357,6 @@ describe('#Map', function () {
             });
             map.addLayer(layer);
             map.removeLayer(layer);
-            map.setBaseLayer(tile);
         });
 
         it('layerload triggered after setBaseLayer', function (done) {
@@ -392,7 +365,7 @@ describe('#Map', function () {
                 done();
             });
             map.addLayer(layer);
-            map.setBaseLayer(tile);
+            map.setBaseLayer(baseLayer);
         });
     });
 
@@ -406,7 +379,6 @@ describe('#Map', function () {
         });
 
         it('map.getLayer returns null if layer is removed', function () {
-            map.setBaseLayer(tile);
 
             var layer = new maptalks.VectorLayer('id');
             map.addLayer(layer);
@@ -428,8 +400,6 @@ describe('#Map', function () {
     describe('events', function () {
 
         it('double click', function () {
-            map.setBaseLayer(tile);
-
             var spy = sinon.spy();
             map.on('dblclick', spy);
 
@@ -439,8 +409,6 @@ describe('#Map', function () {
         });
 
         it('mousedown following mouseup on map should not trigger move events', function () {
-            map.setBaseLayer(tile);
-
             var spy = sinon.spy();
             map.on('movestart moving moveend', spy);
 
@@ -481,8 +449,6 @@ describe('#Map', function () {
         });
 
         it('event properties', function (done) {
-            map.setBaseLayer(tile);
-
             function listener(param) {
                 expect(param.coordinate).to.be.ok();
                 expect(param.containerPoint).to.be.ok();
@@ -511,8 +477,8 @@ describe('#Map', function () {
 
         it('use tilelayer as base tile', function (done) {
             this.timeout(6000);
-            tile.config({
-                'baseLayerRenderer': 'canvas',
+            baseLayer.config({
+                'renderer': 'canvas',
                 'crossOrigin' : 'anonymous',
                 'gradualLoading' : false,
                 'visible' : true
@@ -536,8 +502,8 @@ describe('#Map', function () {
                 }
             }
             map.on('renderend', onRenderEnd);
-            map.setBaseLayer(tile);
-            expect(map.getBaseLayer()).to.be.eql(tile);
+            map.setBaseLayer(baseLayer);
+            expect(map.getBaseLayer()).to.be.eql(baseLayer);
         });
 
         it('use vectorlayer as base tile', function (done) {
@@ -680,14 +646,14 @@ describe('#Map', function () {
     });
 
     it('remove', function (done) {
-        map.setBaseLayer(tile);
         var layer = new maptalks.VectorLayer('id');
         var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
         layer.addGeometry(geometries, true);
         var tilelayer = new maptalks.TileLayer('t2', {
             urlTemplate:'/resources/tile.png',
             subdomains: [1, 2, 3],
-            visible : false
+            visible : false,
+            renderer : 'canvas'
         });
         tilelayer.on('add', function () {
             map.remove();

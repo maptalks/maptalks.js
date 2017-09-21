@@ -1,5 +1,4 @@
-
-describe('MapTouchZoomSpec', function () {
+describe('Map.TouchZoom', function () {
     var container, eventContainer;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
