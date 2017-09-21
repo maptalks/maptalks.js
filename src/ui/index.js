@@ -1,5 +1,3 @@
-/** @namespace ui */
-
 import UIComponent from './UIComponent';
 import UIMarker from './UIMarker';
 import InfoWindow from './InfoWindow';

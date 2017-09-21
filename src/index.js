@@ -26,9 +26,9 @@ export { MapTool, DrawTool, AreaTool, DistanceTool } from 'map/tool';
 export { default as SpatialReference } from 'map/spatial-reference/SpatialReference';
 import 'map/spatial-reference/SpatialReference.Arc';
 
-// maptalks.ui.*
+/** @namespace ui */
 import * as ui from 'ui';
-// maptalks.control.*
+/** @namespace control */
 import * as control from 'control';
 export { ui, control };
 
@@ -46,7 +46,7 @@ import 'geometry/ext/Geometry.Events';
 import 'geometry/ext/Geometry.InfoWindow';
 
 /**
- * @namespace
+ * @namespace renderer
  */
 // import layer renderers
 import * as renderer from 'renderer';
@@ -54,5 +54,6 @@ export { renderer };
 // import geometry renderers
 import 'renderer/geometry';
 import * as symbolizer from 'renderer/geometry/symbolizers';
+/** @namespace animation */
 import * as animation from 'core/Animation';
 export { symbolizer, animation };

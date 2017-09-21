@@ -14,7 +14,7 @@ Map.include(/** @lends Map.prototype */ {
                 return;
             }
         }
-
+        const old = this._getCurrentView();
         if (this._viewHistoryPointer < this._viewHistory.length - 1) {
             // remove old 'next views'
             this._viewHistory.splice(this._viewHistoryPointer + 1);
@@ -26,6 +26,19 @@ Map.include(/** @lends Map.prototype */ {
             this._viewHistory.splice(0, this._viewHistory.length - count);
         }
         this._viewHistoryPointer = this._viewHistory.length - 1;
+        /**
+         * viewchange event
+         * @event Map#viewchange
+         * @type {Object}
+         * @property {String} type - viewchange
+         * @property {Map} target - map fires the event
+         * @property {Object} old - old view
+         * @property {Point} new  - new view
+         */
+        this._fireEvent('viewchange', {
+            'old' : old,
+            'new' : view
+        });
     },
 
     /**

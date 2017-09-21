@@ -5,10 +5,12 @@ import PointExtent from 'geo/PointExtent';
  * @classdesc
  * Painter for collection type geometries
  * @class
- * @protected
- * @param {GeometryCollection} geometry - geometry to paint
+ * @private
  */
 export default class CollectionPainter extends Class {
+    /**
+     * @param {GeometryCollection} geometry - geometry to paint
+     */
     constructor(geometry) {
         super();
         this.geometry = geometry;

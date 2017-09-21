@@ -8,11 +8,10 @@ import Point from 'geo/Point';
  * @class
  * @abstract
  * @protected
- * @memberOf renderer.map
- * @name Renderer
+ * @memberOf renderer
  * @extends {Class}
  */
-export default class MapRenderer extends Class {
+class MapRenderer extends Class {
 
     constructor(map) {
         super();
@@ -71,3 +70,5 @@ export default class MapRenderer extends Class {
         this._frameLoop();
     }
 }
+
+export default MapRenderer;

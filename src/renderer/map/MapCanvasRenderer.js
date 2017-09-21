@@ -8,15 +8,15 @@ import Map from 'map/Map';
 
 /**
  * @classdesc
- * Renderer class based on HTML5 Canvas2d for maps.
+ * Renderer class based on HTML5 Canvas for maps.
  * @class
  * @protected
- * @memberOf renderer.map
- * @name Canvas
- * @extends {renderer.map.Renderer}
- * @param {Map} map - map for the renderer
+ * @extends {renderer.MapRenderer}
  */
-export default class MapCanvasRenderer extends MapRenderer {
+class MapCanvasRenderer extends MapRenderer {
+    /**
+     * @param {Map} map - map for the renderer
+     */
     constructor(map) {
         super(map);
         //container is a <canvas> element
@@ -734,3 +734,4 @@ export default class MapCanvasRenderer extends MapRenderer {
 
 Map.registerRenderer('canvas', MapCanvasRenderer);
 
+export default MapCanvasRenderer;

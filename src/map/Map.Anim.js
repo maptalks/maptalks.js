@@ -19,10 +19,10 @@ function equalView(view1, view2) {
     return true;
 }
 
-Map.include({
+Map.include(/** @lends Map.prototype */{
 
     /**
-     * Change to combination of center, zoom, pitch and bearing with animation.
+     * Update map's view with animation.
      * @example
      * map.animateTo({
      *     zoom : 13,

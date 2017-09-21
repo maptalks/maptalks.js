@@ -2,7 +2,7 @@ import Map from './Map';
 
 Map.include(/** @lends Map.prototype */ {
     /**
-     * @return {boolean} Element is currently in fullscreen.
+     * @return {Boolean} Element is currently in fullscreen.
      */
     isFullScreen() {
         return !!(
@@ -15,6 +15,8 @@ Map.include(/** @lends Map.prototype */ {
      * Request for the full screen
      * @property {Object} dom -containerDOM to requestFullScreen
      * @return {Map} this
+     * @fires Map#fullscreenstart
+     * @fires Map#fullscreenend
      */
     requestFullScreen(dom) {
         /**
@@ -40,6 +42,7 @@ Map.include(/** @lends Map.prototype */ {
     /**
      * Cancel full screen
      * @return {Map} this
+     * @fires Map#cancelfullscreen
      */
     cancelFullScreen() {
         this._cancelFullScreen();

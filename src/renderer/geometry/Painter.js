@@ -7,7 +7,7 @@ import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
 
-//注册的symbolizer
+//registered symbolizers
 const registerSymbolizers = [
     Symbolizers.StrokeAndFillSymbolizer,
     Symbolizers.ImageMarkerSymbolizer,
@@ -21,11 +21,13 @@ const registerSymbolizers = [
  * @classdesc
  * Painter class for all geometry types except the collection types.
  * @class
- * @protected
- * @param {Geometry} geometry - geometry to paint
+ * @private
  */
-export default class Painter extends Class {
+class Painter extends Class {
 
+    /**
+     *  @param {Geometry} geometry - geometry to paint
+     */
     constructor(geometry) {
         super();
         this.geometry = geometry;
@@ -43,7 +45,6 @@ export default class Painter extends Class {
 
     /**
      * create symbolizers
-     * @return {*} [description]
      */
     _createSymbolizers() {
         const geoSymbol = this.getSymbol(),
@@ -478,3 +479,5 @@ export default class Painter extends Class {
         }
     }
 }
+
+export default Painter;
