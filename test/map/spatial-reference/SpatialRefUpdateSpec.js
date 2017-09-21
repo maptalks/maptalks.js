@@ -26,7 +26,7 @@ describe('SpatialReference.Update', function () {
         });
         map.addLayer(tileLayer);
         var tiles = tileLayer.getTiles();
-        const anchor = tiles.anchor.toArray();
+        var anchor = tiles.anchor.toArray();
         // expect(tiles.anchor.toArray()).to.be.eql([-2097151, -2097151]);
         expect(tiles.anchor.zoom).to.be.eql(14);
 
@@ -39,7 +39,7 @@ describe('SpatialReference.Update', function () {
         expect(tiles.anchor.zoom).to.be.eql(14);
     });
 
-    /* var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+    var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
     geometries[0].setSymbol({
         markerType : 'ellipse',
         markerWidth : 20,
@@ -52,11 +52,7 @@ describe('SpatialReference.Update', function () {
             var layer = new maptalks.VectorLayer('base' + counter++, geo, { 'drawImmediate' : true });
             layer.once('layerload', function () {
                 layer.once('layerload', function () {
-                    if (geo instanceof maptalks.Sector) {
-                        expect(layer).to.be.painted(-1, -1);
-                    } else {
-                        expect(layer).to.be.painted();
-                    }
+                    expect(layer).to.be.painted(-1, -1);
                     done();
                 });
                 map.setSpatialReference({
@@ -68,5 +64,5 @@ describe('SpatialReference.Update', function () {
     }
     for (var i = 0; i < geometries.length; i++) {
         it('VectorLayer with geometry ' + geometries[i].getType(), test(geometries[i]));
-    } */
+    }
 });

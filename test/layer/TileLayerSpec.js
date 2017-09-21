@@ -151,7 +151,7 @@ describe('TileLayer', function () {
 
         });
 
-        it('gl', function (done) {
+        it.skip('gl', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;
@@ -256,7 +256,7 @@ describe('TileLayer', function () {
         map.setBaseLayer(tile);
     });*/
     describe('pitch', function () {
-        it('should set pitch', function (done) {
+        it.skip('should set pitch', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;

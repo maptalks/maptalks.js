@@ -198,6 +198,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onTileLoad(tileImage, tileInfo) {
+        if (!this.layer) {
+            return;
+        }
         const id = tileInfo['id'];
         if (!IS_NODE) {
             if (!this._tileRended) {
@@ -213,6 +216,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onTileError(tileImage, tileInfo) {
+        if (!this.layer) {
+            return;
+        }
         delete this._tileLoading[tileInfo['id']];
         this._clearTileRectAndRequest(tileImage, tileInfo['z']);
     }
