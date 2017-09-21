@@ -78,7 +78,7 @@ class Overview extends Control {
         if (this.options['maximize']) {
             this._createOverview();
         }
-        this.getMap().on('resize moving moveend zoomend pitch rotate', this._update, this)
+        this.getMap().on('resize moving dragrotating viewchange', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this);
         on(this.button, 'click', this._onButtonClick, this);
         this._updateButtonText();
@@ -86,7 +86,7 @@ class Overview extends Control {
 
     onRemove() {
         this.getMap()
-            .off('resize moving moveend zoomend pitch rotate', this._update, this)
+            .off('resize moving dragrotating viewchange', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this);
         if (this._overview) {
             this._overview.remove();
@@ -201,7 +201,9 @@ class Overview extends Control {
         if (!this._overview) {
             return;
         }
-        this._perspective.setCoordinates(this.getMap().getExtent().toArray());
+        const map = this.getMap();
+        const coords = map.getContainerExtent().toArray().map(c => map.containerPointToCoordinate(c));
+        this._perspective.setCoordinates(coords);
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
     }
 
@@ -211,7 +213,9 @@ class Overview extends Control {
         }
         const map = this.getMap();
         if (map.getBaseLayer()) {
-            this._overview.setBaseLayer(Layer.fromJSON(map.getBaseLayer().toJSON()));
+            const layer = Layer.fromJSON(map.getBaseLayer().toJSON());
+            layer.config('renderer', 'canvas');
+            this._overview.setBaseLayer(layer);
         } else {
             this._overview.setBaseLayer(null);
         }
