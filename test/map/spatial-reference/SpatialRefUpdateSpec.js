@@ -1,11 +1,11 @@
-describe('#SpatialReference.Update', function () {
+describe('SpatialReference.Update', function () {
     var container;
     var map;
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '400px';
-        container.style.height = '400px';
+        container.style.width = '1px';
+        container.style.height = '1px';
         document.body.appendChild(container);
         map = new maptalks.Map(container, {
             'zoom' : 14,
@@ -18,22 +18,22 @@ describe('#SpatialReference.Update', function () {
         REMOVE_CONTAINER();
     });
 
-    it('TileLayer', function (done) {
+    it('TileLayer', function () {
         var tileLayer = new maptalks.TileLayer('base', {
-            urlTemplate:'/resources/tile.png'
-        });
-        tileLayer.once('layerload', function () {
-            map.setSpatialReference({
-                projection : 'baidu'
-            });
-            var tiles = tileLayer.getTiles();
-            expect(tiles.anchor.toArray()).to.be.eql([-1252144, -1252144]);
-            expect(tiles.anchor.zoom).to.be.eql(14);
-            done();
+            urlTemplate: maptalks.Util.emptyImageUrl,
+            renderer : 'canvas',
+            fadeAnimation : false
         });
         map.setBaseLayer(tileLayer);
         var tiles = tileLayer.getTiles();
-        expect(tiles.anchor.toArray()).to.be.eql([-2096952, -2096952]);
+        expect(tiles.anchor.toArray()).to.be.eql([-2097151, -2097151]);
+        expect(tiles.anchor.zoom).to.be.eql(14);
+
+        map.setSpatialReference({
+            projection : 'baidu'
+        });
+        tiles = tileLayer.getTiles();
+        expect(tiles.anchor.toArray()).to.be.eql([-1252344, -1252344]);
         expect(tiles.anchor.zoom).to.be.eql(14);
     });
 

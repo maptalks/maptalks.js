@@ -31,7 +31,7 @@ describe('WMSTileLayer', function () {
             'transparent' : true,
             'uppercase' : true,
             'crs' : 'EPSG:4490',
-            'renderer' : 'dom',
+            'renderer' : 'canvas',
             tileSize : [1, 2]
         });
         expect(tile1.getTileSize().toArray()).to.be.eql([1, 2]);
@@ -45,14 +45,14 @@ describe('WMSTileLayer', function () {
             'transparent' : true,
             'uppercase' : true,
             'crs' : 'EPSG:4490',
-            'renderer' : 'dom',
+            'renderer' : 'canvas',
             tileSize : { width : 1, height : 2 }
         });
 
         expect(tile2.getTileSize().toArray()).to.be.eql([1, 2]);
     });
 
-    it('add with dom renderer', function (done) {
+    /* it('add with dom renderer', function (done) {
         var tile = new maptalks.WMSTileLayer('tile', {
             urlTemplate : '/resources/tile.png',
             'layers' : 'layer',
@@ -69,7 +69,7 @@ describe('WMSTileLayer', function () {
             done();
         });
         map.addLayer(tile);
-    });
+    }); */
 
     it('add with canvas renderer', function (done) {
         var tile = new maptalks.WMSTileLayer('tile', {

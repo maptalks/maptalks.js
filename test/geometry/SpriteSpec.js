@@ -1,4 +1,4 @@
-describe('#Sprite', function () {
+describe('Marker.Sprite', function () {
 
     it('image sprite', function (done) {
         var url = 'http://localhost:9876/resources/pattern.png';

@@ -29,7 +29,8 @@ describe('#CanvasMap', function () {
     it('map creation on canvas', function (done) {
         var tile = new maptalks.TileLayer('tile', {
             urlTemplate:'/resources/tile.png',
-            subdomains: [1, 2, 3]
+            subdomains: [1, 2, 3],
+            renderer : 'canvas'
         });
         tile.on('layerload', function () {
             map.once('renderend', function () {
@@ -43,7 +44,8 @@ describe('#CanvasMap', function () {
     it('map rendering when zooming', function (done) {
         var tile = new maptalks.TileLayer('tile', {
             urlTemplate:'/resources/tile.png',
-            subdomains: [1, 2, 3]
+            subdomains: [1, 2, 3],
+            renderer : 'canvas'
         });
         tile.on('layerload', function () {
             // when layer is loaded, wait map to render it on the canvas
