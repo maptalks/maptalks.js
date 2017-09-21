@@ -18,24 +18,22 @@ describe('SpatialReference.Update', function () {
         REMOVE_CONTAINER();
     });
 
-    it('TileLayer', function () {
+    it('TileLayer', function (done) {
         var tileLayer = new maptalks.TileLayer('base', {
-            urlTemplate: maptalks.Util.emptyImageUrl,
-            renderer : 'canvas',
-            fadeAnimation : false
+            urlTemplate:'/resources/tile.png'
         });
-        map.addLayer(tileLayer);
+        tileLayer.once('layerload', function () {
+            map.setSpatialReference({
+                projection : 'baidu'
+            });
+            var tiles = tileLayer.getTiles();
+            expect(tiles.anchor.toArray()).to.be.eql([-1252344, -1252344]);
+            expect(tiles.anchor.zoom).to.be.eql(14);
+            done();
+        });
+        map.setBaseLayer(tileLayer);
         var tiles = tileLayer.getTiles();
-        var anchor = tiles.anchor.toArray();
-        // expect(tiles.anchor.toArray()).to.be.eql([-2097151, -2097151]);
-        expect(tiles.anchor.zoom).to.be.eql(14);
-
-        map.setSpatialReference({
-            projection : 'baidu'
-        });
-        tiles = tileLayer.getTiles();
-        expect(tiles.anchor.toArray()).not.to.be.eql(anchor);
-        // expect(tiles.anchor.toArray()).to.be.eql([-1252344, -1252344]);
+        expect(tiles.anchor.toArray()).to.be.eql([-2097151, -2097151]);
         expect(tiles.anchor.zoom).to.be.eql(14);
     });
 
