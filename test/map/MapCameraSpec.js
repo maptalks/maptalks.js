@@ -46,9 +46,16 @@ describe('#Map.Camera', function () {
         expect(map.getFov()).to.be.approx(60);
     });
 
-    describe.skip('TileLayer\'s dom rendering', function (done) {
-        it('render after composite operations', function () {
+    describe('TileLayer\'s dom rendering', function () {
+        it('render after composite operations', function (done) {
+            if (!maptalks.Browser.webgl) {
+                done();
+                return;
+            }
             var baseLayer = map.getBaseLayer();
+            map.addTileLayer(new maptalks.TileLayer('b', {
+                urlTemplate : maptalks.Util.emptyImageUrl
+            }));
             map.setBearing(60);
             map.setCenter(map.getCenter().add(0.001, 0.001));
             map.setPitch(40);
@@ -56,9 +63,6 @@ describe('#Map.Camera', function () {
             map.setBearing(0);
             map.setPitch(0);
             baseLayer.on('layerload', function () {
-                var tiles = baseLayer._getRenderer()._tiles;
-                var pos = tiles['53162__108844__17'].pos;
-                expect(pos.toArray()).to.be.eql([52, -412]);
                 done();
             });
         });
