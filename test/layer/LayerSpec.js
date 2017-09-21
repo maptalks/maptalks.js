@@ -45,14 +45,14 @@ describe('#Layer', function () {
         });
 
         it('update id', function () {
-            var layer1 = new maptalks.TileLayer('1');
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
             map.addLayer(layer1);
             layer1.setId('2');
             expect(layer1).to.be.eql(map.getLayer('2'));
         });
 
         it('prevent loading in onLoad', function (done) {
-            var layer = new maptalks.VectorLayer('1');
+            var layer = new maptalks.VectorLayer('1', { renderer:'canvas' });
             var ready = false;
             layer.onLoad = function () {
                 if (!ready) {
@@ -87,7 +87,7 @@ describe('#Layer', function () {
     describe('change order of layers', function () {
 
         it('bring a layer to front', function () {
-            var layer1 = new maptalks.TileLayer('1');
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
             var layer2 = new maptalks.VectorLayer('2');
             var layer3 = new maptalks.VectorLayer('3');
 
@@ -106,7 +106,7 @@ describe('#Layer', function () {
         });
 
         it('bring a layer to back', function () {
-            var layer1 = new maptalks.TileLayer('1');
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
             var layer2 = new maptalks.VectorLayer('2');
             var layer3 = new maptalks.VectorLayer('3');
 
@@ -173,7 +173,8 @@ describe('#Layer', function () {
         it('to a tile layer', function () {
             var tilelayer = new maptalks.TileLayer('tile with mask', {
                 urlTemplate:'http://www.aacaward.com/jiema/html/data/aac/{z}/{x}/{y}.png',
-                subdomains:[1, 2, 3, 4]
+                subdomains:[1, 2, 3, 4],
+                renderer : 'canvas'
             });
             map.addLayer(tilelayer);
             tilelayer.setMask(mask);

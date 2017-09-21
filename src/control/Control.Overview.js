@@ -79,7 +79,8 @@ class Overview extends Control {
             this._createOverview();
         }
         this.getMap().on('resize moving dragrotating viewchange', this._update, this)
-            .on('setbaselayer', this._updateBaseLayer, this);
+            .on('setbaselayer', this._updateBaseLayer, this)
+            .on('spatialreferencechange', this._updateSpatialReference, this);
         on(this.button, 'click', this._onButtonClick, this);
         this._updateButtonText();
     }
@@ -87,7 +88,8 @@ class Overview extends Control {
     onRemove() {
         this.getMap()
             .off('resize moving dragrotating viewchange', this._update, this)
-            .off('setbaselayer', this._updateBaseLayer, this);
+            .off('setbaselayer', this._updateBaseLayer, this)
+            .off('spatialreferencechange', this._updateSpatialReference, this);
         if (this._overview) {
             this._overview.remove();
             delete this._overview;
@@ -205,6 +207,15 @@ class Overview extends Control {
         const coords = map.getContainerExtent().toArray().map(c => map.containerPointToCoordinate(c));
         this._perspective.setCoordinates(coords);
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
+    }
+
+    _updateSpatialReference() {
+        if (!this._overview) {
+            return;
+        }
+        const map = this.getMap();
+        const spatialRef = map.options['spatialReference'];
+        this._overview.setSpatialReference(spatialRef);
     }
 
     _updateBaseLayer() {
