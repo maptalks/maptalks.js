@@ -20,6 +20,7 @@ import Layer from '../Layer';
  * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
  * @property {Boolean}             [options.cacheTiles=true]   - whether cache tiles
  * @property {Number}              [options.keepBuffer=null]   - load more rows and columns of tiles when panning map
+ * @property {Boolean}             [options.renderOnMoving=false]  - whether render layer when moving map
  * @memberOf TileLayer
  * @instance
  */
@@ -50,7 +51,9 @@ const options = {
 
     'renderer' : (() => {
         return Browser.webgl ? 'gl' : 'canvas';
-    })()
+    })(),
+
+    'renderOnMoving' : false
 };
 
 
@@ -315,10 +318,13 @@ class TileLayer extends Layer {
     }
 
     _bindMap(map) {
-        if (map.getBaseLayer() === this) {
-            this.config({
-                'renderOnMoving': true
-            });
+        const baseLayer = map.getBaseLayer();
+        if (baseLayer === this) {
+            if (!baseLayer.options.hasOwnProperty('renderOnMoving')) {
+                this.config({
+                    'renderOnMoving': true
+                });
+            }
         }
         return super._bindMap.apply(this, arguments);
     }
@@ -328,8 +334,9 @@ class TileLayer extends Layer {
         if (!map) {
             return false;
         }
-        const tileSize = this.getTileSize();
-        const tile2DExtent = new PointExtent(tileInfo['point'], tileInfo['point'].add(tileSize.toPoint())).convertTo(c => map._pointToContainerPoint(c, this._tileZoom));
+        const tileSize = this.getTileSize(),
+            tileZoom = tileInfo.z;
+        const tile2DExtent = new PointExtent(tileInfo['point'], tileInfo['point'].add(tileSize.toPoint())).convertTo(c => map._pointToContainerPoint(c, tileZoom));
         return extent.intersects(tile2DExtent);
     }
 }

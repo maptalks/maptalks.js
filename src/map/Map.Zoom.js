@@ -2,7 +2,6 @@ import { isNil } from 'core/util';
 import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Map from './Map';
-import TileLayer from 'layer/tile/TileLayer';
 
 Map.include(/** @lends Map.prototype */{
 
@@ -27,7 +26,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _checkZoomOrigin(origin) {
-        if (!origin || this.options['zoomInCenter'] || (this.getPitch() && (this.getBaseLayer() instanceof TileLayer))) {
+        if (!origin || this.options['zoomInCenter']) {
             origin = new Point(this.width / 2, this.height / 2);
         }
         return origin;

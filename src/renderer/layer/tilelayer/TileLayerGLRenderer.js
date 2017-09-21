@@ -46,11 +46,88 @@ const shaders = {
  * @extends {renderer.TileLayerCanvasRenderer}
  * @param {TileLayer} layer - TileLayer to render
  */
-export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
+class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 
     //override to set to always drawable
-    _isDrawable() {
+    isDrawable() {
         return true;
+    }
+
+    drawOnInteracting() {
+        const map = this.getMap();
+        if (map.isZooming() && !map.isMoving() && !map.isRotating()) {
+            this._drawBackground();
+        } else {
+            super.drawOnInteracting();
+        }
+
+    }
+
+    needToRedraw() {
+        if (this._gl() && this.getMap().isInteracting()) {
+            return true;
+        }
+        return super.needToRedraw();
+    }
+
+    drawTile(tileInfo, tileImage) {
+        if (!this._gl()) {
+            // fall back to canvas 2D
+            super.drawTile(tileInfo, tileImage);
+            return;
+        }
+        const map = this.getMap();
+        if (!tileInfo || !map) {
+            return;
+        }
+        const point = tileInfo.point,
+            tileZoom = tileInfo.z;
+        const gl = this.gl,
+            pp = map._pointToPoint(point, tileZoom),
+            scale = map.getResolution(tileZoom) / map.getResolution(),
+            tileSize = this.layer.getTileSize();
+        const opacity = this.getTileOpacity(tileImage);
+        const x = pp.x,
+            y = pp.y,
+            w = tileSize['width'] * scale,
+            h = tileSize['height'] * scale;
+        this.loadTexture(tileImage);
+        const matrix = this.getViewMatrix();
+        gl.uniformMatrix4fv(this.program['u_matrix'], false, Float32Array.from(matrix));
+        gl.uniform1f(this.program['u_opacity'], opacity);
+
+        const x1 = x;
+        const x2 = x + w;
+        const y1 = y;
+        const y2 = y + h;
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            x1, y1,
+            x2, y1,
+            x1, y2,
+            x1, y2,
+            x2, y1,
+            x2, y2
+        ]), gl.DYNAMIC_DRAW);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        if (opacity < 1) {
+            this.setToRedraw();
+        }
+    }
+
+    getViewMatrix() {
+        const m = mat4.copy(new Float64Array(16), this.getMap().projMatrix);
+        mat4.scale(m, m, [1, -1, 1]);
+        return m;
+    }
+
+    onTileLoad(tileImage, tileInfo) {
+        if (this._gl()) {
+            const texture = this._createTexture(tileImage);
+            tileImage.texture = texture;
+        }
+        super.onTileLoad(tileImage, tileInfo);
     }
 
     // override TileLayerCanvasRenderer to initialize gl context
@@ -65,7 +142,7 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
     }
 
-    // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coords
+    // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
     onCanvasCreate() {
         const gl = this.gl;
         gl.disable(gl.DEPTH_TEST);
@@ -117,6 +194,14 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         }
     }
 
+    getCanvasImage() {
+        if (this._gl()) {
+            // draw gl canvas on layer canvas
+            this.context.drawImage(this.glCanvas, 0, 0);
+        }
+        return super.getCanvasImage();
+    }
+
     // decide whether the layer is renderer with gl.
     // when map is pitching, or fragmentShader is set in options
     _gl() {
@@ -129,22 +214,6 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             return 10;
         }
         return 0;
-    }
-
-    getCanvasImage() {
-        if (this._gl()) {
-            // draw gl canvas on layer canvas
-            this.context.drawImage(this.glCanvas, 0, 0);
-        }
-        return super.getCanvasImage();
-    }
-
-    _onTileLoad(tileImage, tileInfo) {
-        if (this._gl()) {
-            const texture = this._createTexture(tileImage);
-            tileImage.texture = texture;
-        }
-        super._onTileLoad(tileImage, tileInfo);
     }
 
     _createTexture(tileImage) {
@@ -178,75 +247,35 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         this._textures.push(texture);
     }
 
-    _drawTile(point, tileId, tileImage) {
-        if (!this._gl()) {
-            // fall back to canvas 2D, as canvas 2D is much more performant than webgl here
-            super._drawTile(point, tileId, tileImage);
-            return;
-        }
-        const map = this.getMap();
-        if (!point || !map) {
-            return;
-        }
-        const gl = this.gl,
-            pp = map._pointToPoint(point, this._tileZoom),
-            scale = map._getResolution(this._tileZoom) / map._getResolution(),
-            tileSize = this.layer.getTileSize();
-        const opacity = this._getTileOpacity(tileImage);
-        const x = pp.x,
-            y = pp.y,
-            w = tileSize['width'] * scale,
-            h = tileSize['height'] * scale;
-        this.loadTexture(tileImage);
-        const matrix = this.getViewMatrix();
-        gl.uniformMatrix4fv(this.program['u_matrix'], false, Float32Array.from(matrix));
-        gl.uniform1f(this.program['u_opacity'], opacity);
-
-        const x1 = x;
-        const x2 = x + w;
-        const y1 = y;
-        const y2 = y + h;
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            x1, y1,
-            x2, y1,
-            x1, y2,
-            x1, y2,
-            x2, y1,
-            x2, y2
-        ]), gl.DYNAMIC_DRAW);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-        if (opacity < 1) {
-            this.setToRedraw();
-        }
-    }
-
-    getViewMatrix() {
-        const m = mat4.copy(new Float64Array(16), this.getMap().projMatrix);
-        mat4.scale(m, m, [1, -1, 1]);
-        return m;
-    }
-
     _drawBackground() {
         if (this.background) {
             if (!this._gl()) {
-                const ctx = this.context,
-                    back = this.background,
-                    map = this.getMap();
-                const scale = map._getResolution(back.tileZoom) / map._getResolution();
-                const cp = map._pointToContainerPoint(back.nw, back.zoom);
-                ctx.save();
-                ctx.translate(cp.x, cp.y);
-                ctx.scale(scale, scale);
-                ctx.drawImage(back.canvas, 0, 0);
-                ctx.restore();
+                super._drawBackground();
+            } else {
+                for (const p in this.background) {
+                    const parentTile = this.background[p];
+                    this.drawTile(parentTile.info, parentTile.image);
+                }
             }
         }
     }
 
-    _deleteTile(tile) {
-        super._deleteTile(tile);
+    _saveBackground() {
+        if (!this._gl()) {
+            super._saveBackground();
+            return;
+        }
+        this.background = {};
+        for (const p in this._tileRended) {
+            const tile = this._tileRended[p];
+            if (tile.image.current) {
+                this.background[p] = tile;
+            }
+        }
+    }
+
+    deleteTile(tile) {
+        super.deleteTile(tile);
         if (tile && !tile.current && tile.texture) {
             this._saveTexture(tile.texture);
             delete tile.texture;
@@ -468,3 +497,5 @@ export default class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 }
 
 TileLayer.registerRenderer('gl', TileLayerGLRenderer);
+
+export default TileLayerGLRenderer;

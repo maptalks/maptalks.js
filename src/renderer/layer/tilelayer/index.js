@@ -1,9 +1,10 @@
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import TileLayerGLRenderer from './TileLayerGLRenderer';
-import CanvasTileLayerRenderer from './CanvasTileLayerRenderer';
+import { CanvasTileLayerCanvasRenderer, CanvasTileLayerGLRenderer } from './CanvasTileLayerRenderer';
 
 export {
     TileLayerCanvasRenderer,
     TileLayerGLRenderer,
-    CanvasTileLayerRenderer
+    CanvasTileLayerCanvasRenderer,
+    CanvasTileLayerGLRenderer
 };

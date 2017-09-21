@@ -1,4 +1,4 @@
-import { IS_NODE, isString, parseJSON } from 'core/util';
+import { IS_NODE, isString, isFunction, parseJSON } from 'core/util';
 
 /**
  * @classdesc
@@ -24,12 +24,25 @@ const Ajax = {
      *     }
      * );
      */
-    get: function (url, cb) {
+    get: function (url, options, cb) {
         if (IS_NODE && Ajax.get.node) {
-            return Ajax.get.node(url, cb);
+            return Ajax.get.node(url, options, cb);
+        }
+        if (isFunction(options)) {
+            cb = options;
+            options = null;
         }
         const client = Ajax._getClient(cb);
         client.open('GET', url, true);
+        if (options) {
+            for (const k in options.headers) {
+                client.setRequestHeader(k, options.headers[k]);
+            }
+            client.withCredentials = options.credentials === 'include';
+            if (options['responseType']) {
+                client.responseType = options['responseType'];
+            }
+        }
         client.send(null);
         return this;
     },
@@ -87,16 +100,27 @@ const Ajax = {
 
     _wrapCallback: function (client, cb) {
         return function () {
-            if (client.withCredentials !== undefined) {
-                cb(null, client.responseText);
-            } else if (client.readyState === 4) {
+            if (client.readyState === 4) {
                 if (client.status === 200) {
-                    cb(null, client.responseText);
+                    if (client.responseType === 'arraybuffer') {
+                        const response = client.response;
+                        if (response.byteLength === 0) {
+                            cb(new Error('http status 200 returned without content.'));
+                        } else {
+                            cb(null, {
+                                data: client.response,
+                                cacheControl: client.getResponseHeader('Cache-Control'),
+                                expires: client.getResponseHeader('Expires')
+                            });
+                        }
+                    } else {
+                        cb(null, client.responseText);
+                    }
                 } else {
                     if (client.status === 0) {
                         return;
                     }
-                    cb(null, '{"success":false,"error":"Status:' + client.status + ',' + client.statusText + '"}');
+                    cb(new Error(client.statusText + ',' + client.status));
                 }
             }
         };
@@ -118,47 +142,21 @@ const Ajax = {
     },
 
     // from mapbox-gl-js
-    makeRequest(url, requestParameters = {}) {
-        const xhr = new window.XMLHttpRequest();
-
-        xhr.open('GET', url, true);
-        for (const k in requestParameters.headers) {
-            xhr.setRequestHeader(k, requestParameters.headers[k]);
+    getArrayBuffer(url, options, callback) {
+        if (isFunction(options)) {
+            callback = options;
+            options = {};
         }
-
-        xhr.withCredentials = requestParameters.credentials === 'include';
-        return xhr;
+        if (!options) {
+            options = {};
+        }
+        options['responseType'] = 'arraybuffer';
+        return Ajax.get(url, options, callback);
     },
 
     // from mapbox-gl-js
-    getArrayBuffer(url, requestParameters, callback) {
-        const xhr = Ajax.makeRequest(url, requestParameters);
-        xhr.responseType = 'arraybuffer';
-        xhr.onerror = function () {
-            callback(new Error(xhr.statusText));
-        };
-        xhr.onload = function () {
-            const response = xhr.response;
-            if (response.byteLength === 0 && xhr.status === 200) {
-                callback(new Error('http status 200 returned without content.'));
-            }
-            if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-                callback(null, {
-                    data: response,
-                    cacheControl: xhr.getResponseHeader('Cache-Control'),
-                    expires: xhr.getResponseHeader('Expires')
-                });
-            } else {
-                callback(new Error(xhr.statusText + ',' + xhr.status));
-            }
-        };
-        xhr.send();
-        return xhr;
-    },
-
-    // from mapbox-gl-js
-    getImage(img, url, requestParameters) {
-        return Ajax.getArrayBuffer(url, requestParameters, (err, imgData) => {
+    getImage(img, url, options) {
+        return Ajax.getArrayBuffer(url, options, (err, imgData) => {
             if (err) {
                 if (img.onerror) {
                     img.onerror(err);
