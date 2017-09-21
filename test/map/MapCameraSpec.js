@@ -52,10 +52,10 @@ describe('#Map.Camera', function () {
                 done();
                 return;
             }
-            var baseLayer = map.getBaseLayer();
-            map.addTileLayer(new maptalks.TileLayer('b', {
+            var baseLayer = new maptalks.TileLayer('b', {
                 urlTemplate : maptalks.Util.emptyImageUrl
-            }));
+            });
+            map.addLayer(baseLayer);
             map.setBearing(60);
             map.setCenter(map.getCenter().add(0.001, 0.001));
             map.setPitch(40);
