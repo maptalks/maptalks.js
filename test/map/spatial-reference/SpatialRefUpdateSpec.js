@@ -24,7 +24,7 @@ describe('SpatialReference.Update', function () {
             renderer : 'canvas',
             fadeAnimation : false
         });
-        map.setBaseLayer(tileLayer);
+        map.addLayer(tileLayer);
         var tiles = tileLayer.getTiles();
         expect(tiles.anchor.toArray()).to.be.eql([-2097151, -2097151]);
         expect(tiles.anchor.zoom).to.be.eql(14);
