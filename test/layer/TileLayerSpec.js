@@ -70,9 +70,9 @@ describe('TileLayer', function () {
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
+                fadeAnimation : false,
                 debug : true,
-                urlTemplate : '#',
-                subdomains:['a', 'b', 'c']
+                urlTemplate : '#'
             });
             tile.on('layerload', function () {
                 done();
@@ -99,6 +99,7 @@ describe('TileLayer', function () {
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
                 renderer : 'canvas',
+                fadeAnimation : false,
                 tileSystem : [1, -1, -180, 90],
                 crossOrigin:'Anonymous',
                 urlTemplate:'#',
@@ -113,15 +114,16 @@ describe('TileLayer', function () {
         it('baidu', function (done) {
             createMap();
             map.config({
-                minZoom:1,
-                maxZoom:19,
-                spatialReference:{
+                minZoom: 1,
+                maxZoom: 19,
+                spatialReference: {
                     projection : 'baidu'
                 }
             });
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
                 debug : true,
+                fadeAnimation : false,
                 crossOrigin:'Anonymous',
                 urlTemplate:'#',
                 subdomains:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]

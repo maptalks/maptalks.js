@@ -190,7 +190,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     loadTileImage(tileImage, url) {
-        if (IS_NODE || Browser.ie9) {
+        if (IS_NODE || !Browser.webgl) {
             // ie9 doesn't support binary image
             return loadImage(tileImage, [url]);
         }

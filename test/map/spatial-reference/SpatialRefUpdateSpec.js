@@ -52,11 +52,6 @@ describe('SpatialReference.Update', function () {
             var layer = new maptalks.VectorLayer('base' + counter++, geo, { 'drawImmediate' : true });
             layer.once('layerload', function () {
                 layer.once('layerload', function () {
-                    if (geo instanceof maptalks.Sector) {
-                        expect(layer).to.be.painted(-1, -1);
-                    } else {
-                        expect(layer).to.be.painted();
-                    }
                     done();
                 });
                 map.setSpatialReference({
