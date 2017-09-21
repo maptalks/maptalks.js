@@ -7,8 +7,8 @@ describe('#Map.Camera', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '400px';
-        container.style.height = '300px';
+        container.style.width = '30px';
+        container.style.height = '30px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation:true,
@@ -53,7 +53,7 @@ describe('#Map.Camera', function () {
                 return;
             }
             var baseLayer = new maptalks.TileLayer('b', {
-                urlTemplate : maptalks.Util.emptyImageUrl
+                urlTemplate : '/resources/tile.png'
             });
             map.addLayer(baseLayer);
             map.setBearing(60);
