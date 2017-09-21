@@ -10,7 +10,6 @@ describe('#Marker', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        map.setBaseLayer(null);
         canvasContainer = map._panels.front;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });

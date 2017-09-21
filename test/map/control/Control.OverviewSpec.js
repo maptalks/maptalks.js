@@ -6,8 +6,8 @@ describe('Control.Overview', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '50px';
+        container.style.height = '50px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -17,9 +17,9 @@ describe('Control.Overview', function () {
         };
         map = new maptalks.Map(container, option);
         tile = new maptalks.TileLayer('tile', {
-
-            urlTemplate:'/resources/tile.png',
-            subdomains: [1, 2, 3]
+            renderer : 'canvas',
+            fadeAnimation : false,
+            urlTemplate:'/resources/tile.png'
         });
 
     });
@@ -32,14 +32,14 @@ describe('Control.Overview', function () {
     it('default', function () {
         expect(map.overviewControl).to.be.ok();
     });
-
+    /*
     it('create', function (done) {
         map.on('baselayerload', function () {
             new maptalks.control.Overview().addTo(map);
             done();
         });
         map.setBaseLayer(tile);
-    });
+    }); */
 
     it('baseLayer', function () {
         var overview = new maptalks.control.Overview();
@@ -51,23 +51,29 @@ describe('Control.Overview', function () {
     it('remove', function () {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);
-        expect(map.listens('zoomend')).to.be(2);
-        expect(map.listens('moveend')).to.be(2);
+        expect(map.listens('viewchange')).to.be(2);
         overview.remove();
-        expect(map.listens('moveend')).to.be(1);
-        expect(map.listens('zoomend')).to.be(1);
+        expect(map.listens('viewchange')).to.be(1);
         map.setBaseLayer(tile);
-
     });
 
     it('move', function (done) {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);
-        map.on('moveend', function () {
+        map.on('viewchange', function () {
             expect(overview._overview.getCenter().toArray()).to.be.eql([0, 0]);
             done();
         });
         map.setCenter([0, 0]);
+    });
+
+    it('change spatialreference', function () {
+        var overview = new maptalks.control.Overview();
+        overview.addTo(map);
+        map.setSpatialReference({
+            projection : 'baidu'
+        });
+        expect(overview._overview.options.spatialReference.projection).to.be.eql('baidu');
     });
 
     it('zoom', function (done) {

@@ -1,10 +1,10 @@
-describe('#TileLayer', function () {
+describe('TileLayer', function () {
 
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    beforeEach(function () {
+    function createMap() {
         container = document.createElement('div');
         container.style.width = '3px';
         container.style.height = '3px';
@@ -14,16 +14,24 @@ describe('#TileLayer', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
+    }
+
+    beforeEach(function () {
+
     });
 
     afterEach(function () {
-        map.remove();
+        if (map) {
+            map.remove();
+        }
         REMOVE_CONTAINER(container);
     });
 
     describe('add to map', function () {
         it('add again', function (done) {
+            createMap();
             var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
                 urlTemplate : '/resources/tile.png'
             });
             tile.once('layerload', function () {
@@ -39,13 +47,16 @@ describe('#TileLayer', function () {
         });
 
         it('set tile size', function () {
+            createMap();
             var tile1 = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
                 urlTemplate : '/resources/tile.png',
                 tileSize : [1, 2]
             });
             expect(tile1.getTileSize().toArray()).to.be.eql([1, 2]);
 
             var tile2 = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
                 urlTemplate : '/resources/tile.png',
                 tileSize : { width : 1, height : 2 }
             });
@@ -56,10 +67,12 @@ describe('#TileLayer', function () {
 
     describe('Different Projections', function () {
         it('webmercator', function (done) {
+            createMap();
             var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                fadeAnimation : false,
                 debug : true,
-                urlTemplate : '#',
-                subdomains:['a', 'b', 'c']
+                urlTemplate : '#'
             });
             tile.on('layerload', function () {
                 done();
@@ -68,6 +81,7 @@ describe('#TileLayer', function () {
         });
 
         it('lonlat', function (done) {
+            createMap();
             map.config({
                 minZoom:1,
                 maxZoom:18,
@@ -84,6 +98,8 @@ describe('#TileLayer', function () {
             });
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
+                renderer : 'canvas',
+                fadeAnimation : false,
                 tileSystem : [1, -1, -180, 90],
                 crossOrigin:'Anonymous',
                 urlTemplate:'#',
@@ -96,16 +112,18 @@ describe('#TileLayer', function () {
         });
 
         it('baidu', function (done) {
+            createMap();
             map.config({
-                minZoom:1,
-                maxZoom:19,
-                spatialReference:{
+                minZoom: 1,
+                maxZoom: 19,
+                spatialReference: {
                     projection : 'baidu'
                 }
             });
-            //添加baidu瓦片图层
             var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
                 debug : true,
+                fadeAnimation : false,
                 crossOrigin:'Anonymous',
                 urlTemplate:'#',
                 subdomains:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -119,11 +137,12 @@ describe('#TileLayer', function () {
 
     describe('Different Renderers', function () {
         it('canvas', function (done) {
+            createMap();
             var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
                 debug : true,
                 urlTemplate : '/resources/tile.png',
-                subdomains:['a', 'b', 'c'],
-                baseLayerRenderer : 'canvas'
+                subdomains:['a', 'b', 'c']
             });
             tile.once('layerload', function () {
                 tile.hide();
@@ -134,12 +153,17 @@ describe('#TileLayer', function () {
 
         });
 
-        it('dom', function (done) {
+        it('gl', function (done) {
+            if (!maptalks.Browser.webgl) {
+                done();
+                return;
+            }
+            createMap();
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
                 urlTemplate : '/resources/tile.png',
                 subdomains:['a', 'b', 'c'],
-                baseLayerRenderer : 'dom'
+                renderer : 'gl'
             });
             tile.once('layerload', function () {
                 tile.hide();
@@ -166,7 +190,8 @@ describe('#TileLayer', function () {
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
                 urlTemplate : '/resources/tile.png',
-                subdomains:['a', 'b', 'c']
+                subdomains:['a', 'b', 'c'],
+                renderer : 'canvas'
             });
             tile.on('layerload', function () {
                 expect(tile.isCanvasRender()).to.be.ok();
@@ -189,7 +214,8 @@ describe('#TileLayer', function () {
             map = new maptalks.Map(container, option);
             var tile = new maptalks.TileLayer('tile', {
                 urlTemplate : '/resources/tile.png',
-                subdomains:['a', 'b', 'c']
+                subdomains:['a', 'b', 'c'],
+                renderer : 'canvas'
             });
             tile.on('layerload', function () {
                 expect(tile.isCanvasRender()).to.be.ok();
@@ -231,23 +257,30 @@ describe('#TileLayer', function () {
         });
         map.setBaseLayer(tile);
     });*/
-
-    describe('pitch and rotation', function () {
-        it('should set domCssMatrix when initialize with pitch', function (done) {
+    describe('pitch', function () {
+        it('should set pitch', function (done) {
+            if (!maptalks.Browser.webgl) {
+                done();
+                return;
+            }
             container = document.createElement('div');
             container.style.width = '10px';
             container.style.height = '10px';
             document.body.appendChild(container);
             var baselayer = new maptalks.TileLayer('tile', {
                 urlTemplate : '/resources/tile.png',
-                subdomains:['a', 'b', 'c']
+                subdomains:['a', 'b', 'c'],
+                renderer : 'gl',
+                fadeAnimation : false
             });
-            baselayer.on('layerload', function () {
-                expect(baselayer.isCanvasRender()).not.to.be.ok();
-                var renderer = baselayer._getRenderer();
-                var cssMat = renderer._getTileContainer(renderer._tileZoom).style.cssText;
-                expect(cssMat.indexOf('matrix3d') > 0).to.be.ok();
-                done();
+            baselayer.once('layerload', function () {
+                baselayer.once('layerload', function () {
+                    expect(baselayer.isCanvasRender()).to.be.ok();
+                    done();
+                });
+                var map = baselayer.getMap();
+                map.config('zoomDuration', 80);
+                map.setZoom(map.getZoom() - 1, { animation : false });
             });
             var options = {
                 zoom: 17,
@@ -258,7 +291,8 @@ describe('#TileLayer', function () {
             map = new maptalks.Map(container, options);
         });
 
-        it('should set domCssMatrix when pitch', function (done) {
+        // dom renderer is no more used, 2017-09-21, v0.30
+        /* it('should set domCssMatrix when pitch', function (done) {
             // var cmap;
             container = document.createElement('div');
             container.style.width = '10px';
@@ -301,7 +335,7 @@ describe('#TileLayer', function () {
             };
             map = new maptalks.Map(container, option);
             map.addLayer(tile2);
-        });
+        }); */
     });
 
 });

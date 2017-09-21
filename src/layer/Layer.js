@@ -367,6 +367,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return !!this._loaded;
     }
 
+    getRenderer() {
+        return this._getRenderer();
+    }
+
     _bindMap(map, zIndex) {
         if (!map) {
             return;

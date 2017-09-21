@@ -1,4 +1,5 @@
-import { isNil, IS_NODE, isArrayHasData, isFunction, isInteger } from 'core/util';
+import { IS_NODE, isNil, isArrayHasData, isFunction, isInteger } from 'core/util';
+import Browser from 'core/Browser';
 import Point from 'geo/Point';
 import Size from 'geo/Size';
 import PointExtent from 'geo/PointExtent';
@@ -8,21 +9,19 @@ import Layer from '../Layer';
 
 /**
  * @property {Object}              options                     - TileLayer's options
- * @property {String}              [options.errorTileUrl=null] - tile's url when error
  * @property {String}              options.urlTemplate         - url templates
+ * @property {String}              [options.errorTileUrl=null] - tile's url when error
  * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
- * @property {Boolean}             [options.renderOnMoving=false]    - render tiles when moving map
- * @property {Boolean}             [options.renderOnRotating=false]  - render tiles when rotating map
- * @property {String}              [options.cssFilter=null]    - css filter of tile image, only applicable for dom renderer, e.g. brightness(0.4)
+ * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
  * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
- * @property {Number[]}            [options.tileSystem=null]   - tile system number arrays
- * @property {Boolean}             [options.debug=false]       - if set to true, tiles will have borders and a title of its coordinates.
- * @property {Boolean}             [options.cacheTiles=true]   - whether cache tiles
- * @property {Number}              [options.keepBuffer=null]   - load more rows and columns of tiles when panning map
- * @property {String}              [options.container=back]    - map container to place tile images, can be back or front.
- * @property {String}              [options.baseLayerRenderer=dom]  - default renderer for TileLayer as baseLayer
+ * @property {Number[]}            [options.tileSystem=null]     - tile system number arrays
+ * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
+ * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
+ * @property {Boolean}             [options.cacheTiles=true]     - whether cache tiles
+ * @property {Number}              [options.keepBuffer=null]     - load more rows and columns of tiles when panning map
+ * @property {Boolean}             [options.renderOnMoving=false]  - whether render layer when moving map
  * @memberOf TileLayer
  * @instance
  */
@@ -32,9 +31,6 @@ const options = {
     'subdomains': null,
 
     'repeatWorld': true,
-
-    'renderOnMoving': false,
-    'renderOnRotating' : false,
 
     //map's animation duration to start tilelayer's animation
     'durationToAnimate' : 2000,
@@ -48,17 +44,20 @@ const options = {
     'tileSize': [256, 256],
 
     'tileSystem': null,
+
+    'fadeAnimation' : !IS_NODE,
+
     'debug': false,
 
     'cacheTiles': true,
 
     'keepBuffer': null,
 
-    'container' : 'back',
+    'renderer' : (() => {
+        return Browser.webgl ? 'gl' : 'canvas';
+    })(),
 
-    'baseLayerRenderer': (() => {
-        return IS_NODE ? 'canvas' : 'dom';
-    })()
+    'renderOnMoving' : false
 };
 
 
@@ -245,13 +244,7 @@ class TileLayer extends Layer {
     }
 
     _initRenderer() {
-        let renderer = this.options['renderer'];
-        if (this.getMap().getBaseLayer() === this) {
-            renderer = this.options['baseLayerRenderer'];
-            if (this.getMap()._getRenderer()._containerIsCanvas) {
-                renderer = 'canvas';
-            }
-        }
+        const renderer = this.options['renderer'];
         if (!this.constructor.getRendererClass) {
             return;
         }
@@ -329,12 +322,26 @@ class TileLayer extends Layer {
     }
 
     _bindMap(map) {
-        if (map.getBaseLayer() === this) {
-            this.config({
-                'renderOnMoving': true
-            });
+        const baseLayer = map.getBaseLayer();
+        if (baseLayer === this) {
+            if (!baseLayer.options.hasOwnProperty('renderOnMoving')) {
+                this.config({
+                    'renderOnMoving': true
+                });
+            }
         }
         return super._bindMap.apply(this, arguments);
+    }
+
+    _isTileInExtent(tileInfo, extent) {
+        const map = this.getMap();
+        if (!map) {
+            return false;
+        }
+        const tileSize = this.getTileSize(),
+            tileZoom = tileInfo.z;
+        const tile2DExtent = new PointExtent(tileInfo['point'], tileInfo['point'].add(tileSize.toPoint())).convertTo(c => map._pointToContainerPoint(c, tileZoom));
+        return extent.intersects(tile2DExtent);
     }
 }
 

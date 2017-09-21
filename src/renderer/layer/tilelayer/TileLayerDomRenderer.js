@@ -30,17 +30,21 @@ const POSITION0 = 'position:absolute;';
 
 /**
  * @classdesc
+ * @deprecated
  * A renderer based on HTML Doms for TileLayers.
  * It is implemented based on Leaflet's GridLayer.
+ *
+ * It is deprecated and replaced by {TileLayerGLRenderer}
  * @class
  * @protected
- * @memberOf tilelayer
- * @name Dom
+ * @memberOf renderer
  * @extends {Class}
- * @param {TileLayer} layer - layer of the renderer
  */
-export default class TileLayerDomRenderer extends Class {
+class TileLayerDomRenderer extends Class {
 
+    /**
+     * @param {TileLayer} layer - layer of the renderer
+     */
     constructor(layer) {
         super();
         this.layer = layer;
@@ -811,3 +815,5 @@ export default class TileLayerDomRenderer extends Class {
 function falseFn() { return false; }
 
 TileLayer.registerRenderer('dom', TileLayerDomRenderer);
+
+export default TileLayerDomRenderer;

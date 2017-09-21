@@ -1,10 +1,5 @@
 import TileLayer from './TileLayer';
 
-const options = {
-    'renderer'  : 'canvas',
-    'baseLayerRenderer' : 'canvas'
-};
-
 /**
  * @classdesc
  * @ignore
@@ -17,6 +12,14 @@ const options = {
  * layer.drawTile = ()
  */
 class CanvasTileLayer extends TileLayer {
+
+    constructor(id, options) {
+        super(id, options);
+        if (!this.options.hasOwnProperty('renderOnMoving')) {
+            // force not to renderOnMoving
+            this.options['renderOnMoving'] = false;
+        }
+    }
 
     /**
      * The interface method to draw on canvsa tile
@@ -58,7 +61,5 @@ class CanvasTileLayer extends TileLayer {
 }
 
 CanvasTileLayer.registerJSONType('CanvasTileLayer');
-
-CanvasTileLayer.mergeOptions(options);
 
 export default CanvasTileLayer;

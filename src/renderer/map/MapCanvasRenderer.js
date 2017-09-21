@@ -8,15 +8,15 @@ import Map from 'map/Map';
 
 /**
  * @classdesc
- * Renderer class based on HTML5 Canvas2d for maps.
+ * Renderer class based on HTML5 Canvas for maps.
  * @class
  * @protected
- * @memberOf renderer.map
- * @name Canvas
- * @extends {renderer.map.Renderer}
- * @param {Map} map - map for the renderer
+ * @extends {renderer.MapRenderer}
  */
-export default class MapCanvasRenderer extends MapRenderer {
+class MapCanvasRenderer extends MapRenderer {
+    /**
+     * @param {Map} map - map for the renderer
+     */
     constructor(map) {
         super(map);
         //container is a <canvas> element
@@ -196,7 +196,7 @@ export default class MapCanvasRenderer extends MapRenderer {
             drawTime = renderer.getDrawTime(),
             inTime = timeLimit === 0 || timeLimit > 0 && t + drawTime <= timeLimit;
         if (renderer.drawOnInteracting &&
-            (inTime ||
+            (layer === map.getBaseLayer() || inTime ||
             map.isZooming() && layer.options['forceRenderOnZooming'] ||
             map.isMoving() && layer.options['forceRenderOnMoving'] ||
             map.isRotating() && layer.options['forceRenderOnRotating'])
@@ -450,7 +450,7 @@ export default class MapCanvasRenderer extends MapRenderer {
         const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
             mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;z-index:0', true),
             backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0 + 'z-index:0;', true),
-            back = createContainer('back', 'maptalks-back', POSITION0 + 'will-change:transform;z-index:1;'),
+            back = createContainer('back', 'maptalks-back', POSITION0 + 'z-index:1;'),
             backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
             canvasContainer = createContainer('canvasContainer', 'maptalks-canvas-layer', POSITION0 + 'border:none;z-index:2;'),
             frontStatic = createContainer('frontStatic', 'maptalks-front-static', POSITION0 + 'z-index:3;', true),
@@ -734,3 +734,4 @@ export default class MapCanvasRenderer extends MapRenderer {
 
 Map.registerRenderer('canvas', MapCanvasRenderer);
 
+export default MapCanvasRenderer;

@@ -101,21 +101,13 @@ function COMMON_CREATE_MAP(center, baseLayer, options) {
             }
         }
     }
-    var map = new maptalks.Map(container, option);
-    if (baseLayer === undefined || baseLayer === null) {
-        var tile = new maptalks.TileLayer('tile', {
-            urlTemplate:'/resources/tile.png',
-            subdomains: [1, 2, 3],
-            cssFilter : 'grayscale(0.5)'
-        });
-        map.setBaseLayer(tile);
-    } else if (baseLayer) {
-        map.setBaseLayer(baseLayer);
+    if (baseLayer) {
+        option.baseLayer = baseLayer;
     }
+    var map = new maptalks.Map(container, option);
     return {
         'container':container,
-        'map':map,
-        'base':tile
+        'map':map
     };
 }
 

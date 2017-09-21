@@ -8,8 +8,6 @@ import {
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 
-/** @namespace animation */
-
 /**
  * @classdesc
  * Easing functions for anmation, from openlayers 3

@@ -7,12 +7,12 @@ import Symbolizer from './Symbolizer';
  * Base symbolizer class for all the symbolizers base on HTML5 Canvas2D
  * @abstract
  * @class
- * @protected
+ * @private
  * @memberOf symbolizer
  * @name CanvasSymbolizer
  * @extends {Symbolizer}
  */
-export default class CanvasSymbolizer extends Symbolizer {
+class CanvasSymbolizer extends Symbolizer {
     _prepareContext(ctx) {
         if (isNumber(this.symbol['opacity'])) {
             if (ctx.globalAlpha !== this.symbol['opacity']) {
@@ -35,3 +35,5 @@ export default class CanvasSymbolizer extends Symbolizer {
         return loadFunctionTypes(style, () => [this.getMap().getZoom(), this.geometry.getProperties()]);
     }
 }
+
+export default CanvasSymbolizer;

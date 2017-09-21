@@ -8,12 +8,12 @@ import CanvasSymbolizer from './CanvasSymbolizer';
  * Base symbolizer class for all the point type symbol styles.
  * @abstract
  * @class
- * @protected
+ * @private
  * @memberOf symbolizer
  * @name PointSymbolizer
- * @extends {CanvasSymbolizer}
+ * @extends {symbolizer.CanvasSymbolizer}
  */
-export default class PointSymbolizer extends CanvasSymbolizer {
+class PointSymbolizer extends CanvasSymbolizer {
 
     constructor(symbol, geometry, painter) {
         super();
@@ -87,3 +87,5 @@ export default class PointSymbolizer extends CanvasSymbolizer {
         return null;
     }
 }
+
+export default PointSymbolizer;

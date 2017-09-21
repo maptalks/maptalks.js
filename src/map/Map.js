@@ -29,7 +29,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
- * @property {Boolean} [options.zoomBackground=true]            - leaves a background after zooming.
+ * @property {Boolean} [options.zoomBackground=false]           - leaves a background after zooming.
  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
@@ -1501,6 +1501,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     isDragRotating() {
         return !!this._dragRotating;
+    }
+
+    getRenderer() {
+        return this._getRenderer();
     }
 
     //-----------------------------------------------------------

@@ -1,9 +1,10 @@
-import TileLayerDomRenderer from './TileLayerDomRenderer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
-import CanvasTileLayerRenderer from './CanvasTileLayerRenderer';
+import TileLayerGLRenderer from './TileLayerGLRenderer';
+import { CanvasTileLayerCanvasRenderer, CanvasTileLayerGLRenderer } from './CanvasTileLayerRenderer';
 
 export {
-    TileLayerDomRenderer,
     TileLayerCanvasRenderer,
-    CanvasTileLayerRenderer
+    TileLayerGLRenderer,
+    CanvasTileLayerCanvasRenderer,
+    CanvasTileLayerGLRenderer
 };
