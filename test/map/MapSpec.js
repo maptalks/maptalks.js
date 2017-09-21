@@ -652,7 +652,8 @@ describe('Map.Spec', function () {
         var tilelayer = new maptalks.TileLayer('t2', {
             urlTemplate:'/resources/tile.png',
             subdomains: [1, 2, 3],
-            visible : false
+            visible : false,
+            renderer : 'canvas'
         });
         tilelayer.on('add', function () {
             map.remove();
