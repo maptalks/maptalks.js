@@ -51,55 +51,5 @@ Geometry.include(/** @lends Geometry.prototype */ {
             eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
         }
         return eventParam;
-    },
-
-    /**
-     * mouse over event handler
-     * @param  {Event} event - mouseover dom event
-     * @private
-     */
-    _onMouseOver: function (event) {
-        if (!this.getMap()) {
-            return;
-        }
-        const originalEvent = event;
-        const params = this._getEventParams(originalEvent);
-        /**
-         * mouseover event for geometry
-         * @event Geometry#mouseover
-         * @type {Object}
-         * @property {String} type                    - mouseover
-         * @property {Geometry} target       - the geometry fires mouseover
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        this._fireEvent('mouseover', params);
-    },
-
-    /**
-     * mouse out event handler
-     * @param  {Event} event - mouseout dom event
-     * @private
-     */
-    _onMouseOut: function (event) {
-        if (!this.getMap()) {
-            return;
-        }
-        const originalEvent = event;
-        const params = this._getEventParams(originalEvent);
-        /**
-         * mouseout event for geometry
-         * @event Geometry#mouseout
-         * @type {Object}
-         * @property {String} type                    - mouseout
-         * @property {Geometry} target       - the geometry fires mouseout
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        this._fireEvent('mouseout', params);
     }
 });
