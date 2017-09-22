@@ -152,7 +152,7 @@ class VectorLayer extends OverlayLayer {
     identify(coordinate, options = {}) {
         const renderer = this._getRenderer();
         // only iterate drawn geometries when onlyVisible is true.
-        if (options['onlyVisible'] && renderer) {
+        if (options['onlyVisible'] && renderer && renderer.identify) {
             return renderer.identify(coordinate, options);
         }
         return super.identify(coordinate, options);
