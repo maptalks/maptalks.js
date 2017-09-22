@@ -53,7 +53,7 @@ class MapScrollWheelZoomHandler extends Handler {
                     'zoom' : nextZoom,
                     'around' : this._origin
                 }, {
-                    'duration' : 160
+                    'duration' : 1000 / 60 * 10
                 }, frame => {
                     if (frame.state.playState === 'finished') {
                         setTimeout(() => {
