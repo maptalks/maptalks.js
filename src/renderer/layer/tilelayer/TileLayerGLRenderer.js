@@ -254,9 +254,28 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             if (!this._gl()) {
                 super._drawBackground();
             } else {
+                const map = this.getMap();
+                const extent = map.getContainerExtent();
                 for (const p in this.background) {
+                    if (p === 'canvas') {
+                        continue;
+                    }
                     const parentTile = this.background[p];
-                    this.drawTile(parentTile.info, parentTile.image);
+                    if (this.layer._isTileInExtent(parentTile.info, extent)) {
+                        this.drawTile(parentTile.info, parentTile.image);
+                    }
+                }
+                if (!map.isZooming()) {
+                    let backCanvas = this.background.canvas;
+                    if (!backCanvas) {
+                        backCanvas = Canvas.copy(this.glCanvas);
+                        this.background.canvas = backCanvas;
+                    } else {
+                        backCanvas.width = this.glCanvas.width;
+                        backCanvas.height = this.glCanvas.height;
+                        backCanvas.getContext('2d').drawImage(this.glCanvas, 0, 0);
+                        this.context.drawImage(backCanvas, 0, 0);
+                    }
                 }
             }
         }
@@ -271,6 +290,7 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         for (const p in this._tileRended) {
             const tile = this._tileRended[p];
             if (tile.image.current) {
+                tile.image.loadTime = 0;
                 this.background[p] = tile;
             }
         }

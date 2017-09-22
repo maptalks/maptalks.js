@@ -20,7 +20,6 @@ import Layer from '../Layer';
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {Boolean}             [options.cacheTiles=true]     - whether cache tiles
- * @property {Number}              [options.keepBuffer=null]     - load more rows and columns of tiles when panning map
  * @property {Boolean}             [options.renderOnMoving=false]  - whether render layer when moving map
  * @memberOf TileLayer
  * @instance
@@ -50,8 +49,6 @@ const options = {
     'debug': false,
 
     'cacheTiles': true,
-
-    'keepBuffer': null,
 
     'renderer' : (() => {
         return Browser.webgl ? 'gl' : 'canvas';
@@ -197,7 +194,7 @@ class TileLayer extends Layer {
         const scale = map.getResolution() / res,
             centerVP = containerCenter.sub((scale !== 1 ? mapVP.multi(scale) : mapVP))._sub(offset.x, offset.y)._round();
 
-        const keepBuffer = this.getMask() ? 0 : this.options['keepBuffer'] === null ? map.isTransforming() ? 0 : map.getBaseLayer() === this ? 1 : 0 : this.options['keepBuffer'];
+        const keepBuffer = 1;
 
         //Number of tiles around the center tile
         const top = Math.ceil(Math.abs(center2d.y - extent2d.ymin - offset.y) / height) + keepBuffer,
@@ -338,9 +335,10 @@ class TileLayer extends Layer {
         if (!map) {
             return false;
         }
-        const tileSize = this.getTileSize(),
+        // add some buffer
+        const tileSize = this.getTileSize().toPoint()._add(1, 1),
             tileZoom = tileInfo.z;
-        const tile2DExtent = new PointExtent(tileInfo['point'], tileInfo['point'].add(tileSize.toPoint())).convertTo(c => map._pointToContainerPoint(c, tileZoom));
+        const tile2DExtent = new PointExtent(tileInfo['point'], tileInfo['point'].add(tileSize)).convertTo(c => map._pointToContainerPoint(c, tileZoom));
         return extent.intersects(tile2DExtent);
     }
 }
