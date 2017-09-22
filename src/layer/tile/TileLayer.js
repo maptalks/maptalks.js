@@ -10,7 +10,6 @@ import Layer from '../Layer';
 /**
  * @property {Object}              options                     - TileLayer's options
  * @property {String}              options.urlTemplate         - url templates
- * @property {String}              [options.errorTileUrl=null] - tile's url when error
  * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
@@ -21,11 +20,11 @@ import Layer from '../Layer';
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {Boolean}             [options.cacheTiles=true]     - whether cache tiles
  * @property {Boolean}             [options.renderOnMoving=false]  - whether render layer when moving map
+ * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
  * @memberOf TileLayer
  * @instance
  */
 const options = {
-    'errorTileUrl': null,
     'urlTemplate': null,
     'subdomains': null,
 
@@ -280,9 +279,6 @@ class TileLayer extends Layer {
     }
 
     getTileUrl(x, y, z) {
-        if (!this.options['urlTemplate']) {
-            return this.options['errorTileUrl'];
-        }
         const urlTemplate = this.options['urlTemplate'];
         let domain = '';
         if (this.options['subdomains']) {
