@@ -117,9 +117,6 @@ const Ajax = {
                         cb(null, client.responseText);
                     }
                 } else {
-                    if (client.status === 0) {
-                        return;
-                    }
                     cb(new Error(client.statusText + ',' + client.status));
                 }
             }

@@ -3,9 +3,6 @@ import {
     loadImage,
     emptyImageUrl
 } from 'core/util';
-import {
-    on
-} from 'core/util/dom';
 import Canvas2D from 'core/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
@@ -176,9 +173,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         tileImage.width = tileSize['width'];
         tileImage.height = tileSize['height'];
 
-        on(tileImage, 'load', this.onTileLoad.bind(this, tileImage, tile));
-        on(tileImage, 'error', this.onTileError.bind(this, tileImage, tile));
-        on(tileImage, 'abort', this.onTileError.bind(this, tileImage, tile));
+        tileImage.onload = this.onTileLoad.bind(this, tileImage, tile);
+        tileImage.onerror = this.onTileError.bind(this, tileImage, tile);
 
         const crossOrigin = this.layer.options['crossOrigin'];
         if (crossOrigin) {
@@ -362,6 +358,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!tile) {
             return;
         }
+        delete tile.onload;
+        delete tile.onerror;
     }
 
     _drawBackground() {
