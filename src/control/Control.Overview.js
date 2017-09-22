@@ -136,8 +136,7 @@ class Overview extends Control {
 
     _createOverview() {
         const map = this.getMap(),
-            dom = this.mapContainer,
-            extent = map.getExtent();
+            dom = this.mapContainer;
         const options = map.config();
         extend(options, {
             'center': map.getCenter(),
@@ -153,7 +152,7 @@ class Overview extends Control {
         });
         this._overview = new Map(dom, options);
         this._updateBaseLayer();
-        this._perspective = new Polygon(extent.toArray(), {
+        this._perspective = new Polygon(this._getPerspectiveCoords(), {
             'draggable': true,
             'cursor': 'move',
             'symbol': this.options['symbol'],
@@ -199,12 +198,16 @@ class Overview extends Control {
         this.getMap().config('draggable', this._origDraggable);
     }
 
+    _getPerspectiveCoords() {
+        const map = this.getMap();
+        return map.getContainerExtent().toArray().map(c => map.containerPointToCoordinate(c));
+    }
+
     _update() {
         if (!this._overview) {
             return;
         }
-        const map = this.getMap();
-        const coords = map.getContainerExtent().toArray().map(c => map.containerPointToCoordinate(c));
+        const coords = this._getPerspectiveCoords();
         this._perspective.setCoordinates(coords);
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
     }
