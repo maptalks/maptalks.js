@@ -1,5 +1,5 @@
 import Ajax from 'core/Ajax';
-import { IS_NODE } from 'core/util';
+import { IS_NODE, emptyImageUrl } from 'core/util';
 import * as mat4 from 'core/util/mat4';
 import TileLayer from 'layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
@@ -75,6 +75,9 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         if (!this._gl()) {
             // fall back to canvas 2D
             super.drawTile(tileInfo, tileImage);
+            return;
+        }
+        if (tileImage.src === emptyImageUrl) {
             return;
         }
         const map = this.getMap();

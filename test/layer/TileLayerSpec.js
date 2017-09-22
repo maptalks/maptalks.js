@@ -28,6 +28,18 @@ describe('TileLayer', function () {
     });
 
     describe('add to map', function () {
+        it('tile 404', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '/resources/not-exists.png'
+            });
+            tile.once('layerload', function () {
+                done();
+            });
+            map.addLayer(tile);
+        });
+
         it('add again', function (done) {
             createMap();
             var tile = new maptalks.TileLayer('tile', {
@@ -172,6 +184,24 @@ describe('TileLayer', function () {
             });
             map.setBaseLayer(tile);
 
+        });
+
+        it('gl with 404', function (done) {
+            if (!maptalks.Browser.webgl) {
+                done();
+                return;
+            }
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                urlTemplate : '/resources/not-exist.png',
+                renderer : 'gl'
+            });
+            tile.once('layerload', function () {
+                tile.hide();
+                tile.show();
+                done();
+            });
+            map.setBaseLayer(tile);
         });
 
     });
