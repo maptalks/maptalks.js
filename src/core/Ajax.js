@@ -1,8 +1,8 @@
-import { IS_NODE, isString, isFunction, parseJSON, emptyImageUrl } from 'core/util';
+import { IS_NODE, isString, parseJSON, emptyImageUrl } from 'core/util';
 
 /**
  * @classdesc
- * Ajax Utilities in both Browser and Node. It is static and should not be initiated.
+ * Ajax Utilities. It is static and should not be initiated.
  * @class
  * @static
  * @category core
@@ -12,6 +12,10 @@ const Ajax = {
      * Fetch remote resource by HTTP "GET" method
      * @param  {String}   url - resource url
      * @param  {Function} cb  - callback function when completed
+     * @param  {Object}   options - request options
+     * @param  {Object}   options.headers - HTTP headers
+     * @param  {String}   options.responseType - responseType
+     * @param  {String}   options.credentials  - if with credentials, set it to "include"
      * @return {Ajax}  Ajax
      * @example
      * maptalks.Ajax.get(
@@ -24,13 +28,9 @@ const Ajax = {
      *     }
      * );
      */
-    get: function (url, options, cb) {
+    get: function (url, cb, options) {
         if (IS_NODE && Ajax.get.node) {
-            return Ajax.get.node(url, options, cb);
-        }
-        if (isFunction(options)) {
-            cb = options;
-            options = null;
+            return Ajax.get.node(url, cb, options);
         }
         const client = Ajax._getClient(cb);
         client.open('GET', url, true);
@@ -140,23 +140,33 @@ const Ajax = {
         return client;
         /*eslint-enable no-empty, no-undef*/
     },
-
-    // from mapbox-gl-js
-    getArrayBuffer(url, options, callback) {
-        if (isFunction(options)) {
-            callback = options;
-            options = {};
-        }
+    /**
+     * Fetch resource as arraybuffer.
+     * @param {String} url          - url
+     * @param {Function} callback   - callback function when completed.
+     * @param {Object} options
+     * @example
+     * maptalks.Ajax.getArrayBuffer(
+     *     'url/to/resource.bin',
+     *     (err, data) => {
+     *         if (err) {
+     *             throw new Error(err);
+     *         }
+     *         // data is a binary array
+     *     }
+     * );
+     */
+    getArrayBuffer(url, callback, options) {
         if (!options) {
             options = {};
         }
         options['responseType'] = 'arraybuffer';
-        return Ajax.get(url, options, callback);
+        return Ajax.get(url, callback, options);
     },
 
     // from mapbox-gl-js
     getImage(img, url, options) {
-        return Ajax.getArrayBuffer(url, options, (err, imgData) => {
+        return Ajax.getArrayBuffer(url, (err, imgData) => {
             if (err) {
                 if (img.onerror) {
                     img.onerror(err);
@@ -174,11 +184,8 @@ const Ajax = {
                 img.cacheControl = imgData.cacheControl;
                 img.expires = imgData.expires;
                 img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : emptyImageUrl;
-                // img.cacheControl = imgData.cacheControl;
-                // img.expires = imgData.expires;
-                // img.src = 'data:image/jpeg;base64,' + encode(new Uint8Array(imgData.data));
             }
-        });
+        }, options);
     }
 };
 
@@ -186,6 +193,7 @@ const Ajax = {
  * Fetch resource as a JSON Object.
  * @param {String} url          - json's url
  * @param {Function} callback   - callback function when completed.
+ * @param {Object} options
  * @example
  * maptalks.Ajax.getJSON(
  *     'url/to/resource.json',
@@ -199,12 +207,12 @@ const Ajax = {
  * );
  * @static
  */
-Ajax.getJSON = function (url, cb) {
+Ajax.getJSON = function (url, cb, options) {
     const callback = function (err, resp) {
         const data = resp ? parseJSON(resp) : null;
         cb(err, data);
     };
-    return Ajax.get(url, callback);
+    return Ajax.get(url, callback, options);
 };
 
 export default Ajax;

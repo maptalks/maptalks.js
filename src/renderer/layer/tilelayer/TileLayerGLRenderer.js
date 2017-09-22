@@ -1,3 +1,4 @@
+import Ajax from 'core/Ajax';
 import { IS_NODE } from 'core/util';
 import * as mat4 from 'core/util/mat4';
 import TileLayer from 'layer/tile/TileLayer';
@@ -122,6 +123,10 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         const m = mat4.copy(new Float64Array(16), this.getMap().projMatrix);
         mat4.scale(m, m, [1, -1, 1]);
         return m;
+    }
+
+    loadTileImage(tileImage, url) {
+        return Ajax.getImage(tileImage, url);
     }
 
     onTileLoad(tileImage, tileInfo) {
