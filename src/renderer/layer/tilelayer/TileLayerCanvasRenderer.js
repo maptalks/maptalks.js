@@ -87,12 +87,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 continue;
             }
             if (cached) {
-                if (!loading && this.getTileOpacity(cached) < 1) {
+                if (!loading && this.getTileOpacity(cached.image) < 1) {
                     loading = true;
                 }
                 this.drawTile(cached.info, cached.image);
             } else {
-                const hitLimit = map.isInteracting() && tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
+                loading = true;
+                const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
                 if (!hitLimit) {
                     this._tileCountToLoad++;
                     tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
@@ -144,7 +145,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     isDrawable() {
         if (this.getMap().getPitch()) {
             if (console) {
-                console.warn('TileLayer with canvas renderer can\'t be pitched, use dom renderer (\'renderer\' : \'dom\') instead.');
+                console.warn('TileLayer with canvas renderer can\'t be pitched, use gl renderer (\'renderer\' : \'gl\') instead.');
             }
             this.clear();
             return false;
@@ -306,11 +307,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         };
     }
 
-    getTileOpacity(tile) {
+    getTileOpacity(tileImage) {
         if (!this.layer.options['fadeAnimation']) {
             return 1;
         }
-        return Math.min(1, (Date.now() - tile.loadTime) / 80);
+        return Math.min(1, (Date.now() - tileImage.loadTime) / (1000 / 60 * 14));
     }
 
     onTileLoadComplete() {
