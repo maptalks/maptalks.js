@@ -27,7 +27,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
      */
     constructor(layer) {
         super(layer);
-        this._mapRender = layer.getMap()._getRenderer();
         this._tileRended = {};
         this._tileLoading = {};
     }
@@ -85,12 +84,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 continue;
             }
             if (cached) {
-                if (cached.image) {
-                    if (!loading && this.getTileOpacity(cached.image) < 1) {
-                        loading = true;
-                    }
-                    this.drawTile(cached.info, cached.image);
+                if (!loading && this.getTileOpacity(cached.image) < 1) {
+                    loading = true;
                 }
+                this.drawTile(cached.info, cached.image);
             } else {
                 loading = true;
                 const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
@@ -219,8 +216,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         tileImage.onload = falseFn;
         tileImage.onerror = falseFn;
         tileImage.src = emptyImageUrl;
-        delete this._tileLoading[tileInfo['id']];
-        this._addTileToCache(tileInfo, null);
+        if (!IS_NODE) {
+            tileImage.loadTime = 0;
+            delete this._tileLoading[tileInfo['id']];
+            this._addTileToCache(tileInfo, tileImage);
+        }
         this.setToRedraw();
     }
 
@@ -315,7 +315,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onRemove() {
-        delete this._mapRender;
         delete this._tileRended;
         delete this._tileZoom;
         delete this._tileLoading;
