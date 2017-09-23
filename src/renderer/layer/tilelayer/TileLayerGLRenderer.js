@@ -221,6 +221,9 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     // limit tile number to load when map is interacting
     _getTileLimitOnInteracting() {
         if (this._gl()) {
+            if (this.getMap().isInteracting()) {
+                return 1;
+            }
             return 10;
         }
         return 0;

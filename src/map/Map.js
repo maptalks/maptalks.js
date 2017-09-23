@@ -1371,6 +1371,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         delete this._panels;
         delete this._containerDOM;
+        delete this.renderer;
         return this;
     }
 
