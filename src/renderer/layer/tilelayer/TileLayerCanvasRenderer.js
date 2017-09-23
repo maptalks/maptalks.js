@@ -3,6 +3,7 @@ import {
     loadImage,
     emptyImageUrl
 } from 'core/util';
+import Browser from 'core/Browser';
 import Canvas2D from 'core/Canvas';
 import TileLayer from 'layer/tile/TileLayer';
 import CanvasRenderer from 'renderer/layer/CanvasRenderer';
@@ -363,8 +364,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const back = this.background;
         if (back && back.nw && ctx) {
             const map = this.getMap();
-            const scale = map._getResolution(back.tileZoom) / map._getResolution();
+            let scale = map._getResolution(back.tileZoom) / map._getResolution();
             const cp = map._pointToContainerPoint(back.nw, back.zoom);
+            if (Browser.retina) {
+                scale *= 1 / 2;
+            }
             ctx.save();
             ctx.translate(cp.x, cp.y);
             ctx.scale(scale, scale);

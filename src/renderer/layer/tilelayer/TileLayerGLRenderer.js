@@ -144,11 +144,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     initContext() {
         super.initContext();
         const map = this.getMap();
-        const size = map.getSize();
-        const r = Browser.retina ? 2 : 1;
-        this.glCanvas = Canvas.createCanvas(r * size['width'], r * size['height'], map.glCanvasClass);
+        this.glCanvas = Canvas.createCanvas(this.canvas.width, this.canvas.height, map.glCanvasClass);
         const gl = this.gl = this._createGLContext(this.glCanvas, this.layer.options['glOptions']);
-
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
     }
 
@@ -206,8 +203,16 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 
     getCanvasImage() {
         if (this._gl()) {
+            const ctx = this.context;
+            if (Browser.retina) {
+                ctx.save();
+                ctx.scale(1 / 2, 1 / 2);
+            }
             // draw gl canvas on layer canvas
-            this.context.drawImage(this.glCanvas, 0, 0);
+            ctx.drawImage(this.glCanvas, 0, 0);
+            if (Browser.retina) {
+                ctx.restore();
+            }
         }
         return super.getCanvasImage();
     }
@@ -285,7 +290,15 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
                         backCanvas.width = this.glCanvas.width;
                         backCanvas.height = this.glCanvas.height;
                         backCanvas.getContext('2d').drawImage(this.glCanvas, 0, 0);
-                        this.context.drawImage(backCanvas, 0, 0);
+                        const ctx = this.context;
+                        if (Browser.retina) {
+                            ctx.save();
+                            ctx.scale(1 / 2, 1 / 2);
+                        }
+                        ctx.drawImage(backCanvas, 0, 0);
+                        if (Browser.retina) {
+                            ctx.restore();
+                        }
                     }
                 }
             }
