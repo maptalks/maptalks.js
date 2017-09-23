@@ -90,21 +90,37 @@ describe('Geometry.Events', function () {
         });
     });
 
-    it('mouseover', function (done) {
+    it('mouseover and mouseenter', function (done) {
         var circle = new maptalks.Circle(map.getCenter(), 10);
         circle.addTo(layer);
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var count = 0;
         function onMouseOver(param) {
-            expect(param.type).to.be.eql('mouseover');
+            if (count === 0) {
+                expect(param.type).to.be.eql('mouseenter');
+            } else {
+                expect(param.type).to.be.eql('mouseover');
+            }
             expect(param.target === circle).to.be.ok();
-            done();
+            count++;
+            if (count === 3) {
+                done();
+            }
         }
         circle.on('mouseover', onMouseOver);
+        circle.on('mouseenter', onMouseOver);
         happen.mousemove(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
         });
+        setTimeout(function () {
+            happen.mousemove(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+        }, 100);
+
     });
 
     it('click', function () {
