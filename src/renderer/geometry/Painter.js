@@ -32,7 +32,7 @@ class Painter extends Class {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
-        this.height = this._getGeometryHeight();
+        this.altitude = this._getGeometryAltitude();
     }
 
     getMap() {
@@ -157,7 +157,7 @@ class Painter extends Class {
             maxZoom = map.getMaxNativeZoom(),
             containerExtent = map.getContainerExtent(),
             extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom)),
-            height = this.getHeight(),
+            altitude = this.getAltitude(),
             layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest),
             cExtent = this.getContainerExtent();
 
@@ -195,14 +195,14 @@ class Painter extends Class {
                 }
             }
             containerPoints = mapArrayRecursively(clipPoints, point => {
-                const p = map._pointToContainerPoint(point, maxZoom, height)._sub(layerPoint);
+                const p = map._pointToContainerPoint(point, maxZoom, altitude)._sub(layerPoint);
                 if (dx || dy) {
                     p._add(dx, dy);
                 }
                 return p;
             });
         } else if (points instanceof Point) {
-            containerPoints = map._pointToContainerPoint(points, maxZoom, height)._sub(layerPoint);
+            containerPoints = map._pointToContainerPoint(points, maxZoom, altitude)._sub(layerPoint);
             if (dx || dy) {
                 containerPoints._add(dx, dy);
             }
@@ -336,7 +336,7 @@ class Painter extends Class {
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent();
         }
-        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, this.height));
+        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, this.altitude));
         if (extent) {
             extent._add(this._markerExtent);
         }
@@ -406,43 +406,43 @@ class Painter extends Class {
         delete this._markerExtent;
     }
 
-    getHeight() {
-        const propHeight = this._getHeightProperty();
-        if (propHeight !== this._propHeight) {
-            this.height = this._getGeometryHeight();
+    getAltitude() {
+        const propAltitude = this._getAltitudeProperty();
+        if (propAltitude !== this._propAltitude) {
+            this.altitude = this._getGeometryAltitude();
         }
-        if (!this.height) {
+        if (!this.altitude) {
             return 0;
         }
         const scale = this.getMap().getScale();
-        return this.height / scale;
+        return this.altitude / scale;
     }
 
-    _getGeometryHeight() {
+    _getGeometryAltitude() {
         const map = this.getMap();
         if (!map) {
             return 0;
         }
-        const height = this._getHeightProperty();
-        this._propHeight = height;
-        if (!height) {
+        const altitude = this._getAltitudeProperty();
+        this._propAltitude = altitude;
+        if (!altitude) {
             return 0;
         }
         const geometry = this.geometry;
         const z = map.getMaxNativeZoom(),
             center = geometry.getCenter(),
-            target = map.locate(center, height, 0);
+            target = map.locate(center, altitude, 0);
         const p0 = map.coordinateToPoint(center, z),
             p1 = map.coordinateToPoint(target, z);
-        return Math.abs(p1.x - p0.x) * sign(height);
+        return Math.abs(p1.x - p0.x) * sign(altitude);
     }
 
-    _getHeightProperty() {
+    _getAltitudeProperty() {
         const geometry = this.geometry,
             layerOpts = geometry.getLayer().options,
             properties = geometry.getProperties();
-        const height = layerOpts['enableHeight'] ? properties ? properties[layerOpts['heightProperty']] : 0 : 0;
-        return height;
+        const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
+        return altitude;
     }
 
     _verifyProjection() {

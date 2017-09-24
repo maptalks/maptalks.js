@@ -510,15 +510,15 @@ describe('VectorLayer', function () {
         });
     });
 
-    describe('render geometry with height', function () {
+    describe('render geometry with altitude', function () {
         it('circle', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 2, {
-                properties : { height : 200 },
+                properties : { altitude : 200 },
                 symbol : {
                     'polygonFill' : '#f00'
                 }
             });
-            layer.config('enableHeight', true);
+            layer.config('enableAltitude', true);
             layer.addGeometry(circle);
             map.setPitch(60);
             layer.once('layerload', function () {
@@ -531,14 +531,14 @@ describe('VectorLayer', function () {
 
         it('marker', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
-                properties : { height : 100 },
+                properties : { altitude : 100 },
                 symbol : {
                     'markerType' : 'ellipse',
-                    'markerHeight' : 6,
+                    'markeraltitude' : 6,
                     'markerWidth' : 6
                 }
             });
-            layer.config('enableHeight', true);
+            layer.config('enableAltitude', true);
             layer.addGeometry(marker);
             map.setPitch(60);
             layer.once('layerload', function () {
