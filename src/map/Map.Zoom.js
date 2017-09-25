@@ -124,6 +124,9 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} to                      - zoom level zooming to
           */
         this._fireEvent('zoomend', { 'from' : startZoomVal, 'to': nextZoom });
+        if (!this._verifyExtent(this.getCenter())) {
+            this.panTo(this.getMaxExtent().getCenter());
+        }
     },
 
     _zoomTo(nextZoom, origin) {
