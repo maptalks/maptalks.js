@@ -55,7 +55,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  *
  * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
- * @property {Boolean|Object} [options.attributionControl=false]        - display the attribution control on the map if set to true or a object as the control construct option.
+ * @property {Boolean|Object} [options.attribution=false]        - display the attribution control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
@@ -1086,7 +1086,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Object} [options=undefined] - options
      * @param {String} [options.mimeType=image/png] - mime type of the image
      * @param {Boolean} [options.save=false] - whether pop a file save dialog to save the export image.
-     * @param {String} [options.filename=export] - specify the file name, if options.save is true.
+     * @param {String} [options.fileName=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
      */
     toDataURL(options) {
@@ -1100,7 +1100,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const save = options['save'];
         const renderer = this._getRenderer();
         if (renderer && renderer.toDataURL) {
-            let file = options['filename'];
+            let file = options['fileName'];
             if (!file) {
                 file = 'export';
             }

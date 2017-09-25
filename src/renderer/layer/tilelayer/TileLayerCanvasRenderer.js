@@ -118,6 +118,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     // 2. it needs to redraw on drag rotating: when rotating, every tile needs to be rotated.
     needToRedraw() {
         const map = this.getMap();
+        if (map.getPitch()) {
+            return super.needToRedraw();
+        }
         if (map.isRotating()) {
             return true;
         }
@@ -364,7 +367,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const back = this.background;
         if (back && back.nw && ctx) {
             const map = this.getMap();
-            let scale = map._getResolution(back.tileZoom) / map._getResolution();
+            let scale = map._getResolution(back.zoom) / map._getResolution();
             const cp = map._pointToContainerPoint(back.nw, back.zoom);
             if (Browser.retina) {
                 scale *= 1 / 2;
@@ -380,7 +383,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     _saveBackground() {
         this.background = {
             canvas : Canvas2D.copy(this.canvas),
-            tileZoom : this._tileZoom,
             zoom : this.getMap().getZoom(),
             nw : this._northWest
         };
