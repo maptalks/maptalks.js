@@ -42,7 +42,7 @@ const defaultWmsParams = {
  * @param {Object} [options=null] - options defined in [WMSTileLayer]{@link TileLayer#options}
  * @example
  * var layer = new maptalks.WMSTileLayer('wms', {
- *     'urlTemplate' : 'https://ahocevar.com/geoserver/wms',
+ *     'urlTemplate' : 'https://demo.boundlessgeo.com/geoserver/ows',
  *     'crs' : 'EPSG:3857',
  *     'layers' : 'ne:ne',
  *     'styles' : '',
