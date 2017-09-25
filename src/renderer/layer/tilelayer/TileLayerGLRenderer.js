@@ -1,5 +1,5 @@
 import Ajax from 'core/Ajax';
-import { IS_NODE, emptyImageUrl } from 'core/util';
+import { IS_NODE, emptyImageUrl, hasOwn } from 'core/util';
 import * as mat4 from 'core/util/mat4';
 import TileLayer from 'layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
@@ -65,7 +65,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     }
 
     needToRedraw() {
-        if (this._gl() && this.getMap().isInteracting()) {
+        const map = this.getMap();
+        if (this._gl() && !map.getPitch() && map.isZooming() && !map.isMoving() && !map.isRotating()) {
             return true;
         }
         return super.needToRedraw();
@@ -97,7 +98,7 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             h = tileSize['height'] * scale;
         this.loadTexture(tileImage);
         const matrix = this.getViewMatrix();
-        gl.uniformMatrix4fv(this.program['u_matrix'], false, Float32Array.from(matrix));
+        gl.uniformMatrix4fv(this.program['u_matrix'], false, new Float32Array(matrix));
         gl.uniform1f(this.program['u_opacity'], opacity);
 
         const x1 = x;
@@ -269,7 +270,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         if (this.background) {
             if (!this._gl()) {
                 super._drawBackground();
-            } else {
+            } else if (!this.background.nw) {
+                //ignore if background is saved in canvas mode
                 const map = this.getMap();
                 const extent = map.getContainerExtent();
                 for (const p in this.background) {
@@ -277,6 +279,7 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
                         continue;
                     }
                     const parentTile = this.background[p];
+
                     if (this.layer._isTileInExtent(parentTile.info, extent)) {
                         this.drawTile(parentTile.info, parentTile.image);
                     }
@@ -311,9 +314,10 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             return;
         }
         this.background = {};
-        for (const p in this._tileRended) {
-            const tile = this._tileRended[p];
-            if (tile.image.current) {
+        const cache = this._tileRended;
+        for (const p in cache) {
+            const tile = cache[p];
+            if (hasOwn(cache, p) && tile && tile.image.current) {
                 tile.image.loadTime = 0;
                 this.background[p] = tile;
             }
