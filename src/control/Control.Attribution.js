@@ -11,7 +11,7 @@ import Map from '../map/Map';
  * @instance
  */
 const options = {
-    'position': 'bottom-left',
+    'position': { 'bottom' : 0, 'left' : 0 },
     'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>'
 };
 
