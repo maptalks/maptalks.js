@@ -328,6 +328,39 @@ describe('Map.Spec', function () {
         });
     });
 
+    describe('#setMaxExtent', function (done) {
+        it('set max extent and limit center', function () {
+            var center = map.getCenter().toArray();
+            var extent = map.getExtent();
+            map.setMaxExtent(extent);
+            map.setCenter(extent.getMax().add(10, 10));
+            map.on('moveend', function () {
+                expect(map.getCenter().toArray()).to.be.eql(center);
+                done();
+            });
+        });
+
+        it('moveback when zoom ends', function (done) {
+            var center = map.getCenter().toArray();
+            var extent = map.getExtent();
+            map.setMaxExtent(extent);
+            map.setZoom(map.getZoom() - 3, { animation : false });
+            map.animateTo({
+                zoom : map.getZoom()  - 2,
+                around : map.getContainerExtent().getMax()
+            }, {
+                duration : 120
+            });
+            map.once('animateend', function () {
+                expect(map.getCenter().toArray()).not.to.be.eql(center);
+                map.on('moveend', function () {
+                    expect(map.getCenter().toArray()).to.be.eql(center);
+                    done();
+                });
+            });
+        });
+    });
+
     describe('#addLayer', function () {
         it('addLayer will trigger add event on layer', function () {
             var spy = sinon.spy();

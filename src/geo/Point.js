@@ -118,7 +118,7 @@ class Point {
 
     //Destructive add
     _add(x, y) {
-        if (x instanceof Point) {
+        if (!isNil(x.x)) {
             this.x += x.x;
             this.y += x.y;
         } else {
@@ -135,7 +135,7 @@ class Point {
      */
     add(x, y) {
         let nx, ny;
-        if (x instanceof Point) {
+        if (!isNil(x.x)) {
             nx = this.x + x.x;
             ny = this.y + x.y;
         } else {
@@ -146,7 +146,7 @@ class Point {
     }
 
     _sub(x, y) {
-        if (x instanceof Point) {
+        if (!isNil(x.x)) {
             this.x -= x.x;
             this.y -= x.y;
         } else {
@@ -167,7 +167,7 @@ class Point {
      */
     sub(x, y) {
         let nx, ny;
-        if (x instanceof Point) {
+        if (!isNil(x.x)) {
             nx = this.x - x.x;
             ny = this.y - x.y;
         } else {
