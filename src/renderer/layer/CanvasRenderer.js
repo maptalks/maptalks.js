@@ -355,6 +355,10 @@ class CanvasRenderer extends Class {
         if (this.onCanvasCreate) {
             this.onCanvasCreate();
         }
+        this.layer.fire('canvascreate', {
+            'context' : this.context,
+            'gl' : this.gl
+        });
     }
 
     initContext() {
@@ -435,14 +439,16 @@ class CanvasRenderer extends Class {
         // this.context may be not available
         if (!mask || !this.context) {
             this.layer.fire('renderstart', {
-                'context': this.context
+                'context': this.context,
+                'gl' : this.gl
             });
             return null;
         }
         const maskExtent2D = this._maskExtent = mask._getPainter().get2DExtent();
         if (!maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
-                'context': this.context
+                'context': this.context,
+                'gl' : this.gl
             });
             return maskExtent2D;
         }
@@ -460,7 +466,8 @@ class CanvasRenderer extends Class {
          * @property {CanvasRenderingContext2D} context - canvas's context
          */
         this.layer.fire('renderstart', {
-            'context': this.context
+            'context': this.context,
+            'gl' : this.gl
         });
         return maskExtent2D;
     }
@@ -494,7 +501,8 @@ class CanvasRenderer extends Class {
              * @property {CanvasRenderingContext2D} context - canvas's context
              */
             this.layer.fire('renderend', {
-                'context': this.context
+                'context': this.context,
+                'gl' : this.gl
             });
             this.setCanvasUpdated();
         }
