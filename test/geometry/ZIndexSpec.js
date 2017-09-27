@@ -80,6 +80,24 @@ describe('Geometry.zindex', function () {
         layer.addGeometry(markers);
     });
 
+    it('can bringToBack and bringToFront', function (done) {
+        var markers = getMarkers();
+        var counter = 0;
+        layer.on('layerload', function () {
+            if (counter === 0) {
+                expect(layer).to.be.painted(0, 0, [0, 0, 255]);
+                blue.bringToBack();
+                red.bringToFront();
+                counter++;
+            } else {
+                expect(layer.getGeometries()).to.be.eql([blue, green, red]);
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                done();
+            }
+        });
+        layer.addGeometry(markers);
+    });
+
     it('can setZIndex', function (done) {
         var markers = getMarkers();
         var counter = 0;

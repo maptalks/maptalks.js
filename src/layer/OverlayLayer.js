@@ -22,6 +22,7 @@ class OverlayLayer extends Layer {
         }
         super(id, options);
         this._maxZIndex = 0;
+        this._minZIndex = 0;
         this._initCache();
         if (geometries) {
             this.addGeometry(geometries);
@@ -222,10 +223,25 @@ class OverlayLayer extends Layer {
         return this;
     }
 
+    /**
+     * Get minimum zindex of geometries
+     */
+    getGeoMinZIndex() {
+        return this._minZIndex;
+    }
+
+    /**
+     * Get maximum zindex of geometries
+     */
+    getGeoMaxZIndex() {
+        return this._maxZIndex;
+    }
+
     _add(geo, extent, i) {
         if (!this._toSort) {
             this._toSort = geo.getZIndex() !== 0;
         }
+        this._updateZIndex(geo.getZIndex());
         const geoId = geo.getId();
         if (!isNil(geoId)) {
             if (!isNil(this._geoMap[geoId])) {
@@ -402,13 +418,19 @@ class OverlayLayer extends Layer {
         }
     }
 
+    _updateZIndex(...zIndex) {
+        this._maxZIndex = Math.max(this._maxZIndex, zIndex);
+        this._minZIndex = Math.min(this._minZIndex, zIndex);
+    }
+
     _sortGeometries() {
         if (!this._toSort) {
             return;
         }
         this._maxZIndex = 0;
+        this._minZIndex = 0;
         this._geoList.sort((a, b) => {
-            this._maxZIndex = Math.max(a.getZIndex(), b.getZIndex());
+            this._updateZIndex(a.getZIndex(), b.getZIndex());
             return this._compare(a, b);
         });
         this._toSort = false;
@@ -487,6 +509,7 @@ class OverlayLayer extends Layer {
 
     _onGeometryZIndexChange(param) {
         if (param['old'] !== param['new']) {
+            this._updateZIndex(param['new']);
             this._toSort = true;
             if (this._getRenderer()) {
                 this._getRenderer().onGeometryZIndexChange(param);

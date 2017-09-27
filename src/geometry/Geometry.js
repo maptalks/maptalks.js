@@ -502,10 +502,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     bringToFront() {
         const layer = this.getLayer();
-        if (!layer || !layer.getLastGeometry) {
+        if (!layer || !layer.getGeoMaxZIndex) {
             return this;
         }
-        const topZ = layer.getLastGeometry().getZIndex();
+        const topZ = layer.getGeoMaxZIndex();
         this.setZIndex(topZ + 1);
         return this;
     }
@@ -517,10 +517,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     bringToBack() {
         const layer = this.getLayer();
-        if (!layer || !layer.getFirstGeometry) {
+        if (!layer || !layer.getGeoMinZIndex) {
             return this;
         }
-        const bottomZ = layer.getFirstGeometry().getZIndex();
+        const bottomZ = layer.getGeoMinZIndex();
         this.setZIndex(bottomZ - 1);
         return this;
     }
