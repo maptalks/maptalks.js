@@ -6,30 +6,31 @@
     www.mapbox.com
     License: MIT, header required.
 */
-var types = ['Unknown', 'Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'];
+const types = ['Unknown', 'Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'];
 
 /**
  * Given a filter expressed as nested arrays, return a new function
  * that evaluates whether a given feature (with a .properties or .tags property)
  * passes its test.
  *
+ * @private
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
  * @memberOf MapboxUtil
  */
 export function createFilter(filter) {
-    return new Function('f', 'var p = (f && f.properties || {}); return ' + compile(filter));
+    return new Function('f', `var p = (f && f.properties || {}); return ${compile(filter)}`);
 }
 
 function compile(filter) {
     if (!filter) return 'true';
-    var op = filter[0];
+    const op = filter[0];
     if (filter.length <= 1) return op === 'any' ? 'false' : 'true';
-    var str =
+    const str =
         op === '==' ? compileComparisonOp(filter[1], filter[2], '===', false) :
             op === '!=' ? compileComparisonOp(filter[1], filter[2], '!==', false) :
                 op === '<' ||
-        op === '>' ||
+                    op === '>' ||
         op === '<=' ||
         op === '>=' ? compileComparisonOp(filter[1], filter[2], op, true) :
                     op === 'any' ? compileLogicalOp(filter.slice(1), '||') :
@@ -38,19 +39,23 @@ function compile(filter) {
                                 op === 'in' ? compileInOp(filter[1], filter.slice(2)) :
                                     op === '!in' ? compileNegation(compileInOp(filter[1], filter.slice(2))) :
                                         op === 'has' ? compileHasOp(filter[1]) :
-                                            op === '!has' ? compileNegation(compileHasOp([filter[1]])) :
+                                            op === '!has' ? compileNegation(compileHasOp(filter[1])) :
                                                 'true';
-    return '(' + str + ')';
+    return `(${str})`;
 }
 
 function compilePropertyReference(property) {
+    // const ref =
+    //     property === '$type' ? 'f.type' :
+    //         property === '$id' ? 'f.id' : `p[${JSON.stringify(property)}]`;
+    // return ref;
     return property[0] === '$' ? 'f.' + property.substring(1) : 'p[' + JSON.stringify(property) + ']';
 }
 
 function compileComparisonOp(property, value, op, checkType) {
-    var left = compilePropertyReference(property);
-    var right = property === '$type' ? types.indexOf(value) : JSON.stringify(value);
-    return (checkType ? 'typeof ' + left + '=== typeof ' + right + '&&' : '') + left + op + right;
+    const left = compilePropertyReference(property);
+    const right = property === '$type' ? types.indexOf(value) : JSON.stringify(value);
+    return (checkType ? `typeof ${left}=== typeof ${right}&&` : '') + left + op + right;
 }
 
 function compileLogicalOp(expressions, op) {
@@ -58,24 +63,27 @@ function compileLogicalOp(expressions, op) {
 }
 
 function compileInOp(property, values) {
-    if (property === '$type') values = values.map(function (value) { return types.indexOf(value); });
-    var left = JSON.stringify(values.sort(compare));
-    var right = compilePropertyReference(property);
+    if (property === '$type') values = values.map((value) => {
+        return types.indexOf(value);
+    });
+    const left = JSON.stringify(values.sort(compare));
+    const right = compilePropertyReference(property);
 
-    if (values.length <= 200) return left + '.indexOf(' + right + ') !== -1';
-    return 'function(v, a, i, j) {' +
+    if (values.length <= 200) return `${left}.indexOf(${right}) !== -1`;
+
+    return `${'function(v, a, i, j) {' +
         'while (i <= j) { var m = (i + j) >> 1;' +
         '    if (a[m] === v) return true; if (a[m] > v) j = m - 1; else i = m + 1;' +
         '}' +
-    'return false; }(' + right + ', ' + left + ',0,' + (values.length - 1) + ')';
+    'return false; }('}${right}, ${left},0,${values.length - 1})`;
 }
 
 function compileHasOp(property) {
-    return JSON.stringify(property) + ' in p';
+    return property === '$id' ? '"id" in f' : `${JSON.stringify(property)} in p`;
 }
 
 function compileNegation(expression) {
-    return '!(' + expression + ')';
+    return `!(${expression})`;
 }
 
 // Comparison function to sort numbers and strings
