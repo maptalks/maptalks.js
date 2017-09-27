@@ -419,8 +419,8 @@ class OverlayLayer extends Layer {
     }
 
     _updateZIndex(...zIndex) {
-        this._maxZIndex = Math.max(this._maxZIndex, zIndex);
-        this._minZIndex = Math.min(this._minZIndex, zIndex);
+        this._maxZIndex = Math.max(this._maxZIndex, Math.max.apply(Math, zIndex));
+        this._minZIndex = Math.min(this._minZIndex, Math.min.apply(Math, zIndex));
     }
 
     _sortGeometries() {

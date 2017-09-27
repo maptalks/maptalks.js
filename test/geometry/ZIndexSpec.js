@@ -92,6 +92,8 @@ describe('Geometry.zindex', function () {
             } else {
                 expect(layer.getGeometries()).to.be.eql([blue, green, red]);
                 expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                expect(layer.getGeoMaxZIndex()).to.be.eql(1);
+                expect(layer.getGeoMinZIndex()).to.be.eql(-1);
                 done();
             }
         });
