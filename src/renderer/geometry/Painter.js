@@ -32,7 +32,7 @@ class Painter extends Class {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
-        this.altitude = this._getGeometryAltitude();
+        this._altAtMaxZ = this._getGeometryAltitude();
     }
 
     getMap() {
@@ -223,6 +223,7 @@ class Painter extends Class {
         if (!renderer || !renderer.context) {
             return;
         }
+        //reduce geos to paint when drawOnInteracting
         if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
             return;
         }
@@ -336,7 +337,7 @@ class Painter extends Class {
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent();
         }
-        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, this.altitude));
+        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, this.getAltitude()));
         if (extent) {
             extent._add(this._markerExtent);
         }
@@ -408,14 +409,14 @@ class Painter extends Class {
 
     getAltitude() {
         const propAltitude = this._getAltitudeProperty();
-        if (propAltitude !== this._propAltitude) {
-            this.altitude = this._getGeometryAltitude();
+        if (propAltitude !== this._propAlt) {
+            this._altAtMaxZ = this._getGeometryAltitude();
         }
-        if (!this.altitude) {
+        if (!this._altAtMaxZ) {
             return 0;
         }
         const scale = this.getMap().getScale();
-        return this.altitude / scale;
+        return this._altAtMaxZ / scale;
     }
 
     _getGeometryAltitude() {
@@ -424,7 +425,7 @@ class Painter extends Class {
             return 0;
         }
         const altitude = this._getAltitudeProperty();
-        this._propAltitude = altitude;
+        this._propAlt = altitude;
         if (!altitude) {
             return 0;
         }

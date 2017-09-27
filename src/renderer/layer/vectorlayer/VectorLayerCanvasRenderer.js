@@ -110,7 +110,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
         this.forEachGeo(this.checkGeo, this);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
-            this._geosToDraw[i]._paint(this._displayExtent);
+            this._geosToDraw[i]._paint();
         }
     }
 
