@@ -37,17 +37,20 @@ const options = {
         'markerHeight': 11
     },
     'labelOptions': {
-        'symbol': {
-            'textWrapCharacter': '\n',
+        'textSymbol': {
             'textFaceName': 'monospace',
             'textLineSpacing': 1,
             'textHorizontalAlignment': 'right',
-            'markerLineColor': '#b4b3b3',
             'textDx': 15
         },
-        'boxPadding': {
-            'width': 6,
-            'height': 4
+        'boxStyle' : {
+            'padding' : [6, 2],
+            'symbol' : {
+                'markerType' : 'square',
+                'markerFill' : '#fff',
+                'markerFillOpacity' : 0.9,
+                'markerLineColor' : '#b4b3b3',
+            }
         }
     },
     'clearButtonSymbol' :[{
