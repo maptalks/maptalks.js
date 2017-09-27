@@ -291,8 +291,12 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         };
         //markerOpacity覆盖fillOpacity和lineOpacity
         if (isNumber(s['markerOpacity'])) {
-            result['markerFillOpacity'] *= s['markerOpacity'];
-            result['markerLineOpacity'] *= s['markerOpacity'];
+            if (isNumber(s['markerFillOpacity'])) {
+                result['markerFillOpacity'] *= s['markerOpacity'];
+            }
+            if (isNumber(s['markerLineOpacity'])) {
+                result['markerLineOpacity'] *= s['markerOpacity'];
+            }
         }
         return result;
     }
