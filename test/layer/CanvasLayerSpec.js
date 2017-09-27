@@ -1,6 +1,4 @@
-// var utils = require('../SpecUtils.js');
-
-describe('#CanvasLayer', function () {
+describe('CanvasLayer', function () {
 
     var container;
     var map;
@@ -78,7 +76,9 @@ describe('#CanvasLayer', function () {
             done();
         };
         layer.once('layerload', function () {
-            map.zoomIn();
+            setTimeout(function () {
+                map.zoomIn();
+            }, 30);
         });
         layer.addTo(map);
     });

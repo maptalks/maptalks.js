@@ -1,5 +1,4 @@
-
-describe('#GeometryAnimation', function () {
+describe('Geometry.Animation', function () {
     // animation duration for
     var animSpeed = 16 * 4;
 
@@ -204,10 +203,28 @@ describe('#GeometryAnimation', function () {
             REMOVE_CONTAINER(container);
         });
 
+        function isDrawn(canvas, p) {
+            var context = canvas.getContext('2d');
+            var imgData = context.getImageData(p.x, p.y, 1, 1).data;
+            if (imgData[3] > 0) {
+                return true;
+            }
+            return false;
+        }
 
         it('animate a marker and focus', function (done) {
-            var marker = new maptalks.Marker(center);
+            var marker = new maptalks.Marker(center, {
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : 20,
+                    markerHeight : 20
+                }
+            });
             function step(frame) {
+                if (frame.state.playState === 'running' || frame.state.playState === 'finished') {
+                    var p = map.getSize().toPoint().multi(1 / 2);
+                    expect(isDrawn(map.getRenderer().canvas, p)).to.be.ok();
+                }
                 if (frame.state.playState !== 'finished') {
                     return;
                 }
@@ -223,6 +240,39 @@ describe('#GeometryAnimation', function () {
                 duration : animSpeed,
                 focus:true
             }, step);
+        });
+
+        it('should paint on map when animating geometry with focus', function (done) {
+            var marker = new maptalks.Marker(map.getCenter()).addTo(layer);
+            function getOffset() {
+                var center = map.getCenter();
+                var extent = map.getExtent();
+                marker.setCoordinates(center);
+                return extent.getMax().sub(map.getCenter()).multi(1 / 2);
+            }
+
+            var start = map.getCenter(),
+                // offset from line start to line end.
+                offset = getOffset();
+            var drawn = false;
+            marker.setCoordinates(start);
+            marker.animate({
+                translate: [offset['x'], offset['y']]
+            }, {
+                duration: 16 * 10,
+                focus : true
+            }, function (frame) {
+                if (frame.state.playState === 'running' || frame.state.playState === 'finished') {
+                    var p = map.getSize().toPoint().multi(1 / 2).add(0, -5);
+                    if (isDrawn(map.getRenderer().canvas, p)) {
+                        drawn = true;
+                    }
+                }
+                if (frame.state.playState === 'finished') {
+                    expect(drawn).to.be.ok();
+                    done();
+                }
+            });
         });
 
         it('fire events during animation', function (done) {

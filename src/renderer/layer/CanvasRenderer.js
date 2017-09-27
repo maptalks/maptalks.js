@@ -21,6 +21,8 @@ class CanvasRenderer extends Class {
     constructor(layer) {
         super();
         this.layer = layer;
+        this._painted = false;
+        this._loaded = false;
         this._drawTime = 0;
         this.setToRedraw();
     }
@@ -130,6 +132,17 @@ class CanvasRenderer extends Class {
     }
 
     /**
+     * Whether must call render instead of drawOnInteracting when map is interacting
+     */
+    mustRenderOnInteracting() {
+        return !this._painted;
+    }
+
+    setMustRenderOnInteracting() {
+        this._painted = false;
+    }
+
+    /**
      * Set to redraw, ask map to call draw/drawOnInteracting to redraw the layer
      */
     setToRedraw() {
@@ -220,7 +233,7 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     isBlank() {
-        if (!this._painted) {
+        if (!this._loaded) {
             return true;
         }
         return false;
@@ -630,6 +643,7 @@ class CanvasRenderer extends Class {
             return;
         }
         this._painted = true;
+        this._loaded = true;
         const t = now();
         this.draw();
         this._drawTime = now() - t;

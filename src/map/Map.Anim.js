@@ -143,7 +143,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     isRotating() {
-        return this.isDragRotating() || this._animRotating;
+        return this.isDragRotating() || !!this._animRotating;
     },
 
     _endAnim(props, zoomOrigin, options) {

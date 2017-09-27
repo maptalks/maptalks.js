@@ -195,7 +195,9 @@ class MapCanvasRenderer extends MapRenderer {
             renderer = layer._getRenderer(),
             drawTime = renderer.getDrawTime(),
             inTime = timeLimit === 0 || timeLimit > 0 && t + drawTime <= timeLimit;
-        if (renderer.drawOnInteracting &&
+        if (renderer.mustRenderOnInteracting && renderer.mustRenderOnInteracting()) {
+            renderer.render();
+        } else if (renderer.drawOnInteracting &&
             (layer === map.getBaseLayer() || inTime ||
             map.isZooming() && layer.options['forceRenderOnZooming'] ||
             map.isMoving() && layer.options['forceRenderOnMoving'] ||
