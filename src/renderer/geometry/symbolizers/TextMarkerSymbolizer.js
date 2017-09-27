@@ -30,6 +30,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         super(symbol, geometry, painter);
         this._dynamic = hasFunctionDefinition(symbol);
         this.style = this._defineStyle(this.translate());
+        if (this.style['textWrapWidth'] === 0) {
+            return;
+        }
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
         const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
         if (!this._dynamic) {
@@ -40,7 +43,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
-        if (this.style['textSize'] === 0 || this.style['textOpacity'] === 0) {
+        if (this.style['textSize'] === 0 || this.style['textOpacity'] === 0 || this.style['textWrapWidth'] === 0) {
             return;
         }
         const cookedPoints = this._getRenderContainerPoints();

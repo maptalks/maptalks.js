@@ -130,7 +130,7 @@ describe('Util', function () {
                 expect(w).to.be.below(wrapWidth);
             }
             expect(shorts.length).to.be(1);
-            expect(concat(shorts)).to.be.eql('foo');
+            expect(concat(shorts)).to.be.eql('');
         });
     });
 });

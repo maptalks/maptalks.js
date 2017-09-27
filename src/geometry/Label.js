@@ -110,7 +110,7 @@ class Label extends TextMarker {
      * @return {Object}
      */
     getTextSymbol() {
-        return extend({}, this.options.textSymbol || this._getDefaultTextSymbol());
+        return extend({}, this._getDefaultTextSymbol(), this.options.textSymbol);
     }
 
     /**

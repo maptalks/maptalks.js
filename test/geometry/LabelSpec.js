@@ -1,4 +1,3 @@
-
 describe('Geometry.Label', function () {
 
     var container;
@@ -210,6 +209,7 @@ describe('Geometry.Label', function () {
             }
         });
         var symbol = vector._getInternalSymbol();
+        expect(symbol.textWrapCharacter).to.be.eql('\n');
         expect(symbol.markerWidth).to.be.above(5);
         expect(symbol.markerHeight).to.be.above(5);
     });

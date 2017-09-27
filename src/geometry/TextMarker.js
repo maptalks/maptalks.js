@@ -6,6 +6,7 @@ const defaultSymbol = {
     'textFaceName': 'monospace',
     'textSize': 12,
     'textLineSpacing': 8,
+    'textWrapCharacter' : '\n',
     'textHorizontalAlignment': 'middle', //left middle right
     'textVerticalAlignment': 'middle' //top middle bottom
 };

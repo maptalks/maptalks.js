@@ -485,7 +485,7 @@ class GeometryEditor extends Eventable(Class) {
         //0: resize width; 1: resize height; 2: resize both width and height.
         const resizeAbilities = [
             2, 1, 2,
-            0, 0,
+            0,    0,
             2, 1, 2
         ];
 
