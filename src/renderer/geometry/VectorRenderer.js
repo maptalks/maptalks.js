@@ -161,11 +161,14 @@ LineString.include({
         const segments = isSplitted ? points : [points];
         const placement = this._getArrowPlacement();
         const arrows = [];
+        const map = this.getMap(),
+            first = map.coordinateToContainerPoint(this.getFirstCoordinate()),
+            last = map.coordinateToContainerPoint(this.getLastCoordinate());
         for (let i = segments.length - 1; i >= 0; i--) {
-            if (placement === 'vertex-first' || placement === 'vertex-firstlast') {
+            if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].equals(first)) {
                 arrows.push(this._getArrowPoints(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));
             }
-            if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
+            if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].equals(last)) {
                 arrows.push(this._getArrowPoints(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance));
             } else if (placement === 'point') {
                 for (let ii = 0, ll = segments[i].length - 1; ii < ll; ii++) {

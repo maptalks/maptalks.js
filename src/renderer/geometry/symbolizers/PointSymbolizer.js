@@ -1,5 +1,4 @@
 import { computeDegree, mapArrayRecursively, isNil } from 'core/util';
-import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
