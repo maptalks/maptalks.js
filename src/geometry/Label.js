@@ -50,7 +50,7 @@ const options = {
           'markerFill' : 'rgb(135,196,240)',
           'markerFillOpacity' : 0.9,
           'markerLineColor' : '#34495e',
-          'markerLineWidth' : 1,
+          'markerLineWidth' : 1
         }
       },
       'textSymbol': {

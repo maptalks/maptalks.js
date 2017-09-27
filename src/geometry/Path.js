@@ -7,13 +7,11 @@ import simplify from 'simplify-js';
 
 /**
  * @property {Object} options - configuration options
- * @property {String} [options.antiMeridian=continuous] - continue | split, how to deal with the anti-meridian problem, split or continue the polygon when it cross the 180 or -180 longtitude line.
  * @property {Object} options.symbol - Path's default symbol
  * @memberOf Path
  * @instance
  */
 const options = {
-    'antiMeridian': 'continuous',
     'symbol': {
         'lineColor': '#000',
         'lineWidth': 2,

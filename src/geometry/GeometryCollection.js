@@ -89,6 +89,10 @@ class GeometryCollection extends Geometry {
      * @param  {Function} fn      - Function to test each geometry
      * @param  {*} [context=undefined]    - Function's context
      * @return {GeometryCollection} A GeometryCollection with all elements that pass the test
+     * @example
+     * var filtered = collection.filter(['==', 'foo', 'bar]);
+     * @example
+     * var filtered = collection.filter(geometry => geometry.getProperties().foo === 'bar');
      */
     filter(fn, context) {
         if (!fn) {
