@@ -787,6 +787,7 @@ class GeometryEditor extends Eventable(Class) {
             //add a new "new vertex" handle.
             newVertexHandles.splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex));
             onVertexAddOrRemove();
+            me._refresh();
         }
 
         function moveVertexHandle(handleViewPoint, index) {
