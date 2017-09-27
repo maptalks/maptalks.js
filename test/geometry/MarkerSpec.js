@@ -10,13 +10,14 @@ describe('#Marker', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
+        map.config('centerCross', true);
         canvasContainer = map._panels.front;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
     afterEach(function () {
-        map.remove();
-        REMOVE_CONTAINER(container);
+        // map.remove();
+        // REMOVE_CONTAINER(container);
     });
 
     it('setCoordinates', function () {
@@ -319,102 +320,123 @@ describe('#Marker', function () {
     });
 
     describe('marker rotation', function () {
-        it('rotate image marker', function (done) {
-            var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerFile' : 'resources/tile.png',
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
-                }
-            });
-            var layer = new maptalks.VectorLayer('vector', marker);
-            layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
-                done();
-            })
-                .addTo(map);
-        });
+        // it('rotate image marker', function (done) {
+        //     var marker = new maptalks.Marker(map.getCenter(), {
+        //         symbol : {
+        //             'markerFile' : 'resources/tile.png',
+        //             'markerWidth'  : 8,
+        //             'markerHeight' : 20,
+        //             'markerRotation' : 45
+        //         }
+        //     });
+        //     var layer = new maptalks.VectorLayer('vector', marker);
+        //     layer.once('layerload', function () {
+        //         expect(layer).not.to.be.painted(0, -9);
+        //         expect(layer).to.be.painted(5, -5);
+        //         done();
+        //     })
+        //         .addTo(map);
+        // });
 
-        it('rotate vector marker', function (done) {
-            var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerType' : 'bar',
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
-                }
-            });
-            var layer = new maptalks.VectorLayer('vector', marker);
-            layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
-                done();
-            })
-                .addTo(map);
-        });
+        // it('rotate vector marker', function (done) {
+        //     var marker = new maptalks.Marker(map.getCenter(), {
+        //         symbol : {
+        //             'markerType' : 'bar',
+        //             'markerWidth'  : 8,
+        //             'markerHeight' : 20,
+        //             'markerRotation' : 45
+        //         }
+        //     });
+        //     var layer = new maptalks.VectorLayer('vector', marker);
+        //     layer.once('layerload', function () {
+        //         expect(layer).not.to.be.painted(0, -9);
+        //         expect(layer).to.be.painted(5, -5);
+        //         done();
+        //     })
+        //         .addTo(map);
+        // });
 
-        it('rotate vector marker', function (done) {
-            var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerType' : 'bar',
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
-                }
-            });
-            var layer = new maptalks.VectorLayer('vector', marker);
-            layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
-                done();
-            })
-                .addTo(map);
-        });
+        // it('rotate vector marker', function (done) {
+        //     var marker = new maptalks.Marker(map.getCenter(), {
+        //         symbol : {
+        //             'markerType' : 'bar',
+        //             'markerWidth'  : 8,
+        //             'markerHeight' : 20,
+        //             'markerRotation' : 45
+        //         }
+        //     });
+        //     var layer = new maptalks.VectorLayer('vector', marker);
+        //     layer.once('layerload', function () {
+        //         expect(layer).not.to.be.painted(0, -9);
+        //         expect(layer).to.be.painted(5, -5);
+        //         done();
+        //     })
+        //         .addTo(map);
+        // });
 
-        it('rotate vector path marker', function (done) {
-            if (maptalks.Browser.ie) {
-                // skip test with IE due to Security Error
-                done();
-                return;
-            }
-            var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerType': 'path',
-                    'markerPath': [{
-                        'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M3,9 a5,5 0,1,0,0,-0.9Z',
-                        'fill': '#DE3333'
-                    }],
-                    'markerPathWidth': 16,
-                    'markerPathHeight': 23,
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
-                }
-            });
-            var layer = new maptalks.VectorLayer('vector', marker);
-            layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
-                done();
-            })
-                .addTo(map);
-        });
+        // it('rotate vector path marker', function (done) {
+        //     if (maptalks.Browser.ie) {
+        //         // skip test with IE due to Security Error
+        //         done();
+        //         return;
+        //     }
+        //     var marker = new maptalks.Marker(map.getCenter(), {
+        //         symbol : {
+        //             'markerType': 'path',
+        //             'markerPath': [{
+        //                 'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M3,9 a5,5 0,1,0,0,-0.9Z',
+        //                 'fill': '#DE3333'
+        //             }],
+        //             'markerPathWidth': 16,
+        //             'markerPathHeight': 23,
+        //             'markerWidth'  : 8,
+        //             'markerHeight' : 20,
+        //             'markerRotation' : 45
+        //         }
+        //     });
+        //     var layer = new maptalks.VectorLayer('vector', marker);
+        //     layer.once('layerload', function () {
+        //         expect(layer).not.to.be.painted(0, -9);
+        //         expect(layer).to.be.painted(5, -5);
+        //         done();
+        //     })
+        //         .addTo(map);
+        // });
 
-        it('rotate text marker', function (done) {
+        // it('rotate text marker', function (done) {
+        //     var marker = new maptalks.Marker(map.getCenter(), {
+        //         symbol : {
+        //             textName : '■■■■■■■■■',
+        //             textSize : 20,
+        //             textFill : '#000',
+        //             textRotation : 45
+        //         }
+        //     });
+        //     var layer = new maptalks.VectorLayer('vector', marker);
+        //     layer.once('layerload', function () {
+        //         expect(layer).not.to.be.painted(11, 0);
+        //         expect(layer).to.be.painted(-11, -11);
+        //         done();
+        //     })
+        //         .addTo(map);
+        // });
+
+        it('rotate text marker with dx dy', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
                     textName : '■■■■■■■■■',
                     textSize : 20,
                     textFill : '#000',
-                    textRotation : 45
+                    textRotation : 45,
+                    textDx : 50,
+                    textDy : 50
                 }
             });
             var layer = new maptalks.VectorLayer('vector', marker);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(11, 0);
-                expect(layer).to.be.painted(-11, -11);
+                expect(layer).not.to.be.painted(-11, -11);
+                expect(layer).to.be.painted(8, 86);
                 done();
             })
                 .addTo(map);

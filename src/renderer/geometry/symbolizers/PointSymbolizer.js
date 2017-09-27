@@ -79,10 +79,12 @@ class PointSymbolizer extends CanvasSymbolizer {
 
     _rotate(ctx, origin, rotation) {
         if (!isNil(rotation)) {
+            const dxdy = this.getDxDy();
+            const p = origin.sub(dxdy);
             ctx.save();
-            ctx.translate(origin.x, origin.y);
+            ctx.translate(p.x, p.y);
             ctx.rotate(rotation);
-            return new Point(0, 0);
+            return this.getDxDy();
         }
         return null;
     }
