@@ -69,7 +69,6 @@ class OverlayLayerRenderer extends CanvasRenderer {
         if (!this._geosToCheck) {
             this._geosToCheck = [];
         }
-        this.setMustRenderOnInteracting();
         pushIn(this._geosToCheck, res);
     }
 

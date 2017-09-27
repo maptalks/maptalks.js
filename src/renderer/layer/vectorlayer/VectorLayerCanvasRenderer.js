@@ -105,6 +105,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._getDisplayExtent();
         this.prepareToDraw();
 
+        const map = this.getMap();
+        this._containerExtent = this._displayExtent.convertTo(c => map._pointToContainerPoint(c));
+
         this.forEachGeo(this.checkGeo, this);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint(this._displayExtent);
@@ -121,9 +124,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
         }
+
         const painter = geo._getPainter(),
-            extent2D = painter.get2DExtent(this.resources);
-        if (!extent2D || !extent2D.intersects(this._displayExtent)) {
+            extent = painter.getContainerExtent();
+        if (!extent || !extent.intersects(this._containerExtent)) {
             return;
         }
         if (painter.hasPoint()) {
