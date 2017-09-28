@@ -203,7 +203,7 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     }
 
     getCanvasImage() {
-        if (this._gl()) {
+        if (this._gl() && this.isCanvasUpdated()) {
             const ctx = this.context;
             if (Browser.retina) {
                 ctx.save();

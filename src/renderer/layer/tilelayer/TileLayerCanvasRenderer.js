@@ -307,7 +307,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer.options['fadeAnimation']) {
             return 1;
         }
-        return Math.min(1, (Date.now() - tileImage.loadTime) / (1000 / 60 * 14));
+        return Math.min(1, (Date.now() - tileImage.loadTime) / (1000 / 60 * 8));
     }
 
     onRemove() {

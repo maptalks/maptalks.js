@@ -307,7 +307,7 @@ class MapCanvasRenderer extends MapRenderer {
                 continue;
             }
             const renderer = layers[i]._getRenderer();
-            if (!renderer || interacting && renderer.__isEmpty) {
+            if (!renderer) {
                 continue;
             }
             const layerImage = this._getLayerImage(layers[i]);
@@ -415,8 +415,9 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     _getLayerImage(layer) {
-        if (layer && layer._getRenderer() && layer._getRenderer().getCanvasImage) {
-            return layer._getRenderer().getCanvasImage();
+        const renderer = layer._getRenderer();
+        if (renderer.getCanvasImage) {
+            return renderer.getCanvasImage();
         }
         return null;
     }
@@ -545,7 +546,10 @@ class MapCanvasRenderer extends MapRenderer {
 
     _drawLayerCanvasImage(layer, layerImage) {
         const ctx = this.context;
-        const point = layerImage['point'].multi(Browser.retina ? 2 : 1);
+        const point = layerImage['point'].round();
+        if (Browser.retina) {
+            point._multi(2);
+        }
         const canvasImage = layerImage['image'];
         if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
             return;
