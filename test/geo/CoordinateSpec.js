@@ -1,4 +1,4 @@
-describe('#Coordinate', function () {
+describe('Coordinate', function () {
 
     describe('has various constructors', function () {
         it('can be created by a coordinate array', function () {

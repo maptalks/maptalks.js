@@ -24,7 +24,7 @@ describe('#Map.Camera', function () {
         map = new maptalks.Map(container, option);
         // bring some offset to map, let view point is different from container point.
         map.setCenter(center._add(0.1, 0.1));
-        layer = new maptalks.VectorLayer('v').addTo(map);
+        layer = new maptalks.VectorLayer('v', { 'enableAltitude' : true }).addTo(map);
     });
 
     afterEach(function () {
@@ -189,6 +189,22 @@ describe('#Map.Camera', function () {
             expect(pointMax.x).to.be.eql(point.x * scale);
             expect(pointMax.y).to.be.eql(point.y * scale);
         });
+
+        // it('point to containerPoint', function (done) {
+        //     console.log(map.pixelMatrix);
+        //     map.setView({ 'center' : [-0.12615856382717539, 51.492700279705105], 'zoom' : 19, 'pitch' : 60, 'bearing' : 0 });
+        //     console.log(map.pixelMatrix);
+        //     console.log([1521, 0, 0, 0, -394.907584125704, 321.4251202812899, -0.8663463270567172, -0.8660254037844386, -228.00000000000006, -1570.7246391561312, -0.5001852851376394, -0.5000000000000001, -8801039028.413084, 7222949351.747576, -19464624.077144705, -19457411.738350045]);
+        //     setTimeout(function () {
+        //         var extent2d = new maptalks.Extent({ 'xmin':-51837.26321211921, 'ymin':-22476997.459779706, 'xmax':-42151.68343609315, 'ymax':-22467312.73870858 });
+        //         var coords = extent2d.toArray();
+        //         coords.forEach(function (c) {
+        //             // console.log(c.toArray());
+        //             console.log(map._pointToContainerPoint(c, map.getZoom(), 0).toArray());
+        //         });
+        //         done();
+        //     }, 200);
+        // });
     });
 
     describe('polygon\' size when pitching or rotating', function () {
@@ -260,6 +276,24 @@ describe('#Map.Camera', function () {
             expect(marker.getSize().toPoint()).to.be.closeTo(s);
             map.setBearing(40);
             expect(marker.getSize().toPoint()).to.be.closeTo(s);
+        });
+    });
+
+    describe('draw with altitude when pitching', function () {
+        it('circle', function (done) {
+            var geometry = new maptalks.Circle(center, 5, {
+                properties : {
+                    altitude : 30
+                },
+                symbol : {
+                    polygonFill : '#f00'
+                }
+            });
+            layer.on('layerload', function () {
+                expect(layer).to.be.painted(14, 0);
+                done();
+            });
+            layer.addGeometry(geometry);
         });
     });
 

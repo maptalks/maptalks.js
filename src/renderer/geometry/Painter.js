@@ -152,24 +152,27 @@ class Painter extends Class {
     }
 
     _getContainerPoints(points, dx, dy) {
+        const cExtent = this.getContainerExtent();
+        if (!cExtent) {
+            return null;
+        }
         const map = this.getMap(),
             lineWidth = this.getSymbol()['lineWidth'] || 2,
             maxZoom = map.getMaxNativeZoom(),
             containerExtent = map.getContainerExtent(),
-            extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom)),
             altitude = this.getAltitude(),
-            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest),
-            cExtent = this.getContainerExtent();
+            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
+        //TODO map.height / 4 is a magic number to draw complete polygon with altitude after clipping
+        const extent2D = containerExtent.expand(altitude ? map.height / 4 : lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom));
 
-        if (!cExtent) {
-            return null;
-        }
         let containerPoints;
-        //convert view points to container points needed by canvas
+        //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
+            const e = this.get2DExtent();
             let clipPoints = points;
-            if (!cExtent.within(containerExtent) && this.geometry.options['clipToPaint']) {
-                if (this.geometry.getJSONType() === 'Polygon') {
+            if (!e.within(map._get2DExtent()) && this.geometry.options['clipToPaint']) {
+                // if (this.geometry instanceof Polygon) {
+                if (this.geometry.getShell && this.geometry.getHoles) {
                     // clip the polygon to draw less and improve performance
                     if (!Array.isArray(points[0])) {
                         clipPoints = clipPolygon(points, extent2D);
@@ -337,7 +340,11 @@ class Painter extends Class {
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent();
         }
-        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, this.getAltitude()));
+        const altitude = this.getAltitude();
+        if (map.cameraAltitude && map.cameraAltitude < altitude) {
+            return null;
+        }
+        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude));
         if (extent) {
             extent._add(this._markerExtent);
         }

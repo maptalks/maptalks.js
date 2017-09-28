@@ -641,6 +641,9 @@ class CanvasRenderer extends Class {
         const t = now();
         this.draw();
         this._drawTime = now() - t;
+        if (this.layer.options['logDrawTime']) {
+            console.log('drawTime:', this.layer.getId(), this._drawTime);
+        }
     }
 
     _promiseResource(url) {

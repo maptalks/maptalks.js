@@ -454,8 +454,12 @@ class Extent {
             return null;
         }
         const e = new this.constructor();
-        this.toArray().forEach(c => {
-            e._combine(fn(c));
+        const coords = this.toArray();
+        const len = coords.length;
+        coords.forEach((c, idx) => {
+            if (idx < len - 1) {
+                e._combine(fn(c));
+            }
         });
         return e;
     }

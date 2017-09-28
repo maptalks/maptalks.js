@@ -24,8 +24,9 @@ const el = {
 
     _paintAsPolygon: function () {
         const map = this.getMap();
+        const altitude = this._getPainter().getAltitude();
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
-        return map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
+        return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
     },
 
     _getPaintParams() {
@@ -77,10 +78,10 @@ Sector.include(el, {
     _redrawWhenPitch : () => true,
 
     _getPaintParams() {
-        const map = this.getMap();
-        if (map.getPitch()) {
+        if (this._paintAsPolygon()) {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
+        const map = this.getMap();
         const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxNativeZoom());
         const size = this._getRenderSize();
         return [pt, size['width'],
@@ -89,8 +90,7 @@ Sector.include(el, {
     },
 
     _paintOn: function () {
-        const map = this.getMap();
-        if (map.getPitch()) {
+        if (this._paintAsPolygon()) {
             return Canvas.polygon.apply(Canvas, arguments);
         } else {
             const r = this.getMap().getBearing();

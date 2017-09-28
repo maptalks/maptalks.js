@@ -144,15 +144,15 @@ Map.include(/** @lends Map.prototype */{
     /**
      * Convert 2d point at target zoom to containerPoint at current zoom
      * @param  {Point} point 2d point at target zoom
-     * @param  {Number} zoom  target zoom, current zoom in default
-     * @param  {Number} [height=0]  target's height in 2d point system at target zoom
+     * @param  {Number} zoom  point's zoom
+     * @param  {Number} [altitude=0]  target's altitude in 2d point system at target zoom
      * @return {Point}       containerPoint at current zoom
      * @private
      */
-    _pointToContainerPoint(point, zoom, height = 0) {
+    _pointToContainerPoint(point, zoom, altitude = 0) {
         point = this._pointToPoint(point, zoom);
-        if (this.isTransforming() || height) {
-            const t = [point.x, point.y, height, 1];
+        if (this.isTransforming() || altitude) {
+            const t = [point.x, point.y, altitude, 1];
             mat4.transformMat4(t, t, this.pixelMatrix);
             return new Point(t[0] / t[3], t[1] / t[3]);
         } else {
@@ -275,6 +275,9 @@ Map.include(/** @lends Map.prototype */{
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         this.domCssMatrix = mat4.multiply(m, m, domMat);
+
+        //camera alitutude in point
+        // this.cameraAltitude = this.cameraToCenterDistance * Math.cos(this._pitch);
     },
 
     _clearMatrices() {
