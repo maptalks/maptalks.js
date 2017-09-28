@@ -243,13 +243,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return r * Math.PI / 180;
     }
 
-    getDxDy() {
-        const s = this.style;
-        const dx = s['markerDx'],
-            dy = s['markerDy'];
-        return new Point(dx, dy);
-    }
-
     getMarkerExtent() {
         const dxdy = this.getDxDy(),
             style = this.style;

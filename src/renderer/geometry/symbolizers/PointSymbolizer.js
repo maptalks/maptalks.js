@@ -1,5 +1,6 @@
 import { computeDegree, mapArrayRecursively, isNil } from 'core/util';
 import PointExtent from 'geo/PointExtent';
+import Point from 'geo/Point';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
 /**
@@ -32,6 +33,13 @@ class PointSymbolizer extends CanvasSymbolizer {
         return extent;
     }
 
+    getDxDy() {
+        const s = this.symbol;
+        const dx = s['markerDx'] || 0;
+        const dy = s['markerDy'] || 0;
+        return new Point(dx, dy);
+    }
+
     _getRenderPoints() {
         return this.getPainter().getRenderPoints(this.getPlacement());
     }
@@ -40,7 +48,7 @@ class PointSymbolizer extends CanvasSymbolizer {
      * Get container points to draw on Canvas
      * @return {Point[]}
      */
-    _getRenderContainerPoints() {
+    _getRenderContainerPoints(ignoreAltitude) {
         const painter = this.getPainter(),
             points = this._getRenderPoints()[0];
         if (painter.isSpriting()) {
@@ -49,7 +57,7 @@ class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         const maxZoom = map.getMaxNativeZoom();
         const dxdy = this.getDxDy(),
-            altitude = this.painter.getAltitude(),
+            altitude = ignoreAltitude ? 0 : this.painter.getAltitude(),
             layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest);
         const containerPoints = mapArrayRecursively(points, point =>
             map._pointToContainerPoint(point, maxZoom, altitude)._add(dxdy)._sub(layerPoint)

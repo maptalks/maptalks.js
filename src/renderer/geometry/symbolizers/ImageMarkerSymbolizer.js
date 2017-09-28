@@ -100,13 +100,6 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         return r * Math.PI / 180;
     }
 
-    getDxDy() {
-        const s = this.style;
-        const dx = s['markerDx'] || 0,
-            dy = s['markerDy'] || 0;
-        return new Point(dx, dy);
-    }
-
     getMarkerExtent(resources) {
         const url = this.style['markerFile'],
             img = resources ? resources.getImage(url) : null;
