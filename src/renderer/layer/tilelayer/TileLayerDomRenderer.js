@@ -8,7 +8,8 @@ import {
     join,
     requestAnimFrame,
     cancelAnimFrame,
-    emptyImageUrl
+    emptyImageUrl,
+    now
 } from 'core/util';
 import * as mat4 from 'core/util/mat4';
 import {
@@ -109,7 +110,7 @@ class TileLayerDomRenderer extends Class {
             this._fadeAnimated = false;
             const tileZoom = this.layer._getTileZoom();
             if (map.isMoving()) {
-                const now = Date.now();
+                const now = now();
                 if (this._renderTime && now - this._renderTime > this.layer.options['updateIntervalOnAnimating']) {
                     this._abortLoading(false);
                     this._renderTiles();
@@ -228,7 +229,7 @@ class TileLayerDomRenderer extends Class {
 
         this._tileZoom = tileGrid['zoom'];
         this._tileExtent = tileGrid['extent'];
-        this._renderTime = Date.now();
+        this._renderTime = now();
 
         this._updateContainer();
 
@@ -472,7 +473,7 @@ class TileLayerDomRenderer extends Class {
             });
         }
 
-        tile.loaded = Date.now();
+        tile.loaded = now();
 
         const map = this.getMap();
 

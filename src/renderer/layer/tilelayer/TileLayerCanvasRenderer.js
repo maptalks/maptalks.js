@@ -1,7 +1,8 @@
 import {
     IS_NODE,
     loadImage,
-    emptyImageUrl
+    emptyImageUrl,
+    now
 } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas2D from 'core/Canvas';
@@ -201,7 +202,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // removed
             return;
         }
-        tileImage.loadTime = Date.now();
+        tileImage.loadTime = now();
         delete this._tileLoading[id];
         this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
@@ -307,7 +308,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer.options['fadeAnimation']) {
             return 1;
         }
-        return Math.min(1, (Date.now() - tileImage.loadTime) / (1000 / 60 * 8));
+        return Math.min(1, (now() - tileImage.loadTime) / (1000 / 60 * 10));
     }
 
     onRemove() {

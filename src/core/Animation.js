@@ -3,7 +3,8 @@ import {
     extend,
     isNumber,
     isString,
-    requestAnimFrame
+    requestAnimFrame,
+    now
 } from 'core/util';
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
@@ -409,7 +410,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             this.currentTime = 0;
             this._prepare();
         }
-        const t = Date.now();
+        const t = now();
         if (!this.startTime) {
             const options = this._options;
             this.startTime = options['startTime'] ? options['startTime'] : t;
@@ -458,7 +459,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
 
     _run() {
         const onFrame = this._onFrame;
-        const t = Date.now();
+        const t = now();
         let elapsed = t - this._playStartTime;
         if (this._options['repeat'] && elapsed >= this.duration) {
             this._playStartTime = t;
