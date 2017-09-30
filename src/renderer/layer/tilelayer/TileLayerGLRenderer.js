@@ -1,5 +1,5 @@
 import Ajax from 'core/Ajax';
-import { IS_NODE, emptyImageUrl, hasOwn } from 'core/util';
+import { IS_NODE, emptyImageUrl, hasOwn, equalMapView } from 'core/util';
 import * as mat4 from 'core/util/mat4';
 import TileLayer from 'layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
@@ -97,10 +97,13 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             w = tileSize['width'] * scale,
             h = tileSize['height'] * scale;
         this.loadTexture(tileImage);
-        const matrix = this.getViewMatrix();
-        gl.uniformMatrix4fv(this.program['u_matrix'], false, new Float32Array(matrix));
+        const view = map.getView();
+        if (!this._matrixView || !equalMapView(this._matrixView, view)) {
+            const matrix = this.getViewMatrix();
+            gl.uniformMatrix4fv(this.program['u_matrix'], false, new Float32Array(matrix));
+            this._matrixView = view;
+        }
         gl.uniform1f(this.program['u_opacity'], opacity);
-
         const x1 = x;
         const x2 = x + w;
         const y1 = y;
