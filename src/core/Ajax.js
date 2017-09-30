@@ -110,7 +110,8 @@ const Ajax = {
                             cb(null, {
                                 data: client.response,
                                 cacheControl: client.getResponseHeader('Cache-Control'),
-                                expires: client.getResponseHeader('Expires')
+                                expires: client.getResponseHeader('Expires'),
+                                contentType : client.getResponseHeader('Content-Type')
                             });
                         }
                     } else {
@@ -177,7 +178,7 @@ const Ajax = {
                     }
                     URL.revokeObjectURL(img.src);
                 };
-                const blob = new Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
+                const blob = new Blob([new Uint8Array(imgData.data)], { type: imgData.contentType });
                 img.cacheControl = imgData.cacheControl;
                 img.expires = imgData.expires;
                 img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : emptyImageUrl;
