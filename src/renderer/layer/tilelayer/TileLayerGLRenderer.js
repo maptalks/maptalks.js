@@ -124,8 +124,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     }
 
     getViewMatrix() {
-        const m = mat4.copy(new Float64Array(16), this.getMap().projMatrix);
-        mat4.scale(m, m, [1, -1, 1]);
+        const m = new Float64Array(16);
+        mat4.scale(m, this.getMap().projMatrix, [1, -1, 1]);
         return m;
     }
 
