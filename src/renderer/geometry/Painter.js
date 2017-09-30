@@ -161,7 +161,6 @@ class Painter extends Class {
         }
         const map = this.getMap(),
             maxZoom = map.getMaxNativeZoom(),
-            altitude = ignoreAltitude ? 0 : this.getAltitude(),
             layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
         let containerPoints;
         function pointContainerPoint(point, alt) {
@@ -171,9 +170,19 @@ class Painter extends Class {
             }
             return p;
         }
+
+        let altitude = this.getAltitude();
+        // clip will cause wrong paint when altitude is an array
+        const isClip = !Array.isArray(altitude);
+        if (ignoreAltitude) {
+            altitude = 0;
+        }
         //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
-            const clipPoints = this._clip(points, altitude);
+            let clipPoints = points;
+            if (isClip) {
+                clipPoints = this._clip(points, altitude);
+            }
             let alt = altitude;
             containerPoints = clipPoints.map((c, idx) => {
                 if (Array.isArray(c)) {
