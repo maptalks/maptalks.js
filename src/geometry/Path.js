@@ -170,7 +170,10 @@ class Path extends Geometry {
             return [];
         }
         const map = this.getMap(),
-            isSimplify = !disableSimplify && this.getLayer() && this.getLayer().options['enableSimplify'],
+            layer = this.getLayer(),
+            properties = this.getProperties(),
+            hasAltitude = layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]),
+            isSimplify = !disableSimplify && layer && layer.options['enableSimplify'] && !hasAltitude,
             tolerance = 2 * map._getResolution(),
             isMulti = Array.isArray(prjCoords[0]);
         delete this._simplified;

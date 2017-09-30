@@ -178,17 +178,18 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this.setSpatialReference(opts['spatialReference'] || opts['view']);
 
+
+        this._mapViewPoint = new Point(0, 0);
+
+        this._initRenderer();
+        this._updateMapSize(this._getContainerDomSize());
+
         if (baseLayer) {
             this.setBaseLayer(baseLayer);
         }
         if (layers) {
             this.addLayer(layers);
         }
-
-        this._mapViewPoint = new Point(0, 0);
-
-        this._initRenderer();
-        this._updateMapSize(this._getContainerDomSize());
 
         this._Load();
     }
@@ -849,6 +850,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
 
         this._baseLayer = baseLayer;
+        baseLayer.options['canvas'] = this.getRenderer().canvas;
         baseLayer._bindMap(this, -1);
 
         function onbaseLayerload() {

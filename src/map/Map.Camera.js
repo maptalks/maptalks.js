@@ -277,7 +277,7 @@ Map.include(/** @lends Map.prototype */{
         this.domCssMatrix = mat4.multiply(m, m, domMat);
 
         //camera alitutude in point
-        // this.cameraAltitude = this.cameraToCenterDistance * Math.cos(this._pitch);
+        this.cameraAltitude = this.cameraToCenterDistance * Math.cos(this._pitch);
     },
 
     _clearMatrices() {

@@ -316,6 +316,9 @@ const Canvas = {
 
     _stroke(ctx, strokeOpacity, x, y) {
         ctx.canvas._drawn = true;
+        if (strokeOpacity === 0) {
+            return;
+        }
         const isPattern = Canvas._isPattern(ctx.strokeStyle) && !isNil(x) && !isNil(y);
         if (isNil(strokeOpacity)) {
             strokeOpacity = 1;
@@ -417,7 +420,8 @@ const Canvas = {
                 fillPolygon(points, i, op);
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'source-over';
-                } else {
+                } else if (len > 1) {
+                    // make sure 'destination-out'
                     ctx.fillStyle = '#fff';
                 }
                 Canvas._stroke(ctx, 0);
@@ -440,7 +444,8 @@ const Canvas = {
                 if (i > 0) {
                     //return to default compositeOperation to display strokes.
                     ctx.globalCompositeOperation = 'source-over';
-                } else {
+                } else if (len > 1) {
+                    // make sure 'destination-out'
                     ctx.fillStyle = '#fff';
                 }
             }

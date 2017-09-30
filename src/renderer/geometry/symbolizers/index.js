@@ -7,6 +7,7 @@ import StrokeAndFillSymbolizer from './StrokeAndFillSymbolizer';
 import TextMarkerSymbolizer from './TextMarkerSymbolizer';
 import VectorMarkerSymbolizer from './VectorMarkerSymbolizer';
 import VectorPathMarkerSymbolizer from './VectorPathMarkerSymbolizer';
+import DrawAltitudeSymbolizer from './DrawAltitudeSymbolizer';
 
 export {
     Symbolizer,
@@ -17,5 +18,6 @@ export {
     StrokeAndFillSymbolizer,
     TextMarkerSymbolizer,
     VectorMarkerSymbolizer,
-    VectorPathMarkerSymbolizer
+    VectorPathMarkerSymbolizer,
+    DrawAltitudeSymbolizer
 };

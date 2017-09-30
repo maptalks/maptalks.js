@@ -13,6 +13,7 @@ import OverlayLayer from './OverlayLayer';
  * @property {Boolean} options.defaultIconSize=[20,20] - default size of a marker's icon
  * @property {Boolean} [options.enableAltitude=false]  - whether to enable render geometry with altitude, false by default
  * @property {Boolean} [options.altitudeProperty=altitude] - geometry's altitude property name, if enableAltitude is true, "altitude" by default
+ * @property {Boolean} [options.drawAltitude=false]  - whether to draw altitude: a vertical line for marker, a vertical polygon for line
  * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
  * @memberOf VectorLayer
  * @instance
@@ -25,7 +26,8 @@ const options = {
     'cacheVectorOnCanvas': true,
     'cacheSvgOnCanvas': false,
     'enableAltitude' : false,
-    'altitudeProperty' : 'altitude'
+    'altitudeProperty' : 'altitude',
+    'drawAltitude' : false
 };
 
 /**

@@ -8,7 +8,9 @@ import Canvas from 'core/Canvas';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
 
 //registered symbolizers
+//the latter will paint at the last
 const registerSymbolizers = [
+    Symbolizers.DrawAltitudeSymbolizer,
     Symbolizers.StrokeAndFillSymbolizer,
     Symbolizers.ImageMarkerSymbolizer,
     Symbolizers.VectorPathMarkerSymbolizer,
@@ -103,7 +105,7 @@ class Painter extends Class {
      * for strokeAndFillSymbolizer
      * @return {Object[]} resources to render vector
      */
-    getPaintParams(dx, dy) {
+    getPaintParams(dx, dy, ignoreAltitude) {
         const map = this.getMap(),
             zoom = map.getZoom(),
             pitched = (map.getPitch() !== 0),
@@ -132,7 +134,7 @@ class Painter extends Class {
             tPaintParams = [], // transformed params
             points = paintParams[0];
 
-        const containerPoints = this._getContainerPoints(points, dx, dy);
+        const containerPoints = this._getContainerPoints(points, dx, dy, ignoreAltitude);
         if (!containerPoints) {
             return null;
         }
@@ -151,59 +153,48 @@ class Painter extends Class {
         return tPaintParams;
     }
 
-    _getContainerPoints(points, dx, dy) {
+    _getContainerPoints(points, dx, dy, ignoreAltitude) {
+
         const cExtent = this.getContainerExtent();
         if (!cExtent) {
             return null;
         }
         const map = this.getMap(),
-            lineWidth = this.getSymbol()['lineWidth'] || 2,
             maxZoom = map.getMaxNativeZoom(),
-            containerExtent = map.getContainerExtent(),
-            altitude = this.getAltitude(),
+            altitude = ignoreAltitude ? 0 : this.getAltitude(),
             layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
-        //TODO map.height / 4 is a magic number to draw complete polygon with altitude after clipping
-        const extent2D = containerExtent.expand(altitude ? map.height / 4 : lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom));
-
         let containerPoints;
+        function pointContainerPoint(point, alt) {
+            const p = map._pointToContainerPoint(point, maxZoom, alt)._sub(layerPoint);
+            if (dx || dy) {
+                p._add(dx, dy);
+            }
+            return p;
+        }
         //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
-            const e = this.get2DExtent();
-            let clipPoints = points;
-            if (!e.within(map._get2DExtent()) && this.geometry.options['clipToPaint']) {
-                // if (this.geometry instanceof Polygon) {
-                if (this.geometry.getShell && this.geometry.getHoles) {
-                    // clip the polygon to draw less and improve performance
-                    if (!Array.isArray(points[0])) {
-                        clipPoints = clipPolygon(points, extent2D);
-                    } else {
-                        clipPoints = [];
-                        for (let i = 0; i < points.length; i++) {
-                            const part = clipPolygon(points[i], extent2D);
-                            if (part.length) {
-                                clipPoints.push(part);
+            const clipPoints = this._clip(points, altitude);
+            let alt = altitude;
+            containerPoints = clipPoints.map((c, idx) => {
+                if (Array.isArray(c)) {
+                    return c.map((cc, cidx) => {
+                        if (Array.isArray(altitude)) {
+                            if (altitude[idx]) {
+                                alt = altitude[idx][cidx];
+                            } else {
+                                alt = 0;
                             }
                         }
+                        return pointContainerPoint(cc, alt);
+                    });
+                } else {
+                    if (Array.isArray(altitude)) {
+                        alt = altitude[idx];
                     }
-                } else if (this.geometry.getJSONType() === 'LineString') {
-                    // clip the line string to draw less and improve performance
-                    if (!Array.isArray(points[0])) {
-                        clipPoints = clipLine(points, extent2D);
-                    } else {
-                        clipPoints = [];
-                        for (let i = 0; i < points.length; i++) {
-                            pushIn(clipPoints, clipLine(points[i], extent2D));
-                        }
-                    }
+                    return pointContainerPoint(c, alt);
                 }
-            }
-            containerPoints = mapArrayRecursively(clipPoints, point => {
-                const p = map._pointToContainerPoint(point, maxZoom, altitude)._sub(layerPoint);
-                if (dx || dy) {
-                    p._add(dx, dy);
-                }
-                return p;
             });
+            // containerPoints = mapArrayRecursively(clipPoints, point => pointContainerPoint(point, altitude));
         } else if (points instanceof Point) {
             containerPoints = map._pointToContainerPoint(points, maxZoom, altitude)._sub(layerPoint);
             if (dx || dy) {
@@ -213,6 +204,44 @@ class Painter extends Class {
         return containerPoints;
     }
 
+    _clip(points, altitude) {
+        const map = this.getMap(),
+            maxZoom = map.getMaxNativeZoom();
+        const lineWidth = this.getSymbol()['lineWidth'] || 2,
+            containerExtent = map.getContainerExtent();
+        //TODO map.height / 4 is a magic number to draw complete polygon with altitude after clipping
+        const extent2D = containerExtent.expand(altitude ? map.height / 4 : lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom));
+        const e = this.get2DExtent();
+        let clipPoints = points;
+        if (!e.within(map._get2DExtent()) && this.geometry.options['clipToPaint']) {
+            // if (this.geometry instanceof Polygon) {
+            if (this.geometry.getShell && this.geometry.getHoles) {
+                // clip the polygon to draw less and improve performance
+                if (!Array.isArray(points[0])) {
+                    clipPoints = clipPolygon(points, extent2D);
+                } else {
+                    clipPoints = [];
+                    for (let i = 0; i < points.length; i++) {
+                        const part = clipPolygon(points[i], extent2D);
+                        if (part.length) {
+                            clipPoints.push(part);
+                        }
+                    }
+                }
+            } else if (this.geometry.getJSONType() === 'LineString') {
+                // clip the line string to draw less and improve performance
+                if (!Array.isArray(points[0])) {
+                    clipPoints = clipLine(points, extent2D);
+                } else {
+                    clipPoints = [];
+                    for (let i = 0; i < points.length; i++) {
+                        pushIn(clipPoints, clipLine(points[i], extent2D));
+                    }
+                }
+            }
+        }
+        return clipPoints;
+    }
 
     getSymbol() {
         return this.geometry._getInternalSymbol();
@@ -228,6 +257,11 @@ class Painter extends Class {
         }
         //reduce geos to paint when drawOnInteracting
         if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
+            return;
+        }
+        const map = this.getMap();
+        const altitude = this.getMinAltitude();
+        if (altitude && map.cameraAltitude && map.cameraAltitude < altitude) {
             return;
         }
         this._beforePaint();
@@ -340,7 +374,7 @@ class Painter extends Class {
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent();
         }
-        const altitude = this.getAltitude();
+        const altitude = this.getMinAltitude();
         if (map.cameraAltitude && map.cameraAltitude < altitude) {
             return null;
         }
@@ -423,7 +457,19 @@ class Painter extends Class {
             return 0;
         }
         const scale = this.getMap().getScale();
-        return this._altAtMaxZ / scale;
+        if (Array.isArray(this._altAtMaxZ)) {
+            return this._altAtMaxZ.map(alt => alt / scale);
+        } else {
+            return this._altAtMaxZ / scale;
+        }
+    }
+
+    getMinAltitude() {
+        if (!this.minAltitude) {
+            return 0;
+        }
+        const scale = this.getMap().getScale();
+        return this.minAltitude / scale;
     }
 
     _getGeometryAltitude() {
@@ -436,10 +482,26 @@ class Painter extends Class {
         if (!altitude) {
             return 0;
         }
-        const geometry = this.geometry;
-        const z = map.getMaxNativeZoom(),
-            center = geometry.getCenter(),
-            target = map.locate(center, altitude, 0);
+        const center = this.geometry.getCenter();
+        if (Array.isArray(altitude)) {
+            this.minAltitude = Number.MAX_VALUE;
+            return altitude.map(alt => {
+                const a = this._meterToPoint(center, alt);
+                if (a < this.minAltitude) {
+                    this.minAltitude = a;
+                }
+                return a;
+            });
+        } else {
+            this.minAltitude = this._meterToPoint(center, altitude);
+            return this.minAltitude;
+        }
+    }
+
+    _meterToPoint(center, altitude) {
+        const map = this.getMap();
+        const z = map.getMaxNativeZoom();
+        const target = map.locate(center, altitude, 0);
         const p0 = map.coordinateToPoint(center, z),
             p1 = map.coordinateToPoint(target, z);
         return Math.abs(p1.x - p0.x) * sign(altitude);

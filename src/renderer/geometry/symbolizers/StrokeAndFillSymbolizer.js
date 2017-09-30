@@ -35,9 +35,6 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     symbolize(ctx, resources) {
-        if (this.geometry.type === 'Point') {
-            return;
-        }
         const style = this.style;
         if (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0) {
             return;
@@ -90,9 +87,6 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     get2DExtent() {
-        if (this.geometry.type === 'Point') {
-            return null;
-        }
         const map = this.getMap();
         const extent = this.geometry._getPrjExtent();
         if (!extent) {
