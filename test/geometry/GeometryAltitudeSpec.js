@@ -100,5 +100,28 @@ describe('Geometry.Altitude', function () {
             });
             map.addLayer(layer);
         });
+
+        it('draw altitude of marker without altitude prop', function (done) {
+            var marker = new maptalks.Marker(map.getCenter(), {
+                // properties : { altitude : 100 },
+                symbol : {
+                    'markerType' : 'ellipse',
+                    'markeraltitude' : 6,
+                    'markerWidth' : 6
+                }
+            });
+            layer.config('drawAltitude', {
+                lineWidth : 5,
+                lineColor : '#000'
+            });
+            layer.addGeometry(marker);
+            map.setPitch(60);
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0, [0, 0, 255]);
+                expect(layer).not.to.be.painted(0, -10);
+                done();
+            });
+            map.addLayer(layer);
+        });
     });
 });
