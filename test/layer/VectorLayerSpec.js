@@ -510,44 +510,4 @@ describe('VectorLayer', function () {
         });
     });
 
-    describe('render geometry with altitude', function () {
-        it('circle', function (done) {
-            var circle = new maptalks.Circle(map.getCenter(), 2, {
-                properties : { altitude : 200 },
-                symbol : {
-                    'polygonFill' : '#f00'
-                }
-            });
-            layer.config('enableAltitude', true);
-            layer.addGeometry(circle);
-            map.setPitch(60);
-            layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -192);
-                done();
-            });
-            map.addLayer(layer);
-        });
-
-        it('marker', function (done) {
-            var marker = new maptalks.Marker(map.getCenter(), {
-                properties : { altitude : 100 },
-                symbol : {
-                    'markerType' : 'ellipse',
-                    'markeraltitude' : 6,
-                    'markerWidth' : 6
-                }
-            });
-            layer.config('enableAltitude', true);
-            layer.addGeometry(marker);
-            map.setPitch(60);
-            layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -93);
-                done();
-            });
-            map.addLayer(layer);
-        });
-    });
-
 });
