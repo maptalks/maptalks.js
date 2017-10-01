@@ -172,7 +172,7 @@ class Path extends Geometry {
         const map = this.getMap(),
             layer = this.getLayer(),
             properties = this.getProperties(),
-            hasAltitude = layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]),
+            hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]),
             isSimplify = !disableSimplify && layer && layer.options['enableSimplify'] && !hasAltitude,
             tolerance = 2 * map._getResolution(),
             isMulti = Array.isArray(prjCoords[0]);
