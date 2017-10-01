@@ -137,6 +137,15 @@ class VectorLayer extends OverlayLayer {
         }
     }
 
+    onConfig(conf) {
+        if (conf['enableAltitude'] || conf['drawAltitude'] || conf['altitudeProperty']) {
+            const renderer = this.getRenderer();
+            if (renderer && renderer.setToRedraw) {
+                renderer.setToRedraw();
+            }
+        }
+    }
+
     _styleGeometry(geometry) {
         if (!this._cookedStyles) {
             return false;
@@ -152,7 +161,7 @@ class VectorLayer extends OverlayLayer {
     }
 
     identify(coordinate, options = {}) {
-        const renderer = this._getRenderer();
+        const renderer = this.getRenderer();
         // only iterate drawn geometries when onlyVisible is true.
         if (options['onlyVisible'] && renderer && renderer.identify) {
             return renderer.identify(coordinate, options);

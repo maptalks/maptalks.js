@@ -166,7 +166,7 @@ class Painter extends Class {
         function pointContainerPoint(point, alt) {
             const p = map._pointToContainerPoint(point, maxZoom, alt)._sub(layerPoint);
             if (dx || dy) {
-                p._add(dx, dy);
+                p._add(dx || 0, dy || 0);
             }
             return p;
         }

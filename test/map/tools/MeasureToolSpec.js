@@ -1,7 +1,4 @@
-
-
-
-describe('#DistanceTool and AreaTool', function () {
+describe('DistanceTool and AreaTool', function () {
     var container, eventContainer;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
