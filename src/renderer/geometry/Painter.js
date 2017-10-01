@@ -1,4 +1,4 @@
-import { isNumber, mapArrayRecursively, sign, pushIn, hasOwn } from 'core/util';
+import { isNumber, sign, pushIn, hasOwn } from 'core/util';
 import { clipPolygon, clipLine } from 'core/util/path';
 import Class from 'core/Class';
 import Size from 'geo/Size';

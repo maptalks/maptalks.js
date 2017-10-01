@@ -142,6 +142,8 @@ class Overview extends Control {
             'center': map.getCenter(),
             'zoom': this._getOverviewZoom(),
             'zoomAnimationDuration'  : 150,
+            'pitch' : 0,
+            'bearing' : 0,
             'scrollWheelZoom': false,
             'checkSize': false,
             'doubleClickZoom': false,
@@ -155,12 +157,11 @@ class Overview extends Control {
         this._perspective = new Polygon(this._getPerspectiveCoords(), {
             'draggable': true,
             'cursor': 'move',
-            'symbol': this.options['symbol'],
-            'antiMeridian' : false
+            'symbol': this.options['symbol']
         })
             .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
-        new VectorLayer('v', [this._perspective]).addTo(this._overview);
+        new VectorLayer('perspective_layer', this._perspective).addTo(this._overview);
         this.fire('load');
     }
 
@@ -227,8 +228,10 @@ class Overview extends Control {
         }
         const map = this.getMap();
         if (map.getBaseLayer()) {
-            const layer = Layer.fromJSON(map.getBaseLayer().toJSON());
-            layer.config('renderer', 'canvas');
+            const json = map.getBaseLayer().toJSON();
+            delete json.options.canvas;
+            json.options.renderer = 'canvas';
+            const layer = Layer.fromJSON(json);
             this._overview.setBaseLayer(layer);
         } else {
             this._overview.setBaseLayer(null);

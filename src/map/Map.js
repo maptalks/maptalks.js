@@ -850,7 +850,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
 
         this._baseLayer = baseLayer;
-        baseLayer.options['canvas'] = this.getRenderer().canvas;
         baseLayer._bindMap(this, -1);
 
         function onbaseLayerload() {
