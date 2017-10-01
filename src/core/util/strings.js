@@ -168,6 +168,8 @@ export function replaceVariable(str, props) {
         const value = props[key];
         if (isNil(value)) {
             return '';
+        } else if (Array.isArray(value)) {
+            return value.join();
         }
         return value;
     });

@@ -134,7 +134,7 @@ class Painter extends Class {
             tPaintParams = [], // transformed params
             points = paintParams[0];
 
-        const containerPoints = this._getContainerPoints(points, dx, dy, ignoreAltitude);
+        const containerPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude);
         if (!containerPoints) {
             return null;
         }
@@ -153,7 +153,7 @@ class Painter extends Class {
         return tPaintParams;
     }
 
-    _getContainerPoints(points, dx, dy, ignoreAltitude) {
+    _pointContainerPoints(points, dx, dy, ignoreAltitude) {
 
         const cExtent = this.getContainerExtent();
         if (!cExtent) {

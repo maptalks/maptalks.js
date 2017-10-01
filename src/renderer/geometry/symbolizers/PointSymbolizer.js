@@ -1,4 +1,4 @@
-import { computeDegree, mapArrayRecursively, isNil } from 'core/util';
+import { computeDegree } from 'core/util';
 import PointExtent from 'geo/PointExtent';
 import Point from 'geo/Point';
 import CanvasSymbolizer from './CanvasSymbolizer';
@@ -54,15 +54,18 @@ class PointSymbolizer extends CanvasSymbolizer {
         if (painter.isSpriting()) {
             return points;
         }
-        const map = this.getMap();
-        const maxZoom = map.getMaxNativeZoom();
-        const dxdy = this.getDxDy(),
-            altitude = ignoreAltitude ? 0 : this.painter.getAltitude(),
-            layerPoint = map._pointToContainerPoint(this.geometry.getLayer()._getRenderer()._northWest);
-        const containerPoints = mapArrayRecursively(points, point =>
-            map._pointToContainerPoint(point, maxZoom, altitude)._add(dxdy)._sub(layerPoint)
-        );
-        return containerPoints;
+        const dxdy = this.getDxDy();
+        const cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true);
+        if (!cpoints || !Array.isArray(cpoints[0])) {
+            return cpoints;
+        }
+        const flat = [];
+        for (let i = 0, l = cpoints.length; i < l; i++) {
+            for (let ii = 0, ll = cpoints[i].length; ii < ll; ii++) {
+                flat.push(cpoints[i][ii]);
+            }
+        }
+        return flat;
     }
 
     _getRotationAt(i) {
@@ -85,7 +88,7 @@ class PointSymbolizer extends CanvasSymbolizer {
     }
 
     _rotate(ctx, origin, rotation) {
-        if (!isNil(rotation)) {
+        if (rotation) {
             const dxdy = this.getDxDy();
             const p = origin.sub(dxdy);
             ctx.save();

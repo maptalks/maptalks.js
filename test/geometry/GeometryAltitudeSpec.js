@@ -63,7 +63,7 @@ describe('Geometry.Altitude', function () {
                 lineColor : '#000',
                 polygonFill : '#000'
             });
-            var line = new maptalks.LineString([center.sub(0.01, 0), center.add(0.01, 0)], {
+            var line = new maptalks.LineString([center.sub(0.001, 0), center.add(0.001, 0)], {
                 properties : { altitude : 20 },
                 symbol : {
                     'polygonFill' : '#f00'
@@ -73,6 +73,33 @@ describe('Geometry.Altitude', function () {
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, -2, [0, 0, 0]);
                 expect(layer).to.be.painted(0, -10, [0, 0, 0]);
+                done();
+            });
+            map.addLayer(layer);
+        });
+
+        it('draw altitude of line string with texts', function (done) {
+            map.setPitch(60);
+            map.config('centerCross', true);
+            var center = map.getCenter();
+            layer.config('drawAltitude', {
+                lineWidth : 5,
+                lineColor : '#000',
+                polygonFill : '#000'
+            });
+            var line = new maptalks.LineString([center, center.add(0.001, 0)], {
+                properties : { altitude : [0, 40] },
+                symbol : {
+                    'polygonFill' : '#f00',
+                    'textName' : '■■■■■■■■■',
+                    'textFill'  : '#f00',
+                    'textPlacement' : 'vertex'
+                }
+            });
+            layer.addGeometry(line);
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 1, [255, 0, 0]); // vertex text
+                expect(layer).to.be.painted(20, -10, [0, 0, 0]);
                 done();
             });
             map.addLayer(layer);
