@@ -9,10 +9,8 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
             return false;
         }
         const type = geometry.getJSONType();
-        const properties = geometry.getProperties();
-        // shoule be a point or linestring with valid altitude property
-        return (type === 'Marker' || type === 'LineString' || type === 'Polygon') &&
-            layer.options['drawAltitude'] && properties && properties[layer.options['altitudeProperty']];
+        // shoule be a point or linestring
+        return (type === 'Marker' || type === 'LineString');
     }
 
     constructor(symbol, geometry, painter) {
@@ -27,6 +25,14 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx) {
+        const layer = this.geometry.getLayer();
+        if (!layer.options['drawAltitude']) {
+            return;
+        }
+        const properties = this.geometry.getProperties();
+        if (!properties || !properties[layer.options['altitudeProperty']]) {
+            return;
+        }
         this._prepareContext(ctx);
         if (this.geometry.type === 'LineString') {
             const paintParams = this._getPaintParams();
