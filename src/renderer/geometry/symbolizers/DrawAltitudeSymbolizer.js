@@ -4,12 +4,15 @@ import Canvas from 'core/Canvas';
 
 export default class DrawAltitudeSymbolizer extends PointSymbolizer {
     static test(symbol, geometry) {
-        if (!geometry.getLayer()) {
+        const layer = geometry.getLayer();
+        if (!layer) {
             return false;
         }
         const type = geometry.getJSONType();
-        // shoule be a point or linestring
-        return (type === 'Marker' || type === 'LineString' || type === 'Polygon') && geometry.getLayer().options['drawAltitude'];
+        const properties = geometry.getProperties();
+        // shoule be a point or linestring with valid altitude property
+        return (type === 'Marker' || type === 'LineString' || type === 'Polygon') &&
+            layer.options['drawAltitude'] && properties && properties[layer.options['altitudeProperty']];
     }
 
     constructor(symbol, geometry, painter) {
