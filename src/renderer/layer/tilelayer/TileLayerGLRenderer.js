@@ -181,6 +181,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         this.posBuffer = this.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
         this.enableVertexAttrib(['a_position', 2]);
+
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     }
 
     resizeCanvas(canvasSize) {
