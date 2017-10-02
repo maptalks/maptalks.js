@@ -32,6 +32,8 @@ const POSITION0 = 'position:absolute;';
 /**
  * @classdesc
  * @deprecated
+ * THIS RENDERER IS NOT USED ANYMORE AND REPLACED BY GL RENDERER.
+ *
  * A renderer based on HTML Doms for TileLayers.
  * It is implemented based on Leaflet's GridLayer.
  *
@@ -110,8 +112,8 @@ class TileLayerDomRenderer extends Class {
             this._fadeAnimated = false;
             const tileZoom = this.layer._getTileZoom();
             if (map.isMoving()) {
-                const now = now();
-                if (this._renderTime && now - this._renderTime > this.layer.options['updateIntervalOnAnimating']) {
+                const nowTime = now();
+                if (this._renderTime && nowTime - this._renderTime > this.layer.options['updateIntervalOnAnimating']) {
                     this._abortLoading(false);
                     this._renderTiles();
                 } else {
