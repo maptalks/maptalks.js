@@ -118,19 +118,22 @@ const Eventable = Base =>
                 return this._switch('off', eventsOff, handler);
             }
             const eventTypes = eventsOff.split(' ');
-            let eventType, handlerChain;
+            let eventType, listeners, wrapKey;
             if (!context) {
                 context = this;
             }
             for (let j = 0, jl = eventTypes.length; j < jl; j++) {
                 eventType = eventTypes[j].toLowerCase();
-                handlerChain = this._eventMap[eventType];
-                if (!handlerChain) {
+                wrapKey = 'Z__' + eventType;
+                listeners = this._eventMap[eventType];
+                if (!listeners) {
                     return this;
                 }
-                for (let i = handlerChain.length - 1; i >= 0; i--) {
-                    if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
-                        handlerChain.splice(i, 1);
+                for (let i = listeners.length - 1; i >= 0; i--) {
+                    const listener = listeners[i];
+                    if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
+                        delete listener.handler[wrapKey];
+                        listeners.splice(i, 1);
                     }
                 }
             }
@@ -219,11 +222,13 @@ const Eventable = Base =>
 
         _wrapOnceHandler(evtType, handler, context) {
             const me = this;
+            const key = 'Z__' + evtType;
             let called = false;
-            return function onceHandler() {
+            const fn = function onceHandler() {
                 if (called) {
                     return;
                 }
+                delete fn[key];
                 called = true;
                 if (context) {
                     handler.apply(context, arguments);
@@ -232,6 +237,8 @@ const Eventable = Base =>
                 }
                 me.off(evtType, onceHandler, this);
             };
+            fn[key] = handler;
+            return fn;
         }
 
         _switch(to, eventKeys, context) {

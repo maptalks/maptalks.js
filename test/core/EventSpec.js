@@ -109,6 +109,21 @@ describe('EventSpec', function () {
         expect(counter).to.be.eql(2);
     });
 
+    it('once and off', function () {
+        var counter = 0;
+        var marker = new maptalks.Marker([0, 0]);
+        function listener() {
+            counter++;
+            expect(this).to.be.eql(marker);
+        }
+        marker.once('click mousedown', listener, marker);
+        marker.off('click mousedown', listener, marker);
+        marker.fire('click').fire('click');
+        marker.fire('mousedown').fire('mousedown');
+
+        expect(counter).to.be.eql(0);
+    });
+
     it('on by keys', function () {
         var counter = 0;
         var counter2 = 0;
