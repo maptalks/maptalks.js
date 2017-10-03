@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
-    <title>Class: BaiduSphere</title>
+    <title>Class: MapCanvasRenderer</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <body>
 
-<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: BaiduSphere</h1></div>
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: MapCanvasRenderer</h1></div>
 <div id="main" style="margin-top:77px;">
     
 
@@ -28,7 +28,7 @@
 
 <nav class="classnav scroll-styled">
 
-    <h5><a href="#main" style="color:#000">class : measurer.BaiduSphere</a></h5>
+    <h5><a href="#main" style="color:#000">class : MapCanvasRenderer</a></h5>
     
 
     
@@ -36,39 +36,49 @@
         
             
             
-            <h5>Static Methods</h5>
-            <ul>
-            
-            
-                <li><a href="#.measureLenBetween">
-            
-                measureLenBetween</a></li>
-        
             
             
             
-                <li><a href="#.measureArea">
-            
-                measureArea</a></li>
-        
             
             
-            
-                <li><a href="#.locate">
-            
-                locate</a></li>
-        
-            
-        
-            </ul>
         
         <h5>Methods</h5>
         <ul>
         
             
-                <li><a class="mixed" href="#measureLength">
+                <li><a href="#renderFrame">
             
-                measureLength</a></li>
+                renderFrame</a></li>
+        
+            
+                <li><a href="#_checkLayerRedraw">
+            
+                _checkLayerRedraw</a></li>
+        
+            
+                <li><a href="#drawLayerCanvas">
+            
+                drawLayerCanvas</a></li>
+        
+            
+                <li><a href="#initContainer">
+            
+                initContainer</a></li>
+        
+            
+                <li><a href="#isViewChanged">
+            
+                isViewChanged</a></li>
+        
+            
+                <li><a href="#_frameLoop">
+            
+                _frameLoop</a></li>
+        
+            
+                <li><a class="inherit" href="#offsetPlatform">
+            
+                offsetPlatform</a></li>
         
         </ul>
     
@@ -83,8 +93,9 @@
 
 <header>
     
-        <h2>
-            <span class="ancestors"><a href="measurer.html">measurer</a>.</span>BaiduSphere</h2>
+        <h2>MapCanvasRenderer</h2>
+        
+            <div class="class-description">Renderer class based on HTML5 Canvas for maps.</div>
         
     
 </header>
@@ -96,31 +107,23 @@
 
     <!-- <h2>Constructor</h2> -->
     
-    <li>
-    
-    <h4 class="name" id="BaiduSphere"><span class="type-signature">(protected) </span>new <a href="#BaiduSphere">measurer.BaiduSphere</a><span class="signature">()</span>
+    <h4 class="name" id="MapCanvasRenderer"><span class="type-signature">(protected) </span>new <a href="#MapCanvasRenderer">MapCanvasRenderer</a><span class="signature">(map)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L133" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L16" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L133" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L16" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#BaiduSphere" class="improvelink">[link]</a> -->
+    <!-- <a href="#MapCanvasRenderer" class="improvelink">[link]</a> -->
     </h4>
 
     
-    </li>
-    
     
 
 
 
-
-<div class="description">
-    Baidu sphere measurer
-</div>
 
 
 
@@ -130,22 +133,69 @@
 
 
 
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>map</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Map.html">Map</a></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">map for the renderer</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
 
 <!-- event properties -->
 
 
 
 
+    <h5>Extends:</h5>
+    
+
+
+    <ul>
+        <li><a href="renderer.MapRenderer.html">renderer.MapRenderer</a></li>
+    </ul>
 
 
 
-    <h5>Mixes From:</h5>
-    <ul><li>
-        
-            <a href="measurer.Common.html">measurer.Common</a>
-            
-        
-    </li></ul>
+
+
 
 
 
@@ -174,7 +224,18 @@
     
     </div>
 
-    <!--  -->
+    <!-- 
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="renderer.MapRenderer.html">renderer.MapRenderer</a></li>
+    </ul>
+
+
+     -->
 
     
 
@@ -188,449 +249,6 @@
 
     
         
-                    <h3 class="subsection-title">Static Methods</h3>
-                
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".measureLenBetween"><span class="type-signature">(static) </span><a href="#.measureLenBetween">measureLenBetween</a><span class="signature">(c1, c2)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L151" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L151" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.measureLenBetween" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Measure the length between 2 coordinates.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>c1</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>c2</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">Number</span>:
-
-        
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".measureArea"><span class="type-signature">(static) </span><a href="#.measureArea">measureArea</a><span class="signature">(coordinates)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L159" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L159" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.measureArea" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Measure the area closed by the given coordinates.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>coordinates</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="Coordinate.html">Coordinate</a>></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">number</span>:
-
-        
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".locate"><span class="type-signature">(static) </span><a href="#.locate">locate</a><span class="signature">(c, xDist, yDist)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L169" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L169" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.locate" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>c</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">source coordinate</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>xDist</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">x-axis distance</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>yDist</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">y-axis distance</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Coordinate.html">Coordinate</a></span>:
-
-        
-
-
-    
-
-
-<hr>
-        
 
         
                     <h3 class="subsection-title">Methods</h3>
@@ -641,16 +259,16 @@
     
     <li>
     
-    <h4 class="name" id="measureLength"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#measureLength">measureLength</a><span class="signature">(c1, c2)</span></i>
+    <h4 class="name" id="renderFrame"><span class="type-signature"></span><a href="#renderFrame">renderFrame</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Common.js#L8" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L36" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Common.js#L8" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L36" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#measureLength" class="improvelink">[link]</a> -->
+    <!-- <a href="#renderFrame" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -662,7 +280,90 @@
 
 
 <div class="description">
-    Measure length between coordinate c1 and coordinate c2
+    render layers in current frame
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Boolean</span>:
+
+        
+<!-- <div class="param-desc"> -->
+    return false to cease frame loop
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="_checkLayerRedraw"><span class="type-signature"></span><a href="#_checkLayerRedraw">_checkLayerRedraw</a><span class="signature">(layer)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L168" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L168" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#_checkLayerRedraw" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    check if need to call layer's draw/drawInteracting
 </div>
 
 
@@ -694,7 +395,7 @@
 
         <tr>
             
-                <td class="name"><code>c1</code>
+                <td class="name"><code>layer</code>
                 
                 </td>
             
@@ -702,7 +403,7 @@
             <td class="type">
             
                 
-<span class="param-type">coordinate</span>
+<span class="param-type"><a href="Layer.html">Layer</a></span>
 
 
             
@@ -710,30 +411,7 @@
 
             
 
-            <td class="description last">coordinate</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>c2</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">coordinate</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">coordinate</td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -749,14 +427,6 @@
 
 
 
-
-    <h5>Mixes From:</h5>
-    <ul><li>
-        
-            <a href="measurer.Common.html#.measureLength">measurer.Common.measureLength</a>
-            
-        
-    </li></ul>
 
 
 
@@ -780,13 +450,433 @@
 
 
 <h5>Returns:</h5>
-<span class="type-signature">Number</span>:
+<span class="type-signature">Boolean</span>:
 
         
-<!-- <div class="param-desc"> -->
-    length
-<!-- </div> -->
 
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="drawLayerCanvas"><span class="type-signature"></span><a href="#drawLayerCanvas">drawLayerCanvas</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L273" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L273" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#drawLayerCanvas" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Renders the layers
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="initContainer"><span class="type-signature"></span><a href="#initContainer">initContainer</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L428" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L428" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#initContainer" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    initialize container DOM of panels
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="isViewChanged"><span class="type-signature"></span><a href="#isViewChanged">isViewChanged</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L491" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L491" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#isViewChanged" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Is current map's state changed?
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Boolean</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="_frameLoop"><span class="type-signature"></span><a href="#_frameLoop">_frameLoop</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L531" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L531" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#_frameLoop" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Main frame loop
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="offsetPlatform"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#offsetPlatform">offsetPlatform</a><span class="signature">(offset)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapRenderer.js#L39" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapRenderer.js#L39" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#offsetPlatform" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Move map platform with offset
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>offset</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Point.html">Point</a></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="renderer.MapRenderer.html#offsetPlatform">renderer.MapRenderer#offsetPlatform</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">this</span>:
+
+        
 
 
     
@@ -815,7 +905,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Tue Oct 03 2017 23:01:04 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Tue Oct 03 2017 23:01:06 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>

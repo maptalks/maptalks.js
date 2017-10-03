@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
-    <title>Class: BaiduSphere</title>
+    <title>Class: TileLayerDomRenderer</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <body>
 
-<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: BaiduSphere</h1></div>
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: TileLayerDomRenderer</h1></div>
 <div id="main" style="margin-top:77px;">
     
 
@@ -28,7 +28,7 @@
 
 <nav class="classnav scroll-styled">
 
-    <h5><a href="#main" style="color:#000">class : measurer.BaiduSphere</a></h5>
+    <h5><a href="#main" style="color:#000">class : renderer.TileLayerDomRenderer</a></h5>
     
 
     
@@ -36,39 +36,31 @@
         
             
             
-            <h5>Static Methods</h5>
-            <ul>
             
             
-                <li><a href="#.measureLenBetween">
-            
-                measureLenBetween</a></li>
-        
-            
-            
-            
-                <li><a href="#.measureArea">
-            
-                measureArea</a></li>
-        
-            
-            
-            
-                <li><a href="#.locate">
-            
-                locate</a></li>
-        
-            
-        
-            </ul>
         
         <h5>Methods</h5>
         <ul>
         
             
-                <li><a class="mixed" href="#measureLength">
+                <li><a class="inherit" href="#callInitHooks">
             
-                measureLength</a></li>
+                callInitHooks</a></li>
+        
+            
+                <li><a class="inherit" href="#setOptions">
+            
+                setOptions</a></li>
+        
+            
+                <li><a class="inherit" href="#config">
+            
+                config</a></li>
+        
+            
+                <li><a class="inherit" href="#onConfig">
+            
+                onConfig</a></li>
         
         </ul>
     
@@ -84,7 +76,7 @@
 <header>
     
         <h2>
-            <span class="ancestors"><a href="measurer.html">measurer</a>.</span>BaiduSphere</h2>
+            <span class="ancestors"><a href="renderer.html">renderer</a>.</span>TileLayerDomRenderer</h2>
         
     
 </header>
@@ -98,16 +90,16 @@
     
     <li>
     
-    <h4 class="name" id="BaiduSphere"><span class="type-signature">(protected) </span>new <a href="#BaiduSphere">measurer.BaiduSphere</a><span class="signature">()</span>
+    <h4 class="name" id="TileLayerDomRenderer"><span class="type-signature">(protected) </span>new <a href="#TileLayerDomRenderer">renderer.TileLayerDomRenderer</a><span class="signature">(layer)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L133" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L46" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L133" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L46" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#BaiduSphere" class="improvelink">[link]</a> -->
+    <!-- <a href="#TileLayerDomRenderer" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -118,10 +110,6 @@
 
 
 
-<div class="description">
-    Baidu sphere measurer
-</div>
-
 
 
 
@@ -130,22 +118,69 @@
 
 
 
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="TileLayer.html">TileLayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">layer of the renderer</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
 
 <!-- event properties -->
 
 
 
 
+    <h5>Extends:</h5>
+    
+
+
+    <ul>
+        <li><a href="Class.html">Class</a></li>
+    </ul>
 
 
 
-    <h5>Mixes From:</h5>
-    <ul><li>
-        
-            <a href="measurer.Common.html">measurer.Common</a>
-            
-        
-    </li></ul>
+
+
 
 
 
@@ -174,7 +209,18 @@
     
     </div>
 
-    <!--  -->
+    <!-- 
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="Class.html">Class</a></li>
+    </ul>
+
+
+     -->
 
     
 
@@ -188,449 +234,6 @@
 
     
         
-                    <h3 class="subsection-title">Static Methods</h3>
-                
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".measureLenBetween"><span class="type-signature">(static) </span><a href="#.measureLenBetween">measureLenBetween</a><span class="signature">(c1, c2)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L151" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L151" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.measureLenBetween" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Measure the length between 2 coordinates.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>c1</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>c2</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">Number</span>:
-
-        
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".measureArea"><span class="type-signature">(static) </span><a href="#.measureArea">measureArea</a><span class="signature">(coordinates)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L159" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L159" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.measureArea" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Measure the area closed by the given coordinates.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>coordinates</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="Coordinate.html">Coordinate</a>></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">number</span>:
-
-        
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".locate"><span class="type-signature">(static) </span><a href="#.locate">locate</a><span class="signature">(c, xDist, yDist)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L169" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Sphere.js#L169" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.locate" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>c</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">source coordinate</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>xDist</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">x-axis distance</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>yDist</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">y-axis distance</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Coordinate.html">Coordinate</a></span>:
-
-        
-
-
-    
-
-
-<hr>
-        
 
         
                     <h3 class="subsection-title">Methods</h3>
@@ -641,16 +244,16 @@
     
     <li>
     
-    <h4 class="name" id="measureLength"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#measureLength">measureLength</a><span class="signature">(c1, c2)</span></i>
+    <h4 class="name" id="callInitHooks"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#callInitHooks">callInitHooks</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Common.js#L8" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L53" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/measurer/Common.js#L8" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L53" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#measureLength" class="improvelink">[link]</a> -->
+    <!-- <a href="#callInitHooks" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -662,7 +265,95 @@
 
 
 <div class="description">
-    Measure length between coordinate c1 and coordinate c2
+    Visit and call all the init hooks defined on Class and its parents.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#callInitHooks">Class#callInitHooks</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Class.html">Class</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="setOptions"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setOptions">setOptions</a><span class="signature">(options)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L64" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L64" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#setOptions" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Merges options with the default options of the object.
 </div>
 
 
@@ -694,7 +385,7 @@
 
         <tr>
             
-                <td class="name"><code>c1</code>
+                <td class="name"><code>options</code>
                 
                 </td>
             
@@ -702,7 +393,7 @@
             <td class="type">
             
                 
-<span class="param-type">coordinate</span>
+<span class="param-type">Object</span>
 
 
             
@@ -710,30 +401,7 @@
 
             
 
-            <td class="description last">coordinate</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>c2</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">coordinate</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">coordinate</td>
+            <td class="description last">options to set</td>
         </tr>
 
     
@@ -750,16 +418,13 @@
 
 
 
-    <h5>Mixes From:</h5>
+
+
+    <h5>Inherited From:</h5>    
     <ul><li>
-        
-            <a href="measurer.Common.html#.measureLength">measurer.Common.measureLength</a>
-            
-        
+        <a href="Class.html#setOptions">Class#setOptions</a>
     </li></ul>
-
-
-
+    
 
 
 
@@ -780,16 +445,233 @@
 
 
 <h5>Returns:</h5>
-<span class="type-signature">Number</span>:
+<span class="type-signature"><a href="Class.html">Class</a></span>:
 
         
 <!-- <div class="param-desc"> -->
-    length
+    this
 <!-- </div> -->
 
 
 
     
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="config"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#config">config</a><span class="signature">(conf)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L94" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L94" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#config" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    1. Return object's options if no parameter is provided. <br/>2. update an option and enable/disable the handler if a handler with the same name existed.
+</div>
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>// Get marker's options;var options = marker.config();// Set map's option "draggable" to false and disable map's draggable handler.map.config('draggable', false);// You can update more than one options like this:map.config({    'scrollWheelZoom' : false,    'doubleClickZoom' : false});</code></pre>
+    
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>conf</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">config to update</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#config">Class#config</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Class.html">Class</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="onConfig"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#onConfig">onConfig</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L129" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L129" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#onConfig" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Default callback when config is called
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#onConfig">Class#onConfig</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 <hr>
@@ -815,7 +697,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Tue Oct 03 2017 23:01:04 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Tue Oct 03 2017 23:01:06 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>

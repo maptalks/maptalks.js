@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
-    <title>Class: GeometryCollection</title>
+    <title>Class: MultiPath</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <body>
 
-<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: GeometryCollection</h1></div>
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: MultiPath</h1></div>
 <div id="main" style="margin-top:77px;">
     
 
@@ -28,7 +28,7 @@
 
 <nav class="classnav scroll-styled">
 
-    <h5><a href="#main" style="color:#000">class : GeometryCollection</a></h5>
+    <h5><a href="#main" style="color:#000">class : MultiPath</a></h5>
     
         <h5>Members</h5>
         <ul>
@@ -113,52 +113,70 @@
             
             
             
+            
+            
+            
         
         <h5>Methods</h5>
         <ul>
         
             
-                <li><a href="#setGeometries">
+                <li><a href="#getCenterInExtent">
+            
+                getCenterInExtent</a></li>
+        
+            
+                <li><a class="inherit" href="#getCoordinates">
+            
+                getCoordinates</a></li>
+        
+            
+                <li><a class="inherit" href="#setCoordinates">
+            
+                setCoordinates</a></li>
+        
+            
+                <li><a class="inherit" href="#setGeometries">
             
                 setGeometries</a></li>
         
             
-                <li><a href="#getGeometries">
+                <li><a class="inherit" href="#getGeometries">
             
                 getGeometries</a></li>
         
             
-                <li><a href="#forEach">
+                <li><a class="inherit" href="#forEach">
             
                 forEach</a></li>
         
             
-                <li><a href="#filter">
+                <li><a class="inherit" href="#filter">
             
                 filter</a></li>
         
             
-                <li><a href="#translate">
+                <li><a class="inherit" href="#translate">
             
                 translate</a></li>
         
             
-                <li><a href="#isEmpty">
+                <li><a class="inherit" href="#isEmpty">
             
                 isEmpty</a></li>
         
             
-                <li><a href="#remove">
+                <li><a class="inherit" href="#remove">
             
                 remove</a></li>
         
             
-                <li><a href="#show">
+                <li><a class="inherit" href="#show">
             
                 show</a></li>
         
             
-                <li><a href="#hide">
+                <li><a class="inherit" href="#hide">
             
                 hide</a></li>
         
@@ -559,9 +577,9 @@
 
 <header>
     
-        <h2>GeometryCollection</h2>
+        <h2>MultiPath</h2>
         
-            <div class="class-description">Represents a GeometryCollection.</div>
+            <div class="class-description">An abstract class for MultiPolygon and MultiLineString</div>
         
     
 </header>
@@ -573,16 +591,16 @@
 
     <!-- <h2>Constructor</h2> -->
     
-    <h4 class="name" id="GeometryCollection"><span class="type-signature"></span>new <a href="#GeometryCollection">GeometryCollection</a><span class="signature">(geometries, options<span class="signature-attributes">opt</span>)</span>
+    <h4 class="name" id="MultiPath"><span class="type-signature"></span>new <a href="#MultiPath">MultiPath</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L19" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiPath.js#L10" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L19" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiPath.js#L10" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#GeometryCollection" class="improvelink">[link]</a> -->
+    <!-- <a href="#MultiPath" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -592,108 +610,11 @@
 
 
 
-    <!--<h5>Example:</h5>-->
-    
-    
-        <pre class="prettyprint"><code>var marker = new Marker([0, 0]),    line = new LineString([[0, 0], [0, 1]]),    polygon = new Polygon([[0, 0], [0, 1], [1, 3]]);var collection = new GeometryCollection([marker, line, polygon])    .addTo(layer);</code></pre>
-    
-
-
 
 
 <!--  -->
 
 
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>geometries</code>
-                
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="Geometry.html">Geometry</a>></span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">GeometryCollection's geometries</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">options defined in <a href="GeometryCollection.html#options">nGeometryCollection</a></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -707,7 +628,7 @@
 
 
     <ul>
-        <li><a href="Geometry.html">Geometry</a></li>
+        <li><a href="MultiGeometry.html">MultiGeometry</a></li>
     </ul>
 
 
@@ -816,7 +737,7 @@
 
 
     <ul>
-        <li><a href="Geometry.html">Geometry</a></li>
+        <li><a href="MultiGeometry.html">MultiGeometry</a></li>
     </ul>
 
 
@@ -1381,7 +1302,374 @@
     
     <li>
     
-    <h4 class="name" id="setGeometries"><span class="type-signature"></span><a href="#setGeometries">setGeometries</a><span class="signature">(geometries)</span>
+    <h4 class="name" id="getCenterInExtent"><span class="type-signature"></span><a href="#getCenterInExtent">getCenterInExtent</a><span class="signature">(extent)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiPath.js#L20" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiPath.js#L20" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getCenterInExtent" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get center of (MultiLineString or MultiPolygon)'s intersection with give extent
+</div>
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>const extent = map.getExtent(); const center = geometry.getCenterInExtent(extent);</code></pre>
+    
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>extent</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Extent.html">Extent</a></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Coordinate.html">Coordinate</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    center, null if line doesn't intersect with extent
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getCoordinates"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getCoordinates">getCoordinates</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiGeometry.js#L29" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiGeometry.js#L29" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getCoordinates" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get coordinates of the collection
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="MultiGeometry.html#getCoordinates">MultiGeometry#getCoordinates</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Array.&lt;<a href="Coordinate.html">Coordinate</a>>|Array.&lt;Array.&lt;<a href="Coordinate.html">Coordinate</a>>>|Array.&lt;Array.&lt;Array.&lt;<a href="Coordinate.html">Coordinate</a>>>></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    coordinates
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="setCoordinates"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setCoordinates">setCoordinates</a><span class="signature">(coordinates)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiGeometry.js#L44" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/MultiGeometry.js#L44" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#setCoordinates" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Set new coordinates to the collection
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>coordinates</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="Coordinate.html">Coordinate</a>></span>
+|
+
+<span class="param-type">Array.&lt;Array.&lt;<a href="Coordinate.html">Coordinate</a>>></span>
+|
+
+<span class="param-type">Array.&lt;Array.&lt;Array.&lt;<a href="Coordinate.html">Coordinate</a>>>></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="MultiGeometry.html#setCoordinates">MultiGeometry#setCoordinates</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="#event:shapechange">shapechange</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Geometry.html">Geometry</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="setGeometries"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setGeometries">setGeometries</a><span class="signature">(geometries)</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L37" class="improvelink">[source]</a>
@@ -1469,6 +1757,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#setGeometries">GeometryCollection#setGeometries</a>
+    </li></ul>
+    
 
 
 
@@ -1514,7 +1807,7 @@
     
     <li>
     
-    <h4 class="name" id="getGeometries"><span class="type-signature"></span><a href="#getGeometries">getGeometries</a><span class="signature">()</span>
+    <h4 class="name" id="getGeometries"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getGeometries">getGeometries</a><span class="signature">()</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L62" class="improvelink">[source]</a>
@@ -1557,6 +1850,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#getGeometries">GeometryCollection#getGeometries</a>
+    </li></ul>
+    
 
 
 
@@ -1597,7 +1895,7 @@
     
     <li>
     
-    <h4 class="name" id="forEach"><span class="type-signature"></span><a href="#forEach">forEach</a><span class="signature">(fn, context<span class="signature-attributes">opt</span>)</span>
+    <h4 class="name" id="forEach"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#forEach">forEach</a><span class="signature">(fn, context<span class="signature-attributes">opt</span>)</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L72" class="improvelink">[source]</a>
@@ -1718,6 +2016,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#forEach">GeometryCollection#forEach</a>
+    </li></ul>
+    
 
 
 
@@ -1758,7 +2061,7 @@
     
     <li>
     
-    <h4 class="name" id="filter"><span class="type-signature"></span><a href="#filter">filter</a><span class="signature">(fn, context<span class="signature-attributes">opt</span>)</span>
+    <h4 class="name" id="filter"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#filter">filter</a><span class="signature">(fn, context<span class="signature-attributes">opt</span>)</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L97" class="improvelink">[source]</a>
@@ -1890,6 +2193,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#filter">GeometryCollection#filter</a>
+    </li></ul>
+    
 
 
 
@@ -1930,7 +2238,7 @@
     
     <li>
     
-    <h4 class="name" id="translate"><span class="type-signature"></span><a href="#translate">translate</a><span class="signature">(offset)</span>
+    <h4 class="name" id="translate"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#translate">translate</a><span class="signature">(offset)</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L120" class="improvelink">[source]</a>
@@ -2018,6 +2326,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#translate">GeometryCollection#translate</a>
+    </li></ul>
+    
 
 
 
@@ -2058,7 +2371,7 @@
     
     <li>
     
-    <h4 class="name" id="isEmpty"><span class="type-signature"></span><a href="#isEmpty">isEmpty</a><span class="signature">()</span>
+    <h4 class="name" id="isEmpty"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#isEmpty">isEmpty</a><span class="signature">()</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L140" class="improvelink">[source]</a>
@@ -2101,6 +2414,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#isEmpty">GeometryCollection#isEmpty</a>
+    </li></ul>
+    
 
 
 
@@ -2137,7 +2455,7 @@
     
     <li>
     
-    <h4 class="name" id="remove"><span class="type-signature"></span><a href="#remove">remove</a><span class="signature">()</span>
+    <h4 class="name" id="remove"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#remove">remove</a><span class="signature">()</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L151" class="improvelink">[source]</a>
@@ -2180,6 +2498,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#remove">GeometryCollection#remove</a>
+    </li></ul>
+    
 
 
 
@@ -2229,7 +2552,7 @@
     
     <li>
     
-    <h4 class="name" id="show"><span class="type-signature"></span><a href="#show">show</a><span class="signature">()</span>
+    <h4 class="name" id="show"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#show">show</a><span class="signature">()</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L163" class="improvelink">[source]</a>
@@ -2272,6 +2595,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#show">GeometryCollection#show</a>
+    </li></ul>
+    
 
 
 
@@ -2317,7 +2645,7 @@
     
     <li>
     
-    <h4 class="name" id="hide"><span class="type-signature"></span><a href="#hide">hide</a><span class="signature">()</span>
+    <h4 class="name" id="hide"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#hide">hide</a><span class="signature">()</span></i>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geometry/GeometryCollection.js#L176" class="improvelink">[source]</a>
@@ -2360,6 +2688,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="GeometryCollection.html#hide">GeometryCollection#hide</a>
+    </li></ul>
+    
 
 
 
@@ -2994,6 +3327,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Geometry.html#startEdit">Geometry#startEdit</a>
+    </li></ul>
+    
 
 
 
@@ -3077,6 +3415,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Geometry.html#endEdit">Geometry#endEdit</a>
+    </li></ul>
+    
 
 
 
@@ -3336,6 +3679,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Geometry.html#isEditing">Geometry#isEditing</a>
+    </li></ul>
+    
 
 
 
@@ -5037,6 +5385,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Geometry.html#getSymbol">Geometry#getSymbol</a>
+    </li></ul>
+    
 
 
 
@@ -5165,6 +5518,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Geometry.html#setSymbol">Geometry#setSymbol</a>
+    </li></ul>
+    
 
 
 
@@ -10735,6 +11093,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#onConfig">Class#onConfig</a>
+    </li></ul>
+    
 
 
 
