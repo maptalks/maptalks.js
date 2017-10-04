@@ -24,7 +24,7 @@ module.exports = function (config) {
         plugins.splice(idx, 1, babel({
             plugins: [['istanbul', {
                 // TileLayerGLRenderer is not testable on CI
-                exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'src/renderer/layer/tilelayer/TileLayerGLRenderer', 'node_modules/**/*']
+                exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'src/renderer/layer/tilelayer/TileLayerGLRenderer.js', 'node_modules/**/*']
             }]]
         }));
     }
