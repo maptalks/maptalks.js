@@ -23,7 +23,8 @@ module.exports = function (config) {
         const babel = require('maptalks-rollup-plugin-babel');
         plugins.splice(idx, 1, babel({
             plugins: [['istanbul', {
-                exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'node_modules/**/*']
+                // TileLayerGLRenderer is not testable on CI
+                exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'src/renderer/layer/tilelayer/TileLayerGLRenderer', 'node_modules/**/*']
             }]]
         }));
     }

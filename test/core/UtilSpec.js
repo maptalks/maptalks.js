@@ -26,6 +26,13 @@ describe('Util', function () {
         expect(maptalks.Util.sign(2)).to.be.eql(1);
     });
 
+    it('now', function () {
+        var now = Date.now();
+        var now2 = maptalks.Util.now();
+
+        expect(now2 >= now).to.be.ok();
+    });
+
     it('getSymbolStamp', function () {
         var symbol = {
             'markerType' : 'ellipse',
