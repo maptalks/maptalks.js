@@ -4,9 +4,11 @@ import TileLayer from './TileLayer';
 
 /**
  * @classdesc
- * A layer used to display a group of tile layers
+ * A layer used to display a group of tile layers. <br>
+ * Its performance is better than add TileLayers seperately and it can prevent the warning: <br>
+ * "WARNING: Too many active WebGL contexts. Oldest context will be lost" on chrome
  * @category layer
- * @extends Layer
+ * @extends TileLayer
  * @param {String|Number} id - tile layer's id
  * @param {Object} [options=null] - options defined in [TileLayer]{@link TileLayer#options}
  * @example
@@ -41,6 +43,12 @@ class GroupTileLayer extends TileLayer {
         return new GroupTileLayer(layerJSON['id'], layers, layerJSON['options']);
     }
 
+    /**
+     * @param {String|Number} id    - layer's id
+     * @param {TileLayer[]} layers  - TileLayers to add
+     * @param {Object}  [options=null]          - construct options
+     * @param {*}  [options.*=null]             - options defined in [TileLayer]{@link TileLayer#options}
+     */
     constructor(id, layers, options) {
         super(id, options);
         this.layers = layers || [];
@@ -55,7 +63,7 @@ class GroupTileLayer extends TileLayer {
     }
 
     /**
-     * Export the tile layer's profile json. <br>
+     * Export the GroupTileLayer's profile json. <br>
      * Layer's profile is a snapshot of the layer in JSON format. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
      * @return {Object} layer's profile JSON
