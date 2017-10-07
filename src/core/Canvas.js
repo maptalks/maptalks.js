@@ -254,7 +254,6 @@ const Canvas = {
     },
 
     text(ctx, text, pt, style, textDesc) {
-        // pt = pt.add(new Point(style['textDx'], style['textDy']));
         Canvas._textOnMultiRow(ctx, textDesc['rows'], style, pt, textDesc['size'], textDesc['rawSize']);
     },
 

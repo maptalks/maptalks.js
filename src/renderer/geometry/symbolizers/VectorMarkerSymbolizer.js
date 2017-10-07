@@ -277,9 +277,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerWidth': getValueOrDefault(s['markerWidth'], 10),
             'markerHeight': getValueOrDefault(s['markerHeight'], 10),
 
-            'markerDx': getValueOrDefault(s['markerDx'], 0),
-            'markerDy': getValueOrDefault(s['markerDy'], 0),
-
             'markerRotation' : getValueOrDefault(s['markerRotation'], 0)
         };
         //markerOpacity覆盖fillOpacity和lineOpacity

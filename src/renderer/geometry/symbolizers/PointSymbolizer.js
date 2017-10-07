@@ -20,6 +20,10 @@ class PointSymbolizer extends CanvasSymbolizer {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
+        this.dxdy = this._defineStyle({
+            'dx' : symbol['textDx'] || symbol['markerDx'],
+            'dy' : symbol['textDy'] || symbol['markerDy']
+        });
     }
 
     get2DExtent() {
@@ -34,10 +38,8 @@ class PointSymbolizer extends CanvasSymbolizer {
     }
 
     getDxDy() {
-        const s = this.symbol;
-        const dx = s['markerDx'] || 0;
-        const dy = s['markerDy'] || 0;
-        return new Point(dx, dy);
+        const s = this.dxdy;
+        return new Point(s['dx'] || 0, s['dy'] || 0);
     }
 
     _getRenderPoints() {

@@ -1,4 +1,4 @@
-describe('#Marker', function () {
+describe('Geometry.Marker', function () {
 
     var container;
     var map;
@@ -289,7 +289,28 @@ describe('#Marker', function () {
                 expect(layer).to.be.painted(4, 0);
                 done();
             });
+        });
 
+        it('vector marker\'s dx, dy with zoom', function (done) {
+            map.config('zoomAnimation', false);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : 10,
+                    markerHeight : 10,
+                    markerDx : { stops: [[7, 8], [14, 20]] },
+                    markerDy : { stops: [[7, 8], [14, 20]] }
+                }
+            });
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            layer.addGeometry([marker]);
+            expect(layer).to.be.painted(21, 21);
+            map.setZoom(7);
+            map.on('renderend', function () {
+                expect(layer).not.to.be.painted(21, 21);
+                expect(layer).to.be.painted(13, 9);
+                done();
+            });
         });
 
         it('text marker\'s size changes with zoom', function (done) {
@@ -312,6 +333,34 @@ describe('#Marker', function () {
                     expect(layer).to.be.painted(20, 0);
                 } else {
                     expect(layer).to.be.painted(30, 0);
+                }
+
+                done();
+            });
+        });
+
+        it('text dx dy changes with zoom', function (done) {
+            map.config('zoomAnimation', false);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    textName : '■■■■■■■■■',
+                    textSize : 20,
+                    textFill : '#000',
+                    textDx : { stops: [[7, 8], [14, 20]] },
+                    textDy : { stops: [[7, 8], [14, 20]] }
+                }
+            });
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            layer.addGeometry([marker]);
+            expect(layer).to.be.painted(72, 20);
+            map.setZoom(7);
+            map.on('renderend', function () {
+                expect(layer).not.to.be.painted(72, 20);
+                if (maptalks.Browser.ie) {
+                    // font is smaller with ie
+                    expect(layer).to.be.painted(10, 12);
+                } else {
+                    expect(layer).to.be.painted(10, 12);
                 }
 
                 done();

@@ -12,6 +12,7 @@ import Map from 'map/Map';
  * @class
  * @protected
  * @extends {renderer.MapRenderer}
+ * @memberOf renderer
  */
 class MapCanvasRenderer extends MapRenderer {
     /**
