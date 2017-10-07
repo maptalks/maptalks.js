@@ -128,6 +128,10 @@ export default class SpatialReference {
             fullExtent['bottom'] = fullExtent['ymin'];
         }
 
+        if (isNil(fullExtent['top']) || isNil(fullExtent['bottom']) || isNil(fullExtent['left']) || isNil(fullExtent['right'])) {
+            throw new Error('must provide valid top/bottom/left/right in fullExtent.');
+        }
+
         //set left, right, top, bottom value
         extend(this._fullExtent, fullExtent);
 
