@@ -97,11 +97,12 @@ class TileLayer extends Layer {
     }
 
     /**
-     * Get tile descriptors
+     * Get tiles at zoom z (or current zoom)
+     * @param {Number} z - zoom
      * @return {Object[]} tile descriptors
      */
-    getTiles() {
-        return this._getTiles();
+    getTiles(z) {
+        return this._getTiles(z);
     }
 
     /**
@@ -200,7 +201,7 @@ class TileLayer extends Layer {
             left = Math.ceil(Math.abs(center2d.x - extent2d.xmin - offset.x) / width) + keepBuffer,
             bottom = Math.ceil(Math.abs(extent2d.ymax - center2d.y + offset.y) / height) + keepBuffer,
             right = Math.ceil(Math.abs(extent2d.xmax - center2d.x + offset.x) / width) + keepBuffer;
-
+        const layerId = this.getId();
         const tiles = [];
         for (let i = -(left); i < right; i++) {
             for (let j = -(top); j < bottom; j++) {
@@ -208,7 +209,7 @@ class TileLayer extends Layer {
                     vp = new Point(centerVP.x + width * i, centerVP.y + height * j),
                     idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
                     url = this.getTileUrl(idx['x'], idx['y'], zoom),
-                    id = [idx['idy'], idx['idx'], zoom].join('__'),
+                    id = [layerId, idx['idy'], idx['idx'], zoom].join('__'),
                     desc = {
                         'url': url,
                         'point': p,

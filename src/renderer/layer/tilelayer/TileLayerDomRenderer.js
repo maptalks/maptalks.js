@@ -136,8 +136,8 @@ class TileLayerDomRenderer extends Class {
 
                     const nextZoom = this._curAnimZoom + gap * s;
                     if (nextZoom !== this._tileZoom && nextZoom >= this._endZoom) {
-                        const curTilesCount = this.layer._getTiles().tiles.length;
-                        const nextGrid = this.layer._getTiles(nextZoom);
+                        const curTilesCount = this.layer.getTiles().tiles.length;
+                        const nextGrid = this.layer.getTiles(nextZoom);
                         this._preloadTiles(nextGrid.tiles.slice(0, curTilesCount));
                     }
                 } else {
@@ -217,7 +217,7 @@ class TileLayerDomRenderer extends Class {
         if (!this._container) {
             this._createLayerContainer();
         }
-        const tileGrid = this.layer._getTiles(escapeTileLoading ? this._tileZoom : undefined);
+        const tileGrid = this.layer.getTiles(escapeTileLoading ? this._tileZoom : undefined);
         if (!tileGrid || tileGrid.tiles.length === 0) {
             return;
         }

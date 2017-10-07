@@ -43,7 +43,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (this._mapView && equalView) {
             tileGrid = this._preTileGrid;
         } else {
-            tileGrid = this._preTileGrid = layer._getTiles();
+            tileGrid = this._preTileGrid = layer.getTiles();
             if (!tileGrid) {
                 this.completeRender();
                 return;

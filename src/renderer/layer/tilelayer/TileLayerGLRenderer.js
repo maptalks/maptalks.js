@@ -158,6 +158,10 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         const gl = this.gl;
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.STENCIL_TEST);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
         this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'], ['u_matrix', 'u_image', 'u_opacity']);
         this.useProgram(this.program);
 

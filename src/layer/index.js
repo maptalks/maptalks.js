@@ -1,5 +1,6 @@
 import Layer from './Layer';
 import TileLayer from './tile/TileLayer';
+import GroupTileLayer from './tile/GroupTileLayer';
 import WMSTileLayer from './tile/WMSTileLayer';
 import CanvasTileLayer from './tile/CanvasTileLayer';
 import OverlayLayer from './OverlayLayer';
@@ -12,6 +13,7 @@ import TileConfig from './tile/tileinfo/TileConfig';
 export {
     Layer,
     TileLayer,
+    GroupTileLayer,
     WMSTileLayer,
     CanvasTileLayer,
     OverlayLayer,
