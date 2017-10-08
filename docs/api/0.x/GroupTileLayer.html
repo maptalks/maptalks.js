@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
-    <title>Class: VectorLayer</title>
+    <title>Class: GroupTileLayer</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <body>
 
-<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: VectorLayer</h1></div>
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: GroupTileLayer</h1></div>
 <div id="main" style="margin-top:77px;">
     
 
@@ -28,7 +28,7 @@
 
 <nav class="classnav scroll-styled">
 
-    <h5><a href="#main" style="color:#000">class : VectorLayer</a></h5>
+    <h5><a href="#main" style="color:#000">class : GroupTileLayer</a></h5>
     
         <h5>Members</h5>
         <ul>
@@ -82,39 +82,14 @@
             
             
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
         
         <h5>Methods</h5>
         <ul>
         
             
-                <li><a href="#getStyle">
+                <li><a href="#getLayers">
             
-                getStyle</a></li>
-        
-            
-                <li><a href="#setStyle">
-            
-                setStyle</a></li>
-        
-            
-                <li><a href="#removeStyle">
-            
-                removeStyle</a></li>
+                getLayers</a></li>
         
             
                 <li><a href="#toJSON">
@@ -122,84 +97,19 @@
                 toJSON</a></li>
         
             
-                <li><a class="inherit" href="#getGeometryById">
+                <li><a href="#getTiles">
             
-                getGeometryById</a></li>
+                getTiles</a></li>
         
             
-                <li><a class="inherit" href="#getGeometries">
+                <li><a class="inherit" href="#getTileSize">
             
-                getGeometries</a></li>
-        
-            
-                <li><a class="inherit" href="#getFirstGeometry">
-            
-                getFirstGeometry</a></li>
-        
-            
-                <li><a class="inherit" href="#getLastGeometry">
-            
-                getLastGeometry</a></li>
-        
-            
-                <li><a class="inherit" href="#getCount">
-            
-                getCount</a></li>
-        
-            
-                <li><a class="inherit" href="#getExtent">
-            
-                getExtent</a></li>
-        
-            
-                <li><a class="inherit" href="#forEach">
-            
-                forEach</a></li>
-        
-            
-                <li><a class="inherit" href="#filter">
-            
-                filter</a></li>
-        
-            
-                <li><a class="inherit" href="#isEmpty">
-            
-                isEmpty</a></li>
-        
-            
-                <li><a class="inherit" href="#addGeometry">
-            
-                addGeometry</a></li>
-        
-            
-                <li><a class="inherit" href="#getGeoMinZIndex">
-            
-                getGeoMinZIndex</a></li>
-        
-            
-                <li><a class="inherit" href="#getGeoMaxZIndex">
-            
-                getGeoMaxZIndex</a></li>
-        
-            
-                <li><a class="inherit" href="#removeGeometry">
-            
-                removeGeometry</a></li>
+                getTileSize</a></li>
         
             
                 <li><a class="inherit" href="#clear">
             
                 clear</a></li>
-        
-            
-                <li><a class="inherit" href="#onRemoveGeometry">
-            
-                onRemoveGeometry</a></li>
-        
-            
-                <li><a class="inherit" href="#identify">
-            
-                identify</a></li>
         
             
                 <li><a class="inherit" href="#load">
@@ -388,15 +298,13 @@
         <h5>Events</h5>
         <ul>
         
-            <li><a href="#event:setstyle">setstyle</a></li>
-        
-            <li><a href="#event:removestyle">removestyle</a></li>
-        
-            <li><a href="#event:addgeo">addgeo</a></li>
-        
-            <li><a href="#event:removegeo">removegeo</a></li>
-        
             <li><a href="#event:clear">clear</a></li>
+        
+            <li><a href="#event:tileerror">tileerror</a></li>
+        
+            <li><a href="#event:tileload">tileload</a></li>
+        
+            <li><a href="#event:tileunload">tileunload</a></li>
         
             <li><a href="#event:idchange">idchange</a></li>
         
@@ -419,9 +327,9 @@
 
 <header>
     
-        <h2>VectorLayer</h2>
+        <h2>GroupTileLayer</h2>
         
-            <div class="class-description">A layer for managing and rendering geometries.</div>
+            <div class="class-description">A layer used to display a group of tile layers. <br>Its performance is better than add TileLayers seperately and it can prevent the warning: <br>"WARNING: Too many active WebGL contexts. Oldest context will be lost" on chrome</div>
         
     
 </header>
@@ -433,16 +341,16 @@
 
     <!-- <h2>Constructor</h2> -->
     
-    <h4 class="name" id="VectorLayer"><span class="type-signature"></span>new <a href="#VectorLayer">VectorLayer</a><span class="signature">(id, geometries<span class="signature-attributes">opt</span>, options<span class="signature-attributes">opt</span>)</span>
+    <h4 class="name" id="GroupTileLayer"><span class="type-signature"></span>new <a href="#GroupTileLayer">GroupTileLayer</a><span class="signature">(id, options<span class="signature-attributes">opt</span>)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L39" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L29" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L39" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L29" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#VectorLayer" class="improvelink">[link]</a> -->
+    <!-- <a href="#GroupTileLayer" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -450,6 +358,15 @@
 
 
 
+
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>new GroupTileLayer("group-tiles",{     tiles : [         {             urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',             subdomains:['a','b','c']         },         {             urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',             subdomains:['a','b','c']         }     ]
+
+    })</code></pre>
+    
 
 
 
@@ -509,45 +426,7 @@
                 </td>
             
 
-            <td class="description last">layer's id</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>geometries</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Geometry.html">Geometry</a></span>
-|
-
-<span class="param-type">Array.&lt;<a href="Geometry.html">Geometry</a>></span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">geometries to add</td>
+            <td class="description last">tile layer's id</td>
         </tr>
 
     
@@ -582,102 +461,7 @@
                 </td>
             
 
-            <td class="description last">construct options
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>style</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">vectorlayer's style</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>*</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">options defined in <a href="VectorLayer.html#options">VectorLayer</a></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last">options defined in <a href="TileLayer.html#options">TileLayer</a></td>
         </tr>
 
     
@@ -696,7 +480,7 @@
 
 
     <ul>
-        <li><a href="OverlayLayer.html">OverlayLayer</a></li>
+        <li><a href="TileLayer.html">TileLayer</a></li>
     </ul>
 
 
@@ -716,15 +500,13 @@
 
 <h5>Fires:</h5>
 <ul>
-    <li><a href="#event:setstyle">setstyle</a></li>
-
-    <li><a href="#event:removestyle">removestyle</a></li>
-
-    <li><a href="#event:addgeo">addgeo</a></li>
-
-    <li><a href="#event:removegeo">removegeo</a></li>
-
     <li><a href="#event:clear">clear</a></li>
+
+    <li><a href="#event:tileerror">tileerror</a></li>
+
+    <li><a href="#event:tileload">tileload</a></li>
+
+    <li><a href="#event:tileunload">tileunload</a></li>
 
     <li><a href="#event:idchange">idchange</a></li>
 
@@ -761,7 +543,7 @@
 
 
     <ul>
-        <li><a href="OverlayLayer.html">OverlayLayer</a></li>
+        <li><a href="TileLayer.html">TileLayer</a></li>
     </ul>
 
 
@@ -784,7 +566,7 @@
 <h4 class="name" id="options"><span class="type-signature">(constant) </span>options<span class="type-signature"></span>
 
 <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L21" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L27" class="improvelink">[help to improve]</a>
     
     <a href="#options" class="improvelink">[link]</a></h4> -->
 </li>
@@ -798,6 +580,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="TileLayer.html#options">TileLayer#options</a>
+    </li></ul>
+    
 
 
 
@@ -846,7 +633,7 @@
 
             
 
-            <td class="description last">VectorLayer's options
+            <td class="description last">TileLayer's options
                 <h6>Properties</h6>
 
 <table class="props">
@@ -873,77 +660,7 @@
 
         <tr>
             
-                <td class="name"><code>debug</code>
-                    
-                        
-                        
-
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">whether the geometries on the layer is in debug mode.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>enableSimplify</code>
-                    
-                        
-                        
-
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-
-
-            
-                <td class="default">
-                
-                    true
-                
-                </td>
-            
-
-            <td class="description last">whether to simplify geometries before rendering.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cursor</code>
+                <td class="name"><code>urlTemplate</code>
                     
                         
                         
@@ -966,20 +683,60 @@
             
                 <td class="default">
                 
-                    default
-                
                 </td>
             
 
-            <td class="description last">the cursor style of the layer</td>
+            <td class="description last">url templates</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>geometryEvents</code>
+                <td class="name"><code>subdomains</code>
                     
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;String></span>
+|
+
+<span class="param-type">Array.&lt;Number></span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">subdomains to replace '{s}' in urlTemplate</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>repeatWorld</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
                         
                         
 
@@ -1006,15 +763,165 @@
                 </td>
             
 
-            <td class="description last">enable/disable firing geometry events, disable it to improve performance.</td>
+            <td class="description last">tiles will be loaded repeatedly outside the world.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>defaultIconSize</code>
+                <td class="name"><code>fragmentShader</code>
                     
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>crossOrigin</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">tile image's corssOrigin</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tileSize</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Number></span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    [256, 256]
+                
+                </td>
+            
+
+            <td class="description last">size of the tile image, [width, height]</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tileSystem</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Number></span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">tile system number arrays</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fadeAnimation</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
                         
                         
 
@@ -1036,19 +943,19 @@
             
                 <td class="default">
                 
-                    [20,20
+                    true
                 
                 </td>
             
 
-            <td class="description last">default size of a marker's icon</td>
+            <td class="description last">fade animation when loading tiles</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>enableAltitude</code>
+                <td class="name"><code>debug</code>
                     
                         
                            <span class="signature-attributes">opt</span>
@@ -1078,14 +985,14 @@
                 </td>
             
 
-            <td class="description last">whether to enable render geometry with altitude, false by default</td>
+            <td class="description last">if set to true, tiles will have borders and a title of its coordinates.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>altitudeProperty</code>
+                <td class="name"><code>cacheTiles</code>
                     
                         
                            <span class="signature-attributes">opt</span>
@@ -1110,19 +1017,19 @@
             
                 <td class="default">
                 
-                    altitude
+                    true
                 
                 </td>
             
 
-            <td class="description last">geometry's altitude property name, if enableAltitude is true, "altitude" by default</td>
+            <td class="description last">whether cache tiles</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>drawAltitude</code>
+                <td class="name"><code>renderOnMoving</code>
                     
                         
                            <span class="signature-attributes">opt</span>
@@ -1152,7 +1059,44 @@
                 </td>
             
 
-            <td class="description last">whether to draw altitude: a vertical line for marker, a vertical polygon for line</td>
+            <td class="description last">whether render layer when moving map</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>renderer</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    gl
+                
+                </td>
+            
+
+            <td class="description last">TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.</td>
         </tr>
 
     
@@ -1307,43 +1251,6 @@
 
         <tr>
             
-                <td class="name"><code>renderer</code>
-                    
-                        
-                           <span class="signature-attributes">opt</span>
-                        
-                        
-
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-
-
-            
-                <td class="default">
-                
-                    canvas
-                
-                </td>
-            
-
-            <td class="description last">renderer type, "canvas" in default.</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>drawImmediate</code>
                     
                         
@@ -1471,12 +1378,12 @@
     
 
     
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="OverlayLayer.html#options">OverlayLayer#options</a>
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TileLayer.html#options">TileLayer#options</a>
     </li></ul></dd>
+    
+
     
 
     
@@ -1499,7 +1406,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js">layer/VectorLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L21">line 21</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js">layer/tile/TileLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L27">line 27</a>
         
 
     </li></ul></dd>
@@ -1533,16 +1440,16 @@
     
     <li>
     
-    <h4 class="name" id="getStyle"><span class="type-signature"></span><a href="#getStyle">getStyle</a><span class="signature">()</span>
+    <h4 class="name" id="getLayers"><span class="type-signature"></span><a href="#getLayers">getLayers</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L61" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L61" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L61" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L61" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#getStyle" class="improvelink">[link]</a> -->
+    <!-- <a href="#getLayers" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -1554,7 +1461,7 @@
 
 
 <div class="description">
-    Gets layer's style.
+    Get children TileLayer
 </div>
 
 
@@ -1596,13 +1503,9 @@
 
 
 <h5>Returns:</h5>
-<span class="type-signature">Object|Array.&lt;Object></span>:
+<span class="type-signature">Array.&lt;<a href="TileLayer.html">TileLayer</a>></span>:
 
         
-<!-- <div class="param-desc"> -->
-    layer's style
-<!-- </div> -->
-
 
 
     
@@ -1616,254 +1519,14 @@
     
     <li>
     
-    <h4 class="name" id="setStyle"><span class="type-signature"></span><a href="#setStyle">setStyle</a><span class="signature">(style)</span>
+    <h4 class="name" id="toJSON"><span class="type-signature"></span><a href="#toJSON">toJSON</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L86" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L86" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#setStyle" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Sets style to the layer, styling the geometries satisfying the condition with style's symbol. <br>Based on filter type in [mapbox-gl-js's style specification]{https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
-</div>
-
-
-    <!--<h5>Example:</h5>-->
-    
-    
-        <pre class="prettyprint"><code>layer.setStyle([
-        {
-          'filter': ['==', 'count', 100],
-          'symbol': {'markerFile' : 'foo1.png'}
-        },
-        {
-          'filter': ['==', 'count', 200],
-          'symbol': {'markerFile' : 'foo2.png'}
-        }
-      ]);</code></pre>
-    
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>style</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-|
-
-<span class="param-type">Array.&lt;Object></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">layer's style</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Fires:</h5>
-<ul>
-    <li><a href="#event:setstyle">setstyle</a></li>
-</ul>
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="VectorLayer.html">VectorLayer</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    this
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="removeStyle"><span class="type-signature"></span><a href="#removeStyle">removeStyle</a><span class="signature">()</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L112" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L71" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L112" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#removeStyle" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Removes layers' style
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Fires:</h5>
-<ul>
-    <li><a href="#event:removestyle">removestyle</a></li>
-</ul>
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="VectorLayer.html">VectorLayer</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    this
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="toJSON"><span class="type-signature"></span><a href="#toJSON">toJSON</a><span class="signature">(options<span class="signature-attributes">opt</span>)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L180" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L180" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L71" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#toJSON" class="improvelink">[link]</a> -->
     </h4>
@@ -1877,7 +1540,90 @@
 
 
 <div class="description">
-    Export the VectorLayer's JSON. <br>
+    Export the GroupTileLayer's profile json. <br>Layer's profile is a snapshot of the layer in JSON format. <br>It can be used to reproduce the instance by fromJSON method
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Object</span>:
+
+        
+<!-- <div class="param-desc"> -->
+    layer's profile JSON
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getTiles"><span class="type-signature"></span><a href="#getTiles">getTiles</a><span class="signature">(z)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L86" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/GroupTileLayer.js#L86" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getTiles" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get tiles at zoom (or current zoom)
 </div>
 
 
@@ -1899,8 +1645,6 @@
         <th>Type</th>
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -1911,13 +1655,7 @@
 
         <tr>
             
-                <td class="name"><code>options</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
+                <td class="name"><code>z</code>
                 
                 </td>
             
@@ -1925,116 +1663,15 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">Number</span>
 
 
             
             </td>
 
             
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
 
-            <td class="description last">export options
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>geometries</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">If not null and the layer is a <a href="OverlayLayer.html">OverlayerLayer</a>,                                           the layer's geometries will be exported with the given "options.geometries" as a parameter of geometry's toJSON.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>clipExtent</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Extent.html">Extent</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">if set, only the geometries intersectes with the extent will be exported.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -2077,7 +1714,7 @@
 
         
 <!-- <div class="param-desc"> -->
-    layer's JSON
+    tiles
 <!-- </div> -->
 
 
@@ -2093,16 +1730,16 @@
     
     <li>
     
-    <h4 class="name" id="getGeometryById"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getGeometryById">getGeometryById</a><span class="signature">(id)</span></i>
+    <h4 class="name" id="getTileSize"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getTileSize">getTileSize</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L37" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L95" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L37" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L95" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#getGeometryById" class="improvelink">[link]</a> -->
+    <!-- <a href="#getTileSize" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -2114,7 +1751,7 @@
 
 
 <div class="description">
-    Get a geometry by its id
+    Get tile size of the tile layer
 </div>
 
 
@@ -2123,54 +1760,6 @@
 <!--  -->
 
 
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>id</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-|
-
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">id of the geometry</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -2186,7 +1775,7 @@
 
     <h5>Inherited From:</h5>    
     <ul><li>
-        <a href="OverlayLayer.html#getGeometryById">OverlayLayer#getGeometryById</a>
+        <a href="TileLayer.html#getTileSize">TileLayer#getTileSize</a>
     </li></ul>
     
 
@@ -2209,1418 +1798,9 @@
 
 
 <h5>Returns:</h5>
-<span class="type-signature"><a href="Geometry.html">Geometry</a></span>:
+<span class="type-signature"><a href="Size.html">Size</a></span>:
 
         
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="getGeometries"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getGeometries">getGeometries</a><span class="signature">(filter<span class="signature-attributes">opt</span>, context<span class="signature-attributes">opt</span>)</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L53" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L53" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getGeometries" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Get all the geometries or the ones filtered if a filter function is provided.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>filter</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">a function to filter the geometries</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>context</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">context of the filter function, value to use as this when executing filter.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#getGeometries">OverlayLayer#getGeometries</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">Array.&lt;<a href="Geometry.html">Geometry</a>></span>:
-
-        
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="getFirstGeometry"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getFirstGeometry">getFirstGeometry</a><span class="signature">()</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L77" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L77" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getFirstGeometry" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Get the first geometry, the geometry at the bottom.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#getFirstGeometry">OverlayLayer#getFirstGeometry</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Geometry.html">Geometry</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    first geometry
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="getLastGeometry"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getLastGeometry">getLastGeometry</a><span class="signature">()</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L88" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L88" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getLastGeometry" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Get the last geometry, the geometry on the top
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#getLastGeometry">OverlayLayer#getLastGeometry</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Geometry.html">Geometry</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    last geometry
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="getCount"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getCount">getCount</a><span class="signature">()</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L100" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L100" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getCount" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Get count of the geometries
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#getCount">OverlayLayer#getCount</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">Number</span>:
-
-        
-<!-- <div class="param-desc"> -->
-    count
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="getExtent"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getExtent">getExtent</a><span class="signature">()</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L108" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L108" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getExtent" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Get extent of all the geometries in the layer, return null if the layer is empty.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#getExtent">OverlayLayer#getExtent</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Extent.html">Extent</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    - extent of the layer
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="forEach"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#forEach">forEach</a><span class="signature">(fn, context<span class="signature-attributes">opt</span>)</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L125" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L125" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#forEach" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Executes the provided callback once for each geometry present in the layer in order.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>fn</code>
-                
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">a callback function</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>context</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">callback's context, value to use as this when executing callback.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#forEach">OverlayLayer#forEach</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="OverlayLayer.html">OverlayLayer</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    this
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="filter"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#filter">filter</a><span class="signature">(fn, context<span class="signature-attributes">opt</span>)</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L143" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L143" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#filter" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Creates a GeometryCollection with all the geometries that pass the test implemented by the provided function.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>fn</code>
-                
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">Function to test each geometry</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>context</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">Function's context, value to use as this when executing function.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#filter">OverlayLayer#filter</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="GeometryCollection.html">GeometryCollection</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    A GeometryCollection with all the geometries that pass the test
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="isEmpty"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#isEmpty">isEmpty</a><span class="signature">()</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L151" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L151" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#isEmpty" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Whether the layer is empty.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#isEmpty">OverlayLayer#isEmpty</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">Boolean</span>:
-
-        
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="addGeometry"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#addGeometry">addGeometry</a><span class="signature">(geometries, fitView<span class="signature-attributes">opt</span>)</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L161" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L161" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#addGeometry" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Adds one or more geometries to the layer
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>geometries</code>
-                
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Geometry.html">Geometry</a></span>
-|
-
-<span class="param-type">Array.&lt;<a href="Geometry.html">Geometry</a>></span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">one or more geometries</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>fitView</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">automatically set the map to a fit center and zoom for the geometries</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#addGeometry">OverlayLayer#addGeometry</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="OverlayLayer.html">OverlayLayer</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    this
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="getGeoMinZIndex"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getGeoMinZIndex">getGeoMinZIndex</a><span class="signature">()</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L229" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L229" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getGeoMinZIndex" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Get minimum zindex of geometries
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#getGeoMinZIndex">OverlayLayer#getGeoMinZIndex</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="getGeoMaxZIndex"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getGeoMaxZIndex">getGeoMaxZIndex</a><span class="signature">()</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L236" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L236" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getGeoMaxZIndex" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Get maximum zindex of geometries
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#getGeoMaxZIndex">OverlayLayer#getGeoMaxZIndex</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="removeGeometry"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#removeGeometry">removeGeometry</a><span class="signature">(geometries)</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L284" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L284" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#removeGeometry" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Removes one or more geometries from the layer
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>geometries</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-|
-
-<span class="param-type">Array.&lt;String></span>
-|
-
-<span class="param-type"><a href="Geometry.html">Geometry</a></span>
-|
-
-<span class="param-type">Array.&lt;<a href="Geometry.html">Geometry</a>></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">geometry ids or geometries to remove</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#removeGeometry">OverlayLayer#removeGeometry</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="OverlayLayer.html">OverlayLayer</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    this
-<!-- </div> -->
-
 
 
     
@@ -3637,11 +1817,11 @@
     <h4 class="name" id="clear"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#clear">clear</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L314" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L112" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L314" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L112" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#clear" class="improvelink">[link]</a> -->
     </h4>
@@ -3655,7 +1835,7 @@
 
 
 <div class="description">
-    Clear all geometries in this layer
+    Clear the layer
 </div>
 
 
@@ -3679,7 +1859,7 @@
 
     <h5>Inherited From:</h5>    
     <ul><li>
-        <a href="OverlayLayer.html#clear">OverlayLayer#clear</a>
+        <a href="TileLayer.html#clear">TileLayer#clear</a>
     </li></ul>
     
 
@@ -3702,366 +1882,11 @@
 
 
 <h5>Returns:</h5>
-<span class="type-signature"><a href="OverlayLayer.html">OverlayLayer</a></span>:
+<span class="type-signature"><a href="TileLayer.html">TileLayer</a></span>:
 
         
 <!-- <div class="param-desc"> -->
     this
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="onRemoveGeometry"><span class="type-signature">(protected) </span><i><span class="type-signature"> (inherited)  </span><a href="#onRemoveGeometry">onRemoveGeometry</a><span class="signature">(geometry)</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L343" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L343" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#onRemoveGeometry" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Called when geometry is being removed to clear the context concerned.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>geometry</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Geometry.html">Geometry</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">the geometry instance to remove</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#onRemoveGeometry">OverlayLayer#onRemoveGeometry</a>
-    </li></ul>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="identify"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#identify">identify</a><span class="signature">(coordinate, options<span class="signature-attributes">opt</span>)</span></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L380" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L380" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#identify" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Identify the geometries on the given coordinate
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>coordinate</code>
-                
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">maptalks.Coordinate</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">coordinate to identify</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">options
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>count</code>
-                
-                    
-                        <span class="signature-attributes">opt</span>
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last">result count</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">Array.&lt;<a href="Geometry.html">Geometry</a>></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    geometries identified
 <!-- </div> -->
 
 
@@ -8599,6 +6424,11 @@
 
 
 
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Class.html#onConfig">Class#onConfig</a>
+    </li></ul>
+    
 
 
 
@@ -8636,928 +6466,14 @@
     
     <li>
     
-    <h4 class="name" id="event:setstyle"><a href="#event:setstyle">setstyle</a>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L92" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L92" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#event:setstyle" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    setstyle event.
-</div>
-
-
-
-
-<!-- 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
- -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">setstyle</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>target</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="VectorLayer.html">VectorLayer</a></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">layer</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>style</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-|
-
-<span class="param-type">Array.&lt;Object></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">style to set</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-        
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js">layer/VectorLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L92">line 92</a>
-        
-
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="event:removestyle"><a href="#event:removestyle">removestyle</a>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L121" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L121" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#event:removestyle" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    removestyle event.
-</div>
-
-
-
-
-<!-- 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
- -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">removestyle</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>target</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="VectorLayer.html">VectorLayer</a></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">layer</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-        
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js">layer/VectorLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/VectorLayer.js#L121">line 121</a>
-        
-
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="event:addgeo"><i><span class="type-signature"> (inherited)  </span><a href="#event:addgeo">addgeo</a></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L211" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L211" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#event:addgeo" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    addgeo event.
-</div>
-
-
-
-
-<!-- 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
- -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#event:addgeo">OverlayLayer#event:addgeo</a>
-    </li></ul>
-    
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">addgeo</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>target</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="OverlayLayer.html">OverlayLayer</a></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">layer</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>geometries</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="Geometry.html">Geometry</a>></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">the geometries to add</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="OverlayLayer.html#event:addgeo">OverlayLayer#event:addgeo</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-        
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js">layer/OverlayLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L211">line 211</a>
-        
-
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="event:removegeo"><i><span class="type-signature"> (inherited)  </span><a href="#event:removegeo">removegeo</a></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L295" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L295" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#event:removegeo" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    removegeo event.
-</div>
-
-
-
-
-<!-- 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
- -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="OverlayLayer.html#event:removegeo">OverlayLayer#event:removegeo</a>
-    </li></ul>
-    
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">removegeo</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>target</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="OverlayLayer.html">OverlayLayer</a></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">layer</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>geometries</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="Geometry.html">Geometry</a>></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">the geometries to remove</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="OverlayLayer.html#event:removegeo">OverlayLayer#event:removegeo</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-        
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js">layer/OverlayLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L295">line 295</a>
-        
-
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
     <h4 class="name" id="event:clear"><i><span class="type-signature"> (inherited)  </span><a href="#event:clear">clear</a></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L326" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L116" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L326" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L116" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:clear" class="improvelink">[link]</a> -->
     </h4>
@@ -9571,7 +6487,7 @@
 
 
 <div class="description">
-    clear event.
+    clear event, fired when tile layer is cleared.
 </div>
 
 
@@ -9605,7 +6521,7 @@
 
     <h5>Inherited From:</h5>    
     <ul><li>
-        <a href="OverlayLayer.html#event:clear">OverlayLayer#event:clear</a>
+        <a href="TileLayer.html#event:clear">TileLayer#event:clear</a>
     </li></ul>
     
 
@@ -9671,7 +6587,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="OverlayLayer.html">OverlayLayer</a></span>
+<span class="param-type"><a href="TileLayer.html">TileLayer</a></span>
 
 
             
@@ -9681,7 +6597,7 @@
 
             
 
-            <td class="description last">layer</td>
+            <td class="description last">tile layer</td>
         </tr>
 
     
@@ -9699,7 +6615,7 @@
     
     <dt class="inherited-from">Inherited From:</dt>
     <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="OverlayLayer.html#event:clear">OverlayLayer#event:clear</a>
+        <a href="TileLayer.html#event:clear">TileLayer#event:clear</a>
     </li></ul></dd>
     
 
@@ -9725,7 +6641,749 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js">layer/OverlayLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/OverlayLayer.js#L326">line 326</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js">layer/tile/TileLayer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/tile/TileLayer.js#L116">line 116</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:tileerror"><i><span class="type-signature"> (inherited)  </span><a href="#event:tileerror">tileerror</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L462" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L462" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:tileerror" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    tileerror event, fired when layer is 'dom' rendered and a tile errors
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="TileLayer.html#event:tileerror">TileLayer#event:tileerror</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tileerror</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="TileLayer.html">TileLayer</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tile layer</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>err</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">error message</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tile</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tile</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TileLayer.html#event:tileerror">TileLayer#event:tileerror</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js">renderer/layer/tilelayer/TileLayerDomRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L462">line 462</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:tileload"><i><span class="type-signature"> (inherited)  </span><a href="#event:tileload">tileload</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L491" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L491" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:tileload" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    tileload event, fired when layer is 'dom' rendered and a tile is loaded
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="TileLayer.html#event:tileload">TileLayer#event:tileload</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tileload</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="TileLayer.html">TileLayer</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tile layer</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tile</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tile</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TileLayer.html#event:tileload">TileLayer#event:tileload</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js">renderer/layer/tilelayer/TileLayerDomRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L491">line 491</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:tileunload"><i><span class="type-signature"> (inherited)  </span><a href="#event:tileunload">tileunload</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L637" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L637" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:tileunload" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    tileunload event, fired when layer is 'dom' rendered and a tile is removed
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="TileLayer.html#event:tileunload">TileLayer#event:tileunload</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tileunload</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="TileLayer.html">TileLayer</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tile layer</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tile</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">tile</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TileLayer.html#event:tileunload">TileLayer#event:tileunload</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js">renderer/layer/tilelayer/TileLayerDomRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/tilelayer/TileLayerDomRenderer.js#L637">line 637</a>
         
 
     </li></ul></dd>
