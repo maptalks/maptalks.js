@@ -12,19 +12,21 @@ import TileLayer from './TileLayer';
  * @param {String|Number} id - tile layer's id
  * @param {Object} [options=null] - options defined in [TileLayer]{@link TileLayer#options}
  * @example
- * new GroupTileLayer("group-tiles",{
- *      tiles : [
- *          {
- *              urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
- *              subdomains:['a','b','c']
- *          },
- *          {
- *              urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
- *              subdomains:['a','b','c']
- *          }
- *      ]
-
+ * new GroupTileLayer("group-tiles",[
+    new maptalks.WMSTileLayer('wms', {
+      'urlTemplate' : 'https://demo.boundlessgeo.com/geoserver/ows',
+      'crs' : 'EPSG:3857',
+      'layers' : 'ne:ne',
+      'styles' : '',
+      'version' : '1.3.0',
+      'format': 'image/png',
+      'transparent' : true,
+      'uppercase' : true
+    }),
+    new maptalks.TileLayer('tile2',{
+      urlTemplate: 'http://korona.geog.uni-heidelberg.de/tiles/adminb/x={x}&y={y}&z={z}'
     })
+  ])
  */
 class GroupTileLayer extends TileLayer {
     /**
@@ -87,14 +89,15 @@ class GroupTileLayer extends TileLayer {
         const layers = this.layers;
         const tiles = [];
         let grid;
-        layers.forEach(layer => {
+        for (let i = layers.length - 1; i >= 0; i--) {
+            const layer = layers[i];
             const childGrid = layer.getTiles(z);
             if (!childGrid || childGrid.tiles.length === 0) {
-                return;
+                continue;
             }
             pushIn(tiles, childGrid.tiles);
             grid = childGrid;
-        });
+        }
         if (!grid) {
             return null;
         }
