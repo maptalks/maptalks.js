@@ -239,7 +239,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileId = tileInfo.id;
         const map = this.getMap(),
             zoom = map.getZoom(),
-            tileSize = this.layer.getTileSize(),
             ctx = this.context,
             cp = map._pointToContainerPoint(point, tileZoom)._round(),
             bearing = map.getBearing(),
@@ -251,12 +250,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.setToRedraw();
         }
         let x = cp.x,
-            y = cp.y,
-            w = tileSize['width'],
-            h = tileSize['height'];
+            y = cp.y;
         if (transformed) {
-            w++;
-            h++;
             ctx.save();
             ctx.translate(x, y);
             if (bearing) {
@@ -269,12 +264,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             x = y = 0;
         }
         Canvas2D.image(ctx, tileImage,
-            x, y,
-            w, h);
+            x, y);
         if (this.layer.options['debug']) {
             const p = new Point(x, y),
+                tileSize = this.layer.getTileSize(),
                 color = this.layer.options['debugOutline'],
                 xyz = tileId.split('__');
+            const w = tileSize['width'], h = tileSize['height'];
             ctx.save();
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
@@ -381,11 +377,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const map = this.getMap();
             let scale = map._getResolution(back.zoom) / map._getResolution();
             const cp = map._pointToContainerPoint(back.nw, back.zoom);
+            const bearing = map.getBearing() - back.bearing;
             if (Browser.retina) {
                 scale *= 1 / 2;
             }
             ctx.save();
             ctx.translate(cp.x, cp.y);
+            if (bearing) {
+                ctx.rotate(-bearing * Math.PI / 180);
+            }
             ctx.scale(scale, scale);
             ctx.drawImage(back.canvas, 0, 0);
             ctx.restore();
@@ -393,10 +393,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _saveBackground() {
+        const map = this.getMap();
         this.background = {
             canvas : Canvas2D.copy(this.canvas),
-            zoom : this.getMap().getZoom(),
-            nw : this._northWest
+            zoom : map.getZoom(),
+            nw : this._northWest,
+            bearing : map.getBearing()
         };
     }
 
