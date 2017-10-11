@@ -5,8 +5,7 @@ import {
     IS_NODE,
     isNil,
     isString,
-    isFunction,
-    isNumber
+    isFunction
 } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
@@ -499,9 +498,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Caculate the target zoom if scaling from "fromZoom" by "scale"
      * @param  {Number} scale
      * @param  {Number} fromZoom
+     * @param  {Boolean} isFraction - can return fractional zoom
      * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getZoomForScale(scale, fromZoom) {
+    getZoomForScale(scale, fromZoom, isFraction) {
         const zoom = this.getZoom();
         if (isNil(fromZoom)) {
             fromZoom = zoom;
@@ -510,25 +510,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return zoom;
         }
         const res = this._getResolution(fromZoom),
-            resolutions = this._getResolutions(),
-            minZoom = this.getMinZoom(),
-            maxZoom = this.getMaxZoom();
-        let min = Number.MAX_VALUE,
-            hit = -1;
-        for (let i = resolutions.length - 1; i >= 0; i--) {
-            const test = Math.abs(res / resolutions[i] - scale);
-            if (test < min) {
-                min = test;
-                hit = i;
-            }
+            targetRes = res / scale;
+        const scaleZoom = this.getZoomFromRes(targetRes);
+        if (isFraction) {
+            return scaleZoom;
+        } else {
+            return scaleZoom > fromZoom ? Math.ceil(scaleZoom) : Math.floor(scaleZoom);
         }
-        if (isNumber(minZoom) && hit < minZoom) {
-            hit = minZoom;
-        }
-        if (isNumber(maxZoom) && hit > maxZoom) {
-            hit = maxZoom;
-        }
-        return hit;
     }
 
     getZoomFromRes(res) {
@@ -552,9 +540,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (!resolutions[i]) {
                 continue;
             }
-            const gap = Math.abs(resolutions[i + 1] - resolutions[i]);
-            const test = Math.abs(res - resolutions[i]);
-            if (gap >= test) {
+            const gap = resolutions[i + 1] - resolutions[i];
+            const test = res - resolutions[i];
+            if (Math.abs(gap) >= Math.abs(test)) {
                 return i + test / gap;
             }
         }
