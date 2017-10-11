@@ -35,32 +35,71 @@ Map.include(/** @lends Map.prototype */ {
          * @property {Object} old - old view
          * @property {Point} new  - new view
          */
-        this._fireEvent('viewchange', {
-            'old' : old,
-            'new' : view
-        });
+        this._fireViewChange(old, view);
     },
 
     /**
-     * Get previous map view in view history
+     * Zoom to the previous map view in view history
      * @return {Object} map view
      */
-    getPreviousView() {
+    zoomToPreviousView(options = {}) {
+        if (!this.hasPreviousView()) {
+            return null;
+        }
+        const view = this._viewHistory[--this._viewHistoryPointer];
+        this._zoomToView(view, options);
+        return view;
+    },
+
+    /**
+     * Whether has more previous view
+     * @return {Boolean}
+     */
+    hasPreviousView() {
         if (!this._viewHistory || this._viewHistoryPointer === 0) {
-            return null;
+            return false;
         }
-        return this._viewHistory[--this._viewHistoryPointer];
+        return true;
     },
 
     /**
-     * Get next view in view history
+     * Zoom to the next view in view history
      * @return {Object} map view
      */
-    getNextView() {
-        if (!this._viewHistory || this._viewHistoryPointer === this._viewHistory.length - 1) {
+    zoomToNextView(options = {}) {
+        if (!this.hasNextView()) {
             return null;
         }
-        return this._viewHistory[++this._viewHistoryPointer];
+        const view = this._viewHistory[++this._viewHistoryPointer];
+        this._zoomToView(view, options);
+        return view;
+    },
+
+    /**
+     * Whether has more next view
+     * @return {Boolean}
+     */
+    hasNextView() {
+        if (!this._viewHistory || this._viewHistoryPointer === this._viewHistory.length - 1) {
+            return false;
+        }
+        return true;
+    },
+
+    _zoomToView(view, options) {
+        const old = this.getView();
+        if (options['animation']) {
+            this.animateTo(view, {
+                'duration' : options['duration']
+            }, frame => {
+                if (frame.state.playState === 'finished') {
+                    this._fireViewChange(old, view);
+                }
+            });
+        } else {
+            this.setView(view);
+            this._fireViewChange(old, view);
+        }
     },
 
     /**
@@ -69,6 +108,13 @@ Map.include(/** @lends Map.prototype */ {
      */
     getViewHistory() {
         return this._viewHistory;
+    },
+
+    _fireViewChange(old, view) {
+        this._fireEvent('viewchange', {
+            'old' : old,
+            'new' : view
+        });
     },
 
     _getCurrentView() {

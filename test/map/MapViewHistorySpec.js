@@ -22,44 +22,46 @@ describe('Map View History', function () {
             renderer.callInNextFrame(function () {
                 map.setCenterAndZoom([0, 0], map.getZoom() - 1);
                 renderer.callInNextFrame(function () {
-                    var view = map.getPreviousView();
+                    var view = map.zoomToPreviousView();
                     expect(view.center).to.be.eql(center.toArray());
                     expect(view.zoom).to.be.eql(zoom);
 
-                    expect(map.getPreviousView()).not.to.be.ok();
+                    expect(map.zoomToPreviousView()).not.to.be.ok();
                     done();
                 });
             });
         });
 
-        it('get previous view', function (done) {
+        it('zoom to previous view', function (done) {
             var zoom = map.getZoom();
             var renderer = map._getRenderer();
             renderer.callInNextFrame(function () {
                 map.setCenterAndZoom([0, 0], map.getZoom() - 1);
                 renderer.callInNextFrame(function () {
-                    var view = map.getPreviousView();
+                    var view = map.zoomToPreviousView();
                     expect(view.center).to.be.eql(center.toArray());
                     expect(view.zoom).to.be.eql(zoom);
 
-                    expect(map.getPreviousView()).not.to.be.ok();
+                    expect(map.hasPreviousView()).not.to.be.ok();
+                    expect(map.zoomToPreviousView()).not.to.be.ok();
                     done();
                 });
             });
         });
 
-        it('get next view', function (done) {
+        it('zoom to next view', function (done) {
             var zoom = map.getZoom();
             var renderer = map._getRenderer();
             renderer.callInNextFrame(function () {
                 map.setCenterAndZoom([0, 0], map.getZoom() - 1);
                 renderer.callInNextFrame(function () {
-                    map.getPreviousView();
-                    var next = map.getNextView();
+                    map.zoomToPreviousView();
+                    var next = map.zoomToNextView();
                     expect(next.center).to.be.eql([0, 0]);
                     expect(next.zoom).to.be.eql(zoom - 1);
 
-                    expect(map.getNextView()).not.to.be.ok();
+                    expect(map.hasNextView()).not.to.be.ok();
+                    expect(map.zoomToNextView()).not.to.be.ok();
                     done();
                 });
             });
@@ -76,9 +78,9 @@ describe('Map View History', function () {
                     renderer.callInNextFrame(function () {
                         map.setCenterAndZoom([2, 2], zoom - 2);
                         renderer.callInNextFrame(function () {
-                            map.getPreviousView();
-                            map.getPreviousView();
-                            map.setView(map.getPreviousView());
+                            map.zoomToPreviousView();
+                            map.zoomToPreviousView();
+                            map.zoomToPreviousView();
                             renderer.callInNextFrame(function () {
                                 expect(map.getViewHistory().length).to.be.eql(4);
                             });
@@ -97,11 +99,30 @@ describe('Map View History', function () {
                 renderer.callInNextFrame(function () {
                     map.setCenterAndZoom([1, 1], zoom - 2);
                     renderer.callInNextFrame(function () {
-                        map.getPreviousView();
-                        map.getPreviousView();
+                        map.zoomToPreviousView();
+                        map.zoomToPreviousView();
                         map.setCenterAndZoom([2, 2], zoom - 3);
                         renderer.callInNextFrame(function () {
                             expect(map.getViewHistory().length).to.be.eql(2);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('zoom to previous view with animation', function (done) {
+            var zoom = map.getZoom();
+            var renderer = map._getRenderer();
+            renderer.callInNextFrame(function () {
+                map.setCenterAndZoom([0, 0], zoom - 1);
+                renderer.callInNextFrame(function () {
+                    map.setCenterAndZoom([1, 1], zoom - 2);
+                    renderer.callInNextFrame(function () {
+
+                        map.zoomToPreviousView({ animation : true, duration : 120 });
+                        map.on('animateend', function () {
+                            expect(map.getViewHistory().length).to.be.eql(3);
                             done();
                         });
                     });
@@ -119,7 +140,7 @@ describe('Map View History', function () {
                 }, function (frame) {
                     renderer.callInNextFrame(function () {
                         if (frame.state.playState === 'finished') {
-                            var view = map.getPreviousView();
+                            var view = map.zoomToPreviousView();
                             expect(view.center).to.be.eql(center.toArray());
                             done();
                         }
