@@ -238,6 +238,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
         const map = this.getMap(),
+            tileSize = this.layer.getTileSize(),
             zoom = map.getZoom(),
             ctx = this.context,
             cp = map._pointToContainerPoint(point, tileZoom)._round(),
@@ -251,7 +252,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         let x = cp.x,
             y = cp.y;
+        let w = tileSize['width'], h = tileSize['height'];
         if (transformed) {
+            w++;
+            h++;
             ctx.save();
             ctx.translate(x, y);
             if (bearing) {
@@ -264,13 +268,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             x = y = 0;
         }
         Canvas2D.image(ctx, tileImage,
-            x, y);
+            x, y, w, h);
         if (this.layer.options['debug']) {
             const p = new Point(x, y),
-                tileSize = this.layer.getTileSize(),
                 color = this.layer.options['debugOutline'],
                 xyz = tileId.split('__');
-            const w = tileSize['width'], h = tileSize['height'];
             ctx.save();
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
