@@ -24,36 +24,22 @@ function parse(arcConf) {
     };
 }
 
-SpatialReference.loadArcgis = function (url, cb, context) {
+SpatialReference.loadArcgis = function (url, cb, options = { 'jsonp' : true }) {
     if (isString(url) && url.substring(0, 1) !== '{') {
         Ajax.getJSON(url, function (err, json) {
             if (err) {
-                if (context) {
-                    cb.call(context, err);
-                } else {
-                    cb(err);
-                }
+                cb(err);
                 return;
             }
             const spatialRef = parse(json);
-            if (context) {
-                cb.call(context, null, spatialRef);
-            } else {
-                cb(null, spatialRef);
-            }
-        }, {
-            'jsonp' : true
-        });
+            cb(null, spatialRef);
+        }, options);
     } else {
         if (isString(url)) {
             url = parseJSON(url);
         }
         const spatialRef = parse(url);
-        if (context) {
-            cb.call(context, null, spatialRef);
-        } else {
-            cb(null, spatialRef);
-        }
+        cb(null, spatialRef);
 
     }
     return this;

@@ -1,4 +1,4 @@
-describe('#SpatialReference.Arc', function () {
+describe('SpatialReference.Arc', function () {
     var expected = { 'spatialReference':{ 'resolutions':[132.291931250529, 52.9167725002117, 26.4583862501058, 13.2291931250529, 5.29167725002117, 2.64583862501058, 1.32291931250529, 0.529167725002117, 0.264583862501058, 0.132291931250529], 'fullExtent':{ 'xmin':-72625.16349000037, 'ymin':-82574.4862099995, 'xmax':75957.00628999919, 'ymax':86066.27641000012 }}, 'tileSystem':[1, -1, -66000, 75000], 'tileSize':[512, 512] };
 
     var arcgis = {
@@ -120,6 +120,8 @@ describe('#SpatialReference.Arc', function () {
             expect(err).to.be(null);
             expect(conf).to.be.eql(expected);
             done();
+        }, {
+            jsonp : false
         });
     });
 
