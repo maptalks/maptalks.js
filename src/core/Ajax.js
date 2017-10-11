@@ -1,4 +1,4 @@
-import { IS_NODE, isString, parseJSON, emptyImageUrl } from 'core/util';
+import { IS_NODE, isString, parseJSON, emptyImageUrl, UID } from 'core/util';
 
 /**
  * @classdesc
@@ -8,6 +8,37 @@ import { IS_NODE, isString, parseJSON, emptyImageUrl } from 'core/util';
  * @category core
  */
 const Ajax = {
+
+    /**
+     * Get JSON data by jsonp
+     * from https://gist.github.com/gf3/132080/110d1b68d7328d7bfe7e36617f7df85679a08968
+     * @param  {String}   url - resource url
+     * @param  {Function} cb  - callback function when completed
+     */
+    jsonp: function (url, callback) {
+        // INIT
+        const name = '_maptalks_jsonp_' + UID();
+        if (url.match(/\?/)) url += '&callback=' + name;
+        else url += '?callback=' + name;
+
+        // Create script
+        let script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = url;
+
+        // Setup handler
+        window[name] = function (data) {
+            callback(null, data);
+            document.getElementsByTagName('head')[0].removeChild(script);
+            script = null;
+            delete window[name];
+        };
+
+        // Load JSON
+        document.getElementsByTagName('head')[0].appendChild(script);
+        return this;
+    },
+
     /**
      * Fetch remote resource by HTTP "GET" method
      * @param  {String}   url - resource url
@@ -191,7 +222,8 @@ const Ajax = {
  * Fetch resource as a JSON Object.
  * @param {String} url          - json's url
  * @param {Function} callback   - callback function when completed.
- * @param {Object} options
+ * @param {Object} options      - optional options
+ * @param {String} options.jsonp - fetch by jsonp, false by default
  * @example
  * maptalks.Ajax.getJSON(
  *     'url/to/resource.json',
@@ -201,7 +233,8 @@ const Ajax = {
  *         }
  *         // json is a JSON Object
  *         console.log(json.foo);
- *     }
+ *     },
+ *     { jsonp : true }
  * );
  * @static
  */
@@ -210,6 +243,9 @@ Ajax.getJSON = function (url, cb, options) {
         const data = resp ? parseJSON(resp) : null;
         cb(err, data);
     };
+    if (options && options['jsonp']) {
+        return Ajax.jsonp(url, callback);
+    }
     return Ajax.get(url, callback, options);
 };
 

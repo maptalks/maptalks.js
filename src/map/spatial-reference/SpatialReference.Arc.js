@@ -41,6 +41,8 @@ SpatialReference.loadArcgis = function (url, cb, context) {
             } else {
                 cb(null, spatialRef);
             }
+        }, {
+            'jsonp' : true
         });
     } else {
         if (isString(url)) {
