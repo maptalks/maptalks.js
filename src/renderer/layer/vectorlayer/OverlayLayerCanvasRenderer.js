@@ -11,11 +11,6 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
  */
 class OverlayLayerRenderer extends CanvasRenderer {
 
-    // geometries can be: true | [geometries] | null
-    // true: check layer's all geometries if the checking is the first time.
-    // [geometries] : the additional geometries needs to be checked.
-    // null : no checking.
-    //
     // possible memory leaks:
     // 1. if geometries' symbols with external resources change frequently,
     // resources of old symbols will still be stored.

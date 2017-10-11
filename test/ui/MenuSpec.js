@@ -1,4 +1,4 @@
-describe('#ContextMenu', function () {
+describe('UI.ContextMenu', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -155,6 +155,34 @@ describe('#ContextMenu', function () {
                 animation : null,
                 width: 250
             });
+            target.openMenu();
+            var pos = map.getViewPoint().round();
+            expect(map._panels.front.style.transform).to.be.eql('translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)');
+            done();
+        });
+        map.setCenter(map.getCenter().add(0.01, 0.02));
+    });
+
+    it('update when map center updated', function (done) {
+        map.removeLayer('vector');
+
+        var layer = new maptalks.VectorLayer('vector');
+        var target = new maptalks.Marker(map.getCenter());
+        layer.addGeometry(target).addTo(map);
+        var items = [
+            { item: 'item1', click: function () {} },
+            '-',
+            { item: 'item2', click: function () {} }
+        ];
+        target.setMenu({
+            items: items,
+            animation : null,
+            width: 250
+        });
+
+        target.openMenu();
+        map.on('frameend', function () {
+
             target.openMenu();
             var pos = map.getViewPoint().round();
             expect(map._panels.front.style.transform).to.be.eql('translate3d(' + pos.x + 'px, ' + pos.y + 'px, 0px)');
