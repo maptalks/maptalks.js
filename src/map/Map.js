@@ -515,7 +515,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isFraction) {
             return scaleZoom;
         } else {
-            return scaleZoom > fromZoom ? Math.ceil(scaleZoom) : Math.floor(scaleZoom);
+            const resolutions = this._getResolutions();
+            return resolutions[0] < resolutions[resolutions.length - 1] ?
+                Math.ceil(scaleZoom) : Math.floor(scaleZoom);
         }
     }
 
