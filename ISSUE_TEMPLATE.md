@@ -3,11 +3,7 @@
 * Browser (version):
 * OS/Platform (version):
 
-#### Actual Behavior
-
-#### Expected Behavior
-
-#### Steps to Reproduce
+#### Issue Description
 
 #### jsfiddle or codepen URL
 > the example url of maptalks to attach in
