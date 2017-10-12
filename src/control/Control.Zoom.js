@@ -108,13 +108,13 @@ class Zoom extends Control {
     _update() {
         const map = this.getMap();
         if (this._sliderBox) {
-
             const totalRange = (map.getMaxZoom() - map.getMinZoom()) * UNIT;
             this._sliderBox.style.height = totalRange + 16 + 'px';
             this._sliderRuler.style.height = totalRange + 8 + 'px';
             this._sliderRuler.style.cursor = 'pointer';
             const zoomRange = (map.getMaxZoom() - map.getZoom()) * UNIT;
-            this._sliderReading.style.height = (map.getZoom() - map.getMinZoom()) * UNIT + 'px';
+            //this._sliderReading.style.height = (map.getZoom() - map.getMinZoom()) * UNIT + 'px';
+            this._sliderReading.style.height = (map.getZoom() - map.getMinZoom() + 1) * UNIT + 'px';
             this._sliderDot.style.top = zoomRange + 'px';
         }
         this._updateText();
@@ -204,7 +204,8 @@ class Zoom extends Control {
             }
         }
         this._sliderDot.style.top = top + 'px';
-        this._sliderReading.style.height = (map.getZoom() - minZoom) * UNIT + 'px';
+        //this._sliderReading.style.height = (map.getZoom() - minZoom) * UNIT + 'px';
+        this._sliderReading.style.height = (map.getZoom() - minZoom + 1) * UNIT + 'px';
         this._updateText();
     }
 }
