@@ -92,6 +92,9 @@ class GroupTileLayer extends TileLayer {
         let grid;
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
+            if (!layer.options['visible']) {
+                continue;
+            }
             const childGrid = layer.getTiles(z);
             if (!childGrid || childGrid.tiles.length === 0) {
                 continue;
@@ -108,13 +111,25 @@ class GroupTileLayer extends TileLayer {
 
     onAdd() {
         const map = this.getMap();
-        this.layers.forEach(layer => layer._bindMap(map));
+        this.layers.forEach(layer => {
+            layer._bindMap(map);
+            layer.on('show hide', this._onLayerShowHide, this);
+        });
     }
 
     onRemove() {
-        this.layers.forEach(layer => layer._doRemove());
+        this.layers.forEach(layer => {
+            layer._doRemove();
+            layer.off('show hide', this._onLayerShowHide, this);
+        });
     }
 
+    _onLayerShowHide() {
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
 }
 
 GroupTileLayer.registerJSONType('GroupTileLayer');

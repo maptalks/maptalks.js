@@ -216,13 +216,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     show() {
         if (!this.options['visible']) {
             this.options['visible'] = true;
-
-            if (this._getRenderer()) {
-                this._getRenderer().show();
+            const renderer = this.getRenderer();
+            if (renderer) {
+                renderer.show();
             }
 
             const map = this.getMap();
-            if (map) {
+            if (renderer && map) {
                 //fire show at renderend to make sure layer is shown
                 map.once('renderend', () => {
                     this.fire('show');
@@ -241,12 +241,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     hide() {
         if (this.options['visible']) {
             this.options['visible'] = false;
-            if (this._getRenderer()) {
-                this._getRenderer().hide();
+            const renderer = this.getRenderer();
+            if (renderer) {
+                renderer.hide();
             }
 
             const map = this.getMap();
-            if (map) {
+            if (renderer && map) {
                 //fire hide at renderend to make sure layer is hidden
                 map.once('renderend', () => {
                     this.fire('hide');

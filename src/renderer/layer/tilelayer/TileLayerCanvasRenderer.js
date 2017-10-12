@@ -2,8 +2,7 @@ import {
     IS_NODE,
     loadImage,
     emptyImageUrl,
-    now,
-    equalMapView
+    now
 } from 'core/util';
 import Browser from 'core/Browser';
 import Canvas2D from 'core/Canvas';
@@ -36,20 +35,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.isDrawable()) {
             return;
         }
-        const layer = this.layer;
-        let tileGrid;
-        const view = map.getView();
-        const equalView = equalMapView(view, this._mapView);
-        if (this._mapView && equalView) {
-            tileGrid = this._preTileGrid;
-        } else {
-            tileGrid = this._preTileGrid = layer.getTiles();
-            if (!tileGrid) {
-                this.completeRender();
-                return;
-            }
-        }
-
         const mask2DExtent = this.prepareCanvas();
         let extent = map.getContainerExtent();
         if (mask2DExtent) {
@@ -59,6 +44,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             } else {
                 extent = mask2DExtent.intersection(this._extent2D).convertTo(c => map._pointToContainerPoint(c));
             }
+        }
+        const layer = this.layer;
+        const tileGrid = layer.getTiles();
+        if (!tileGrid) {
+            this.completeRender();
+            return;
         }
         const tiles = tileGrid['tiles'];
 
@@ -116,7 +107,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.loadTileQueue(tileQueue);
         }
         this._retireTiles();
-        this._mapView = view;
     }
 
     drawOnInteracting() {
@@ -322,8 +312,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this._tileRended;
         delete this._tileZoom;
         delete this._tileLoading;
-        delete this._preTileGrid;
-        delete this._mapView;
     }
 
     _markTiles() {

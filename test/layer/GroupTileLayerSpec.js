@@ -6,8 +6,8 @@ describe('GroupTileLayer', function () {
 
     function createMap() {
         container = document.createElement('div');
-        container.style.width = '3px';
-        container.style.height = '3px';
+        container.style.width = '30px';
+        container.style.height = '30px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -45,6 +45,59 @@ describe('GroupTileLayer', function () {
             done();
         });
         map.addLayer(group);
+    });
+
+    it('show and hide', function (done) {
+        var tile1 = new maptalks.TileLayer('tile1', {
+            urlTemplate : '/resources/tile.png'
+        });
+        var tile2 = new maptalks.TileLayer('tile2', {
+            urlTemplate : '/resources/tile.png'
+        });
+        var group = new maptalks.GroupTileLayer('group', [
+            tile1, tile2
+        ], {
+            fadeAnimation : false,
+            renderer : 'canvas'
+        });
+        group.once('layerload', function () {
+            expect(group).to.be.painted();
+            group.once('layerload', function () {
+                expect(group).not.to.be.painted();
+                group.once('layerload', function () {
+                    expect(group).to.be.painted();
+                    done();
+                });
+                tile1.show();
+                tile2.show();
+            });
+            tile1.hide();
+            tile2.hide();
+        });
+        map.addLayer(group);
+    });
+
+    it('event bindings', function () {
+        var tile1 = new maptalks.TileLayer('tile1', {
+            urlTemplate : '/resources/tile.png'
+        });
+        var tile2 = new maptalks.TileLayer('tile2', {
+            urlTemplate : '/resources/tile.png'
+        });
+        var group = new maptalks.GroupTileLayer('group', [
+            tile1, tile2
+        ], {
+            fadeAnimation : false,
+            renderer : 'canvas'
+        });
+        map.addLayer(group);
+        expect(tile1.listens('show')).to.be.eql(1);
+        expect(tile2.listens('hide')).to.be.eql(1);
+
+        group.remove();
+
+        expect(tile1.listens('show')).to.be.eql(0);
+        expect(tile2.listens('hide')).to.be.eql(0);
     });
 
     it('json', function (done) {
