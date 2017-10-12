@@ -37,7 +37,7 @@ maptalks.js is well tested against IE10, IE11, Firefox and Chrome by around 1.5K
 
 ## Plugin Development
 
-It's easy and joyful to write plugins for maptalks, please check out [the tutorials](https://github.com/maptalks/maptalks.js) and begin to develop you own. And welcome to [share your works](https://github.com/maptalks/maptalks.github.io/issues/new) with us.
+It's easy and joyful to write plugins for maptalks, please check out [the tutorials](https://github.com/maptalks/maptalks.js/wiki) and begin to develop you own. And welcome to [share your works](https://github.com/maptalks/maptalks.github.io/issues/new) with us.
 
 ## Contributing
 
@@ -48,4 +48,4 @@ Please see the [Contribution Guide](CONTRIBUTING.md).
 
 ## Acknowledgments
 
-Maptalks is built on the shoulders of giants. Please refer to [ACKNOWLEDGEMENT](ACKNOWLEDGEMENT.md) for details.
+Maptalks is built on the shoulders of giants. Please refer to [ACKNOWLEDGEMENT](ACKNOWLEDGEMENT) for details.
