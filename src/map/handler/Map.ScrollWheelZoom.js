@@ -22,13 +22,17 @@ class MapScrollWheelZoomHandler extends Handler {
         this._requesting = 0;
         const map = this.target;
         const container = map._containerDOM;
-        this._zooming = true;
         let levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             levelValue *= -1;
         }
-        let nextZoom = map.getZoom() + levelValue;
+        const zoom = map.getZoom();
+        let nextZoom = zoom + levelValue;
         nextZoom = map._checkZoom(levelValue > 0 ? Math.ceil(nextZoom) : Math.floor(nextZoom));
+        if (nextZoom === zoom) {
+            return false;
+        }
+        this._zooming = true;
         const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
         if (!map.isZooming()) {
             map.onZoomStart(null, origin);
@@ -48,7 +52,10 @@ class MapScrollWheelZoomHandler extends Handler {
             if (frame.state.playState !== 'finished') {
                 return;
             }
-            if (this._requesting < 2 || Math.abs(nextZoom - this._startZoom) > 3) {
+            if (this._requesting < 2 || Math.abs(nextZoom - this._startZoom) > 3 ||
+                //finish zooming if target zoom hits min/max
+                nextZoom === map.getMaxZoom() || nextZoom === map.getMinZoom()) {
+
                 map.animateTo({
                     'zoom' : nextZoom,
                     'around' : this._origin

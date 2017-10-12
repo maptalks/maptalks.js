@@ -59,6 +59,8 @@ const DefaultSpatialRef = {
     }
 };
 
+DefaultSpatialRef['EPSG:4490'] = DefaultSpatialRef['EPSG:4326'];
+
 export default class SpatialReference {
     constructor(options = {}) {
         this.options = options;
@@ -69,10 +71,11 @@ export default class SpatialReference {
         let projection = this.options['projection'];
         if (projection) {
             if (isString(projection)) {
+                const prjName = projection.toLowerCase();
                 for (const p in projections) {
                     if (hasOwn(projections, p)) {
                         const regName = projections[p]['code'];
-                        if (regName && regName.toLowerCase() === projection.toLowerCase()) {
+                        if (regName && regName.toLowerCase() === prjName) {
                             projection = projections[p];
                             break;
                         }

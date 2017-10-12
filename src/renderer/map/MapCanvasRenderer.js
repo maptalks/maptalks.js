@@ -84,6 +84,7 @@ class MapCanvasRenderer extends MapRenderer {
             // time of layer drawing
             layerLimit = this.map.options['layerCanvasLimitOnInteracting'],
             l = layers.length;
+        const baseLayer = map.getBaseLayer();
         let t = 0;
         for (let i = l - 1; i >= 0; i--) {
             const layer = layers[i];
@@ -124,7 +125,7 @@ class MapCanvasRenderer extends MapRenderer {
             }
 
             if (isInteracting && isCanvas) {
-                if (layerLimit > 0 && l - 1 - i > layerLimit) {
+                if (layerLimit > 0 && l - 1 - i > layerLimit && layer !== baseLayer) {
                     layer._getRenderer().clearCanvas();
                     continue;
                 }

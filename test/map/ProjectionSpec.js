@@ -1,4 +1,4 @@
-describe('#Projection', function () {
+describe('Map.Projection', function () {
 
     var container;
     var map;
@@ -73,6 +73,14 @@ describe('#Projection', function () {
                 projection:'EPSG:4326'
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
+            expect(map.getCenter()).to.closeTo(center);
+        });
+
+        it('change to EPSG:4490', function () {
+            map.setSpatialReference({
+                projection:'EPSG:4490'
+            });
+            expect(map.getProjection().code).to.be.eql('EPSG:4490');
             expect(map.getCenter()).to.closeTo(center);
         });
 

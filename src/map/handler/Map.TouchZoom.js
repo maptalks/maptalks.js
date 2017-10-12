@@ -79,16 +79,10 @@ class MapTouchZoomHandler extends Handler {
         off(document, 'touchend', this._onTouchEnd, this);
 
         const scale = this._scale;
-        let zoom = map.getZoomForScale(scale);
-        if (zoom === -1) {
-            zoom = map.getZoom();
-        }
+        const res = map._getResolution(this._startZoom) / scale;
+        const zoom = map.getZoomFromRes(res);
 
-        if (zoom !== map.getZoom()) {
-            map._zoomAnimation(zoom, this._Origin, this._scale);
-        } else {
-            map.onZoomEnd(zoom, this._Origin);
-        }
+        map.onZoomEnd(zoom, this._Origin);
         /**
          * touchzoomend event
          * @event Map#touchzoomend
