@@ -2,14 +2,14 @@ import { extend } from 'core/util';
 import PROJ4326 from './Projection.EPSG4326';
 
 /**
- * CGCS2000
+ * For CGCS2000
  *
  * @class
  * @category geo
  * @protected
  * @memberOf projection
  * @name EPSG4490
- * @mixes projection.Common
+ * @mixes projection.EPSG4326
  * @mixes measurer.WGS84Sphere
  */
 export default extend({}, PROJ4326, /** @lends projection.EPSG4490 */ {

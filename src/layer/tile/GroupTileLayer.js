@@ -5,11 +5,12 @@ import TileLayer from './TileLayer';
 /**
  * @classdesc
  * A layer used to display a group of tile layers. <br>
- * Its performance is better than add TileLayers seperately and it can prevent the warning: <br>
- * "WARNING: Too many active WebGL contexts. Oldest context will be lost" on chrome
+ * Its performance is better than add TileLayers seperately and it can help prevent limits of active webgl contexts: <br>
+ * "WARNING: Too many active WebGL contexts. Oldest context will be lost"
  * @category layer
  * @extends TileLayer
  * @param {String|Number} id - tile layer's id
+ * @param {TileLayer[]} layers  - TileLayers to add
  * @param {Object} [options=null] - options defined in [TileLayer]{@link TileLayer#options}
  * @example
  * new GroupTileLayer("group-tiles",[
