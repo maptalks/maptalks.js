@@ -141,7 +141,7 @@ gulp.task('doc', (done) => {
     });
     const conf = require('./jsdoc.json');
     const cmd = 'jsdoc';
-    const args = ['-c', 'jsdoc.json'].concat(['-P', 'package.json']).concat(['API.md']).concat(sources);
+    const args = ['-c', 'jsdoc.json'].concat(['-P', 'package.json']).concat(sources);
     const exec = require('child_process').exec;
     exec([cmd].concat(args).join(' '), (error, stdout, stderr) => {
         if (error) {
