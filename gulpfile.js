@@ -30,7 +30,7 @@ const browsers = [];
 
 const configBrowsers = options.browsers || process.env['MAPTALKS_BROWSERS'] || '';
 configBrowsers.split(',').forEach(name => {
-    if (!name || name.length < 2) {
+    if (!name || name.length < 1) {
         return;
     }
     browsers.push(name);

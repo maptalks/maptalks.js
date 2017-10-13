@@ -1,4 +1,4 @@
-describe('#TextBox', function () {
+describe('Geometry.TextBox', function () {
 
     var container;
     var map;
@@ -159,7 +159,7 @@ describe('#TextBox', function () {
             map.addLayer(layer);
             layer.addGeometry(vector);
             expect(layer).to.be.painted(100 / 2 - padding[0] - 2, 0);
-            expect(layer).not.to.be.painted(100 / 2 - padding[0], 0);
+            expect(layer).not.to.be.painted(100 / 2 - padding[0] + 1, 0);
             expect(layer).not.to.be.painted(0, 0);
         });
 

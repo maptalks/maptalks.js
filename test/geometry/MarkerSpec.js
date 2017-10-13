@@ -428,7 +428,7 @@ describe('Geometry.Marker', function () {
         });
 
         it('rotate vector path marker', function (done) {
-            if (maptalks.Browser.ie) {
+            if (maptalks.Browser.ie || maptalks.Browser.gecko) {
                 // skip test with IE due to Security Error
                 done();
                 return;
