@@ -1,0 +1,7 @@
+language: node_js
+node_js:
+  - "6"
+addons:
+  firefox: "latest"
+script:
+  gulp test --browsers Firefox
