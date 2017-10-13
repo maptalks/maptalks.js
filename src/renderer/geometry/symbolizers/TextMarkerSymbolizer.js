@@ -5,6 +5,7 @@ import {
     isArrayHasData,
     getValueOrDefault
 } from 'core/util';
+import Point from 'geo/Point';
 import { hasFunctionDefinition } from 'core/mapbox';
 import { splitTextToRow, getAlignPoint, replaceVariable } from 'core/util/strings';
 import PointExtent from 'geo/PointExtent';
@@ -82,6 +83,11 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         return r * Math.PI / 180;
     }
 
+    getDxDy() {
+        const s = this.style;
+        return new Point(s['textDx'], s['textDy']);
+    }
+
     getMarkerExtent() {
         const dxdy = this.getDxDy(),
             style = this.style;
@@ -118,6 +124,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             'textWrapWidth': getValueOrDefault(s['textWrapWidth'], null),
             'textWrapCharacter': getValueOrDefault(s['textWrapCharacter'], '\n'),
             'textLineSpacing': getValueOrDefault(s['textLineSpacing'], 0),
+
+            'textDx': getValueOrDefault(s['textDx'], 0),
+            'textDy': getValueOrDefault(s['textDy'], 0),
 
             'textHorizontalAlignment': getValueOrDefault(s['textHorizontalAlignment'], 'middle'), //left | middle | right | auto
             'textVerticalAlignment': getValueOrDefault(s['textVerticalAlignment'], 'middle'), // top | middle | bottom | auto

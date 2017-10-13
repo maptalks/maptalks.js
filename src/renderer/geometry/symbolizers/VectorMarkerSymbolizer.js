@@ -53,6 +53,13 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     }
 
+    getDxDy() {
+        const s = this.style;
+        const dx = s['markerDx'],
+            dy = s['markerDy'];
+        return new Point(dx, dy);
+    }
+
     _drawMarkers(ctx, cookedPoints, resources) {
 
         const strokeAndFill = this.strokeAndFill;
@@ -273,6 +280,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerLineOpacity': getValueOrDefault(s['markerLineOpacity'], 1),
             'markerLineDasharray': getValueOrDefault(s['markerLineDasharray'], []),
             'markerLinePatternFile': getValueOrDefault(s['markerLinePatternFile'], null),
+
+            'markerDx': getValueOrDefault(s['markerDx'], 0),
+            'markerDy': getValueOrDefault(s['markerDy'], 0),
 
             'markerWidth': getValueOrDefault(s['markerWidth'], 10),
             'markerHeight': getValueOrDefault(s['markerHeight'], 10),

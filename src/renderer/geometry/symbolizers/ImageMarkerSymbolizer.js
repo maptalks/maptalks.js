@@ -1,4 +1,5 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
+import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
@@ -99,6 +100,13 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         return r * Math.PI / 180;
     }
 
+    getDxDy() {
+        const s = this.style;
+        const dx = s['markerDx'],
+            dy = s['markerDy'];
+        return new Point(dx, dy);
+    }
+
     getMarkerExtent(resources) {
         const url = this.style['markerFile'],
             img = resources ? resources.getImage(url) : null;
@@ -115,7 +123,10 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             'markerOpacity': getValueOrDefault(s['markerOpacity'], 1),
             'markerWidth': getValueOrDefault(s['markerWidth'], null),
             'markerHeight': getValueOrDefault(s['markerHeight'], null),
-            'markerRotation' : getValueOrDefault(s['markerRotation'], 0)
+            'markerRotation' : getValueOrDefault(s['markerRotation'], 0),
+
+            'markerDx': getValueOrDefault(s['markerDx'], 0),
+            'markerDy': getValueOrDefault(s['markerDy'], 0)
         };
     }
 }
