@@ -1,13 +1,13 @@
 
 
-describe('#MapScrollZoomSpec', function () {
+describe('Map.ScrollZoom', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var delay;
     function scrollMap(delta) {
         happen.once(container, {
-            type: 'mousewheel',
+            type: (maptalks.Browser.gecko ? 'DOMMouseScroll' : 'mousewheel'),
             detail: delta
         });
     }

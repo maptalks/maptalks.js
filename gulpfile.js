@@ -30,18 +30,10 @@ const browsers = [];
 
 const configBrowsers = options.browsers || process.env['MAPTALKS_BROWSERS'] || '';
 configBrowsers.split(',').forEach(name => {
-    if (!name || name.length < 2) {
+    if (!name || name.length < 1) {
         return;
     }
-    const lname = name.toLowerCase();
-    if (lname.indexOf('phantom') === 0) {
-        browsers.push('PhantomJS');
-    }
-    if (lname[0] === 'i' && lname[1] === 'e') {
-        browsers.push('IE' + lname.substr(2));
-    } else {
-        browsers.push(lname[0].toUpperCase() + lname.substr(1));
-    }
+    browsers.push(name);
 });
 
 gulp.task('scripts', () => {

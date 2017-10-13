@@ -140,7 +140,7 @@ describe('Marker.Sprite', function () {
     });
 
     it('vector path marker sprite', function (done) {
-        if (maptalks.Browser.ie) {
+        if (maptalks.Browser.ie || maptalks.Browser.gecko) {
             // IE throws SecurityError
             done();
             return;

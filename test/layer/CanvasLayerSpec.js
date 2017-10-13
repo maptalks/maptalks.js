@@ -1,4 +1,4 @@
-describe('CanvasLayer', function () {
+describe('Layer.CanvasLayer', function () {
 
     var container;
     var map;
@@ -149,7 +149,11 @@ describe('CanvasLayer', function () {
             }
         }));
         layer.once('layerload', function () {
-            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            if (maptalks.Browser.gecko3d) {
+                expect(layer).to.be.painted(0, 0, [254, 0, 0]);
+            } else {
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            }
             expect(layer).not.to.be.painted(0, maskRadius + 2);
             done();
         });
