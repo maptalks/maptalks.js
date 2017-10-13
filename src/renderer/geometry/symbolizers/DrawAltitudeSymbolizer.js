@@ -1,4 +1,5 @@
 import { isObject } from 'core/util';
+import Point from 'geo/Point';
 import PointSymbolizer from './PointSymbolizer';
 import StrokeAndFillSymbolizer from './StrokeAndFillSymbolizer';
 import Canvas from 'core/Canvas';
@@ -32,6 +33,10 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
             // for get2DExtent
             this.style['lineWidth'] = 0;
         }
+        this.dxdy = this._defineStyle({
+            'dx' : symbol['textDx'] || symbol['markerDx'],
+            'dy' : symbol['textDy'] || symbol['markerDy']
+        });
     }
 
     symbolize(ctx) {
@@ -61,6 +66,11 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
             }
             this._drawMarkerAltitude(ctx, point[0], groundPoint[0]);
         }
+    }
+
+    getDxDy() {
+        const s = this.dxdy;
+        return new Point(s['dx'] || 0, s['dy'] || 0);
     }
 
     get2DExtent() {

@@ -1,6 +1,5 @@
 import { computeDegree } from 'core/util';
 import PointExtent from 'geo/PointExtent';
-import Point from 'geo/Point';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
 /**
@@ -20,10 +19,6 @@ class PointSymbolizer extends CanvasSymbolizer {
         this.symbol = symbol;
         this.geometry = geometry;
         this.painter = painter;
-        this.dxdy = this._defineStyle({
-            'dx' : symbol['textDx'] || symbol['markerDx'],
-            'dy' : symbol['textDy'] || symbol['markerDy']
-        });
     }
 
     get2DExtent() {
@@ -35,11 +30,6 @@ class PointSymbolizer extends CanvasSymbolizer {
             extent._combine(map._pointToPoint(renderPoints[i], maxZoom));
         }
         return extent;
-    }
-
-    getDxDy() {
-        const s = this.dxdy;
-        return new Point(s['dx'] || 0, s['dy'] || 0);
     }
 
     _getRenderPoints() {
