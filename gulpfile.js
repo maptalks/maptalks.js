@@ -33,15 +33,7 @@ configBrowsers.split(',').forEach(name => {
     if (!name || name.length < 2) {
         return;
     }
-    const lname = name.toLowerCase();
-    if (lname.indexOf('phantom') === 0) {
-        browsers.push('PhantomJS');
-    }
-    if (lname[0] === 'i' && lname[1] === 'e') {
-        browsers.push('IE' + lname.substr(2));
-    } else {
-        browsers.push(lname[0].toUpperCase() + lname.substr(1));
-    }
+    browsers.push(name);
 });
 
 gulp.task('scripts', () => {

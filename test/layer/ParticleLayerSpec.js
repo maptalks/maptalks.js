@@ -1,4 +1,4 @@
-describe('ParticleLayer', function () {
+describe('Layer.ParticleLayer', function () {
 
     var container;
     var map;
@@ -36,7 +36,11 @@ describe('ParticleLayer', function () {
         layer.getParticles = getParticles;
 
         layer.once('layerload', function () {
-            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            if (maptalks.Browser.gecko3d) {
+                expect(layer).to.be.painted(0, 0, [254, 0, 0]);
+            } else {
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            }
             done();
         });
         layer.addTo(map);
@@ -107,7 +111,11 @@ describe('ParticleLayer', function () {
             }
         }));
         layer.once('layerload', function () {
-            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            if (maptalks.Browser.gecko3d) {
+                expect(layer).to.be.painted(0, 0, [254, 0, 0]);
+            } else {
+                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            }
             expect(layer).not.to.be.painted(0, maskRadius + 2);
             done();
         });
@@ -121,7 +129,11 @@ describe('ParticleLayer', function () {
         layer.once('add', function () {
             expect(layer).not.to.be.painted();
             layer.once('layerload', function () {
-                expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                if (maptalks.Browser.gecko3d) {
+                    expect(layer).to.be.painted(0, 0, [254, 0, 0]);
+                } else {
+                    expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+                }
                 done();
             });
             layer.show();
@@ -134,7 +146,7 @@ describe('ParticleLayer', function () {
         layer.getParticles = getParticles;
 
         layer.once('layerload', function () {
-            expect(layer).to.be.painted(0, 0, [255, 0, 0]);
+            expect(layer).to.be.painted(0, 0);
             layer.once('hide', function () {
                 expect(layer).not.to.be.painted();
                 done();
@@ -160,7 +172,11 @@ describe('ParticleLayer', function () {
                 expect(layer).not.to.be.painted(4, 0);
             }
             if (count === 2) {
-                expect(layer).to.be.painted(4, 0, [255, 0, 0]);
+                if (maptalks.Browser.gecko3d) {
+                    expect(layer).to.be.painted(4, 0, [254, 0, 0]);
+                } else {
+                    expect(layer).to.be.painted(4, 0, [255, 0, 0]);
+                }
                 done();
             }
         });
@@ -185,7 +201,11 @@ describe('ParticleLayer', function () {
             expect(layer.isPlaying()).not.to.be.ok();
             setTimeout(function () {
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(3, 0, [255, 0, 0]);
+                    if (maptalks.Browser.gecko3d) {
+                        expect(layer).to.be.painted(3, 0, [254, 0, 0]);
+                    } else {
+                        expect(layer).to.be.painted(3, 0, [255, 0, 0]);
+                    }
                     expect(layer.isPlaying()).to.be.ok();
                     done();
                 });

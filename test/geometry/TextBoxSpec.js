@@ -9,6 +9,7 @@ describe('#TextBox', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
+        map.config('centerCross', true);
         map.removeBaseLayer();
     });
 
@@ -200,7 +201,7 @@ describe('#TextBox', function () {
             layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
             map.addLayer(layer);
             layer.addGeometry(vector);
-            expect(layer).to.be.painted(0, 100 / 2 - padding[1] - 7);
+            expect(layer).to.be.painted(0, 100 / 2 - padding[1] - 9);
             expect(layer).not.be.painted();
         });
     });

@@ -1,4 +1,4 @@
-describe('Remove and Hide Geometry', function () {
+describe('Geometry.RemoveHide', function () {
 
     var container;
     var map;
@@ -31,9 +31,14 @@ describe('Remove and Hide Geometry', function () {
         REMOVE_CONTAINER(container);
     });
 
-    // 测试所有类型Geometry的公共方法
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
-
+    //override marker's default symbol by a 10 * 10 ellipse
+    geometries[0].setSymbol({
+        markerType : 'ellipse',
+        markerWidth : 10,
+        markerHeight : 10,
+        markerFill : '#000'
+    });
     for (var i = 0, len = geometries.length; i < len; i++) {
         testRemoveHide.call(this, geometries[i], context);
     }

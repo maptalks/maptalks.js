@@ -121,6 +121,10 @@ describe('Control.Panel', function () {
             expect(points[1].toArray()).to.be.closeTo([118.84482943649291, 32.04781623775102]);
             expect(points[2].toArray()).to.be.closeTo([118.84448611373901, 32.04773439332491]);
             expect(points[3].toArray()).to.be.closeTo([118.8441427909851, 32.04781623775102]);
+        } if (maptalks.Browser.gecko) {
+            expect(points[1].toArray()).to.be.closeTo([118.844829, 32.04779805]);
+            expect(points[2].toArray()).to.be.closeTo([118.844486, 32.04769801]);
+            expect(points[3].toArray()).to.be.closeTo([118.844142, 32.047798050]);
         } else {
             expect(points[1].toArray()).to.be.closeTo([118.844829, 32.0478025]);
             expect(points[2].toArray()).to.be.closeTo([118.844486, 32.047707]);

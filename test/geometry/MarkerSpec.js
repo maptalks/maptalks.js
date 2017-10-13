@@ -319,7 +319,7 @@ describe('Geometry.Marker', function () {
                 symbol : {
                     textName : '■■■■■■■■■',
                     textSize : { stops: [[7, 8], [14, 20]] },
-                    textFill : '#fff'
+                    textFill : '#000'
                 }
             });
             var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
@@ -331,6 +331,8 @@ describe('Geometry.Marker', function () {
                 if (maptalks.Browser.ie) {
                     // font is smaller with ie
                     expect(layer).to.be.painted(20, 0);
+                } else if (maptalks.Browser.gecko3d) {
+                    expect(layer).to.be.painted(20, -1);
                 } else {
                     expect(layer).to.be.painted(30, 0);
                 }
@@ -359,6 +361,8 @@ describe('Geometry.Marker', function () {
                 if (maptalks.Browser.ie) {
                     // font is smaller with ie
                     expect(layer).to.be.painted(10, 12);
+                } else if (maptalks.Browser.gecko3d) {
+                    expect(layer).to.be.painted(10, 8);
                 } else {
                     expect(layer).to.be.painted(10, 12);
                 }
@@ -463,7 +467,7 @@ describe('Geometry.Marker', function () {
             });
             var layer = new maptalks.VectorLayer('vector', marker);
             layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(11, 0);
+                expect(layer).not.to.be.painted(12, 0);
                 expect(layer).to.be.painted(-11, -11);
                 done();
             })
@@ -485,7 +489,12 @@ describe('Geometry.Marker', function () {
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(11, 0);
                 expect(layer).not.to.be.painted(-11, -11);
-                expect(layer).to.be.painted(8, 86);
+                if (maptalks.Browser.gecko3d) {
+                    expect(layer).to.be.painted(6, 70);
+                } else {
+                    expect(layer).to.be.painted(8, 86);
+                }
+
                 done();
             })
                 .addTo(map);
