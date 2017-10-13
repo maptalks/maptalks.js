@@ -139,8 +139,8 @@ describe('SymbolSpec', function () {
             expect(symbolizer.style.markerFillOpacity).to.be.eql(0.5);
             expect(symbolizer.style.markerLineWidth).to.be.eql(2);
             expect(symbolizer.style.markerLineOpacity).to.be.eql(0.6);
-            expect(symbolizer.dxdy.dx).to.be.eql(1);
-            expect(symbolizer.dxdy.dy).to.be.eql(2);
+            expect(symbolizer.style.markerDx).to.be.eql(1);
+            expect(symbolizer.style.markerDy).to.be.eql(2);
         });
 
         it('image marker symbolizer', function () {
@@ -156,8 +156,8 @@ describe('SymbolSpec', function () {
             expect(symbolizer.style.markerWidth).to.be.eql(20);
             expect(symbolizer.style.markerHeight).to.be.eql(30);
             expect(symbolizer.style.markerOpacity).to.be.eql(0.5);
-            expect(symbolizer.dxdy.dx).to.be.eql(1);
-            expect(symbolizer.dxdy.dy).to.be.eql(2);
+            expect(symbolizer.style.markerDx).to.be.eql(1);
+            expect(symbolizer.style.markerDy).to.be.eql(2);
         });
 
         it('text marker symbolizer', function () {
@@ -178,8 +178,8 @@ describe('SymbolSpec', function () {
             expect(symbolizer.style.textHaloRadius).to.be.eql(4);
             expect(symbolizer.style.textWrapWidth).to.be.eql(3);
             expect(symbolizer.style.textLineSpacing).to.be.eql(2);
-            expect(symbolizer.dxdy.dx).to.be.eql(1);
-            expect(symbolizer.dxdy.dy).to.be.eql(2);
+            expect(symbolizer.style.textDx).to.be.eql(1);
+            expect(symbolizer.style.textDy).to.be.eql(2);
         });
     });
 
