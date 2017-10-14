@@ -1,4 +1,4 @@
-> Version and which browser you use?
+> maptalks's version and what browser you use?
 
 > Description
 
