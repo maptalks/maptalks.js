@@ -1,13 +1,5 @@
-#### Environment
-* maptalks version:
-* Browser (version):
-* OS/Platform (version):
+> Version and which browser you use?
 
-#### Issue Description
 
-#### jsfiddle or codepen URL
-> the example url of maptalks to attach in
->
-> https://cdn.jsdelivr.net/npm/maptalks@0.30.0/dist/maptalks.js
->
-> https://cdn.jsdelivr.net/npm/maptalks@0.30.0/dist/maptalks.css
+
+> Please provide a reproduction Url (on any jsfiddle like site)
