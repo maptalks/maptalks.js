@@ -1,10 +1,6 @@
-
-
-<h1 align="center"><a href="https://maptalks.org"><img alt="maptalks logo" src="https://user-images.githubusercontent.com/13678919/31478848-cc8d5ef0-af45-11e7-99a9-d894a3c0c7c2.png"/></a></h1>
-
+<h1 align="center"><img src="https://user-images.githubusercontent.com/13678919/31573184-f0221e06-b0e8-11e7-9a1e-bb576c2eb9ba.png"/></h1>
 
 [![NPM Version](https://img.shields.io/npm/v/maptalks.svg)](https://github.com/maptalks/maptalks.js) [![Circle CI](https://circleci.com/gh/maptalks/maptalks.js.svg?style=shield)](https://circleci.com/gh/maptalks/maptalks.js) [![Build status](https://ci.appveyor.com/api/projects/status/r9pb0dhqqq3cdppy/branch/master?svg=true)](https://ci.appveyor.com/project/fuzhenn/maptalks-js) [![Build Status](https://travis-ci.org/maptalks/maptalks.js.svg?branch=master)](https://travis-ci.org/maptalks/maptalks.js) [![codecov](https://codecov.io/gh/maptalks/maptalks.js/branch/master/graph/badge.svg)](https://codecov.io/gh/maptalks/maptalks.js) [![devDependency Status](https://david-dm.org/maptalks/maptalks.js/dev-status.svg)](https://david-dm.org/maptalks/maptalks.js#info=devDependencies)
-------
 
 A light JavaScript library to create integrated 2D/3D maps. 
 
@@ -41,10 +37,10 @@ It's easy and joyful to write plugins for maptalks, please check out [the tutori
 
 ## Contributing
 
-We welcome any kind of contributions including issue reportings, pull requests, documentation corrections, feature requests and any other helps.
+We warmly welcome any kind of contributions including issue reportings, pull requests, documentation corrections, feature requests and any other helps.
 
-### Contributing Code
-Please see the [Contribution Guide](CONTRIBUTING.md).
+### Contributing Guide
+Read our [contributing guide](CONTRIBUTING.md) to learn about our development process, how to propose fixes and improvements, and how to test your changes to maptalks.
 
 ## Acknowledgments
 
