@@ -12,7 +12,7 @@ A light JavaScript library to create integrated 2D/3D maps.
 
 ## The Story
 
-maptalks.js was born in 2013, for a map-centric project to help [YUM! China](http://www.yumchina.com/en/) to choose locations of KFC and PizzaHut restaurants. After verified in many projects of government depts and enterprises, in 2016, we did a complete rewrite with ES2015 and open source it, hoping it can make your life easier in mapping projects.
+maptalks.js was born in 2013, for a map-centric project to help [YUM! China](http://www.yumchina.com/en/) to choose locations of KFC and PizzaHut restaurants. After verified in many projects of government depts and enterprises, we did a complete rewrite with ES2015 and open source it, hoping it can make your life easier in mapping projects.
 
 ## Resources
 
