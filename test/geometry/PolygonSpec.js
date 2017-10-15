@@ -264,6 +264,30 @@ describe('Geometry.Polygon', function () {
         expect(spy.called).to.be.ok();
     });
 
+    it('Polygon._containsPoint with dynamic linewidth', function () {
+        layer.config('drawImmediate', true);
+        layer.clear();
+        var geometry = new maptalks.Polygon([[
+            new maptalks.Coordinate([center.x, center.y + 0.001]),
+            new maptalks.Coordinate([center.x, center.y]),
+            new maptalks.Coordinate([center.x + 0.002, center.y])
+        ]], {
+            symbol: {
+                'lineWidth': { stops : [[0, 1], [12, 8]] }
+            }
+        });
+        layer.addGeometry(geometry);
+
+        var spy = sinon.spy();
+        geometry.on('click', spy);
+
+        happen.click(canvasContainer, {
+            clientX: 400 + 8,
+            clientY: 300 + 8
+        });
+        expect(spy.called).to.be.ok();
+    });
+
     it('can be a anti-meridian polygon', function () {
         var points = [
             [[179, 10], [-170, 10], [-169, -10], [179, -10]],

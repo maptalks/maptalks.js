@@ -216,8 +216,11 @@ class Painter extends Class {
     _clip(points, altitude) {
         const map = this.getMap(),
             maxZoom = map.getMaxNativeZoom();
-        const lineWidth = this.getSymbol()['lineWidth'] || 2,
-            containerExtent = map.getContainerExtent();
+        let lineWidth = this.getSymbol()['lineWidth'];
+        if (!isNumber(lineWidth)) {
+            lineWidth = 4;
+        }
+        const containerExtent = map.getContainerExtent();
         //TODO map.height / 4 is a magic number to draw complete polygon with altitude after clipping
         const extent2D = containerExtent.expand(altitude ? map.height / 4 : lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom));
         const e = this.get2DExtent();

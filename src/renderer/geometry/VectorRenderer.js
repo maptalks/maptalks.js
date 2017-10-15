@@ -1,4 +1,4 @@
-import { pushIn } from 'core/util';
+import { pushIn, isNumber } from 'core/util';
 import Size from 'geo/Size';
 import Canvas from 'core/Canvas';
 import Geometry from 'geometry/Geometry';
@@ -181,7 +181,7 @@ LineString.include({
 
     _paintArrow(ctx, points, lineOpacity) {
         let lineWidth = this._getInternalSymbol()['lineWidth'];
-        if (!lineWidth || lineWidth < 3) {
+        if (!isNumber(lineWidth) || lineWidth < 3) {
             lineWidth = 3;
         }
         const arrows = this._getArrows(points, lineWidth);

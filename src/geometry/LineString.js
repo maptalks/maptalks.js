@@ -1,4 +1,4 @@
-import { isNil } from 'core/util';
+import { isNil, isNumber } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import PointExtent from 'geo/PointExtent';
 import { pointInsidePolygon, distanceToSegment, clipLine } from 'core/util/path';
@@ -116,8 +116,10 @@ class LineString extends Path {
         }
 
         const arrowStyle = this._getArrowStyle();
-        const lineWidth = this._getInternalSymbol()['lineWidth'];
-
+        let lineWidth = this._getInternalSymbol()['lineWidth'];
+        if (!isNumber(lineWidth)) {
+            lineWidth = 2;
+        }
         const map = this.getMap(),
             extent = this._getPrjExtent(),
             nw = new Coordinate(extent.xmin, extent.ymax),
