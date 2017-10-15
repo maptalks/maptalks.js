@@ -1,13 +1,15 @@
 {
   "name": "maptalks",
   "version": "0.31.0",
-  "description": "An open-source javascript library for 2D/3D maps.",
+  "description": "A light JavaScript library to create integrated 2D/3D maps.",
   "license": "BSD-3-Clause",
   "author": "Fu Zhen",
   "keywords": [
+    "javascript",
+    "gis",
     "map",
-    "2D",
-    "3D",
+    "2d-maps",
+    "3d-maps",
     "geospatial"
   ],
   "repository": {
@@ -26,7 +28,9 @@
     "prepublish": "gulp minify",
     "preversion": "npm run lint",
     "version": "npm run doc && git add -A docs/api",
-    "doc": "gulp doc"
+    "doc": "gulp doc",
+    "dev" : "gulp",
+    "build" : "gulp minify"
   },
   "main": "dist/maptalks.js",
   "browser": "dist/maptalks.min.js",
