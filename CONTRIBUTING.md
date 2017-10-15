@@ -2,7 +2,7 @@
 
 Hi! It's really really exciting that you are interested in contributing to maptalks.js. Before submitting your contribution though, please make sure to take a moment and read through the following guidelines.
 
-- [Code of Conduct](https://github.com/maptalks.js/CODE_OF_CONDUCT.md)
+- [Code of Conduct](https://github.com/maptalks/maptalks.js/blob/master/CODE_OF_CONDUCT.md)
 - [Pull Request Guidelines](#pull-request-guidelines)
 - [Development Setup](#development-setup)
 - [CI Tests](#ci-tests)
@@ -75,9 +75,9 @@ The default test script will do the following: lint with ESLint -> unit tests. *
 
 ## CI Tests
 maptalks's unit tests are run in the following CI servers:
-* **[Travis-ci](https://travis-ci.org/maptalks/maptalks.js)**: run tests on latest Firefox
 * **[CircleCI](https://circleci.com/gh/maptalks/maptalks.js)**: run tests on Chrome
 * **[AppVeyor](https://ci.appveyor.com/project/fuzhenn/maptalks-js)**: run tests on IE11 and IE10 (emulated by "x-ua-compatible")
+* **[Travis-ci](https://travis-ci.org/maptalks/maptalks.js)**: run tests on latest Firefox
 
 Common causes of CI failures:
 * If your PR failes in one or two CI tests but succeeds in the others, it usually indicated a browser compatible problem. 
