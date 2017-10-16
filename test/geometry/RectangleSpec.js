@@ -92,6 +92,8 @@ describe('Geometry.Rectangle', function () {
         });
         layer.addGeometry(geometry);
 
+        var prjExtent = geometry._getPrjExtent();
+
         var spy = sinon.spy();
         geometry.on('click', spy);
 
@@ -106,6 +108,8 @@ describe('Geometry.Rectangle', function () {
             clientY: 300 + 8 - 2
         });
         expect(spy.called).to.be.ok();
+
+        expect(prjExtent.equals(geometry._getPrjExtent())).to.be.ok();
     });
 
     describe('geometry fires events', function () {
