@@ -1,3 +1,4 @@
+/* eslint-env es6 */
 describe('Class', () => {
     it('addInitHook', () => {
         const D = class extends maptalks.Class {
