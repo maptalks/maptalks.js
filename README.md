@@ -8,11 +8,11 @@ A light JavaScript library to create integrated 2D/3D maps.
 * **Open and pluggable**: Easy to extend with techs you may love as [plugins](https://maptalks.org/plugins.html).
 * **Performant**: Can smoothly render tens of thousands of geometries.
 * **Simple**: Extremely easy to learn and use.
-* **Feature Packed**: Essential features for the most mapping needs.
+* **Feature Packed**: Essential features for most mapping needs.
 
 ## The Story
 
-maptalks.js was born in 2013, for a map-centric project to help [YUM! China](http://www.yumchina.com/en/) to choose locations of KFC and PizzaHut restaurants. After verified in many projects of government depts and enterprises, we did a complete rewrite with ES2015 and open source it, hoping it can make your life easier in mapping projects.
+maptalks.js was born in 2013, for a map-centric project to help [YUM! China](http://www.yumchina.com/en/) to choose locations of KFC and PizzaHut restaurants. After verified in many projects of government depts and enterprises, we did a complete rewrite with ES2015 and open sourced it, hoping it can make your life easier in mapping projects.
 
 ## Resources
 
@@ -33,7 +33,7 @@ maptalks.js is well tested against IE10, IE11, Firefox and Chrome by around 1.5K
 
 ## Plugin Development
 
-It's easy and joyful to write plugins for maptalks, please check out [the tutorials](https://github.com/maptalks/maptalks.js/wiki) and begin to develop you own. And welcome to [share your works](https://github.com/maptalks/maptalks.github.io/issues/new) with us.
+It's easy and joyful to write plugins for maptalks, please check out [the tutorials](https://github.com/maptalks/maptalks.js/wiki) and begin to develop your own. And you are welcome to [share your work](https://github.com/maptalks/maptalks.github.io/issues/new) with us.
 
 ## Contributing
 
