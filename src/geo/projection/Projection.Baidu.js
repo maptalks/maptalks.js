@@ -62,7 +62,7 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
             }
         }
         const T = this.convertor(cB, cE);
-        const result = new Coordinate(T.x.toFixed(6), T.y.toFixed(6));
+        const result = new Coordinate(T.x, T.y);
         return result;
     },
     convertLL2MC: function (T) {
@@ -85,7 +85,7 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
             }
         }
         const cE = this.convertor(T, cD);
-        const result = new Coordinate(cE.x.toFixed(2), cE.y.toFixed(2));
+        const result = new Coordinate(cE.x, cE.y);
         return result;
     },
     convertor: function (cC, cD) {
