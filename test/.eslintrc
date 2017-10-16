@@ -13,9 +13,5 @@
     "COMMON_GEOEVENTS_TESTOR" : true,
     "GET_PAGE_POSITION" : true
   },
-  "plugins": ["mocha"],
-  "rules": {
-    "no-var" : 0,
-    "prefer-const": 0
-  }
+  "plugins": ["mocha"]
 }
