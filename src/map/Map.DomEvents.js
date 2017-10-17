@@ -190,12 +190,12 @@ Map.include(/** @lends Map.prototype */ {
 
     _handleDOMEvent(e) {
         let type = e.type;
-        if (this._ignoreEvent(e)) {
-            return;
-        }
         // prevent default contextmenu
         if (type === 'contextmenu') {
             preventDefault(e);
+        }
+        if (this._ignoreEvent(e)) {
+            return;
         }
         let mimicClick = false;
         // ignore click lasted for more than 300ms.
@@ -246,6 +246,13 @@ Map.include(/** @lends Map.prototype */ {
         if (!domEvent || !this._panels.control) {
             return false;
         }
+        if (this.getPitch() > this.options['maxVisualPitch']) {
+            const actualEvent = this._getActualEvent(domEvent);
+            const eventPos = getEventContainerPoint(actualEvent, this._containerDOM);
+            if (!this.getContainerExtent().contains(eventPos)) {
+                return true;
+            }
+        }
         let target = domEvent.srcElement || domEvent.target;
         if (target) {
             while (target && target !== this._containerDOM) {
@@ -268,9 +275,7 @@ Map.include(/** @lends Map.prototype */ {
             'domEvent': e
         };
         if (type !== 'keypress') {
-            const actual = e.touches && e.touches.length > 0 ?
-                e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
-                    e.changedTouches[0] : e;
+            const actual = this._getActualEvent(e);
             if (actual) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
@@ -280,6 +285,12 @@ Map.include(/** @lends Map.prototype */ {
             }
         }
         return eventParam;
+    },
+
+    _getActualEvent(e) {
+        return e.touches && e.touches.length > 0 ?
+            e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ?
+                e.changedTouches[0] : e;
     },
 
     _fireDOMEvent(target, e, type) {

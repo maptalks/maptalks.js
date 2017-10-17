@@ -273,7 +273,8 @@ class MapCanvasRenderer extends MapRenderer {
      * Renders the layers
      */
     drawLayerCanvas(layers) {
-        if (!this.map) {
+        const map = this.map;
+        if (!map) {
             return;
         }
         if (!this._needToRedraw() && !this.isViewChanged()) {
@@ -291,7 +292,7 @@ class MapCanvasRenderer extends MapRenderer {
          * @property {Map} target            - the map fires event
          * @property {CanvasRenderingContext2D} context  - canvas context
          */
-        this.map._fireEvent('renderstart', {
+        map._fireEvent('renderstart', {
             'context': this.context
         });
 
@@ -299,8 +300,8 @@ class MapCanvasRenderer extends MapRenderer {
             this.clearCanvas();
         }
 
-        const interacting = this.map.isInteracting(),
-            limit = this.map.options['layerCanvasLimitOnInteracting'];
+        const interacting = map.isInteracting(),
+            limit = map.options['layerCanvasLimitOnInteracting'];
         let len = layers.length;
 
         const images = [];
@@ -334,7 +335,7 @@ class MapCanvasRenderer extends MapRenderer {
          * @property {Map} target              - the map fires event
          * @property {CanvasRenderingContext2D} context - canvas context
          */
-        this.map._fireEvent('renderend', {
+        map._fireEvent('renderend', {
             'context': this.context
         });
     }

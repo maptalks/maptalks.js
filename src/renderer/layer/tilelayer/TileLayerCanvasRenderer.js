@@ -36,13 +36,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         const mask2DExtent = this.prepareCanvas();
-        let extent = map.getContainerExtent();
         if (mask2DExtent) {
             if (!mask2DExtent.intersects(this._extent2D)) {
                 this.completeRender();
                 return;
-            } else {
-                extent = mask2DExtent.intersection(this._extent2D).convertTo(c => map._pointToContainerPoint(c));
             }
         }
         const layer = this.layer;
@@ -61,6 +58,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // reset current transformation matrix to the identity matrix
             this.resetCanvasTransform();
         }
+        if (!mask2DExtent) {
+            this._clipByPitch();
+        }
         this._drawBackground();
         const loadingCount = this._markTiles(),
             tileLimit = this._getTileLimitOnInteracting();
@@ -74,9 +74,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tileId = tiles[i]['id'];
             //load tile in cache at first if it has.
             const cached = this._getCachedTile(tileId);
-            if (!layer._isTileInExtent(tile, extent)) {
-                continue;
-            }
             if (this._isLoadingTile(tileId)) {
                 loading = true;
                 continue;
@@ -154,6 +151,27 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _isLoadingTile(tileId) {
         return !!this._tileLoading[tileId];
+    }
+
+    // clip canvas to avoid rough edge of tiles
+    _clipByPitch() {
+        const ctx = this.context;
+        if (this._pitchClipped) {
+            delete this._pitchClipped;
+            ctx.restore();
+        }
+        const map = this.getMap();
+        if (map.getPitch() <= map.options['maxVisualPitch']) {
+            return;
+        }
+        const clipExtent = map.getContainerExtent();
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
+        ctx.beginPath();
+        ctx.rect(0, Math.ceil(clipExtent.ymin), Math.ceil(clipExtent.getWidth()), Math.ceil(clipExtent.getHeight()));
+        ctx.stroke();
+        ctx.clip();
+        this._pitchClipped = true;
     }
 
     loadTileQueue(tileQueue) {

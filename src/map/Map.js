@@ -41,6 +41,9 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
  *
+ * @property {Number}  [options.maxPitch=80]                    - max pitch
+ * @property {Number}  [options.maxVisualPitch=60]              - the max pitch to be visual
+ *
  * @property {Extent}  [options.viewHistory=true]               -  whether to record view history
  * @property {Extent}  [options.viewHistoryCount=10]            -  the count of view history record.
  *
@@ -64,6 +67,9 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
+    'maxVisualPitch' : 60,
+    'maxPitch' : 80,
+
     'centerCross': false,
 
     'clipFullExtent': false,
@@ -429,7 +435,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {PointExtent}
      */
     getContainerExtent() {
-        return new PointExtent(0, 0, this.width, this.height);
+        let visualHeight = this.height;
+        const pitch = this.getPitch(),
+            maxVisualPitch = this.options['maxVisualPitch'];
+        if (maxVisualPitch && pitch > maxVisualPitch) {
+            const visualDistance = this.height / 2 * Math.tan(maxVisualPitch * Math.PI / 180);
+            visualHeight = this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+        }
+        return new PointExtent(0, this.height - visualHeight, this.width, this.height);
     }
 
     /**
@@ -1568,8 +1581,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      */
     _get2DExtent(zoom) {
-        const c1 = this._containerPointToPoint(new Point(0, 0), zoom),
-            c2 = this._containerPointToPoint(new Point(this.width, 0), zoom),
+        const cExtent = this.getContainerExtent();
+        const c1 = this._containerPointToPoint(new Point(cExtent.xmin, cExtent.ymin), zoom),
+            c2 = this._containerPointToPoint(new Point(cExtent.xmax, cExtent.ymin), zoom),
             c3 = this._containerPointToPoint(new Point(this.width, this.height), zoom),
             c4 = this._containerPointToPoint(new Point(0, this.height), zoom);
         const xmin = Math.min(c1.x, c2.x, c3.x, c4.x),

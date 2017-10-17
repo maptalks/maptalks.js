@@ -436,6 +436,17 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         return this.map._layers;
     }
+
+    _getMask2DExtent() {
+        if (!this._mask || !this.getMap()) {
+            return null;
+        }
+        const painter = this._mask._getPainter();
+        if (!painter) {
+            return null;
+        }
+        return painter.get2DExtent();
+    }
 }
 
 Layer.mergeOptions(options);

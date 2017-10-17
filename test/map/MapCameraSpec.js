@@ -1,5 +1,5 @@
 
-describe('#Map.Camera', function () {
+describe('Map.Camera', function () {
 
     var container;
     var map, layer;
@@ -14,12 +14,7 @@ describe('#Map.Camera', function () {
             zoomAnimation:true,
             zoomAnimationDuration : 100,
             zoom: 17,
-            center: center/* ,
-            baseLayer : new maptalks.TileLayer('tile', {
-                urlTemplate:'/resources/tile.png',
-                subdomains: [1, 2, 3],
-                renderer:'canvas'
-            }) */
+            center: center
         };
         map = new maptalks.Map(container, option);
         // bring some offset to map, let view point is different from container point.
@@ -44,10 +39,14 @@ describe('#Map.Camera', function () {
         // max fov is 60
         map.setFov(90);
         expect(map.getFov()).to.be.approx(60);
+
+        // max pitch
+        map.setPitch(360);
+        expect(map.getPitch()).to.be.approx(map.options['maxPitch']);
     });
 
-    describe('TileLayer\'s dom rendering', function () {
-        it('render after composite operations', function (done) {
+    describe('TileLayer\'s rendering', function () {
+        it('gl render after composite operations', function (done) {
             if (!maptalks.Browser.webgl) {
                 done();
                 return;
@@ -65,6 +64,20 @@ describe('#Map.Camera', function () {
             baseLayer.on('layerload', function () {
                 done();
             });
+        });
+
+        it('render with canvas renderer', function (done) {
+            var baseLayer = new maptalks.TileLayer('b', {
+                urlTemplate : '/resources/tile.png',
+                renderer : 'canvas'
+            });
+            map.addLayer(baseLayer);
+            // let canvas renderer draw with pitch
+            baseLayer.getRenderer().isDrawable = function ()  { return true; };
+            baseLayer.on('layerload', function () {
+                done();
+            });
+            map.setPitch(80);
         });
     });
 

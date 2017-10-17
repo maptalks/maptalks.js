@@ -38,13 +38,22 @@ describe('GroupTileLayer', function () {
         ], {
             renderer : 'canvas'
         });
+        var group2 = new maptalks.GroupTileLayer('group2', [
+            new maptalks.TileLayer('tile1', {
+                urlTemplate : '/resources/tile.png'
+            })
+        ], {
+            renderer : 'canvas'
+        });
         group.once('layerload', function () {
             var grid = group.getTiles();
-            expect(grid.tiles.length).to.be.eql(32);
+            var grid2 = group2.getTiles();
+            expect(grid.tiles.length).to.be.eql(2);
+            expect(grid2.tiles.length).to.be.eql(1);
             map.removeLayer(group);
             done();
         });
-        map.addLayer(group);
+        map.addLayer([group, group2]);
     });
 
     it('show and hide', function (done) {
@@ -127,7 +136,7 @@ describe('GroupTileLayer', function () {
         layer.once('layerload', function () {
             var grid = layer.getTiles();
 
-            expect(grid.tiles.length).to.be.eql(32);
+            expect(grid.tiles.length).to.be.eql(2);
             done();
         });
         map.addLayer(layer);
