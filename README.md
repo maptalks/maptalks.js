@@ -17,6 +17,7 @@ maptalks.js was born in 2013, for a map-centric project to help [YUM! China](htt
 ## Resources
 
 * [Web Site](https://maptalks.org)
+* [A Quick Start](https://maptalks.org/getting-started.html)
 * [Examples](https://maptalks.github.io/examples/en/map/load/)
 * [API Reference](https://maptalks.github.io/maptalks.js/api/0.x/Map.html)
 * [Docs](https://github.com/maptalks/maptalks.js/wiki)
