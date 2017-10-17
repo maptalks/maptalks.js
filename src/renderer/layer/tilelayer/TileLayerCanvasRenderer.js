@@ -61,6 +61,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // reset current transformation matrix to the identity matrix
             this.resetCanvasTransform();
         }
+        if (!mask2DExtent) {
+            this._clipByPitch();
+        }
         this._drawBackground();
         const loadingCount = this._markTiles(),
             tileLimit = this._getTileLimitOnInteracting();
@@ -154,6 +157,27 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _isLoadingTile(tileId) {
         return !!this._tileLoading[tileId];
+    }
+
+    // clip canvas to avoid rough edge of tiles
+    _clipByPitch() {
+        const ctx = this.context;
+        if (this._pitchClipped) {
+            delete this._pitchClipped;
+            ctx.restore();
+        }
+        const map = this.getMap();
+        if (map.getPitch() <= map.options['maxVisualPitch']) {
+            return;
+        }
+        const clipExtent = map.getContainerExtent();
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
+        ctx.beginPath();
+        ctx.rect(0, Math.ceil(clipExtent.ymin), Math.ceil(clipExtent.getWidth()), Math.ceil(clipExtent.getHeight()));
+        ctx.stroke();
+        ctx.clip();
+        this._pitchClipped = true;
     }
 
     loadTileQueue(tileQueue) {

@@ -210,6 +210,7 @@ class TileLayer extends Layer {
                     idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
                     url = this.getTileUrl(idx['x'], idx['y'], zoom),
                     id = [layerId, idx['idy'], idx['idx'], zoom].join('__'),
+                    tileExtent = new PointExtent(p, p.add(width, height)),
                     desc = {
                         'url': url,
                         'point': p,
@@ -217,7 +218,8 @@ class TileLayer extends Layer {
                         'id': id,
                         'z': zoom,
                         'x' : idx['x'],
-                        'y' : idx['y']
+                        'y' : idx['y'],
+                        'extent2d' : tileExtent
                     };
                 tiles.push(desc);
             }
@@ -332,11 +334,10 @@ class TileLayer extends Layer {
         if (!map) {
             return false;
         }
+        const tileZoom = tileInfo.z;
+        const tileExtent = tileInfo.extent2d.convertTo(c => map._pointToContainerPoint(c, tileZoom));
         // add some buffer
-        const tileSize = this.getTileSize().toPoint()._add(1, 1),
-            tileZoom = tileInfo.z;
-        const tile2DExtent = new PointExtent(tileInfo['point'], tileInfo['point'].add(tileSize)).convertTo(c => map._pointToContainerPoint(c, tileZoom));
-        return extent.intersects(tile2DExtent);
+        return extent.intersects(tileExtent._expand(1));
     }
 }
 
