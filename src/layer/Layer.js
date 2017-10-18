@@ -12,10 +12,6 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
  * @property {String}  [options.renderer=canvas] - renderer type, "canvas" in default.
- * @property {Boolean}  [options.drawImmediate=false] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>
- *                                                    In default, for performance reason, layer will be drawn in a frame requested by RAF(RequestAnimationFrame).<br>
- *                                                    Set drawImmediate to true to draw immediately.<br>
- *                                                    This is necessary when layer's drawing is wrapped with another frame requested by RAF.
  * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
  * @property {String}   [options.debugOutline='#0f0']  - debug outline's color.
  * @memberOf Layer
@@ -26,7 +22,6 @@ const options = {
     'maxZoom': null,
     'visible': true,
     'opacity': 1,
-    'drawImmediate': false,
     // context.globalCompositeOperation, 'source-over' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
