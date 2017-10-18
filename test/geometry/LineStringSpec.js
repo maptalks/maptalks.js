@@ -234,6 +234,30 @@ describe('Geometry.LineString', function () {
         });
     });
 
+
+    //issue #522
+    it('drawn with arrow of vertex-first', function () {
+        map.setPitch(60);
+        map.setCenterAndZoom([-0.113049,51.49856], 10);
+        layer.config('drawImmediate', true);
+        var lineWidth = 8;
+        var center = map.getCenter();
+        var line = new maptalks.LineString([
+                center.sub(0.1, 0),
+                center.add(0.1, 0),
+                center.add(0.1, -0.1)
+            ], {
+            arrowStyle : 'classic',
+            arrowPlacement : 'vertex-firstlast',
+            symbol : {
+                'lineWidth' : lineWidth
+            }
+        });
+        layer.addGeometry(line);
+        var cp = map.coordinateToContainerPoint(map.getCenter());
+        expect(layer).to.be.painted(-43, -12);
+    });
+
     describe('animateShow', function () {
         it('animateShow', function (done) {
             layer = new maptalks.VectorLayer('id2');
