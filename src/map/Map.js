@@ -35,14 +35,14 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
  * @property {Boolean} [options.hitDetectLimit=5]               - the maximum number of layers to perform hit detect.
- * @property {Boolean} [options.fpsOnInteracting=40]            - fps when map is interacting.
+ * @property {Boolean} [options.fpsOnInteracting=0]            - fps when map is interacting.
  * @property {Boolean} [options.layerCanvasLimitOnInteracting=-1]    - limit of layer canvas to draw on map when interacting, set it to improve perf.
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
  *
  * @property {Number}  [options.maxPitch=80]                    - max pitch
- * @property {Number}  [options.maxVisualPitch=60]              - the max pitch to be visual
+ * @property {Number}  [options.maxVisualPitch=65]              - the max pitch to be visual
  *
  * @property {Extent}  [options.viewHistory=true]               -  whether to record view history
  * @property {Extent}  [options.viewHistoryCount=10]            -  the count of view history record.
@@ -67,7 +67,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
-    'maxVisualPitch' : 60,
+    'maxVisualPitch' : 65,
     'maxPitch' : 80,
 
     'centerCross': false,
@@ -97,7 +97,7 @@ const options = {
 
     'hitDetectLimit' : 5,
 
-    'fpsOnInteracting' : 40,
+    'fpsOnInteracting' : 0,
 
     'layerCanvasLimitOnInteracting' : -1,
 
