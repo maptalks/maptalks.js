@@ -165,10 +165,10 @@ LineString.include({
             first = map.coordinateToContainerPoint(this.getFirstCoordinate()),
             last = map.coordinateToContainerPoint(this.getLastCoordinate());
         for (let i = segments.length - 1; i >= 0; i--) {
-            if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].equals(first)) {
+            if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
                 arrows.push(this._getArrowPoints(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));
             }
-            if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].equals(last)) {
+            if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
                 arrows.push(this._getArrowPoints(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance));
             } else if (placement === 'point') {
                 for (let ii = 0, ll = segments[i].length - 1; ii < ll; ii++) {
