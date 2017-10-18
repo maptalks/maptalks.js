@@ -77,7 +77,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tileId = tiles[i]['id'];
             //load tile in cache at first if it has.
             const cached = this._getCachedTile(tileId);
-            if (!layer._isTileInExtent(tile, extent)) {
+            if (mask2DExtent && !layer._isTileInExtent(tile, extent)) {
                 continue;
             }
             if (this._isLoadingTile(tileId)) {

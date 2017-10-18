@@ -175,6 +175,7 @@ class TileLayer extends Layer {
 
         const res = map.getResolution(zoom),
             extent2d = map._get2DExtent(zoom),
+            containerExtent = map.getContainerExtent(),
             containerCenter = new Point(map.width / 2, map.height / 2),
             center2d = map._containerPointToPoint(containerCenter, zoom);
         if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
@@ -211,7 +212,7 @@ class TileLayer extends Layer {
                     url = this.getTileUrl(idx['x'], idx['y'], zoom),
                     id = [layerId, idx['idy'], idx['idx'], zoom].join('__'),
                     tileExtent = new PointExtent(p, p.add(width, height)),
-                    desc = {
+                    tileInfo = {
                         'url': url,
                         'point': p,
                         'viewPoint' : vp,
@@ -221,10 +222,11 @@ class TileLayer extends Layer {
                         'y' : idx['y'],
                         'extent2d' : tileExtent
                     };
-                tiles.push(desc);
+                if (this._isTileInExtent(tileInfo, containerExtent)) {
+                    tiles.push(tileInfo);
+                }
             }
         }
-
         //sort tiles according to tile's distance to center
         tiles.sort(function (a, b) {
             return (b.point.distanceTo(center2D) - a.point.distanceTo(center2D));
