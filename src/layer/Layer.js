@@ -14,6 +14,9 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
  * @property {String}  [options.renderer=canvas] - renderer type, "canvas" in default.
  * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
  * @property {String}   [options.debugOutline='#0f0']  - debug outline's color.
+ * @property {Boolean}  [options.forceRenderOnMoving=false]    - force to render layer when map is moving
+ * @property {Boolean}  [options.forceRenderOnZooming=false]   - force to render layer when map is zooming
+ * @property {Boolean}  [options.forceRenderOnRotating=false]  - force to render layer when map is Rotating
  * @memberOf Layer
  * @instance
  */

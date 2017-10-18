@@ -19,7 +19,6 @@ import Layer from '../Layer';
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {Boolean}             [options.cacheTiles=true]     - whether cache tiles
- * @property {Boolean}             [options.renderOnMoving=false]  - whether render layer when moving map
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
  * @memberOf TileLayer
  * @instance
@@ -51,9 +50,7 @@ const options = {
 
     'renderer' : (() => {
         return Browser.webgl ? 'gl' : 'canvas';
-    })(),
-
-    'renderOnMoving' : false
+    })()
 };
 
 
@@ -334,9 +331,9 @@ class TileLayer extends Layer {
     _bindMap(map) {
         const baseLayer = map.getBaseLayer();
         if (baseLayer === this) {
-            if (!baseLayer.options.hasOwnProperty('renderOnMoving')) {
+            if (!baseLayer.options.hasOwnProperty('forceRenderOnMoving')) {
                 this.config({
-                    'renderOnMoving': true
+                    'forceRenderOnMoving': true
                 });
             }
         }
