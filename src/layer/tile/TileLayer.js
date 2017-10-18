@@ -239,7 +239,6 @@ class TileLayer extends Layer {
             }
         }
 
-        console.log(this.getId(), tiles.length);
         //sort tiles according to tile's distance to center
         tiles.sort(function (a, b) {
             return (b.point.distanceTo(center2D) - a.point.distanceTo(center2D));
