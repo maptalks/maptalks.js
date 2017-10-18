@@ -107,7 +107,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     drawOnInteracting() {
-        this.draw();
+        const map = this.getMap();
+        if (map.isZooming() && !map.isMoving() && !map.isRotating()) {
+            this._drawBackground();
+            this.completeRender();
+        } else {
+            this.draw();
+        }
     }
 
     // Unlike other layers, TileLayerCanvasRenderer is special in drawing on interacting:
@@ -122,10 +128,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return true;
         }
         if (map.isZooming()) {
-            return false;
+            return !!this.layer.options['forceRenderOnZooming'];
         }
         if (map.isMoving()) {
-            return !!this.layer.options['renderOnMoving'];
+            return !!this.layer.options['forceRenderOnMoving'];
         }
         return super.needToRedraw();
     }
@@ -413,7 +419,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     onZoomStart(e) {
         const map = this.getMap();
         const preserveBack = !IS_NODE && (map && this.layer === map.getBaseLayer());
-        if (preserveBack) {
+        if (preserveBack || this.layer.options['forceRenderOnZooming']) {
             this._saveBackground();
         }
         super.onZoomStart(e);

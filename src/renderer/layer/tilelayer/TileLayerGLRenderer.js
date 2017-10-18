@@ -54,16 +54,6 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         return true;
     }
 
-    drawOnInteracting() {
-        const map = this.getMap();
-        if (map.isZooming() && !map.isMoving() && !map.isRotating()) {
-            this._drawBackground();
-        } else {
-            super.drawOnInteracting();
-        }
-
-    }
-
     needToRedraw() {
         const map = this.getMap();
         if (this._gl() && !map.getPitch() && map.isZooming() && !map.isMoving() && !map.isRotating()) {
