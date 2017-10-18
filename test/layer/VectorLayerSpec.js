@@ -361,6 +361,23 @@ describe('VectorLayer', function () {
             });
             layer.addGeometry(circle);
         });
+
+        it('ignore geometries out of container extent', function (done) {
+            var ne = map.getSize().toPoint().multi(1 / 2);
+            var circle = new maptalks.Circle(map.getExtent().getMax(), 10, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.config('drawImmediate', true);
+            layer.addGeometry(circle);
+            expect(layer).to.be.painted(ne.x - 2, -(ne.y - 2), [255, 0, 0]);
+            layer.once('layerload', function () {
+                expect(layer).not.to.be.painted(ne.x - 2, -(ne.y - 2));
+                done();
+            });
+            map.setPitch(80);
+        });
     });
 
     describe('can setStyle', function () {

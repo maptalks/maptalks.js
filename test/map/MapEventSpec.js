@@ -1,4 +1,4 @@
-describe('#MapEventSpec', function () {
+describe('Map.Event', function () {
 
     var container;
     var map;
@@ -7,8 +7,8 @@ describe('#MapEventSpec', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '2px';
-        container.style.height = '2px';
+        container.style.width = '20px';
+        container.style.height = '20px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation:false,
@@ -134,6 +134,34 @@ describe('#MapEventSpec', function () {
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
+        });
+        expect(spy.called).not.to.be.ok();
+    });
+
+    it('ignore events out of container extent', function () {
+        var domPosition = GET_PAGE_POSITION(container);
+        var x = domPosition.x + 2;
+        var y = domPosition.y + 2;
+        var spy = sinon.spy();
+        map.on('click', spy);
+        happen.mousedown(eventContainer, {
+            'clientX': x,
+            'clientY': y
+        });
+        happen.click(eventContainer, {
+            'clientX': x,
+            'clientY': y
+        });
+        expect(spy.called).to.be.ok();
+        spy.reset();
+        map.setPitch(80);
+        happen.mousedown(eventContainer, {
+            'clientX': x,
+            'clientY': y
+        });
+        happen.click(eventContainer, {
+            'clientX': x,
+            'clientY': y
         });
         expect(spy.called).not.to.be.ok();
     });
