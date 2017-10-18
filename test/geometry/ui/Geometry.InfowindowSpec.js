@@ -1,6 +1,7 @@
 describe('Geometry.InfoWindow', function () {
 
     var container;
+    var eventContainer;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
@@ -16,6 +17,7 @@ describe('Geometry.InfoWindow', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
+        eventContainer = map._panels.front;
         layer = new maptalks.VectorLayer('vector').addTo(map);
     });
 
@@ -79,6 +81,53 @@ describe('Geometry.InfoWindow', function () {
         var w = marker.getInfoWindow();
         expect(w.isVisible()).to.be.ok();
         layer.remove();
+        expect(w.isVisible()).not.to.be.ok();
+    });
+
+    it('auto close infowindow on click', function () {
+        var marker = new maptalks.Marker(center);
+        marker.addTo(layer);
+        var options = {
+            autoCloseOn : 'click',
+            title: 'title',
+            content: 'content',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        marker.openInfoWindow();
+        var w = marker.getInfoWindow();
+        expect(w.isVisible()).to.be.ok();
+        happen.mousedown(eventContainer, {
+            clientX: 10,
+            clientY: 10
+        });
+        happen.click(eventContainer, {
+            clientX: 10,
+            clientY: 10
+        });
+        expect(w.isVisible()).not.to.be.ok();
+    });
+
+    it('auto close infowindow on touchstart', function () {
+        var marker = new maptalks.Marker(center);
+        marker.addTo(layer);
+        var options = {
+            autoCloseOn : 'touchstart',
+            title: 'title',
+            content: 'content',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        marker.openInfoWindow();
+        var w = marker.getInfoWindow();
+        expect(w.isVisible()).to.be.ok();
+        happen.once(eventContainer, {
+            'type' : 'touchstart',
+            'touches' : [{
+                'clientX': 10,
+                'clientY': 10
+            }]
+        });
         expect(w.isVisible()).not.to.be.ok();
     });
 

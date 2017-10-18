@@ -8,6 +8,7 @@ import UIComponent from './UIComponent';
 /**
  * @property {Object} options
  * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
+ * @property {Boolean} [options.autoCloseOn=null]  - Auto close infowindow on map's events, e.g. "click contextmenu" will close infowindow with click or right click on map.
  * @property {Number}  [options.width=300]     - default width
  * @property {Number}  [options.minHeight=120] - minimun height
  * @property {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
@@ -18,6 +19,7 @@ import UIComponent from './UIComponent';
  */
 const options = {
     'autoPan': true,
+    'autoCloseOn' : null,
     'width': 300,
     'minHeight': 120,
     'custom': false,
@@ -192,6 +194,15 @@ class InfoWindow extends UIComponent {
             return this;
         }
         return super.show(coordinate);
+    }
+
+    getEvents() {
+        if (!this.options['autoCloseOn']) {
+            return null;
+        }
+        const events = {};
+        events[this.options['autoCloseOn']] = this.hide;
+        return events;
     }
 
     _getWindowWidth() {
