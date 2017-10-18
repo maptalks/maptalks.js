@@ -199,12 +199,8 @@ class DistanceTool extends DrawTool {
         const layerId = 'distancetool_' + uid;
         const markerLayerId = 'distancetool_markers_' + uid;
         if (!map.getLayer(layerId)) {
-            this._measureLineLayer = new VectorLayer(layerId, {
-                'drawImmediate': true
-            }).addTo(map);
-            this._measureMarkerLayer = new VectorLayer(markerLayerId, {
-                'drawImmediate': true
-            }).addTo(map);
+            this._measureLineLayer = new VectorLayer(layerId).addTo(map);
+            this._measureMarkerLayer = new VectorLayer(markerLayerId).addTo(map);
         } else {
             this._measureLineLayer = map.getLayer(layerId);
             this._measureMarkerLayer = map.getLayer(markerLayerId);

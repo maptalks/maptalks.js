@@ -6,6 +6,18 @@ import Layer from './Layer';
 import GeoJSON from 'geometry/GeoJSON';
 
 /**
+ * @property {Boolean}  [options.drawImmediate=false] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>
+ *                                                    In default, for performance reason, layer will be drawn in a frame requested by RAF(RequestAnimationFrame).<br>
+ *                                                    Set drawImmediate to true to draw immediately.<br>
+ *                                                    This is necessary when layer's drawing is wrapped with another frame requested by RAF.
+ * @memberOf OverlayLayer
+ * @instance
+ */
+const options = {
+    'drawImmediate' : false
+};
+
+/**
  * @classdesc
  * Base class of all the layers that can add/remove geometries. <br>
  * It is abstract and not intended to be instantiated.
@@ -553,5 +565,7 @@ class OverlayLayer extends Layer {
         }
     }
 }
+
+OverlayLayer.mergeOptions(options);
 
 export default OverlayLayer;

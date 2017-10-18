@@ -170,9 +170,7 @@ class GeometryDragHandler extends Handler  {
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
-                'drawImmediate': true
-            });
+            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID);
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
@@ -294,21 +292,14 @@ class GeometryDragHandler extends Handler  {
 
     _updateTargetAndRemoveShadow(eventParam) {
         const target = this.target,
-            layer = target.getLayer(),
             map = target.getMap();
         if (!target.options['dragShadow']) {
-            const d = layer.options['drawImmediate'];
-            layer.config('drawImmediate', true);
             target.show();
-            layer.config('drawImmediate', d);
         }
         const shadow = this._shadow;
         if (shadow) {
             if (target.options['dragShadow']) {
-                const d = layer.options['drawImmediate'];
-                layer.config('drawImmediate', true);
                 target.setCoordinates(shadow.getCoordinates());
-                layer.config('drawImmediate', d);
             }
             shadow._fireEvent('dragend', eventParam);
             shadow.remove();
