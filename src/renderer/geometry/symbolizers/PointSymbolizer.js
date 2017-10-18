@@ -62,13 +62,14 @@ class PointSymbolizer extends CanvasSymbolizer {
 
     _getRotationAt(i) {
         let r = this.getRotation();
-        const rotations = this._getRenderPoints()[1];
-        if (!rotations) {
-            return r;
-        }
         if (!r) {
             r = 0;
         }
+        const rotations = this._getRenderPoints()[1];
+        if (!rotations || !rotations[i]) {
+            return r;
+        }
+
         const map = this.getMap();
         let p0 = rotations[i][0], p1 = rotations[i][1];
         if (map.isTransforming()) {
