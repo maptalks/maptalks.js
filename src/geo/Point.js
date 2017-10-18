@@ -106,6 +106,20 @@ class Point {
     }
 
     /**
+     * Compare with another point with a delta
+     * @param {Point} p
+     * @param {Number} delta
+     * @return {Boolean}
+     */
+    closeTo(p, delta) {
+        if (!delta) {
+            delta = 0;
+        }
+        return this.x >= (p.x - delta) && this.x <= (p.x + delta) &&
+            this.y >= (p.y - delta) && this.y <= (p.y + delta);
+    }
+
+    /**
      * Returns the distance between the current and the given point.
      * @param  {Point} point - another point
      * @return {Number} distance
