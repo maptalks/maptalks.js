@@ -196,7 +196,7 @@ class TileLayerDomRenderer extends Class {
     _drawOnMoving() {
         const map = this.getMap();
         // prevent render when zooming or dragrotating, which may crash the browser
-        if (!map || !map.getPitch() && !this.layer.options['renderOnMoving']) {
+        if (!map || !map.getPitch() && !this.layer.options['forceRenderOnMoving']) {
             return;
         }
         this.render();
