@@ -36,13 +36,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         const mask2DExtent = this.prepareCanvas();
-        let extent = map.getContainerExtent();
         if (mask2DExtent) {
             if (!mask2DExtent.intersects(this._extent2D)) {
                 this.completeRender();
                 return;
-            } else {
-                extent = mask2DExtent.intersection(this._extent2D).convertTo(c => map._pointToContainerPoint(c));
             }
         }
         const layer = this.layer;
@@ -77,9 +74,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tileId = tiles[i]['id'];
             //load tile in cache at first if it has.
             const cached = this._getCachedTile(tileId);
-            if (mask2DExtent && !layer._isTileInExtent(tile, extent)) {
-                continue;
-            }
             if (this._isLoadingTile(tileId)) {
                 loading = true;
                 continue;

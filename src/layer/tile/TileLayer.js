@@ -175,15 +175,26 @@ class TileLayer extends Layer {
 
         const res = map.getResolution(zoom),
             extent2d = map._get2DExtent(zoom),
-            containerExtent = map.getContainerExtent(),
             containerCenter = new Point(map.width / 2, map.height / 2),
             center2d = map._containerPointToPoint(containerCenter, zoom);
+        const emptyGrid = {
+            'zoom' : zoom,
+            'anchor' : null,
+            'extent' : null,
+            'tiles' : []
+        };
         if (extent2d.getWidth() === 0 || extent2d.getHeight() === 0) {
-            return {
-                'zoom' : zoom,
-                'anchor' : null,
-                'tiles' : []
-            };
+            return emptyGrid;
+        }
+
+        let containerExtent = map.getContainerExtent();
+        const maskExtent = this._getMask2DExtent();
+        if (maskExtent) {
+            const intersection = maskExtent.intersection(map._get2DExtent());
+            if (!intersection) {
+                return emptyGrid;
+            }
+            containerExtent = intersection.convertTo(c => map._pointToContainerPoint(c));
         }
 
         //Get description of center tile including left and top offset
@@ -227,6 +238,8 @@ class TileLayer extends Layer {
                 }
             }
         }
+
+        console.log(this.getId(), tiles.length);
         //sort tiles according to tile's distance to center
         tiles.sort(function (a, b) {
             return (b.point.distanceTo(center2D) - a.point.distanceTo(center2D));

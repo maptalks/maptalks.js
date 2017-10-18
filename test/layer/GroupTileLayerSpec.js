@@ -127,7 +127,7 @@ describe('GroupTileLayer', function () {
         layer.once('layerload', function () {
             var grid = layer.getTiles();
 
-            expect(grid.tiles.length).to.be.eql(32);
+            expect(grid.tiles.length).to.be.eql(2);
             done();
         });
         map.addLayer(layer);
