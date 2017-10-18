@@ -1,6 +1,7 @@
-> maptalks's version and what browser you use?
-
-> Description
+**maptalks's version and what browser you use?**
 
 
-> Please provide a reproduction Url (on any jsfiddle like site)
+**Issue description**
+
+
+**Please provide a reproduction URL (on any jsfiddle like site)**
