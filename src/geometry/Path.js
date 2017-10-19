@@ -71,11 +71,12 @@ class Path extends Geometry {
             if (!this.getMap()) {
                 player.finish();
                 if (cb) {
-                    cb(frame);
+                    this._currentCoordinate = coordinates[coordinates.length - 1];
+                    cb(frame, this._currentCoordinate);
                 }
                 return;
             }
-            this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords);
+            const showCoords = this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords);
             if (frame.state.playState === 'finished') {
                 delete this._showPlayer;
                 delete this._aniShowCenter;
@@ -84,7 +85,10 @@ class Path extends Geometry {
                 this.setCoordinates(coordinates);
             }
             if (cb) {
-                cb(frame);
+                //In most case, we need to get the coordinate the line move to. 
+                //Thus I suggest that the callback function should have the parameter of current coordinate
+                this._currentCoordinate = showCoords[showCoords.length - 1];
+                cb(frame, this._currentCoordinate);
             }
         });
         player.play();
@@ -127,6 +131,7 @@ class Path extends Geometry {
         } else {
             this.setCoordinates(animCoords);
         }
+        return animCoords;
     }
 
     _getCenterInExtent(extent, coordinates, clipFn) {
