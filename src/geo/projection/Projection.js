@@ -47,7 +47,7 @@ export default /** @lends projection.Common */ {
             return coordinates.map(coords => this.projectCoords(coords));
         } else {
             const circum = this.getCircum();
-            const extent = this.getFullExtent(),
+            const extent = this.getSphereExtent(),
                 sx = extent.sx,
                 sy = extent.sy;
             let wrapX, wrapY;
@@ -116,7 +116,7 @@ export default /** @lends projection.Common */ {
         if (!this.isSphere()) {
             return false;
         }
-        const extent = this.getFullExtent();
+        const extent = this.getSphereExtent();
         return !extent.contains(pcoord);
     },
 
@@ -126,7 +126,10 @@ export default /** @lends projection.Common */ {
      * @return {Coordinate} wrapped projected coord
      */
     wrapCoord(pcoord) {
-        const extent = this.getFullExtent();
+        if (!this.isSphere()) {
+            return pcoord;
+        }
+        const extent = this.getSphereExtent();
         const wrapped = new Coordinate(pcoord);
         if (!extent.contains(wrapped)) {
             wrapped.x = wrap(pcoord.x, extent.xmin, extent.xmax);
@@ -137,7 +140,7 @@ export default /** @lends projection.Common */ {
 
     getCircum() {
         if (!this.circum && this.isSphere()) {
-            const extent = this.getFullExtent();
+            const extent = this.getSphereExtent();
             this.circum = {
                 x : extent.getWidth(),
                 y : extent.getHeight()
@@ -146,7 +149,7 @@ export default /** @lends projection.Common */ {
         return this.circum;
     },
 
-    getFullExtent() {
+    getSphereExtent() {
         if (!this.extent && this.isSphere()) {
             const max = this.project(new Coordinate(180, 90)),
                 min = this.project(new Coordinate(-180, -90));

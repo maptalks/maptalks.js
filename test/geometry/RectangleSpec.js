@@ -242,4 +242,83 @@ describe('Geometry.Rectangle', function () {
         var vector = new maptalks.Rectangle(center, 1, 1);
         COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
     });
+
+    describe('rectangle with identity projection', function () {
+        var div, imap, layer;
+        beforeEach(function () {
+            div = document.createElement('div');
+        });
+        afterEach(function () {
+            if (layer) {
+                layer.remove();
+            }
+            if (imap) {
+                imap.remove();
+            }
+        });
+
+        function createMap(fullExtent) {
+            imap = new maptalks.Map(div, {
+                center:     [0, 0],
+                zoom:  4,
+                spatialReference : {
+                  projection : 'identity',
+                  resolutions : [
+                    32, 16, 8, 4, 2, 1
+                  ],
+                  fullExtent : fullExtent
+                }
+            });
+            ilayer = new maptalks.VectorLayer('id');
+            imap.addLayer(ilayer);
+        }
+
+        it('with reverse full extent', function () {
+            createMap({
+                'top': 10000,
+                'left': -10000,
+                'bottom': -10000,
+                'right': 10000
+            });
+
+            var rectangle = new maptalks.Rectangle([0, 0], 100, 500).addTo(ilayer);
+            expect(rectangle.getExtent().toJSON()).to.be.eql({
+                xmin : 0,
+                xmax : 100,
+                ymin : -500,
+                ymax : 0
+            });
+            expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
+                [0, 0],
+                [100, 0],
+                [100, -500],
+                [0, -500],
+                [0, 0]
+            ]);
+        });
+
+        it('with in-reverse full extent', function () {
+            createMap({
+                'top': -10000,
+                'left': -10000,
+                'bottom': 10000,
+                'right': 10000
+            });
+
+            var rectangle = new maptalks.Rectangle([0, 0], 100, 500).addTo(ilayer);
+            expect(rectangle.getExtent().toJSON()).to.be.eql({
+                xmin : 0,
+                xmax : 100,
+                ymin : 0,
+                ymax : 500
+            });
+            expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
+                [0, 0],
+                [100, 0],
+                [100, 500],
+                [0, 500],
+                [0, 0]
+            ]);
+        })
+    });
 });

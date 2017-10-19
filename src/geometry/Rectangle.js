@@ -110,18 +110,22 @@ class Rectangle extends Polygon {
         const measurer = this._getMeasurer();
         const nw = this._coordinates;
         const map = this.getMap();
-        let r = -1;
+        let sx = 1,
+            sy = -1;
         if (map) {
             const fExt = map.getFullExtent();
+            if (fExt['left'] > fExt['right']) {
+                sx = -1;
+            }
             if (fExt['bottom'] > fExt['top']) {
-                r = 1;
+                sy = 1;
             }
         }
         const points = [];
         points.push(nw);
-        points.push(measurer.locate(nw, this._width, 0));
-        points.push(measurer.locate(nw, this._width, r * this._height));
-        points.push(measurer.locate(nw, 0, r * this._height));
+        points.push(measurer.locate(nw, sx * this._width, 0));
+        points.push(measurer.locate(nw, sx * this._width, sy * this._height));
+        points.push(measurer.locate(nw, 0, sy * this._height));
         points.push(nw);
         return points;
 
@@ -164,9 +168,9 @@ class Rectangle extends Polygon {
         if (!projection.isSphere()) {
             return shell;
         }
-        const fullExtent = projection.getFullExtent(),
-            sx = fullExtent.sx,
-            sy = fullExtent.sy;
+        const sphereExtent = projection.getSphereExtent(),
+            sx = sphereExtent.sx,
+            sy = sphereExtent.sy;
         const circum = this._getProjection().getCircum();
         const nw = shell[0];
         for (let i = 1, l = shell.length; i < l; i++) {
@@ -239,7 +243,15 @@ class Rectangle extends Polygon {
         }
         const width = this.getWidth(),
             height = this.getHeight();
-        const se = measurer.locate(this._coordinates, width, -height);
+        let w = width, h = -height;
+        if (measurer.fullExtent) {
+            const fullExtent = measurer.fullExtent,
+                sx = fullExtent.right > fullExtent.left ? 1 : -1,
+                sy = fullExtent.top > fullExtent.bottom ? 1 : -1;
+            w *= sx;
+            h *= sy;
+        }
+        const se = measurer.locate(this._coordinates, w, h);
         return se;
     }
 

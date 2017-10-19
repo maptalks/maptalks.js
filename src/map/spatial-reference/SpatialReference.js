@@ -138,6 +138,8 @@ export default class SpatialReference {
         //set left, right, top, bottom value
         extend(this._fullExtent, fullExtent);
 
+        this._projection.fullExtent = fullExtent;
+
         const a = fullExtent['right'] >= fullExtent['left'] ? 1 : -1,
             b = fullExtent['top'] >= fullExtent['bottom'] ? -1 : 1;
         this._transformation = new Transformation([a, b, 0, 0]);
