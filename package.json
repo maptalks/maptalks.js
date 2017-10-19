@@ -29,8 +29,8 @@
     "preversion": "npm run lint",
     "version": "npm run doc && git add -A docs/api",
     "doc": "gulp doc",
-    "dev" : "gulp",
-    "build" : "gulp minify"
+    "dev": "gulp",
+    "build": "gulp minify"
   },
   "main": "dist/maptalks.js",
   "browser": "dist/maptalks.min.js",
