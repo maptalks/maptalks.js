@@ -319,7 +319,12 @@ export function computeDomPosition(dom) {
         parseInt(style['padding-top'])
     ];
     const rect = dom.getBoundingClientRect();
-    dom.__position = [rect.left + padding[0], rect.top + padding[1]];
+    //fix #450, inspired by https://github.com/Leaflet/Leaflet/pull/5794/files
+    const offsetWidth = dom.offsetWidth,
+        offsetHeight = dom.offsetHeight;
+    const scaleX = offsetWidth ? rect.width / offsetWidth : 1,
+        scaleY = offsetHeight ? rect.height / offsetHeight : 1;
+    dom.__position = [rect.left + padding[0], rect.top + padding[1], scaleX, scaleY];
     return dom.__position;
 }
 
@@ -337,10 +342,10 @@ export function getEventContainerPoint(ev, dom) {
     if (!domPos) {
         domPos = computeDomPosition(dom);
     }
-
+    // div by scaleX, scaleY to fix #450
     return new Point(
-        ev.clientX - domPos[0] - dom.clientLeft,
-        ev.clientY - domPos[1] - dom.clientTop
+        ev.clientX / domPos[2] - domPos[0] - dom.clientLeft,
+        ev.clientY / domPos[3] - domPos[1] - dom.clientTop
     );
 }
 
