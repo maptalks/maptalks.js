@@ -1,5 +1,5 @@
 import { now } from 'core/util';
-import { preventDefault } from 'core/util/dom';
+import { preventDefault, getEventContainerPoint } from 'core/util/dom';
 import Handler from 'handler/Handler';
 import DragHandler from 'handler/Drag';
 import Point from 'geo/Point';
@@ -100,7 +100,10 @@ class MapDragHandler extends Handler {
 
     _moveStart(param) {
         this._start(param);
-        this.target.onMoveStart(param);
+        const map = this.target;
+        map.onMoveStart(param);
+        const p = getEventContainerPoint(param.domEvent, map.getContainer());
+        this.startPrjCoord = map._containerPointToPrj(p);
     }
 
     _moving(param) {
@@ -108,13 +111,8 @@ class MapDragHandler extends Handler {
             return;
         }
         const map = this.target;
-        const mx = param['mousePos'].x,
-            my = param['mousePos'].y;
-        const dx = mx - this.preX,
-            dy = my - this.preY;
-        map._offsetCenterByPixel(new Point(dx, dy));
-        this.preX = mx;
-        this.preY = my;
+        const p = getEventContainerPoint(param.domEvent, map.getContainer());
+        map._setPrjCoordAtContainerPoint(this.startPrjCoord, p);
         map.onMoving(param);
     }
 
@@ -183,8 +181,7 @@ class MapDragHandler extends Handler {
     }
 
     _clear() {
-        delete this.startLeft;
-        delete this.startTop;
+        delete this.startPrjCoord;
         delete this.preX;
         delete this.preY;
         delete this.startX;

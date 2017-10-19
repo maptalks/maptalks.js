@@ -225,6 +225,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Get map's container
+     * @returns {HTMLElement}
+     */
+    getContainer() {
+        return this._containerDOM;
+    }
+
+    /**
      * Get the spatial reference of the Map.
      * @return {SpatialReference} map's spatial reference
      */
