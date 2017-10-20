@@ -24,7 +24,6 @@ import SpatialReference from './spatial-reference/SpatialReference';
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
- * @property {Boolean} [options.clipFullExtent=false]           - clip geometries outside map's full extent
  * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
@@ -71,8 +70,6 @@ const options = {
     'maxPitch' : 80,
 
     'centerCross': false,
-
-    'clipFullExtent': false,
 
     'zoomInCenter' : false,
     'zoomAnimation': (function () {
