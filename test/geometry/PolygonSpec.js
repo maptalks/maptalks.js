@@ -339,10 +339,40 @@ describe('Geometry.Polygon', function () {
                         done();
                     }
                 });
-
             });
             layer.addGeometry(polygon).addTo(map);
 
+        });
+        it('The current coordinate should be on the line along the polygon', function (done) {
+             var polygon = new maptalks.Polygon([[
+                new maptalks.Coordinate([center.x, center.y]),
+                new maptalks.Coordinate([center.x, center.y + 0.001]),
+                new maptalks.Coordinate([center.x + 0.001, center.y + 0.001]),
+                new maptalks.Coordinate([center.x + 0.001, center.y]),
+                new maptalks.Coordinate([center.x, center.y])
+            ]], {
+                symbol: {
+                    'lineWidth': 2
+                },
+                visible : false
+            });
+            layer.once('layerload', function () {
+                expect(layer._getRenderer().isBlank()).to.be.ok();
+                polygon.animateShow({
+                    'duration' : 100,
+                    'easing' : 'out'
+                }, function (frame, curCoord) {
+                    if (frame.state.playState !== 'finished') {
+                        if(curCoord.x > center.x) {
+                            expect(curCoord.x < center.x + 0.001 && curCoord.y >= center.y).to.be.true;
+                        }
+                    } else {
+                        expect(curCoord.x === center.x && curCoord.y === center.y).to.be.true;
+                        done();
+                    }
+                });
+            });
+            layer.addGeometry(polygon).addTo(map);
         });
     });
 });
