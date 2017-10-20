@@ -361,7 +361,7 @@ describe('Geometry.Polygon', function () {
                 polygon.animateShow({
                     'duration' : 100,
                     'easing' : 'out'
-                },function (frame, curCoord) {
+                }, function (frame, curCoord) {
                     if (frame.state.playState !== 'finished') {
                         if(curCoord.x > center.x) {
                             expect(curCoord.x < center.x + 0.001 && curCoord.y >= center.y).to.be.true;
