@@ -22,7 +22,7 @@ describe('DistanceTool and AreaTool', function () {
         for (i = 1; i < 10; i++) {
             happen.mousemove(eventContainer, {
                 'clientX':point.x + i,
-                'clientY':point.y + i
+                'clientY':point.y
             });
         }
 
@@ -36,11 +36,11 @@ describe('DistanceTool and AreaTool', function () {
         });
 
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
+            'clientX':point.x + 10,
             'clientY':point.y + 10
         });
         happen.click(eventContainer, {
-            'clientX':point.x,
+            'clientX':point.x + 10,
             'clientY':point.y + 10
         });
 
@@ -57,6 +57,14 @@ describe('DistanceTool and AreaTool', function () {
                 expect(tool.getLastMeasure()).to.be.above(0);
             }
         }
+        happen.mousedown(eventContainer, {
+            'clientX':point.x - 1,
+            'clientY':point.y + 5
+        });
+        happen.click(eventContainer, {
+            'clientX':point.x - 1,
+            'clientY':point.y + 5
+        });
         happen.dblclick(eventContainer, {
             'clientX':point.x - 1,
             'clientY':point.y + 5
