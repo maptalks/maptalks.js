@@ -67,7 +67,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
-    'maxVisualPitch' : 65,
+    'maxVisualPitch' : 60,
     'maxPitch' : 80,
 
     'centerCross': false,

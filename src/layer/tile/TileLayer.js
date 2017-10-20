@@ -347,8 +347,11 @@ class TileLayer extends Layer {
         }
         const tileZoom = tileInfo.z;
         const tileExtent = tileInfo.extent2d.convertTo(c => map._pointToContainerPoint(c, tileZoom));
+        if (tileExtent.getWidth() < 5 || tileExtent.getHeight() < 5) {
+            return false;
+        }
         // add some buffer
-        return extent.intersects(tileExtent._expand(1));
+        return extent.intersects(tileExtent);
     }
 }
 
