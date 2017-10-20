@@ -71,11 +71,12 @@ class Path extends Geometry {
             if (!this.getMap()) {
                 player.finish();
                 if (cb) {
-                    cb(frame);
+                    const coordinates = this.getCoordinates();
+                    cb(frame, coordinates[coordinates.length - 1]);
                 }
                 return;
             }
-            this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords);
+            const currentCoord = this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords);
             if (frame.state.playState === 'finished') {
                 delete this._showPlayer;
                 delete this._aniShowCenter;
@@ -84,7 +85,7 @@ class Path extends Geometry {
                 this.setCoordinates(coordinates);
             }
             if (cb) {
-                cb(frame);
+                cb(frame, currentCoord);
             }
         });
         player.play();
@@ -93,7 +94,7 @@ class Path extends Geometry {
 
     _drawAnimShowFrame(t, duration, length, coordinates) {
         if (t === 0) {
-            return;
+            return coordinates[0];
         }
         const map = this.getMap();
         const targetLength = t / duration * length;
@@ -109,7 +110,7 @@ class Path extends Geometry {
         this._animIdx = i;
         if (this._animIdx >= l - 1) {
             this.setCoordinates(coordinates);
-            return;
+            return coordinates[coordinates.length - 1];
         }
         const idx = this._animIdx;
         const p1 = coordinates[idx],
@@ -127,6 +128,7 @@ class Path extends Geometry {
         } else {
             this.setCoordinates(animCoords);
         }
+        return animCoords[animCoords.length - 1];
     }
 
     _getCenterInExtent(extent, coordinates, clipFn) {
