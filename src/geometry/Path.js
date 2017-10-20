@@ -40,7 +40,7 @@ class Path extends Geometry {
      * @example
      *  line.animateShow({
      *    duration : 2000,
-     *    easing : linear
+     *    easing : 'linear'
      *  }, function (frame, currentCoord) {
      *    //frame is the animation frame
      *    //currentCoord is current coordinate of animation
