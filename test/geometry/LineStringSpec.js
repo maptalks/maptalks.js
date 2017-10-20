@@ -285,7 +285,32 @@ describe('Geometry.LineString', function () {
 
             });
             layer.addGeometry(polyline).addTo(map);
-
+        });
+        it('The current coordinate should be correct', function (done) {
+            layer = new maptalks.VectorLayer('animateShow_layer');
+            var polyline = new maptalks.LineString([
+                map.getCenter(),
+                map.getCenter().add(0.05, 0)
+            ], {
+                'visible' : false
+            });
+            layer.once('layerload', function () {
+                expect(layer._getRenderer().isBlank()).to.be.ok();
+                polyline.animateShow({
+                    'duration' : 100,
+                    'easing' : 'out'
+                }, function (frame, curCoord) {
+                    if (frame.state.playState !== 'finished') {
+                        expect(curCoord.x >= map.getCenter().x && curCoord.x < map.getCenter().x + 0.05).to.be.true;
+                        expect(curCoord.y === map.getCenter().y).to.be.true;
+                    } else {
+                        expect(curCoord.x === map.getCenter().x + 0.05).to.be.true;
+                        expect(curCoord.y === map.getCenter().y).to.be.true;
+                        done();
+                    }
+                });
+            });
+            layer.addGeometry(polyline).addTo(map);
         });
     });
 

@@ -85,8 +85,6 @@ class Path extends Geometry {
                 this.setCoordinates(coordinates);
             }
             if (cb) {
-                //In most case, we need to get the coordinate the line move to. 
-                //Thus I suggest that the callback function should have the parameter of current coordinate
                 cb(frame, currentCoord);
             }
         });
