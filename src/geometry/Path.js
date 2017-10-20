@@ -36,7 +36,15 @@ class Path extends Geometry {
      * @param  {Object} [options=null] animation options
      * @param  {Number} [options.duration=1000] duration
      * @param  {String} [options.easing=out] animation easing
-     * @param  {Function} [cb=null] callback function in animation
+     * @param  {Function} [cb=null] callback function in animation, function parameters: frame, currentCoord
+     * @example
+     *  line.animateShow({
+     *    duration : 2000,
+     *    easing : linear
+     *  }, function (frame, currentCoord) {
+     *    //frame is the animation frame
+     *    //currentCoord is current coordinate of animation
+     *  });
      * @return {LineString}         this
      */
     animateShow(options = {}, cb) {
