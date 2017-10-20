@@ -6,11 +6,11 @@ import Map from '../Map';
 //handler to zoom map by pinching
 class MapTouchZoomHandler extends Handler {
     addHooks() {
-        addDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart, this);
+        addDomEvent(this.target.getContainer(), 'touchstart', this._onTouchStart, this);
     }
 
     removeHooks() {
-        removeDomEvent(this.target._containerDOM, 'touchstart', this._onTouchStart);
+        removeDomEvent(this.target.getContainer(), 'touchstart', this._onTouchStart);
     }
 
     _onTouchStart(event) {
@@ -18,7 +18,7 @@ class MapTouchZoomHandler extends Handler {
         if (!event.touches || event.touches.length !== 2 || map.isZooming()) {
             return;
         }
-        const container = map._containerDOM;
+        const container = map.getContainer();
         const p1 = getEventContainerPoint(event.touches[0], container),
             p2 = getEventContainerPoint(event.touches[1], container);
 
@@ -48,7 +48,7 @@ class MapTouchZoomHandler extends Handler {
         if (!event.touches || event.touches.length !== 2 || !map.isZooming()) {
             return;
         }
-        const container = map._containerDOM,
+        const container = map.getContainer(),
             p1 = getEventContainerPoint(event.touches[0], container),
             p2 = getEventContainerPoint(event.touches[1], container),
             scale = p1.distanceTo(p2) / this._startDist;
