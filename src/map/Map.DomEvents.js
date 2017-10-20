@@ -246,12 +246,8 @@ Map.include(/** @lends Map.prototype */ {
         if (!domEvent || !this._panels.control) {
             return false;
         }
-        if (this.getPitch() > this.options['maxVisualPitch']) {
-            const actualEvent = this._getActualEvent(domEvent);
-            const eventPos = getEventContainerPoint(actualEvent, this._containerDOM);
-            if (!this.getContainerExtent().contains(eventPos)) {
-                return true;
-            }
+        if (this._isEventOutMap(domEvent)) {
+            return true;
         }
         let target = domEvent.srcElement || domEvent.target;
         if (target) {
@@ -263,6 +259,17 @@ Map.include(/** @lends Map.prototype */ {
                 target = target.parentNode;
             }
 
+        }
+        return false;
+    },
+
+    _isEventOutMap(domEvent) {
+        if (this.getPitch() > this.options['maxVisualPitch']) {
+            const actualEvent = this._getActualEvent(domEvent);
+            const eventPos = getEventContainerPoint(actualEvent, this._containerDOM);
+            if (!this.getContainerExtent().contains(eventPos)) {
+                return true;
+            }
         }
         return false;
     },

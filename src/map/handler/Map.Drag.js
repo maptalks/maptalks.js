@@ -75,6 +75,10 @@ class MapDragHandler extends Handler {
     }
 
     _onDragging(param) {
+        const map = this.target;
+        if (map._isEventOutMap(param['domEvent'])) {
+            return;
+        }
         if (this._mode === 'move') {
             this._moving(param);
         } else if (this._mode === 'rotatePitch') {
