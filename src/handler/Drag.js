@@ -1,10 +1,9 @@
 import { isNumber } from 'core/util';
 import Handler from 'handler/Handler';
-import Browser from 'core/Browser';
 import { on, off } from 'core/util/dom';
 import Point from 'geo/Point';
 
-const START_EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
+const START_EVENTS = 'touchstart mousedown';
 const MOVE_EVENTS = {
     mousedown: 'mousemove',
     touchstart: 'touchmove',

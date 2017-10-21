@@ -1,7 +1,4 @@
-
-
-
-describe('#MapDrag', function () {
+describe('Map.Drag', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -134,5 +131,56 @@ describe('#MapDrag', function () {
         var pitch = map.getPitch();
         dragToRotate(0, -1);
         expect(map.getPitch()).to.be.eql(pitch);
+    });
+
+    it('drag map by touches', function () {
+        map.options['panAnimation'] = false;
+        var center2;
+        map.setZoom(7);
+
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+
+        var called = false;
+
+        map.on('moving', function (e) {
+            called = true;
+            expect(e.domEvent.touches.length).to.be.eql(1);
+        });
+
+        happen.once(map._panels.mapWrapper, {
+            'type' : 'touchstart',
+            'touches' : [
+                {
+                    'clientX':point.x,
+                    'clientY':point.y
+                }
+            ]
+        });
+        for (var i = 0; i < 10; i++) {
+            happen.once(map._panels.mapWrapper, {
+                'type' : 'touchmove',
+                'touches' : [
+                    {
+                        'clientX':point.x + i,
+                        'clientY':point.y + i
+                    }
+                ]
+            })
+        }
+        happen.once(map._panels.mapWrapper, {
+            'type' : 'touchend',
+            'changedTouches' : [
+                {
+                    'clientX':point.x + i,
+                    'clientY':point.y + i
+                }
+            ]
+        });
+
+        center2 = map.getCenter();
+        expect(called).to.be.ok();
+        expect(center2.toArray()).not.to.be.eql(center.toArray());
+        expect(map.isMoving()).not.to.be.ok();
     });
 });
