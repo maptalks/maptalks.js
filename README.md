@@ -21,6 +21,7 @@ maptalks.js was born for a map-centric project to help [YUM! China](http://www.y
 * [Examples](https://maptalks.github.io/examples/en/map/load/)
 * [API Reference](https://maptalks.github.io/maptalks.js/api/0.x/Map.html)
 * [Docs](https://github.com/maptalks/maptalks.js/wiki)
+* [Style Reference](https://github.com/maptalks/maptalks.js/wiki/Symbol-Reference)
 * [Plugins](https://maptalks.org/plugins.html)
 
 ## Supported Enviroments
