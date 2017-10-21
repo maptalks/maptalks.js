@@ -76,7 +76,7 @@ class DragHandler extends Handler {
             on(this.dom, 'mouseleave', this.onMouseUp, this);
         }
         this.fire('mousedown', {
-            'domEvent': actual,
+            'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)
         });
     }
@@ -94,13 +94,13 @@ class DragHandler extends Handler {
         }
         if (!this.moved) {
             this.fire('dragstart', {
-                'domEvent': actual,
+                'domEvent': event,
                 'mousePos': this.startPos.copy()
             });
             this.moved = true;
         } else {
             this.fire('dragging', {
-                'domEvent': actual,
+                'domEvent': event,
                 'mousePos': new Point(actual.clientX, actual.clientY)
             });
         }
@@ -110,7 +110,7 @@ class DragHandler extends Handler {
         const actual = event.changedTouches ? event.changedTouches[0] : event;
         this._offEvents();
         const param = {
-            'domEvent': actual
+            'domEvent': event
         };
         if (isNumber(actual.clientX)) {
             param['mousePos'] = new Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
