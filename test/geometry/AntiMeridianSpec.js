@@ -48,6 +48,7 @@ describe('Geometry.AntiMeridian', function () {
     var geometries = genGeometries();
     geometries.forEach(function (g) {
         it('different symbols', function (done) {
+            this.timeout(5000);
             COMMON_SYMBOL_TESTOR.testGeoSymbols(g, map, done);
         });
     });
