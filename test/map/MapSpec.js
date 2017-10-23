@@ -575,6 +575,9 @@ describe('Map.Spec', function () {
     describe('Map.FullScreen', function () {
 
         it('requestFullScreen', function () {
+            if (maptalks.Browser.ie) {
+                return;
+            }
             map.requestFullScreen();
             // Failed to execute 'requestFullscreen' on 'Element': API can only be initiated by a user gesture.
             // So,the value of 'map.isFullScreen()' is false.
@@ -582,6 +585,9 @@ describe('Map.Spec', function () {
         });
 
         it('cancelFullScreen', function () {
+            if (maptalks.Browser.ie) {
+                return;
+            }
             map.cancelFullScreen();
             expect(map.isFullScreen()).not.to.be.ok();
         });
