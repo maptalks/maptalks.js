@@ -864,17 +864,7 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var map = new maptalks.Map("map",{
-     center:     [180,0],
-     zoom:  4,
-     baseLayer : new maptalks.TileLayer("base",{
-         urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-         subdomains:['a','b','c']
-     }),
-     layers : [
-         new maptalks.VectorLayer('v', [new maptalks.Marker([180, 0])])
-     ]
-});</code></pre>
+        <pre class="prettyprint"><code>var map = new maptalks.Map("map",{     center:     [180,0],     zoom:  4,     baseLayer : new maptalks.TileLayer("base",{         urlTemplate:'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',         subdomains:['a','b','c']     }),     layers : [         new maptalks.VectorLayer('v', [new maptalks.Marker([180, 0])])     ]});</code></pre>
     
 
 
@@ -928,10 +918,7 @@
 
             
 
-            <td class="description last">The container to create the map on, can be:<br>
-                                         1. A HTMLElement container.<br/>
-                                         2. ID of a HTMLElement container.<br/>
-                                         3. Any canvas compatible container</td>
+            <td class="description last">The container to create the map on, can be:<br>                                         1. A HTMLElement container.<br/>                                         2. ID of a HTMLElement container.<br/>                                         3. Any canvas compatible container</td>
         </tr>
 
     
@@ -1886,7 +1873,7 @@
             
                 <td class="default">
                 
-                    0
+                    25
                 
                 </td>
             
@@ -5290,13 +5277,7 @@
 
 
 <div class="description">
-    Change the spatial reference of the map. <br>
-A SpatialReference is a series of settings to decide the map presentation:<br>
-1. the projection.<br>
-2. zoom levels and resolutions. <br>
-3. full extent.<br>
-There are some <a href="http://www.foo.com">predefined spatial references</a>, and surely you can <a href="http://www.foo.com">define a custom one.</a>.<br>
-SpatialReference can also be updated by map.config('spatialReference', spatialReference);
+    Change the spatial reference of the map. <br>A SpatialReference is a series of settings to decide the map presentation:<br>1. the projection.<br>2. zoom levels and resolutions. <br>3. full extent.<br>There are some <a href="http://www.foo.com">predefined spatial references</a>, and surely you can <a href="http://www.foo.com">define a custom one.</a>.<br>SpatialReference can also be updated by map.config('spatialReference', spatialReference);
 </div>
 
 
@@ -5311,8 +5292,7 @@ SpatialReference can also be updated by map.config('spatialReference', spatialRe
                     resolutions[i] = 180/(Math.pow(2, i)*128);
                 }
                 return resolutions;
-            })()
- });
+            })() });
        </code></pre>
     
 
@@ -5459,15 +5439,7 @@ SpatialReference can also be updated by map.config('spatialReference', spatialRe
 
 
 <div class="description">
-    Get the projection of the map. <br>
-Projection is an algorithm for map projection, e.g. well-known <a href="https://en.wikipedia.org/wiki/Mercator_projection">Mercator Projection</a> <br>
-A projection must have 2 methods: <br>
-1. project(coordinate) - project the input coordinate <br>
-2. unproject(coordinate) - unproject the input coordinate <br>
-Projection also contains measuring method usually extended from a measurer: <br>
-1. measureLength(coord1, coord2) - compute length between 2 coordinates.  <br>
-2. measureArea(coords[]) - compute area of the input coordinates. <br>
-3. locate(coord, distx, disty) - compute the coordinate from the coord with xdist on axis x and ydist on axis y.
+    Get the projection of the map. <br>Projection is an algorithm for map projection, e.g. well-known <a href="https://en.wikipedia.org/wiki/Mercator_projection">Mercator Projection</a> <br>A projection must have 2 methods: <br>1. project(coordinate) - project the input coordinate <br>2. unproject(coordinate) - unproject the input coordinate <br>Projection also contains measuring method usually extended from a measurer: <br>1. measureLength(coord1, coord2) - compute length between 2 coordinates.  <br>2. measureArea(coords[]) - compute area of the input coordinates. <br>3. locate(coord, distx, disty) - compute the coordinate from the coord with xdist on axis x and ydist on axis y.
 </div>
 
 
@@ -5546,8 +5518,7 @@ Projection also contains measuring method usually extended from a measurer: <br>
 
 
 <div class="description">
-    Get map's full extent, which is defined in map's spatial reference. <br>
-eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
+    Get map's full extent, which is defined in map's spatial reference. <br>eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
 </div>
 
 
@@ -8301,8 +8272,7 @@ eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
 
             
 
-            <td class="description last">a object containing center/zoom/pitch/bearing
-return {Map} this</td>
+            <td class="description last">a object containing center/zoom/pitch/bearingreturn {Map} this</td>
         </tr>
 
     
@@ -8857,8 +8827,7 @@ return {Map} this</td>
 
 
 <div class="description">
-    Sets a new base layer to the map.<br>
-Some events will be thrown such as baselayerchangestart, baselayerload, baselayerchangeend.
+    Sets a new base layer to the map.<br>Some events will be thrown such as baselayerchangestart, baselayerload, baselayerchangeend.
 </div>
 
 
@@ -9083,17 +9052,14 @@ Some events will be thrown such as baselayerchangestart, baselayerload, baselaye
 
 
 <div class="description">
-    Get the layers of the map, except base layer (which should be by getBaseLayer). <br>
-A filter function can be given to filter layers, e.g. exclude all the VectorLayers.
+    Get the layers of the map, except base layer (which should be by getBaseLayer). <br>A filter function can be given to filter layers, e.g. exclude all the VectorLayers.
 </div>
 
 
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var vectorLayers = map.getLayers(function (layer) {
-    return (layer instanceof VectorLayer);
-});</code></pre>
+        <pre class="prettyprint"><code>var vectorLayers = map.getLayers(function (layer) {    return (layer instanceof VectorLayer);});</code></pre>
     
 
 
@@ -9632,9 +9598,7 @@ A filter function can be given to filter layers, e.g. exclude all the VectorLaye
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>map.addLayer([layer1, layer2, layer3]);
-map.sortLayers([layer2, layer3, layer1]);
-map.sortLayers(['3', '2', '1']); // sort by layer ids.</code></pre>
+        <pre class="prettyprint"><code>map.addLayer([layer1, layer2, layer3]);map.sortLayers([layer2, layer3, layer1]);map.sortLayers(['3', '2', '1']); // sort by layer ids.</code></pre>
     
 
 
@@ -10029,9 +9993,7 @@ map.sortLayers(['3', '2', '1']); // sort by layer ids.</code></pre>
 
 
 <div class="description">
-    Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
-The 2D point's coordinate system's origin is the same with map's origin.
-Usually used in plugin development.
+    Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>The 2D point's coordinate system's origin is the same with map's origin.Usually used in plugin development.
 </div>
 
 
@@ -10199,8 +10161,7 @@ Usually used in plugin development.
 
 
 <div class="description">
-    Converts a 2D point in current zoom or a specific zoom to a coordinate.
-Usually used in plugin development.
+    Converts a 2D point in current zoom or a specific zoom to a coordinate.Usually used in plugin development.
 </div>
 
 
@@ -10358,9 +10319,7 @@ Usually used in plugin development.
 
 
 <div class="description">
-    Converts a geographical coordinate to view point.<br>
-A view point is a point relative to map's mapPlatform panel's position. <br>
-Usually used in plugin development.
+    Converts a geographical coordinate to view point.<br>A view point is a point relative to map's mapPlatform panel's position. <br>Usually used in plugin development.
 </div>
 
 
@@ -10484,8 +10443,7 @@ Usually used in plugin development.
 
 
 <div class="description">
-    Converts a view point to the geographical coordinate.
-Usually used in plugin development.
+    Converts a view point to the geographical coordinate.Usually used in plugin development.
 </div>
 
 
@@ -10609,8 +10567,7 @@ Usually used in plugin development.
 
 
 <div class="description">
-    Convert a geographical coordinate to the container point. <br>
- A container point is a point relative to map container's top-left corner. <br>
+    Convert a geographical coordinate to the container point. <br> A container point is a point relative to map container's top-left corner. <br>
 </div>
 
 
@@ -10891,8 +10848,7 @@ Usually used in plugin development.
 
 
 <div class="description">
-    Converts a container point to the view point.
-Usually used in plugin development.
+    Converts a container point to the view point.Usually used in plugin development.
 </div>
 
 
@@ -11016,8 +10972,7 @@ Usually used in plugin development.
 
 
 <div class="description">
-    Converts a view point to the container point.
-Usually used in plugin development.
+    Converts a view point to the container point.Usually used in plugin development.
 </div>
 
 
@@ -11357,8 +11312,7 @@ Usually used in plugin development.
 
 
 <div class="description">
-    Converts geographical distances to the pixel length.<br>
-The value varis with difference zoom level.
+    Converts geographical distances to the pixel length.<br>The value varis with difference zoom level.
 </div>
 
 
@@ -28652,13 +28606,13 @@ The value varis with difference zoom level.
 </div>
 
 <nav class="page-nav">
-    <h2><a href="index.html">V0.32.3</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="Circle.html">Circle</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="Curve.html">Curve</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="Label.html">Label</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Marker.html">Marker</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPath.html">MultiPath</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="Path.html">Path</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="TextMarker.html">TextMarker</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="AreaTool.html">AreaTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="MapTool.html">MapTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.Menu.html">ui.Menu</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li></ul><h5>Control</h5><ul><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Overview.html">control.Overview</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Zoom.html">control.Zoom</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="DragHandler.html">DragHandler</a></li><li><a href="Handler.html">Handler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li><li><a href="renderer.TileLayerCanvasRenderer.html">renderer.TileLayerCanvasRenderer</a></li><li><a href="renderer.TileLayerDomRenderer.html">renderer.TileLayerDomRenderer</a></li><li><a href="renderer.TileLayerGLRenderer.html">renderer.TileLayerGLRenderer</a></li><li><a href="renderer.MapCanvasRenderer.html">renderer.MapCanvasRenderer</a></li><li><a href="renderer.MapRenderer.html">renderer.MapRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="ui.html">ui</a></li><li><a href="control.html">control</a></li><li><a href="renderer.html">renderer</a></li><li><a href="animation.html">animation</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li></ul>
+    <h2><a href="index.html">V0.32.4</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="Circle.html">Circle</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="Curve.html">Curve</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="Label.html">Label</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Marker.html">Marker</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPath.html">MultiPath</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="Path.html">Path</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="TextMarker.html">TextMarker</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="AreaTool.html">AreaTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="MapTool.html">MapTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.Menu.html">ui.Menu</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li></ul><h5>Control</h5><ul><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Overview.html">control.Overview</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Zoom.html">control.Zoom</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="DragHandler.html">DragHandler</a></li><li><a href="Handler.html">Handler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li><li><a href="renderer.TileLayerCanvasRenderer.html">renderer.TileLayerCanvasRenderer</a></li><li><a href="renderer.TileLayerDomRenderer.html">renderer.TileLayerDomRenderer</a></li><li><a href="renderer.TileLayerGLRenderer.html">renderer.TileLayerGLRenderer</a></li><li><a href="renderer.MapCanvasRenderer.html">renderer.MapCanvasRenderer</a></li><li><a href="renderer.MapRenderer.html">renderer.MapRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="ui.html">ui</a></li><li><a href="control.html">control</a></li><li><a href="renderer.html">renderer</a></li><li><a href="animation.html">animation</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Sun Oct 22 2017 01:50:53 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Mon Oct 23 2017 20:10:53 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>
