@@ -34,7 +34,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
  * @property {Boolean} [options.hitDetectLimit=5]               - the maximum number of layers to perform hit detect.
- * @property {Boolean} [options.fpsOnInteracting=0]            - fps when map is interacting.
+ * @property {Boolean} [options.fpsOnInteracting=25]            - fps when map is interacting.
  * @property {Boolean} [options.layerCanvasLimitOnInteracting=-1]    - limit of layer canvas to draw on map when interacting, set it to improve perf.
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
@@ -94,7 +94,7 @@ const options = {
 
     'hitDetectLimit' : 5,
 
-    'fpsOnInteracting' : 0,
+    'fpsOnInteracting' : 25,
 
     'layerCanvasLimitOnInteracting' : -1,
 

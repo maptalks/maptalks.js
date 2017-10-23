@@ -637,11 +637,14 @@ class CanvasRenderer extends Class {
         if (!this.getMap()) {
             return;
         }
+        const painted = this._painted;
         this._painted = true;
-        const t = now();
+        let t = now();
         this.draw();
-        this._drawTime = now() - t;
-        if (this.layer.options['logDrawTime']) {
+        t = now() - t;
+        //reduce some time in the first draw
+        this._drawTime = painted ? t  : t / 2;
+        if (painted && this.layer.options['logDrawTime']) {
             console.log('drawTime:', this.layer.getId(), this._drawTime);
         }
     }
