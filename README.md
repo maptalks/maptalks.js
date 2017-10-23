@@ -11,11 +11,10 @@ A light JavaScript library to create integrated 2D/3D maps.
 * **Feature Packed**: Essential features for most mapping needs.
 
 ## The Story
-<a href="https://maptalks.org/maptalks.three/demo/buildings.html" title="maptalks.THREE Demo" target="_blank"><img src = "https://user-images.githubusercontent.com/13678919/31882832-a031d858-b81a-11e7-80c3-14bd69080bdf.gif" align="right" hspace="10" vspace="6"/></a>
 
 **maptalks.js** was born for a map-centric project to help [YUM! China](http://www.yumchina.com/en/) (the most successful food chain in China) manage and analyze spatial data all over the country for choosing locations of new KFC and PizzaHut restaurants. After verified in many projects of government depts and enterprises, we are glad to open source it, and hoping it can help you deliver better mapping projects.
 
-
+<div align="center"><a href="https://maptalks.org/maptalks.three/demo/buildings.html" title="maptalks.THREE Demo" target="_blank"><img width="820" src = "https://user-images.githubusercontent.com/13678919/31883619-01963fa6-b81d-11e7-9429-b29641049523.gif"/></a></div>
 
 ## Resources
 
