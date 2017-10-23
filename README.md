@@ -23,6 +23,11 @@ maptalks.js was born for a map-centric project to help [YUM! China](http://www.y
 * [Docs](https://github.com/maptalks/maptalks.js/wiki)
 * [Style Reference](https://github.com/maptalks/maptalks.js/wiki/Symbol-Reference)
 * [Plugins](https://maptalks.org/plugins.html)
+  * [markercluster](https://github.com/maptalks/maptalks.markercluster)
+  * [heatmap](https://github.com/maptalks/maptalks.heatmap)
+  * [three.js](https://github.com/maptalks/maptalks.three)
+  * [mapboxgl](https://github.com/maptalks/maptalks.mapboxgl)
+  * [echarts](https://github.com/maptalks/maptalks.e3)
 
 ## Supported Enviroments
 
