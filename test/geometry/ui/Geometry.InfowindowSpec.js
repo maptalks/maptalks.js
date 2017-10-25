@@ -68,6 +68,22 @@ describe('Geometry.InfoWindow', function () {
         expect(position.round().toArray()).to.be.eql([633, 25]);
     });
 
+    it('autoOpen on click', function () {
+        var marker = new maptalks.Marker(center);
+        marker.addTo(layer);
+        var options = {
+            title: 'title',
+            content: 'content',
+            autoOpenOn : 'click',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        marker._fireEvent('click');
+        var w = marker.getInfoWindow();
+        var position = w._getViewPoint();
+        expect(position.round().toArray()).to.be.eql([400, 300]);
+    });
+
     it('close when layer is removed', function () {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);

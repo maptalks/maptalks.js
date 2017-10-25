@@ -83,6 +83,8 @@ class UIComponent extends Eventable(Class) {
      */
     addTo(owner) {
         this._owner = owner;
+        // first time
+        this._switchEvents('on');
         if (this.onAdd) {
             this.onAdd();
         }
@@ -140,10 +142,6 @@ class UIComponent extends Eventable(Class) {
          */
         this.fire('showstart');
         const container = this._getUIContainer();
-        if (!this.__uiDOM) {
-            // first time
-            this._switchEvents('on');
-        }
         this._coordinate = coordinate;
         this._removePrevDOM();
         const dom = this.__uiDOM = this.buildOn(map);
