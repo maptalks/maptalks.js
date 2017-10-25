@@ -401,6 +401,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this._renderer.onAdd) {
             this._renderer.onAdd();
         }
+        this.fire('renderercreate', {
+            'renderer': this._renderer
+        });
     }
 
     _doRemove() {

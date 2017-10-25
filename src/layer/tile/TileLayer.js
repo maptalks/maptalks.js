@@ -253,20 +253,6 @@ class TileLayer extends Layer {
         };
     }
 
-    _initRenderer() {
-        const renderer = this.options['renderer'];
-        if (!this.constructor.getRendererClass) {
-            return;
-        }
-        const clazz = this.constructor.getRendererClass(renderer);
-        if (!clazz) {
-            return;
-        }
-        this._renderer = new clazz(this);
-        this._renderer.setZIndex(this.getZIndex());
-        this._switchEvents('on', this._renderer);
-    }
-
     /**
      * initialize [tileConfig]{@link TileConfig} for the tilelayer
      * @private
