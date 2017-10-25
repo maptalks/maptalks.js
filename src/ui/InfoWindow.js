@@ -218,7 +218,12 @@ class InfoWindow extends UIComponent {
     }
 
     _onAutoOpen(e) {
-        this.show(e.coordinate);
+        const owner = this.getOwner();
+        if (owner instanceof Marker) {
+            this.show();
+        } else {
+            this.show(e.coordinate);
+        }
     }
 
     _getWindowWidth() {
