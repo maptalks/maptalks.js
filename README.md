@@ -9,7 +9,7 @@ A light JavaScript library to create integrated 2D/3D maps.
 * **Performant**: Can smoothly render tens of thousands of geometries.
 * **Simple**: Extremely easy to learn and use.
 * **Feature Packed**: Essential features for most mapping needs.
-* **SSR**: Server-Side rendering
+* **SSR**: [Server-Side Rendering](https://github.com/maptalks/maptalks.js/wiki/Server-Side-Rendering)
 
 ## The Story
 
