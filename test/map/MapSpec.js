@@ -655,7 +655,7 @@ describe('Map.Spec', function () {
             });
         });
 
-        it('identify with tolerace', function (done) {
+        it('identify with tolerance', function (done) {
             var layer = new maptalks.VectorLayer('id');
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
