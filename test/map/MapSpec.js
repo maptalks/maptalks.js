@@ -655,6 +655,35 @@ describe('Map.Spec', function () {
             });
         });
 
+        it('identify with tolerace', function (done) {
+            var layer = new maptalks.VectorLayer('id');
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : 4,
+                    markerHeight : 4,
+                    markerDx : 4
+                }
+            });
+            layer.addGeometry(marker);
+            map.addLayer(layer);
+
+            map.identify({
+                coordinate: center,
+                layers: [layer]
+            }, function (geos) {
+                expect(geos.length).to.be.eql(0);
+                map.identify({
+                    coordinate: center,
+                    layers: [layer],
+                    tolerance : 5
+                }, function (geos) {
+                    expect(geos.length).to.be.eql(1);
+                    done();
+                });
+            });
+        });
+
         it('identify on empty line', function (done) {
             var layer = new maptalks.VectorLayer('id');
             var line = new maptalks.LineString([]);

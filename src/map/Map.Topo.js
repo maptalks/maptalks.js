@@ -52,6 +52,7 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Object}   opts.layers        - the layers to perform identify on.
      * @param {Function} [opts.filter=null] - filter function of the result geometries, return false to exclude.
      * @param {Number}   [opts.count=null]  - limit of the result count.
+     * @param {Number}   [opts.tolerance=0] - identify tolerance in pixel.
      * @param {Boolean}  [opts.includeInternals=false] - whether to identify internal layers.
      * @param {Boolean}  [opts.includeInvisible=false] - whether to identify invisible layers.
      * @param {Function} callback           - the callback function using the result geometries as the parameter.
