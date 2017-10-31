@@ -396,6 +396,7 @@ class OverlayLayer extends Layer {
 
     _hitGeos(geometries, coordinate, options = {}) {
         const filter = options['filter'],
+            tolerance = options['tolerance'],
             hits = [];
         const map = this.getMap();
         const point = map.coordinateToPoint(coordinate);
@@ -408,14 +409,14 @@ class OverlayLayer extends Layer {
             if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
                 // Except for LineString with arrows
                 let extent = geo._getPainter().getContainerExtent();
-                if (options['tolerance']) {
-                    extent = extent.expand(options['tolerance']);
+                if (tolerance) {
+                    extent = extent.expand(tolerance);
                 }
                 if (!extent || !extent.contains(cp)) {
                     continue;
                 }
             }
-            if (geo._containsPoint(point, options.tolerance || 0) && (!filter || filter(geo))) {
+            if (geo._containsPoint(point, tolerance) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {
