@@ -386,7 +386,8 @@ class OverlayLayer extends Layer {
      * Identify the geometries on the given coordinate
      * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
      * @param  {Object} [options=null]  - options
-     * @param  {Object} [options.count=null] - result count
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
      * @return {Geometry[]} geometries identified
      */
     identify(coordinate, options = {}) {
@@ -394,7 +395,8 @@ class OverlayLayer extends Layer {
     }
 
     _hitGeos(geometries, coordinate, options = {}) {
-        const filter = options.filter,
+        const filter = options['filter'],
+            tolerance = options['tolerance'],
             hits = [];
         const map = this.getMap();
         const point = map.coordinateToPoint(coordinate);
@@ -406,12 +408,15 @@ class OverlayLayer extends Layer {
             }
             if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
                 // Except for LineString with arrows
-                const extent = geo._getPainter().getContainerExtent();
+                let extent = geo._getPainter().getContainerExtent();
+                if (tolerance) {
+                    extent = extent.expand(tolerance);
+                }
                 if (!extent || !extent.contains(cp)) {
                     continue;
                 }
             }
-            if (geo._containsPoint(point) && (!filter || filter(geo))) {
+            if (geo._containsPoint(point, tolerance) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {

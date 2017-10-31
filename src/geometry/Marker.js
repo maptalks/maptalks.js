@@ -73,8 +73,11 @@ class Marker extends CenterMixin(Geometry) {
             Symbolizers.ImageMarkerSymbolizer.test(symbol);
     }
 
-    _containsPoint(point) {
-        const extent = this._getPainter().getContainerExtent();
+    _containsPoint(point, t) {
+        let extent = this._getPainter().getContainerExtent();
+        if (t) {
+            extent = extent.expand(t);
+        }
         return extent.contains(this.getMap()._pointToContainerPoint(point));
     }
 
