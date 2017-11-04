@@ -15,17 +15,17 @@ A light JavaScript library to create integrated 2D/3D maps.
 
 **maptalks.js** was born for a map-centric project to help [YUM! China](http://www.yumchina.com/en/) (the most successful food chain in China) manage and analyze spatial data all over the country for choosing locations of new KFC and PizzaHut restaurants. After verified in many projects of government depts and enterprises, we are glad to open source it, and hoping it can help you deliver better mapping projects.
 
-<a href="https://maptalks.org/maptalks.three/demo/buildings.html" title="maptalks.THREE Demo" target="_blank"><img width="820" src = "https://user-images.githubusercontent.com/13678919/31883619-01963fa6-b81d-11e7-9429-b29641049523.gif" hspace="20"/></a>
+<a href="http://maptalks.org/maptalks.three/demo/buildings.html" title="maptalks.THREE Demo" target="_blank"><img width="820" src = "https://user-images.githubusercontent.com/13678919/31883619-01963fa6-b81d-11e7-9429-b29641049523.gif" hspace="20"/></a>
 
 ## Resources
 
-* [Web Site](https://maptalks.org)
-* [A Quick Start](https://maptalks.org/getting-started.html)
+* [Web Site](http://maptalks.org)
+* [A Quick Start](http://maptalks.org/getting-started.html)
 * [Examples](https://maptalks.github.io/examples/en/map/load/)
 * [API Reference](https://maptalks.github.io/maptalks.js/api/0.x/Map.html)
 * [Docs](https://github.com/maptalks/maptalks.js/wiki)
 * [Style Reference](https://github.com/maptalks/maptalks.js/wiki/Symbol-Reference)
-* [Plugins](https://maptalks.org/plugins.html)
+* [Plugins](http://maptalks.org/plugins.html)
    * [markercluster](https://github.com/maptalks/maptalks.markercluster)
    * [heatmap](https://github.com/maptalks/maptalks.heatmap)
    * [mapbox-gl-js](https://github.com/maptalks/maptalks.mapboxgl)
