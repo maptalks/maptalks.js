@@ -154,7 +154,12 @@ Map.include(/** @lends Map.prototype */{
             delete this._animPlayer;
         }
         if (props['center']) {
-            this.onMoveEnd();
+            const eventParam = {};
+            eventParam['coordinate'] = props['center'][1];
+            eventParam['containerPoint'] = this.coordinateToContainerPoint(eventParam['coordinate']);
+            eventParam['viewPoint'] = this.containerPointToViewPoint(eventParam['containerPoint']);
+            eventParam['point2d'] = this._containerPointToPoint(eventParam['containerPoint']);
+            this.onMoveEnd(eventParam);
         }
         if (!isNil(props['zoom'])) {
             if (!options['wheelZoom']) {
