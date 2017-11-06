@@ -154,7 +154,8 @@ Map.include(/** @lends Map.prototype */{
             delete this._animPlayer;
         }
         if (props['center']) {
-            this.onMoveEnd();
+            //this.onMoveEnd();
+            this.onMoveEnd({ coordinate:props['center'][1] });
         }
         if (!isNil(props['zoom'])) {
             if (!options['wheelZoom']) {
@@ -165,6 +166,9 @@ Map.include(/** @lends Map.prototype */{
         }
         if (evtType) {
             this._fireEvent(evtType);
+        }
+        if (options['finished'] && isFunction(options['finished'])) {
+            options['finished']({ coordinate: props['center'][1] });
         }
     },
 

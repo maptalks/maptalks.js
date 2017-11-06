@@ -495,7 +495,15 @@ describe('Map.Spec', function () {
 
             happen.dblclick(eventContainer);
         });
-
+        
+        it('After dragging the map quickly and trigger moveend event,it can get the final coordinate', function(done) {
+            map.on('moveend', function(e) {
+                expect(e.coordinate).to.be.ok();
+                done();
+            });
+            var center = map.getCenter();
+            map.panTo([center.x + 0.01, center.y + 0.01]);
+        });
     });
 
     describe('#setBaseLayer', function () {

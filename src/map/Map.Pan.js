@@ -18,7 +18,8 @@ Map.include(/** @lends Map.prototype */ {
         }
         coordinate = new Coordinate(coordinate);
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
-            return this._panAnimation(coordinate, options['duration']);
+            //return this._panAnimation(coordinate, options['duration']);
+            return this._panAnimation(coordinate, options['duration'], options['finished']);
         } else {
             this.setCenter(coordinate);
             return this;
@@ -57,14 +58,15 @@ Map.include(/** @lends Map.prototype */ {
         return this.animateTo({
             'center' : target
         }, {
-            'duration' : t || this.options['panAnimationDuration']
+            'duration' : t || this.options['panAnimationDuration'],
+            'finished' : onFinish
         }, frame => {
             if (frame.state.playState !== 'finished') {
                 return;
             }
-            if (onFinish) {
+            /*if (onFinish) {
                 onFinish();
-            }
+            }*/
         });
     }
 });
