@@ -1441,21 +1441,18 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     onMoveEnd(param) {
         this._moving = false;
         this._trySetCursor('default');
-        if (param && param.coordinate) {
-            this._fireEvent('moveend', param);
-        } else
-            /**
-             * moveend event
-             * @event Map#moveend
-             * @type {Object}
-             * @property {String} type - moveend
-             * @property {Map} target - map fires the event
-             * @property {Coordinate} coordinate - coordinate of the event
-             * @property {Point} containerPoint  - container point of the event
-             * @property {Point} viewPoint       - view point of the event
-             * @property {Event} domEvent                 - dom event
-             */
-            this._fireEvent('moveend', this._parseEvent(param ? param['domEvent'] : null, 'moveend'));
+        /**
+         * moveend event
+         * @event Map#moveend
+         * @type {Object}
+         * @property {String} type - moveend
+         * @property {Map} target - map fires the event
+         * @property {Coordinate} coordinate - coordinate of the event
+         * @property {Point} containerPoint  - container point of the event
+         * @property {Point} viewPoint       - view point of the event
+         * @property {Event} domEvent                 - dom event
+         */
+        this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
         if (!this._verifyExtent(this.getCenter())) {
             let moveTo = this._originCenter;
             if (!this._verifyExtent(moveTo)) {
