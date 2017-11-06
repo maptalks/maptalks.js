@@ -499,6 +499,9 @@ describe('Map.Spec', function () {
         it('After dragging the map quickly and trigger moveend event,it can get the final coordinate', function(done) {
             map.on('moveend', function(e) {
                 expect(e.coordinate).to.be.ok();
+                expect(e.containerPoint).to.be.ok();
+                expect(e.viewPoint).to.be.ok();
+                expect(e.point2d).to.be.ok();
                 done();
             });
             var center = map.getCenter();

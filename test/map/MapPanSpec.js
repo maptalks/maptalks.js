@@ -37,20 +37,19 @@ describe('#MapPan', function () {
         map.panTo(coord, { 'animation' : true });
     });
 
-    it('when finished panning to map, call the callback function', function (done) {
+    it('when panning map to a point, call the callback function in each frame', function (done) {
         var coord = center.substract(1, 1);
         var spy = sinon.spy();
         var t = 100;
         map.panTo(coord, { 
            'animation' : true,
-           'duration': t,
-           'finished' :spy
-        });
+           'duration': t
+        }, spy);
         expect(spy.called).to.not.be.ok();
         setTimeout(function(){
            expect(spy.called).to.be.ok();
            done();
-        }, t + 10);
+        }, 10);
     });
     
     it('panBy without animation', function (done) {
@@ -62,13 +61,25 @@ describe('#MapPan', function () {
         map.panBy(offset, { 'animation' : false });
     });
 
-    it('panBy without animation', function (done) {
+    it('panBy with animation', function (done) {
         var offset = { x: 20, y: 20 };
         map.once('moveend', function () {
             expect(map.getCenter()).not.to.be.eql(center);
             done();
         });
         map.panBy(offset, { 'animation' : true });
+    });
+
+    it('panBy with callback', function (done) {
+        var offset = { x: 20, y: 20 };
+        var spy = sinon.spy();
+        var t = 100;
+        map.panBy(offset, { 'animation' : true, 'duration': t }, spy);
+        expect(spy.called).to.not.be.ok();
+        setTimeout(function(){
+           expect(spy.called).to.be.ok();
+           done();
+        }, 10);
     });
 
     it('change zoom or center during panning', function (done) {
