@@ -1,6 +1,7 @@
 import Coordinate from 'geo/Coordinate';
 import Point from 'geo/Point';
 import Map from './Map';
+import { isFunction } from 'core/util';
 
 Map.include(/** @lends Map.prototype */ {
 
@@ -12,14 +13,17 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {Map} this
      */
-    panTo: function (coordinate, options = {}) {
+    panTo: function (coordinate, options = {}, step) {
         if (!coordinate) {
             return this;
         }
+        if (isFunction(options)) {
+            step = options;
+            options = {};
+        }
         coordinate = new Coordinate(coordinate);
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
-            //return this._panAnimation(coordinate, options['duration']);
-            return this._panAnimation(coordinate, options['duration'], options['finished']);
+            return this._panAnimation(coordinate, options['duration'], step);
         } else {
             this.setCenter(coordinate);
             return this;
@@ -34,15 +38,19 @@ Map.include(/** @lends Map.prototype */ {
      * @param {Boolean} [options.duration=600] - pan animation duration
      * @return {Map} this
      */
-    panBy: function (offset, options = {}) {
+    panBy: function (offset, options = {}, step) {
         if (!offset) {
             return this;
+        }
+        if (isFunction(options)) {
+            step = options;
+            options = {};
         }
         offset = new Point(offset).multi(-1);
         this.onMoveStart();
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
             const target = this.locateByPoint(this.getCenter(), offset.x, offset.y);
-            this._panAnimation(target, options['duration']);
+            this._panAnimation(target, options['duration'], step);
         } else {
             this._offsetCenterByPixel(offset);
             this.onMoving();
@@ -51,7 +59,7 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _panAnimation: function (target, t, onFinish) {
+    _panAnimation: function (target, t, cb) {
         if (!this.options['panAnimation']) {
             return this.setCenter(target);
         }
@@ -59,14 +67,6 @@ Map.include(/** @lends Map.prototype */ {
             'center' : target
         }, {
             'duration' : t || this.options['panAnimationDuration'],
-            'finished' : onFinish
-        }, frame => {
-            if (frame.state.playState !== 'finished') {
-                return;
-            }
-            /*if (onFinish) {
-                onFinish();
-            }*/
-        });
+        }, cb);
     }
 });
