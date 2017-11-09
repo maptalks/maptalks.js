@@ -617,8 +617,8 @@ const Canvas = {
         ctx.stroke();
     },
 
-    copy(canvas) {
-        const target = createEl('canvas');
+    copy(canvas, c) {
+        const target = c || createEl('canvas');
         target.width = canvas.width;
         target.height = canvas.height;
         target.getContext('2d').drawImage(canvas, 0, 0);

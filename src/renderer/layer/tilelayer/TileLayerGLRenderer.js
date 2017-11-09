@@ -223,17 +223,6 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         return this.getMap() && !!this.getMap().getPitch() || this.layer && !!this.layer.options['fragmentShader'];
     }
 
-    // limit tile number to load when map is interacting
-    _getTileLimitOnInteracting() {
-        if (this._gl()) {
-            if (this.getMap().isInteracting()) {
-                return 1;
-            }
-            return 10;
-        }
-        return 0;
-    }
-
     _createTexture(tileImage) {
         const gl = this.gl;
         const texture = this._getTexture() || gl.createTexture();   // Create a texture object

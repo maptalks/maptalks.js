@@ -30,6 +30,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._tileLoading = {};
     }
 
+    prepareRender() {
+        super.prepareRender();
+        const tileZoom = this.layer._getTileZoom();
+        const map = this.getMap();
+        if (this._shouldSaveBack() && (map.isZooming() && (map.isMoving() || map.isRotating())) && this._tileZoom !== tileZoom) {
+            this._saveBackground();
+            this._backZoom = this._tileZoom;
+            this._backRefreshed = true;
+        }
+    }
+
     draw() {
         const map = this.getMap();
         if (!this.isDrawable()) {
@@ -52,12 +63,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         this._tileZoom = tileGrid.zoom;
 
-        if (!this.canvas) {
-            this.createCanvas();
-        } else {
-            // reset current transformation matrix to the identity matrix
-            this.resetCanvasTransform();
-        }
+        // reset current transformation matrix to the identity matrix
+        this.resetCanvasTransform();
         if (!mask2DExtent) {
             this._clipByPitch();
         }
@@ -94,9 +101,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         if (this._tileCountToLoad === 0) {
             if (!loading) {
-                if (this.background && !map.options['zoomBackground']) {
+                if (this.background && !map.options['zoomBackground'] && !map.isAnimating()) {
                     this.setToRedraw();
                     delete this.background;
+                    delete this._backZoom;
                 }
                 this.completeRender();
             }
@@ -140,8 +148,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return false;
     }
 
+    // limit tile number to load when map is interacting
     _getTileLimitOnInteracting() {
-        return 0;
+        if (this.getMap().isInteracting()) {
+            return 1;
+        }
+        return 10;
     }
 
     isDrawable() {
@@ -255,7 +267,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileSize = this.layer.getTileSize(),
             zoom = map.getZoom(),
             ctx = this.context,
-            cp = map._pointToContainerPoint(point, tileZoom)._round(),
+            cp = map._pointToContainerPoint(point, tileZoom),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
         const opacity = this.getTileOpacity(tileImage);
@@ -263,6 +275,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (opacity < 1) {
             ctx.globalAlpha = opacity;
             this.setToRedraw();
+        }
+        if (!transformed) {
+            cp._round();
         }
         let x = cp.x,
             y = cp.y;
@@ -336,6 +351,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this._tileRended;
         delete this._tileZoom;
         delete this._tileLoading;
+        delete this._backCanvas;
     }
 
     _markTiles() {
@@ -408,21 +424,38 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _saveBackground() {
         const map = this.getMap();
+        if (!this._backCanvas) {
+            this._backCanvas = Canvas2D.createCanvas(1, 1);
+        }
         this.background = {
-            canvas : Canvas2D.copy(this.canvas),
+            canvas : Canvas2D.copy(this.canvas, this._backCanvas),
             zoom : map.getZoom(),
             nw : this._northWest,
             bearing : map.getBearing()
         };
     }
 
-    onZoomStart(e) {
+    _shouldSaveBack() {
         const map = this.getMap();
-        const preserveBack = !IS_NODE && (map && this.layer === map.getBaseLayer());
-        if (preserveBack || this.layer.options['forceRenderOnZooming']) {
+        return !IS_NODE && (map && this.layer === map.getBaseLayer());
+    }
+
+    onZoomStart(e) {
+        if (this._shouldSaveBack() || this.layer.options['forceRenderOnZooming']) {
+            this._backZoom = this._tileZoom;
             this._saveBackground();
         }
         super.onZoomStart(e);
+    }
+
+    onZoomEnd(e) {
+        if (this._shouldSaveBack() && this._backRefreshed) {
+            this._northWest = this.getMap()._containerPointToPoint(new Point(0, 0));
+            this._saveBackground();
+            this._backZoom = this._tileZoom;
+            delete this._backRefreshed;
+        }
+        super.onZoomEnd(e);
     }
 }
 
