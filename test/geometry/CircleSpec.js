@@ -168,7 +168,7 @@ describe('Geometry.Circle', function () {
         COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
     });
 
-    it('Circle._containsPoint', function () {
+    it('Circle.containsPoint', function () {
 
         var geometry = new maptalks.Circle(center, 10, {
             symbol: {
@@ -179,19 +179,10 @@ describe('Geometry.Circle', function () {
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
-        var spy = sinon.spy();
-        geometry.on('click', spy);
+        var p1 = new maptalks.Point(400 + 10 + 6, 300);
+        expect(geometry.containsPoint(p1)).not.to.be.ok();
 
-        happen.click(canvasContainer, {
-            clientX: 400 + 8 + 10 + 6,
-            clientY: 300 + 8
-        });
-        expect(spy.called).to.not.be.ok();
-
-        happen.click(canvasContainer, {
-            clientX: 400 + 8 + 10 + 2,
-            clientY: 300 + 8
-        });
-        expect(spy.called).to.be.ok();
+        var p2 = new maptalks.Point(400 + 10 + 2, 300);
+        expect(geometry.containsPoint(p2)).to.be.ok();
     });
 });

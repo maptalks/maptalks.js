@@ -232,8 +232,8 @@ function _getBitCode(p, bounds) {
  */
 export function withInEllipse(point, center, southeast, tolerance) {
     point = new Point(point);
-    const a = Math.abs(southeast.x - center.x) * 2,
-        b = Math.abs(southeast.y - center.y) * 2,
+    const a = Math.abs(southeast.x - center.x),
+        b = Math.abs(southeast.y - center.y),
         c = Math.sqrt(Math.abs(a * a - b * b)),
         xfocus = a >= b;
     let f1, f2, d;
@@ -252,5 +252,5 @@ export function withInEllipse(point, center, southeast, tolerance) {
     L2 + t >= L2'
     D + 2t >= L1' + L2'
     */
-    return point.distanceTo(f1) + point.distanceTo(f2) <= d + 2 * tolerance;
+    return (point.distanceTo(f1) + point.distanceTo(f2)) <= (d + 2 * tolerance);
 }
