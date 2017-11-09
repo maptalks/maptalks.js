@@ -5,7 +5,8 @@ import {
     IS_NODE,
     isNil,
     isString,
-    isFunction
+    isFunction,
+    sign
 } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
@@ -41,7 +42,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
  *
  * @property {Number}  [options.maxPitch=80]                    - max pitch
- * @property {Number}  [options.maxVisualPitch=60]              - the max pitch to be visual
+ * @property {Number}  [options.maxVisualPitch=65]              - the max pitch to be visual
  *
  * @property {Extent}  [options.viewHistory=true]               -  whether to record view history
  * @property {Extent}  [options.viewHistoryCount=10]            -  the count of view history record.
@@ -66,7 +67,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
-    'maxVisualPitch' : 60,
+    'maxVisualPitch' : 65,
     'maxPitch' : 80,
 
     'centerCross': false,
@@ -562,7 +563,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             const gap = resolutions[i + 1] - resolutions[i];
             const test = res - resolutions[i];
-            if (Math.abs(gap) >= Math.abs(test)) {
+            if (sign(gap) === sign(test) && Math.abs(gap) >= Math.abs(test)) {
                 return i + test / gap;
             }
         }
