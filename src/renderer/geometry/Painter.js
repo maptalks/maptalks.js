@@ -514,8 +514,8 @@ class Painter extends Class {
         const map = this.getMap();
         const z = map.getMaxNativeZoom();
         const target = map.locate(center, altitude, 0);
-        const p0 = map.coordinateToPoint(center, z),
-            p1 = map.coordinateToPoint(target, z);
+        const p0 = map.coordToPoint(center, z),
+            p1 = map.coordToPoint(target, z);
         return Math.abs(p1.x - p0.x) * sign(altitude);
     }
 

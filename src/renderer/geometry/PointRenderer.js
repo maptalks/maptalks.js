@@ -31,11 +31,11 @@ Rectangle.include({
             const shell = this._trimRing(this.getShell());
             const points = [];
             for (let i = 0, len = shell.length; i < len; i++) {
-                points.push(map.coordinateToPoint(shell[i], map.getMaxNativeZoom()));
+                points.push(map.coordToPoint(shell[i], map.getMaxNativeZoom()));
             }
             return [points, null];
         } else {
-            const c = map.coordinateToPoint(this.getCenter(), map.getMaxNativeZoom());
+            const c = map.coordToPoint(this.getCenter(), map.getMaxNativeZoom());
             return [
                 [c], null
             ];

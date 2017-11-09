@@ -162,8 +162,8 @@ LineString.include({
         const placement = this._getArrowPlacement();
         const arrows = [];
         const map = this.getMap(),
-            first = map.coordinateToContainerPoint(this.getFirstCoordinate()),
-            last = map.coordinateToContainerPoint(this.getLastCoordinate());
+            first = map.coordToContainerPoint(this.getFirstCoordinate()),
+            last = map.coordToContainerPoint(this.getLastCoordinate());
         for (let i = segments.length - 1; i >= 0; i--) {
             if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
                 arrows.push(this._getArrowPoints(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));

@@ -399,7 +399,7 @@ class OverlayLayer extends Layer {
             tolerance = options['tolerance'],
             hits = [];
         const map = this.getMap();
-        const point = map.coordinateToPoint(coordinate);
+        const point = map.coordToPoint(coordinate);
         const cp = map._pointToContainerPoint(point);
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];

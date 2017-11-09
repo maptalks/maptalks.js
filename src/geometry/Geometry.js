@@ -362,7 +362,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
         if (containerPoint instanceof Coordinate) {
-            containerPoint = this.getMap().coordinateToContainerPoint(containerPoint);
+            containerPoint = this.getMap().coordToContainerPoint(containerPoint);
         }
         return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     }

@@ -369,7 +369,7 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getViewPoint() {
-        return this.getMap().coordinateToViewPoint(this._coordinate)
+        return this.getMap().coordToViewPoint(this._coordinate)
             ._add(this.options['dx'], this.options['dy']);
     }
 
