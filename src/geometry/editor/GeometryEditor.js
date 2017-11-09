@@ -505,7 +505,7 @@ class GeometryEditor extends Eventable(Class) {
                 geometryToEdit.setCoordinates(newCoordinates);
                 //coordinates changed, and use mirror handle instead to caculate width and height
                 const mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
-                const mirrorViewPoint = map.coordViewPoint(mirrorHandle.getCoordinates());
+                const mirrorViewPoint = map.coordToViewPoint(mirrorHandle.getCoordinates());
                 handleViewPoint = mirrorViewPoint;
             }
 
@@ -637,7 +637,7 @@ class GeometryEditor extends Eventable(Class) {
             const ability = resizeAbilities[i];
             if (isRect) {
                 const mirror = resizeHandles[7 - i];
-                const mirrorViewPoint = map.coordViewPoint(mirror.getCoordinates());
+                const mirrorViewPoint = map.coordToViewPoint(mirror.getCoordinates());
                 pointSub = targetPoint.sub(mirrorViewPoint);
                 const absSub = pointSub.abs();
                 w = map.pixelToDistance(absSub.x, 0);
@@ -685,7 +685,7 @@ class GeometryEditor extends Eventable(Class) {
                 geometryToEdit.setCoordinates(newCoordinates);
 
             } else {
-                const viewCenter = map.coordViewPoint(geometryToEdit.getCenter());
+                const viewCenter = map.coordToViewPoint(geometryToEdit.getCenter());
                 pointSub = viewCenter.sub(targetPoint)._abs();
                 w = map.pixelToDistance(pointSub.x, 0);
                 h = map.pixelToDistance(0, pointSub.y);
