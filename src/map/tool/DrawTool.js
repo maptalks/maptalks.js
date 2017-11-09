@@ -753,7 +753,7 @@ DrawTool.registerMode('boxZoom', {
     },
     'update': function (coordinate, geometry, param) {
         const map = geometry.getMap();
-        const p1 = map.coordinateToContainerPoint(geometry._firstClick),
+        const p1 = map.coordToContainerPoint(geometry._firstClick),
             p2 = param['containerPoint'];
         const coord = map.containerPointToCoordinate(new Coordinate(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)));
         geometry.setCoordinates(coord)

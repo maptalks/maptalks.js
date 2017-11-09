@@ -384,7 +384,7 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     _getConnectPoints() {
         const map = this.getMap();
-        const containerPoint = map.coordinateToContainerPoint(this.getCoordinates());
+        const containerPoint = map.coordToContainerPoint(this.getCoordinates());
         const size = this.getSize(),
             width = size.width,
             height = size.height;
