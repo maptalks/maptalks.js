@@ -716,7 +716,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this.getMaxZoom();
         }
         const size = this.getSize();
-        const containerExtent = extent.convertTo(p => this.coordinateToContainerPoint(p));
+        const containerExtent = extent.convertTo(p => this.coordToContainerPoint(p));
         const w = containerExtent.getWidth(),
             h = containerExtent.getHeight();
         const scaleX = size['width'] / w,
@@ -1148,6 +1148,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for coordinateToPoint
+     */
+    coordToPoint(coordinate, zoom) {
+        return this.coordinateToPoint(coordinate, zoom);
+    }
+
+    /**
      * Converts a 2D point in current zoom or a specific zoom to a coordinate.
      * Usually used in plugin development.
      * @param  {Point} point - 2D point
@@ -1162,6 +1169,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for pointToCoordinate
+     */
+    pointToCoord(point, zoom) {
+        return this.pointToCoordinate(point, zoom);
+    }
+
+    /**
      * Converts a geographical coordinate to view point.<br>
      * A view point is a point relative to map's mapPlatform panel's position. <br>
      * Usually used in plugin development.
@@ -1173,6 +1187,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for coordinateToViewPoint
+     */
+    coordToViewPoint(coordinate) {
+        return this.coordinateToViewPoint(coordinate);
+    }
+
+    /**
      * Converts a view point to the geographical coordinate.
      * Usually used in plugin development.
      * @param {Point} viewPoint
@@ -1180,6 +1201,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     viewPointToCoordinate(viewPoint) {
         return this.getProjection().unproject(this._viewPointToPrj(viewPoint));
+    }
+
+    /**
+     * shorter alias for viewPointToCoordinate
+     */
+    viewPointToCoord(viewPoint) {
+        return this.viewPointToCoordinate(viewPoint);
     }
 
     /**
@@ -1195,6 +1223,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for coordinateToContainerPoint
+     */
+    coordToContainerPoint(coordinate, zoom) {
+        return this.coordinateToContainerPoint(coordinate, zoom);
+    }
+
+    /**
      * Converts a container point to geographical coordinate.
      * @param {Point}
      * @return {Coordinate}
@@ -1202,6 +1237,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     containerPointToCoordinate(containerPoint) {
         const pCoordinate = this._containerPointToPrj(containerPoint);
         return this.getProjection().unproject(pCoordinate);
+    }
+
+    /**
+     * shorter alias for containerPointToCoordinate
+     */
+    containerPointToCoord(containerPoint) {
+        return this.containerPointToCoordinate(containerPoint);
     }
 
     /**
@@ -1292,8 +1334,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const scale = this.getScale() / this.getScale(zoom);
         const center = this.getCenter(),
             target = projection.locate(center, xDist, yDist);
-        const p0 = this.coordinateToContainerPoint(center),
-            p1 = this.coordinateToContainerPoint(target);
+        const p0 = this.coordToContainerPoint(center),
+            p1 = this.coordToContainerPoint(target);
         p1._sub(p0)._multi(scale)._abs();
         return new Size(p1.x, p1.y);
     }
@@ -1313,7 +1355,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const fullExt = this.getFullExtent();
         const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
         const target = new Point(this.width / 2 + width, this.height / 2 + d * height);
-        const coord = this.containerPointToCoordinate(target);
+        const coord = this.containerPointToCoord(target);
         return projection.measureLength(this.getCenter(), coord);
     }
 
@@ -1336,8 +1378,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locateByPoint(coordinate, px, py) {
-        const point = this.coordinateToContainerPoint(coordinate);
-        return this.containerPointToCoordinate(point._add(px, py));
+        const point = this.coordToContainerPoint(coordinate);
+        return this.containerPointToCoord(point._add(px, py));
     }
 
     /**
@@ -1606,8 +1648,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _pointToExtent(extent2D) {
         return new Extent(
-            this.pointToCoordinate(extent2D.getMin()),
-            this.pointToCoordinate(extent2D.getMax())
+            this.pointToCoord(extent2D.getMin()),
+            this.pointToCoord(extent2D.getMax())
         );
     }
 
