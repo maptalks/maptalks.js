@@ -189,7 +189,7 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _handleDOMEvent(e) {
-        let type = e.type;
+        const type = e.type;
         // prevent default contextmenu
         if (type === 'contextmenu') {
             preventDefault(e);
@@ -219,12 +219,12 @@ Map.include(/** @lends Map.prototype */ {
                 }
             }
         }
-        if (type === 'click') {
-            const button = e.button;
-            if (button === 2) {
-                type = 'contextmenu';
-            }
-        }
+        // if (type === 'click') {
+        //     const button = e.button;
+        //     if (button === 2) {
+        //         type = 'contextmenu';
+        //     }
+        // }
         this._fireDOMEvent(this, e, type);
         if (mimicClick) {
             let mimicDblClick = false;
