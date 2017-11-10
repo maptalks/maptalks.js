@@ -88,10 +88,11 @@ Geometry.include(/** @lends Geometry.prototype */ {
             if (map && isFocusing) {
                 const pcenter = projection.project(this.getCenter());
                 map._setPrjCenter(pcenter);
+                const e = map._parseEventFromCoord(projection.unproject(pcenter));
                 if (player.playState !== 'running') {
-                    map.onMoveEnd();
+                    map.onMoveEnd(e);
                 } else {
-                    map.onMoving();
+                    map.onMoving(e);
                 }
             }
             this._fireAnimateEvent(player.playState);

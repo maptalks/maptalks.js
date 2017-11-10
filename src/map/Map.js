@@ -421,7 +421,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const projection = this.getProjection();
         const _pcenter = projection.project(center);
         this._setPrjCenter(_pcenter);
-        this.onMoveEnd();
+        this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
         return this;
     }
 
