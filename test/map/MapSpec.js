@@ -17,8 +17,8 @@ describe('Map.Spec', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        map.config('zoomAnimationDuration', 10);
-        map._getRenderer()._setCheckSizeInterval(10);
+        map.config('zoomAnimationDuration', 20);
+        map._getRenderer()._setCheckSizeInterval(20);
         baseLayer = new maptalks.VectorLayer('base_', new maptalks.Marker(center));
         eventContainer = map._panels.front;
     });
@@ -495,7 +495,7 @@ describe('Map.Spec', function () {
 
             happen.dblclick(eventContainer);
         });
-        
+
         it('After dragging the map quickly and trigger moveend event,it can get the final coordinate', function(done) {
             map.on('moveend', function(e) {
                 expect(e.coordinate).to.be.ok();
