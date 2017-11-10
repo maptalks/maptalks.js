@@ -230,12 +230,11 @@ function runTests(target, _context) {
         var domPosition = GET_PAGE_POSITION(eventContainer);
         var point = _context.map.coordinateToContainerPoint(target.getFirstCoordinate()).add(domPosition);
 
-        happen.click(eventContainer, {
+        happen.once(eventContainer, {
+            'type' : 'contextmenu',
             'clientX':point.x,
-            'clientY':point.y,
-            'button' : 2
+            'clientY':point.y
         });
-
     }
 
     context('Type of ' + type, function () {
