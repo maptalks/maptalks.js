@@ -79,7 +79,7 @@ describe('#MapPan', function () {
         setTimeout(function(){
            expect(spy.called).to.be.ok();
            done();
-        }, 10);
+        }, 50);
     });
 
     it('change zoom or center during panning', function (done) {
