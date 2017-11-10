@@ -21,14 +21,14 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     _getEventTypeToFire: function (domEvent) {
-        let eventType = domEvent.type;
-        //change event type to contextmenu
-        if (eventType === 'click' || eventType === 'mousedown') {
-            if (domEvent.button === 2) {
-                eventType = 'contextmenu';
-            }
-        }
-        return eventType;
+        // let eventType = domEvent.type;
+        // //change event type to contextmenu
+        // if (eventType === 'click' || eventType === 'mousedown') {
+        //     if (domEvent.button === 2) {
+        //         eventType = 'contextmenu';
+        //     }
+        // }
+        return domEvent.type;
     },
 
     /**
