@@ -41,7 +41,7 @@ describe('#MapPan', function () {
         var coord = center.substract(1, 1);
         var spy = sinon.spy();
         var t = 100;
-        map.panTo(coord, { 
+        map.panTo(coord, {
            'animation' : true,
            'duration': t
         }, spy);
@@ -49,9 +49,9 @@ describe('#MapPan', function () {
         setTimeout(function(){
            expect(spy.called).to.be.ok();
            done();
-        }, 10);
+        }, 50);
     });
-    
+
     it('panBy without animation', function (done) {
         var offset = { x: 20, y: 20 };
         map.once('moveend', function () {
