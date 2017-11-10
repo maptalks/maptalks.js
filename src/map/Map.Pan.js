@@ -53,8 +53,7 @@ Map.include(/** @lends Map.prototype */ {
             this._panAnimation(target, options['duration'], step);
         } else {
             this._offsetCenterByPixel(offset);
-            this.onMoving();
-            this.onMoveEnd();
+            this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
         }
         return this;
     },

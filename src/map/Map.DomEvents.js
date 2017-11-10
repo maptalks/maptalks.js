@@ -1,4 +1,4 @@
-import { now } from 'core/util';
+import { now, extend } from 'core/util';
 import {
     addDomEvent,
     removeDomEvent,
@@ -278,20 +278,34 @@ Map.include(/** @lends Map.prototype */ {
         if (!e) {
             return null;
         }
-        const eventParam = {
+        let eventParam = {
             'domEvent': e
         };
         if (type !== 'keypress') {
             const actual = this._getActualEvent(e);
             if (actual) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
-                eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
-                eventParam['containerPoint'] = containerPoint;
-                eventParam['viewPoint'] = this.containerPointToViewPoint(containerPoint);
-                eventParam['point2d'] = this._containerPointToPoint(containerPoint);
+                eventParam = extend(eventParam, {
+                    'coordinate' : this.containerPointToCoord(containerPoint),
+                    'containerPoint' : containerPoint,
+                    'viewPoint' : this.containerPointToViewPoint(containerPoint),
+                    'point2d' : this._containerPointToPoint(containerPoint),
+                });
             }
         }
         return eventParam;
+    },
+
+    _parseEventFromCoord(coord) {
+        const containerPoint = this._prjToContainerPoint(coord),
+            viewPoint = this.containerPointToViewPoint(containerPoint);
+        const e = {
+            'coordinate' : coord,
+            'containerPoint' : containerPoint,
+            'viewPoint' : viewPoint,
+            'point2d' : this.coordToPoint(coord)
+        };
+        return e;
     },
 
     _getActualEvent(e) {

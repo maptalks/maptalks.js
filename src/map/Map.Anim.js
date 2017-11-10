@@ -97,7 +97,7 @@ Map.include(/** @lends Map.prototype */{
                 if (frame.styles['center']) {
                     const center = frame.styles['center'];
                     this._setPrjCenter(projection.project(center));
-                    this.onMoving();
+                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
                 }
                 if (!isNil(frame.styles['zoom'])) {
                     this.onZooming(frame.styles['zoom'], zoomOrigin);
@@ -154,12 +154,7 @@ Map.include(/** @lends Map.prototype */{
             delete this._animPlayer;
         }
         if (props['center']) {
-            const eventParam = {};
-            eventParam['coordinate'] = props['center'][1];
-            eventParam['containerPoint'] = this.coordinateToContainerPoint(eventParam['coordinate']);
-            eventParam['viewPoint'] = this.containerPointToViewPoint(eventParam['containerPoint']);
-            eventParam['point2d'] = this._containerPointToPoint(eventParam['containerPoint']);
-            this.onMoveEnd(eventParam);
+            this.onMoveEnd(this._parseEventFromCoord(props['center'][1]));
         }
         if (!isNil(props['zoom'])) {
             if (!options['wheelZoom']) {
