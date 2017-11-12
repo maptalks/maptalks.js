@@ -160,7 +160,7 @@ class Painter extends Class {
             return null;
         }
         const map = this.getMap(),
-            maxZoom = map.getMaxNativeZoom(),
+            maxZoom = map._getGLPointZoom(),
             layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
         let containerPoints;
         function pointContainerPoint(point, alt) {
@@ -213,16 +213,16 @@ class Painter extends Class {
         return containerPoints;
     }
 
-    _clip(points, altitude) {
+    _clip(points) {
         const map = this.getMap(),
-            maxZoom = map.getMaxNativeZoom();
+            renderZoom = map._getGLPointZoom();
         let lineWidth = this.getSymbol()['lineWidth'];
         if (!isNumber(lineWidth)) {
             lineWidth = 4;
         }
         const containerExtent = map.getContainerExtent();
         //TODO map.height / 4 is a magic number to draw complete polygon with altitude after clipping
-        const extent2D = containerExtent.expand(altitude ? map.height / 4 : lineWidth).convertTo(p => map._containerPointToPoint(p, maxZoom));
+        const extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, renderZoom));
         const e = this.get2DExtent();
         let clipPoints = points;
         if (!e.within(map._get2DExtent()) && this.geometry.options['clipToPaint']) {
@@ -271,11 +271,11 @@ class Painter extends Class {
         if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
             return;
         }
-        const map = this.getMap();
-        const altitude = this.getMinAltitude();
-        if (altitude && map.cameraAltitude && map.cameraAltitude < altitude) {
-            return;
-        }
+        // const map = this.getMap();
+        // const altitude = this.getMinAltitude();
+        // if (altitude && map.cameraAltitude && map.cameraAltitude < altitude) {
+        //     return;
+        // }
         this._beforePaint();
         const contexts = [renderer.context, renderer.resources];
         this._prepareShadow(renderer.context);
@@ -512,7 +512,7 @@ class Painter extends Class {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
-        const z = map.getMaxNativeZoom();
+        const z = map._getGLPointZoom();
         const target = map.locate(center, altitude, 0);
         const p0 = map.coordToPoint(center, z),
             p1 = map.coordToPoint(target, z);

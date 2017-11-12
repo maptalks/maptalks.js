@@ -11,7 +11,7 @@ import {
     emptyImageUrl,
     now
 } from 'core/util';
-import * as mat4 from 'core/util/mat4';
+import { mat4 } from '@mapbox/gl-matrix';
 import {
     on,
     createEl,
