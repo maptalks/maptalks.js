@@ -35,7 +35,7 @@ const el = {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
-        const pt = map._prjToPoint(pcenter, map.getMaxNativeZoom());
+        const pt = map._prjToPoint(pcenter, map._getGLPointZoom());
         const size = this._getRenderSize();
         return [pt, size['width'], size['height']];
     },
@@ -50,7 +50,7 @@ const el = {
 
     _getRenderSize() {
         const map = this.getMap(),
-            z = map.getMaxNativeZoom();
+            z = map._getGLPointZoom();
         const prjExtent = this._getPrjExtent();
         const pmin = map._prjToPoint(prjExtent.getMin(), z),
             pmax = map._prjToPoint(prjExtent.getMax(), z);
@@ -65,7 +65,7 @@ Circle.include(el);
 Rectangle.include({
     _getPaintParams() {
         const map = this.getMap();
-        const maxZoom = map.getMaxNativeZoom();
+        const maxZoom = map._getGLPointZoom();
         const shell = this._getPrjShell();
         const points = this._getPath2DPoints(shell, false, maxZoom);
         return [points];
@@ -82,7 +82,7 @@ Sector.include(el, {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const map = this.getMap();
-        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxNativeZoom());
+        const pt = map._prjToPoint(this._getPrjCoordinates(), map._getGLPointZoom());
         const size = this._getRenderSize();
         return [pt, size['width'],
             [this.getStartAngle(), this.getEndAngle()]
@@ -131,7 +131,7 @@ LineString.include({
 
     _getPaintParams() {
         const prjVertexes = this._getPrjCoordinates();
-        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getMaxNativeZoom());
+        const points = this._getPath2DPoints(prjVertexes, false, this.getMap()._getGLPointZoom());
         return [points];
     },
 
@@ -201,7 +201,7 @@ LineString.include({
 
 Polygon.include({
     _getPaintParams(disableSimplify) {
-        const maxZoom = this.getMap().getMaxNativeZoom();
+        const maxZoom = this.getMap()._getGLPointZoom();
         const prjVertexes = this._getPrjShell();
         let points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
         //splitted by anti-meridian
