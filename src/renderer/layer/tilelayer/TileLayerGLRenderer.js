@@ -16,9 +16,7 @@ const shaders = {
         varying vec2 v_texCoord;
 
         void main() {
-            vec2 t = a_position * vec2(1.0, -1.0);
-
-            gl_Position = u_matrix * vec4(t, 0.0, 1.0);
+            gl_Position = u_matrix * vec4(a_position, 0.0, 1.0);
 
             v_texCoord = a_texCoord;
         }
@@ -78,8 +76,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         const point = tileInfo.point,
             tileZoom = tileInfo.z;
         const gl = this.gl,
-            pp = map._pointToPoint(point, tileZoom),
-            scale = map.getResolution(tileZoom) / map.getResolution(),
+            scale = map.getGLScale(tileZoom),
+            pp = point.multi(scale),
             tileSize = this.layer.getTileSize();
         const opacity = this.getTileOpacity(tileImage);
         const x = pp.x,
@@ -87,12 +85,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
             w = tileSize['width'] * scale,
             h = tileSize['height'] * scale;
         this.loadTexture(tileImage);
-        const view = map.getView();
-        if (!this._matrixView || !equalMapView(this._matrixView, view)) {
-            const matrix = this.getViewMatrix();
-            gl.uniformMatrix4fv(this.program['u_matrix'], false, new Float32Array(matrix));
-            this._matrixView = view;
-        }
+
+        gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
         gl.uniform1f(this.program['u_opacity'], opacity);
         const x1 = x;
         const x2 = x + w;
@@ -116,10 +110,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         }
     }
 
-    getViewMatrix() {
-        const m = new Float64Array(16);
-        mat4.scale(m, this.getMap().projMatrix, [1, -1, 1]);
-        return m;
+    getProjViewMatrix() {
+        return this.copy16(this.getMap().projViewMatrix);
     }
 
     loadTileImage(tileImage, url) {
@@ -159,7 +151,7 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         const texBuffer = this.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
         this.enableVertexAttrib(['a_texCoord', 2]);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        gl.bufferData(gl.ARRAY_BUFFER, this.copy12([
             0.0,  0.0,
             1.0,  0.0,
             0.0,  1.0,
@@ -535,6 +527,24 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
     }
 }
 
+TileLayerGLRenderer.include({
+    copy12: function () {
+        const m = new Float32Array(12);
+        return function (arr) {
+            return mat4.copy(m, arr);
+        };
+    }(),
+
+    copy16: function () {
+        const m = new Float32Array(16);
+        return function (arr) {
+            return mat4.copy(m, arr);
+        };
+    }()
+});
+
 TileLayer.registerRenderer('gl', TileLayerGLRenderer);
 
 export default TileLayerGLRenderer;
+
+

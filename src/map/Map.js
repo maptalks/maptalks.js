@@ -601,18 +601,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Maximum zoom the map has
-     * @return {Number}
-     */
-    getMaxNativeZoom() {
-        const ref = this.getSpatialReference();
-        if (!ref) {
-            return null;
-        }
-        return ref.getResolutions().length - 1;
-    }
-
-    /**
      * Sets the max zoom that the map can be zoom to.
      * @param {Number} maxZoom
      * @returns {Map} this
@@ -652,6 +640,42 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         this.options['minZoom'] = minZoom;
         return this;
+    }
+
+    /**
+     * Maximum zoom the map has
+     * @return {Number}
+     */
+    getMaxNativeZoom() {
+        const ref = this.getSpatialReference();
+        if (!ref) {
+            return null;
+        }
+        return ref.getResolutions().length - 1;
+    }
+
+    /**
+     * Zoom for world point in WebGL context
+     * @returns {Number}
+     */
+    getGLZoom() {
+        return this.getMaxNativeZoom() / 2;
+    }
+
+    /**
+     * Caculate scale from gl zoom to given zoom (default by current zoom)
+     * @param {Number} [zoom=undefined] target zoom, current zoom by default
+     * @returns {Number}
+     * @examples
+     * const point = map.coordToPoint(map.getCenter());
+     * // convert to point in gl zoom
+     * const glPoint = point.multi(this.getGLScale());
+     */
+    getGLScale(zoom) {
+        if (isNil(zoom)) {
+            zoom = this.getZoom();
+        }
+        return this.getScale(zoom) / this.getScale(this.getGLZoom());
     }
 
     /**
@@ -1561,13 +1585,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     //-----------------------------------------------------------
-
-    /**
-     * zoom for point of world in GL/Canvas context
-     */
-    _getGLPointZoom() {
-        return this.getMaxNativeZoom() / 2;
-    }
 
     _initContainer(container) {
         if (isString(container)) {

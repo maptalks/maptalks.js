@@ -2,7 +2,7 @@ import Map from './Map';
 import Point from 'geo/Point';
 import { mat4 } from '@mapbox/gl-matrix';
 import { clamp, interpolate, wrap } from 'core/util';
-import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from 'core/math';
+import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from 'core/util/math';
 import Browser from 'core/Browser';
 
 const RADIAN = Math.PI / 180;
@@ -154,18 +154,16 @@ Map.include(/** @lends Map.prototype */{
     _pointToContainerPoint(point, zoom, altitude = 0) {
         point = this._pointToPoint(point, zoom);
         if (this.isTransforming() || altitude) {
-            // altitude = altitude * this.getScale(getTargetZoom(this)) / this.getScale();
-            const scale = this._pointScale;
+            //convert altitude at zoom to current zoom
+            altitude *= this.getResolution(zoom) / this.getResolution();
+            const scale = this._glScale;
             const t = [point.x * scale, point.y * scale, altitude * scale];
-            applyMatrix(t, t, this.pixelMatrix);
+            applyMatrix(t, t, this.projViewMatrix);
 
             const w2 = this.width / 2, h2 = this.height / 2;
             t[0] = (t[0] * w2) + w2;
             t[1] = -(t[1] * h2) + h2;
             return new Point(t[0], t[1]);
-            /* const t = [point.x, point.y, altitude, 1];
-            mat4.transformMat4(t, t, this.pixelMatrix);
-            return new Point(t[0] / t[3], t[1] / t[3]); */
         } else {
             const centerPoint = this._prjToPoint(this._getPrjCenter());
             return point._sub(centerPoint)._add(this.width / 2, this.height / 2);
@@ -187,8 +185,8 @@ Map.include(/** @lends Map.prototype */{
             const coord0 = [cp[0], cp[1], 0, 1];
             const coord1 = [cp[0], cp[1], 1, 1];
 
-            applyMatrix(coord0, coord0, this.pixelMatrixInverse);
-            applyMatrix(coord1, coord1, this.pixelMatrixInverse);
+            applyMatrix(coord0, coord0, this.projViewMatrixInverse);
+            applyMatrix(coord1, coord1, this.projViewMatrixInverse);
             const x0 = coord0[0];
             const x1 = coord1[0];
             const y0 = coord0[1];
@@ -198,33 +196,8 @@ Map.include(/** @lends Map.prototype */{
 
             const t = z0 === z1 ? 0 : (0 - z0) / (z1 - z0);
 
-            const point = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t))._multi(1 / this._pointScale);
+            const point = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t))._multi(1 / this._glScale);
             return ((zoom === undefined || this.getZoom() === zoom) ? point : this._pointToPointAtZoom(point, zoom));
-
-            /* const targetZ = 0;
-            // since we don't know the correct projected z value for the point,
-            // unproject two points to get a line and then find the point on that
-            // line with z=0
-
-            const coord0 = [p.x, p.y, 0, 1];
-            const coord1 = [p.x, p.y, 1, 1];
-
-            mat4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
-            mat4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
-
-            const w0 = coord0[3];
-            const w1 = coord1[3];
-            const x0 = coord0[0] / w0;
-            const x1 = coord1[0] / w1;
-            const y0 = coord0[1] / w0;
-            const y1 = coord1[1] / w1;
-            const z0 = coord0[2] / w0;
-            const z1 = coord1[2] / w1;
-
-            const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
-
-            const cp = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t));
-            return ((zoom === undefined || this.getZoom() === zoom) ? cp : this._pointToPointAtZoom(cp, zoom)); */
         }
         const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
             scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
@@ -233,40 +206,51 @@ Map.include(/** @lends Map.prototype */{
         return centerPoint._add(x, y);
     },
 
+    /**
+     * GL Matrices in maptalks (based on THREE):
+     * this.cameraCenter
+     * this.cameraWorldMatrix
+     * this.projMatrix
+     * this.viewMatrix = cameraWorldMatrix.inverse()
+     * this.projViewMatrix = projMatrix * viewMatrix
+     * this.projViewMatrixInverse = projViewMatrix.inverse()
+     */
     _calcMatrices: function () {
+        // closure matrixes to reuse
         const m0 = createMat4(),
             m1 = createMat4();
         return function () {
-            const map = this;
-            this._pointScale = this._calPointScale();
+            this._glScale = this.getGLScale();
             // get pixel size of map
-            const size = map.getSize();
+            const size = this.getSize();
             // get field of view
-            const fov = map.getFov() * Math.PI / 180;
-            const maxScale = map.getScale(map.getMinZoom()) / map.getScale(map.getMaxNativeZoom());
+            const fov = this.getFov() * Math.PI / 180;
+            const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
             const farZ = maxScale * size.height / 2 / this._getFovRatio() + 1;
-            const projectionMatrix = createMat4();
-            mat4.perspective(projectionMatrix, fov, size.width / size.height, 1, farZ);
-            mat4.scale(projectionMatrix, projectionMatrix, [1, -1, 1]);
-            // mat4.copy(m1, projectionMatrix);
-            const worldMatrix = this.getCameraWorldMatrix();
-            this.projMatrix = mat4.multiply(createMat4(), projectionMatrix, worldMatrix);
-            this.pixelMatrix = mat4.multiply(createMat4(), projectionMatrix, mat4.invert(m0, worldMatrix));
-            this.pixelMatrixInverse = mat4.multiply(createMat4(), worldMatrix, mat4.invert(m1, projectionMatrix));
+            // camera projection matrix
+            const projMatrix = this.projMatrix || createMat4();
+            mat4.perspective(projMatrix, fov, size.width / size.height, 1, farZ);
+            mat4.scale(projMatrix, projMatrix, [1, -1, 1]);
+            // camera world matrix
+            const worldMatrix = this._getCameraWorldMatrix();
+            // view matrix
+            this.viewMatrix = mat4.invert(m0, worldMatrix);
+            // matrix for world point => screen point
+            this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
+            // matrix for screen point => world point
+            this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
         };
     }(),
 
-    getCameraWorldMatrix() {
-        const map = this;
+    _getCameraWorldMatrix() {
+        const targetZ = this.getGLZoom();
 
-        const targetZ = map._getGLPointZoom();
+        const size = this.getSize(),
+            scale = this.getGLScale();
+        const center2D = this.cameraCenter = this._prjToPoint(this._prjCenter, targetZ);
 
-        const size = map.getSize(),
-            scale = map.getScale() / map.getScale(targetZ);
-        // const center = this.cameraCenter = map._prjToPoint(map._getPrjCenter(), map.getMaxNativeZoom());
-        const center2D = this.cameraCenter = map._prjToPoint(map._prjCenter, targetZ);
-        const pitch = map.getPitch() * RADIAN;
-        const bearing = -map.getBearing() * RADIAN;
+        const pitch = this.getPitch() * RADIAN;
+        const bearing = -this.getBearing() * RADIAN;
 
         const ratio = this._getFovRatio();
         const z = scale * size.height / 2 / ratio;
@@ -284,7 +268,7 @@ Map.include(/** @lends Map.prototype */{
         // let up = new vec3(0,1,0);
         // up.rotateZ(target,radians);
         const up = [Math.sin(bearing) * dist, Math.cos(bearing) * dist, 0];
-        const m = createMat4();
+        const m = this.cameraWorldMatrix || createMat4();
         lookAt(m, [cx, cy, cz], [center2D.x, center2D.y, 0], up);
 
         // math from THREE.js
@@ -296,95 +280,9 @@ Map.include(/** @lends Map.prototype */{
         return m;
     },
 
-    _calPointScale() {
-        return this.getScale() / this.getScale(this._getGLPointZoom());
-    },
-
     _getFovRatio() {
         const fov = this.getFov();
         return Math.tan(fov / 2 * RADIAN);
-    },
-
-    /* _calcMatrices() {
-        if (!this.height || (typeof Float64Array === 'undefined')) {
-            return;
-        }
-        if (!this._fov) {
-            this._fov = DEFAULT_FOV;
-        }
-        if (!this._pitch) {
-            this._pitch = 0;
-        }
-        if (!this._angle) {
-            this._angle = 0;
-        }
-
-        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
-
-        // Find the distance from the center point [width/2, height/2] to the
-        // center top point [width/2, 0] in Z units, using the law of sines.
-        // 1 Z unit is equivalent to 1 horizontal px at the center of the map
-        // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
-        // const halfFov = this._fov / 2;
-        // const groundAngle = Math.PI / 2 + this._pitch;
-        // const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
-
-        // Calculate z distance of the farthest fragment that should be rendered.
-        // const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
-        // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
-        const farZ = 1E9;//furthestDistance * 1.5;
-
-        // matrix for conversion from location to GL coordinates (-1 .. 1)
-        let m = new Float64Array(16);
-        mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
-
-        mat4.scale(m, m, [1, -1, 1]);
-        mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
-        mat4.rotateX(m, m, this._pitch);
-        mat4.rotateZ(m, m, this._angle);
-
-        //matrix for doms
-        const domMat = mat4.copy(new Float64Array(16), m);
-
-        const centerPoint = this._prjToPoint(this._prjCenter);
-        const x = centerPoint.x, y = centerPoint.y;
-        mat4.translate(m, m, [-x, -y, 0]);
-
-        // scale vertically to meters per pixel (inverse of ground resolution):
-        // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
-        // but for maptalks.js, scaling on Z axis is unnecessary
-        // const verticalScale = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
-        // mat4.scale(m, m, [1, 1, verticalScale, 1]);
-
-        this.projMatrix = m;
-
-        // matrix for conversion from location to screen coordinates
-        m = mat4.create();
-        mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
-        mat4.translate(m, m, [1, -1, 0]);
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), m, this.projMatrix);
-
-        // inverse matrix for conversion from screen coordinaes to location
-        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
-        if (!m) throw new Error('failed to invert matrix');
-        this.pixelMatrixInverse = m;
-
-        if (!this._pitch && !this._angle) {
-            this._clearMatrices();
-            return;
-        }
-
-        // matrix for dom's css3 matrix3d transform
-        m = mat4.create();
-        mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
-        this.domCssMatrix = mat4.multiply(m, m, domMat);
-
-        //camera alitutude in point
-        this.cameraAltitude = this.cameraToCenterDistance * Math.cos(this._pitch);
-    }, */
-
-    _clearMatrices() {
-        delete this.domCssMatrix;
     },
 
     _renderLayers() {
