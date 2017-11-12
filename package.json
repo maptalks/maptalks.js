@@ -38,6 +38,7 @@
   "jsnext:main": "dist/maptalks.es.js",
   "style": "dist/maptalks.css",
   "dependencies": {
+    "@mapbox/gl-matrix": "0.0.1",
     "simplify-js": "^1.2.1",
     "zousan": "^2.3.3"
   },

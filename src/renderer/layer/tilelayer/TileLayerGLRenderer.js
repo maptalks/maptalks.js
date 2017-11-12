@@ -1,6 +1,6 @@
 import Ajax from 'core/Ajax';
 import { IS_NODE, emptyImageUrl, hasOwn, equalMapView } from 'core/util';
-import * as mat4 from 'core/util/mat4';
+import { mat4 } from '@mapbox/gl-matrix';
 import TileLayer from 'layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import Browser from 'core/Browser';
