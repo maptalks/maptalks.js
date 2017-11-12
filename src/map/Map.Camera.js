@@ -220,9 +220,12 @@ Map.include(/** @lends Map.prototype */{
         const m0 = createMat4(),
             m1 = createMat4();
         return function () {
-            this._glScale = this.getGLScale();
             // get pixel size of map
             const size = this.getSize();
+            if (size.width === 0 || size.height === 0) {
+                return;
+            }
+            this._glScale = this.getGLScale();
             // get field of view
             const fov = this.getFov() * Math.PI / 180;
             const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
@@ -304,5 +307,7 @@ Map.include(/** @lends Map.prototype */{
 });
 
 function createMat4() {
-    return new Float64Array(16);
+    const out = new Float64Array(16);
+    out[0] = out[5] = out[10] = out[15] = 1;
+    return out;
 }
