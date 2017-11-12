@@ -1562,6 +1562,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //-----------------------------------------------------------
 
+    /**
+     * zoom for point of world in GL/Canvas context
+     */
+    _getGLPointZoom() {
+        return this.getMaxNativeZoom() / 2;
+    }
+
     _initContainer(container) {
         if (isString(container)) {
             this._containerDOM = document.getElementById(container);

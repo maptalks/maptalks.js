@@ -45,7 +45,7 @@ export default function (Base) {
             if (!map) {
                 return null;
             }
-            const z = isNil(zoom) ? map.getZoom() : map.getMaxNativeZoom();
+            const z = isNil(zoom) ? map.getZoom() : map._getGLPointZoom();
             const pcenter = this._getPrjCoordinates();
             if (!pcenter) { return null; }
 
