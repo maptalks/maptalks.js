@@ -23,7 +23,7 @@ class PointSymbolizer extends CanvasSymbolizer {
 
     get2DExtent() {
         const map = this.getMap();
-        const maxZoom = map._getGLPointZoom();
+        const maxZoom = map.getGLZoom();
         const extent = new PointExtent();
         const renderPoints = this._getRenderPoints()[0];
         for (let i = renderPoints.length - 1; i >= 0; i--) {
@@ -73,7 +73,7 @@ class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         let p0 = rotations[i][0], p1 = rotations[i][1];
         if (map.isTransforming()) {
-            const maxZoom = map._getGLPointZoom();
+            const maxZoom = map.getGLZoom();
             p0 = map._pointToContainerPoint(rotations[i][0], maxZoom);
             p1 = map._pointToContainerPoint(rotations[i][1], maxZoom);
         }

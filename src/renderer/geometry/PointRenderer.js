@@ -9,7 +9,7 @@ import Polygon from 'geometry/Polygon';
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
     _getRenderPoints() {
-        return [[this._getCenter2DPoint(this.getMap()._getGLPointZoom())], null];
+        return [[this._getCenter2DPoint(this.getMap().getGLZoom())], null];
     }
 };
 
@@ -31,11 +31,11 @@ Rectangle.include({
             const shell = this._trimRing(this.getShell());
             const points = [];
             for (let i = 0, len = shell.length; i < len; i++) {
-                points.push(map.coordToPoint(shell[i], map._getGLPointZoom()));
+                points.push(map.coordToPoint(shell[i], map.getGLZoom()));
             }
             return [points, null];
         } else {
-            const c = map.coordToPoint(this.getCenter(), map._getGLPointZoom());
+            const c = map.coordToPoint(this.getCenter(), map.getGLZoom());
             return [
                 [c], null
             ];
@@ -47,7 +47,7 @@ Rectangle.include({
 const PolyRenderer = {
     _getRenderPoints(placement) {
         const map = this.getMap();
-        const maxZoom = map._getGLPointZoom();
+        const maxZoom = map.getGLZoom();
         let points, rotations = null;
         if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom);

@@ -129,7 +129,7 @@ class Painter extends Class {
         }
         this._pitched = pitched;
         this._rotated = rotated;
-        const zoomScale = map.getScale(),
+        const zoomScale = map.getGLScale(),
             paintParams = this._paintParams,
             tPaintParams = [], // transformed params
             points = paintParams[0];
@@ -160,11 +160,11 @@ class Painter extends Class {
             return null;
         }
         const map = this.getMap(),
-            maxZoom = map._getGLPointZoom(),
+            glZoom = map.getGLZoom(),
             layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
         let containerPoints;
         function pointContainerPoint(point, alt) {
-            const p = map._pointToContainerPoint(point, maxZoom, alt)._sub(layerPoint);
+            const p = map._pointToContainerPoint(point, glZoom, alt)._sub(layerPoint);
             if (dx || dy) {
                 p._add(dx || 0, dy || 0);
             }
@@ -205,7 +205,7 @@ class Painter extends Class {
             });
             // containerPoints = mapArrayRecursively(clipPoints, point => pointContainerPoint(point, altitude));
         } else if (points instanceof Point) {
-            containerPoints = map._pointToContainerPoint(points, maxZoom, altitude)._sub(layerPoint);
+            containerPoints = map._pointToContainerPoint(points, glZoom, altitude)._sub(layerPoint);
             if (dx || dy) {
                 containerPoints._add(dx, dy);
             }
@@ -215,14 +215,13 @@ class Painter extends Class {
 
     _clip(points) {
         const map = this.getMap(),
-            renderZoom = map._getGLPointZoom();
+            glZoom = map.getGLZoom();
         let lineWidth = this.getSymbol()['lineWidth'];
         if (!isNumber(lineWidth)) {
             lineWidth = 4;
         }
         const containerExtent = map.getContainerExtent();
-        //TODO map.height / 4 is a magic number to draw complete polygon with altitude after clipping
-        const extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, renderZoom));
+        const extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, glZoom));
         const e = this.get2DExtent();
         let clipPoints = points;
         if (!e.within(map._get2DExtent()) && this.geometry.options['clipToPaint']) {
@@ -387,9 +386,9 @@ class Painter extends Class {
             this.get2DExtent();
         }
         const altitude = this.getMinAltitude();
-        if (map.cameraAltitude && map.cameraAltitude < altitude) {
-            return null;
-        }
+        // if (map.cameraAltitude && map.cameraAltitude < altitude) {
+        //     return null;
+        // }
         const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude));
         if (extent) {
             extent._add(this._markerExtent);
@@ -468,20 +467,14 @@ class Painter extends Class {
         if (!this._altAtMaxZ) {
             return 0;
         }
-        const scale = this.getMap().getScale();
-        if (Array.isArray(this._altAtMaxZ)) {
-            return this._altAtMaxZ.map(alt => alt / scale);
-        } else {
-            return this._altAtMaxZ / scale;
-        }
+        return this._altAtMaxZ;
     }
 
     getMinAltitude() {
         if (!this.minAltitude) {
             return 0;
         }
-        const scale = this.getMap().getScale();
-        return this.minAltitude / scale;
+        return this.minAltitude;
     }
 
     _getGeometryAltitude() {
@@ -512,7 +505,7 @@ class Painter extends Class {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
-        const z = map._getGLPointZoom();
+        const z = map.getGLZoom();
         const target = map.locate(center, altitude, 0);
         const p0 = map.coordToPoint(center, z),
             p1 = map.coordToPoint(target, z);
