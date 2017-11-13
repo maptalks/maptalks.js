@@ -296,8 +296,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
             x = y = 0;
         }
-        Canvas2D.image(ctx, tileImage,
-            x, y, w, h);
+        Canvas2D.image(ctx, tileImage, x, y, w, h);
         if (this.layer.options['debug']) {
             const p = new Point(x, y),
                 color = this.layer.options['debugOutline'],

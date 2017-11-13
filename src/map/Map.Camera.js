@@ -270,7 +270,8 @@ Map.include(/** @lends Map.prototype */{
         // if you want to rotate the map after up an incline,please rotateZ like this:
         // let up = new vec3(0,1,0);
         // up.rotateZ(target,radians);
-        const up = [Math.sin(bearing) * dist, Math.cos(bearing) * dist, 0];
+        const d = dist || 1;
+        const up = [Math.sin(bearing) * d, Math.cos(bearing) * d, 0];
         const m = this.cameraWorldMatrix || createMat4();
         lookAt(m, [cx, cy, cz], [center2D.x, center2D.y, 0], up);
 
