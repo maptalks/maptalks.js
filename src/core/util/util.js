@@ -328,14 +328,12 @@ export function computeDegree(p1, p2) {
 }
 
 /**
- * from Leaflet.
- * Data URI string containing a base64-encoded empty GIF image.
- * Used as a hack to free memory from unused images on WebKit-powered
- * mobile devices (by setting image `src` to this string).
+ * Transparent 1X1 gif image
+ * from https://css-tricks.com/snippets/html/base64-encode-of-1x1px-transparent-gif/
  * @type {String}
  * @memberOf Util
  */
-export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 
 /**
