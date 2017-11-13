@@ -232,7 +232,7 @@ Map.include(/** @lends Map.prototype */{
             const farZ = maxScale * size.height / 2 / this._getFovRatio() + 1;
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
-            mat4.perspective(projMatrix, fov, size.width / size.height, 1, farZ);
+            mat4.perspective(projMatrix, fov, size.width / size.height, 0.1, farZ);
             mat4.scale(projMatrix, projMatrix, [1, -1, 1]);
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
