@@ -1,3 +1,4 @@
+import Browser from 'core/Browser';
 import { extend, isNil } from 'core/util';
 import { getFilterFeature, compileStyle } from 'core/mapbox';
 import Extent from 'geo/Extent';
@@ -24,7 +25,7 @@ const options = {
     'geometryEvents': true,
     'defaultIconSize': [20, 20],
     'cacheVectorOnCanvas': true,
-    'cacheSvgOnCanvas': false,
+    'cacheSvgOnCanvas': Browser.gecko,
     'enableAltitude' : false,
     'altitudeProperty' : 'altitude',
     'drawAltitude' : false
