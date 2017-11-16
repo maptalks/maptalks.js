@@ -138,6 +138,130 @@ describe('Geometry.Marker', function () {
             }
         });
 
+        context('image marker with alignment', function () {
+            it('bottom-right', function (done) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerFile: 'images/control/2.png',
+                        markerWidth: 30,
+                        markerHeight: 22,
+                        markerHorizontalAlignment : 'right',
+                        markerVerticalAlignment : 'bottom',
+                    }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).not.to.be.painted(0, -3);
+                    expect(layer).to.be.painted(15, -3 + 22);
+                    done();
+                });
+                layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([30, 22]);
+            });
+
+            it('top-left', function (done) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerFile: 'images/control/2.png',
+                        markerWidth: 30,
+                        markerHeight: 22,
+                        markerHorizontalAlignment : 'left',
+                        markerVerticalAlignment : 'top',
+                    }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(-15, -22);
+                    expect(layer).not.to.be.painted(1, 0);
+                    done();
+                });
+                layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([30, 22]);
+            });
+
+            it('middle-middle', function (done) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerFile: 'images/control/2.png',
+                        markerWidth: 30,
+                        markerHeight: 22,
+                        markerHorizontalAlignment : 'middle',
+                        markerVerticalAlignment : 'middle'
+                    }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, 0);
+                    expect(layer).to.be.painted(5, 5);
+                    expect(layer).to.be.painted(-5, -5);
+                    done();
+                });
+                layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([30, 22]);
+            });
+
+        });
+
+        context('vector marker with alignment', function () {
+            it('ellipse', function (done) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerType: 'ellipse',
+                        markerWidth : 10,
+                        markerHeight : 20,
+                        markerHorizontalAlignment : 'right',
+                        markerVerticalAlignment : 'bottom',
+                    }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).not.to.be.painted(0, 0);
+                    expect(layer).not.to.be.painted(-2, 10);
+                    expect(layer).to.be.painted(0, 10);
+                    expect(layer).to.be.painted(5, 10);
+                    expect(layer).not.to.be.painted(5, -2);
+                    expect(layer).to.be.painted(5, 0);
+                    done();
+                });
+                layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+            });
+
+            it('pin', function (done) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerType: 'pin',
+                        markerWidth : 10,
+                        markerHeight : 20,
+                        markerHorizontalAlignment : 'right',
+                        markerVerticalAlignment : 'bottom',
+                    }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).not.to.be.painted(-2, -2);
+                    expect(layer).to.be.painted(5, 10);
+                    done();
+                });
+                layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+            });
+
+            it('rectangle', function (done) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerType: 'rectangle',
+                        markerWidth : 10,
+                        markerHeight : 20,
+                        'markerVerticalAlignment' : 'middle',
+                        'markerHorizontalAlignment' : 'middle'
+                    }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(-5, -11);
+                    expect(layer).to.be.painted(5, 9);
+                    done();
+                });
+                layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+            });
+        });
+
     });
 
     describe('set marker\'s Symbol', function () {

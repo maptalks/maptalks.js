@@ -1,6 +1,8 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
+import { isNil, isNumber, isArrayHasData, getValueOrDefault, sign } from 'core/util';
 import { isGradient, getGradientStamp } from 'core/util/style';
+import { getAlignPoint } from 'core/util/strings';
 import { hasFunctionDefinition } from 'core/mapbox';
+import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
@@ -25,9 +27,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         this.strokeAndFill = this._defineStyle(VectorMarkerSymbolizer.translateLineAndFill(this.style));
         const lineWidth = this.strokeAndFill['lineWidth'];
         if (lineWidth % 2 === 0) {
-            this.padding = [2, 2];
+            this.padding = 2;
         } else {
-            this.padding = [3, 3];
+            this.padding = 1.5;
         }
     }
 
@@ -61,7 +63,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _drawMarkers(ctx, cookedPoints, resources) {
-
         const strokeAndFill = this.strokeAndFill;
         const gradient = isGradient(strokeAndFill['lineColor']) || isGradient(strokeAndFill['polygonFill']);
         if (!gradient) {
@@ -95,21 +96,26 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 point = origin;
             }
-            Canvas.image(ctx, image, point.x - anchor.x, point.y - anchor.y);
+            Canvas.image(ctx, image, point.x + anchor.x, point.y + anchor.y);
             if (origin) {
                 ctx.restore();
             }
         }
     }
 
+    _calMarkerSize() {
+        const lineWidth = this.strokeAndFill['lineWidth'],
+            shadow = this.geometry.options['shadowBlur'],
+            w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding * 2),
+            h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding * 2);
+        return [w, h];
+    }
+
     _createMarkerImage(ctx, resources) {
         const canvasClass = ctx.canvas.constructor,
-            lineWidth = this.strokeAndFill['lineWidth'],
-            shadow = this.geometry.options['shadowBlur'],
-            w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding[0] * 2),
-            h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding[1] * 2),
-            canvas = Canvas.createCanvas(w, h, canvasClass),
-            point = this._getAnchor(w, h);
+            size = this._calMarkerSize(),
+            canvas = Canvas.createCanvas(size[0], size[1], canvasClass),
+            point = this._getCacheImageAnchor(size[0], size[1]);
         const context = canvas.getContext('2d');
         const gradient = isGradient(this.strokeAndFill['lineColor']) || isGradient(this.strokeAndFill['polygonFill']);
         if (!gradient) {
@@ -132,20 +138,35 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
                 this.style['markerLineDasharray'] ? this.style['markerLineDasharray'].join(',') : '',
                 this.style['markerLinePatternFile'],
                 this.style['markerWidth'],
-                this.style['markerHeight']
+                this.style['markerHeight'],
+                this.style['markerHorizontalAlignment'],
+                this.style['markerVerticalAlignment']
             ].join('_');
         }
         return this._stamp;
     }
 
     _getAnchor(w, h) {
-        const lineWidth = this.strokeAndFill['lineWidth'],
-            shadow = this.geometry.options['shadowBlur'];
-        const markerType = this.style['markerType'].toLowerCase();
+        const shadow = this.geometry.options['shadowBlur'],
+            margin = shadow + this.padding;
+        const p = getAlignPoint(new Size(w, h), this.style['markerHorizontalAlignment'], this.style['markerVerticalAlignment']);
+        if (p.x !== -w  / 2) {
+            p.x -= sign(p.x + w / 2) * margin;
+        }
+        if (p.y !== -h / 2) {
+            p.y -= sign(p.y + h / 2) * margin;
+        }
+        return p;
+    }
+
+    _getCacheImageAnchor(w, h) {
+        const shadow = this.geometry.options['shadowBlur'],
+            margin = shadow + this.padding;
+        const markerType = this.style['markerType'];
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
-            return new Point(w / 2, h - this.padding[1] - lineWidth / 2 - shadow);
+            return new Point(w / 2, h - margin);
         } else if (markerType === 'rectangle') {
-            return new Point(0, 0);
+            return new Point(margin, margin);
         } else {
             return new Point(w / 2, h / 2);
         }
@@ -289,6 +310,22 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
             'markerRotation' : getValueOrDefault(s['markerRotation'], 0)
         };
+        const markerType = result['markerType'];
+        let ha, va;
+        if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
+            ha = 'middle';
+            va = 'top';
+        } else if (markerType === 'rectangle') {
+            ha = 'right';
+            va = 'bottom';
+        } else {
+            ha = 'middle';
+            va = 'middle';
+        }
+
+        result['markerHorizontalAlignment'] = getValueOrDefault(s['markerHorizontalAlignment'], ha); //left | middle | right
+        result['markerVerticalAlignment'] = getValueOrDefault(s['markerVerticalAlignment'], va); // top | middle | bottom
+
         //markerOpacity覆盖fillOpacity和lineOpacity
         if (isNumber(s['markerOpacity'])) {
             if (isNumber(s['markerFillOpacity'])) {

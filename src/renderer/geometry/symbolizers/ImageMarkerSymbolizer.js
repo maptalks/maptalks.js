@@ -1,4 +1,6 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
+import { getAlignPoint } from 'core/util/strings';
+import Size from 'geo/Size';
 import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
@@ -62,16 +64,16 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];
         }
+        const alignPoint = getAlignPoint(new Size(width, height), style['markerHorizontalAlignment'], style['markerVerticalAlignment']);
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
             const origin = this._rotate(ctx, p, this._getRotationAt(i));
             if (origin) {
                 p = origin;
             }
-            //图片定位到中心底部
             Canvas.image(ctx, img,
-                p.x - width / 2,
-                p.y - height,
+                p.x + alignPoint.x,
+                p.y + alignPoint.y,
                 width, height);
             if (origin) {
                 ctx.restore();
@@ -126,7 +128,10 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             'markerRotation' : getValueOrDefault(s['markerRotation'], 0),
 
             'markerDx': getValueOrDefault(s['markerDx'], 0),
-            'markerDy': getValueOrDefault(s['markerDy'], 0)
+            'markerDy': getValueOrDefault(s['markerDy'], 0),
+
+            'markerHorizontalAlignment': getValueOrDefault(s['markerHorizontalAlignment'], 'middle'), //left | middle | right
+            'markerVerticalAlignment': getValueOrDefault(s['markerVerticalAlignment'], 'top'), // top | middle | bottom
         };
     }
 }
