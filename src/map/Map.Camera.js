@@ -79,11 +79,21 @@ Map.include(/** @lends Map.prototype */{
         const b = -wrap(bearing, -180, 180) * RADIAN;
         if (this._angle === b) return this;
         const from = this.getBearing();
+        /*
+          * rotate event
+          * @event Map#rotatestart
+          * @type {Object}
+          * @property {String} type                    - rotatestart
+          * @property {Map} target                     - the map fires event
+          * @property {Number} from                    - bearing rotate from
+          * @property {Number} to                      - bearing rotate to
+        */
+        this._fireEvent('rotatestart', { 'from' : from, 'to': b });
         this._angle = b;
         this._calcMatrices();
         this._renderLayers();
         /*
-          * rotate event
+          * rotate event, alias of rotateend
           * @event Map#rotate
           * @type {Object}
           * @property {String} type                    - rotate
@@ -92,6 +102,16 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} to                      - bearing rotate to
         */
         this._fireEvent('rotate', { 'from' : from, 'to': b });
+        /*
+          * rotateend event
+          * @event Map#rotateend
+          * @type {Object}
+          * @property {String} type                    - rotateend
+          * @property {Map} target                     - the map fires event
+          * @property {Number} from                    - bearing rotate from
+          * @property {Number} to                      - bearing rotate to
+        */
+        this._fireEvent('rotateend', { 'from' : from, 'to': b });
         return this;
     },
 
@@ -118,11 +138,21 @@ Map.include(/** @lends Map.prototype */{
         const p = clamp(pitch, 0, this.options['maxPitch']) * RADIAN;
         if (this._pitch === p) return this;
         const from = this.getPitch();
+        /*
+          * rotate event
+          * @event Map#pitchstart
+          * @type {Object}
+          * @property {String} type                    - pitchstart
+          * @property {Map} target                     - the map fires event
+          * @property {Number} from                    - pitch from
+          * @property {Number} to                      - pitch to
+        */
+        this._fireEvent('pitchstart', { 'from' : from, 'to': p });
         this._pitch = p;
         this._calcMatrices();
         this._renderLayers();
         /**
-          * pitch event
+          * pitch event, alias of pitchend
           * @event Map#pitch
           * @type {Object}
           * @property {String} type                    - pitch
@@ -131,6 +161,16 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} to                      - pitch to
           */
         this._fireEvent('pitch', { 'from' : from, 'to': p });
+        /**
+          * pitchend event
+          * @event Map#pitchend
+          * @type {Object}
+          * @property {String} type                    - pitchend
+          * @property {Map} target                     - the map fires event
+          * @property {Number} from                    - pitchend from
+          * @property {Number} to                      - pitchend to
+          */
+        this._fireEvent('pitchend', { 'from' : from, 'to': p });
         return this;
     },
 
