@@ -6,6 +6,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * Start to edit
      * @param {Object} [options=null]        - edit options
      * @param {Object} [options.symbol=null] - symbol for the geometry during editing
+     * @param {Object} [options.fixAspectRatio=false]    - fix outline's aspect ratio when resizing
+     * @param {Object} [options.centerHandleSymbol=null] - symbol of center handle
+     * @param {Object} [options.vertexHandleSymbol=null] - symbol of vertex handle
+     * @param {Object} [options.newVertexHandleSymbol=null] - symbol of new vertex handle
      * @return {Geometry} this
      */
     startEdit(opts) {

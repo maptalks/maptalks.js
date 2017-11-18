@@ -124,6 +124,28 @@ describe('Geometry.InfoWindow', function () {
         expect(w.isVisible()).not.to.be.ok();
     });
 
+    it('reopen infowindow at right position', function () {
+        var marker = new maptalks.Marker(center);
+        marker.addTo(layer);
+        var options = {
+            autoCloseOn : 'click',
+            title: 'title',
+            content: 'content',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        marker.openInfoWindow();
+        var w = marker.getInfoWindow();
+        var pos = w.getPosition().toArray();
+        marker.closeInfoWindow();
+
+        marker.setCoordinates(map.containerPointToCoord(new maptalks.Point(20, 20)));
+        marker.fire('click');
+        var pos2 = w.getPosition().toArray();
+        expect(pos2[0] < pos[0] - 100).to.be.ok();
+        expect(pos2[1] < pos[1] - 100).to.be.ok();
+    });
+
     it('auto close infowindow on touchstart', function () {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);

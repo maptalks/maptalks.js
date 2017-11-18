@@ -220,7 +220,7 @@ class InfoWindow extends UIComponent {
     _onAutoOpen(e) {
         const owner = this.getOwner();
         if (owner instanceof Marker) {
-            this.show();
+            this.show(owner.getCoordinates());
         } else {
             this.show(e.coordinate);
         }
