@@ -107,22 +107,33 @@ class Painter extends Class {
      */
     getPaintParams(dx, dy, ignoreAltitude) {
         const map = this.getMap(),
-            zoom = map.getZoom(),
+            res = map.getResolution(),
             pitched = (map.getPitch() !== 0),
             rotated = (map.getBearing() !== 0);
-        let params = this._paintParams;
-        // remove cached points if the geometry is simplified on the zoom.
-        if (!params ||
-            (params._zoom !== undefined && params._zoom !== zoom) ||
-            (this._pitched !== pitched && this.geometry._redrawWhenPitch()) ||
-            (this._rotated !== rotated && this.geometry._redrawWhenRotate())
+        let params = this._cachedParams;
+        if (this._completeParams && res <= this._completeParams._res) {
+            params = this._completeParams;
+        } else if (!params ||
+            // refresh paint params
+            // simplified, but not same zoom
+            params._res !== map.getResolution() ||
+            // refresh if requested by geometry
+            this._pitched !== pitched && this.geometry._redrawWhenPitch() ||
+            this._rotated !== rotated && this.geometry._redrawWhenRotate()
         ) {
             //render resources geometry returned are based on 2d points.
             params = this.geometry._getPaintParams();
-            if (this.geometry._simplified) {
-                params._zoom = zoom;
+            params._res = res;
+            params._simplified = this.geometry._simplified;
+            if (!params._simplified) {
+                if (!this._completeParams) {
+                    this._completeParams = params;
+                }
+                if (res > this._completeParams._res) {
+                    this._completeParams._res = res;
+                }
             }
-            this._paintParams = params;
+            this._cachedParams = params;
         }
         if (!params) {
             return null;
@@ -130,31 +141,30 @@ class Painter extends Class {
         this._pitched = pitched;
         this._rotated = rotated;
         const zoomScale = map.getGLScale(),
-            paintParams = this._paintParams,
-            tPaintParams = [], // transformed params
-            points = paintParams[0];
+            // paintParams = this._paintParams,
+            tr = [], // transformed params
+            points = params[0];
 
-        const containerPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude);
-        if (!containerPoints) {
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude);
+        if (!cPoints) {
             return null;
         }
-        tPaintParams.push(containerPoints);
-        for (let i = 1, len = paintParams.length; i < len; i++) {
-            if (isNumber(paintParams[i]) || (paintParams[i] instanceof Size)) {
-                if (isNumber(paintParams[i])) {
-                    tPaintParams.push(paintParams[i] / zoomScale);
+        tr.push(cPoints);
+        for (let i = 1, l = params.length; i < l; i++) {
+            if (isNumber(params[i]) || (params[i] instanceof Size)) {
+                if (isNumber(params[i])) {
+                    tr.push(params[i] / zoomScale);
                 } else {
-                    tPaintParams.push(paintParams[i].multi(1 / zoomScale));
+                    tr.push(params[i].multi(1 / zoomScale));
                 }
             } else {
-                tPaintParams.push(paintParams[i]);
+                tr.push(params[i]);
             }
         }
-        return tPaintParams;
+        return tr;
     }
 
     _pointContainerPoints(points, dx, dy, ignoreAltitude) {
-
         const cExtent = this.getContainerExtent();
         if (!cExtent) {
             return null;
@@ -162,7 +172,7 @@ class Painter extends Class {
         const map = this.getMap(),
             glZoom = map.getGLZoom(),
             layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
-        let containerPoints;
+        let cPoints;
         function pointContainerPoint(point, alt) {
             const p = map._pointToContainerPoint(point, glZoom, alt)._sub(layerPoint);
             if (dx || dy) {
@@ -184,7 +194,7 @@ class Painter extends Class {
                 clipPoints = this._clip(points, altitude);
             }
             let alt = altitude;
-            containerPoints = clipPoints.map((c, idx) => {
+            cPoints = clipPoints.map((c, idx) => {
                 if (Array.isArray(c)) {
                     return c.map((cc, cidx) => {
                         if (Array.isArray(altitude)) {
@@ -203,14 +213,14 @@ class Painter extends Class {
                     return pointContainerPoint(c, alt);
                 }
             });
-            // containerPoints = mapArrayRecursively(clipPoints, point => pointContainerPoint(point, altitude));
+            // cPoints = mapArrayRecursively(clipPoints, point => pointContainerPoint(point, altitude));
         } else if (points instanceof Point) {
-            containerPoints = map._pointToContainerPoint(points, glZoom, altitude)._sub(layerPoint);
+            cPoints = map._pointToContainerPoint(points, glZoom, altitude)._sub(layerPoint);
             if (dx || dy) {
-                containerPoints._add(dx, dy);
+                cPoints._add(dx, dy);
             }
         }
-        return containerPoints;
+        return cPoints;
     }
 
     _clip(points) {
@@ -457,6 +467,8 @@ class Painter extends Class {
         delete this._sprite;
         delete this._extent2D;
         delete this._markerExtent;
+        delete this._cachedParams;
+        delete this._completeParams;
     }
 
     getAltitude() {
