@@ -75,7 +75,7 @@ class Layerswitcher extends Control {
         this._renderLayers(this.getMap(), ul);
     }
 
-    _renderLayers(map,elm) {
+    _renderLayers(map, elm) {
         const base = map.getBaseLayer(),
             layers = map.getLayers(),
             len = layers.length;
@@ -94,7 +94,7 @@ class Layerswitcher extends Control {
         }
 
         if (len) {
-            const li = createEl('li','group'),
+            const li = createEl('li', 'group'),
                 ul = createEl('ul'),
                 label = createEl('label');
             label.innerHTML = 'Overlayers';
@@ -107,7 +107,7 @@ class Layerswitcher extends Control {
         }
     }
 
-    _renderLayer(layer,isBase) {
+    _renderLayer(layer, isBase) {
         const li = createEl('li', 'layer'),
             label =  createEl('label'),
             input = createEl('input'),
@@ -124,11 +124,11 @@ class Layerswitcher extends Control {
             _maxZoom = _option.maxZoom || Infinity,
             _minZoom = _option.minZoom || -1;
         if (_zoom > _maxZoom || _zoom < _minZoom) {
-            input.setAttribute('disabled','disabled');
+            input.setAttribute('disabled', 'disabled');
             label.style.color = '#d7d7d7';
         }
         input.checked = layer.isVisible();
-        input.onchange = function(e) {
+        input.onchange = function (e) {
             if (e.target.type === 'radio') {
                 const baseLayers = map.getBaseLayer().layers;
                 for (let i = 0, len = baseLayers.length; i < len; i++) {
