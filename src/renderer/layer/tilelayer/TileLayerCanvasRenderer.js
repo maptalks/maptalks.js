@@ -436,7 +436,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _shouldSaveBack() {
         const map = this.getMap();
-        return !IS_NODE && (map && this.layer === map.getBaseLayer());
+        return !IS_NODE && this.canvas && (map && this.layer === map.getBaseLayer());
     }
 
     onZoomStart(e) {
@@ -454,6 +454,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this._backZoom = this._tileZoom;
             delete this._backRefreshed;
         }
+        this._markTiles();
+        this._retireTiles();
         super.onZoomEnd(e);
     }
 }
