@@ -125,7 +125,6 @@ class Layerswitcher extends Control {
             _minZoom = _option.minZoom || -1;
         if (_zoom > _maxZoom || _zoom < _minZoom) {
             input.setAttribute('disabled', 'disabled');
-            label.style.color = '#d7d7d7';
         }
         input.checked = layer.isVisible();
         input.onchange = function (e) {
