@@ -165,7 +165,7 @@ class Painter extends Class {
         return tr;
     }
 
-    _pointContainerPoints(points, dx, dy, ignoreAltitude) {
+    _pointContainerPoints(points, dx, dy, ignoreAltitude, noClip) {
         const cExtent = this.getContainerExtent();
         if (!cExtent) {
             return null;
@@ -186,7 +186,15 @@ class Painter extends Class {
 
         //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
-            const clipped = this._clip(points, altitude);
+            let clipped;
+            if (!noClip) {
+                clipped = this._clip(points, altitude);
+            } else {
+                clipped = {
+                    points : points,
+                    altitude : altitude
+                };
+            }
             const clipPoints = clipped.points;
             altitude = clipped.altitude;
             if (ignoreAltitude) {
