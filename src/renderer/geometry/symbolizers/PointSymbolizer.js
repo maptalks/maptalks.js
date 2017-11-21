@@ -23,11 +23,13 @@ class PointSymbolizer extends CanvasSymbolizer {
 
     get2DExtent() {
         const map = this.getMap();
-        const maxZoom = map.getGLZoom();
+        const glZoom = map.getGLZoom();
         const extent = new PointExtent();
         const renderPoints = this._getRenderPoints()[0];
         for (let i = renderPoints.length - 1; i >= 0; i--) {
-            extent._combine(map._pointToPoint(renderPoints[i], maxZoom));
+            if (renderPoints[i]) {
+                extent._combine(map._pointToPoint(renderPoints[i], glZoom));
+            }
         }
         return extent;
     }

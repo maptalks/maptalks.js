@@ -183,6 +183,20 @@ Map.include(/** @lends Map.prototype */{
         return !!(this._pitch || this._angle);
     },
 
+    getFrustumAltitude() {
+        const pitch = 90 - this.getPitch();
+        let fov = this.getFov() / 2;
+        const cameraAlt = this.cameraPosition[2];
+        if (pitch === 90 || fov <= pitch) {
+            return cameraAlt;
+        }
+        fov = Math.PI * fov / 180;
+        const d1 = new Point(this.cameraPosition).distanceTo(this.cameraLookAt),
+            d2 = cameraAlt * Math.tan(fov * 2);
+        const d = Math.tan(fov) * (d1 + d2);
+        return cameraAlt + d;
+    },
+
     /**
      * Convert 2d point at target zoom to containerPoint at current zoom
      * @param  {Point} point 2d point at target zoom
@@ -198,6 +212,11 @@ Map.include(/** @lends Map.prototype */{
             altitude *= this.getResolution(zoom) / this.getResolution();
             const scale = this._glScale;
             const t = [point.x * scale, point.y * scale, altitude * scale];
+
+            // const t2 = [];
+            // applyMatrix(t2, t, this.viewMatrix);
+            // console.log(t2[2]);
+
             applyMatrix(t, t, this.projViewMatrix);
 
             const w2 = this.width / 2, h2 = this.height / 2;
@@ -248,7 +267,7 @@ Map.include(/** @lends Map.prototype */{
 
     /**
      * GL Matrices in maptalks (based on THREE):
-     * this.cameraCenter
+     * this.cameraLookAt
      * this.cameraWorldMatrix
      * this.projMatrix
      * this.viewMatrix = cameraWorldMatrix.inverse()
@@ -290,7 +309,7 @@ Map.include(/** @lends Map.prototype */{
 
         const size = this.getSize(),
             scale = this.getGLScale();
-        const center2D = this.cameraCenter = this._prjToPoint(this._prjCenter, targetZ);
+        const center2D = this.cameraLookAt = this._prjToPoint(this._prjCenter, targetZ);
 
         const pitch = this.getPitch() * RADIAN;
         const bearing = -this.getBearing() * RADIAN;
@@ -298,13 +317,12 @@ Map.include(/** @lends Map.prototype */{
         const ratio = this._getFovRatio();
         const z = scale * size.height / 2 / ratio;
         const cz = z * Math.cos(pitch);
-        this.cameraAltitude = cz;
         // and [dist] away from map's center on XY plane to tilt the scene.
         const dist = Math.sin(pitch) * z;
         // when map rotates, the camera's xy position is rotating with the given bearing and still keeps [dist] away from map's center
         const cx = center2D.x + dist * Math.sin(bearing);
         const cy = center2D.y + dist * Math.cos(bearing);
-
+        this.cameraPosition = [cx, cy, cz];
         // when map rotates, camera's up axis is pointing to bearing from south direction of map
         // default [0,1,0] is the Y axis while the angle of inclination always equal 0
         // if you want to rotate the map after up an incline,please rotateZ like this:
