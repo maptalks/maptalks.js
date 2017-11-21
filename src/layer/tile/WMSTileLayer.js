@@ -72,7 +72,9 @@ class WMSTileLayer extends TileLayer {
     }
 
     onAdd() {
-        this.wmsParams.crs = this.options.crs || this.getMap().getProjection().code;
+        const crs = this.options.crs || this.getMap().getProjection().code;
+        const projectionKey = this._wmsVersion >= 1.3 ? 'crs' : 'srs';
+        this.wmsParams[projectionKey] = crs;
     }
 
     getTileUrl(x, y, z) {

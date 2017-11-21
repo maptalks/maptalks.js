@@ -111,6 +111,28 @@ describe('WMSTileLayer', function () {
         map.addLayer(tile);
     });
 
+    it('map with crs EPSG:4326 in version 1.1.1', function (done) {
+        map.setSpatialReference({
+            'projection' : 'EPSG:4326'
+        });
+        var tile = new maptalks.WMSTileLayer('tile', {
+            urlTemplate : '/resources/tile.png',
+            'layers' : 'layer',
+            'styles' : 'styles',
+            'version' : '1.1.1',
+            'format': 'image/png',
+            'transparent' : true,
+            'uppercase' : true,
+            'renderer' : 'canvas'
+        });
+        tile.once('layerload', function () {
+            console.log(tile.getTileUrl(0, 0, 1));
+            expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.1.1&WIDTH=256&HEIGHT=256&SRS=EPSG%3A4326&BBOX=-180,-90,0,90');
+            done();
+        });
+        map.addLayer(tile);
+    });
+
     it('set crs to EPSG:4326 in options', function (done) {
         map.setSpatialReference({
             'projection' : 'EPSG:4326'
