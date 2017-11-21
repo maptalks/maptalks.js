@@ -6,6 +6,7 @@ import Point from 'geo/Point';
 import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import * as Symbolizers from 'renderer/geometry/symbolizers';
+import { interpolate } from '../../core/util/util';
 
 //registered symbolizers
 //the latter will paint at the last
@@ -182,16 +183,14 @@ class Painter extends Class {
         }
 
         let altitude = this.getAltitude();
-        // clip will cause wrong paint when altitude is an array
-        const isClip = !Array.isArray(altitude);
-        if (ignoreAltitude) {
-            altitude = 0;
-        }
+
         //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
-            let clipPoints = points;
-            if (isClip) {
-                clipPoints = this._clip(points, altitude);
+            const clipped = this._clip(points, altitude);
+            const clipPoints = clipped.points;
+            altitude = clipped.altitude;
+            if (ignoreAltitude) {
+                altitude = 0;
             }
             let alt = altitude;
             cPoints = clipPoints.map((c, idx) => {
@@ -213,8 +212,10 @@ class Painter extends Class {
                     return pointContainerPoint(c, alt);
                 }
             });
-            // cPoints = mapArrayRecursively(clipPoints, point => pointContainerPoint(point, altitude));
         } else if (points instanceof Point) {
+            if (ignoreAltitude) {
+                altitude = 0;
+            }
             cPoints = map._pointToContainerPoint(points, glZoom, altitude)._sub(layerPoint);
             if (dx || dy) {
                 cPoints._add(dx, dy);
@@ -223,7 +224,7 @@ class Painter extends Class {
         return cPoints;
     }
 
-    _clip(points) {
+    _clip(points, altitude) {
         const map = this.getMap(),
             glZoom = map.getGLZoom();
         let lineWidth = this.getSymbol()['lineWidth'];
@@ -231,37 +232,109 @@ class Painter extends Class {
             lineWidth = 4;
         }
         const containerExtent = map.getContainerExtent();
-        const extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, glZoom));
+        let extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, glZoom));
+        if (map.getPitch() > 0 && altitude) {
+            const c = map.cameraLookAt;
+            const pos = map.cameraPosition;
+            //add [1px, 1px] towards camera's lookAt
+            extent2D = extent2D.combine(new Point(pos)._add(sign(c.x - pos[0]), sign(c.y - pos[1])));
+        }
         const e = this.get2DExtent();
         let clipPoints = points;
-        if (!e.within(map._get2DExtent()) && this.geometry.options['clipToPaint']) {
-            // if (this.geometry instanceof Polygon) {
-            if (this.geometry.getShell && this.geometry.getHoles) {
-                // clip the polygon to draw less and improve performance
-                if (!Array.isArray(points[0])) {
-                    clipPoints = clipPolygon(points, extent2D);
-                } else {
-                    clipPoints = [];
-                    for (let i = 0; i < points.length; i++) {
-                        const part = clipPolygon(points[i], extent2D);
-                        if (part.length) {
-                            clipPoints.push(part);
-                        }
-                    }
-                }
-            } else if (this.geometry.getJSONType() === 'LineString') {
-                // clip the line string to draw less and improve performance
-                if (!Array.isArray(points[0])) {
-                    clipPoints = clipLine(points, extent2D);
-                } else {
-                    clipPoints = [];
-                    for (let i = 0; i < points.length; i++) {
-                        pushIn(clipPoints, clipLine(points[i], extent2D));
+        if (e.within(extent2D)) {
+            if (this.geometry.getJSONType() === 'LineString') {
+                // clip line with altitude
+                return this._clipLineByAlt(clipPoints, altitude);
+            }
+            return {
+                points : clipPoints,
+                altitude : altitude
+            };
+        }
+        // if (this.geometry instanceof Polygon) {
+        if (this.geometry.getShell && this.geometry.getHoles) {
+            // clip the polygon to draw less and improve performance
+            if (!Array.isArray(points[0])) {
+                clipPoints = clipPolygon(points, extent2D);
+            } else {
+                clipPoints = [];
+                for (let i = 0; i < points.length; i++) {
+                    const part = clipPolygon(points[i], extent2D);
+                    if (part.length) {
+                        clipPoints.push(part);
                     }
                 }
             }
+        } else if (this.geometry.getJSONType() === 'LineString') {
+            // clip the line string to draw less and improve performance
+            if (!Array.isArray(points[0])) {
+                clipPoints = clipLine(points, extent2D);
+            } else {
+                clipPoints = [];
+                for (let i = 0; i < points.length; i++) {
+                    pushIn(clipPoints, clipLine(points[i], extent2D));
+                }
+            }
+            //interpolate line's segment's altitude if altitude is an array
+            const segs = this._interpolateSegAlt(clipPoints, points, altitude);
+            return this._clipLineByAlt(segs.points, segs.altitude);
         }
-        return clipPoints;
+
+        return {
+            points : clipPoints,
+            altitude : altitude
+        };
+    }
+
+    _clipLineByAlt(clipSegs, altitude) {
+        const frustumAlt = this.getMap().getFrustumAltitude();
+        if (!Array.isArray(altitude) || this.maxAltitude <= frustumAlt) {
+            return {
+                points : clipSegs,
+                altitude : altitude
+            };
+        }
+        return clipByALt(clipSegs, altitude, frustumAlt);
+    }
+
+    /**
+     * interpolate clipped line segs's altitude
+     * @param {Point[] || Point[][]} clipSegs
+     * @param {Point[] || Point[][]} orig
+     * @param {Number || Number[]} altitude
+     */
+    _interpolateSegAlt(clipSegs, orig, altitude) {
+        if (!Array.isArray(altitude)) {
+            const fn = cc => cc.point;
+            return {
+                points : clipSegs.map(c => {
+                    if (Array.isArray(c)) {
+                        return c.map(fn);
+                    }
+                    return c.point;
+                }),
+                altitude : altitude
+            };
+        }
+        const segsWithAlt = interpolateAlt(clipSegs, orig, altitude);
+        altitude = [];
+        const points = segsWithAlt.map(p => {
+            if (Array.isArray(p)) {
+                const alt = [];
+                const cp = p.map(pp => {
+                    alt.push(pp.altitude);
+                    return pp.point;
+                });
+                altitude.push(alt);
+                return cp;
+            }
+            altitude.push(p.altitude);
+            return p.point;
+        });
+        return {
+            points : points,
+            altitude : altitude
+        };
     }
 
     getSymbol() {
@@ -280,11 +353,12 @@ class Painter extends Class {
         if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
             return;
         }
-        // const map = this.getMap();
-        // const altitude = this.getMinAltitude();
-        // if (altitude && map.cameraAltitude && map.cameraAltitude < altitude) {
-        //     return;
-        // }
+        const map = this.getMap();
+        const minAltitude = this.getMinAltitude();
+        const frustumAlt = map.getFrustumAltitude();
+        if (minAltitude && frustumAlt && frustumAlt < minAltitude) {
+            return;
+        }
         this._beforePaint();
         const contexts = [renderer.context, renderer.resources];
         this._prepareShadow(renderer.context);
@@ -396,9 +470,10 @@ class Painter extends Class {
             this.get2DExtent();
         }
         const altitude = this.getMinAltitude();
-        // if (map.cameraAltitude && map.cameraAltitude < altitude) {
-        //     return null;
-        // }
+        const frustumAlt = map.getFrustumAltitude();
+        if (altitude && frustumAlt && frustumAlt < altitude) {
+            return null;
+        }
         const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude));
         if (extent) {
             extent._add(this._markerExtent);
@@ -502,15 +577,19 @@ class Painter extends Class {
         const center = this.geometry.getCenter();
         if (Array.isArray(altitude)) {
             this.minAltitude = Number.MAX_VALUE;
+            this.maxAltitude = Number.MIN_VALUE;
             return altitude.map(alt => {
                 const a = this._meterToPoint(center, alt);
                 if (a < this.minAltitude) {
                     this.minAltitude = a;
                 }
+                if (a > this.maxAltitude) {
+                    this.maxAltitude = a;
+                }
                 return a;
             });
         } else {
-            this.minAltitude = this._meterToPoint(center, altitude);
+            this.maxAltitude = this.minAltitude = this._meterToPoint(center, altitude);
             return this.minAltitude;
         }
     }
@@ -565,6 +644,101 @@ class Painter extends Class {
             }
         }
     }
+}
+
+function interpolateAlt(points, orig, altitude) {
+    if (!Array.isArray(altitude)) {
+        return points;
+    }
+    const parts = [];
+    for (let i = 0, l = points.length; i < l; i++) {
+        if (Array.isArray(points[i])) {
+            parts.push(interpolateAlt(points[i], orig, altitude));
+        } else {
+            const p = points[i];
+            if (!p.point.equals(orig[p.index])) {
+                let w0, w1;
+                if (p.index === 0) {
+                    w0 = p.index;
+                    w1 = p.index + 1;
+                } else {
+                    w0 = p.index - 1;
+                    w1 = p.index;
+                }
+
+                const t0 = p.point.distanceTo(orig[w1]);
+                const t = t0 / (t0 + orig[w0].distanceTo(p.point));
+                const alt = interpolate(altitude[w0], altitude[w1], 1 - t);
+                p.altitude = alt;
+                parts.push(p);
+            } else {
+                p.altitude = altitude[p.index];
+                parts.push(p);
+            }
+        }
+    }
+    return parts;
+}
+
+function interpolatePoint(p0, p1, t) {
+    const x = interpolate(p0.x, p1.x, t),
+        y = interpolate(p0.y, p1.y, t);
+    return new Point(x, y);
+}
+
+function clipByALt(clipSegs, altitude, topAlt) {
+    const points = [];
+    const alt = [];
+    let preAlt;
+    // clip lines with camera altitude
+    for (let i = 0, l = clipSegs.length; i < l; i++) {
+        if (Array.isArray(clipSegs[i])) {
+            const r = clipByALt(clipSegs[i], altitude[i], topAlt);
+            if (!r) {
+                continue;
+            }
+            points.push(r.points);
+            alt.push(r.altitude);
+        } else if (i === 0) {
+            preAlt = altitude[0];
+            if (preAlt < topAlt) {
+                points.push(clipSegs[i]);
+                alt.push(altitude[i]);
+            }
+        } else {
+            // i > 0
+            const a = altitude[i];
+            if (a >= topAlt) {
+                if (preAlt >= topAlt) {
+                    points.push(clipSegs[i]);
+                    alt.push(topAlt);
+                } else {
+                    //ascending interpolate
+                    const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (topAlt - preAlt) / (a - preAlt));
+                    points.push(p);
+                    alt.push(topAlt);
+                    points.push(clipSegs[i]);
+                    alt.push(topAlt);
+                }
+                // a < topAlt
+            } else if (preAlt < topAlt) {
+                points.push(clipSegs[i]);
+                alt.push(a);
+            } else {
+                //descending interpolate
+                const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (preAlt - topAlt) / (preAlt - a));
+                points.push(p);
+                alt.push(topAlt);
+                points.push(clipSegs[i]);
+                alt.push(a);
+            }
+            preAlt = a;
+        }
+    }
+    return {
+        points : points,
+        altitude : alt
+    };
 }
 
 export default Painter;

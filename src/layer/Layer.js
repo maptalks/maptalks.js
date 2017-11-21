@@ -11,7 +11,8 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
  * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
- * @property {String}  [options.renderer=canvas] - renderer type, "canvas" in default.
+ * @property {Number}  [options.zIndex=undefined] - z index of the layer
+ * @property {String}  [options.renderer=canvas]  - renderer type, "canvas" in default.
  * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
  * @property {String}   [options.debugOutline='#0f0']  - debug outline's color.
  * @property {Boolean}  [options.forceRenderOnMoving=false]    - force to render layer when map is moving
@@ -368,6 +369,15 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     getRenderer() {
         return this._getRenderer();
+    }
+
+    onConfig(conf) {
+        if (isNumber(conf['opacity'])) {
+            const renderer = this.getRenderer();
+            if (renderer) {
+                renderer.setToRedraw();
+            }
+        }
     }
 
     _bindMap(map, zIndex) {
