@@ -9,7 +9,7 @@ import Layer from '../Layer';
 
 /**
  * @property {Object}              options                     - TileLayer's options
- * @property {String}              options.urlTemplate         - url templates
+ * @property {String|Function}     options.urlTemplate         - url templates
  * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
