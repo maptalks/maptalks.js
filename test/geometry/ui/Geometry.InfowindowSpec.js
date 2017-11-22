@@ -474,6 +474,32 @@ describe('Geometry.InfoWindow', function () {
 
             expect(map._panels['ui'].children.length).to.be.eql(2);
         });
+
+        it('isVisible', function (done) {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : false,
+                autoPan : false,
+                autoPanDuration : 100
+            };
+            var infoWindow1 = new maptalks.ui.InfoWindow(options);
+            var geo = new maptalks.Marker(map.getExtent().getMin());
+
+            var infoWindow2 = new maptalks.ui.InfoWindow(options);
+            var geo2 = new maptalks.Marker(map.getExtent().getMin());
+            layer.addGeometry(geo, geo2);
+            
+            infoWindow1.addTo(geo).show();
+            infoWindow2.addTo(geo2);
+
+            setTimeout(function () {
+               infoWindow2.show();
+               expect(infoWindow1.isVisible()).not.to.be.ok();
+               done();
+            }, 80);
+            infoWindow2.addTo(geo2).show();
+        });
     });
 
 });
