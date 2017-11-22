@@ -189,7 +189,7 @@ class DrawTool extends MapTool {
     onDisable() {
         const map = this.getMap();
         this._restoreMapCfg();
-        this._endDraw();
+        this.endDraw();
         if (this._map) {
             map.removeLayer(this._getDrawLayer());
         }
@@ -311,7 +311,7 @@ class DrawTool extends MapTool {
         if (this.options['symbol'] && this.options.hasOwnProperty('symbol')) {
             this._geometry.setSymbol(this.options['symbol']);
         }
-        this._endDraw();
+        this.endDraw();
     }
 
     _clickForPath(param) {
@@ -425,7 +425,7 @@ class DrawTool extends MapTool {
             return;
         }
         registerMode['update'](path, this._geometry, param);
-        this._endDraw(param);
+        this.endDraw(param);
     }
 
     _mousedownToDraw(param) {
@@ -475,7 +475,7 @@ class DrawTool extends MapTool {
             if (this._isValidContainerPoint(current)) {
                 genGeometry(evt);
             }
-            this._endDraw(param);
+            this.endDraw(param);
             return false;
         };
 
@@ -489,16 +489,19 @@ class DrawTool extends MapTool {
         return false;
     }
 
-    _endDraw(param) {
+    /**
+     * End current draw
+     * @param {Object} [param=null] params of drawend event
+     * @returns {DrawTool} this
+     */
+    endDraw(param) {
         if (!this._geometry || this._ending) {
-            return;
+            return this;
         }
         this._ending = true;
         const geometry = this._geometry;
         this._clearStage();
-        if (!param) {
-            param = {};
-        }
+        param = param || {};
         this._geometry = geometry;
         /**
          * drawend event.
@@ -519,6 +522,7 @@ class DrawTool extends MapTool {
             this.disable();
         }
         delete this._ending;
+        return this;
     }
 
     _clearStage() {
