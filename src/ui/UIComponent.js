@@ -273,7 +273,8 @@ class UIComponent extends Eventable(Class) {
      * @returns {Boolean} true|false
      */
     isVisible() {
-        return this.getMap() && this.getDOM() && this.__uiDOM.parentNode !== null && this.getDOM().style.display !== 'none';
+        const dom = this.getDOM();
+        return this.getMap() && dom && dom.parentNode && dom.style.display !== 'none';
     }
 
     /**

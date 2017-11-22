@@ -497,7 +497,7 @@ describe('Geometry.InfoWindow', function () {
                infoWindow2.show();
                expect(infoWindow1.isVisible()).not.to.be.ok();
                done();
-            }, 50);
+            }, 80);
             infoWindow2.addTo(geo2).show();
         });
     });
