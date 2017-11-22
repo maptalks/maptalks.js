@@ -293,6 +293,7 @@ Map.include(/** @lends Map.prototype */{
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, size.width / size.height, 0.1, farZ);
             mat4.scale(projMatrix, projMatrix, [1, -1, 1]);
+            this.projMatrix = projMatrix;
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
             // view matrix
@@ -301,6 +302,24 @@ Map.include(/** @lends Map.prototype */{
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
             // matrix for screen point => world point
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
+            this.domCssMatrix = this._calcDomMatrix();
+        };
+    }(),
+
+    _calcDomMatrix: function () {
+        const m = createMat4();
+        return function () {
+            const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+            mat4.translate(m, this.projMatrix, [0, 0, -cameraToCenterDistance]);
+            if (this._pitch) {
+                mat4.rotateX(m, m, this._pitch);
+            }
+            if (this._angle) {
+                mat4.rotateZ(m, m, this._angle);
+            }
+            const m1 = createMat4();
+            mat4.scale(m1, m1, [this.width / 2, -this.height / 2, 1]);
+            return mat4.multiply(this.domCssMatrix || createMat4(), m1, m);
         };
     }(),
 
