@@ -8,6 +8,7 @@ describe('Geometry.Altitude', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
+        map.config('centerCross', true);
         layer = new maptalks.VectorLayer('id', { 'enableAltitude' : true });
     });
 
@@ -78,7 +79,7 @@ describe('Geometry.Altitude', function () {
             map.addLayer(layer);
         });
 
-        it('draw altitude of line string with altitude array', function (done) {
+        it('draw linestring with altitude array', function (done) {
             map.setPitch(60);
             map.setBearing(60);
             var center = map.getCenter();
@@ -98,6 +99,33 @@ describe('Geometry.Altitude', function () {
                 expect(layer).not.to.be.painted(50, -30);
                 expect(layer).to.be.painted(35, -40, [0, 0, 0]);
                 expect(layer).to.be.painted(-40, 30, [0, 0, 0]);
+                done();
+            });
+            map.addLayer(layer);
+        });
+
+        it('draw linestring with altitude array in large zoom', function (done) {
+            map.setPitch(60);
+            map.setBearing(60);
+            map.setZoom(20, { animation : false });
+            var center = map.getCenter();
+            layer.config('drawAltitude', {
+                lineWidth : 5,
+                lineColor : '#000',
+                polygonFill : '#000'
+            });
+            var line = new maptalks.LineString([center.sub(0.001, 0), center.add(0.001, 0), center.add(0.001, -0.001)], {
+                properties : { altitude : [200, 100, 300] },
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.addGeometry(line);
+            layer.once('layerload', function () {
+                expect(layer).not.to.be.painted(10, 10);
+                expect(layer).to.be.painted(-360, -290, [0, 0, 0]);
+                expect(layer).to.be.painted(340, -270, [0, 0, 0]);
+                expect(layer).to.be.painted(-260, 210, [0, 0, 0]);
                 done();
             });
             map.addLayer(layer);
