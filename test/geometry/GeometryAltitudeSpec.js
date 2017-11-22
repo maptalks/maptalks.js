@@ -78,6 +78,31 @@ describe('Geometry.Altitude', function () {
             map.addLayer(layer);
         });
 
+        it('draw altitude of line string with altitude array', function (done) {
+            map.setPitch(60);
+            map.setBearing(60);
+            var center = map.getCenter();
+            layer.config('drawAltitude', {
+                lineWidth : 5,
+                lineColor : '#000',
+                polygonFill : '#000'
+            });
+            var line = new maptalks.LineString([center.sub(0.001, 0), center.add(0.001, 0)], {
+                properties : { altitude : [40, 20] },
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.addGeometry(line);
+            layer.once('layerload', function () {
+                expect(layer).not.to.be.painted(50, -30);
+                expect(layer).to.be.painted(35, -40, [0, 0, 0]);
+                expect(layer).to.be.painted(-40, 30, [0, 0, 0]);
+                done();
+            });
+            map.addLayer(layer);
+        });
+
         it('draw altitude of line string with texts', function (done) {
             map.setPitch(60);
             map.config('centerCross', true);
