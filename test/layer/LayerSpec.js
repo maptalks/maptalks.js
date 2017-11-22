@@ -204,4 +204,34 @@ describe('#Layer', function () {
         });
     });
 
+    it('change opacity', function (done) {
+        var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+        var layer2 = new maptalks.VectorLayer('2', new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                markerType : 'ellipse',
+                markerWidth : 10,
+                markerHeight : 10
+            }
+        }));
+        map.addLayer([layer2]);
+
+        expect(layer1.getOpacity()).to.be.eql(1);
+        expect(layer2.getOpacity()).to.be.eql(1);
+
+        layer1.setOpacity(0.5);
+        expect(layer1.getOpacity()).to.be.eql(0.5);
+
+        layer2.setOpacity(0.1);
+        expect(layer2.getOpacity()).to.be.eql(0.1);
+
+        setTimeout(function () {
+            var canvas = map.getRenderer().canvas;
+            var size = map.getSize().toPoint();
+            var context = canvas.getContext('2d');
+            var imgData = context.getImageData(size.x / 2, size.y / 2, 1, 1).data;
+            expect(imgData[3]).to.be.below(40);
+            done();
+        }, 100);
+    });
+
 });

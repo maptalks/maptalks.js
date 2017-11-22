@@ -151,6 +151,24 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Get layer's opacity
+     * @returns {Number}
+     */
+    getOpacity() {
+        return this.options['opacity'];
+    }
+
+    /**
+     * Set opacity to the layer
+     * @param {Number} opacity - layer's opacity
+     * @return {Layer} this
+     */
+    setOpacity(op) {
+        this.config('opacity', op);
+        return this;
+    }
+
+    /**
      * If the layer is rendered by HTML5 Canvas.
      * @return {Boolean}
      * @protected
