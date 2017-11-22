@@ -71,7 +71,7 @@ describe('WMSTileLayer', function () {
         map.addLayer(tile);
     }); */
 
-    it('add with canvas renderer', function (done) {
+    it('add with canvas renderer', function () {
         var tile = new maptalks.WMSTileLayer('tile', {
             urlTemplate : '/resources/tile.png',
             'layers' : 'layer',
@@ -83,14 +83,11 @@ describe('WMSTileLayer', function () {
             'crs' : 'EPSG:4490',
             'renderer' : 'canvas'
         });
-        tile.once('layerload', function () {
-            expect(tile.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4490&BBOX=0.002789244055747986,-40075016.688367724,20037508.345578488,-20037508.34557848');
-            done();
-        });
         map.addLayer(tile);
+        expect(tile.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4490&BBOX=0.002789244055747986,-40075016.688367724,20037508.345578488,-20037508.34557848');
     });
 
-    it('map with crs EPSG:4326', function (done) {
+    it('map with crs EPSG:4326', function () {
         map.setSpatialReference({
             'projection' : 'EPSG:4326'
         });
@@ -104,14 +101,11 @@ describe('WMSTileLayer', function () {
             'uppercase' : true,
             'renderer' : 'canvas'
         });
-        tile.once('layerload', function () {
-            expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
-            done();
-        });
         map.addLayer(tile);
+        expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
     });
 
-    it('map with crs EPSG:4326 in version 1.1.1', function (done) {
+    it('map with crs EPSG:4326 in version 1.1.1', function () {
         map.setSpatialReference({
             'projection' : 'EPSG:4326'
         });
@@ -125,15 +119,11 @@ describe('WMSTileLayer', function () {
             'uppercase' : true,
             'renderer' : 'canvas'
         });
-        tile.once('layerload', function () {
-            console.log(tile.getTileUrl(0, 0, 1));
-            expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.1.1&WIDTH=256&HEIGHT=256&SRS=EPSG%3A4326&BBOX=-180,-90,0,90');
-            done();
-        });
         map.addLayer(tile);
+        expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.1.1&WIDTH=256&HEIGHT=256&SRS=EPSG%3A4326&BBOX=-180,-90,0,90');
     });
 
-    it('set crs to EPSG:4326 in options', function (done) {
+    it('set crs to EPSG:4326 in options', function () {
         map.setSpatialReference({
             'projection' : 'EPSG:4326'
         });
@@ -148,11 +138,8 @@ describe('WMSTileLayer', function () {
             'crs' : 'EPSG:4326',
             'renderer' : 'canvas'
         });
-        tile.once('layerload', function () {
-            expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
-            done();
-        });
         map.addLayer(tile);
+        expect(tile.getTileUrl(0, 0, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4326&BBOX=-90,-180,90,0');
     });
 
     it('toJSON', function () {
