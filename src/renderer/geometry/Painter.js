@@ -709,10 +709,8 @@ function clipByALt(clipSegs, altitude, topAlt) {
             alt.push(r.altitude);
         } else if (i === 0) {
             preAlt = altitude[0];
-            if (preAlt < topAlt) {
-                points.push(clipSegs[i]);
-                alt.push(altitude[i]);
-            }
+            points.push(clipSegs[i]);
+            alt.push(preAlt < topAlt ? preAlt : topAlt);
         } else {
             // i > 0
             const a = altitude[i];
