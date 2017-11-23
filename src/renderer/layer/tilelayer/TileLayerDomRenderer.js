@@ -11,7 +11,7 @@ import {
     emptyImageUrl,
     now
 } from 'core/util';
-import { mat4 } from '@mapbox/gl-matrix';
+import * as mat4 from 'core/util/mat4';
 import {
     on,
     createEl,
@@ -349,7 +349,7 @@ class TileLayerDomRenderer extends Class {
         }
         let matrix;
         if (fraction !== 1) {
-            const m = mat4.create();
+            const m = new Float32Array();
             if (map.isZooming() && this._zoomParam) {
                 const origin = this._zoomParam['origin'],
                     // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a offset to fix.

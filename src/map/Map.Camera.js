@@ -1,6 +1,6 @@
 import Map from './Map';
 import Point from 'geo/Point';
-import { mat4 } from '@mapbox/gl-matrix';
+import * as mat4 from 'core/util/mat4';
 import { clamp, interpolate, wrap } from 'core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from 'core/util/math';
 import Browser from 'core/Browser';
@@ -276,12 +276,12 @@ Map.include(/** @lends Map.prototype */{
      */
     _calcMatrices: function () {
         // closure matrixes to reuse
-        const m0 = createMat4(),
-            m1 = createMat4();
+        const m0 = Browser.ie9 ? null : createMat4(),
+            m1 = Browser.ie9 ? null : createMat4();
         return function () {
             // get pixel size of map
             const size = this.getSize();
-            if (size.width === 0 || size.height === 0) {
+            if (size.width === 0 || size.height === 0 || Browser.ie9) {
                 return;
             }
             this._glScale = this.getGLScale();
@@ -307,7 +307,7 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _calcDomMatrix: function () {
-        const m = createMat4();
+        const m = Browser.ie9 ? null : createMat4();
         return function () {
             const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
             mat4.translate(m, this.projMatrix, [0, 0, -cameraToCenterDistance]);
