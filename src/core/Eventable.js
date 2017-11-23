@@ -20,11 +20,11 @@ const Eventable = Base =>
          * foo.on('mousedown mousemove mouseup', onMouseEvent, foo);
          */
         on(eventsOn, handler, context) {
-            if (!eventsOn || !handler) {
-                return this;
-            }
             if (!isString(eventsOn)) {
                 return this._switch('on', eventsOn, handler);
+            }
+            if (!eventsOn || !handler) {
+                return this;
             }
             if (!this._eventMap) {
                 this._eventMap = {};
@@ -111,11 +111,14 @@ const Eventable = Base =>
          * @function Eventable.off
          */
         off(eventsOff, handler, context) {
-            if (!eventsOff || !this._eventMap || !handler) {
+            if (!this._eventMap) {
                 return this;
             }
             if (!isString(eventsOff)) {
                 return this._switch('off', eventsOff, handler);
+            }
+            if (!eventsOff || !handler) {
+                return this;
             }
             const eventTypes = eventsOff.split(' ');
             let eventType, listeners, wrapKey;
