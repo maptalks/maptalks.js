@@ -130,7 +130,7 @@ class GroupTileLayer extends TileLayer {
             renderer.setToRedraw();
         }
     }
-    
+
     isVisible() {
         if (!super.isVisible()) {
             return false;
