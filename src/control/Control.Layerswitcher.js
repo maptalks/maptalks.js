@@ -5,12 +5,20 @@ import Control from './Control';
 /**
  * @property {Object} options - options
  * @property {Object} [options.position='top-right'] - position of the control
+ * @property {Object} [options.baseTitle='Base Layers'] - title of the base layers
+ * @property {Object} [options.overlayTitle='Overlay Layers'] - title of the overlay layers
+ * @property {Object} [options.excludeLayers=[] - ids of layers that don't display in layerswitcher
+ * @property {Object} [options.containerClass=maptalks-layer-switcher] - layerswitcher's container div's CSS class
  *
- * @memberOf control.Layerswitcher
+ * @memberOf control.LayerSwitcher
  * @instance
  */
 const options = {
-    'position': 'top-right'
+    'position' : 'top-right',
+    'baseTitle' : 'Base Layers',
+    'overlayTitle' : 'Overlay Layers',
+    'excludeLayers' : [],
+    'containerClass' : 'maptalks-layer-switcher'
 };
 
 /**
@@ -24,13 +32,13 @@ const options = {
  *     position : {'top': '0', 'right': '0'}
  * }).addTo(map);
 */
-class Layerswitcher extends Control {
+class LayerSwitcher extends Control {
     /**
      * method to build DOM of the control
      * @return {HTMLDOMElement}
      */
     buildOn() {
-        const container = this.container = createEl('div', 'maptalks-layer-switcher'),
+        const container = this.container = createEl('div', this.options['containerClass']),
             panel = this.panel = createEl('div', 'panel'),
             button = this.button = createEl('button');
         container.appendChild(button);
@@ -84,12 +92,15 @@ class Layerswitcher extends Control {
                 li = createEl('li', 'group'),
                 ul =  createEl('ul'),
                 label = createEl('label');
-            label.innerHTML = 'Base maps';
+            label.innerHTML = this.options['baseTitle'];
             li.appendChild(label);
             for (let i = 0, len = baseLayers.length; i < len; i++) {
-                ul.appendChild(this._renderLayer(baseLayers[i], true));
-                li.appendChild(ul);
-                elm.appendChild(li);
+                const layer = baseLayers[i];
+                if (this._isDisplay(layer)) {
+                    ul.appendChild(this._renderLayer(baseLayers[i], true));
+                    li.appendChild(ul);
+                    elm.appendChild(li);
+                }
             }
         }
 
@@ -97,21 +108,31 @@ class Layerswitcher extends Control {
             const li = createEl('li', 'group'),
                 ul = createEl('ul'),
                 label = createEl('label');
-            label.innerHTML = 'Overlayers';
+            label.innerHTML = this.options['overlayTitle'];
             li.appendChild(label);
             for (let i = 0; i < len; i++) {
-                ul.appendChild(this._renderLayer(layers[i]));
+                const layer = layers[i];
+                if (this._isDisplay(layer)) {
+                    ul.appendChild(this._renderLayer(layer));
+                }
             }
             li.appendChild(ul);
             elm.appendChild(li);
         }
     }
 
+    _isDisplay(layer) {
+        const id = layer.getId(),
+            excludeLayers = this.options['excludeLayers'];
+        return !(excludeLayers.length && excludeLayers.includes(id));
+    }
+
     _renderLayer(layer, isBase) {
         const li = createEl('li', 'layer'),
             label =  createEl('label'),
             input = createEl('input'),
-            map = this.getMap();
+            map = this.getMap(),
+            visible = layer.isVisible();
         li.className = 'layer';
         if (isBase) {
             input.type = 'radio';
@@ -119,14 +140,12 @@ class Layerswitcher extends Control {
         } else {
             input.type = 'checkbox';
         }
-        const _zoom = map.getZoom(),
-            _option = layer.options,
-            _maxZoom = _option.maxZoom || Infinity,
-            _minZoom = _option.minZoom || -1;
-        if (_zoom > _maxZoom || _zoom < _minZoom) {
+
+        input.checked = visible;
+        if (!visible) {
             input.setAttribute('disabled', 'disabled');
         }
-        input.checked = layer.isVisible();
+
         input.onchange = function (e) {
             if (e.target.type === 'radio') {
                 const baseLayers = map.getBaseLayer().layers;
@@ -145,17 +164,17 @@ class Layerswitcher extends Control {
     }
 }
 
-Layerswitcher.mergeOptions(options);
+LayerSwitcher.mergeOptions(options);
 
 Map.mergeOptions({
-    'layerswitcherControl': false
+    'layerSwitcherControl': false
 });
 
 Map.addOnLoadHook(function () {
-    if (this.options['layerswitcherControl']) {
-        this.layerswitcherControl = new Layerswitcher(this.options['layerswitcherControl']);
-        this.addControl(this.layerswitcherControl);
+    if (this.options['layerSwitcherControl']) {
+        this.layerSwitcherControl = new LayerSwitcher(this.options['layerSwitcherControl']);
+        this.addControl(this.layerSwitcherControl);
     }
 });
 
-export default Layerswitcher;
+export default LayerSwitcher;
