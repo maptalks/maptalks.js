@@ -45,6 +45,26 @@ describe('Geometry.Edit', function () {
             expect(marker.isEditing()).not.to.be.ok();
         });
 
+        it('should can change coordinates when being edited', function () {
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+            var coords = geometries.map(function (g) {
+                return maptalks.Coordinate.toNumberArrays(g.getCoordinates());
+            });
+
+            var changed = [];
+            geometries.forEach(function (g) {
+                g.startEdit();
+                g.translate(0.1, 0.2);
+                changed.push(maptalks.Coordinate.toNumberArrays(g.getCoordinates()));
+                g.endEdit();
+            });
+
+            expect(coords.length).to.be.eql(changed.length);
+            for (var i = 0, l = coords.length; i < l; i++) {
+                expect(coords[i]).not.to.be.eql(changed[i]);
+            }
+        });
+
         describe('drag all kinds of geometries', function () {
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             function testDrag(geo) {
