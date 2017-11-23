@@ -34,8 +34,8 @@ describe('Geometry.Edit', function () {
     });
 
     afterEach(function () {
-        map.remove();
-        REMOVE_CONTAINER(container);
+        // map.remove();
+        // REMOVE_CONTAINER(container);
     });
 
     describe('edit all kinds of geometries', function () {
@@ -84,7 +84,9 @@ describe('Geometry.Edit', function () {
                     if (!(geo instanceof maptalks.Marker) || geo._canEdit()) {
                         expect(geo.getCenter()).to.closeTo(newCenter);
                         geo.undoEdit();
-                        expect(geo.getCenter()).to.closeTo(center);
+                        var c = geo.getCenter();
+                        expect(c.x).to.be.approx(center.x, 1E-4);
+                        expect(c.y).to.be.approx(center.y, 1E-4);
                         geo.redoEdit();
                         expect(geo.getCenter()).to.closeTo(newCenter);
                     }

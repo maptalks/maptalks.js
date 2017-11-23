@@ -386,6 +386,7 @@ class GeometryEditor extends Eventable(Class) {
         if (!blackList) {
             blackList = [];
         }
+        const me = this;
         const resizeHandles = [],
             anchorIndexes = {},
             map = this.getMap(),
@@ -410,11 +411,13 @@ class GeometryEditor extends Eventable(Class) {
                         'axis': axis[i],
                         onMove: (function (_index) {
                             return function (handleViewPoint) {
+                                me._updating = true;
                                 onHandleMove(handleViewPoint, _index);
                                 geometry.fire('resizing');
                             };
                         })(i),
                         onUp: () => {
+                            me._updating = false;
                             onHandleUp();
                             this._refresh();
                         }
@@ -497,7 +500,8 @@ class GeometryEditor extends Eventable(Class) {
                 const coordinates = shadow.getCoordinates();
                 newCoordinates.x = coordinates.x;
                 shadow.setCoordinates(newCoordinates);
-                geometryToEdit.setCoordinates(newCoordinates);
+                this._updateCoordFromShadow(true);
+                // geometryToEdit.setCoordinates(newCoordinates);
                 //coordinates changed, and use mirror handle instead to caculate width and height
                 const mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
                 const mirrorViewPoint = map.coordToViewPoint(mirrorHandle.getCoordinates());
@@ -677,7 +681,8 @@ class GeometryEditor extends Eventable(Class) {
                 //change rectangle's coordinates
                 const newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
                 shadow.setCoordinates(newCoordinates);
-                geometryToEdit.setCoordinates(newCoordinates);
+                this._updateCoordFromShadow(true);
+                // geometryToEdit.setCoordinates(newCoordinates);
 
             } else {
                 const viewCenter = map.coordToViewPoint(geometryToEdit.getCenter());
@@ -792,7 +797,7 @@ class GeometryEditor extends Eventable(Class) {
             pVertex.y = nVertex.y;
             shadow._updateCache();
             shadow.onShapeChanged();
-            me._updateFromShadow(true);
+            me._updateCoordFromShadow(true);
             let nextIndex;
             if (index === 0) {
                 nextIndex = newVertexHandles.length - 1;
@@ -823,7 +828,7 @@ class GeometryEditor extends Eventable(Class) {
                 },
                 onUp: function () {
                     me._refresh();
-                    me._updateFromShadow();
+                    me._updateCoordFromShadow();
                 }
             });
             handle[propertyOfVertexIndex] = index;
@@ -873,7 +878,7 @@ class GeometryEditor extends Eventable(Class) {
                     //add a new vertex handle
                     vertexHandles.splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1));
                     onVertexAddOrRemove();
-                    me._updateFromShadow();
+                    me._updateCoordFromShadow();
                     me._refresh();
                 },
                 onRefresh: function () {
@@ -961,18 +966,20 @@ class GeometryEditor extends Eventable(Class) {
         this._recordHistory(method, ...args);
     }
 
-    _updateFromShadow(ignoreRecord) {
+    _updateCoordFromShadow(ignoreRecord) {
         if (!this._shadow) {
             return;
         }
+
         const coords = this._shadow.getCoordinates();
         const geo = this._geometry;
+        const updating = this._updating;
         this._updating = true;
         geo.setCoordinates(coords);
         if (!ignoreRecord) {
             this._recordHistory('setCoordinates', Coordinate.toNumberArrays(geo.getCoordinates()));
         }
-        this._updateing = false;
+        this._updating = updating;
     }
 
     _recordHistory(method, ...args) {
@@ -1041,6 +1048,7 @@ class GeometryEditor extends Eventable(Class) {
         if (!Array.isArray(record)) {
             return;
         }
+        const updating = this._updating;
         this._updating = true;
         const geo = this._geometry;
         if (Array.isArray(record[0])) {
@@ -1054,7 +1062,7 @@ class GeometryEditor extends Eventable(Class) {
             this._shadow[record[0]].apply(this._shadow, record[1]);
             geo[record[0]].apply(geo, record[1]);
         }
-        this._updating = false;
+        this._updating = updating;
     }
 
 }
