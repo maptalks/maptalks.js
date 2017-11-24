@@ -140,4 +140,24 @@ describe('GroupTileLayer', function () {
         });
         map.addLayer(layer);
     });
+    
+    it('zoom isVisible', function (done) {
+        var group = new maptalks.GroupTileLayer('group', [
+            new maptalks.TileLayer('tile1', {
+                maxZoom : 17,
+                urlTemplate : '/resources/tile.png'
+            })
+        ], {
+            renderer : 'canvas'
+        });
+        group.once('layerload', function () {
+            expect(group.isVisible()).to.be.ok();
+            map.setZoom(18);
+            map.once('zoomend', function () {
+                expect(group.isVisible()).not.to.be.ok();
+                done();
+            });
+        });
+        map.addLayer(group);
+    });
 });
