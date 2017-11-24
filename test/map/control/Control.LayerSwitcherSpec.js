@@ -135,7 +135,9 @@ describe('Control.LayerSwitcher', function () {
         happen.once(control.panel, {
             'type' : 'mouseleave',
             'clientX' : 100,
-            'clientY' : 100
+            'clientY' : 100,
+            'toElement' : container,
+            'relatedTarget' : container
         });
         expect(control.container.className).to.be.eql(control.options.containerClass);
     });

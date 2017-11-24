@@ -6,8 +6,8 @@ import Control from './Control';
  * @property {Object} options - options
  * @property {Object} [options.position='top-right'] - position of the control
  * @property {Object} [options.baseTitle='Base Layers'] - title of the base layers
- * @property {Object} [options.overlayTitle='Overlay Layers'] - title of the overlay layers
- * @property {Object} [options.excludeLayers=[] - ids of layers that don't display in layerswitcher
+ * @property {Object} [options.overlayTitle='Layers'] - title of the overlay layers
+ * @property {Object} [options.excludeLayers=[]] - ids of layers that don't display in layerswitcher
  * @property {Object} [options.containerClass=maptalks-layer-switcher] - layerswitcher's container div's CSS class
  *
  * @memberOf control.LayerSwitcher
@@ -16,7 +16,7 @@ import Control from './Control';
 const options = {
     'position' : 'top-right',
     'baseTitle' : 'Base Layers',
-    'overlayTitle' : 'Overlay Layers',
+    'overlayTitle' : 'Layers',
     'excludeLayers' : [],
     'containerClass' : 'maptalks-layer-switcher'
 };
@@ -56,6 +56,7 @@ class LayerSwitcher extends Control {
             off(this.button, 'mouseover', this._show, this);
             off(this.panel, 'mouseleave', this._hide, this);
             removeDomNode(this.panel);
+            removeDomNode(this.button);
             delete this.panel;
             delete this.button;
             delete this.container;
@@ -69,8 +70,10 @@ class LayerSwitcher extends Control {
         }
     }
 
-    _hide() {
-        setClass(this.container, this.options['containerClass']);
+    _hide(e) {
+        if (e.relatedTarget || e.toElement) {
+            setClass(this.container, this.options['containerClass']);
+        }
     }
 
     _createPanel() {
