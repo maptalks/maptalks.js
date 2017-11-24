@@ -130,6 +130,19 @@ class GroupTileLayer extends TileLayer {
             renderer.setToRedraw();
         }
     }
+
+    isVisible() {
+        if (!super.isVisible()) {
+            return false;
+        }
+        const children = this.layers;
+        for (let i = 0, l = children.length; i < l; i++) {
+            if (children[i].isVisible()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 GroupTileLayer.registerJSONType('GroupTileLayer');

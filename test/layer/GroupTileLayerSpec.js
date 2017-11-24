@@ -71,17 +71,16 @@ describe('GroupTileLayer', function () {
         });
         group.once('layerload', function () {
             expect(group).to.be.painted();
-            group.once('layerload', function () {
-                expect(group).not.to.be.painted();
-                group.once('layerload', function () {
-                    expect(group).to.be.painted();
-                    done();
-                });
-                tile1.show();
-                tile2.show();
-            });
             tile1.hide();
             tile2.hide();
+            expect(group.isVisible()).not.to.be.ok();
+            group.once('layerload', function () {
+                expect(group).to.be.painted();
+                done();
+            });
+            tile1.show();
+            expect(group.isVisible()).to.be.ok();
+            tile2.show();
         });
         map.addLayer(group);
     });
@@ -140,5 +139,25 @@ describe('GroupTileLayer', function () {
             done();
         });
         map.addLayer(layer);
+    });
+    
+    it('zoom isVisible', function (done) {
+        var group = new maptalks.GroupTileLayer('group', [
+            new maptalks.TileLayer('tile1', {
+                maxZoom : 17,
+                urlTemplate : '/resources/tile.png'
+            })
+        ], {
+            renderer : 'canvas'
+        });
+        group.once('layerload', function () {
+            expect(group.isVisible()).to.be.ok();
+            map.setZoom(18);
+            map.once('zoomend', function () {
+                expect(group.isVisible()).not.to.be.ok();
+                done();
+            });
+        });
+        map.addLayer(group);
     });
 });

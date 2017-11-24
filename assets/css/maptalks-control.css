@@ -70,3 +70,74 @@
   border:1px solid #b4b3b3;
   color : #363539;
 }
+
+.maptalks-layer-switcher ul {
+  padding-left: 1em;
+  list-style: none;
+}
+.maptalks-layer-switcher li {
+  padding-top: 5px;
+}
+.maptalks-layer-switcher .group > label {
+  font-weight: bold;
+}
+.maptalks-layer-switcher .group + .group {
+  padding-top: 1em;
+}
+.maptalks-layer-switcher label {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: inline-block;
+  white-space: nowrap;
+}
+.maptalks-layer-switcher .group label {
+  width: 260px;
+}
+.maptalks-layer-switcher .layer label {
+  width: 215px;
+}
+.maptalks-layer-switcher input {
+  margin: 0 5px;
+  vertical-align: text-top;
+}
+.maptalks-layer-switcher input[disabled = 'disabled'] {
+  cursor: not-allowed;
+}
+.maptalks-layer-switcher input[disabled = 'disabled'] + label {
+  color: #666;
+}
+.maptalks-layer-switcher button, .maptalks-layer-switcher .panel {
+  border-radius: 4px;
+}
+.maptalks-layer-switcher button {
+  width: 28px;
+  height: 28px;
+  background: url(images/control/layer.png) no-repeat 4px 4px;
+  background-color: #2f2f2f;
+  border: none;
+}
+.maptalks-layer-switcher.shown button {
+  display: none;
+}
+.maptalks-layer-switcher .panel {
+  background-color: #2f2f2f;
+  display: none;
+  max-height: 100%;
+  overflow-y: auto;
+  width: 300px;
+  max-height: 500px;
+  color: #b1b1b1;
+}
+.maptalks-layer-switcher.shown .panel {
+  display: block;
+}
+.maptalks-layer-switcher ::-webkit-scrollbar {
+  width: 10px;
+}
+.maptalks-layer-switcher ::-webkit-scrollbar-track {
+  background-color: #1f1f1f;
+}
+.maptalks-layer-switcher ::-webkit-scrollbar-thumb { 
+  border-radius: 5px;
+  background-color: #777;
+}
