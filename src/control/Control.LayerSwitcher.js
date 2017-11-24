@@ -1,4 +1,4 @@
-import { on, off, createEl } from 'core/util/dom';
+import { on, off, createEl, removeDomNode, addClass, hasClass, setClass } from 'core/util/dom';
 import Map from 'map/Map';
 import Control from './Control';
 
@@ -48,32 +48,29 @@ class LayerSwitcher extends Control {
 
     onAdd() {
         on(this.button, 'mouseover', this._show, this);
-        on(this.panel, 'mouseout', this._hide, this);
+        on(this.panel, 'mouseleave', this._hide, this);
     }
 
     onRemove() {
         if (this.panel) {
-            this.panel.remove();
+            off(this.button, 'mouseover', this._show, this);
+            off(this.panel, 'mouseleave', this._hide, this);
+            removeDomNode(this.panel);
             delete this.panel;
+            delete this.button;
+            delete this.container;
         }
-        off(this.button, 'mouseover', this._show, this);
-        off(this.panel, 'mouseout', this._hide, this);
     }
 
     _show() {
-        const list = this.container.classList;
-        if (!list.contains('shown')) {
-            list.add('shown');
+        if (!hasClass(this.container, 'shown')) {
+            addClass(this.container, 'shown');
             this._createPanel();
         }
     }
 
-    _hide(e) {
-        e = e || window.event;
-        const list = this.container.classList;
-        if (!this.panel.contains(e.toElement || e.relatedTarget) && list.contains('shown')) {
-            list.remove('shown');
-        }
+    _hide() {
+        setClass(this.container, this.options['containerClass']);
     }
 
     _createPanel() {
@@ -96,7 +93,7 @@ class LayerSwitcher extends Control {
             li.appendChild(label);
             for (let i = 0, len = baseLayers.length; i < len; i++) {
                 const layer = baseLayers[i];
-                if (this._isDisplay(layer)) {
+                if (this._isExcluded(layer)) {
                     ul.appendChild(this._renderLayer(baseLayers[i], true));
                     li.appendChild(ul);
                     elm.appendChild(li);
@@ -112,7 +109,7 @@ class LayerSwitcher extends Control {
             li.appendChild(label);
             for (let i = 0; i < len; i++) {
                 const layer = layers[i];
-                if (this._isDisplay(layer)) {
+                if (this._isExcluded(layer)) {
                     ul.appendChild(this._renderLayer(layer));
                 }
             }
@@ -121,10 +118,10 @@ class LayerSwitcher extends Control {
         }
     }
 
-    _isDisplay(layer) {
+    _isExcluded(layer) {
         const id = layer.getId(),
             excludeLayers = this.options['excludeLayers'];
-        return !(excludeLayers.length && excludeLayers.includes(id));
+        return !(excludeLayers.length && excludeLayers.indexOf(id) >= 0);
     }
 
     _renderLayer(layer, isBase) {
@@ -142,9 +139,9 @@ class LayerSwitcher extends Control {
         }
 
         input.checked = visible;
-        if (!visible) {
-            input.setAttribute('disabled', 'disabled');
-        }
+        // if (!visible) {
+        //     input.setAttribute('disabled', 'disabled');
+        // }
 
         input.onchange = function (e) {
             if (e.target.type === 'radio') {
