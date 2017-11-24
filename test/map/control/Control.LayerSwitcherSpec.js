@@ -36,8 +36,7 @@ describe('Control.LayerSwitcher', function () {
         });
         map.setBaseLayer(tile1);
         map.addLayer(tile2);
-        var dom = document.querySelector('.maptalks-layer-switcher');
-        dom.addEventListener("mouseover", function() {
+        control.container.addEventListener("mouseover", function() {
             var labels = document.querySelectorAll('.group > label',this);
             expect(labels[0].innerText).to.eql('baseTitle');
             expect(labels[1].innerText).to.eql('overlayTitle');
@@ -56,8 +55,7 @@ describe('Control.LayerSwitcher', function () {
             urlTemplate : '/resources/tile.png'
         });
         map.addLayer([tile1, tile2]);
-        var dom = document.querySelector('.maptalks-layer-switcher');
-        dom.addEventListener("mouseover", function() {
+        control.container.addEventListener("mouseover", function() {
             var labels = document.querySelectorAll('.layer label',this);
             for (var i = 0, len = labels.length; i < len; i++) {
                  expect(labels[i].innerText).not.to.eql('tile1');
@@ -78,8 +76,7 @@ describe('Control.LayerSwitcher', function () {
             })
         ]);
         map.setBaseLayer(group);
-        var dom = document.querySelector('.maptalks-layer-switcher');
-        dom.addEventListener("mouseover", function() {
+        control.container.addEventListener("mouseover", function() {
             var radios = document.querySelectorAll('.layer input',this);
             expect(radios[0].checked).to.be.ok();
             expect(radios[1].checked).not.to.be.ok();
@@ -101,8 +98,7 @@ describe('Control.LayerSwitcher', function () {
             urlTemplate : '/resources/tile.png'
         });
         map.addLayer(tile1);
-        var dom = document.querySelector('.maptalks-layer-switcher');
-        dom.addEventListener("mouseover", function() {
+        control.container.addEventListener("mouseover", function() {
             var checkbox = document.querySelector('.layer input',this);
             expect(checkbox.checked).to.be.ok();
             expect(tile1.isVisible()).to.be.ok();
