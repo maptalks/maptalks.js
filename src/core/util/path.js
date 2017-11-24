@@ -10,11 +10,18 @@ export function clipLine(points, bounds, round) {
         if (!segment) { continue; }
 
         parts[k] = parts[k] || [];
-        parts[k].push(segment[0]);
+        parts[k].push({
+            'point' : segment[0],
+            'index' : j
+        });
 
         // if segment goes out of screen, or it's the last one, it's the end of the line part
         if ((segment[1] !== points[j + 1]) || (j === l - 2)) {
-            parts[k].push(segment[1]);
+            // parts[k].push(segment[1]);
+            parts[k].push({
+                'point' : segment[1],
+                'index' : j + 1
+            });
             k++;
         }
     }

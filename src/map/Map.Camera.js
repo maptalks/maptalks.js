@@ -1,6 +1,6 @@
 import Map from './Map';
 import Point from 'geo/Point';
-import { mat4 } from '@mapbox/gl-matrix';
+import * as mat4 from 'core/util/mat4';
 import { clamp, interpolate, wrap } from 'core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from 'core/util/math';
 import Browser from 'core/Browser';
@@ -183,6 +183,20 @@ Map.include(/** @lends Map.prototype */{
         return !!(this._pitch || this._angle);
     },
 
+    getFrustumAltitude() {
+        const pitch = 90 - this.getPitch();
+        let fov = this.getFov() / 2;
+        const cameraAlt = this.cameraPosition[2];
+        if (pitch === 90 || fov <= pitch) {
+            return cameraAlt;
+        }
+        fov = Math.PI * fov / 180;
+        const d1 = new Point(this.cameraPosition).distanceTo(this.cameraLookAt),
+            d2 = cameraAlt * Math.tan(fov * 2);
+        const d = Math.tan(fov) * (d1 + d2);
+        return cameraAlt + d;
+    },
+
     /**
      * Convert 2d point at target zoom to containerPoint at current zoom
      * @param  {Point} point 2d point at target zoom
@@ -198,6 +212,11 @@ Map.include(/** @lends Map.prototype */{
             altitude *= this.getResolution(zoom) / this.getResolution();
             const scale = this._glScale;
             const t = [point.x * scale, point.y * scale, altitude * scale];
+
+            // const t2 = [];
+            // applyMatrix(t2, t, this.viewMatrix);
+            // console.log(t2[2]);
+
             applyMatrix(t, t, this.projViewMatrix);
 
             const w2 = this.width / 2, h2 = this.height / 2;
@@ -248,7 +267,7 @@ Map.include(/** @lends Map.prototype */{
 
     /**
      * GL Matrices in maptalks (based on THREE):
-     * this.cameraCenter
+     * this.cameraLookAt
      * this.cameraWorldMatrix
      * this.projMatrix
      * this.viewMatrix = cameraWorldMatrix.inverse()
@@ -257,12 +276,12 @@ Map.include(/** @lends Map.prototype */{
      */
     _calcMatrices: function () {
         // closure matrixes to reuse
-        const m0 = createMat4(),
-            m1 = createMat4();
+        const m0 = Browser.ie9 ? null : createMat4(),
+            m1 = Browser.ie9 ? null : createMat4();
         return function () {
             // get pixel size of map
             const size = this.getSize();
-            if (size.width === 0 || size.height === 0) {
+            if (size.width === 0 || size.height === 0 || Browser.ie9) {
                 return;
             }
             this._glScale = this.getGLScale();
@@ -274,6 +293,7 @@ Map.include(/** @lends Map.prototype */{
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, size.width / size.height, 0.1, farZ);
             mat4.scale(projMatrix, projMatrix, [1, -1, 1]);
+            this.projMatrix = projMatrix;
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
             // view matrix
@@ -282,6 +302,24 @@ Map.include(/** @lends Map.prototype */{
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
             // matrix for screen point => world point
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
+            this.domCssMatrix = this._calcDomMatrix();
+        };
+    }(),
+
+    _calcDomMatrix: function () {
+        const m = Browser.ie9 ? null : createMat4();
+        return function () {
+            const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+            mat4.translate(m, this.projMatrix, [0, 0, -cameraToCenterDistance]);
+            if (this._pitch) {
+                mat4.rotateX(m, m, this._pitch);
+            }
+            if (this._angle) {
+                mat4.rotateZ(m, m, this._angle);
+            }
+            const m1 = createMat4();
+            mat4.scale(m1, m1, [this.width / 2, -this.height / 2, 1]);
+            return mat4.multiply(this.domCssMatrix || createMat4(), m1, m);
         };
     }(),
 
@@ -290,7 +328,7 @@ Map.include(/** @lends Map.prototype */{
 
         const size = this.getSize(),
             scale = this.getGLScale();
-        const center2D = this.cameraCenter = this._prjToPoint(this._prjCenter, targetZ);
+        const center2D = this.cameraLookAt = this._prjToPoint(this._prjCenter, targetZ);
 
         const pitch = this.getPitch() * RADIAN;
         const bearing = -this.getBearing() * RADIAN;
@@ -298,13 +336,12 @@ Map.include(/** @lends Map.prototype */{
         const ratio = this._getFovRatio();
         const z = scale * size.height / 2 / ratio;
         const cz = z * Math.cos(pitch);
-        this.cameraAltitude = cz;
         // and [dist] away from map's center on XY plane to tilt the scene.
         const dist = Math.sin(pitch) * z;
         // when map rotates, the camera's xy position is rotating with the given bearing and still keeps [dist] away from map's center
         const cx = center2D.x + dist * Math.sin(bearing);
         const cy = center2D.y + dist * Math.cos(bearing);
-
+        this.cameraPosition = [cx, cy, cz];
         // when map rotates, camera's up axis is pointing to bearing from south direction of map
         // default [0,1,0] is the Y axis while the angle of inclination always equal 0
         // if you want to rotate the map after up an incline,please rotateZ like this:

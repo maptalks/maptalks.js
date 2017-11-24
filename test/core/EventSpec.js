@@ -156,14 +156,12 @@ describe('EventSpec', function () {
         var marker = new maptalks.Marker([0, 0]);
         function listener() {
             counter++;
-            expect(this).to.be.eql(marker);
         }
         function listener2() {
             counter2++;
-            expect(this).to.be.eql(marker);
         }
-        marker.on({ 'click':listener, 'mousedown' : listener2 }, marker);
-        marker.off({ 'click':listener, 'mousedown' : listener2 }, marker);
+        marker.on({ 'click':listener, 'mousedown' : listener2 });
+        marker.off({ 'click':listener, 'mousedown' : listener2 });
         marker.fire('click')
             .fire('click');
 

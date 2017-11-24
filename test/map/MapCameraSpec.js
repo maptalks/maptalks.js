@@ -67,6 +67,7 @@ describe('Map.Camera', function () {
         });
 
         it('render with canvas renderer', function (done) {
+            this.timeout(10000);
             var baseLayer = new maptalks.TileLayer('b', {
                 urlTemplate : '/resources/tile.png',
                 renderer : 'canvas'
@@ -539,6 +540,12 @@ describe('Map.Camera', function () {
             expect(geometry.containsPoint(newTopPt)).to.be.ok();
             expect(newTopPt.y).to.be.above(topPt.y);
         });
+    });
+
+    it('should generate dom css matrix', function () {
+        map.setPitch(75);
+        map.setBearing(45);
+        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql('31.819805153394643,-8.235571585149868,0.6830127076821895,0.6830127018922193,31.819805153394636,8.23557158514987,-0.6830127076821896,-0.6830127018922194,0,-43.466662183008076,-0.2588190472965569,-0.25881904510252074,0,0,44.80000038062201,45');
     });
 });
 

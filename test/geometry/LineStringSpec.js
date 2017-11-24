@@ -160,9 +160,12 @@ describe('Geometry.LineString', function () {
     it('containsPoint', function () {
         var lineWidth = 8;
         var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
-            symbol : {
+            symbol : [{
                 'lineWidth' : lineWidth
-            }
+            },
+            {
+                'lineWidth' : 4
+            }]
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
@@ -234,6 +237,11 @@ describe('Geometry.LineString', function () {
         });
     });
 
+    it('should get2DLength', function () {
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)]);
+        layer.addGeometry(line);
+        expect(line._get2DLength()).to.be.above(0);
+    });
 
     //issue #522
     it('drawn with arrow of vertex-first', function () {

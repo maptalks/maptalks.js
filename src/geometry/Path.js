@@ -152,11 +152,17 @@ class Path extends Geometry {
         clipped.forEach(part => {
             if (Array.isArray(part)) {
                 part.forEach(c => {
+                    if (c.point) {
+                        c = c.point;
+                    }
                     sumx += c.x;
                     sumy += c.y;
                     counter++;
                 });
             } else {
+                if (part.point) {
+                    part = part.point;
+                }
                 sumx += part.x;
                 sumy += part.y;
                 counter++;

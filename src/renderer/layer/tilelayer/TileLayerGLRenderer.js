@@ -1,6 +1,6 @@
 import Ajax from 'core/Ajax';
 import { IS_NODE, emptyImageUrl, hasOwn } from 'core/util';
-import { mat4 } from '@mapbox/gl-matrix';
+import * as mat4 from 'core/util/mat4';
 import TileLayer from 'layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import Browser from 'core/Browser';
@@ -221,7 +221,8 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
         // Bind the texture object to the target
         gl.bindTexture(gl.TEXTURE_2D, texture);
         // from mapbox-gl-js
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -529,14 +530,14 @@ class TileLayerGLRenderer extends TileLayerCanvasRenderer {
 
 TileLayerGLRenderer.include({
     copy12: function () {
-        const m = new Float32Array(12);
+        const m = Browser.ie9 ? null : new Float32Array(12);
         return function (arr) {
             return mat4.copy(m, arr);
         };
     }(),
 
     copy16: function () {
-        const m = new Float32Array(16);
+        const m = Browser.ie9 ? null : new Float32Array(16);
         return function (arr) {
             return mat4.copy(m, arr);
         };

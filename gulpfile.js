@@ -2,15 +2,17 @@ const minimist = require('minimist'),
     path = require('path'),
     gulp = require('gulp'),
     del = require('del'),
+    zip = require('gulp-zip'),
     concat = require('gulp-concat'),
     cssnano = require('gulp-cssnano'),
     connect = require('gulp-connect'),
     rollupCfg = require('./build/rollup.config'),
     BundleHelper = require('maptalks-build-helpers').BundleHelper,
-    Server = require('karma').Server;
+    Server = require('karma').Server,
+    package = require('./package.json');
 
 const rollupWatch = rollupCfg.watch;
-const bundler = new BundleHelper(require('./package.json'));
+const bundler = new BundleHelper(package);
 
 const knownOptions = {
     string: ['browsers', 'pattern'],
@@ -163,4 +165,24 @@ gulp.task('editdoc', ['doc'], () => {
     gulp.watch(['src/**/*.js'], ['doc']);
 });
 
+gulp.task('beforeZip', () => {
+    gulp.src(['LICENSE', 'ACKNOWLEDGEMENT'])
+    .pipe(gulp.dest('dist'))
+});
+
+gulp.task('zip', ['beforeZip'], done => {
+    gulp.src(['dist/*.js', 'dist/images/**/*', 'dist/maptalks.css', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT'], { base: 'dist/' })
+        .pipe(zip('maptalks-' + package.version + '.zip'))
+        .pipe(gulp.dest('dist'));
+    setTimeout(function () {
+        del([
+            'dist/LICENSE', 'dist/ACKNOWLEDGEMENT'
+        ], {
+            force : true
+        });
+        done();
+    }, 500);
+});
+
 gulp.task('default', ['connect']);
+

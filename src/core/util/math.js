@@ -1,4 +1,4 @@
-import { vec3 } from '@mapbox/gl-matrix';
+import { subtract, length, normalize, cross } from './vec3';
 //contains code from THREE.js
 
 export function applyMatrix(out, v, e) {
@@ -128,9 +128,9 @@ export function lookAt(te, eye, target, up) {
     const x = [0, 0, 0];
     const y = [0, 0, 0];
     const z = [0, 0, 0];
-    vec3.subtract(z, eye, target);
+    subtract(z, eye, target);
 
-    if (vec3.length(z) === 0) {
+    if (length(z) === 0) {
 
         // eye and target are in the same position
 
@@ -138,10 +138,10 @@ export function lookAt(te, eye, target, up) {
 
     }
 
-    vec3.normalize(z, z);
-    vec3.cross(x, up, z);
+    normalize(z, z);
+    cross(x, up, z);
 
-    if (vec3.length(z) === 0) {
+    if (length(z) === 0) {
 
         // up and z are parallel
 
@@ -155,13 +155,13 @@ export function lookAt(te, eye, target, up) {
 
         }
 
-        vec3.normalize(z, z);
-        vec3.cross(x, up, z);
+        normalize(z, z);
+        cross(x, up, z);
 
     }
 
-    vec3.normalize(x, x);
-    vec3.cross(y, z, x);
+    normalize(x, x);
+    cross(y, z, x);
 
     te[ 0 ] = x[0]; te[ 4 ] = y[0]; te[ 8 ] = z[0];
     te[ 1 ] = x[1]; te[ 5 ] = y[1]; te[ 9 ] = z[1];

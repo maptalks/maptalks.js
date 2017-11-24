@@ -45,6 +45,26 @@ describe('Geometry.Edit', function () {
             expect(marker.isEditing()).not.to.be.ok();
         });
 
+        it('should can change coordinates when being edited', function () {
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+            var coords = geometries.map(function (g) {
+                return maptalks.Coordinate.toNumberArrays(g.getCoordinates());
+            });
+
+            var changed = [];
+            geometries.forEach(function (g) {
+                g.startEdit();
+                g.translate(0.1, 0.2);
+                changed.push(maptalks.Coordinate.toNumberArrays(g.getCoordinates()));
+                g.endEdit();
+            });
+
+            expect(coords.length).to.be.eql(changed.length);
+            for (var i = 0, l = coords.length; i < l; i++) {
+                expect(coords[i]).not.to.be.eql(changed[i]);
+            }
+        });
+
         describe('drag all kinds of geometries', function () {
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             function testDrag(geo) {
@@ -64,7 +84,9 @@ describe('Geometry.Edit', function () {
                     if (!(geo instanceof maptalks.Marker) || geo._canEdit()) {
                         expect(geo.getCenter()).to.closeTo(newCenter);
                         geo.undoEdit();
-                        expect(geo.getCenter()).to.closeTo(center);
+                        var c = geo.getCenter();
+                        expect(c.x).to.be.approx(center.x, 1E-4);
+                        expect(c.y).to.be.approx(center.y, 1E-4);
                         geo.redoEdit();
                         expect(geo.getCenter()).to.closeTo(newCenter);
                     }

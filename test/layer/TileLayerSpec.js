@@ -75,6 +75,21 @@ describe('TileLayer', function () {
 
             expect(tile2.getTileSize().toArray()).to.be.eql([1, 2]);
         });
+
+        it('render after setting zoom without animation, bug found by sgh', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '/resources/tile.png'
+            });
+            map.setBaseLayer(tile);
+            map.setZoom(map.getZoom() - 2, { animation : false });
+
+            setTimeout(function () {
+                expect(map.getBaseLayer()).to.be.painted();
+                done();
+            }, 90);
+        });
     });
 
     describe('Different Projections', function () {
