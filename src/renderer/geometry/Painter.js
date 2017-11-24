@@ -580,6 +580,7 @@ class Painter extends Class {
         const altitude = this._getAltitudeProperty();
         this._propAlt = altitude;
         if (!altitude) {
+            this.minAltitude = this.maxAltitude = 0;
             return 0;
         }
         const center = this.geometry.getCenter();
@@ -597,7 +598,7 @@ class Painter extends Class {
                 return a;
             });
         } else {
-            this.maxAltitude = this.minAltitude = this._meterToPoint(center, altitude);
+            this.minAltitude = this.maxAltitude = this._meterToPoint(center, altitude);
             return this.minAltitude;
         }
     }

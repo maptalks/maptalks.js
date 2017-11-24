@@ -186,8 +186,8 @@ Map.include(/** @lends Map.prototype */{
     getFrustumAltitude() {
         const pitch = 90 - this.getPitch();
         let fov = this.getFov() / 2;
-        const cameraAlt = this.cameraPosition[2];
-        if (pitch === 90 || fov <= pitch) {
+        const cameraAlt = this.cameraPosition ? this.cameraPosition[2] : 0;
+        if (fov <= pitch) {
             return cameraAlt;
         }
         fov = Math.PI * fov / 180;
