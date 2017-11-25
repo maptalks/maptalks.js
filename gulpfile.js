@@ -166,7 +166,7 @@ gulp.task('editdoc', ['doc'], () => {
 });
 
 gulp.task('beforeZip', () => {
-    gulp.src(['LICENSE', 'ACKNOWLEDGEMENT', 'docs/**/*'])
+    return gulp.src(['LICENSE', 'ACKNOWLEDGEMENT', 'docs/**/*'])
     .pipe(gulp.dest('dist'))
 });
 
