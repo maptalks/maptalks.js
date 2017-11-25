@@ -72,8 +72,13 @@
 }
 
 .maptalks-layer-switcher ul {
-  padding-left: 1em;
   list-style: none;
+}
+.maptalks-layer-switcher .panel > ul {
+  padding-left: 1em;
+}
+.maptalks-layer-switcher .group > ul {
+  padding-left: 10px;
 }
 .maptalks-layer-switcher .group + .group {
   padding-top: 1em;
@@ -81,10 +86,19 @@
 .maptalks-layer-switcher label {
   text-overflow: ellipsis;
   overflow: hidden;
-  width : 90%;
   display: inline-block;
   font-size : 14px;
   white-space: nowrap;
+  color: #bbb;
+}
+.maptalks-layer-switcher .group > label {
+  font-weight: bold;
+  color: #ddd;
+  width: 100%;
+}
+.maptalks-layer-switcher .layer label {
+  padding-top: 5px;
+  width: 92%;
 }
 .maptalks-layer-switcher input {
   margin: 0 5px;
@@ -116,12 +130,12 @@
   min-width: 120px;
   max-width: 400px;
   max-height: 600px;
-  color: #fff;
 }
 .maptalks-layer-switcher li {
-  overflow:hidden;
-  margin-right: 1em;
   white-space:nowrap;
+}
+.maptalks-layer-switcher li.group {
+  margin-right: 1em;
 }
 .maptalks-layer-switcher.shown .panel {
   display: block;
