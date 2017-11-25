@@ -81,6 +81,7 @@
 .maptalks-layer-switcher label {
   text-overflow: ellipsis;
   overflow: hidden;
+  width : 90%;
   display: inline-block;
   font-size : 14px;
   white-space: nowrap;

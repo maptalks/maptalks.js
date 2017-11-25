@@ -131,8 +131,11 @@ class LayerSwitcher extends Control {
         const li = createEl('li', 'layer'),
             label =  createEl('label'),
             input = createEl('input'),
-            map = this.getMap(),
-            visible = layer.isVisible();
+            map = this.getMap();
+        const visible = layer.options['visible'];
+        layer.options['visible'] = true;
+        const enabled = layer.isVisible();
+        layer.options['visible'] = visible;
         li.className = 'layer';
         if (isBase) {
             input.type = 'radio';
@@ -141,10 +144,10 @@ class LayerSwitcher extends Control {
             input.type = 'checkbox';
         }
 
-        input.checked = visible;
-        // if (!visible) {
-        //     input.setAttribute('disabled', 'disabled');
-        // }
+        input.checked = visible && enabled;
+        if (!enabled) {
+            input.setAttribute('disabled', 'disabled');
+        }
 
         input.onchange = function (e) {
             if (e.target.type === 'radio') {

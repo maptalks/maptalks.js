@@ -92,12 +92,11 @@ describe('Control.LayerSwitcher', function () {
         expect(radios[1].checked).not.to.be.ok();
         expect(group.layers[0].isVisible()).to.be.ok();
         expect(group.layers[1].isVisible()).not.to.be.ok();
-        radios[1].addEventListener("click", function() {
-            expect(radios[0].checked).not.to.be.ok();
-            expect(radios[1].checked).to.be.ok();
-            expect(group.layers[0].isVisible()).not.to.be.ok();
-            expect(group.layers[1].isVisible()).to.be.ok();
-        });
+        happen.click(radios[1]);
+        expect(radios[0].checked).not.to.be.ok();
+        expect(radios[1].checked).to.be.ok();
+        expect(group.layers[0].isVisible()).not.to.be.ok();
+        expect(group.layers[1].isVisible()).to.be.ok();
     });
 
     it('overlay layers switch', function () {
@@ -114,10 +113,12 @@ describe('Control.LayerSwitcher', function () {
         var checkbox = document.querySelector('.layer input');
         expect(checkbox.checked).to.be.ok();
         expect(tile1.isVisible()).to.be.ok();
-        checkbox.addEventListener("click", function() {
-            expect(checkbox.checked).not.to.be.ok();
-            expect(tile1.isVisible()).not.to.be.ok();
+        happen.click(checkbox, {
+            'clientX' : 100,
+            'clientY' : 100
         });
+        expect(checkbox.checked).not.to.be.ok();
+        expect(tile1.isVisible()).not.to.be.ok();
     });
 
     it('show and hide', function () {
@@ -154,5 +155,27 @@ describe('Control.LayerSwitcher', function () {
             'clientY' : 100
         });
         control.remove();
+    });
+
+    it('disable if layer is transparent or out of zoom', function () {
+        var control = new maptalks.control.LayerSwitcher();
+        map.addControl(control);
+        var tile1 = new maptalks.TileLayer('tile1', {
+            opacity : 0,
+            urlTemplate : '/resources/tile.png'
+        });
+        var tile2 = new maptalks.TileLayer('tile2', {
+            minZoom : 1,
+            maxZoom : 1,
+            urlTemplate : '/resources/tile.png'
+        });
+        map.addLayer(tile1, tile2);
+        happen.mouseover(control.button, {
+            'clientX' : 100,
+            'clientY' : 100
+        });
+        var checkbox = document.querySelectorAll('.layer input');
+        expect(checkbox[0].getAttribute('disabled')).to.be.eql('disabled');
+        expect(checkbox[1].getAttribute('disabled')).to.be.eql('disabled');
     });
 });
