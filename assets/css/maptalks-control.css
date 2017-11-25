@@ -127,6 +127,7 @@
   background-color: #172029;
   display: none;
   overflow-y: auto;
+  overflow-x: hidden;
   min-width: 120px;
   max-width: 400px;
   max-height: 600px;
