@@ -41,7 +41,7 @@ describe('Control.LayerSwitcher', function () {
             'clientY' : 100
         });
 
-        var labels = document.querySelectorAll('.maptalks-layer-switcher label', this);
+        var labels = document.querySelectorAll('label');
         expect(labels[0].innerText).to.be.eql('baseTitle');
         expect(labels[1].innerText).to.be.eql('tile1');
         expect(labels[2].innerText).to.be.eql('overlayTitle');
@@ -64,7 +64,7 @@ describe('Control.LayerSwitcher', function () {
             'clientX' : 100,
             'clientY' : 100
         });
-        var labels = document.querySelectorAll('.layer label', this);
+        var labels = document.querySelectorAll('.layer label');
         for (var i = 0, len = labels.length; i < len; i++) {
              expect(labels[i].innerText).not.to.eql('tile1');
         }
@@ -87,7 +87,7 @@ describe('Control.LayerSwitcher', function () {
             'clientX' : 100,
             'clientY' : 100
         });
-        var radios = document.querySelectorAll('.layer input',this);
+        var radios = document.querySelectorAll('.layer input');
         expect(radios[0].checked).to.be.ok();
         expect(radios[1].checked).not.to.be.ok();
         expect(group.layers[0].isVisible()).to.be.ok();
@@ -111,7 +111,7 @@ describe('Control.LayerSwitcher', function () {
             'clientX' : 100,
             'clientY' : 100
         });
-        var checkbox = document.querySelector('.layer input',this);
+        var checkbox = document.querySelector('.layer input');
         expect(checkbox.checked).to.be.ok();
         expect(tile1.isVisible()).to.be.ok();
         checkbox.addEventListener("click", function() {
