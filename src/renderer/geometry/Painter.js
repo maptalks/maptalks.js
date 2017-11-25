@@ -307,9 +307,10 @@ class Painter extends Class {
 
     /**
      * interpolate clipped line segs's altitude
-     * @param {Point[] || Point[][]} clipSegs
-     * @param {Point[] || Point[][]} orig
-     * @param {Number || Number[]} altitude
+     * @param {Point[]|Point[][]} clipSegs
+     * @param {Point[]|Point[][]} orig
+     * @param {Number|Number[]} altitude
+     * @private
      */
     _interpolateSegAlt(clipSegs, orig, altitude) {
         if (!Array.isArray(altitude)) {
