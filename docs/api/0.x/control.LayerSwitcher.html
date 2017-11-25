@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
-    <title>Class: Overview</title>
+    <title>Class: LayerSwitcher</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <body>
 
-<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: Overview</h1></div>
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: LayerSwitcher</h1></div>
 <div id="main" style="margin-top:77px;">
     
 
@@ -28,7 +28,7 @@
 
 <nav class="classnav scroll-styled">
 
-    <h5><a href="#main" style="color:#000">class : control.Overview</a></h5>
+    <h5><a href="#main" style="color:#000">class : control.LayerSwitcher</a></h5>
     
         <h5>Members</h5>
         <ul>
@@ -220,9 +220,9 @@
 <header>
     
         <h2>
-            <span class="ancestors"><a href="control.html">control</a>.</span>Overview</h2>
+            <span class="ancestors"><a href="control.html">control</a>.</span>LayerSwitcher</h2>
         
-            <div class="class-description">An overview control for the map.</div>
+            <div class="class-description">A layerswither control for the map.</div>
         
     
 </header>
@@ -234,16 +234,16 @@
 
     <!-- <h2>Constructor</h2> -->
     
-    <h4 class="name" id="Overview"><span class="type-signature"></span>new <a href="#Overview">control.Overview</a><span class="signature">()</span>
+    <h4 class="name" id="LayerSwitcher"><span class="type-signature"></span>new <a href="#LayerSwitcher">control.LayerSwitcher</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.Overview.js#L52" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.LayerSwitcher.js#L35" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.Overview.js#L52" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.LayerSwitcher.js#L35" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#Overview" class="improvelink">[link]</a> -->
+    <!-- <a href="#LayerSwitcher" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -256,7 +256,7 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var overview = new Overview({    position : {'bottom': '0', 'right': '0'},    size : {'width' : 300,'height' : 200}}).addTo(map);</code></pre>
+        <pre class="prettyprint"><code>var layerswither = new Layerswither({    position : {'top': '0', 'right': '0'}}).addTo(map);</code></pre>
     
 
 
@@ -352,7 +352,7 @@
 <h4 class="name" id="options"><span class="type-signature">(constant) </span>options<span class="type-signature"></span>
 
 <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.Overview.js#L22" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.LayerSwitcher.js#L16" class="improvelink">[help to improve]</a>
     
     <a href="#options" class="improvelink">[link]</a></h4> -->
 </li>
@@ -466,7 +466,7 @@
             
                 <td class="default">
                 
-                    'bottom-right'
+                    'top-right'
                 
                 </td>
             
@@ -478,44 +478,7 @@
 
         <tr>
             
-                <td class="name"><code>level</code>
-                    
-                        
-                           <span class="signature-attributes">opt</span>
-                        
-                        
-
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-
-
-            
-                <td class="default">
-                
-                    4
-                
-                </td>
-            
-
-            <td class="description last">the zoom level of the overview</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>maximize</code>
+                <td class="name"><code>baseTitle</code>
                     
                         
                            <span class="signature-attributes">opt</span>
@@ -540,19 +503,19 @@
             
                 <td class="default">
                 
-                    true
+                    'Base Layers'
                 
                 </td>
             
 
-            <td class="description last">whether to maximize overview when added</td>
+            <td class="description last">title of the base layers</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>size</code>
+                <td class="name"><code>overlayTitle</code>
                     
                         
                            <span class="signature-attributes">opt</span>
@@ -577,19 +540,19 @@
             
                 <td class="default">
                 
-                    [300, 200
+                    'Layers'
                 
                 </td>
             
 
-            <td class="description last">size of the Control</td>
+            <td class="description last">title of the overlay layers</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>symbol</code>
+                <td class="name"><code>excludeLayers</code>
                     
                         
                            <span class="signature-attributes">opt</span>
@@ -614,12 +577,12 @@
             
                 <td class="default">
                 
-                    {}
+                    []
                 
                 </td>
             
 
-            <td class="description last">symbol of the overview rectangle</td>
+            <td class="description last">ids of layers that don't display in layerswitcher</td>
         </tr>
 
     
@@ -651,49 +614,12 @@
             
                 <td class="default">
                 
-                    maptalks-overview
+                    maptalks-layer-switcher
                 
                 </td>
             
 
-            <td class="description last">overview's container div's CSS class</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>buttonClass</code>
-                    
-                        
-                           <span class="signature-attributes">opt</span>
-                        
-                        
-
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-
-
-            
-                <td class="default">
-                
-                    maptalks-overview-button
-                
-                </td>
-            
-
-            <td class="description last">overview's minimize/maximize button's CSS class</td>
+            <td class="description last">layerswitcher's container div's CSS class</td>
         </tr>
 
     
@@ -739,7 +665,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.Overview.js">control/Control.Overview.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.Overview.js#L22">line 22</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.LayerSwitcher.js">control/Control.LayerSwitcher.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.LayerSwitcher.js#L16">line 16</a>
         
 
     </li></ul></dd>
@@ -773,14 +699,14 @@
     
     <li>
     
-    <h4 class="name" id="buildOn"><span class="type-signature"></span><a href="#buildOn">buildOn</a><span class="signature">(map)</span>
+    <h4 class="name" id="buildOn"><span class="type-signature"></span><a href="#buildOn">buildOn</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.Overview.js#L59" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.LayerSwitcher.js#L40" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.Overview.js#L59" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/control/Control.LayerSwitcher.js#L40" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#buildOn" class="improvelink">[link]</a> -->
     </h4>
@@ -803,51 +729,6 @@
 <!--  -->
 
 
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>map</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Map.html">Map</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">map to build on</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 

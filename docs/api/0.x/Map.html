@@ -33,6 +33,8 @@
         <h5>Members</h5>
         <ul>
         
+            <li><a href="#_calcMatrices">_calcMatrices</a></li>
+        
             <li><a href="#options">options</a></li>
         
             <li><a href="#JSON_VERSION">JSON_VERSION</a></li>
@@ -66,6 +68,8 @@
             
                 addOnLoadHook</a></li>
         
+            
+            
             
             
             
@@ -348,11 +352,6 @@
                 getMaxZoom</a></li>
         
             
-                <li><a href="#getMaxNativeZoom">
-            
-                getMaxNativeZoom</a></li>
-        
-            
                 <li><a href="#setMaxZoom">
             
                 setMaxZoom</a></li>
@@ -366,6 +365,21 @@
                 <li><a href="#setMinZoom">
             
                 setMinZoom</a></li>
+        
+            
+                <li><a href="#getMaxNativeZoom">
+            
+                getMaxNativeZoom</a></li>
+        
+            
+                <li><a href="#getGLZoom">
+            
+                getGLZoom</a></li>
+        
+            
+                <li><a href="#getGLScale">
+            
+                getGLScale</a></li>
         
             
                 <li><a href="#zoomIn">
@@ -776,6 +790,8 @@
             <li><a href="#event:touchzoomend">touchzoomend</a></li>
         
             <li><a href="#event:pitch">pitch</a></li>
+        
+            <li><a href="#event:pitchend">pitchend</a></li>
         
             <li><a href="#event:mousedown">mousedown</a></li>
         
@@ -1264,6 +1280,8 @@
 
     <li><a href="#event:pitch">pitch</a></li>
 
+    <li><a href="#event:pitchend">pitchend</a></li>
+
     <li><a href="#event:mousedown">mousedown</a></li>
 
     <li><a href="#event:mouseup">mouseup</a></li>
@@ -1382,6 +1400,39 @@
     
         <h3 class="subsection-title">Members</h3>
 
+        
+            
+<li>
+<h4 class="name" id="_calcMatrices"><span class="type-signature"></span>_calcMatrices<span class="type-signature"></span>
+
+<!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L277" class="improvelink">[help to improve]</a>
+    
+    <a href="#_calcMatrices" class="improvelink">[link]</a></h4> -->
+</li>
+
+
+
+<div class="description">
+    GL Matrices in maptalks (based on THREE):this.cameraLookAtthis.cameraWorldMatrixthis.projMatrixthis.viewMatrix = cameraWorldMatrix.inverse()this.projViewMatrix = projMatrix * viewMatrixthis.projViewMatrixInverse = projViewMatrix.inverse()
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
         
             
 <li>
@@ -4022,11 +4073,11 @@
     <h4 class="name" id="getFov"><span class="type-signature"></span><a href="#getFov">getFov</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L22" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L24" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L22" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L24" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getFov" class="improvelink">[link]</a> -->
     </h4>
@@ -4105,11 +4156,11 @@
     <h4 class="name" id="setFov"><span class="type-signature"></span><a href="#setFov">setFov</a><span class="signature">(fov)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L34" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L36" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L34" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L36" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setFov" class="improvelink">[link]</a> -->
     </h4>
@@ -4233,11 +4284,11 @@
     <h4 class="name" id="getBearing"><span class="type-signature"></span><a href="#getBearing">getBearing</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L61" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L63" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L61" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L63" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getBearing" class="improvelink">[link]</a> -->
     </h4>
@@ -4316,11 +4367,11 @@
     <h4 class="name" id="setBearing"><span class="type-signature"></span><a href="#setBearing">setBearing</a><span class="signature">(bearing)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L73" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L75" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L73" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L75" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setBearing" class="improvelink">[link]</a> -->
     </h4>
@@ -4444,11 +4495,11 @@
     <h4 class="name" id="getPitch"><span class="type-signature"></span><a href="#getPitch">getPitch</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L100" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L122" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L100" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L122" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getPitch" class="improvelink">[link]</a> -->
     </h4>
@@ -4527,11 +4578,11 @@
     <h4 class="name" id="setPitch"><span class="type-signature"></span><a href="#setPitch">setPitch</a><span class="signature">(pitch)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L112" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L134" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L112" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L134" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setPitch" class="improvelink">[link]</a> -->
     </h4>
@@ -7139,93 +7190,14 @@
     
     <li>
     
-    <h4 class="name" id="getMaxNativeZoom"><span class="type-signature"></span><a href="#getMaxNativeZoom">getMaxNativeZoom</a><span class="signature">()</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L607" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L607" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#getMaxNativeZoom" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Maximum zoom the map has
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature">Number</span>:
-
-        
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
     <h4 class="name" id="setMaxZoom"><span class="type-signature"></span><a href="#setMaxZoom">setMaxZoom</a><span class="signature">(maxZoom)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L620" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L608" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L620" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L608" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setMaxZoom" class="improvelink">[link]</a> -->
     </h4>
@@ -7349,11 +7321,11 @@
     <h4 class="name" id="getMinZoom"><span class="type-signature"></span><a href="#getMinZoom">getMinZoom</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L636" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L624" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L636" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L624" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getMinZoom" class="improvelink">[link]</a> -->
     </h4>
@@ -7428,11 +7400,11 @@
     <h4 class="name" id="setMinZoom"><span class="type-signature"></span><a href="#setMinZoom">setMinZoom</a><span class="signature">(minZoom)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L648" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L636" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L648" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L636" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setMinZoom" class="improvelink">[link]</a> -->
     </h4>
@@ -7553,7 +7525,86 @@
     
     <li>
     
-    <h4 class="name" id="zoomIn"><span class="type-signature"></span><a href="#zoomIn">zoomIn</a><span class="signature">()</span>
+    <h4 class="name" id="getMaxNativeZoom"><span class="type-signature"></span><a href="#getMaxNativeZoom">getMaxNativeZoom</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L649" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L649" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getMaxNativeZoom" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Maximum zoom the map has
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getGLZoom"><span class="type-signature"></span><a href="#getGLZoom">getGLZoom</a><span class="signature">()</span>
     
         
             <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L661" class="improvelink">[source]</a>
@@ -7561,6 +7612,215 @@
     
     <!-- 
         <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L661" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getGLZoom" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Zoom for world point in WebGL context
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getGLScale"><span class="type-signature"></span><a href="#getGLScale">getGLScale</a><span class="signature">(zoom<span class="signature-attributes">opt</span>)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L674" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L674" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getGLScale" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Caculate scale from gl zoom to given zoom (default by current zoom)
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>zoom</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">target zoom, current zoom by default</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="zoomIn"><span class="type-signature"></span><a href="#zoomIn">zoomIn</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L685" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L685" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#zoomIn" class="improvelink">[link]</a> -->
     </h4>
@@ -7639,11 +7899,11 @@
     <h4 class="name" id="zoomOut"><span class="type-signature"></span><a href="#zoomOut">zoomOut</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L669" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L693" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L669" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L693" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#zoomOut" class="improvelink">[link]</a> -->
     </h4>
@@ -7722,11 +7982,11 @@
     <h4 class="name" id="isZooming"><span class="type-signature"></span><a href="#isZooming">isZooming</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L677" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L701" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L677" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L701" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#isZooming" class="improvelink">[link]</a> -->
     </h4>
@@ -7801,11 +8061,11 @@
     <h4 class="name" id="isInteracting"><span class="type-signature"></span><a href="#isInteracting">isInteracting</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L685" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L709" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L685" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L709" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#isInteracting" class="improvelink">[link]</a> -->
     </h4>
@@ -7880,11 +8140,11 @@
     <h4 class="name" id="setCenterAndZoom"><span class="type-signature"></span><a href="#setCenterAndZoom">setCenterAndZoom</a><span class="signature">(center, zoom)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L695" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L719" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L695" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L719" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setCenterAndZoom" class="improvelink">[link]</a> -->
     </h4>
@@ -8031,11 +8291,11 @@
     <h4 class="name" id="getFitZoom"><span class="type-signature"></span><a href="#getFitZoom">getFitZoom</a><span class="signature">(extent)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L711" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L735" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L711" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L735" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getFitZoom" class="improvelink">[link]</a> -->
     </h4>
@@ -8159,11 +8419,11 @@
     <h4 class="name" id="getView"><span class="type-signature"></span><a href="#getView">getView</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L736" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L760" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L736" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L760" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getView" class="improvelink">[link]</a> -->
     </h4>
@@ -8242,11 +8502,11 @@
     <h4 class="name" id="setView"><span class="type-signature"></span><a href="#setView">setView</a><span class="signature">(view)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L750" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L774" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L750" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L774" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setView" class="improvelink">[link]</a> -->
     </h4>
@@ -8359,11 +8619,11 @@
     <h4 class="name" id="getResolution"><span class="type-signature"></span><a href="#getResolution">getResolution</a><span class="signature">(zoom)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L774" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L798" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L774" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L798" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getResolution" class="improvelink">[link]</a> -->
     </h4>
@@ -8487,11 +8747,11 @@
     <h4 class="name" id="getScale"><span class="type-signature"></span><a href="#getScale">getScale</a><span class="signature">(zoom)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L783" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L807" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L783" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L807" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getScale" class="improvelink">[link]</a> -->
     </h4>
@@ -8615,11 +8875,11 @@
     <h4 class="name" id="fitExtent"><span class="type-signature"></span><a href="#fitExtent">fitExtent</a><span class="signature">(extent, zoomOffset)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L796" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L820" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L796" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L820" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#fitExtent" class="improvelink">[link]</a> -->
     </h4>
@@ -8766,11 +9026,11 @@
     <h4 class="name" id="getBaseLayer"><span class="type-signature"></span><a href="#getBaseLayer">getBaseLayer</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L810" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L834" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L810" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L834" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getBaseLayer" class="improvelink">[link]</a> -->
     </h4>
@@ -8845,11 +9105,11 @@
     <h4 class="name" id="setBaseLayer"><span class="type-signature"></span><a href="#setBaseLayer">setBaseLayer</a><span class="signature">(baseLayer)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L823" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L847" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L823" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L847" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setBaseLayer" class="improvelink">[link]</a> -->
     </h4>
@@ -8982,11 +9242,11 @@
     <h4 class="name" id="removeBaseLayer"><span class="type-signature"></span><a href="#removeBaseLayer">removeBaseLayer</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L892" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L916" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L892" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L916" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#removeBaseLayer" class="improvelink">[link]</a> -->
     </h4>
@@ -9070,11 +9330,11 @@
     <h4 class="name" id="getLayers"><span class="type-signature"></span><a href="#getLayers">getLayers</a><span class="signature">(filter<span class="signature-attributes">opt</span>)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L919" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L943" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L919" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L943" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getLayers" class="improvelink">[link]</a> -->
     </h4>
@@ -9207,11 +9467,11 @@
     <h4 class="name" id="getLayer"><span class="type-signature"></span><a href="#getLayer">getLayer</a><span class="signature">(id)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L936" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L960" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L936" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L960" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getLayer" class="improvelink">[link]</a> -->
     </h4>
@@ -9331,11 +9591,11 @@
     <h4 class="name" id="addLayer"><span class="type-signature"></span><a href="#addLayer">addLayer</a><span class="signature">(layer)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L957" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L981" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L957" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L981" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#addLayer" class="improvelink">[link]</a> -->
     </h4>
@@ -9467,11 +9727,11 @@
     <h4 class="name" id="removeLayer"><span class="type-signature"></span><a href="#removeLayer">removeLayer</a><span class="signature">(layer)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1007" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1032" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1007" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1032" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#removeLayer" class="improvelink">[link]</a> -->
     </h4>
@@ -9609,11 +9869,11 @@
     <h4 class="name" id="sortLayers"><span class="type-signature"></span><a href="#sortLayers">sortLayers</a><span class="signature">(layers)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1068" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1093" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1068" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1093" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#sortLayers" class="improvelink">[link]</a> -->
     </h4>
@@ -9747,11 +10007,11 @@
     <h4 class="name" id="toDataURL"><span class="type-signature"></span><a href="#toDataURL">toDataURL</a><span class="signature">(options<span class="signature-attributes">opt</span>)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1102" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1127" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1102" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1127" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#toDataURL" class="improvelink">[link]</a> -->
     </h4>
@@ -10011,11 +10271,11 @@
     <h4 class="name" id="coordinateToPoint"><span class="type-signature"></span><a href="#coordinateToPoint">coordinateToPoint</a><span class="signature">(coordinate, zoom<span class="signature-attributes">opt</span>)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1146" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1171" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1146" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1171" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#coordinateToPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -10179,11 +10439,11 @@
     <h4 class="name" id="coordToPoint"><span class="type-signature"></span><a href="#coordToPoint">coordToPoint</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1154" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1179" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1154" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1179" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#coordToPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -10251,11 +10511,11 @@
     <h4 class="name" id="pointToCoordinate"><span class="type-signature"></span><a href="#pointToCoordinate">pointToCoordinate</a><span class="signature">(point, zoom)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1167" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1192" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1167" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1192" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#pointToCoordinate" class="improvelink">[link]</a> -->
     </h4>
@@ -10409,11 +10669,11 @@
     <h4 class="name" id="pointToCoord"><span class="type-signature"></span><a href="#pointToCoord">pointToCoord</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1175" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1200" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1175" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1200" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#pointToCoord" class="improvelink">[link]</a> -->
     </h4>
@@ -10481,11 +10741,11 @@
     <h4 class="name" id="coordinateToViewPoint"><span class="type-signature"></span><a href="#coordinateToViewPoint">coordinateToViewPoint</a><span class="signature">(coordinate)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1186" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1211" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1186" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1211" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#coordinateToViewPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -10605,11 +10865,11 @@
     <h4 class="name" id="coordToViewPoint"><span class="type-signature"></span><a href="#coordToViewPoint">coordToViewPoint</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1193" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1218" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1193" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1218" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#coordToViewPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -10677,11 +10937,11 @@
     <h4 class="name" id="viewPointToCoordinate"><span class="type-signature"></span><a href="#viewPointToCoordinate">viewPointToCoordinate</a><span class="signature">(viewPoint)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1203" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1228" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1203" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1228" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#viewPointToCoordinate" class="improvelink">[link]</a> -->
     </h4>
@@ -10801,11 +11061,11 @@
     <h4 class="name" id="viewPointToCoord"><span class="type-signature"></span><a href="#viewPointToCoord">viewPointToCoord</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1210" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1235" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1210" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1235" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#viewPointToCoord" class="improvelink">[link]</a> -->
     </h4>
@@ -10873,11 +11133,11 @@
     <h4 class="name" id="coordinateToContainerPoint"><span class="type-signature"></span><a href="#coordinateToContainerPoint">coordinateToContainerPoint</a><span class="signature">(coordinate, zoom<span class="signature-attributes">opt</span>)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1221" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1246" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1221" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1246" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#coordinateToContainerPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -11030,11 +11290,11 @@
     <h4 class="name" id="coordToContainerPoint"><span class="type-signature"></span><a href="#coordToContainerPoint">coordToContainerPoint</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1229" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1254" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1229" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1254" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#coordToContainerPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -11102,11 +11362,11 @@
     <h4 class="name" id="containerPointToCoordinate"><span class="type-signature"></span><a href="#containerPointToCoordinate">containerPointToCoordinate</a><span class="signature">(containerPoint)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1238" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1263" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1238" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1263" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#containerPointToCoordinate" class="improvelink">[link]</a> -->
     </h4>
@@ -11226,11 +11486,11 @@
     <h4 class="name" id="containerPointToCoord"><span class="type-signature"></span><a href="#containerPointToCoord">containerPointToCoord</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1246" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1271" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1246" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1271" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#containerPointToCoord" class="improvelink">[link]</a> -->
     </h4>
@@ -11298,11 +11558,11 @@
     <h4 class="name" id="containerPointToViewPoint"><span class="type-signature"></span><a href="#containerPointToViewPoint">containerPointToViewPoint</a><span class="signature">(containerPoint)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1256" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1281" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1256" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1281" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#containerPointToViewPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -11422,11 +11682,11 @@
     <h4 class="name" id="viewPointToContainerPoint"><span class="type-signature"></span><a href="#viewPointToContainerPoint">viewPointToContainerPoint</a><span class="signature">(viewPoint)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1266" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1291" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1266" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1291" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#viewPointToContainerPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -11546,11 +11806,11 @@
     <h4 class="name" id="containerToExtent"><span class="type-signature"></span><a href="#containerToExtent">containerToExtent</a><span class="signature">(containerExtent)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1275" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1300" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1275" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1300" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#containerToExtent" class="improvelink">[link]</a> -->
     </h4>
@@ -11674,11 +11934,11 @@
     <h4 class="name" id="checkSize"><span class="type-signature"></span><a href="#checkSize">checkSize</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1288" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1313" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1288" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1313" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#checkSize" class="improvelink">[link]</a> -->
     </h4>
@@ -11762,11 +12022,11 @@
     <h4 class="name" id="distanceToPixel"><span class="type-signature"></span><a href="#distanceToPixel">distanceToPixel</a><span class="signature">(xDist, yDist)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1330" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1355" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1330" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1355" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#distanceToPixel" class="improvelink">[link]</a> -->
     </h4>
@@ -11913,11 +12173,11 @@
     <h4 class="name" id="pixelToDistance"><span class="type-signature"></span><a href="#pixelToDistance">pixelToDistance</a><span class="signature">(width, height)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1351" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1376" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1351" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1376" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#pixelToDistance" class="improvelink">[link]</a> -->
     </h4>
@@ -12064,11 +12324,11 @@
     <h4 class="name" id="locate"><span class="type-signature"></span><a href="#locate">locate</a><span class="signature">(coordinate, dx, dy)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1370" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1395" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1370" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1395" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#locate" class="improvelink">[link]</a> -->
     </h4>
@@ -12238,11 +12498,11 @@
     <h4 class="name" id="locateByPoint"><span class="type-signature"></span><a href="#locateByPoint">locateByPoint</a><span class="signature">(coordinate, px, py)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1381" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1406" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1381" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1406" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#locateByPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -12412,11 +12672,11 @@
     <h4 class="name" id="getMainPanel"><span class="type-signature"></span><a href="#getMainPanel">getMainPanel</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1390" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1415" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1390" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1415" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getMainPanel" class="improvelink">[link]</a> -->
     </h4>
@@ -12491,11 +12751,11 @@
     <h4 class="name" id="getPanels"><span class="type-signature"></span><a href="#getPanels">getPanels</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1398" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1423" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1398" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1423" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getPanels" class="improvelink">[link]</a> -->
     </h4>
@@ -12570,11 +12830,11 @@
     <h4 class="name" id="remove"><span class="type-signature"></span><a href="#remove">remove</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1406" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1431" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1406" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1431" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#remove" class="improvelink">[link]</a> -->
     </h4>
@@ -12653,11 +12913,11 @@
     <h4 class="name" id="isRemoved"><span class="type-signature"></span><a href="#isRemoved">isRemoved</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1434" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1459" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1434" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1459" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#isRemoved" class="improvelink">[link]</a> -->
     </h4>
@@ -12732,11 +12992,11 @@
     <h4 class="name" id="isMoving"><span class="type-signature"></span><a href="#isMoving">isMoving</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1442" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1467" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1442" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1467" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#isMoving" class="improvelink">[link]</a> -->
     </h4>
@@ -12811,11 +13071,11 @@
     <h4 class="name" id="_pointToExtent"><span class="type-signature">(protected) </span><a href="#_pointToExtent">_pointToExtent</a><span class="signature">(extent2D)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1650" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1675" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1650" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1675" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#_pointToExtent" class="improvelink">[link]</a> -->
     </h4>
@@ -12939,11 +13199,11 @@
     <h4 class="name" id="offsetPlatform"><span class="type-signature"></span><a href="#offsetPlatform">offsetPlatform</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1905" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1930" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1905" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1930" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#offsetPlatform" class="improvelink">[link]</a> -->
     </h4>
@@ -13018,11 +13278,11 @@
     <h4 class="name" id="getViewPoint"><span class="type-signature"></span><a href="#getViewPoint">getViewPoint</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1920" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1945" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1920" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1945" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getViewPoint" class="improvelink">[link]</a> -->
     </h4>
@@ -15383,11 +15643,11 @@
     <h4 class="name" id="addEventListener"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#addEventListener">addEventListener</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L61" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L64" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L61" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L64" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#addEventListener" class="improvelink">[link]</a> -->
     </h4>
@@ -15595,11 +15855,11 @@
     <h4 class="name" id="once"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#once">once</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L74" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L77" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L74" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L77" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#once" class="improvelink">[link]</a> -->
     </h4>
@@ -15814,11 +16074,11 @@
     <h4 class="name" id="off"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#off">off</a><span class="signature">(eventsOff, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L102" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L105" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L102" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L105" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#off" class="improvelink">[link]</a> -->
     </h4>
@@ -16033,11 +16293,11 @@
     <h4 class="name" id="removeEventListener"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#removeEventListener">removeEventListener</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L143" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L149" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L143" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L149" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#removeEventListener" class="improvelink">[link]</a> -->
     </h4>
@@ -16245,11 +16505,11 @@
     <h4 class="name" id="listens"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#listens">listens</a><span class="signature">(eventType, hanlder<span class="signature-attributes">opt</span>, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L156" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L162" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L156" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L162" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#listens" class="improvelink">[link]</a> -->
     </h4>
@@ -16457,11 +16717,11 @@
     <h4 class="name" id="copyEventListeners"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#copyEventListeners">copyEventListeners</a><span class="signature">(target)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L187" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L193" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L187" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L193" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#copyEventListeners" class="improvelink">[link]</a> -->
     </h4>
@@ -16593,11 +16853,11 @@
     <h4 class="name" id="fire"><span class="type-signature"></span><i><span class="type-signature"> (mixin)  </span><a href="#fire">fire</a><span class="signature">(eventType, param)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L208" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L214" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L208" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L214" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#fire" class="improvelink">[link]</a> -->
     </h4>
@@ -18751,11 +19011,11 @@
     <h4 class="name" id="event:pitch"><a href="#event:pitch">pitch</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L122" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L154" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L122" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L154" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:pitch" class="improvelink">[link]</a> -->
     </h4>
@@ -18769,7 +19029,7 @@
 
 
 <div class="description">
-    pitch event
+    pitch event, alias of pitchend
 </div>
 
 
@@ -18963,7 +19223,261 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js">map/Map.Camera.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L122">line 122</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js">map/Map.Camera.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L154">line 154</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:pitchend"><a href="#event:pitchend">pitchend</a>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L164" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L164" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:pitchend" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    pitchend event
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">pitchend</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Map.html">Map</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">the map fires event</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">pitchend from</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>to</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">pitchend to</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js">map/Map.Camera.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.Camera.js#L164">line 164</a>
         
 
     </li></ul></dd>
@@ -24127,11 +24641,11 @@
     <h4 class="name" id="event:baselayerchangestart"><a href="#event:baselayerchangestart">baselayerchangestart</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L827" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L851" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L827" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L851" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:baselayerchangestart" class="improvelink">[link]</a> -->
     </h4>
@@ -24289,7 +24803,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L827">line 827</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L851">line 851</a>
         
 
     </li></ul></dd>
@@ -24331,11 +24845,11 @@
     <h4 class="name" id="event:baselayerchangeend"><a href="#event:baselayerchangeend">baselayerchangeend</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L840" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L864" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L840" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L864" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:baselayerchangeend" class="improvelink">[link]</a> -->
     </h4>
@@ -24493,7 +25007,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L840">line 840</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L864">line 864</a>
         
 
     </li></ul></dd>
@@ -24535,11 +25049,11 @@
     <h4 class="name" id="event:setbaselayer"><a href="#event:setbaselayer">setbaselayer</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L849" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L873" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L849" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L873" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:setbaselayer" class="improvelink">[link]</a> -->
     </h4>
@@ -24697,7 +25211,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L849">line 849</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L873">line 873</a>
         
 
     </li></ul></dd>
@@ -24739,11 +25253,11 @@
     <h4 class="name" id="event:baselayerload"><a href="#event:baselayerload">baselayerload</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L865" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L889" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L865" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L889" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:baselayerload" class="improvelink">[link]</a> -->
     </h4>
@@ -24901,7 +25415,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L865">line 865</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L889">line 889</a>
         
 
     </li></ul></dd>
@@ -24943,11 +25457,11 @@
     <h4 class="name" id="event:baselayerremove"><a href="#event:baselayerremove">baselayerremove</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L896" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L920" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L896" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L920" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:baselayerremove" class="improvelink">[link]</a> -->
     </h4>
@@ -25105,7 +25619,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L896">line 896</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L920">line 920</a>
         
 
     </li></ul></dd>
@@ -25147,11 +25661,11 @@
     <h4 class="name" id="event:addlayer"><a href="#event:addlayer">addlayer</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L986" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1011" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L986" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1011" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:addlayer" class="improvelink">[link]</a> -->
     </h4>
@@ -25334,7 +25848,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L986">line 986</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1011">line 1011</a>
         
 
     </li></ul></dd>
@@ -25376,11 +25890,11 @@
     <h4 class="name" id="event:removelayer"><a href="#event:removelayer">removelayer</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1044" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1069" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1044" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1069" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:removelayer" class="improvelink">[link]</a> -->
     </h4>
@@ -25563,7 +26077,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1044">line 1044</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1069">line 1069</a>
         
 
     </li></ul></dd>
@@ -25605,11 +26119,11 @@
     <h4 class="name" id="event:resize"><a href="#event:resize">resize</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1310" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1335" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1310" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1335" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:resize" class="improvelink">[link]</a> -->
     </h4>
@@ -25767,7 +26281,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1310">line 1310</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1335">line 1335</a>
         
 
     </li></ul></dd>
@@ -25809,11 +26323,11 @@
     <h4 class="name" id="event:movestart"><a href="#event:movestart">movestart</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1455" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1480" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1455" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1480" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:movestart" class="improvelink">[link]</a> -->
     </h4>
@@ -26071,7 +26585,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1455">line 1455</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1480">line 1480</a>
         
 
     </li></ul></dd>
@@ -26113,11 +26627,11 @@
     <h4 class="name" id="event:moving"><a href="#event:moving">moving</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1470" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1495" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1470" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1495" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:moving" class="improvelink">[link]</a> -->
     </h4>
@@ -26375,7 +26889,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1470">line 1470</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1495">line 1495</a>
         
 
     </li></ul></dd>
@@ -26417,11 +26931,11 @@
     <h4 class="name" id="event:moveend"><a href="#event:moveend">moveend</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1487" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1512" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1487" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1512" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:moveend" class="improvelink">[link]</a> -->
     </h4>
@@ -26679,7 +27193,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1487">line 1487</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1512">line 1512</a>
         
 
     </li></ul></dd>
@@ -26721,11 +27235,11 @@
     <h4 class="name" id="event:dragrotatestart"><a href="#event:dragrotatestart">dragrotatestart</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1510" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1535" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1510" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1535" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:dragrotatestart" class="improvelink">[link]</a> -->
     </h4>
@@ -26983,7 +27497,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1510">line 1510</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1535">line 1535</a>
         
 
     </li></ul></dd>
@@ -27025,11 +27539,11 @@
     <h4 class="name" id="event:dragrotating"><a href="#event:dragrotating">dragrotating</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1525" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1550" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1525" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1550" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:dragrotating" class="improvelink">[link]</a> -->
     </h4>
@@ -27287,7 +27801,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1525">line 1525</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1550">line 1550</a>
         
 
     </li></ul></dd>
@@ -27329,11 +27843,11 @@
     <h4 class="name" id="event:dragrotateend"><a href="#event:dragrotateend">dragrotateend</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1541" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1566" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1541" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1566" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:dragrotateend" class="improvelink">[link]</a> -->
     </h4>
@@ -27591,7 +28105,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1541">line 1541</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js">map/Map.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/Map.js#L1566">line 1566</a>
         
 
     </li></ul></dd>
@@ -29109,13 +29623,13 @@
 </div>
 
 <nav class="page-nav">
-    <h2><a href="index.html">V0.34.0</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="Circle.html">Circle</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="Curve.html">Curve</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="Label.html">Label</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Marker.html">Marker</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPath.html">MultiPath</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="Path.html">Path</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="TextMarker.html">TextMarker</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="AreaTool.html">AreaTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="MapTool.html">MapTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.Menu.html">ui.Menu</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li></ul><h5>Control</h5><ul><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Overview.html">control.Overview</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Zoom.html">control.Zoom</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="DragHandler.html">DragHandler</a></li><li><a href="Handler.html">Handler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li><li><a href="renderer.TileLayerCanvasRenderer.html">renderer.TileLayerCanvasRenderer</a></li><li><a href="renderer.TileLayerDomRenderer.html">renderer.TileLayerDomRenderer</a></li><li><a href="renderer.TileLayerGLRenderer.html">renderer.TileLayerGLRenderer</a></li><li><a href="renderer.MapCanvasRenderer.html">renderer.MapCanvasRenderer</a></li><li><a href="renderer.MapRenderer.html">renderer.MapRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="ui.html">ui</a></li><li><a href="control.html">control</a></li><li><a href="renderer.html">renderer</a></li><li><a href="animation.html">animation</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li></ul>
+    <h2><a href="index.html">V0.35.0</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="Circle.html">Circle</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="Curve.html">Curve</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="Label.html">Label</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Marker.html">Marker</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPath.html">MultiPath</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="Path.html">Path</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="TextMarker.html">TextMarker</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="AreaTool.html">AreaTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="MapTool.html">MapTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.Menu.html">ui.Menu</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li></ul><h5>Control</h5><ul><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Control.html">control.Control</a></li><li><a href="control.LayerSwitcher.html">control.LayerSwitcher</a></li><li><a href="control.Overview.html">control.Overview</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Zoom.html">control.Zoom</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="DragHandler.html">DragHandler</a></li><li><a href="Handler.html">Handler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li><li><a href="renderer.TileLayerCanvasRenderer.html">renderer.TileLayerCanvasRenderer</a></li><li><a href="renderer.TileLayerDomRenderer.html">renderer.TileLayerDomRenderer</a></li><li><a href="renderer.TileLayerGLRenderer.html">renderer.TileLayerGLRenderer</a></li><li><a href="renderer.MapCanvasRenderer.html">renderer.MapCanvasRenderer</a></li><li><a href="renderer.MapRenderer.html">renderer.MapRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="ui.html">ui</a></li><li><a href="control.html">control</a></li><li><a href="renderer.html">renderer</a></li><li><a href="animation.html">animation</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li><li><a href="global.html#subtract">subtract</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#normalize">normalize</a></li><li><a href="global.html#cross">cross</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Fri Nov 10 2017 11:50:28 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Sat Nov 25 2017 19:29:23 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>
