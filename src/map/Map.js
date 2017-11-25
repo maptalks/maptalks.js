@@ -983,7 +983,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         if (!Array.isArray(layers)) {
-            return this.addLayer([layers]);
+            layers = Array.prototype.slice.call(arguments, 0);
+            return this.addLayer(layers);
         }
         if (!this._layerCache) {
             this._layerCache = {};
