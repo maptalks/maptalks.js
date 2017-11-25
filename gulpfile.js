@@ -166,22 +166,22 @@ gulp.task('editdoc', ['doc'], () => {
 });
 
 gulp.task('beforeZip', () => {
-    gulp.src(['LICENSE', 'ACKNOWLEDGEMENT'])
+    gulp.src(['LICENSE', 'ACKNOWLEDGEMENT', 'docs/**/*'])
     .pipe(gulp.dest('dist'))
 });
 
 gulp.task('zip', ['beforeZip'], done => {
-    gulp.src(['dist/*.js', 'dist/images/**/*', 'dist/maptalks.css', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT'], { base: 'dist/' })
+    gulp.src(['dist/*.js', 'dist/images/**/*', 'dist/maptalks.css', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT', 'dist/api/**/*'], { base: 'dist/' })
         .pipe(zip('maptalks-' + package.version + '.zip'))
         .pipe(gulp.dest('dist'));
     setTimeout(function () {
         del([
-            'dist/LICENSE', 'dist/ACKNOWLEDGEMENT'
+            'dist/api/**/*', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT'
         ], {
             force : true
         });
         done();
-    }, 500);
+    }, 2000);
 });
 
 gulp.task('default', ['connect']);
