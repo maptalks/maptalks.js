@@ -5,9 +5,10 @@
  */
 
  /**
-  * @class Record
+  * 每个glProgram对应一个Recoder对象
+  * @class Recorder
   */
- class Record{
+ class Recorder{
     /**
      * 
      * @param {Oject} [options]
@@ -84,4 +85,4 @@
 
  }
 
- module.exports= Record;
+ module.exports= Recorder;

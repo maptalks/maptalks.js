@@ -3,7 +3,7 @@
  */
 
 const merge = require('./../utils/merge'),
-    Ticker = require('./Ticker');
+    Ticker = require('./../tick/Ticker');
 /**
 * 与program相关的操作
 */

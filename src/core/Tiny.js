@@ -2,19 +2,15 @@
  * Tiny的作用与策略，详情请参见：
  * https://github.com/axmand/fusion.gl/wiki/Tiny
  * 
- * -
- * -
- * -
- * 
  */
 const stamp = require('./../utils/stamp').stamp,
     isArray = require('./../utils/isArray'),
     ticker = require('./handle').ticker,
+    Recorder = require('./Recorder'),
     INTERNAL_ENUM = require('./handle').INTERNAL_ENUM,
     OVERRAL_ENUM = require('./handle').OVERRAL_ENUM,
-    TICKER_ENUM = require('./handle').TICKER_ENUM;
-
-const GLPROGRAMS = require('./../utils/util').GLPROGRAMS,
+    TICKER_ENUM = require('./handle').TICKER_ENUM,
+    GLPROGRAMS = require('./../utils/util').GLPROGRAMS,
     GLSHADERS = require('./../utils/util').GLSHADERS,
     GLTEXTURES = require('./../utils/util').GLTEXTURES;
 /**
@@ -50,6 +46,8 @@ class Tiny {
          * @type {GLProgram}
          */
         this._glPrgram = null;
+        //存储tiny实例
+        Tiny.instances.push(this);
     }
     /**
      * indicate wether it's need to be updated
@@ -69,6 +67,7 @@ class Tiny {
         this._glPrgram = glProgram;
         const id = stamp(glProgram),
             tinyProgramCache = this._tinyProgramCache;
+        //切换program
         if (!tinyProgramCache[id])
             tinyProgramCache[id] = [];
         this._programInternal = tinyProgramCache[id];
@@ -133,5 +132,10 @@ class Tiny {
     }
 
 }
+/**
+ * tiny实例集
+ */
+Tiny.instances = [];
+
 
 module.exports = Tiny;
