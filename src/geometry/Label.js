@@ -140,8 +140,7 @@ class Label extends TextMarker {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'Label',
-            'content': this._content,
-            'textSymbol' : this.getTextSymbol()
+            'content': this._content
         };
     }
 
@@ -188,7 +187,9 @@ class Label extends TextMarker {
                 symbol['markerDy'] += textSize['height'] / 2;
             }
         }
+        this._refreshing = true;
         this.updateSymbol(symbol);
+        delete this._refreshing;
     }
 
     _getBoxSize(symbol) {

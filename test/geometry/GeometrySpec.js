@@ -289,6 +289,9 @@ function registerGeometryCommonTest(geometry, _context) {
         it('getExternalResources', function () {
             var symbol, resource;
             var type = geometry.getType();
+            if (geometry instanceof maptalks.TextMarker) {
+                return;
+            }
             if (type === 'Point') {
                 symbol = {
                     'markerFile':'http://foo.com/foo.png'

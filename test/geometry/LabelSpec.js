@@ -112,6 +112,44 @@ describe('Geometry.Label', function () {
             //symbol's textName will be set.
             expect(vector.getSymbol()['textName']).not.to.be.empty();
         });
+
+        it('textSymbol and boxStyle by setSymbol', function () {
+            var label = '中文标签';
+            var vector = new maptalks.Label(label, center);
+            //null symbol is allowed, means set to default symbol.
+            expect(vector.getSymbol()).to.be.ok();
+            layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            layer.addGeometry(vector);
+            var labelSymbol = {
+                'textFaceName': 'arial',
+                'textSize': 12,
+                // 'textFill': '#ff0000',
+                'textOpacity': 1,
+                'textSpacing': 30,
+                'textWrapWidth': null, //auto
+                'textWrapBefore': false,
+                'textWrapCharacter': '\n',
+                'textLineSpacing': 8,
+                'textHorizontalAlignment': 'middle', //left middle right
+                'textVerticalAlignment': 'top'//top middle bottom
+            };
+            var boxStyle = {
+                'markerType': 'square',
+                'markerLineColor': '#00f',
+                'markerLineWidth': 3,
+                'markerLineOpacity': 2,
+                'markerFill': '#f00',
+                'markerOpacity': 0.5
+            };
+            vector.setSymbol(maptalks.Util.extend({}, labelSymbol, boxStyle));
+            expect(vector.getTextSymbol()).to.be.eql(labelSymbol);
+            expect(vector.getBoxStyle()).to.be.eql(boxStyle);
+
+            var json = vector.toJSON();
+            expect(json.options.textSymbol).to.be.eql(labelSymbol);
+            expect(json.options.boxStyle).to.be.eql(boxStyle);
+        });
     });
 
 
@@ -268,7 +306,8 @@ describe('Geometry.Label', function () {
                     'markerDy' : 0,
                     'textDx' : 0,
                     'textDy' : 0,
-                    'textHorizontalAlignment' : 'left'
+                    'textHorizontalAlignment' : 'left',
+                    'textVerticalAlignment' : 'top'
                 }
             });
             layer = new maptalks.VectorLayer('id');
@@ -277,8 +316,8 @@ describe('Geometry.Label', function () {
             vector.startEditText();
             expect(vector.isEditingText()).to.be.ok();
             var editor = vector.getTextEditor();
-            expect(editor.options['dx']).to.be(-2);
-            expect(editor.options['dy']).to.be(-2);
+            expect(Math.round(editor.options['dx'])).to.below(-10);
+            expect(editor.options['dy'] <= 9).to.be.ok();
             vector.endEditText();
             expect(vector.isEditingText()).not.to.be.ok();
         });
@@ -300,7 +339,7 @@ describe('Geometry.Label', function () {
             vector.startEditText();
             expect(vector.isEditingText()).to.be.ok();
             var editor = vector.getTextEditor();
-            expect(editor.options['dx']).to.be(-2);
+            expect(Math.round(editor.options['dx'])).to.above(5);
             expect(editor.options['dy']).to.be(-2);
             vector.endEditText();
             expect(vector.isEditingText()).not.to.be.ok();

@@ -225,8 +225,9 @@ class TextBox extends TextMarker {
             symbol['textVerticalAlignment'] = 'top';
             symbol['textDy'] += offsetY;
         }
-
+        this._refreshing = true;
         this.updateSymbol(symbol);
+        delete this._refreshing;
     }
 }
 

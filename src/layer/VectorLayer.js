@@ -1,5 +1,5 @@
 import Browser from 'core/Browser';
-import { extend, isNil } from 'core/util';
+import { isNil } from 'core/util';
 import { getFilterFeature, compileStyle } from 'core/mapbox';
 import Extent from 'geo/Extent';
 import Geometry from 'geometry/Geometry';
@@ -197,16 +197,13 @@ class VectorLayer extends OverlayLayer {
             }
             const geoJSONs = [];
             const geometries = this.getGeometries();
-            let geoExt, json;
             for (let i = 0, len = geometries.length; i < len; i++) {
-                geoExt = geometries[i].getExtent();
+                const geo = geometries[i];
+                const geoExt = geo.getExtent();
                 if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
                     continue;
                 }
-                json = geometries[i].toJSON(options['geometries']);
-                if (json['symbol'] && this.getStyle()) {
-                    json['symbol'] = geometries[i]._symbolBeforeStyle ? extend({}, geometries[i]._symbolBeforeStyle) : null;
-                }
+                const json = geo.toJSON(options['geometries']);
                 geoJSONs.push(json);
             }
             profile['geometries'] = geoJSONs;

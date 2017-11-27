@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend, hasOwn } from 'core/util';
 import { splitTextToRow, escapeSpecialChars } from 'core/util/strings';
 import Marker from './Marker';
 
@@ -65,6 +65,37 @@ class TextMarker extends Marker {
 
     onAdd() {
         this._refresh();
+    }
+
+    toJSON() {
+        const json = super.toJSON();
+        delete json['symbol'];
+        return json;
+    }
+
+    setSymbol(symbol) {
+        if (this._refreshing || !symbol) {
+            return super.setSymbol(symbol);
+        }
+        const s = this._parseSymbol(symbol);
+        (this.setTextSymbol || this.setTextStyle).call(this, s[0]);
+        (this.setBoxSymbol || this.setBoxStyle).call(this, s[1]);
+        return this;
+    }
+
+    _parseSymbol(symbol) {
+        const t = {};
+        const b = {};
+        for (const p in symbol) {
+            if (hasOwn(symbol, p)) {
+                if (p.indexOf('text') === 0) {
+                    t[p] = symbol[p];
+                } else {
+                    b[p] = symbol[p];
+                }
+            }
+        }
+        return [t, b];
     }
 
     _getTextSize(symbol) {
