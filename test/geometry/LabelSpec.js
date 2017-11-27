@@ -144,11 +144,11 @@ describe('Geometry.Label', function () {
             };
             vector.setSymbol(maptalks.Util.extend({}, labelSymbol, boxStyle));
             expect(vector.getTextSymbol()).to.be.eql(labelSymbol);
-            expect(vector.getBoxStyle()).to.be.eql(boxStyle);
+            expect(vector.getBoxStyle().symbol).to.be.eql(boxStyle);
 
             var json = vector.toJSON();
             expect(json.options.textSymbol).to.be.eql(labelSymbol);
-            expect(json.options.boxStyle).to.be.eql(boxStyle);
+            expect(json.options.boxStyle.symbol).to.be.eql(boxStyle);
         });
     });
 

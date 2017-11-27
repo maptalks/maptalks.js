@@ -137,11 +137,11 @@ describe('Geometry.TextBox', function () {
                 'markerOpacity': 0.5
             };
             vector.setSymbol(maptalks.Util.extend({}, textStyle, boxSymbol));
-            expect(vector.getTextStyle()).to.be.eql(textStyle);
+            expect(vector.getTextStyle().symbol).to.be.eql(textStyle);
             expect(vector.getBoxSymbol()).to.be.eql(boxSymbol);
 
             var json = vector.toJSON();
-            expect(json.options.textStyle).to.be.eql(textStyle);
+            expect(json.options.textStyle.symbol).to.be.eql(textStyle);
             expect(json.options.boxSymbol).to.be.eql(boxSymbol);
         });
     });

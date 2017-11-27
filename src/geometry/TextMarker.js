@@ -78,8 +78,20 @@ class TextMarker extends Marker {
             return super.setSymbol(symbol);
         }
         const s = this._parseSymbol(symbol);
-        (this.setTextSymbol || this.setTextStyle).call(this, s[0]);
-        (this.setBoxSymbol || this.setBoxStyle).call(this, s[1]);
+        if (this.setTextStyle) {
+            const style = this.getTextStyle() || {};
+            style.symbol = s[0];
+            this.setTextStyle(style);
+        } else if (this.setTextSymbol) {
+            this.setTextSymbol(s[0]);
+        }
+        if (this.setBoxStyle) {
+            const style = this.getBoxStyle() || {};
+            style.symbol = s[1];
+            this.setBoxStyle(style);
+        } else if (this.setBoxSymbol) {
+            this.setBoxSymbol(s[1]);
+        }
         return this;
     }
 
