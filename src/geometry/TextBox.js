@@ -169,6 +169,9 @@ class TextBox extends TextMarker {
         const textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['width'], json['height'], json['options']);
         textBox.setProperties(feature['properties']);
         textBox.setId(feature['id']);
+        if (json['symbol']) {
+            textBox.setSymbol(json['symbol']);
+        }
         return textBox;
     }
 

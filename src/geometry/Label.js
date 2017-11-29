@@ -129,6 +129,9 @@ class Label extends TextMarker {
         const label = new Label(json['content'], feature['geometry']['coordinates'], json['options']);
         label.setProperties(feature['properties']);
         label.setId(feature['id']);
+        if (json['symbol']) {
+            label.setSymbol(json['symbol']);
+        }
         return label;
     }
 
