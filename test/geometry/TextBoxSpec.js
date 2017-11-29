@@ -308,4 +308,11 @@ describe('Geometry.TextBox', function () {
         map.addLayer(layer);
 
     });
+
+    it('JSON of previous version\'s TextBox', function () {
+        var json = {"content":"岭南站/SM/A","feature":{"geometry":{"coordinates":[113.120816,23.033914],"type":"Point"},"id":"NWP_LABEL_3","type":"Feature"},"options":{"boxAutoSize":true,"boxMinHeight":30,"boxMinWidth":100,"boxPadding":{"height":8,"width":15},"draggable":true,"visible":true,"zIndex":1},"subType":"TextBox","symbol":{"markerFill":"#ffffff","markerFillOpacity":1,"markerHeight":40,"markerLineColor":"#cccccc","markerLineOpacity":0.8,"markerLineWidth":1,"markerOpacity":0.8,"markerType":"square","markerWidth":140,"opacity":1,"textDx":0,"textDy":0,"textFaceName":"microsoft yahei","textFill":"#000000","textHorizontalAlignment":"middle","textLineSpacing":1,"textName":"岭南站/SM/A","textOpacity":0.8,"textSize":18,"textSpacing":0,"textVerticalAlignment":"middle","textWrapBefore":false,"textWrapCharacter":"\n"}};
+        var textBox = maptalks.Geometry.fromJSON(json);
+        expect(textBox instanceof maptalks.TextBox).to.be.ok();
+        expect(maptalks.Util.extend({}, textBox.getTextStyle().symbol, textBox.getBoxSymbol())).to.be.eql(json.symbol);
+    });
 });
