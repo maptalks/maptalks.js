@@ -2,6 +2,7 @@
 
 export { ResourceCache } from './layer/CanvasRenderer';
 export { default as CanvasRenderer } from './layer/CanvasRenderer';
+export { default as ImageGLRenderable } from './layer/ImageGLRenderable';
 
 export * from './layer/tilelayer';
 export * from './layer/vectorlayer';
