@@ -32,6 +32,14 @@ class CRS {
             'proj': proj
         });
     }
+
+    static fromProjectionCode(code) {
+        if (!code) {
+            return null;
+        }
+        code = code.toUpperCase().replace(':', '');
+        return CRS[code] || null;
+    }
 }
 
 // some common CRS definitions
