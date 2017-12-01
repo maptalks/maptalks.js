@@ -156,6 +156,9 @@ class LayerSwitcher extends Control {
                     const baseLayer = baseLayers[i];
                     baseLayer[baseLayer === layer ? 'show' : 'hide']();
                 }
+                if (map.overviewControl) {
+                    map.fire('setbaselayer');
+                }
             } else {
                 layer[e.target.checked ? 'show' : 'hide']();
             }
