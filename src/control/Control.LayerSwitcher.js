@@ -156,7 +156,7 @@ class LayerSwitcher extends Control {
                     const baseLayer = baseLayers[i];
                     baseLayer[baseLayer === layer ? 'show' : 'hide']();
                 }
-                map.fire('setbaselayer');
+                map._fireEvent('setbaselayer');
             } else {
                 layer[e.target.checked ? 'show' : 'hide']();
             }
