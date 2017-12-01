@@ -27,7 +27,7 @@ describe('SpatialReference.Update', function () {
                 projection : 'baidu'
             });
             var tiles = tileLayer.getTiles();
-            expect(tiles.anchor.toArray()).to.be.eql([-1252344, -1252344]);
+            expect(tiles.anchor.toArray()).to.be.eql([1, -255]);
             expect(tiles.anchor.zoom).to.be.eql(14);
             done();
         });
