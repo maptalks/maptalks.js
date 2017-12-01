@@ -80,7 +80,6 @@ class Overview extends Control {
         }
         this.getMap().on('resize moving dragrotating viewchange', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this)
-            .on('baselayerchange', this._updateBaseLayer, this)
             .on('spatialreferencechange', this._updateSpatialReference, this);
         on(this.button, 'click', this._onButtonClick, this);
         this._updateButtonText();
@@ -90,7 +89,6 @@ class Overview extends Control {
         this.getMap()
             .off('resize moving dragrotating viewchange', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this)
-            .off('baselayerchange', this._updateBaseLayer, this)
             .off('spatialreferencechange', this._updateSpatialReference, this);
         if (this._overview) {
             this._overview.remove();
