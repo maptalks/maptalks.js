@@ -140,7 +140,7 @@ describe('GroupTileLayer', function () {
         });
         map.addLayer(layer);
     });
-    
+
     it('zoom isVisible', function (done) {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
@@ -159,5 +159,29 @@ describe('GroupTileLayer', function () {
             });
         });
         map.addLayer(group);
+    });
+
+    it('update child layer tile config if map\'s spatial reference changed', function () {
+        var group = new maptalks.GroupTileLayer('group', [
+            new maptalks.TileLayer('tile1', {
+                maxZoom : 17,
+                urlTemplate : '/resources/tile.png'
+            }),
+            new maptalks.TileLayer('tile2', {
+                urlTemplate : '/resources/tile.png'
+            })
+        ], {
+            renderer : 'canvas'
+        });
+
+        map.setBaseLayer(group);
+
+        expect(group._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['web-mercator']);
+
+        map.setSpatialReference({
+            projection : 'baidu'
+        });
+
+        expect(group._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['baidu']);
     });
 });

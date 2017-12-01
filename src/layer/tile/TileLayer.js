@@ -339,6 +339,17 @@ class TileLayer extends Layer {
         // add some buffer
         return extent.intersects(tileExtent);
     }
+
+    getEvents() {
+        return {
+            'spatialreferencechange' : this._onSpatialReferenceChange
+        };
+    }
+
+    _onSpatialReferenceChange() {
+        delete this._tileConfig;
+        delete this._defaultTileConfig;
+    }
 }
 
 TileLayer.registerJSONType('TileLayer');
