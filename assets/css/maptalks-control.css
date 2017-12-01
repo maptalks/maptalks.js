@@ -131,7 +131,7 @@
   overflow-x: hidden;
   min-width: 120px;
   max-width: 400px;
-  max-height: 600px;
+  max-height: 500px;
 }
 .maptalks-layer-switcher li {
   white-space:nowrap;
