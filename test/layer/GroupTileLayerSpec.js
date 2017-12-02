@@ -162,14 +162,12 @@ describe('GroupTileLayer', function () {
     });
 
     it('update child layer tile config if map\'s spatial reference changed', function () {
+        var t1 = new maptalks.TileLayer('tile1', {
+            maxZoom : 17,
+            urlTemplate : '/resources/tile.png'
+        });
         var group = new maptalks.GroupTileLayer('group', [
-            new maptalks.TileLayer('tile1', {
-                maxZoom : 17,
-                urlTemplate : '/resources/tile.png'
-            }),
-            new maptalks.TileLayer('tile2', {
-                urlTemplate : '/resources/tile.png'
-            })
+            t1
         ], {
             renderer : 'canvas'
         });
@@ -177,11 +175,13 @@ describe('GroupTileLayer', function () {
         map.setBaseLayer(group);
 
         expect(group._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['web-mercator']);
+        expect(t1._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['web-mercator']);
 
         map.setSpatialReference({
             projection : 'baidu'
         });
 
         expect(group._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['baidu']);
+        expect(t1._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['baidu']);
     });
 });
