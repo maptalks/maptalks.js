@@ -1328,6 +1328,7 @@ var _OVERRAL_ENUM;
 
 /**
  * 操作分类
+ * @author yellow date 2017/9/4
  */
 
 /**
@@ -1431,6 +1432,118 @@ var handle = {
 };
 
 /**
+ * 状态记录器
+ * @author yellow date 2017/11/10
+ * @description 提供状态的搜集，上一状态存储，下一状态应用
+ */
+
+/**
+ * 每个glProgram对应一个Recoder对象
+ * @class Recorder
+ */
+var Recorder = function () {
+  /**
+   * 
+   * @param {Oject} [options]
+   * @param {boolean} [options.forceUpdate] 指定是否record强制应用本次应用 
+   */
+  function Recorder() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    classCallCheck(this, Recorder);
+
+    /**
+     * @type {boolean}
+     */
+    var forceUpdate = options.forceUpdate;
+    /**
+     * 
+     */
+
+    this._lastQueue = [];
+    /**
+     * 操作集
+     * @param {Array} _queue
+     */
+    this._queue = [];
+  }
+  /**
+   * 深拷贝数组对象，防止原应用处理数组引用导致应用时数值错误
+   * @private
+   * @param {Array} rest 
+   */
+
+
+  createClass(Recorder, [{
+    key: "_exact",
+    value: function _exact(rest) {
+      for (var i = 0, len = rest.length; i < len; i++) {
+        var target = rest[i];
+        if (target instanceof Float32Array) {
+          rest[i] = new Float32Array(target);
+        }
+      }
+      return rest;
+    }
+    /**
+     * 组织执行操作的队列
+     * @method increase
+     * @param {String} name 
+     * @param {Array} rest 
+     */
+
+  }, {
+    key: "increase",
+    value: function increase(name) {
+      for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        rest[_key - 1] = arguments[_key];
+      }
+
+      this._queue.push({
+        name: name,
+        rest: this._exact(rest)
+      });
+    }
+    /**
+     * 
+     * @param {GLProgram} glProgram 
+     */
+
+  }, {
+    key: "apply",
+    value: function apply(glProgram) {
+      //1.deep copy the target operation queue
+      var _queue$reverse = this._queue.reverse(),
+          _queue$reverse2 = toArray(_queue$reverse),
+          cp = _queue$reverse2.slice(0);
+
+      this._lastQueue = cp;
+      //2.清理queue
+      this._queue = [];
+      //3.应用
+      this.reapply(glProgram);
+    }
+    /**
+     * 应用对象
+     * @param {GLProgram} glProgram 
+     */
+
+  }, {
+    key: "reapply",
+    value: function reapply(glProgram) {
+      glProgram.useProgram();
+      var len = this._lastQueue.length,
+          gl = glProgram.gl;
+      var task = this._lastQueue.pop();
+      while (task != null) {
+        gl[task.name].apply(gl, task.rest);
+        task.pop();
+      }
+    }
+  }]);
+  return Recorder;
+}();
+
+/**
  * 全局HTMLCanvasElement
  */
 var CANVASES$1 = {};
@@ -1478,15 +1591,10 @@ var util = {
  * Tiny的作用与策略，详情请参见：
  * https://github.com/axmand/fusion.gl/wiki/Tiny
  * 
- * -
- * -
- * -
- * 
  */
 var stamp$2 = stamp_1.stamp;
 var ticker = handle.ticker;
 var TICKER_ENUM = handle.TICKER_ENUM;
-
 var GLPROGRAMS$1 = util.GLPROGRAMS;
 /**
  * @class
@@ -1524,6 +1632,10 @@ var Tiny = function () {
          * @type {GLProgram}
          */
         this._glPrgram = null;
+        /**
+         * store this instance to Global
+         */
+        Tiny.instances.push(this);
     }
     /**
      * indicate wether it's need to be updated
@@ -1544,13 +1656,14 @@ var Tiny = function () {
             this._glPrgram = glProgram;
             var id = stamp$2(glProgram),
                 tinyProgramCache = this._tinyProgramCache;
+            //切换program
             if (!tinyProgramCache[id]) tinyProgramCache[id] = [];
             this._programInternal = tinyProgramCache[id];
         }
         /**
          * 
          * @param {String} name 
-         * @param {[]} rest 
+         * @param {Array} rest 
          */
 
     }, {
@@ -1572,7 +1685,7 @@ var Tiny = function () {
         }
         /**
          * 
-         * @param {*} glProgram 
+         * @param {GLProgram} glProgram 
          * @param {*} internal 
          * @param {*} overrall 
          */
@@ -1622,6 +1735,12 @@ var Tiny = function () {
     }]);
     return Tiny;
 }();
+/**
+ * Global instances of Tiny
+ */
+
+
+Tiny.instances = [];
 
 var Tiny_1 = Tiny;
 
@@ -3988,11 +4107,6 @@ var GLContext = function (_Dispose) {
          */
         _this._tiny = new Tiny_1(_this);
         /**
-         * current using program
-         * @type {GLProgram}
-         */
-        //this._glProgram = null;
-        /**
          * setup env
          */
         _this._setup();
@@ -4365,8 +4479,8 @@ var GLCanvas = function (_Dispose) {
                 stencil: options.stencil || true,
                 antialias: options.antialias || false,
                 premultipliedAlpha: options.premultipliedAlpha || true,
-                preserveDrawingBuffer: options.preserveDrawingBuffer || false
-                //failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
+                preserveDrawingBuffer: options.preserveDrawingBuffer || false,
+                failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false
             };
         }
         /**

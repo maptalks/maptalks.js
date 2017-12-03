@@ -48,8 +48,8 @@ class GLCanvas extends Dispose {
             stencil: options.stencil || true,
             antialias: options.antialias || false,
             premultipliedAlpha: options.premultipliedAlpha || true,
-            preserveDrawingBuffer: options.preserveDrawingBuffer || false
-            //failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
+            preserveDrawingBuffer: options.preserveDrawingBuffer || false,
+            failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
         }
     }
     /**

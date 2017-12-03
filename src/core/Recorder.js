@@ -22,24 +22,12 @@
         /**
          * 
          */
-        this._laskQueue=[];
+        this._lastQueue=[];
         /**
          * 操作集
          * @param {Array} _queue
          */
         this._queue = [];
-    }
-    /**
-     * 组织执行操作的队列
-     * @method increase
-     * @param {*} name 
-     * @param {*} rest 
-     */
-    increase(name,...rest){
-        this._queue.push({
-            name:name,
-            rest:this._exact(rest)
-        });
     }
     /**
      * 深拷贝数组对象，防止原应用处理数组引用导致应用时数值错误
@@ -56,13 +44,25 @@
         return rest;
     }
     /**
+     * 组织执行操作的队列
+     * @method increase
+     * @param {String} name 
+     * @param {Array} rest 
+     */
+    increase(name,...rest){
+        this._queue.push({
+            name:name,
+            rest:this._exact(rest)
+        });
+    }
+    /**
      * 
      * @param {GLProgram} glProgram 
      */
     apply(glProgram){
-        //1.深拷贝对象
-        var [...cp] = this._queue.reverse();
-        this._laskQueue = cp;
+        //1.deep copy the target operation queue
+        let [...cp] = this._queue.reverse();
+        this._lastQueue = cp;
         //2.清理queue
         this._queue=[];
         //3.应用
@@ -74,15 +74,14 @@
      */
     reapply(glProgram){
         glProgram.useProgram();
-        const len = this._laskQueue.length,
+        const len = this._lastQueue.length,
             gl = glProgram.gl;
-        let task = this._laskQueue.pop();
+        let task = this._lastQueue.pop();
         while(task!=null){
             gl[task.name].apply(gl,task.rest);
             task.pop();
         }
     }
-
  }
 
  module.exports= Recorder;

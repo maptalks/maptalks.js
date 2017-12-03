@@ -1,7 +1,7 @@
 /**
  * 操作分类
+ * @author yellow date 2017/9/4
  */
-
 const merge = require('./../utils/merge'),
     Ticker = require('./../tick/Ticker');
 /**
