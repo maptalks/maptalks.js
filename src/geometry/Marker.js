@@ -116,5 +116,5 @@ function computeExtent(fn) {
     if (!coordinates) {
         return null;
     }
-    return new Extent(coordinates, coordinates);
+    return new Extent(coordinates, coordinates, this._getProjection());
 }

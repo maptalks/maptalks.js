@@ -1,6 +1,5 @@
 import Extent from './Extent';
 import Point from './Point';
-import Size from './Size';
 
 /**
  * Represent a bounding box on 2d surface , a rectangular area with minimum and maximum points. <br>
@@ -32,14 +31,6 @@ class PointExtent extends Extent {
     constructor(p1, p2, p3, p4) {
         super(p1, p2, p3, p4);
         this._clazz = Point;
-    }
-
-    /**
-     * Get size of the PointExtent
-     * @return {Size}
-     */
-    getSize() {
-        return new Size(this.getWidth(), this.getHeight());
     }
 }
 

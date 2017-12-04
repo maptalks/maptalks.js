@@ -255,4 +255,39 @@ describe('ExtentSpec', function () {
         });
     });
 
+    describe('extent with projection', function () {
+        it('should contain', function () {
+            var container = document.createElement('div');
+            var map = new maptalks.Map(container, {
+                center: [104,31],
+                zoom: 3
+            });
+            var center = map.getCenter(),
+                extent = map.getExtent()
+            expect(extent.contains(center));
+            map.remove();
+        });
+
+        it('should intersect', function () {
+            var proj = maptalks.projection.EPSG3857;
+            var ext1 = new maptalks.Extent(170, 80, -170, -80, proj);
+            var ext2 = new maptalks.Extent(180, 85, 180, 85);
+            expect(ext1.intersects(ext2)).to.be.ok();
+            expect(ext1.intersects(new maptalks.Extent(150, 10, 160, 20))).to.not.be.ok();
+
+        });
+
+        it('should combine', function () {
+            var proj = maptalks.projection.EPSG3857;
+            var ext1 = new maptalks.Extent(170, 80, -170, -50, proj);
+            var ext2 = new maptalks.Extent(160, 80, -175, -40, proj);
+            var combined = ext1.combine(ext2);
+
+            expect(combined.xmin).to.eql(160);
+            expect(combined.ymin).to.approx(80);
+            expect(combined.xmax).to.eql(-170);
+            //FIXME
+            // expect(combined.ymax).to.eql(-10);
+        });
+    });
 });

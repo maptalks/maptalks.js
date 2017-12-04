@@ -193,7 +193,9 @@ class VectorLayer extends OverlayLayer {
         if (isNil(options['geometries']) || options['geometries']) {
             let clipExtent;
             if (options['clipExtent']) {
-                clipExtent = new Extent(options['clipExtent']);
+                const map = this.getMap();
+                const projection = map ? map.getProjection() : null;
+                clipExtent = new Extent(options['clipExtent'], projection);
             }
             const geoJSONs = [];
             const geometries = this.getGeometries();

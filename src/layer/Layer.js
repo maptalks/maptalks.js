@@ -189,6 +189,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return null;
     }
 
+    /**
+     * Get projection of layer's map
+     * @returns {Object}
+     */
+    getProjection() {
+        const map = this.getMap();
+        return map ? map.getProjection() : null;
+    }
 
     /**
      * Brings the layer to the top of all the layers

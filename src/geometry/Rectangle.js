@@ -234,7 +234,7 @@ class Rectangle extends Polygon {
         if (!se) {
             return null;
         }
-        return new Extent(this._coordinates, se);
+        return new Extent(this._coordinates, se, this._getProjection());
     }
 
     _getSouthEast(measurer) {

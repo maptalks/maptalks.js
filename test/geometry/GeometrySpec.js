@@ -327,17 +327,17 @@ function registerGeometryCommonTest(geometry, _context) {
 
         it('getMeasurer', function () {
             var measurer = geometry._getMeasurer();
-            expect(measurer).to.be(maptalks.measurer.WGS84Sphere);
+            expect(measurer).to.be(maptalks.projection.EPSG4326);
 
-            geometry.config('measure', 'identity');
-
-            measurer = geometry._getMeasurer();
-            expect(measurer).to.be(maptalks.measurer.Identity);
-
-            geometry.config('measure', 'baidu');
+            geometry.config('defaultProjection', 'identity');
 
             measurer = geometry._getMeasurer();
-            expect(measurer).to.be(maptalks.measurer.BaiduSphere);
+            expect(measurer).to.be(maptalks.projection.IDENTITY);
+
+            geometry.config('defaultProjection', 'baidu');
+
+            measurer = geometry._getMeasurer();
+            expect(measurer).to.be(maptalks.projection.BAIDU);
         });
     });
 }
