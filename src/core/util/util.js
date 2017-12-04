@@ -188,7 +188,7 @@ export function interpolate(a, b, t) {
 export function wrap(n, min, max) {
     const d = max - min;
     const w = ((n - min) % d + d) % d + min;
-    return (w === min) ? max : w;
+    return w;
 }
 
 /**
