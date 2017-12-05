@@ -76,28 +76,32 @@ const ImageGLRenderable = Base => {
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
 
-        drawGLtin(image,tin,x, y, w, h, opacity) {
-           var gl = this.gl;
+        /**
+         * 
+         * @param {HtmlElement} image 
+         * @param {Array} vertices 
+         * @param {Array} triangles 
+         * @param {number} x 
+         * @param {number} y 
+         * @param {number} w 
+         * @param {number} h 
+         * @param {number} opacity 
+         */
+        drawGLTin(image, vertices, triangles, x, y, w, h, opacity) {
+            const gl = this.gl;
             this.loadTexture(image);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
             gl.uniform1f(this.program['u_opacity'], opacity);
-
-            var vertices = tin.vertices,
-                triangles = tin.triangles,
-                arr = [],
-                indices = [];
-            //vertices
+            //
+            const arr=[],indices=[];
+            //
             for (var i = 0, len = vertices.length; i < len; i++) {
-                arr.push(x + vertices[i][0]*1);
-                arr.push(y + vertices[i][1]*1);
-                if (i % 3 === 0) {
-                    arr.push(-10);
-                } else {
-                    arr.push(Math.random() * 30);
-                }
+                arr.push(x + vertices[i][0]);
+                arr.push(y + vertices[i][1]);
+                arr.push(vertices[i][2]);
             }
-            //indices
-            for(var i =0,len = triangles.length;i<len;i++){
+            //
+            for (var i = 0, len = triangles.length; i < len; i++) {
                 indices.push(triangles[i]);
             }
             //bufferdata vertices
@@ -105,7 +109,7 @@ const ImageGLRenderable = Base => {
             //bufferdata indices
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices), gl.STATIC_DRAW);
             //draw
-            gl.drawElements(gl.TRIANGLES,indices.length, gl.UNSIGNED_BYTE, 0);
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
         }
 
         /**
@@ -159,7 +163,7 @@ const ImageGLRenderable = Base => {
 
             // Enable indices buffer
             this.indicesBuffer = this.createBuffer();
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,this.indicesBuffer);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
         }
 
         /**
