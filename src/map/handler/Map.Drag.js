@@ -163,6 +163,8 @@ class MapDragHandler extends Handler {
                 this._rotateMode = 'rotate';
             } else if (dx < dy) {
                 this._rotateMode = 'pitch';
+            } else {
+                this._rotateMode = 'rotate';
             }
         }
 
