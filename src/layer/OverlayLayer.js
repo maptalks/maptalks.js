@@ -121,7 +121,7 @@ class OverlayLayer extends Layer {
         if (this.getCount() === 0) {
             return null;
         }
-        const extent = new Extent();
+        const extent = new Extent(this.getProjection());
         this.forEach(g => {
             extent._combine(g.getExtent());
         });

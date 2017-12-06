@@ -67,20 +67,27 @@ export default class SpatialReference {
         this._initSpatialRef();
     }
 
+    static getProjectionInstance(prjName) {
+        if (!prjName) {
+            return null;
+        }
+        prjName = prjName.toLowerCase();
+        for (const p in projections) {
+            if (hasOwn(projections, p)) {
+                const code = projections[p]['code'];
+                if (code && code.toLowerCase() === prjName) {
+                    return projections[p];
+                }
+            }
+        }
+        return null;
+    }
+
     _initSpatialRef() {
         let projection = this.options['projection'];
         if (projection) {
             if (isString(projection)) {
-                const prjName = projection.toLowerCase();
-                for (const p in projections) {
-                    if (hasOwn(projections, p)) {
-                        const regName = projections[p]['code'];
-                        if (regName && regName.toLowerCase() === prjName) {
-                            projection = projections[p];
-                            break;
-                        }
-                    }
-                }
+                projection = SpatialReference.getProjectionInstance(projection);
             }
         } else {
             projection = projections.DEFAULT;

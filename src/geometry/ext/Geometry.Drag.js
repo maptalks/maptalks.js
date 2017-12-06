@@ -1,6 +1,6 @@
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { isNil } from 'core/util';
 import { lowerSymbolOpacity } from 'core/util/style';
+import { on, off } from 'core/util/dom';
 import Browser from 'core/Browser';
 import Handler from 'handler/Handler';
 import Geometry from 'geometry/Geometry';
@@ -34,6 +34,7 @@ class GeometryDragHandler extends Handler  {
 
     removeHooks() {
         this.target.off(EVENTS, this._startDrag, this);
+        delete this.container;
     }
 
     _startDrag(param) {
@@ -55,9 +56,12 @@ class GeometryDragHandler extends Handler  {
         this.target.on('click', this._endDrag, this);
         this._lastCoord = param['coordinate'];
         this._lastPoint = param['containerPoint'];
-        this._prepareMap();
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
+
+        this.container = map._panels.mapWrapper || map._containerDOM;
+        on(this.container, 'mouseleave', this._endDrag, this);
+
         this._moved = false;
         /**
          * drag start event
@@ -71,38 +75,11 @@ class GeometryDragHandler extends Handler  {
          * @property {Event} domEvent                 - dom event
          */
         this.target._fireEvent('dragstart', param);
-    }
-
-    _prepareMap() {
-        const map = this.target.getMap();
-        this._mapDraggable = map.options['draggable'];
-        this._mapHitDetect = map.options['hitDetect'];
-        map._trySetCursor('move');
-        map.config({
-            'hitDetect': false,
-            'draggable': false
-        });
-    }
-
-    _restoreMap() {
-        const map = this.target.getMap();
-        //restore map status
-        map._trySetCursor('default');
-        if (isNil(this._mapDraggable)) {
-            this._mapDraggable = true;
-        }
-        map.config({
-            'hitDetect': this._mapHitDetect,
-            'draggable': this._mapDraggable
-        });
-
-        delete this._mapDraggable;
-        delete this._mapHitDetect;
+        return;
     }
 
     _prepareDragHandler() {
-        const map = this.target.getMap();
-        this._dragHandler = new DragHandler(map._panels.mapWrapper || map._containerDOM);
+        this._dragHandler = new DragHandler(document);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
@@ -192,7 +169,6 @@ class GeometryDragHandler extends Handler  {
         if (!this._moved) {
             this._moved = true;
             target.on('symbolchange', this._onTargetUpdated, this);
-            // this._prepareMap();
             this._isDragging = true;
             this._prepareShadow();
             if (!target.options['dragShadow']) {
@@ -255,9 +231,11 @@ class GeometryDragHandler extends Handler  {
             this._dragHandler.disable();
             delete this._dragHandler;
         }
+        off(this.container, 'mouseleave', this._endDrag, this);
         if (!map) {
             return;
         }
+
         const eventParam = map._parseEvent(param['domEvent']);
         target.off('symbolchange', this._onTargetUpdated, this);
 
@@ -265,8 +243,6 @@ class GeometryDragHandler extends Handler  {
 
         delete this._lastCoord;
         delete this._lastPoint;
-
-        this._restoreMap();
 
         this._isDragging = false;
         /**

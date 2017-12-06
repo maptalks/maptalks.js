@@ -125,7 +125,7 @@ describe('DrawTool', function () {
                 expect(param.geometry instanceof maptalks.Marker).to.be.ok();
                 var markerCoord = param.geometry.getCoordinates();
                 expect(markerCoord.x).to.be.approx(map.getCenter().x, 1E-4);
-                expect(markerCoord.y).to.be.approx(map.getCenter().y);
+                expect(markerCoord.y).to.be.approx(map.getCenter().y, 1E-4);
                 done();
             }
             var drawTool = new maptalks.DrawTool({

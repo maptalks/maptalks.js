@@ -132,7 +132,7 @@ describe('Geometry.LineString', function () {
         ]);
         // layer.addGeometry(polyline);
 
-        expect(polyline.getExtent()).to.eql(new maptalks.Extent(0, 0, 0, 80));
+        expect(polyline.getExtent().toJSON()).to.eql(new maptalks.Extent(0, 0, 0, 80).toJSON());
     });
 
     describe('geometry fires events', function () {

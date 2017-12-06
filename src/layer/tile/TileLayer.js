@@ -53,6 +53,7 @@ const options = {
     })()
 };
 
+const urlPattern = /\{ *([\w_]+) *\}/g;
 
 /**
  * @classdesc
@@ -301,7 +302,7 @@ class TileLayer extends Layer {
             'z': z,
             's': domain
         };
-        return urlTemplate.replace(/\{ *([\w_]+) *\}/g, function (str, key) {
+        return urlTemplate.replace(urlPattern, function (str, key) {
             let value = data[key];
 
             if (value === undefined) {
@@ -338,6 +339,17 @@ class TileLayer extends Layer {
         }
         // add some buffer
         return extent.intersects(tileExtent);
+    }
+
+    getEvents() {
+        return {
+            'spatialreferencechange' : this._onSpatialReferenceChange
+        };
+    }
+
+    _onSpatialReferenceChange() {
+        delete this._tileConfig;
+        delete this._defaultTileConfig;
     }
 }
 

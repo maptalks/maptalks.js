@@ -284,7 +284,7 @@ class Path extends Geometry {
         if (this.hasHoles && this.hasHoles()) {
             rings.push.apply(rings, this.getHoles());
         }
-        return this._coords2Extent(rings);
+        return this._coords2Extent(rings, this._getProjection());
     }
 
     _computePrjExtent() {
@@ -322,8 +322,8 @@ class Path extends Geometry {
         return isNumber(w) ? w / 2 : 1.5;
     }
 
-    _coords2Extent(coords) {
-        const result = new Extent();
+    _coords2Extent(coords, proj) {
+        const result = new Extent(proj);
         for (let i = 0, l = coords.length; i < l; i++) {
             for (let j = 0, ll = coords[i].length; j < ll; j++) {
                 result._combine(coords[i][j]);

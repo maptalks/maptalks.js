@@ -43,7 +43,7 @@ class MapBoxZoomHander extends Handler {
             w = symbol.markerWidth,
             h = symbol.markerHeight;
 
-        const extent = new Extent(center, map.locateByPoint(center, w, h));
+        const extent = new Extent(center, map.locateByPoint(center, w, h), map.getProjection());
         const zoom = map.getFitZoom(extent);
         map.animateTo({
             center : extent.getCenter(),

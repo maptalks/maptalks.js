@@ -195,6 +195,7 @@ const ImageGLRenderable = Base => {
             // Bind the texture object to the target
             gl.bindTexture(gl.TEXTURE_2D, texture);
             // from mapbox-gl-js
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -405,7 +406,7 @@ const ImageGLRenderable = Base => {
             for (let i = 0; i < names.length; ++i) {
                 try {
                     context = canvas.getContext(names[i], attributes);
-                } catch (e) { }
+                } catch (e) {}
                 if (context) {
                     break;
                 }

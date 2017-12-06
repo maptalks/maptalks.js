@@ -153,7 +153,7 @@ export default /** @lends projection.Common */ {
         if (!this.extent && this.isSphere()) {
             const max = this.project(new Coordinate(180, 90)),
                 min = this.project(new Coordinate(-180, -90));
-            this.extent = new Extent(min, max);
+            this.extent = new Extent(min, max, this);
             this.extent.sx = max.x > min.x ? 1 : -1;
             this.extent.sy = max.y > min.y ? 1 : -1;
         }

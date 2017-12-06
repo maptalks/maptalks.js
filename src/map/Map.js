@@ -481,7 +481,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!this.options['maxExtent']) {
             return null;
         }
-        return new Extent(this.options['maxExtent']);
+        return new Extent(this.options['maxExtent'], this.getProjection());
     }
 
     /**
@@ -493,7 +493,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     setMaxExtent(extent) {
         if (extent) {
-            const maxExt = new Extent(extent);
+            const maxExt = new Extent(extent, this.getProjection());
             this.options['maxExtent'] = maxExt;
             const center = this.getCenter();
             if (!this._verifyExtent(center)) {
@@ -821,7 +821,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!extent) {
             return this;
         }
-        extent = new Extent(extent);
+        extent = new Extent(extent, this.getProjection());
         const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
         const center = extent.getCenter();
         return this.setCenterAndZoom(center, zoom);
@@ -1673,9 +1673,17 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @protected
      */
     _pointToExtent(extent2D) {
+        const min2d = extent2D.getMin(),
+            max2d = extent2D.getMax();
+        const fullExtent = this.getFullExtent();
+        const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
+        const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
+        const min = new Coordinate(minx, miny),
+            max = new Coordinate(maxx, maxy);
         return new Extent(
-            this.pointToCoord(extent2D.getMin()),
-            this.pointToCoord(extent2D.getMax())
+            this.pointToCoord(min),
+            this.pointToCoord(max),
+            this.getProjection()
         );
     }
 

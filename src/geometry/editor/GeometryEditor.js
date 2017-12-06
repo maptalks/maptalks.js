@@ -28,6 +28,7 @@ const options = {
     'fixAspectRatio' : false,
     // geometry's symbol when editing
     'symbol' : null,
+    'removeVertexOn' : 'contextmenu',
     //symbols of edit handles
     'centerHandleSymbol' : createHandleSymbol('ellipse', 1),
     'vertexHandleSymbol' : createHandleSymbol('square', 1),
@@ -832,7 +833,7 @@ class GeometryEditor extends Eventable(Class) {
                 }
             });
             handle[propertyOfVertexIndex] = index;
-            handle.on('contextmenu', removeVertex);
+            handle.on(me.options['removeVertexOn'], removeVertex);
             return handle;
         }
 
@@ -849,7 +850,10 @@ class GeometryEditor extends Eventable(Class) {
                 'symbol': me.options['newVertexHandleSymbol'],
                 'cursor': 'pointer',
                 'axis': null,
-                onDown: function () {
+                onDown: function (param, e) {
+                    if (e && e.domEvent && e.domEvent.button === 2) {
+                        return;
+                    }
                     const prjCoordinates = getVertexPrjCoordinates();
                     const vertexIndex = handle[propertyOfVertexIndex];
                     //add a new vertex
@@ -870,7 +874,10 @@ class GeometryEditor extends Eventable(Class) {
                 onMove: function (handleViewPoint) {
                     moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex] + 1);
                 },
-                onUp: function () {
+                onUp: function (e) {
+                    if (e && e.domEvent && e.domEvent.button === 2) {
+                        return;
+                    }
                     const vertexIndex = handle[propertyOfVertexIndex];
                     //remove this handle
                     removeFromArray(handle, newVertexHandles);

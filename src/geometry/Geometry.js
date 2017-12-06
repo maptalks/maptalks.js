@@ -17,10 +17,10 @@ import { convertResourceUrl, getExternalResources } from 'core/util/resource';
 import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
-import { Measurer } from 'geo/measurer';
 import Painter from 'renderer/geometry/Painter';
 import CollectionPainter from 'renderer/geometry/CollectionPainter';
 import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
+import SpatialReference from '../map/spatial-reference/SpatialReference';
 
 /**
  * @property {Object} options                       - geometry options
@@ -44,7 +44,7 @@ const options = {
     'cursor': null,
     'shadowBlur': 0,
     'shadowColor': 'black',
-    'measure': 'EPSG:4326' // BAIDU, IDENTITY
+    'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
 };
 
 /**
@@ -326,7 +326,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const prjExt = this._getPrjExtent();
         if (prjExt) {
             const p = this._getProjection();
-            return new Extent(p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax'])));
+            const min = p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])),
+                max = p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax']));
+            return new Extent(min, max, this._getProjection());
         } else {
             return this._computeExtent(this._getMeasurer());
         }
@@ -891,7 +893,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._getProjection()) {
             return this._getProjection();
         }
-        return Measurer.getInstance(this.options['measure']);
+        return SpatialReference.getProjectionInstance(this.options['defaultProjection']);
     }
 
     _getProjection() {
