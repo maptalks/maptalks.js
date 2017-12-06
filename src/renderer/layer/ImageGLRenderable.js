@@ -77,31 +77,29 @@ const ImageGLRenderable = Base => {
         }
 
         /**
-         * 
-         * @param {HtmlElement} image 
-         * @param {Array} vertices 
-         * @param {Array} triangles 
-         * @param {number} x 
-         * @param {number} y 
-         * @param {number} w 
-         * @param {number} h 
-         * @param {number} opacity 
+         * Draw the tile image as tins
+         * @param {HtmlElement} image
+         * @param {Array} vertices  - tin vertices
+         * @param {Array} triangles - element indexes
+         * @param {Number} x        - x at map's gl zoom
+         * @param {Number} y        - y at map's gl zoom
+         * @param {number} opacity
          */
-        drawGLTin(image, vertices, triangles, x, y, w, h, opacity) {
+        drawGLTin(image, vertices, triangles, x, y, opacity) {
             const gl = this.gl;
             this.loadTexture(image);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
             gl.uniform1f(this.program['u_opacity'], opacity);
             //
-            const arr=[],indices=[];
+            const arr = [], indices = [];
             //
-            for (var i = 0, len = vertices.length; i < len; i++) {
+            for (let i = 0, len = vertices.length; i < len; i++) {
                 arr.push(x + vertices[i][0]);
                 arr.push(y + vertices[i][1]);
                 arr.push(vertices[i][2]);
             }
             //
-            for (var i = 0, len = triangles.length; i < len; i++) {
+            for (let i = 0, len = triangles.length; i < len; i++) {
                 indices.push(triangles[i]);
             }
             //bufferdata vertices
