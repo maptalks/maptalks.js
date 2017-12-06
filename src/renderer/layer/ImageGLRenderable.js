@@ -64,22 +64,14 @@ const ImageGLRenderable = Base => {
             const x2 = x + w;
             const y1 = y;
             const y2 = y + h;
-            if (!image.buffer) {
-                image.buffer = this.getBuffer() || this.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, image.buffer);
-                this.enableVertexAttrib(['a_position', 3]);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                    x1, y1, 0.0,  //0
-                    x2, y1, 0.0, //1
-                    x1, y2, 0.0, //2
-                    x1, y2, 0.0,  //2
-                    x2, y1, 0.0, //1
-                    x2, y2, 0.0 //3
-                ]), gl.STATIC_DRAW);
-            } else {
-                gl.bindBuffer(gl.ARRAY_BUFFER, image.buffer);
-                this.enableVertexAttrib(['a_position', 3]);
-            }
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                x1, y1, 0.0,  //0
+                x2, y1, 0.0, //1
+                x1, y2, 0.0, //2
+                x1, y2, 0.0,  //2
+                x2, y1, 0.0, //1
+                x2, y2, 0.0 //3
+            ]), gl.DYNAMIC_DRAW);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
 
@@ -158,6 +150,10 @@ const ImageGLRenderable = Base => {
 
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
+            this.posBuffer = this.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+            this.enableVertexAttrib(['a_position', 3]);
+
             // Enable indices buffer
             this.indicesBuffer = this.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
@@ -224,18 +220,6 @@ const ImageGLRenderable = Base => {
             this._textures.push(texture);
         }
 
-        getBuffer() {
-            if (!this._savedBuffers) {
-                this._savedBuffers = [];
-            }
-            const buffers = this._savedBuffers;
-            return buffers && buffers.length > 0 ? buffers.pop() : null;
-        }
-
-        saveBuffer(buffer) {
-            this._savedBuffers.push(buffer);
-        }
-
         /**
          * Load image into a text and bind it with WebGLContext
          * @param {Image|Canvas} image
@@ -271,7 +255,7 @@ const ImageGLRenderable = Base => {
                 this._textures.forEach(t => gl.deleteTexture(t));
                 delete this._textures;
             }
-            delete this._savedBuffers;
+            delete this.posBuffer;
             const program = gl.program;
             gl.deleteProgram(program);
             gl.deleteShader(program.fragmentShader);
