@@ -458,6 +458,7 @@ class CanvasRenderer extends Class {
             });
             return maskExtent2D;
         }
+        this._shouldClip = true;
         /**
          * renderstart event, fired when layer starts to render.
          *
@@ -476,12 +477,19 @@ class CanvasRenderer extends Class {
 
     clipCanvas(context) {
         const mask = this.layer.getMask();
-        if (!mask) {
+        if (!mask && !this._shouldClip) {
             return false;
         }
+        const old = this._northWest;
+        //when clipping, layer's northwest needs to be reset for mask's containerPoint conversion
+        this._northWest = this.getMap()._containerPointToPoint(new Point(0, 0));
         context.save();
         mask._getPainter().paint(null, context);
         context.clip();
+        this._northWest = old;
+        if (this.isRenderComplete()) {
+            this._shouldClip = false;
+        }
         return true;
     }
 

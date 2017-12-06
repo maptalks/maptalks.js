@@ -190,7 +190,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         ctx.stroke();
         ctx.clip();
         return true;
-        // this._pitchClipped = true;
     }
 
     loadTileQueue(tileQueue) {

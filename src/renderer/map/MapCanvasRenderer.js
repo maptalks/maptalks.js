@@ -585,12 +585,13 @@ class MapCanvasRenderer extends MapRenderer {
         }
         const matrix = this._zoomMatrix;
         const shouldTransform = !!layer._getRenderer().__shouldZoomTransform;
+        const renderer = layer.getRenderer();
+        const clipped = renderer.clipCanvas(this.context);
         if (matrix && shouldTransform) {
             ctx.save();
             ctx.setTransform.apply(ctx, matrix);
         }
-        const renderer = layer.getRenderer();
-        const clipped = renderer.clipCanvas(this.context);
+
         /*let outlineColor = layer.options['debugOutline'];
         if (outlineColor) {
             if (outlineColor === true) {
@@ -605,10 +606,10 @@ class MapCanvasRenderer extends MapRenderer {
         }*/
 
         ctx.drawImage(canvasImage, point.x, point.y);
-        if (clipped) {
+        if (matrix && shouldTransform) {
             ctx.restore();
         }
-        if (matrix && shouldTransform) {
+        if (clipped) {
             ctx.restore();
         }
         if (ctx.filter !== 'none') {
