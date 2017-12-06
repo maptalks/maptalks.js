@@ -359,17 +359,6 @@ class CanvasRenderer extends Class {
         } else {
             this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
         }
-        this.initContext();
-        if (this.onCanvasCreate) {
-            this.onCanvasCreate();
-        }
-        this.layer.fire('canvascreate', {
-            'context' : this.context,
-            'gl' : this.gl
-        });
-    }
-
-    initContext() {
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
@@ -378,9 +367,22 @@ class CanvasRenderer extends Class {
             const r = 2;
             this.context.scale(r, r);
         }
+        this.onCanvasCreate();
+
+        this.layer.fire('canvascreate', {
+            'context' : this.context,
+            'gl' : this.gl
+        });
+    }
+
+    onCanvasCreate() {
+
     }
 
     resetCanvasTransform() {
+        if (!this.context) {
+            return;
+        }
         const r = Browser.retina ? 2 : 1;
         this.context.setTransform(r, 0, 0, r, 0, 0);
     }
@@ -407,7 +409,7 @@ class CanvasRenderer extends Class {
         //retina support
         this.canvas.height = r * size.height;
         this.canvas.width = r * size.width;
-        if (Browser.retina) {
+        if (Browser.retin && this.context) {
             this.context.scale(r, r);
         }
         if (this.layer._canvas && this.canvas.style) {
@@ -420,7 +422,7 @@ class CanvasRenderer extends Class {
      * Clear the canvas to blank
      */
     clearCanvas() {
-        if (!this.canvas) {
+        if (!this.context) {
             return;
         }
         Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
@@ -433,10 +435,6 @@ class CanvasRenderer extends Class {
      * @return {PointExtent} mask's extent of current zoom's 2d point.
      */
     prepareCanvas() {
-        if (this._clipped) {
-            this.context.restore();
-            this._clipped = false;
-        }
         if (!this.canvas) {
             this.createCanvas();
         } else {
@@ -445,7 +443,7 @@ class CanvasRenderer extends Class {
         delete this._maskExtent;
         const mask = this.layer.getMask();
         // this.context may be not available
-        if (!mask || !this.context) {
+        if (!mask) {
             this.layer.fire('renderstart', {
                 'context': this.context,
                 'gl' : this.gl
@@ -460,10 +458,6 @@ class CanvasRenderer extends Class {
             });
             return maskExtent2D;
         }
-        this.context.save();
-        mask._paint();
-        this.context.clip();
-        this._clipped = true;
         /**
          * renderstart event, fired when layer starts to render.
          *
@@ -478,6 +472,17 @@ class CanvasRenderer extends Class {
             'gl' : this.gl
         });
         return maskExtent2D;
+    }
+
+    clipCanvas(context) {
+        const mask = this.layer.getMask();
+        if (!mask) {
+            return false;
+        }
+        context.save();
+        mask._getPainter().paint(null, context);
+        context.clip();
+        return true;
     }
 
     /**

@@ -102,6 +102,14 @@ describe('Layer.ParticleLayer', function () {
     });
 
     it('can be masked', function (done) {
+        function isDrawn(canvas, p) {
+            var context = canvas.getContext('2d');
+            var imgData = context.getImageData(p.x, p.y, 1, 1).data;
+            if (imgData[3] > 0) {
+                return true;
+            }
+            return false;
+        }
         layer = new maptalks.ParticleLayer('v');
         layer.getParticles = getParticles;
         var maskRadius = 10;
@@ -110,13 +118,16 @@ describe('Layer.ParticleLayer', function () {
                 polygonFill : '#000'
             }
         }));
+        var canvas = map.getRenderer().canvas;
+        var c = new maptalks.Point(canvas.width / 2, canvas.height / 2);
         layer.once('layerload', function () {
+            expect(isDrawn(canvas, c)).to.be.ok();
             if (maptalks.Browser.gecko3d) {
                 expect(layer).to.be.painted(0, 0, [254, 0, 0]);
             } else {
                 expect(layer).to.be.painted(0, 0, [255, 0, 0]);
             }
-            expect(layer).not.to.be.painted(0, maskRadius + 2);
+            expect(isDrawn(canvas, c.add(0, maskRadius + 2))).not.to.be.ok();
             done();
         });
         layer.addTo(map);

@@ -589,6 +589,8 @@ class MapCanvasRenderer extends MapRenderer {
             ctx.save();
             ctx.setTransform.apply(ctx, matrix);
         }
+        const renderer = layer.getRenderer();
+        const clipped = renderer.clipCanvas(this.context);
         /*let outlineColor = layer.options['debugOutline'];
         if (outlineColor) {
             if (outlineColor === true) {
@@ -603,6 +605,9 @@ class MapCanvasRenderer extends MapRenderer {
         }*/
 
         ctx.drawImage(canvasImage, point.x, point.y);
+        if (clipped) {
+            ctx.restore();
+        }
         if (matrix && shouldTransform) {
             ctx.restore();
         }

@@ -350,7 +350,7 @@ class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
-    paint(extent) {
+    paint(extent, context) {
         if (!this.symbolizers) {
             return;
         }
@@ -369,8 +369,9 @@ class Painter extends Class {
             return;
         }
         this._beforePaint();
-        const contexts = [renderer.context, renderer.resources];
-        this._prepareShadow(renderer.context);
+        const ctx = context || renderer.context;
+        const contexts = [ctx, renderer.resources];
+        this._prepareShadow(ctx);
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }

@@ -23,30 +23,45 @@ describe('Spec of Masks', function () {
     });
 
     afterEach(function () {
-        // map.remove();
-        // REMOVE_CONTAINER(container);
+        map.remove();
+        REMOVE_CONTAINER(container);
     });
 
+    function isDrawn(canvas, p) {
+        var context = canvas.getContext('2d');
+        var imgData = context.getImageData(p.x, p.y, 1, 1).data;
+        if (imgData[3] > 0) {
+            return true;
+        }
+        return false;
+    }
+
     function testMask(layer, done) {
+        var canvas = layer.getMap().getRenderer().canvas;
+        var c = new maptalks.Point(canvas.width / 2, canvas.height / 2);
         layer.once('layerload', function () {
-            expect(layer).not.to.be.painted(-6, 0);
-            expect(layer).to.be.painted(0, 0/* , [0, 0, 0] */);
-            // layer.once('layerload', function () {
-            //     expect(layer).not.to.be.painted(-11, 0);
-            //     expect(layer).to.be.painted(0, 0, [0, 0, 0]);
-            //     done();
-            // });
-            // layer.setMask(new maptalks.Marker(map.getCenter(), {
-            //     'symbol' : {
-            //         'markerType' : 'ellipse',
-            //         'markerWidth' : 20,
-            //         'markerHeight' : 20,
-            //         'markerFill' : '#fff',
-            //         'markerFillOpacity' : 1,
-            //         'markerLineWidth' : 3,
-            //         'markerDy' : 5
-            //     }
-            // }));
+            expect(isDrawn(canvas, c.add(-6, 0))).not.to.be.ok();
+            expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
+            // expect(layer).not.to.be.painted(-6, 0);
+            // expect(layer).to.be.painted(0, 0/* , [0, 0, 0] */);
+            layer.once('layerload', function () {
+                expect(isDrawn(canvas, c.add(-11, 0))).not.to.be.ok();
+                expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
+                // expect(layer).not.to.be.painted(-11, 0);
+                // expect(layer).to.be.painted(0, 0, [0, 0, 0]);
+                done();
+            });
+            layer.setMask(new maptalks.Marker(map.getCenter(), {
+                'symbol' : {
+                    'markerType' : 'ellipse',
+                    'markerWidth' : 20,
+                    'markerHeight' : 20,
+                    'markerFill' : '#fff',
+                    'markerFillOpacity' : 1,
+                    'markerLineWidth' : 3,
+                    'markerDy' : 5
+                }
+            }));
             done();
         });
         layer.setMask(new maptalks.Circle(map.getCenter(), 5, {
@@ -90,45 +105,45 @@ describe('Spec of Masks', function () {
                 });
             });
 
-            // it('can remove mask,' + layerToTest.getJSONType(), function (done) {
-            //     layerToTest.once('layerload', function () {
-            //         layerToTest.once('layerload', function () {
-            //             layerToTest.once('layerload', function () {
-            //                 expect(layerToTest).to.be.painted(-20, 0);
-            //                 expect(layerToTest).to.be.painted();
-            //                 done();
-            //             });
-            //             layerToTest.removeMask();
-            //         });
-            //         layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
-            //             'symbol' : {
-            //                 'markerType' : 'ellipse',
-            //                 'markerWidth' : 10,
-            //                 'markerHeight' : 10,
-            //                 'markerFill' : '#000',
-            //                 'markerFillOpacity' : 1
-            //             }
-            //         }));
-            //     });
-            // });
+            it('can remove mask,' + layerToTest.getJSONType(), function (done) {
+                layerToTest.once('layerload', function () {
+                    layerToTest.once('layerload', function () {
+                        layerToTest.once('layerload', function () {
+                            expect(layerToTest).to.be.painted(-20, 0);
+                            expect(layerToTest).to.be.painted();
+                            done();
+                        });
+                        layerToTest.removeMask();
+                    });
+                    layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
+                        'symbol' : {
+                            'markerType' : 'ellipse',
+                            'markerWidth' : 10,
+                            'markerHeight' : 10,
+                            'markerFill' : '#000',
+                            'markerFillOpacity' : 1
+                        }
+                    }));
+                });
+            });
 
-            // it('zoom with mask,' + layerToTest.getJSONType(), function (done) {
-            //     this.timeout(10000);
-            //     layerToTest.once('layerload', function () {
-            //         var zoomed = false;
-            //         layerToTest.on('layerload', function () {
-            //             if (zoomed) {
-            //                 // expect(layer).not.to.be.painted(-11, 0);
-            //                 expect(layerToTest).to.be.painted(0, 0, [0, 0, 0]);
-            //                 done();
-            //             }
-            //         });
-            //         testMask(layerToTest, function () {
-            //             zoomed = true;
-            //             context.map.zoomIn();
-            //         });
-            //     });
-            // });
+            it('zoom with mask,' + layerToTest.getJSONType(), function (done) {
+                this.timeout(10000);
+                layerToTest.once('layerload', function () {
+                    var zoomed = false;
+                    layerToTest.on('layerload', function () {
+                        if (zoomed) {
+                            // expect(layer).not.to.be.painted(-11, 0);
+                            expect(layerToTest).to.be.painted(0, 0, [0, 0, 0]);
+                            done();
+                        }
+                    });
+                    testMask(layerToTest, function () {
+                        zoomed = true;
+                        context.map.zoomIn();
+                    });
+                });
+            });
         });
     }
 
