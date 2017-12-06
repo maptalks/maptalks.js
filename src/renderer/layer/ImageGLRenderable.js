@@ -64,6 +64,8 @@ const ImageGLRenderable = Base => {
             const x2 = x + w;
             const y1 = y;
             const y2 = y + h;
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+            this.enableVertexAttrib(['a_position', 3]);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
                 x1, y1, 0.0,  //0
                 x2, y1, 0.0, //1
@@ -79,26 +81,26 @@ const ImageGLRenderable = Base => {
          * Draw the tile image as tins
          * @param {HtmlElement} image
          * @param {Array} vertices  - tin vertices
+         * @param {Array} texCoords - texture coords
          * @param {Array} indices   - element indexes
-         * @param {Number} x        - x at map's gl zoom
-         * @param {Number} y        - y at map's gl zoom
          * @param {number} opacity
          */
-        drawGLTin(image, vertices, indices, x, y, opacity) {
+        drawTinImage(image, vertices, texCoords, indices, opacity) {
             const gl = this.gl;
             this.loadTexture(image);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
             gl.uniform1f(this.program['u_opacity'], opacity);
-            //
-            const arr = [];
-            //
-            for (let i = 0, len = vertices.length; i < len; i++) {
-                arr.push(x + vertices[i][0]);
-                arr.push(y + vertices[i][1]);
-                arr.push(vertices[i][2]);
-            }
+
             //bufferdata vertices
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+            this.enableVertexAttrib(['a_position', 3]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
+
+            //bufferdata tex coords
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
+            this.enableVertexAttrib(['a_texCoord', 2]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.DYNAMIC_DRAW);
+
             //bufferdata indices
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
             //draw
@@ -132,8 +134,8 @@ const ImageGLRenderable = Base => {
             this.useProgram(this.program);
 
             // input texture vec data
-            const texBuffer = this.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+            this.texBuffer = this.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
             this.enableVertexAttrib(['a_texCoord', 2]);
             gl.bufferData(gl.ARRAY_BUFFER, this.copy12([
                 0.0, 0.0,
