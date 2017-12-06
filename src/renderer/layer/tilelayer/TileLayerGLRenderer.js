@@ -90,19 +90,28 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     getCanvasImage() {
-        if (this._gl() && this.isCanvasUpdated()) {
-            const ctx = this.context;
-            if (Browser.retina) {
-                ctx.save();
-                ctx.scale(1 / 2, 1 / 2);
-            }
-            // draw gl canvas on layer canvas
-            ctx.drawImage(this.glCanvas, 0, 0);
-            if (Browser.retina) {
-                ctx.restore();
-            }
+        if (!this._gl()) {
+            return super.getCanvasImage();
         }
-        return super.getCanvasImage();
+        if (this.layer.getMask()) {
+            if (this.isCanvasUpdated()) {
+                const ctx = this.context;
+                if (Browser.retina) {
+                    ctx.save();
+                    ctx.scale(1 / 2, 1 / 2);
+                }
+                // draw gl canvas on layer canvas
+                ctx.drawImage(this.glCanvas, 0, 0);
+                if (Browser.retina) {
+                    ctx.restore();
+                }
+            }
+            return super.getCanvasImage();
+        } else {
+            const img = super.getCanvasImage();
+            img.image = this.glCanvas;
+            return img;
+        }
     }
 
     // decide whether the layer is renderer with gl.
