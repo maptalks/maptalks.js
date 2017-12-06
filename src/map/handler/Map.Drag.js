@@ -155,8 +155,11 @@ class MapDragHandler extends Handler {
             preBearing = map.getBearing();
         const dx = Math.abs(mx - this.preX),
             dy = Math.abs(my - this.preY);
+
         if (!this._rotateMode) {
-            if (dx > dy) {
+            if (map.options['dragRotatePitch']) {
+                this._rotateMode = 'rotate_pitch';
+            } else if (dx > dy) {
                 this._rotateMode = 'rotate';
             } else if (dx < dy) {
                 this._rotateMode = 'pitch';
@@ -167,10 +170,11 @@ class MapDragHandler extends Handler {
             return;
         }
 
-        if (this._rotateMode === 'rotate' && map.options['dragRotate']) {
-            map.setBearing(map.getBearing() + 3 * (mx > this.preX ? 1 : -1));
-        } else if (this._rotateMode === 'pitch' && map.options['dragPitch']) {
-            map.setPitch(map.getPitch() + (my > this.preY ? -1 : 1) * 3);
+        if (this._rotateMode.indexOf('rotate') >= 0 && map.options['dragRotate']) {
+            map.setBearing(map.getBearing() - 0.6 * (this.preX - mx));
+        }
+        if (this._rotateMode.indexOf('pitch') >= 0 && map.options['dragPitch']) {
+            map.setPitch(map.getPitch() + (this.preY - my) * 0.4);
         }
         this.preX = mx;
         this.preY = my;
@@ -196,6 +200,7 @@ class MapDragHandler extends Handler {
 Map.mergeOptions({
     'draggable': true,
     'dragPan' : true,
+    'dragRotatePitch' : false,
     'dragRotate' : true,
     'dragPitch' : true
 });
