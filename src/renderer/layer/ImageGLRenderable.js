@@ -64,15 +64,22 @@ const ImageGLRenderable = Base => {
             const x2 = x + w;
             const y1 = y;
             const y2 = y + h;
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                x1, y1, 0.0,  //0
-                x2, y1, 0.0, //1
-                x1, y2, 0.0, //2
-                x1, y2, 0.0,  //2
-                x2, y1, 0.0, //1
-                x2, y2, 0.0 //3
-            ]), gl.DYNAMIC_DRAW);
-
+            if (!image.buffer) {
+                image.buffer = this.getBuffer() || this.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, image.buffer);
+                this.enableVertexAttrib(['a_position', 3]);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                    x1, y1, 0.0,  //0
+                    x2, y1, 0.0, //1
+                    x1, y2, 0.0, //2
+                    x1, y2, 0.0,  //2
+                    x2, y1, 0.0, //1
+                    x2, y2, 0.0 //3
+                ]), gl.STATIC_DRAW);
+            } else {
+                gl.bindBuffer(gl.ARRAY_BUFFER, image.buffer);
+                this.enableVertexAttrib(['a_position', 3]);
+            }
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
 
@@ -80,34 +87,30 @@ const ImageGLRenderable = Base => {
          * Draw the tile image as tins
          * @param {HtmlElement} image
          * @param {Array} vertices  - tin vertices
-         * @param {Array} triangles - element indexes
+         * @param {Array} indices   - element indexes
          * @param {Number} x        - x at map's gl zoom
          * @param {Number} y        - y at map's gl zoom
          * @param {number} opacity
          */
-        drawGLTin(image, vertices, triangles, x, y, opacity) {
+        drawGLTin(image, vertices, indices, x, y, opacity) {
             const gl = this.gl;
             this.loadTexture(image);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
             gl.uniform1f(this.program['u_opacity'], opacity);
             //
-            const arr = [], indices = [];
+            const arr = [];
             //
             for (let i = 0, len = vertices.length; i < len; i++) {
                 arr.push(x + vertices[i][0]);
                 arr.push(y + vertices[i][1]);
                 arr.push(vertices[i][2]);
             }
-            //
-            for (let i = 0, len = triangles.length; i < len; i++) {
-                indices.push(triangles[i]);
-            }
             //bufferdata vertices
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
             //bufferdata indices
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices), gl.STATIC_DRAW);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
             //draw
-            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
         }
 
         /**
@@ -152,10 +155,6 @@ const ImageGLRenderable = Base => {
 
             // Enable texture unit 0
             gl.activeTexture(gl['TEXTURE0']);
-
-            this.posBuffer = this.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-            this.enableVertexAttrib(['a_position', 3]);
 
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
@@ -225,6 +224,18 @@ const ImageGLRenderable = Base => {
             this._textures.push(texture);
         }
 
+        getBuffer() {
+            if (!this._savedBuffers) {
+                this._savedBuffers = [];
+            }
+            const buffers = this._savedBuffers;
+            return buffers && buffers.length > 0 ? buffers.pop() : null;
+        }
+
+        saveBuffer(buffer) {
+            this._savedBuffers.push(buffer);
+        }
+
         /**
          * Load image into a text and bind it with WebGLContext
          * @param {Image|Canvas} image
@@ -260,6 +271,7 @@ const ImageGLRenderable = Base => {
                 this._textures.forEach(t => gl.deleteTexture(t));
                 delete this._textures;
             }
+            delete this._savedBuffers;
             const program = gl.program;
             gl.deleteProgram(program);
             gl.deleteShader(program.fragmentShader);

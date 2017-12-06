@@ -173,7 +173,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         super.deleteTile(tile);
         if (tile && !tile.current && tile.texture) {
             this.saveTexture(tile.texture);
+            this.saveBuffer(tile.buffer);
             delete tile.texture;
+            delete tile.buffer;
         }
     }
 
