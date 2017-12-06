@@ -4,8 +4,9 @@ import Canvas from 'core/Canvas';
 import Browser from 'core/Browser';
 
 const shaders = {
-    'vertexShader' : `
-        attribute vec2 a_position;
+    'vertexShader': `
+        attribute vec3 a_position;
+
         attribute vec2 a_texCoord;
 
         uniform mat4 u_matrix;
@@ -13,22 +14,25 @@ const shaders = {
         varying vec2 v_texCoord;
 
         void main() {
-            gl_Position = u_matrix * vec4(a_position, 0.0, 1.0);
+            gl_Position = u_matrix * vec4(a_position, 1.0);
 
             v_texCoord = a_texCoord;
         }
     `,
     // fragment shader, can be replaced by layer.options.fragmentShader
-    'fragmentShader' : `
+    'fragmentShader': `
         precision mediump float;
 
         uniform sampler2D u_image;
+
         uniform float u_opacity;
 
         varying vec2 v_texCoord;
 
         void main() {
+
             gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
+
         }
     `
 };
@@ -61,15 +65,51 @@ const ImageGLRenderable = Base => {
             const y1 = y;
             const y2 = y + h;
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                x1, y1,
-                x2, y1,
-                x1, y2,
-                x1, y2,
-                x2, y1,
-                x2, y2
+                x1, y1, 0.0,  //0
+                x2, y1, 0.0, //1
+                x1, y2, 0.0, //2
+                x1, y2, 0.0,  //2
+                x2, y1, 0.0, //1
+                x2, y2, 0.0 //3
             ]), gl.DYNAMIC_DRAW);
 
             gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+
+        /**
+         * 
+         * @param {HtmlElement} image 
+         * @param {Array} vertices 
+         * @param {Array} triangles 
+         * @param {number} x 
+         * @param {number} y 
+         * @param {number} w 
+         * @param {number} h 
+         * @param {number} opacity 
+         */
+        drawGLTin(image, vertices, triangles, x, y, w, h, opacity) {
+            const gl = this.gl;
+            this.loadTexture(image);
+            gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
+            gl.uniform1f(this.program['u_opacity'], opacity);
+            //
+            const arr=[],indices=[];
+            //
+            for (var i = 0, len = vertices.length; i < len; i++) {
+                arr.push(x + vertices[i][0]);
+                arr.push(y + vertices[i][1]);
+                arr.push(vertices[i][2]);
+            }
+            //
+            for (var i = 0, len = triangles.length; i < len; i++) {
+                indices.push(triangles[i]);
+            }
+            //bufferdata vertices
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
+            //bufferdata indices
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices), gl.STATIC_DRAW);
+            //draw
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
         }
 
         /**
@@ -103,12 +143,12 @@ const ImageGLRenderable = Base => {
             gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
             this.enableVertexAttrib(['a_texCoord', 2]);
             gl.bufferData(gl.ARRAY_BUFFER, this.copy12([
-                0.0,  0.0,
-                1.0,  0.0,
-                0.0,  1.0,
-                0.0,  1.0,
-                1.0,  0.0,
-                1.0,  1.0]), gl.STATIC_DRAW);
+                0.0, 0.0,
+                1.0, 0.0,
+                0.0, 1.0,
+                0.0, 1.0,
+                1.0, 0.0,
+                1.0, 1.0]), gl.STATIC_DRAW);
 
             this.enableSampler('u_image');
 
@@ -117,9 +157,13 @@ const ImageGLRenderable = Base => {
 
             this.posBuffer = this.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-            this.enableVertexAttrib(['a_position', 2]);
+            this.enableVertexAttrib(['a_position', 3]);
 
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+
+            // Enable indices buffer
+            this.indicesBuffer = this.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
         }
 
         /**
