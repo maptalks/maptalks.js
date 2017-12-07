@@ -112,8 +112,9 @@ class Painter extends Class {
             pitched = (map.getPitch() !== 0),
             rotated = (map.getBearing() !== 0);
         let params = this._cachedParams;
-        if (this._completeParams && res <= this._completeParams._res) {
-            params = this._completeParams;
+        if (this._unsimpledParams && res <= this._unsimpledParams._res) {
+            //if res is smaller, return unsimplified params directly
+            params = this._unsimpledParams;
         } else if (!params ||
             // refresh paint params
             // simplified, but not same zoom
@@ -124,14 +125,17 @@ class Painter extends Class {
         ) {
             //render resources geometry returned are based on 2d points.
             params = this.geometry._getPaintParams();
+            if (!params) {
+                return null;
+            }
             params._res = res;
             params._simplified = this.geometry._simplified;
             if (!params._simplified) {
-                if (!this._completeParams) {
-                    this._completeParams = params;
+                if (!this._unsimpledParams) {
+                    this._unsimpledParams = params;
                 }
-                if (res > this._completeParams._res) {
-                    this._completeParams._res = res;
+                if (res > this._unsimpledParams._res) {
+                    this._unsimpledParams._res = res;
                 }
             }
             this._cachedParams = params;
