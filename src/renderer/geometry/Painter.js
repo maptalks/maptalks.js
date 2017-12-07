@@ -557,7 +557,7 @@ class Painter extends Class {
         delete this._extent2D;
         delete this._markerExtent;
         delete this._cachedParams;
-        delete this._completeParams;
+        delete this._unsimpledParams;
     }
 
     getAltitude() {
