@@ -319,6 +319,7 @@ describe('Geometry.Marker', function () {
         });
 
         it('change marker file by updateSymbol', function (done) {
+            this.timeout(10000);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
                     'markerFile' : 'resources/tile.png'
