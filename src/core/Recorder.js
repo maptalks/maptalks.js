@@ -22,7 +22,7 @@
         /**
          * 
          */
-        this._laskQueue=[];
+        this._lastQueue=[];
         /**
          * 操作集
          * @param {Array} _queue
@@ -62,7 +62,7 @@
     apply(glProgram){
         //1.深拷贝对象
         var [...cp] = this._queue.reverse();
-        this._laskQueue = cp;
+        this._lastQueue = cp;
         //2.清理queue
         this._queue=[];
         //3.应用
@@ -74,9 +74,9 @@
      */
     reapply(glProgram){
         glProgram.useProgram();
-        const len = this._laskQueue.length,
+        const len = this._lastQueue.length,
             gl = glProgram.gl;
-        let task = this._laskQueue.pop();
+        let task = this._lastQueue.pop();
         while(task!=null){
             gl[task.name].apply(gl,task.rest);
             task.pop();
