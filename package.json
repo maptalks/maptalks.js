@@ -43,7 +43,7 @@
     "rollup-plugin-multidest": "^1.0.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "three": "^0.87.1",
-    "twgl.js": "^3.5.0",
+    "twgl.js": "^3.8.0",
     "ypromise": "^0.3.0"
   }
 }

@@ -3,11 +3,13 @@
  * -simulate HTMLCanvasElement action
  * -using GLContext instead of WebGLRenderingContext
  * @author yellow date 2017/8/23
+ * @modify support webworker 
  */
 const GLContext = require('./GLContext'),
     merge = require('./../utils/merge'),
     stamp = require('./../utils/stamp').stamp,
     setId = require('./../utils/stamp').setId,
+    isString = require('./../utils/isString'),
     GLExtension = require('./GLExtension'),
     GLLimits = require('./GLLimits'),
     Dispose = require('./../utils/Dispose'),
@@ -23,13 +25,17 @@ const GLContext = require('./GLContext'),
 class GLCanvas extends Dispose {
     /**
      * 
-     * @param {HTMLCanvasElement} canvas 
+     * @param {HTMLCanvasElement|String} canvas,default is htmlCanvasElement,or canvas's fusion_id 
      * @param {Object} [options]
      * @param {number} [options.width]
      * @param {number} [options.height]
      */
     constructor(canvas,options ={}) {
         super();
+        /**
+         *  
+         */
+
         this._rootId = stamp(canvas);
         canvas.width = options.width || canvas.clientWidth;
         canvas.height = options.height || canvas.clientHeight;
@@ -48,8 +54,8 @@ class GLCanvas extends Dispose {
             stencil: options.stencil || true,
             antialias: options.antialias || false,
             premultipliedAlpha: options.premultipliedAlpha || true,
-            preserveDrawingBuffer: options.preserveDrawingBuffer || false
-            //failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
+            preserveDrawingBuffer: options.preserveDrawingBuffer || false,
+            failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
         }
     }
     /**

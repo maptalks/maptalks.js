@@ -46,7 +46,9 @@ class Tiny {
          * @type {GLProgram}
          */
         this._glPrgram = null;
-        //存储tiny实例
+        /**
+         * store this instance to Global
+         */
         Tiny.instances.push(this);
     }
     /**
@@ -75,7 +77,7 @@ class Tiny {
     /**
      * 
      * @param {String} name 
-     * @param {[]} rest 
+     * @param {Array} rest 
      */
     push(name, ...rest) {
         const glPrograms = GLPROGRAMS,
@@ -93,7 +95,7 @@ class Tiny {
     }
     /**
      * 
-     * @param {*} glProgram 
+     * @param {GLProgram} glProgram 
      * @param {*} internal 
      * @param {*} overrall 
      */
@@ -133,9 +135,8 @@ class Tiny {
 
 }
 /**
- * tiny实例集
+ * Global instances of Tiny
  */
 Tiny.instances = [];
-
 
 module.exports = Tiny;

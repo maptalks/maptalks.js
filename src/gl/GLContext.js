@@ -108,11 +108,6 @@ class GLContext extends Dispose {
          */
         this._tiny = new Tiny(this);
         /**
-         * current using program
-         * @type {GLProgram}
-         */
-        //this._glProgram = null;
-        /**
          * setup env
          */
         this._setup();

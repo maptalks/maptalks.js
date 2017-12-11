@@ -30,18 +30,6 @@
         this._queue = [];
     }
     /**
-     * 组织执行操作的队列
-     * @method increase
-     * @param {*} name 
-     * @param {*} rest 
-     */
-    increase(name,...rest){
-        this._queue.push({
-            name:name,
-            rest:this._exact(rest)
-        });
-    }
-    /**
      * 深拷贝数组对象，防止原应用处理数组引用导致应用时数值错误
      * @private
      * @param {Array} rest 
@@ -56,12 +44,24 @@
         return rest;
     }
     /**
+     * 组织执行操作的队列
+     * @method increase
+     * @param {String} name 
+     * @param {Array} rest 
+     */
+    increase(name,...rest){
+        this._queue.push({
+            name:name,
+            rest:this._exact(rest)
+        });
+    }
+    /**
      * 
      * @param {GLProgram} glProgram 
      */
     apply(glProgram){
-        //1.深拷贝对象
-        var [...cp] = this._queue.reverse();
+        //1.deep copy the target operation queue
+        let [...cp] = this._queue.reverse();
         this._lastQueue = cp;
         //2.清理queue
         this._queue=[];
@@ -82,7 +82,6 @@
             task.pop();
         }
     }
-
  }
 
  module.exports= Recorder;
