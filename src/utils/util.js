@@ -1,7 +1,14 @@
 /**
  * 全局HTMLCanvasElement
  */
-const CANVASES={};
+const CANVASES={
+    /**
+     * 取出canvas htmldoucment
+     */
+    getCanvasById:function(){
+
+    }
+};
 /**
  * 全局GLCONTEXT
  */

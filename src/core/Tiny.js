@@ -46,10 +46,6 @@ class Tiny {
          * @type {GLProgram}
          */
         this._glPrgram = null;
-        /**
-         * store this instance to Global
-         */
-        Tiny.instances.push(this);
     }
     /**
      * indicate wether it's need to be updated

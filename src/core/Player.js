@@ -4,6 +4,7 @@
  */
 
 /**
+ * 将记录的操作在主线程播放出来
  * @class Player
  */
 class Player{

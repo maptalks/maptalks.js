@@ -18,28 +18,31 @@ const GLContext = require('./GLContext'),
     WEBGLCONTEXTS = require('./../utils/util').WEBGLCONTEXTS,
     GLEXTENSIONS = require('./../utils/util').GLEXTENSIONS,
     GLLIMITS = require('./../utils/util').GLLIMITS;
+
+const GLCanvasOptions = {
+    width: 800,
+    height: 600
+}
+
 /**
+ * 逻辑变更：2017/12/12
+ * GLCanvas不对dom进行操作，所有操作移回到Player
+ * GlCanvas接受对dom操作的记录
  * a virtual HTMLCanvasElement element
  * @class
  */
 class GLCanvas extends Dispose {
     /**
      * 
-     * @param {HTMLCanvasElement|String} canvas,default is htmlCanvasElement,or canvas's fusion_id 
+     * @param {HTMLCanvasElement|String} element,default is htmlCanvasElement,or canvas's fusion_id 
      * @param {Object} [options]
      * @param {number} [options.width]
      * @param {number} [options.height]
      */
-    constructor(canvas,options ={}) {
+    constructor(element, options = {}) {
         super();
-        /**
-         *  
-         */
-
-        this._rootId = stamp(canvas);
-        canvas.width = options.width || canvas.clientWidth;
-        canvas.height = options.height || canvas.clientHeight;
-        CANVASES[this._rootId] = canvas;
+        this._options = merge({}, GLCanvasOptions, options);
+        this._rootId = isString(element) ? element : stamp(element);
     }
     /**
      * get context attributes
@@ -74,7 +77,9 @@ class GLCanvas extends Dispose {
         const id = this._id,
             rootId = this._rootId;
         if (!GLCONTEXTS[id]) {
+            //1.get the WebGLRenderingContext parms
             const attrib = this._getContextAttributes(options);
+            //2.record 
             const canvas = CANVASES[rootId];
             if (!WEBGLCONTEXTS[rootId])
                 WEBGLCONTEXTS[rootId] = canvas.getContext(renderType, attrib) || canvas.getContext(`experimental-${renderType}`, attrib);
@@ -99,14 +104,14 @@ class GLCanvas extends Dispose {
     /**
      * 
      */
-    get parentElement(){
+    get parentElement() {
         const id = this._rootId;
         return CANVASES[id].parentElement
     }
     /**
      * @type {HTMLCanvasElement}
      */
-    get HTMLCanvasElement(){
+    get HTMLCanvasElement() {
         const id = this._rootId;
         return CANVASES[id]
     }
@@ -130,56 +135,56 @@ class GLCanvas extends Dispose {
     /**
      * 
      */
-    set width(v){
+    set width(v) {
         const id = this._rootId;
         CANVASES[id].width = v;
     }
     /**
      * 
      */
-    set height(v){
+    set height(v) {
         const id = this._rootId;
         CANVASES[id].height = v;
     }
     /**
      * 
      */
-    get width(){
+    get width() {
         const id = this._rootId;
         return CANVASES[id].width;
     }
     /**
      * 
      */
-    get height(){
+    get height() {
         const id = this._rootId;
         return CANVASES[id].height;
     }
     /**
      * 
      */
-    get clientWidth(){
+    get clientWidth() {
         const id = this._rootId;
         return CANVASES[id].clientWidth;
     }
     /**
      * 
      */
-    get clientHeight(){
+    get clientHeight() {
         const id = this._rootId;
         return CANVASES[id].clientHeight;
     }
     /**
      * 
      */
-    get offsetLeft(){
+    get offsetLeft() {
         const id = this._rootId;
         return CANVASES[id].offsetLeft;
     }
     /**
      * 
      */
-    get offsetTop(){
+    get offsetTop() {
         const id = this._rootId;
         return CANVASES[id].offsetTop;
     }
