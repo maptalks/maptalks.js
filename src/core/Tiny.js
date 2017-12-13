@@ -13,15 +13,16 @@ const stamp = require('./../utils/stamp').stamp,
     GLPROGRAMS = require('./../utils/util').GLPROGRAMS,
     GLSHADERS = require('./../utils/util').GLSHADERS,
     GLTEXTURES = require('./../utils/util').GLTEXTURES;
+
 /**
  * @class
  */
 class Tiny {
     /**
      * 
-     * @param {GLContext} glContext 
+     * @param {GLContext|GLCanvas} element 
      */
-    constructor(glContext) {
+    constructor(element) {
         /**
          * @type {GLContext}
          */

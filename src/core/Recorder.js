@@ -1,21 +1,23 @@
+const Dispose = require('./../utils/Dispose');
+
 /**
- * 状态记录器
- * @author yellow date 2017/11/10
- * @description 提供状态的搜集，上一状态存储，下一状态应用
- */
-/**
+ * @class
  * @author yellow date 2017/12/12
  * 操作记录对象，提供
  * -记录操作名称
  * -记录操作相关参数
  */
-class Record {
+export default class Record extends Dispose {
 
     constructor(opName, ...rest) {
+        super();
         this._opName = opName;
         this._rest = this._exact(rest)
     }
-
+    /**
+     * @private
+     * @param {*} rest 
+     */
     _exact(rest) {
         for (let i = 0, len = rest.length; i < len; i++) {
             let target = rest[i];
@@ -25,45 +27,56 @@ class Record {
         }
         return rest;
     }
+    /**
+     * 修改索引对饮参数值，Player执行Record时自动替换
+     * @private
+     * @param {*} ptIndex 
+     * @param {*} ptName 
+     */
+    _exactIndex(ptIndex, ptName) {
+        this._rest[ptIndex] = ptName;
+    }
 
 }
-/**   
- *  webgl operaion records
+
+/**
+ * webgl operaion records
  * 与Record的区别是
- * -记录操作时传入的指针
+ * 记录操作时传入的指针
  */
 class GLRecord extends Record {
 
-    constructor(opName, ptName, ptIndex, ...rest) {
+    constructor(opName, ...rest, ptName = null, ptIndex = -1) {
         super(opName, ...rest);
         this._ptName = ptName;
         this._ptIndex = ptIndex;
-    }
-    /**
-     * 修改索引对饮参数值，Player执行Record时自动替换
-     */
-    _exactIndex(){
-        this._rest[this._ptIndex] = this._ptName;
+        //修改Record指针
+        ptName && ptIndex !== -1 ? this._exactIndex(this._ptIndex, this._ptName) : null;
     }
 
 }
+
 /**
+ * @author
+ * @class
  * some dom opearion which needs to be stored
  * 提供dom元素名称，player执行时通过名称搜索获取元素，后进行操作
  */
 class DomRecord {
 
-    constructor(opName,domName,...rest) {
-        super(opName,...rest);
+    constructor(opName, ...rest, domName) {
+        super(opName, ...rest);
         this._domName = domName;
     }
 
 }
+
 /**
  * 每个glProgram对应一个Recoder对象
  * @class Recorder
  */
 class Recorder {
+
     /**
      * 
      * @param {Oject} [options]
@@ -79,36 +92,26 @@ class Recorder {
          */
         this._lastQueue = [];
         /**
-         * 操作集
-         * @param {Array} _queue
+         * dom操作
+         * @type {Array}
          */
-        this._queue = [];
+        this._domQueue = [];
+        /**
+         * gl操作
+         * @type {Array} _queue
+         */
+        this._glQueue = [];
     }
     /**
-     * 深拷贝数组对象，防止原应用处理数组引用导致应用时数值错误
-     * @private
-     * @param {Array} rest 
+     * 添加记录到记录器
+     * @param {GLRecord|DomRecord} record 
      */
-    _exact(rest) {
-        for (let i = 0, len = rest.length; i < len; i++) {
-            let target = rest[i];
-            if (target instanceof Float32Array) {
-                rest[i] = new Float32Array(target);
-            }
+    increase(record) {
+        if (record instanceof GLRecord) {
+            this._glQueue.push(record);
+        } else if (record instanceof DomRecord) {
+            this._domQueue.push(record);
         }
-        return rest;
-    }
-    /**
-     * 组织执行操作的队列
-     * @method increase
-     * @param {String} name 
-     * @param {Array} rest 
-     */
-    increase(name, ...rest) {
-        this._queue.push({
-            name: name,
-            rest: this._exact(rest)
-        });
     }
     /**
      * 
@@ -116,10 +119,10 @@ class Recorder {
      */
     apply(glProgram) {
         //1.deep copy the target operation queue
-        let [...cp] = this._queue.reverse();
+        let [...cp] = this._glQueue.reverse();
         this._lastQueue = cp;
         //2.清理queue
-        this._queue = [];
+        this._glQueue = [];
         //3.应用
         this.reapply(glProgram);
     }
@@ -137,6 +140,11 @@ class Recorder {
             task.pop();
         }
     }
+
 }
 
-module.exports = Recorder;
+module.exports = {
+    GLRecord,
+    DomRecord,
+    Recorder
+};

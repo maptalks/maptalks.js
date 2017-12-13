@@ -10,6 +10,8 @@ const GLContext = require('./GLContext'),
     stamp = require('./../utils/stamp').stamp,
     setId = require('./../utils/stamp').setId,
     isString = require('./../utils/isString'),
+    DomRecord = require('./../core/Recorder').DomRecord,
+    Recorder = require('./../core/Recorder').Recorder,
     GLExtension = require('./GLExtension'),
     GLLimits = require('./GLLimits'),
     Dispose = require('./../utils/Dispose'),
@@ -79,7 +81,11 @@ class GLCanvas extends Dispose {
         if (!GLCONTEXTS[id]) {
             //1.get the WebGLRenderingContext parms
             const attrib = this._getContextAttributes(options);
-            //2.record 
+            //2.record (包括experimental-webgl)
+            const record = new DomRecord('getContext',attrib);
+            //3.record glContext
+            GLCONTEXTS[id] = new GLContext({ renderType: renderType, canvas: canvas, gl: gl, glLimits: glLimits, glExtension: glExtension });
+
             const canvas = CANVASES[rootId];
             if (!WEBGLCONTEXTS[rootId])
                 WEBGLCONTEXTS[rootId] = canvas.getContext(renderType, attrib) || canvas.getContext(`experimental-${renderType}`, attrib);

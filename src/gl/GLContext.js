@@ -71,27 +71,27 @@ const BRIDGE_ARRAY = [
 ];
 /**
  * @class
- * @example
  */
 class GLContext extends Dispose {
+
     /**
-     * @param {Object} options
-     * @param {HTMLCanvasElement} options.canvas
-     * @param {WebGLRenderingContext} options.gl
-     * @param {String} options.renderType 'webgl'、'webgl2'
+     * 
+     * @param {String} canvasId 
+     * @param {*} options 
      * @param {GLExtension} [options.glExtension] 
      * @param {GLLimits} [options.glLimits]
      */
-    constructor(options = {}) {
+    constructor(canvasId, options = {}) {
         super();
-        /**
-         * @type {HTMLCanvasElement}
+        /*
+         * merge all options
          */
-        this._canvas = options.canvas || null;
+        options = merge({}, options);
         /**
-         *  @type {WebGLRenderingContext}
+         * canvasId,用此id获取gl对象
+         * @type {String}
          */
-        this._gl = options.gl;
+        this._canvasId = canvasId;
         /**
          * webgl扩展
          * @type {GLExtension}
@@ -103,83 +103,26 @@ class GLContext extends Dispose {
          */
         this._glLimits = options.glLimits;
         /**
-         * the ticker datasource
-         * @type {Tiny}
-         */
-        this._tiny = new Tiny(this);
-        /**
-         * setup env
-         */
-        this._setup();
-        /**
          * map glContext to Context
          */
         this._map();
     };
     /**
-     * 设置绘制区域的规则
-     * 1. 混合颜色
-     * 2. 深度
-     * 3.
-     */
-    _setup() {
-        const gl = this._gl;
-        //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
-        //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
-        //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，
-        //作用为：源颜色的alpha作为不透明度，即源颜色alpha值越大，混合时占比越高，混合时最常用的方式
-        gl.enable(GLConstants.BLEND);
-        gl.blendFunc(GLConstants.ONE, GLConstants.ONE_MINUS_SRC_ALPHA);
-        //为了模仿真实物体和透明物体的混合颜色，需要使用深度信息
-        //http://www.cnblogs.com/aokman/archive/2010/12/13/1904723.html
-        //模版缓存区测试，用来对比当前值与预设值，用以判断是否更新此值
-        //顺序为：(framment + associated data) - pixel ownership test - scissor test
-        //       - alpha test - stencil test - depth test
-        //       - blending - dithering - logic op - framebuffer
-        //在模板测试的过程中，可以先使用一个比较用掩码（comparison mask）与模板缓冲区中的值进行位与运算，
-        //再与参考值进行比较，从而实现对模板缓冲区中的值的某一位上的置位状态的判断。
-        gl.enable(GLConstants.STENCIL_TEST);
-        //gl.stencilFunc(gl)
-        gl.enable(GLConstants.DEPTH_TEST);
-        //深度参考值小于模版值时，测试通过
-        gl.depthFunc(GLConstants.LEQUAL);
-        gl.depthMask(false);
-    }
-    /**
      * map相关属性与方法
      */
     _map() {
-        //get the WebGLRenderingContext
-        const gl = this._gl;
-        //get tiny
-        const tiny = this._tiny;
-        //map constant
-        for (const key in GLConstants) {
-            if (!this.hasOwnProperty(key)) {
-                const target = GLConstants[key];
-                if (!this[key] && !!target)
-                    this[key] = target;
-            }
-        }
-        //map ImplementBridge
-        for (let i = 0, len = BRIDGE_ARRAY.length; i < len; i++) {
-            const key = BRIDGE_ARRAY[i];
-            this[key] = (...rest) => {
-                return gl[key].apply(gl, rest);
-            }
-        }
         //map internalTinyOperation
         for (const key in ALL_ENUM) {
             this[key] = (...rest) => {
                 //gl[key].apply(gl, rest);
-                tiny.push(key,...rest);
+                tiny.push(key, ...rest);
             }
         }
     }
     /**
      * @return {WebGLRenderingContext}
      */
-    get gl(){
+    get gl() {
         return this._gl;
     }
     /**
@@ -247,21 +190,21 @@ class GLContext extends Dispose {
     /**
      * @return {WebGLBuffer}
      */
-    createBuffer(){
+    createBuffer() {
         const gl = this._gl;
         return gl.createBuffer();
     }
     /**
      * @type {WebGLFramebuffer}
      */
-    createFramebuffer(){
+    createFramebuffer() {
         const gl = this._gl;
         return gl.createFramebuffer();
     }
     /**
      * @type {WebGLRenderbuffer}
      */
-    createRenderbuffer(){
+    createRenderbuffer() {
         const gl = this._gl;
         return gl.createRenderbuffer();
     }
@@ -300,7 +243,7 @@ class GLContext extends Dispose {
     shaderSource(shader, source) {
         const gl = this._gl;
         //1.如果不存在'precision mediump float;'则添加
-        source = source.indexOf('precision') === -1?`precision mediump float;\n${source}`:source;
+        source = source.indexOf('precision') === -1 ? `precision mediump float;\n${source}` : source;
         //指定glsl版本
         //source = source.indexOf('#version') === -1?`#version 300 es\n${source}`:source;
         gl.shaderSource(shader, source);
@@ -323,27 +266,27 @@ class GLContext extends Dispose {
 
 
     //webgl2 
-    createTransformFeedback(){
+    createTransformFeedback() {
         const gl = this._gl;
-        gl.createTransformFeedback.apply(gl,arguments);
+        gl.createTransformFeedback.apply(gl, arguments);
     }
 
-    clear(){
-
-    }
-
-    clearColor(){
+    clear() {
 
     }
 
-    clearDepth(){
+    clearColor() {
 
     }
 
-    clearStencil(){
+    clearDepth() {
 
     }
-    
+
+    clearStencil() {
+
+    }
+
 }
 
 module.exports = GLContext;
