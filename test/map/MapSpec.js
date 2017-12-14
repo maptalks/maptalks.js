@@ -29,6 +29,14 @@ describe('Map.Spec', function () {
     });
 
     describe('status', function () {
+        it('has id and is readonly', function () {
+            var id = map.id;
+            expect(id).to.be.ok();
+            map.id = 2;
+            //id is readonly
+            expect(map.id !== 2).to.be.ok();
+        });
+
         it('getSize', function () {
             var size = map.getSize();
 

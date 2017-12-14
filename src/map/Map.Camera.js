@@ -273,6 +273,7 @@ Map.include(/** @lends Map.prototype */{
      * this.viewMatrix = cameraWorldMatrix.inverse()
      * this.projViewMatrix = projMatrix * viewMatrix
      * this.projViewMatrixInverse = projViewMatrix.inverse()
+     *  @private
      */
     _calcMatrices: function () {
         // closure matrixes to reuse

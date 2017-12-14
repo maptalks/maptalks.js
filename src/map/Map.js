@@ -6,7 +6,8 @@ import {
     isNil,
     isString,
     isFunction,
-    sign
+    sign,
+    UID
 } from 'core/util';
 import Class from 'core/Class';
 import Browser from 'core/Browser';
@@ -166,6 +167,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete opts['layers'];
 
         super(opts);
+
+        Object.defineProperty(this, 'id', {
+            value: UID(),
+            writable: false
+        });
 
         this._loaded = false;
         this._initContainer(container);
@@ -1432,6 +1438,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this.isRemoved()) {
             return this;
         }
+        this._fireEvent('removestart');
         this._removeDomEvents();
         this._clearHandlers();
         this.removeBaseLayer();
@@ -1449,6 +1456,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this._panels;
         delete this._containerDOM;
         delete this.renderer;
+        this._fireEvent('removeend');
         return this;
     }
 
