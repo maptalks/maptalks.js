@@ -7,14 +7,15 @@ Map.include(/** @lends Map.prototype */ {
             this._viewHistory = [];
             this._viewHistoryPointer = 0;
         }
-
+        const old = this._getCurrentView();
         for (let i = this._viewHistory.length - 1; i >= 0; i--) {
             if (equalMapView(view, this._viewHistory[i])) {
                 this._viewHistoryPointer = i;
+                this._fireViewChange(old, view);
                 return;
             }
         }
-        const old = this._getCurrentView();
+
         if (this._viewHistoryPointer < this._viewHistory.length - 1) {
             // remove old 'next views'
             this._viewHistory.splice(this._viewHistoryPointer + 1);
