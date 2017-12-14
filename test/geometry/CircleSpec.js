@@ -6,13 +6,11 @@ describe('Geometry.Circle', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.canvasContainer;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
@@ -184,5 +182,46 @@ describe('Geometry.Circle', function () {
 
         var p2 = new maptalks.Point(400 + 10 + 2, 300);
         expect(geometry.containsPoint(p2)).to.be.ok();
+    });
+
+    it('redraw when map is pitched', function (done) {
+        var circle = new maptalks.Circle(center, 20, {
+            symbol: {
+                'polygonFill' : '#f00',
+                'lineWidth': 6
+            }
+        });
+        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate' : true });
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted();
+                done();
+            });
+            map.setPitch(60);
+        });
+        map.addLayer(layer);
+
+    });
+
+    it('redraw when map not pitched', function (done) {
+        map.setPitch(60);
+        var circle = new maptalks.Circle(center, 20, {
+            symbol: {
+                'polygonFill' : '#f00',
+                'lineWidth': 6
+            }
+        });
+        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate' : true });
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted();
+                done();
+            });
+            map.setPitch(0);
+        });
+        map.addLayer(layer);
+
     });
 });

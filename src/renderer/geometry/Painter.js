@@ -108,11 +108,14 @@ class Painter extends Class {
      */
     getPaintParams(dx, dy, ignoreAltitude) {
         const map = this.getMap(),
+            geometry = this.geometry,
             res = map.getResolution(),
             pitched = (map.getPitch() !== 0),
             rotated = (map.getBearing() !== 0);
         let params = this._cachedParams;
-        if (this._unsimpledParams && res <= this._unsimpledParams._res) {
+
+        const paintAsPath = geometry._paintAsPath && geometry._paintAsPath();
+        if (paintAsPath && this._unsimpledParams && res <= this._unsimpledParams._res) {
             //if res is smaller, return unsimplified params directly
             params = this._unsimpledParams;
         } else if (!params ||
@@ -120,17 +123,17 @@ class Painter extends Class {
             // simplified, but not same zoom
             params._res !== map.getResolution() ||
             // refresh if requested by geometry
-            this._pitched !== pitched && this.geometry._redrawWhenPitch() ||
-            this._rotated !== rotated && this.geometry._redrawWhenRotate()
+            this._pitched !== pitched && geometry._redrawWhenPitch() ||
+            this._rotated !== rotated && geometry._redrawWhenRotate()
         ) {
             //render resources geometry returned are based on 2d points.
-            params = this.geometry._getPaintParams();
+            params = geometry._getPaintParams();
             if (!params) {
                 return null;
             }
             params._res = res;
-            params._simplified = this.geometry._simplified;
-            if (!params._simplified) {
+
+            if (!geometry._simplified && paintAsPath) {
                 if (!this._unsimpledParams) {
                     this._unsimpledParams = params;
                 }
@@ -434,9 +437,13 @@ class Painter extends Class {
         if (this._hasShadow) {
             ctx.shadowBlur = this.geometry.options['shadowBlur'];
             ctx.shadowColor = this.geometry.options['shadowColor'];
+            ctx.shadowOffsetX = this.geometry.options['shadowOffsetX'];
+            ctx.shadowOffsetY = this.geometry.options['shadowOffsetY'];
         } else if (ctx.shadowBlur) {
             ctx.shadowBlur = null;
             ctx.shadowColor = null;
+            ctx.shadowOffsetX = null;
+            ctx.shadowOffsetY = null;
         }
     }
 

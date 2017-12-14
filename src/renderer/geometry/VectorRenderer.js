@@ -22,7 +22,7 @@ const el = {
         return (this instanceof Ellipse) || (this instanceof Sector);
     },
 
-    _paintAsPolygon: function () {
+    _paintAsPath: function () {
         const map = this.getMap();
         const altitude = this._getPainter().getAltitude();
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
@@ -31,7 +31,7 @@ const el = {
 
     _getPaintParams() {
         const map = this.getMap();
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
@@ -41,7 +41,7 @@ const el = {
     },
 
     _paintOn: function () {
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Canvas.polygon.apply(Canvas, arguments);
         } else {
             return Canvas.ellipse.apply(Canvas, arguments);
@@ -78,7 +78,7 @@ Sector.include(el, {
     _redrawWhenPitch : () => true,
 
     _getPaintParams() {
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const map = this.getMap();
@@ -90,7 +90,7 @@ Sector.include(el, {
     },
 
     _paintOn: function () {
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Canvas.polygon.apply(Canvas, arguments);
         } else {
             const r = this.getMap().getBearing();
@@ -108,6 +108,8 @@ Sector.include(el, {
 //----------------------------------------------------
 
 LineString.include({
+    _paintAsPath: () => true,
+
     arrowStyles: {
         'classic': [3, 4]
     },
@@ -200,6 +202,8 @@ LineString.include({
 });
 
 Polygon.include({
+    _paintAsPath: () => true,
+
     _getPaintParams(disableSimplify) {
         const maxZoom = this.getMap().getGLZoom();
         const prjVertexes = this._getPrjShell();
