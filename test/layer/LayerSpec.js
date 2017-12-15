@@ -210,7 +210,8 @@ describe('#Layer', function () {
             symbol : {
                 markerType : 'ellipse',
                 markerWidth : 10,
-                markerHeight : 10
+                markerHeight : 10,
+                markerFill : '#f00'
             }
         }));
         map.addLayer([layer2]);
@@ -221,17 +222,31 @@ describe('#Layer', function () {
         layer1.setOpacity(0.5);
         expect(layer1.getOpacity()).to.be.eql(0.5);
 
-        layer2.setOpacity(0.1);
-        expect(layer2.getOpacity()).to.be.eql(0.1);
+        layer2.once('layerload', function () {
+            layer2.once('layerload', function () {
+                expect(layer2.getOpacity()).to.be.eql(0.1);
+                var canvas = map.getRenderer().canvas;
+                var size = map.getSize().toPoint();
+                var context = canvas.getContext('2d');
+                var imgData = context.getImageData(Math.round(size.x / 2), Math.round(size.y / 2), 1, 1).data;
+                expect(imgData[3]).to.be.below(40);
+                done();
+            });
+            layer2.setOpacity(0.1);
+        });
 
-        setTimeout(function () {
-            var canvas = map.getRenderer().canvas;
-            var size = map.getSize().toPoint();
-            var context = canvas.getContext('2d');
-            var imgData = context.getImageData(size.x / 2, size.y / 2, 1, 1).data;
-            expect(imgData[3]).to.be.below(40);
-            done();
-        }, 100);
+        layer2.setOpacity(0.6);
+        expect(layer2.getOpacity()).to.be.eql(0.6);
+
+        // setTimeout(function () {
+        //     var canvas = map.getRenderer().canvas;
+        //     var size = map.getSize().toPoint();
+        //     var context = canvas.getContext('2d');
+        //     var imgData = context.getImageData(Math.round(size.x / 2), Math.round(size.y / 2), 1, 1).data;
+        //     console.log(imgData[3]);
+        //     expect(imgData[3]).to.be.below(40);
+        //     done();
+        // }, 60);
     });
 
 });

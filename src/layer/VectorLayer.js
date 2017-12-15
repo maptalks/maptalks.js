@@ -139,6 +139,7 @@ class VectorLayer extends OverlayLayer {
     }
 
     onConfig(conf) {
+        super.onConfig(conf);
         if (conf['enableAltitude'] || conf['drawAltitude'] || conf['altitudeProperty']) {
             const renderer = this.getRenderer();
             if (renderer && renderer.setToRedraw) {
