@@ -71,6 +71,10 @@ const BRIDGE_ARRAY = [
 ];
 /**
  * @class
+ * 
+ * GlContext类，包含 glProgram类
+ * 根据glProgram类构建子程序
+ * 
  */
 class GLContext extends Dispose {
 
