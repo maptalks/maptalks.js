@@ -1,3 +1,4 @@
+import Browser from 'core/Browser';
 import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
 import { isNil } from 'core/util';
 import { extendSymbol } from 'core/util/style';
@@ -404,9 +405,10 @@ class DrawTool extends MapTool {
             return;
         }
         const registerMode = this._getRegisterMode();
-        const coordinate = param['coordinate'];
         const path = this._clickCoords;
-        path.push(coordinate);
+        if (!Browser.mobile) {
+            path.push(param['coordinate']);
+        }
         if (path.length < 2) {
             return;
         }
