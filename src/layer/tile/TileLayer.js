@@ -12,13 +12,13 @@ import Layer from '../Layer';
  * @property {String|Function}     options.urlTemplate         - url templates
  * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
+ * @property {Boolean}             [options.zoomBackground=false] - whether to draw a background of baselayer during or after zooming, false by default
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
  * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
  * @property {Number[]}            [options.tileSystem=null]     - tile system number arrays
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
- * @property {Boolean}             [options.cacheTiles=true]     - whether cache tiles
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
  * @memberOf TileLayer
  * @instance
@@ -29,12 +29,7 @@ const options = {
 
     'repeatWorld': true,
 
-    //map's animation duration to start tilelayer's animation
-    'durationToAnimate' : 2000,
-    //the update interval to render tiles during tilelayer's animation
-    'updateIntervalOnAnimating' : 400,
-
-    'cssFilter': null,
+    'zoomBackground' : false,
 
     'crossOrigin': null,
 
@@ -45,8 +40,6 @@ const options = {
     'fadeAnimation' : !IS_NODE,
 
     'debug': false,
-
-    'cacheTiles': true,
 
     'renderer' : (() => {
         return Browser.webgl ? 'gl' : 'canvas';

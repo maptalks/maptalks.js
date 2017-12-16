@@ -29,7 +29,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
- * @property {Boolean} [options.zoomBackground=false]           - leaves a background after zooming.
+ * @property {Boolean} [options.zoomBackground=true]            - override baseLayer's zoomBackground option, true by default.
  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
@@ -78,8 +78,8 @@ const options = {
         return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
-    //still leave background after zooming, set it to false if baseLayer is a transparent layer
-    'zoomBackground': false,
+
+    'zoomBackground': true,
 
     'panAnimation': (function () {
         return !IS_NODE;
@@ -1449,7 +1449,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this._getRenderer()) {
             this._getRenderer().remove();
         }
-        this._clearAllListeners();
         if (this._containerDOM.innerHTML) {
             this._containerDOM.innerHTML = '';
         }
@@ -1457,6 +1456,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this._containerDOM;
         delete this.renderer;
         this._fireEvent('removeend');
+        this._clearAllListeners();
         return this;
     }
 

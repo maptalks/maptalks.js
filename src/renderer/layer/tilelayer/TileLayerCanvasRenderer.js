@@ -36,7 +36,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const map = this.getMap();
         if (this._shouldSaveBack() && (map.isZooming() && (map.isMoving() || map.isRotating())) && this._tileZoom !== tileZoom) {
             this._saveBackground();
-            this._backZoom = this._tileZoom;
             this._backRefreshed = true;
         }
     }
@@ -98,10 +97,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         if (this._tileCountToLoad === 0) {
             if (!loading) {
-                if (this.background && !map.options['zoomBackground'] && !map.isAnimating()) {
+                if (this.background && !map.isAnimating()) {
                     this.setToRedraw();
                     delete this.background;
-                    delete this._backZoom;
                 }
                 this.completeRender();
             }
@@ -435,13 +433,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _shouldSaveBack() {
-        const map = this.getMap();
-        return !IS_NODE && this.canvas && (map && this.layer === map.getBaseLayer());
+        const layer = this.layer,
+            map = this.getMap();
+        if (IS_NODE || !this.canvas) {
+            return false;
+        }
+        if (layer === map.getBaseLayer() && map.options['zoomBackground']) {
+            return true;
+        }
+        return layer.options['zoomBackground'];
     }
 
     onZoomStart(e) {
         if (this._shouldSaveBack() || this.layer.options['forceRenderOnZooming']) {
-            this._backZoom = this._tileZoom;
             this._saveBackground();
         }
         super.onZoomStart(e);
@@ -451,7 +455,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (this._shouldSaveBack() && this._backRefreshed) {
             this._northWest = this.getMap()._containerPointToPoint(new Point(0, 0));
             this._saveBackground();
-            this._backZoom = this._tileZoom;
             delete this._backRefreshed;
         }
         this._markTiles();

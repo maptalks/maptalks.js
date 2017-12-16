@@ -155,7 +155,7 @@ class CanvasRenderer extends Class {
 
     /**
      * Only called by map's renderer to check whether the layer's canvas is updated
-     * @private
+     * @protected
      * @return {Boolean}
      */
     isCanvasUpdated() {
@@ -166,9 +166,7 @@ class CanvasRenderer extends Class {
      * Remove the renderer, will be called when layer is removed
      */
     remove() {
-        if (this.onRemove) {
-            this.onRemove();
-        }
+        this.onRemove();
         delete this._loadingResource;
         delete this._northWest;
         delete this.canvas;
@@ -176,6 +174,10 @@ class CanvasRenderer extends Class {
         delete this._extent2D;
         delete this.resources;
         delete this.layer;
+    }
+
+    onRemove() {
+
     }
 
     /**
