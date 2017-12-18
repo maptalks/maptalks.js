@@ -129,13 +129,10 @@ describe('Map.Spec', function () {
 
             describe('#baseLayer', function () {
                 it('use osm layer ', function () {
-                    var testLayer = new maptalks.TileLayer('osm', {
-                        urlTemplate: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        subdomains: ['a', 'b', 'c']
-                    });
+                    var urlTemplate = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
                     map.removeBaseLayer();
                     map.setBaseLayer("osm");
-                    expect(testLayer).to.be.eql(map.getBaseLayer());
+                    expect(urlTemplate).to.be.eql(map.getBaseLayer().options.urlTemplate);
                 });
 
                 describe('#getView', function () {

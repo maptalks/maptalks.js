@@ -900,21 +900,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._baseLayer = baseLayer;
             baseLayer._bindMap(this, -1);
         } else if (typeof (baseLayer) == 'string' && baseLayer !== '') {
-            switch (baseLayer) {
-            case 'carto':
-                this._baseLayer = new maptalks.TileLayer('carto', {
-                    'urlTemplate' : 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                    'subdomains'  : ['a', 'b', 'c', 'd']
-                });
-                break;
-            case 'osm':
-                this._baseLayer = new maptalks.TileLayer('osm', {
-                    urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains:['a', 'b', 'c']
-                });
-                break;
-            }
-            this._baseLayer._bindMap(this, -1);
+            this._getInnerBaseLayer(baseLayer)._bindMap(this, -1);
         } else {
             console.warn(`${baseLayer} is not match the shorthand of provided tileLayer's name！ `);
         }
@@ -1623,6 +1609,34 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //-----------------------------------------------------------
 
+    /**
+     * Get baseLayer by given layer name
+     * @param {string} layerName - layerName
+     * @return {TileLayer}
+     * @private
+     */
+    _getInnerBaseLayer(layerName) {
+        switch (layerName.toLowerCase()) {
+        case 'carto':
+            this._baseLayer = new maptalks.TileLayer('base', {
+                'urlTemplate' : 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                'subdomains'  : ['a', 'b', 'c', 'd']
+            });
+            break;
+        case 'osm':
+            this._baseLayer = new maptalks.TileLayer('base', {
+                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains:['a', 'b', 'c']
+            });
+            break;
+        case 'baidu':
+            this._baseLayer =  new maptalks.TileLayer({
+                'urlTemplate' : 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1',
+                'subdomains'  : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+            });
+        }
+        return this._baseLayer;
+    }
     _initContainer(container) {
         if (isString(container)) {
             this._containerDOM = document.getElementById(container);
