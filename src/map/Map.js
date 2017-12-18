@@ -899,8 +899,24 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (typeof (baseLayer) == 'object') {
             this._baseLayer = baseLayer;
             baseLayer._bindMap(this, -1);
+        } else if (typeof (baseLayer) == 'string' && baseLayer !== '') {
+            switch (baseLayer) {
+            case 'carto':
+                this._baseLayer = new maptalks.TileLayer('carto', {
+                    'urlTemplate' : 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                    'subdomains'  : ['a', 'b', 'c', 'd']
+                });
+                break;
+            case 'osm':
+                this._baseLayer = new maptalks.TileLayer('osm', {
+                    urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    subdomains:['a', 'b', 'c']
+                });
+                break;
+            }
+            this._baseLayer._bindMap(this, -1);
         } else {
-            console.log('test');
+            console.warn(`${baseLayer} is not match the shorthand of provided tileLayer's name！ `);
         }
 
         function onbaseLayerload() {
