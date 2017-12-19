@@ -1,4 +1,6 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
+import {
+    INTERNAL_LAYER_PREFIX
+} from 'core/Constants';
 import {
     now,
     extend,
@@ -68,12 +70,12 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
-    'maxVisualPitch' : 60,
-    'maxPitch' : 80,
+    'maxVisualPitch': 60,
+    'maxPitch': 80,
 
     'centerCross': false,
 
-    'zoomInCenter' : false,
+    'zoomInCenter': false,
     'zoomAnimation': (function () {
         return !IS_NODE;
     })(),
@@ -94,11 +96,11 @@ const options = {
         return !Browser.mobile;
     })(),
 
-    'hitDetectLimit' : 5,
+    'hitDetectLimit': 5,
 
-    'fpsOnInteracting' : 25,
+    'fpsOnInteracting': 25,
 
-    'layerCanvasLimitOnInteracting' : -1,
+    'layerCanvasLimitOnInteracting': -1,
 
     'maxZoom': null,
     'minZoom': null,
@@ -143,7 +145,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {(Number[]|Coordinate)} options.center - initial center of the map.
      * @param {Number} options.zoom - initial zoom of the map.
      * @param {Object} [options.spatialReference=null] - map's spatial reference, default is using projection EPSG:3857 with resolutions used by google map/osm.
-     * @param {Layer} [options.baseLayer=null] - base layer that will be set to map initially.
+     * @param {Layer|String} [options.baseLayer=null] - base layer that will be set to map initially; if param's type is string , The following are valid:'carto', 'baidu', 'osm', 'BoudlessGeo'; and not case sensitive; baseLayer's shordhands were added at v.0.36.2.
      * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
      */
@@ -452,7 +454,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             maxVisualPitch = this.options['maxVisualPitch'];
         if (maxVisualPitch && pitch > maxVisualPitch) {
             const visualDistance = this.height / 2 * Math.tan(maxVisualPitch * Math.PI / 180);
-            visualHeight = this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+            visualHeight = this.height / 2 + visualDistance * Math.tan((90 - pitch) * Math.PI / 180);
         }
         return new PointExtent(0, this.height - visualHeight, this.width, this.height);
     }
@@ -583,7 +585,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Boolean} [options.animation=true] whether zoom is animation, true by default
      * @returns {Map} this
      */
-    setZoom(zoom, options = { 'animation' : true }) {
+    setZoom(zoom, options = {
+        'animation': true
+    }) {
         if (isNaN(zoom) || isNil(zoom)) {
             return this;
         }
@@ -725,7 +729,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     setCenterAndZoom(center, zoom) {
         if (!isNil(zoom) && this._zoomLevel !== zoom) {
             this.setCenter(center);
-            this.setZoom(zoom, { animation : false });
+            this.setZoom(zoom, {
+                animation: false
+            });
         } else {
             this.setCenter(center);
         }
@@ -765,10 +771,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     getView() {
         return {
-            'center' : this.getCenter().toArray(),
-            'zoom'  : this.getZoom(),
-            'pitch' : this.getPitch(),
-            'bearing' : this.getBearing()
+            'center': this.getCenter().toArray(),
+            'zoom': this.getZoom(),
+            'pitch': this.getPitch(),
+            'bearing': this.getBearing()
         };
     }
 
@@ -785,7 +791,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.setCenter(view['center']);
         }
         if (view['zoom']) {
-            this.setZoom(view['zoom'], { 'animation' : false });
+            this.setZoom(view['zoom'], {
+                'animation': false
+            });
         }
         if (view['pitch']) {
             this.setPitch(view['pitch']);
@@ -844,7 +852,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Sets a new base layer to the map.<br>
      * Some events will be thrown such as baselayerchangestart, baselayerload, baselayerchangeend.
-     * @param  {Layer} baseLayer - new base layer
+     * @param  {Layer | string} baseLayer - new base layer
      * @return {Map} this
      * @fires Map#setbaselayer
      * @fires Map#baselayerchangestart
@@ -888,8 +896,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
 
-        this._baseLayer = baseLayer;
-        baseLayer._bindMap(this, -1);
+        if (typeof (baseLayer) == 'object') {
+            this._baseLayer = baseLayer;
+            baseLayer._bindMap(this, -1);
+        } else if (typeof (baseLayer) == 'string' && baseLayer !== '') {
+            this._getInnerBaseLayer(baseLayer)._bindMap(this, -1);
+        } else {
+            console.warn(`${baseLayer} is not match the shorthand of provided tileLayer's name！ `);
+        }
 
         function onbaseLayerload() {
             /**
@@ -967,7 +981,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!id) {
             return null;
         }
-        const layer =  this._layerCache ? this._layerCache[id] : null;
+        const layer = this._layerCache ? this._layerCache[id] : null;
         if (layer) {
             return layer;
         }
@@ -1331,7 +1345,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._offsetCenterByPixel(resizeOffset);
         // when size changed, center is updated but panel's offset remains.
         this._mapViewCoord = this._getPrjCenter();
-        const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
+        const hided = (watched['width'] === 0 || watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
         if (justStart || hided) {
             this._noEvent = true;
@@ -1528,7 +1542,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
+        this._fireEvent('moveend', (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
         if (!this._verifyExtent(this.getCenter())) {
             let moveTo = this._originCenter;
             if (!this._verifyExtent(moveTo)) {
@@ -1595,6 +1609,47 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     //-----------------------------------------------------------
 
+    /**
+     * Get baseLayer by given layer name
+     * @param {string} layerName - layerName
+     * @return {TileLayer}
+     * @private
+     */
+    _getInnerBaseLayer(layerName) {
+        switch (layerName.toLowerCase()) {
+        case 'carto': // carto
+            this._baseLayer = new maptalks.TileLayer('base', {
+                'urlTemplate' : 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                'subdomains'  : ['a', 'b', 'c', 'd']
+            });
+            break;
+        case 'osm': // osm
+            this._baseLayer = new maptalks.TileLayer('base', {
+                urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains:['a', 'b', 'c']
+            });
+            break;
+        case 'baidu':  // baidu
+            this._baseLayer =  new maptalks.TileLayer({
+                urlTemplate: 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1',
+                subdomains  : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+            });
+            break;
+        case 'boudlessgeo': // BoudlessGeo
+            this._baseLaye = new maptalks.TileLayer({
+                'urlTemplate' : 'https://demo.boundlessgeo.com/geoserver/ows',
+                'crs' : 'EPSG:3857',
+                'layers' : 'ne:ne',
+                'styles' : '',
+                'version' : '1.3.0',
+                'format': 'image/png',
+                'transparent' : true,
+                'uppercase' : true
+            });
+            break;
+        }
+        return this._baseLayer;
+    }
     _initContainer(container) {
         if (isString(container)) {
             this._containerDOM = document.getElementById(container);
