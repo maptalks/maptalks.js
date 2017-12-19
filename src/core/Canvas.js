@@ -51,7 +51,7 @@ const Canvas = {
             ctx.lineWidth = strokeWidth;
         }
         const strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
-        if (isCssUrl(strokeColor) && resources) {
+        if (isImageUrl(strokeColor) && resources) {
             Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
@@ -74,8 +74,8 @@ const Canvas = {
             ctx.setLineDash(style['lineDasharray']);
         }
         const fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
-        if (isCssUrl(fill)) {
-            const fillImgUrl = extractCssUrl(fill);
+        if (isImageUrl(fill) && resources) {
+            const fillImgUrl = extractImageUrl(fill);
             let fillTexture = resources.getImage([fillImgUrl, null, null]);
             if (!fillTexture) {
                 //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
@@ -150,7 +150,7 @@ const Canvas = {
     },
 
     _setStrokePattern(ctx, strokePattern, strokeWidth, resources) {
-        const imgUrl = extractCssUrl(strokePattern);
+        const imgUrl = extractImageUrl(strokePattern);
         let imageTexture;
         if (IS_NODE) {
             imageTexture = resources.getImage([imgUrl, null, strokeWidth]);
@@ -696,4 +696,16 @@ function drawDashLine(ctx, startPoint, endPoint, dashArray) {
         idx = (idx + 1) % pattern.length;
         dash = !dash;
     }
+}
+
+const prefix = 'data:image/';
+function isImageUrl(url) {
+    return url.length > prefix.length && url.substring(0, prefix.length) === prefix || isCssUrl(url);
+}
+
+function extractImageUrl(url) {
+    if (url.substring(0, prefix.length) === prefix) {
+        return url;
+    }
+    return extractCssUrl(url);
 }
