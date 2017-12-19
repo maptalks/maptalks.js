@@ -3,6 +3,7 @@ describe('StrokeAndFillSpec', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
+    var patternImage = 'data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7';
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center);
@@ -49,6 +50,39 @@ describe('StrokeAndFillSpec', function () {
             v.addGeometry(circle);
         });
 
+        it('fill pattern with base64', function (done) {
+            var circle = new maptalks.Circle(center, 10, {
+                symbol:{
+                    'polygonPatternFile' : patternImage,
+                    'polygonOpacity' : 1
+                }
+            });
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).to.be.painted();
+                done();
+            });
+            v.addGeometry(circle);
+        });
+
+        it('line pattern with base64', function (done) {
+            var circle = new maptalks.Circle(center, 10, {
+                symbol:{
+                    'linePatternFile' : 'url(' + patternImage + ')',
+                    'lineOpacity' : 1,
+                    'lineWidth' : 5,
+                    'polygonFill' : '#000',
+                    'polygonOpacity' : 0
+                }
+            });
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).to.be.painted(12);
+                done();
+            });
+            v.addGeometry(circle);
+        });
+
         it('vector marker fill pattern', function (done) {
             var circle = new maptalks.Marker(center, {
                 symbol:{
@@ -82,6 +116,44 @@ describe('StrokeAndFillSpec', function () {
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function () {
                 expect(v).to.be.painted(11);
+                done();
+            });
+            v.addGeometry(circle);
+        });
+
+        it('vector marker fill pattern with base64', function (done) {
+            var circle = new maptalks.Marker(center, {
+                symbol:{
+                    'markerType' : 'ellipse',
+                    'markerFillPatternFile' : patternImage,
+                    'markerFillOpacity' : 1,
+                    'markerWidth' : 20,
+                    'markerHeight' : 20
+                }
+            });
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).to.be.painted();
+                done();
+            });
+            v.addGeometry(circle);
+        });
+
+        it('vector marker line pattern with base64', function (done) {
+            var circle = new maptalks.Marker(center, {
+                symbol:{
+                    'markerType' : 'ellipse',
+                    'markerLinePatternFile' : 'url(' + patternImage + ')',
+                    'markerLineOpacity' : 1,
+                    'markerLineWidth' : 5,
+                    'markerFillOpacity' : 0,
+                    'markerWidth' : 20,
+                    'markerHeight' : 20
+                }
+            });
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).to.be.painted(12);
                 done();
             });
             v.addGeometry(circle);

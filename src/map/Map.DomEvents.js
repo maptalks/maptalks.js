@@ -227,16 +227,12 @@ Map.include(/** @lends Map.prototype */ {
         // }
         this._fireDOMEvent(this, e, type);
         if (mimicClick) {
-            let mimicDblClick = false;
-            this._fireDOMEvent(this, e, 'click');
             if (this._clickTime && (now() - this._clickTime <= 300)) {
-                mimicDblClick = true;
                 delete this._clickTime;
+                this._fireDOMEvent(this, e, 'dblclick');
             } else {
                 this._clickTime = now();
-            }
-            if (mimicDblClick) {
-                this._fireDOMEvent(this, e, 'dblclick');
+                this._fireDOMEvent(this, e, 'click');
             }
         }
     },

@@ -128,6 +128,11 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return this;
         }
+
+        if (!this._mapEventsOn) {
+            this._switchMapEvents('on');
+        }
+
         coordinate = coordinate || this._coordinate || this._owner.getCenter();
 
         const visible = this.isVisible();
@@ -284,6 +289,7 @@ class UIComponent extends Eventable(Class) {
      * @fires ui.UIComponent#remove
      */
     remove() {
+        delete this._mapEventsOn;
         if (!this._owner) {
             return this;
         }
@@ -476,21 +482,27 @@ class UIComponent extends Eventable(Class) {
         return 'UIComponent';
     }
 
-    _switchEvents(to) {
+    _switchMapEvents(to) {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        this._mapEventsOn = (to === 'on');
         const events = this._getDefaultEvents();
         if (this.getEvents) {
             extend(events, this.getEvents());
         }
         if (events) {
-            const map = this.getMap();
-            if (map) {
-                for (const p in events) {
-                    if (events.hasOwnProperty(p)) {
-                        map[to](p, events[p], this);
-                    }
+            for (const p in events) {
+                if (events.hasOwnProperty(p)) {
+                    map[to](p, events[p], this);
                 }
             }
         }
+    }
+
+    _switchEvents(to) {
+        this._switchMapEvents(to);
         const ownerEvents = this._getOwnerEvents();
         if (this._owner) {
             for (const p in ownerEvents) {

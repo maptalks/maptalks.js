@@ -404,13 +404,11 @@ class DrawTool extends MapTool {
             return;
         }
         const registerMode = this._getRegisterMode();
-        const coordinate = param['coordinate'];
         const path = this._clickCoords;
-        path.push(coordinate);
         if (path.length < 2) {
             return;
         }
-        //去除重复的端点
+        //remove duplicate vertexes
         const nIndexes = [];
         for (let i = 1, len = path.length; i < len; i++) {
             if (path[i].x === path[i - 1].x && path[i].y === path[i - 1].y) {
