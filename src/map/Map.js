@@ -145,7 +145,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {(Number[]|Coordinate)} options.center - initial center of the map.
      * @param {Number} options.zoom - initial zoom of the map.
      * @param {Object} [options.spatialReference=null] - map's spatial reference, default is using projection EPSG:3857 with resolutions used by google map/osm.
-     * @param {Layer} [options.baseLayer=null] - base layer that will be set to map initially.
+     * @param {Layer|String} [options.baseLayer=null] - base layer that will be set to map initially; if param's type is string , The following are valid:'carto', 'baidu', 'osm', 'BoudlessGeo'; and not case sensitive; baseLayer's shordhands were added at v.0.36.2.
      * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
      */
@@ -1617,23 +1617,36 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _getInnerBaseLayer(layerName) {
         switch (layerName.toLowerCase()) {
-        case 'carto':
+        case 'carto': // carto
             this._baseLayer = new maptalks.TileLayer('base', {
                 'urlTemplate' : 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                 'subdomains'  : ['a', 'b', 'c', 'd']
             });
             break;
-        case 'osm':
+        case 'osm': // osm
             this._baseLayer = new maptalks.TileLayer('base', {
                 urlTemplate : 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 subdomains:['a', 'b', 'c']
             });
             break;
-        case 'baidu':
+        case 'baidu':  // baidu
             this._baseLayer =  new maptalks.TileLayer({
-                'urlTemplate' : 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1',
-                'subdomains'  : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                urlTemplate: 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1',
+                subdomains  : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
             });
+            break;
+        case 'boudlessgeo': // BoudlessGeo
+            this._baseLaye = new maptalks.TileLayer({
+                'urlTemplate' : 'https://demo.boundlessgeo.com/geoserver/ows',
+                'crs' : 'EPSG:3857',
+                'layers' : 'ne:ne',
+                'styles' : '',
+                'version' : '1.3.0',
+                'format': 'image/png',
+                'transparent' : true,
+                'uppercase' : true
+            });
+            break;
         }
         return this._baseLayer;
     }
