@@ -1,4 +1,4 @@
-import { extend, isNil, isString, isInteger, hasOwn } from 'core/util';
+import { extend, isNil, isObject, isInteger, hasOwn } from 'core/util';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import * as projections from 'geo/projection';
@@ -71,7 +71,10 @@ export default class SpatialReference {
         if (!prjName) {
             return null;
         }
-        prjName = prjName.toLowerCase();
+        if (isObject(prjName)) {
+            return prjName;
+        }
+        prjName = (prjName + '').toLowerCase();
         for (const p in projections) {
             if (hasOwn(projections, p)) {
                 const code = projections[p]['code'];
@@ -86,13 +89,11 @@ export default class SpatialReference {
     _initSpatialRef() {
         let projection = this.options['projection'];
         if (projection) {
-            if (isString(projection)) {
-                projection = SpatialReference.getProjectionInstance(projection);
-            }
+            projection = SpatialReference.getProjectionInstance(projection);
         } else {
             projection = projections.DEFAULT;
         }
-        if (!projection || isString(projection)) {
+        if (!projection) {
             throw new Error('must provide a valid projection in map\'s spatial reference.');
         }
         projection = extend({}, projections.Common, projection);

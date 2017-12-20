@@ -50,7 +50,7 @@ class TileConfig {
      * @param  {Number} res  - current resolution
      * @return {Object}       tile index
      */
-    getTileIndex(point, res) {
+    _getTileNum(point, res) {
         const tileSystem = this.tileSystem,
             tileSize = this['tileSize'],
             delta = 1E-7;
@@ -69,17 +69,17 @@ class TileConfig {
      * @param  {Number} res - current resolution
      * @return {Object}   tile index and offset
      */
-    getCenterTile(pCoord, res) {
-        const tileSystem = this.tileSystem,
-            tileSize = this['tileSize'];
+    getTileIndex(pCoord, res) {
+        const tileSystem = this.tileSystem;
+        // tileSize = this['tileSize'];
         const point = this.transformation.transform(pCoord, 1);
-        let tileIndex = this.getTileIndex(point, res);
+        let tileIndex = this._getTileNum(point, res);
 
-        const tileLeft = tileIndex['x'] * tileSize['width'];
-        const tileTop = tileIndex['y'] * tileSize['height'];
+        // const tileLeft = tileIndex['x'] * tileSize['width'];
+        // const tileTop = tileIndex['y'] * tileSize['height'];
 
-        const offsetLeft = point.x / res - tileSystem['scale']['x'] * tileLeft;
-        const offsetTop = point.y / res + tileSystem['scale']['y'] * tileTop;
+        // const offsetLeft = point.x / res - tileSystem['scale']['x'] * tileLeft;
+        // const offsetTop = point.y / res + tileSystem['scale']['y'] * tileTop;
 
         //如果x方向为左大右小
         if (tileSystem['scale']['x'] < 0) {
@@ -95,8 +95,8 @@ class TileConfig {
 
         return {
             'x': tileIndex['x'],
-            'y': tileIndex['y'],
-            'offset': new Point(offsetLeft, offsetTop)
+            'y': tileIndex['y']/* ,
+            'offset': new Point(offsetLeft, offsetTop) */
         };
     }
 
@@ -149,24 +149,39 @@ class TileConfig {
     _getTileFullIndex(res) {
         const ext = this.fullExtent;
         const transformation = this.transformation;
-        const nwIndex = this.getTileIndex(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
-        const seIndex = this.getTileIndex(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
+        const nwIndex = this._getTileNum(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
+        const seIndex = this._getTileNum(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
         return new Extent(nwIndex, seIndex);
     }
 
     /**
-     * Get tile's south west's projected coordinate
+     * Get tile's north west's projected coordinate
      * @param  {Number} tileX
      * @param  {Number} tileY
      * @param  {Number} res
-     * @return {Object}
+     * @return {Number[]}
      */
-    getTileProjectedSw(tileX, tileY, res) {
+    getTilePrjNW(tileX, tileY, res) {
+        const tileSystem = this.tileSystem;
+        const tileSize = this['tileSize'];
+        const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * (res * tileSize['height']);
+        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'] + tileSystem['origin']['x'];
+        return new Coordinate(x, y);
+    }
+
+    /**
+     * Get tile's south east's projected coordinate
+     * @param  {Number} tileX
+     * @param  {Number} tileY
+     * @param  {Number} res
+     * @return {Number[]}
+     */
+    getTilePrjSE(tileX, tileY, res) {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
         const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * (res * tileSize['height']);
-        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'] + tileSystem['origin']['x'];
-        return [x, y];
+        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 1 : 0)) * res * tileSize['width'] + tileSystem['origin']['x'];
+        return new Coordinate(x, y);
     }
 
     /**
