@@ -863,7 +863,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._animPlayer) {
             this._animPlayer.finish();
         }
-
+        this._clearHandlers();
         //contextmenu
         this._unbindMenu();
         //infowindow
