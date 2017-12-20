@@ -480,6 +480,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Alias for getProjExtent
+     *
+     * @return {Extent}
+     */
+    getPrjExtent() {
+        return this.getProjExtent();
+    }
+
+    /**
      * Get the max extent that the map is restricted to.
      * @return {Extent}
      */
@@ -2011,7 +2020,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Converts the projected coordinate to a 2D point in the specific zoom
      * @param  {Coordinate} pCoord - projected Coordinate
-     * @param  {Number} zoom   - zoom level
+     * @param  {Number} zoom   - point's zoom level
      * @return {Point} 2D point
      * @private
      */
@@ -2023,7 +2032,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Converts the 2D point to projected coordinate
      * @param  {Point} point - 2D point
-     * @param  {Number} zoom   - zoom level
+     * @param  {Number} zoom   - point's zoom level
      * @return {Coordinate} projected coordinate
      * @private
      */
