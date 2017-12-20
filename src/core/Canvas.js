@@ -279,30 +279,34 @@ const Canvas = {
     _textOnLine(ctx, text, pt, textHaloRadius, textHaloFill, textHaloOp) {
         // pt = pt._round();
         ctx.textBaseline = 'top';
+        let gco, fill;
         if (textHaloOp !== 0 && textHaloRadius !== 0) {
             const alpha = ctx.globalAlpha;
             //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
             //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
-            if (textHaloOp) {
-                ctx.globalAlpha *= textHaloOp;
-            }
+            ctx.globalAlpha *= textHaloOp;
 
-            if (textHaloRadius) {
-                ctx.miterLimit = 2;
-                ctx.lineJoin = 'round';
-                ctx.lineCap = 'round';
-                ctx.lineWidth = (textHaloRadius * 2 - 1);
-                ctx.strokeStyle = textHaloFill;
-                ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
-                ctx.lineWidth = 1;
-                ctx.miterLimit = 10; //default
-            }
+            ctx.miterLimit = 2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = textHaloRadius * 2;
+            ctx.strokeStyle = textHaloFill;
+            ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
+            ctx.lineWidth = 1;
+            ctx.miterLimit = 10; //default
 
-            if (textHaloOp) {
-                ctx.globalAlpha = alpha;
-            }
+            ctx.globalAlpha = alpha;
+
+            gco = ctx.globalCompositeOperation;
+            ctx.globalCompositeOperation = 'destination-out';
+            fill = ctx.fillStyle;
+            ctx.fillStyle = '#000';
         }
         Canvas.fillText(ctx, text, pt);
+        if (gco) {
+            ctx.globalCompositeOperation = gco;
+            Canvas.fillText(ctx, text, pt, fill);
+        }
     },
 
     fillText(ctx, text, point, rgba) {

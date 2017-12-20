@@ -43,7 +43,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
-        if (this.style['textSize'] === 0 || this.style['textOpacity'] === 0 || this.style['textWrapWidth'] === 0) {
+        if (this.style['textSize'] === 0 ||
+            !this.style['textOpacity'] && (!this.style['textHaloRadius'] || !this.style['textHaloOpacity']) ||
+            this.style['textWrapWidth'] === 0) {
             return;
         }
         const cookedPoints = this._getRenderContainerPoints();

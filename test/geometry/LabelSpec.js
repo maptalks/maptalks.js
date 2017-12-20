@@ -236,6 +236,23 @@ describe('Geometry.Label', function () {
         });
     });
 
+    it('should draw text halo', function () {
+        var vector = new maptalks.Label('■■■', center, {
+            textSymbol : {
+                'textOpacity': 0,
+                'textSize': 12,
+                'textHaloRadius' : 10,
+                'textHaloFill' : '#000'
+            }
+        });
+        layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
+        map.addLayer(layer);
+        layer.addGeometry(vector);
+        var size = vector.getSize();
+        expect(layer).to.be.painted(0, 10);
+        expect(layer).not.to.be.painted(0, 0);
+    });
+
     it('autoSize', function () {
         var vector = new maptalks.Label('■■■', center, {
             boxStyle : {
