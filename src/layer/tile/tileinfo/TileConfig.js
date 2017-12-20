@@ -1,5 +1,4 @@
 import { isString } from 'core/util';
-import Point from 'geo/Point';
 import Coordinate from 'geo/Coordinate';
 import Extent from 'geo/Extent';
 import Transformation from 'geo/transformation/Transformation';
@@ -185,20 +184,16 @@ class TileConfig {
     }
 
     /**
-     * Get tile's extent
+     * Get tile's projected extent
      * @param  {Number} tileX
      * @param  {Number} tileY
      * @param  {Number} res
      * @return {Extent}
      */
     getTilePrjExtent(tileX, tileY, res) {
-        const tileSize = this['tileSize'],
-            sw = new Coordinate(this.getTileProjectedSw(tileX, tileY, res));
-        const sx = this.transformation.matrix[0],
-            sy = this.transformation.matrix[1];
-        const x = sw.x + sx * (res * tileSize['width']),
-            y = sw.y - sy * (res * tileSize['height']);
-        return new Extent(sw, new Coordinate(x, y));
+        const nw = this.getTilePrjNW(tileX, tileY, res),
+            se = this.getTilePrjSE(tileX, tileY, res);
+        return new Extent(nw, se);
     }
 }
 
