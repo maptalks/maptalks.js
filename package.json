@@ -34,7 +34,6 @@
     "build": "gulp minify"
   },
   "main": "dist/maptalks.js",
-  "browser": "dist/maptalks.min.js",
   "module": "dist/maptalks.es.js",
   "jsnext:main": "dist/maptalks.es.js",
   "style": "dist/maptalks.css",
