@@ -160,6 +160,72 @@ describe('TileLayer', function () {
             });
             map.setBaseLayer(tile);
         });
+
+        it('3857 map with baidu tilelayer', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                spatialReference : {
+                    'projection' : 'baidu',
+                    'resolutions': (function () {
+                      var res = Math.pow(2, 17);
+                      var resolutions = [];
+                      for (var i = 0; i < 20; i++) {
+                          resolutions[i] = res;
+                          res *= 0.5;
+                      }
+                      resolutions[0] = null;
+                      resolutions[1] = null;
+                      resolutions[2] = null;
+                      return resolutions;
+                  })(),
+                  'fullExtent': {
+                      'top': 33554432,
+                      'left': -33554432,
+                      'bottom': -33554432,
+                      'right': 33554432
+                  }
+                },
+                urlTemplate : '/resources/tile.png'
+            });
+            tile.on('layerload', function () {
+                expect(map.getBaseLayer()).to.be.painted();
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
+        it('3857 map with 4326 tilelayer', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                spatialReference : {
+                    'projection' : 'EPSG:4326'
+                },
+                urlTemplate : '/resources/tile.png'
+            });
+            tile.on('layerload', function () {
+                expect(map.getBaseLayer()).to.be.painted();
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
+        it('3857 map with 3857 tilelayer', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                spatialReference : {
+                    'projection' : 'EPSG:3857'
+                },
+                urlTemplate : '/resources/tile.png'
+            });
+            tile.on('layerload', function () {
+                expect(map.getBaseLayer()).to.be.painted();
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
     });
 
     describe('Different Renderers', function () {
