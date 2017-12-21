@@ -304,6 +304,7 @@ class MapCanvasRenderer extends MapRenderer {
             limit = map.options['layerCanvasLimitOnInteracting'];
         let len = layers.length;
 
+        let baseLayerImage;
         const images = [];
         for (let i = 0; i < len; i++) {
             if (!layers[i].isVisible() || !layers[i].isCanvasRender()) {
@@ -315,8 +316,16 @@ class MapCanvasRenderer extends MapRenderer {
             }
             const layerImage = this._getLayerImage(layers[i]);
             if (layerImage && layerImage['image']) {
-                images.push([layers[i], layerImage]);
+                if (layers[i] === map.getBaseLayer()) {
+                    baseLayerImage = [layers[i], layerImage];
+                } else {
+                    images.push([layers[i], layerImage]);
+                }
             }
+        }
+
+        if (baseLayerImage) {
+            this._drawLayerCanvasImage.apply(this, baseLayerImage);
         }
 
         len = images.length;
