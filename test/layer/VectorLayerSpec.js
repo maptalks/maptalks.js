@@ -1,4 +1,4 @@
-describe('VectorLayer', function () {
+describe('VectorLayer.Spec', function () {
 
     var container;
     var map;
@@ -196,6 +196,34 @@ describe('VectorLayer', function () {
             layer.on('layerload', function () {
                 expect(layer).to.be.painted(0, 0, [255, 0, 0]);
                 done();
+            });
+            layer.addGeometry(circle);
+        });
+
+        it('repaint when map resized', function (done) {
+            map.getRenderer()._setCheckSizeInterval(80);
+
+            var circle = new maptalks.Circle(map.getCenter(), 100, {
+                symbol : {
+                    'polygonFill' : '#f00'
+                }
+            });
+            layer.once('layerload', function () {
+                var sx = 1, sy = 1;
+                var scaleFn = layer.getRenderer().context.scale;
+                layer.getRenderer().context.scale = function (x, y) {
+                    sx = x;
+                    sy = y;
+                    scaleFn.call(this, x, y);
+                };
+                layer.once('layerload', function () {
+                    maptalks.Browser.retina = false;
+                    expect(sx).to.be.eql(2);
+                    expect(sy).to.be.eql(2);
+                    done();
+                });
+                maptalks.Browser.retina = true;
+                container.style.width = (parseInt(container.style.width) - 1) + 'px';
             });
             layer.addGeometry(circle);
         });

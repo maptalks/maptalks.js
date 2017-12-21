@@ -411,7 +411,7 @@ class CanvasRenderer extends Class {
         //retina support
         this.canvas.height = r * size.height;
         this.canvas.width = r * size.width;
-        if (Browser.retin && this.context) {
+        if (Browser.retina && this.context) {
             this.context.scale(r, r);
         }
         if (this.layer._canvas && this.canvas.style) {
