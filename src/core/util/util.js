@@ -178,14 +178,17 @@ export function interpolate(a, b, t) {
 }
 
 /*
- * constrain n to the given range, excluding the minimum, via modular arithmetic
+ * constrain n to the given range, via modular arithmetic
  * @param {Number} n value
- * @param {Number} min the minimum value to be returned, exclusive
+ * @param {Number} min the minimum value to be returned, inclusive
  * @param {Number} max the maximum value to be returned, inclusive
  * @returns {Number} constrained number
  * @private
  */
 export function wrap(n, min, max) {
+    if (n === max || n === min) {
+        return n;
+    }
     const d = max - min;
     const w = ((n - min) % d + d) % d + min;
     return w;

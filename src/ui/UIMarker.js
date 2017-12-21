@@ -431,7 +431,7 @@ class UIMarkerDragHandler extends Handler {
 
     _startDrag(param) {
         const domEvent = param['domEvent'];
-        if (domEvent.touches && domEvent.touches.length > 1) {
+        if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
             return;
         }
         if (this.isDragging()) {

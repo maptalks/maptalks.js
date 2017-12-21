@@ -84,7 +84,7 @@ describe('WMSTileLayer', function () {
             'renderer' : 'canvas'
         });
         map.addLayer(tile);
-        expect(tile.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4490&BBOX=0.002789244055747986,-40075016.688367724,20037508.345578488,-20037508.34557848');
+        expect(tile.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4490&BBOX=0,-40075016.68557848,20037508.342789244,-20037508.342789244');
     });
 
     it('map with crs EPSG:4326', function () {
@@ -188,6 +188,6 @@ describe('WMSTileLayer', function () {
         };
         var layer = maptalks.Layer.fromJSON(json);
         map.addLayer(layer);
-        expect(layer.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&BBOX=0.002789244055747986,-40075016.688367724,20037508.345578488,-20037508.34557848');
+        expect(layer.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&BBOX=0,-40075016.68557848,20037508.342789244,-20037508.342789244');
     });
 });

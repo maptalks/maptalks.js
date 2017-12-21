@@ -46,13 +46,12 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const point = tileInfo.point,
             tileZoom = tileInfo.z;
         const scale = map.getGLScale(tileZoom),
-            pp = point.multi(scale),
-            tileSize = this.layer.getTileSize();
+            pp = point.multi(scale);
         const opacity = this.getTileOpacity(tileImage);
         const x = pp.x,
             y = pp.y,
-            w = tileSize['width'] * scale,
-            h = tileSize['height'] * scale;
+            w = tileInfo.size[0] * scale,
+            h = tileInfo.size[1] * scale;
 
         this.drawGLImage(tileImage, x, y, w, h, opacity);
 
