@@ -9,22 +9,6 @@
 class Handler {
 
 }
-/**
- * @class
- */
-class GLHandler extends Handler {
-
-}
-/**
- * @class
- * 为GLCanvas
- */
-class DomHandler extends Handler {
-
-}
 
 
-module.exports = {
-    GLHandler,
-    DomHandler
-}
+module.exports = Handler;

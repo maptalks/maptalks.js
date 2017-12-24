@@ -23,12 +23,13 @@ const merge = require('./../utils/merge'),
     isNode = require('./../utils/isNode'),
     mapFunc = require('./../utils/mapFunc'),
     stamp = require('./../utils/stamp').stamp,
-    Tiny = require('./../core/Tiny'),
     Dispose = require('./../utils/Dispose'),
+    GLConstants = require('./GLConstants'),
+
     GLVertexShader = require('./shader/GLVertexShader'),
     GLFragmentShader = require('./shader/GLFragmentShader'),
     GLTexture = require('../gl/GLTexture'),
-    GLConstants = require('./GLConstants'),
+
     GLExtension = require('./GLExtension'),
     GLLimits = require('./GLLimits'),
     GLProgram = require('./GLProgram');

@@ -5,21 +5,15 @@
  * @author yellow date 2017/8/23
  * @modify support webworker 
  */
-const GLContext = require('./GLContext'),
-    merge = require('./../utils/merge'),
+const merge = require('./../utils/merge'),
     stamp = require('./../utils/stamp').stamp,
     setId = require('./../utils/stamp').setId,
     isString = require('./../utils/isString'),
-    DomRecord = require('./../core/Recorder').DomRecord,
-    Recorder = require('./../core/Recorder').Recorder,
-    GLExtension = require('./GLExtension'),
-    GLLimits = require('./GLLimits'),
-    Dispose = require('./../utils/Dispose'),
-    CANVASES = require('./../utils/util').CANVASES,
-    GLCONTEXTS = require('./../utils/util').GLCONTEXTS,
-    WEBGLCONTEXTS = require('./../utils/util').WEBGLCONTEXTS,
-    GLEXTENSIONS = require('./../utils/util').GLEXTENSIONS,
-    GLLIMITS = require('./../utils/util').GLLIMITS;
+    Dispose = require('./../utils/Dispose');
+
+const Resource = require('./../core/Resource');
+const GLContext = require('./../gl/GLContext');
+
 
 const GLCanvasOptions = {
     width: 800,
@@ -43,8 +37,28 @@ class GLCanvas extends Dispose {
      */
     constructor(element, options = {}) {
         super();
+
+        const canvasId = isString(element) ? element : stamp(element);
+        /**
+         * style填充
+         * @type object
+         */
+        this._style = {};
+        /**
+         * 合并全局设置
+         * @type {Object}
+         */
         this._options = merge({}, GLCanvasOptions, options);
-        this._rootId = isString(element) ? element : stamp(element);
+        /**
+         * 记录glCanvas与真实canvasId关联
+         * @type {String}
+         */
+        this._canvasId = canvasId;
+        /**
+         * 创建resource包
+         * @type {Resource}
+         */
+        this._resource = Resource.getInstance(canvasId);
     }
     /**
      * get context attributes
@@ -76,36 +90,13 @@ class GLCanvas extends Dispose {
      * @param {boolean} [options.failIfMajorPerformanceCaveat]
      */
     getContext(renderType = 'webgl', options = {}) {
-        const id = this._id,
-            rootId = this._rootId;
-        if (!GLCONTEXTS[id]) {
-            //1.get the WebGLRenderingContext parms
-            const attrib = this._getContextAttributes(options);
-            //2.record (包括experimental-webgl)
-            const record = new DomRecord('getContext',attrib);
-            //3.record glContext
-            GLCONTEXTS[id] = new GLContext({ renderType: renderType, canvas: canvas, gl: gl, glLimits: glLimits, glExtension: glExtension });
-
-            const canvas = CANVASES[rootId];
-            if (!WEBGLCONTEXTS[rootId])
-                WEBGLCONTEXTS[rootId] = canvas.getContext(renderType, attrib) || canvas.getContext(`experimental-${renderType}`, attrib);
-            const gl = WEBGLCONTEXTS[rootId];
-            if (!GLLIMITS[rootId])
-                GLLIMITS[rootId] = new GLLimits(gl);
-            if (!GLEXTENSIONS[rootId])
-                GLEXTENSIONS[rootId] = new GLExtension(gl);
-            const glLimits = GLLIMITS[rootId],
-                glExtension = GLEXTENSIONS[rootId];
-            GLCONTEXTS[id] = new GLContext({ renderType: renderType, canvas: canvas, gl: gl, glLimits: glLimits, glExtension: glExtension });
-        }
-        return GLCONTEXTS[id];
+        return this._resource.glContext;
     }
     /**
      * return HTMLCanvasElement.style 
      */
     get style() {
-        const id = this._rootId;
-        return CANVASES[id].style;
+        return this._style;
     }
     /**
      * 

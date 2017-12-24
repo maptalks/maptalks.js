@@ -16,8 +16,8 @@ class Dispose {
     /**
      * 构建一个可被销毁的资源对象
      */
-    constructor() {
-        this._id = stamp(this);
+    constructor(id = null) {
+        this._id = id ? id : stamp(this);
     }
     /**
      * 资源销毁方法，执行完一段后，统一调用
@@ -30,7 +30,7 @@ class Dispose {
     /**
      * 获取资源id
      */
-    get id(){
+    get id() {
         return this._id;
     }
     /**
@@ -38,7 +38,7 @@ class Dispose {
      * @readonly
      * @member
      */
-    get handle(){
+    get handle() {
         return this._handle;
     }
     /**
