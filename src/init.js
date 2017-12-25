@@ -6,11 +6,13 @@
  */
 const stamp = require('./utils/stamp').stamp;
 const GLCanvas = require('./gl/GLCanvas');
-// const GLContext = require('./gl/GLContext');
+const GLContext = require('./gl/GLContext');
+
+
 
 
 /**
- *  本地测试
+ *  }{debug 本地测试代码
  */
 const vertexShaderSource = `#version 300 es
  
@@ -54,7 +56,10 @@ const canvasId = stamp(htmlCanvas);
 const glCanvas = new GLCanvas(canvasId);
 
 const gl = glCanvas.getContext('webgl');
+//从此步骤开始，以记录为主
+const vertext_shader = gl.createShader(gl.VERTEX_SHADER);
 
+const fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
 
  
 

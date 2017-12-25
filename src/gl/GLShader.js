@@ -1,6 +1,7 @@
 /**
  * 提供shader程序创建，销毁，应用等
  * @author yellow 2017/6/12
+ * @modify yellow 2017/12/25 不涉及真实的buffer创建
  */
 
 const isString = require('./../utils/isString'),

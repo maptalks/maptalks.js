@@ -23,7 +23,8 @@ const GLCanvasOptions = {
 /**
  * 逻辑变更：2017/12/12
  * GLCanvas不对dom进行操作，所有操作移回到Player
- * GlCanvas接受对dom操作的记录
+ * GlCanvas不再接受和记录对dom的操作
+ *
  * a virtual HTMLCanvasElement element
  * @class
  */
@@ -37,13 +38,10 @@ class GLCanvas extends Dispose {
      */
     constructor(element, options = {}) {
         super();
-
-        const canvasId = isString(element) ? element : stamp(element);
-        /**
-         * style填充
-         * @type object
+        /*
+         * get canvas id as unique signal 
          */
-        this._style = {};
+        const canvasId = isString(element) ? element : stamp(element);
         /**
          * 合并全局设置
          * @type {Object}
@@ -96,28 +94,29 @@ class GLCanvas extends Dispose {
      * return HTMLCanvasElement.style 
      */
     get style() {
-        return this._style;
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).style;
     }
     /**
      * 
      */
     get parentElement() {
-        const id = this._rootId;
-        return CANVASES[id].parentElement
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).parentElement;
     }
     /**
      * @type {HTMLCanvasElement}
      */
     get HTMLCanvasElement() {
-        const id = this._rootId;
-        return CANVASES[id]
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId);
     }
     /**
      * 
      */
     getBoundingClientRect() {
-        const id = this._rootId;
-        CANVASES[id].getBoundingClientRect();
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).getBoundingClientRect();
     }
     /**
      * 
@@ -126,64 +125,64 @@ class GLCanvas extends Dispose {
      * @param {*} useCapture 
      */
     addEventListener(type, Listener, useCapture) {
-        const id = this._rootId;
-        CANVASES[id].addEventListener(type, Listener, useCapture);
+        const canvasId = this._canvasId;
+        document.getElementById(canvasId).addEventListener(type, Listener, useCapture);
     }
     /**
      * 
      */
     set width(v) {
-        const id = this._rootId;
-        CANVASES[id].width = v;
+        const canvasId = this._canvasId;
+        document.getElementById(canvasId).width = v;
     }
     /**
      * 
      */
     set height(v) {
-        const id = this._rootId;
-        CANVASES[id].height = v;
+        const canvasId = this._canvasId;
+        document.getElementById(canvasId).height = v;
     }
     /**
      * 
      */
     get width() {
-        const id = this._rootId;
-        return CANVASES[id].width;
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).width;
     }
     /**
      * 
      */
     get height() {
-        const id = this._rootId;
-        return CANVASES[id].height;
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).height;
     }
     /**
      * 
      */
     get clientWidth() {
-        const id = this._rootId;
-        return CANVASES[id].clientWidth;
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).clientWidth;
     }
     /**
      * 
      */
     get clientHeight() {
-        const id = this._rootId;
-        return CANVASES[id].clientHeight;
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).clientHeight;
     }
     /**
      * 
      */
     get offsetLeft() {
-        const id = this._rootId;
-        return CANVASES[id].offsetLeft;
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).offsetLeft;
     }
     /**
      * 
      */
     get offsetTop() {
-        const id = this._rootId;
-        return CANVASES[id].offsetTop;
+        const canvasId = this._canvasId;
+        return document.getElementById(canvasId).offsetTop;
     }
 }
 
