@@ -52,6 +52,7 @@ class Resource extends Dispose {
 }
 /**
  * 实例
+ * @type {Array}
  */
 Resource.instances = {};
 /**

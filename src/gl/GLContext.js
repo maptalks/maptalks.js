@@ -25,10 +25,12 @@ const merge = require('./../utils/merge'),
     stamp = require('./../utils/stamp').stamp,
     Dispose = require('./../utils/Dispose'),
     GLConstants = require('./GLConstants'),
+    //
 
-    GLVertexShader = require('./shader/GLVertexShader'),
-    GLFragmentShader = require('./shader/GLFragmentShader'),
-    GLTexture = require('../gl/GLTexture'),
+    GLShader = require('./GLShader'),
+
+
+    GLTexture = require('./GLTexture'),
 
     GLExtension = require('./GLExtension'),
     GLLimits = require('./GLLimits'),
@@ -81,8 +83,8 @@ const TICKER_ENUM = {
     'drawArrays': true
 };
 
-const GL2_ENUM={
-    'bindTransformFeedback':true
+const GL2_ENUM = {
+    'bindTransformFeedback': true
 };
 
 const INTERNAL_ENUM = {
@@ -175,7 +177,7 @@ const BRIDGE_ARRAY = [
     'checkFramebufferStatus'
 ];
 
-const ALL_ENUM = merge({},INTERNAL_ENUM,OVERRAL_ENUM,TICKER_ENUM,GL2_ENUM);
+const ALL_ENUM = merge({}, INTERNAL_ENUM, OVERRAL_ENUM, TICKER_ENUM, GL2_ENUM);
 
 /**
  * @class
@@ -270,22 +272,15 @@ class GLContext extends Dispose {
     /**
      * create shader
      * @param {number} type
-     * @return {WebGLShader}
+     * @return {GLShader}
      */
     createShader(type) {
-        const gl = this._gl,
-            glExtension = this._glExtension;
-        let glShader = null;
-        if (type === GLConstants.VERTEX_SHADER) {
-            glShader = new GLVertexShader(gl, null, glExtension);
-        } else if (type === GLConstants.FRAGMENT_SHADER) {
-            glShader = new GLFragmentShader(gl, null, glExtension);
-        }
-        if (!!glShader) {
-            GLSHADERS[glShader.id] = glShader;
-            return glShader.handle;
-        }
-        return null;
+        if (type !== GLConstants.VERTEX_SHADER && type !== GLConstants.FRAGMENT_SHADER)
+            throw new Error('createShader parameter error');
+        const glContextId = this.id,
+            glCanvasId = this._canvasId,
+            glExtension = Resource.getInstance(glCanvasId).glExtension;
+        return new GLShader(type, glContextId, glExtension);
     }
     /**
      * @return {WebGLTexture}
