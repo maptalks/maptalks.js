@@ -31,8 +31,8 @@ class GLExtension {
      * @param {WebGLRenderingContext} gl 
      * @param {Array} [names] the arry of extension names
      */
-    constructor(gl) {
-        this._gl = gl;
+    constructor(canvasId) {
+        this._canvasId = canvasId;
         this._extensions = {};
         this._includeExtension();
         this._map();

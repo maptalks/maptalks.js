@@ -11,16 +11,17 @@ const merge = require('./../utils/merge'),
     GLConstants = require('./GLConstants');
 
 const Limits = {
-    maximumCombinedTextureImageUnits: 0,
-    maximumCubeMapSize: 0,
-    maximumFragmentUniformVectors: 0,
-    maximumTextureImageUnits: 0,
-    maximumRenderbufferSize: 0,
-    maximumTextureSize: 0,
-    maximumVaryingVectors: 0,
-    maximumVertexAttributes: 0,
+    hardwareConcurrency: 2,
+    maximumCombinedTextureImageUnits: 8,
+    maximumCubeMapSize: 16,
+    maximumFragmentUniformVectors: 16,
+    maximumTextureImageUnits: 8,
+    maximumRenderbufferSize: 1,
+    maximumTextureSize: 64,
+    maximumVaryingVectors: 8,
+    maximumVertexAttributes: 8,
     maximumVertexTextureImageUnits: 0,
-    maximumVertexUniformVectors: 0,
+    maximumVertexUniformVectors: 128,
     minimumAliasedLineWidth: 0,
     maximumAliasedLineWidth: 0,
     minimumAliasedPointSize: 0,
@@ -31,8 +32,7 @@ const Limits = {
     maximumDrawBuffers: 0,
     maximumColorAttachments: 0,
     highpFloatSupported: false,
-    highpIntSupported: false,
-    hardwareConcurrency: 0
+    highpIntSupported: false
 };
 
 /**

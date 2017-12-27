@@ -9,16 +9,12 @@ const merge = require('./../utils/merge'),
     stamp = require('./../utils/stamp').stamp,
     setId = require('./../utils/stamp').setId,
     isString = require('./../utils/isString'),
-    Dispose = require('./../utils/Dispose');
-
-const Resource = require('./../core/Resource');
-const GLContext = require('./../gl/GLContext');
-
-
-const GLCanvasOptions = {
-    width: 800,
-    height: 600
-}
+    Dispose = require('./../utils/Dispose'),
+    GLContext = require('./../gl/GLContext');
+/**
+ * 存储glContext对象，根据canvasId存储
+ */
+const CACHE_GLCONTEXT = {};
 
 /**
  * 逻辑变更：2017/12/12
@@ -36,7 +32,7 @@ class GLCanvas extends Dispose {
      * @param {number} [options.width]
      * @param {number} [options.height]
      */
-    constructor(element, options = {}) {
+    constructor(element, options = { width: 800, height: 600 }) {
         super();
         /*
          * get canvas id as unique signal 
@@ -46,17 +42,12 @@ class GLCanvas extends Dispose {
          * 合并全局设置
          * @type {Object}
          */
-        this._options = merge({}, GLCanvasOptions, options);
+        this._options = merge({}, options);
         /**
          * 记录glCanvas与真实canvasId关联
          * @type {String}
          */
         this._canvasId = canvasId;
-        /**
-         * 创建resource包
-         * @type {Resource}
-         */
-        this._resource = Resource.getInstance(canvasId);
     }
     /**
      * get context attributes
@@ -88,7 +79,9 @@ class GLCanvas extends Dispose {
      * @param {boolean} [options.failIfMajorPerformanceCaveat]
      */
     getContext(renderType = 'webgl', options = {}) {
-        return this._resource.glContext;
+        const canvasId = this._canvasId;
+        CACHE_GLCONTEXT[canvasId] = CACHE_GLCONTEXT[canvasId] || new GLContext(canvasId, this._getContextAttributes(options));
+        return CACHE_GLCONTEXT[canvasId];
     }
     /**
      * return HTMLCanvasElement.style 

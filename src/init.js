@@ -8,9 +8,6 @@ const stamp = require('./utils/stamp').stamp;
 const GLCanvas = require('./gl/GLCanvas');
 const GLContext = require('./gl/GLContext');
 
-
-
-
 /**
  *  }{debug 本地测试代码
  */
@@ -58,7 +55,7 @@ const glCanvas = new GLCanvas(canvasId);
 const gl = glCanvas.getContext('webgl');
 //从此步骤开始，以记录为主
 const vertext_shader = gl.createShader(gl.VERTEX_SHADER);
-
+//
 const fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
 
  
