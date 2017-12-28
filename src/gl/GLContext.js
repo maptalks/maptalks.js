@@ -35,6 +35,9 @@ const merge = require('./../utils/merge'),
     //全部操作枚举
     ALL_ENUM = require('./../core/Handler').ALL_ENUM,
     //cache存储
+    CACHE_GLLIMITS = {},
+    CACHE_GLEXTENSION = {},
+    //
     CACHE_GLSHADER = {},
     CACHE_GLPROGRAM = {},
     CACHE_GLTEXTURE = {};
@@ -66,10 +69,32 @@ class GLContext extends Dispose {
          */
         this._options = merge({}, options);
         /**
+         * @type {GLLimits}
+         */
+        this._glLimits = null;
+        /**
+         * @type {GLExtension}
+         */
+        this._glExtension = null;
+        /**
+         * initial internal object
+         */
+        this._init();
+        /**
          * map glContext to Context
          */
         this._map();
     };
+    /**
+     * 初始化内部方法
+     */
+    _init(){
+        const canvasId = this._canvasId;
+        CACHE_GLLIMITS[canvasId] = CACHE_GLLIMITS[canvasId] ||new GLLimits(this);
+        CACHE_GLEXTENSION[canvasId] = CACHE_GLEXTENSION[canvasId] || new GLExtension(this);
+        this._glLimits = CACHE_GLLIMITS[canvasId];
+        this._glExtension = CACHE_GLEXTENSION[canvasId];
+    }
     /**
      * map相关属性与方法
      */
@@ -139,7 +164,7 @@ class GLContext extends Dispose {
             throw new Error('createShader parameter error');
         const glContextId = this.id,
             glCanvasId = this._canvasId,
-            glExtension = Resource.getInstance(glCanvasId).glExtension;
+            glExtension = this._glExtension;
         return new GLShader(type, glContextId, glExtension);
     }
     /**

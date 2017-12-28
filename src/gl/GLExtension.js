@@ -31,11 +31,9 @@ class GLExtension {
      * @param {WebGLRenderingContext} gl 
      * @param {Array} [names] the arry of extension names
      */
-    constructor(canvasId) {
-        this._canvasId = canvasId;
-        this._extensions = {};
-        this._includeExtension();
-        this._map();
+    constructor(glContext) {
+        this._glContext = glContext;
+        this._options = {};
     }
     /**
      * @private
@@ -47,7 +45,7 @@ class GLExtension {
                 let extensionName = GL_STANDEXTENSIONS[key],
                     extension = this.getExtension(extensionName);
                 if (!!extension)
-                    this._extensions[key] = extension;
+                    this._options[key] = extension;
             }
         }
     }
@@ -72,8 +70,8 @@ class GLExtension {
      */
     _map() {
         for (var key in this._extensions) {
-            if (this._extensions.hasOwnProperty(key)) {
-                let target = this._extensions[key];
+            if (this._options.hasOwnProperty(key)) {
+                let target = this._options[key];
                 if (!this[key] && !!target)
                     this[key] = target;
             }

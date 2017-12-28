@@ -10,7 +10,7 @@ const merge = require('./../utils/merge'),
     isNode = require('./../utils/isNode'),
     GLConstants = require('./GLConstants');
 
-const Limits = {
+const _options = {
     hardwareConcurrency: 2,
     maximumCombinedTextureImageUnits: 8,
     maximumCubeMapSize: 16,
@@ -41,43 +41,41 @@ const Limits = {
 class GLLimits {
     /**
      * 
-     * @param {WebGLRenderingContext} gl 
+     * @param {glContext} gl 
      */
-    constructor(gl) {
-        this._gl = gl;
-        this._limits = merge({}, Limits);
-        this._includeParamter(this._gl);
-        this._map();
+    constructor(glContext) {
+        this._glContext = glContext;
+        this._options = merge({}, _options);
     };
 
     _includeParamter(gl) {
-        this._limits.hardwareConcurrency = isNode?2:(window.navigator.hardwareConcurrency||2);
-        this._limits.maximumCombinedTextureImageUnits = gl.getParameter(GLConstants.MAX_COMBINED_TEXTURE_IMAGE_UNITS); // min: 8
-        this._limits.maximumCubeMapSize = gl.getParameter(GLConstants.MAX_CUBE_MAP_TEXTURE_SIZE); // min: 16
-        this._limits.maximumFragmentUniformVectors = gl.getParameter(GLConstants.MAX_FRAGMENT_UNIFORM_VECTORS); // min: 16
-        this._limits.maximumTextureImageUnits = gl.getParameter(GLConstants.MAX_TEXTURE_IMAGE_UNITS); // min: 8
-        this._limits.maximumRenderbufferSize = gl.getParameter(GLConstants.MAX_RENDERBUFFER_SIZE); // min: 1
-        this._limits.maximumTextureSize = gl.getParameter(GLConstants.MAX_TEXTURE_SIZE); // min: 64
-        this._limits.maximumVaryingVectors = gl.getParameter(GLConstants.MAX_VARYING_VECTORS); // min: 8
-        this._limits.maximumVertexAttributes = gl.getParameter(GLConstants.MAX_VERTEX_ATTRIBS); // min: 8
-        this._limits.maximumVertexTextureImageUnits = gl.getParameter(GLConstants.MAX_VERTEX_TEXTURE_IMAGE_UNITS); // min: 0
-        this._limits.maximumVertexUniformVectors = gl.getParameter(GLConstants.MAX_VERTEX_UNIFORM_VECTORS); // min: 128
-        this._limits.highpFloatSupported = gl.getShaderPrecisionFormat(GLConstants.FRAGMENT_SHADER, GLConstants.HIGH_FLOAT) !== 0;
-        this._limits.highpIntSupported = gl.getShaderPrecisionFormat(GLConstants.FRAGMENT_SHADER, GLConstants.HIGH_INT) !== 0;
-        this._limits.minimumAliasedLineWidth = gl.getParameter(GLConstants.ALIASED_LINE_WIDTH_RANGE)[0];//must include 1
-        this._limits.maximumAliasedLineWidth = gl.getParameter(GLConstants.ALIASED_LINE_WIDTH_RANGE)[1];     
-        this._limits.minimumAliasedPointSize = gl.getParameter(GLConstants.ALIASED_POINT_SIZE_RANGE)[0]
-        this._limits.maximumAliasedPointSize = gl.getParameter(GLConstants.ALIASED_POINT_SIZE_RANGE)[1];//must include 1
-        this._limits.maximumViewportWidth = gl.getParameter(GLConstants.MAX_VIEWPORT_DIMS)[0];
-        this._limits.maximumViewportHeight = gl.getParameter(GLConstants.MAX_VIEWPORT_DIMS)[1];
+        this._options.hardwareConcurrency = isNode?2:(window.navigator.hardwareConcurrency||2);
+        this._options.maximumCombinedTextureImageUnits = gl.getParameter(GLConstants.MAX_COMBINED_TEXTURE_IMAGE_UNITS); // min: 8
+        this._options.maximumCubeMapSize = gl.getParameter(GLConstants.MAX_CUBE_MAP_TEXTURE_SIZE); // min: 16
+        this._options.maximumFragmentUniformVectors = gl.getParameter(GLConstants.MAX_FRAGMENT_UNIFORM_VECTORS); // min: 16
+        this._options.maximumTextureImageUnits = gl.getParameter(GLConstants.MAX_TEXTURE_IMAGE_UNITS); // min: 8
+        this._options.maximumRenderbufferSize = gl.getParameter(GLConstants.MAX_RENDERBUFFER_SIZE); // min: 1
+        this._options.maximumTextureSize = gl.getParameter(GLConstants.MAX_TEXTURE_SIZE); // min: 64
+        this._options.maximumVaryingVectors = gl.getParameter(GLConstants.MAX_VARYING_VECTORS); // min: 8
+        this._options.maximumVertexAttributes = gl.getParameter(GLConstants.MAX_VERTEX_ATTRIBS); // min: 8
+        this._options.maximumVertexTextureImageUnits = gl.getParameter(GLConstants.MAX_VERTEX_TEXTURE_IMAGE_UNITS); // min: 0
+        this._options.maximumVertexUniformVectors = gl.getParameter(GLConstants.MAX_VERTEX_UNIFORM_VECTORS); // min: 128
+        this._options.highpFloatSupported = gl.getShaderPrecisionFormat(GLConstants.FRAGMENT_SHADER, GLConstants.HIGH_FLOAT) !== 0;
+        this._options.highpIntSupported = gl.getShaderPrecisionFormat(GLConstants.FRAGMENT_SHADER, GLConstants.HIGH_INT) !== 0;
+        this._options.minimumAliasedLineWidth = gl.getParameter(GLConstants.ALIASED_LINE_WIDTH_RANGE)[0];//must include 1
+        this._options.maximumAliasedLineWidth = gl.getParameter(GLConstants.ALIASED_LINE_WIDTH_RANGE)[1];     
+        this._options.minimumAliasedPointSize = gl.getParameter(GLConstants.ALIASED_POINT_SIZE_RANGE)[0]
+        this._options.maximumAliasedPointSize = gl.getParameter(GLConstants.ALIASED_POINT_SIZE_RANGE)[1];//must include 1
+        this._options.maximumViewportWidth = gl.getParameter(GLConstants.MAX_VIEWPORT_DIMS)[0];
+        this._options.maximumViewportHeight = gl.getParameter(GLConstants.MAX_VIEWPORT_DIMS)[1];
     };
     /**
      * map the limits to GLLimits instance
      */
     _map() {
         for (var key in this._limits) {
-            if (this._limits.hasOwnProperty(key)) {
-                let target = this._limits[key];
+            if (this._options.hasOwnProperty(key)) {
+                let target = this._options[key];
                 if (!this[key] && !!target)
                     this[key] = target;
             }
@@ -85,5 +83,8 @@ class GLLimits {
     };
 
 }
+
+
+
 
 module.exports = GLLimits;

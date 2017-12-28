@@ -10,12 +10,14 @@ const merge = require('./../utils/merge'),
     setId = require('./../utils/stamp').setId,
     isString = require('./../utils/isString'),
     Dispose = require('./../utils/Dispose'),
-    GLContext = require('./../gl/GLContext');
+    //
+    GLContext = require('./GLContext'),
+    GLExtension = require('./GLExtension'),
+    GLLimits = require('./GLLimits');
 /**
  * 存储glContext对象，根据canvasId存储
  */
 const CACHE_GLCONTEXT = {};
-
 /**
  * 逻辑变更：2017/12/12
  * GLCanvas不对dom进行操作，所有操作移回到Player
@@ -39,15 +41,15 @@ class GLCanvas extends Dispose {
          */
         const canvasId = isString(element) ? element : stamp(element);
         /**
-         * 合并全局设置
-         * @type {Object}
-         */
-        this._options = merge({}, options);
-        /**
          * 记录glCanvas与真实canvasId关联
          * @type {String}
          */
         this._canvasId = canvasId;
+        /**
+         * 合并全局设置
+         * @type {Object}
+         */
+        this._options = merge({}, options);
     }
     /**
      * get context attributes
@@ -80,7 +82,10 @@ class GLCanvas extends Dispose {
      */
     getContext(renderType = 'webgl', options = {}) {
         const canvasId = this._canvasId;
-        CACHE_GLCONTEXT[canvasId] = CACHE_GLCONTEXT[canvasId] || new GLContext(canvasId, this._getContextAttributes(options));
+        if(!CACHE_GLCONTEXT[canvasId]){
+            const glContext = new GLContext(canvasId, this._getContextAttributes(options));
+            CACHE_GLCONTEXT[canvasId] = glContext;
+        }
         return CACHE_GLCONTEXT[canvasId];
     }
     /**
