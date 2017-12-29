@@ -52,11 +52,14 @@ const canvasId = stamp(htmlCanvas);
 
 const glCanvas = new GLCanvas(canvasId);
 
-const gl = glCanvas.getContext('webgl');
+const glContext = glCanvas.getContext('webgl');
 //从此步骤开始，以记录为主
-const vertext_shader = gl.createShader(gl.VERTEX_SHADER);
+const vertext_shader = glContext.createShader(glContext.VERTEX_SHADER);
 //
-const fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
+const fragment_shader = glContext.createShader(glContext.FRAGMENT_SHADER);
+
+ glContext.shaderSource(vertext_shader,vertexShaderSource);
+ glContext.compileShader(vertext_shader);
 
  
 

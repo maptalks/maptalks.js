@@ -25,6 +25,8 @@ const merge = require('./../utils/merge'),
     stamp = require('./../utils/stamp').stamp,
     Dispose = require('./../utils/Dispose'),
     GLConstants = require('./GLConstants'),
+    Recorder = require('./../core/Recorder').Recorder,
+    GLRecord = require('./../core/Recorder').GLRecord,
     //映射内置对象
     GLShader = require('./GLShader'),
     GLProgram = require('./GLProgram'),
@@ -68,6 +70,10 @@ class GLContext extends Dispose {
          * merge all options
          */
         this._options = merge({}, options);
+        /**
+         * record all gl operations
+         */
+        this._recoder = new Recorder();
         /**
          * @type {GLLimits}
          */
@@ -230,12 +236,17 @@ class GLContext extends Dispose {
      * @param {String} source 
      */
     shaderSource(shader, source) {
-        const gl = this._gl;
-        //1.如果不存在'precision mediump float;'则添加
+        const recorder = this._recoder,
+            canvasId = this._canvasId,
+            glContextId = this.id;
+        //指定glsl版本 gl.shaderSource(shader, source);
         source = source.indexOf('precision') === -1 ? `precision mediump float;\n${source}` : source;
-        //指定glsl版本
-        //source = source.indexOf('#version') === -1?`#version 300 es\n${source}`:source;
-        gl.shaderSource(shader, source);
+        //创建操作记录
+        const record = new GLRecord('shaderSource',shader,source);
+        //设置0号参数改为shaderId
+        record.setPt(0,`${canvasId}-${glContextId}-${shader.id}`);
+        //增加操作记录
+        recorder.increase(record);
     }
     /**
      * no need to implement

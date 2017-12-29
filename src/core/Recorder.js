@@ -46,28 +46,15 @@ export default class Record extends Dispose {
  */
 class GLRecord extends Record {
 
-    constructor(opName, ...rest, ptName = null, ptIndex = -1) {
+    constructor(opName, ...rest) {
         super(opName, ...rest);
-        this._ptName = ptName;
-        this._ptIndex = ptIndex;
+    }
+
+    setPt(ptIndex,ptName){
         //修改Record指针
-        ptName && ptIndex !== -1 ? this._exactIndex(this._ptIndex, this._ptName) : null;
+        ptName && ptIndex !== -1 ? this._exactIndex(ptIndex, ptName) : null;
     }
 
-}
-
-/**
- * @author
- * @class
- * some dom opearion which needs to be stored
- * 提供dom元素名称，player执行时通过名称搜索获取元素，后进行操作
- */
-class DomRecord {
-
-    constructor(opName, ...rest, domName) {
-        super(opName, ...rest);
-        this._domName = domName;
-    }
 
 }
 
@@ -76,7 +63,6 @@ class DomRecord {
  * @class Recorder
  */
 class Recorder {
-
     /**
      * 
      * @param {Oject} [options]
@@ -145,6 +131,5 @@ class Recorder {
 
 module.exports = {
     GLRecord,
-    DomRecord,
     Recorder
 };
