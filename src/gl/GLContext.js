@@ -152,13 +152,14 @@ class GLContext extends Dispose {
      * @return {WebGLProgram}
      */
     createProgram() {
-        const gl = this._gl;
+        const glContextId = this.id;
         //1.创建GLProgram
-        const glProgram = new GLProgram(gl);
-        //2.缓存program
-        GLPROGRAMS[glProgram.id] = glProgram;
-        //3.返回句柄
-        return glProgram.handle;
+        const glProgram = new GLProgram(glContextId,{
+            glExtension:this._glExtension,
+            glLimits:this._glLimits
+        });
+        //2.返回句柄
+        return glProgram;
     }
     /**
      * create shader
@@ -252,8 +253,12 @@ class GLContext extends Dispose {
      * no need to implement
      */
     compileShader(shader) {
-        const gl = this._gl;
-        gl.compileShader(shader);
+        const recorder = this._recoder,
+            canvasId = this._canvasId,
+            glContextId = this.id;
+        const record = new GLRecord('compileShader',shader);
+        record.setPt(0,`${canvasId}-${glContextId}-${shader.id}`);
+        recorder.increase(record);
     }
     /**
      * no needs to implement this function

@@ -25,7 +25,7 @@ void main() {
   gl_Position = a_position;
 }
 `;
- 
+
 const fragmentShaderSource = `#version 300 es
  
 // fragment shaders don't have a default precision so we need
@@ -54,12 +54,20 @@ const glCanvas = new GLCanvas(canvasId);
 
 const glContext = glCanvas.getContext('webgl');
 //从此步骤开始，以记录为主
-const vertext_shader = glContext.createShader(glContext.VERTEX_SHADER);
+const glShader_v = glContext.createShader(glContext.VERTEX_SHADER);
 //
-const fragment_shader = glContext.createShader(glContext.FRAGMENT_SHADER);
+const glShader_f = glContext.createShader(glContext.FRAGMENT_SHADER);
 
- glContext.shaderSource(vertext_shader,vertexShaderSource);
- glContext.compileShader(vertext_shader);
+glContext.shaderSource(glShader_v, vertexShaderSource);
+glContext.compileShader(glShader_v);
 
- 
+glContext.shaderSource(glShader_f, fragmentShaderSource);
+glContext.compileShader(glShader_f);
+
+//
+const glProgram = glContext.createProgram();
+
+
+
+
 

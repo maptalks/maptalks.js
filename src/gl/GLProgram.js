@@ -123,21 +123,21 @@ class GLProgram extends Dispose {
      * 创建program
      * @param {WebGLRenderingContext} gl 
      * @param {object} [options]
-     * @param {GLExtension} [options.extension] 
-     * @param {GLLimits} [options.limits]
+     * @param {GLExtension} [options.glExtension] 
+     * @param {GLLimits} [options.glLimits]
      * @param {GLFragmentShader} [options.fs] 
      * @param {GLVertexShader} [options.vs]
      */
-    constructor(gl, options = {}) {
+    constructor(glContextId, options = {}) {
         super();
         /**
          * destruction options
          */
-        const {extension, limits, vs, fs} = options;
+        const {glExtension, glLimits, vs, fs} = options;
         /**
          * @type {WebGLRenderingContext}
          */
-        this._gl = gl;
+        this._glContextId = glContextId;
         /**
          *  program active attribute
          */
@@ -149,21 +149,17 @@ class GLProgram extends Dispose {
         /**
          * @type {GLExtension}
          */
-        this._extension = extension;
+        this._glExtension = glExtension;
         /**
          * @type {GLLimits}
          */
-        this._limits = limits;
+        this._glLimits = glLimits;
         /**
          * 混合存储 oes_vertex_array_object
          * @type {GLVertexArrayObject}
          * @memberof GLProgram
          */
-        this._vao = new GLVertexArrayObject(gl, extension, limits);
-        /**
-         * @type {WebGLProgram}
-         */
-        this._handle = this._createHandle();
+        this._vao = new GLVertexArrayObject(gl, glExtension, glLimits);
         /**
          * vertex_shader
          * @type {GLVertexShader}

@@ -1,5 +1,8 @@
+/**
+ * 记录webgl相关操作
+ * @author yellow date 2017/12/29
+ */
 const Dispose = require('./../utils/Dispose');
-
 /**
  * @class
  * @author yellow date 2017/12/12
@@ -7,7 +10,7 @@ const Dispose = require('./../utils/Dispose');
  * -记录操作名称
  * -记录操作相关参数
  */
-export default class Record extends Dispose {
+class Record extends Dispose {
 
     constructor(opName, ...rest) {
         super();
@@ -36,7 +39,6 @@ export default class Record extends Dispose {
     _exactIndex(ptIndex, ptName) {
         this._rest[ptIndex] = ptName;
     }
-
 }
 
 /**
@@ -50,11 +52,10 @@ class GLRecord extends Record {
         super(opName, ...rest);
     }
 
-    setPt(ptIndex,ptName){
+    setPt(ptIndex = -1,ptName = null){
         //修改Record指针
         ptName && ptIndex !== -1 ? this._exactIndex(ptIndex, ptName) : null;
     }
-
 
 }
 
@@ -126,10 +127,9 @@ class Recorder {
             task.pop();
         }
     }
-
 }
 
 module.exports = {
     GLRecord,
     Recorder
-};
+}
