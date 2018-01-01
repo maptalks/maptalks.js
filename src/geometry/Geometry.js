@@ -225,6 +225,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     setProperties(properties) {
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
+        this._repaint();
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
@@ -1019,7 +1020,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 }
             }
         }
-        if (needRepaint) {
+        if (conf['properties']) {
+            this.setProperties(conf['properties']);
+        } else if (needRepaint) {
             this._repaint();
         }
     }

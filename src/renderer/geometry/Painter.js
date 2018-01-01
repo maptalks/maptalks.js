@@ -530,6 +530,15 @@ class Painter extends Class {
 
     repaint() {
         this.removeCache();
+        const layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
+        const renderer = layer.getRenderer();
+        if (!renderer || !renderer.setToRedraw()) {
+            return;
+        }
+        renderer.setToRedraw();
     }
 
     /**
@@ -565,6 +574,9 @@ class Painter extends Class {
         delete this._markerExtent;
         delete this._cachedParams;
         delete this._unsimpledParams;
+        if (this.geometry) {
+            delete this.geometry[Symbolizers.TextMarkerSymbolizer.CACHE_KEY];
+        }
     }
 
     getAltitude() {
