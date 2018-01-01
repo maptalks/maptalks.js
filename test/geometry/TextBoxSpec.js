@@ -303,7 +303,7 @@ describe('Geometry.TextBox', function () {
                 done();
             });
             vector.setContent('1');
-            expect(Object.keys(vector[cachekey]).length).to.be.eql(2);
+            expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
         });
         map.addLayer(layer);
 
