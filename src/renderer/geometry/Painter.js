@@ -193,8 +193,9 @@ class Painter extends Class {
 
         //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
+            const geometry = this.geometry;
             let clipped;
-            if (!noClip) {
+            if (!noClip && geometry.options['enableClip'] && !geometry.options['smoothness']) {
                 clipped = this._clip(points, altitude);
             } else {
                 clipped = {

@@ -266,6 +266,42 @@ describe('Geometry.LineString', function () {
         expect(layer).to.be.painted(-43, -12);
     });
 
+    describe('smoothness', function () {
+        it('draw 2 points with smoothness', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                    center.sub(0.1, 0),
+                    center.add(0.1, 0)
+                ], {
+                smoothness : 0.5,
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 4
+                }
+            }).addTo(layer);
+            expect(layer).to.be.painted();
+        });
+
+        it('draw 3 points with smoothness', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                smoothness : 0.5,
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            expect(layer).not.to.be.painted(0, 0);
+            expect(layer).to.be.painted(0, -7);
+        });
+    });
+
     describe('animateShow', function () {
         it('animateShow', function (done) {
             layer = new maptalks.VectorLayer('id2');

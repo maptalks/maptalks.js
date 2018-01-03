@@ -324,9 +324,9 @@ export function btoa(input) {
  * @return {Number}    degree between 2 points
  * @memberOf Util
  */
-export function computeDegree(p1, p2) {
-    const dx = p2.x - p1.x;
-    const dy = p2.y - p1.y;
+export function computeDegree(x0, y0, x1, y1) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
     return Math.atan2(dy, dx);
 }
 

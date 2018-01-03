@@ -312,6 +312,26 @@ describe('Geometry.Polygon', function () {
         // expect(vector.getArea()).to.be.eql(comparison.getArea());
     });
 
+    describe('smoothness', function () {
+        it('draw 3 points with smoothness', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.Polygon([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                smoothness : 0.5,
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            expect(layer).not.to.be.painted(0, 0);
+            expect(layer).to.be.painted(0, -10);
+        });
+    });
+
     describe('animateShow', function () {
         it('animateShow', function (done) {
             var polygon = new maptalks.Polygon([[
