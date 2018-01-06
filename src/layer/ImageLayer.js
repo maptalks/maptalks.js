@@ -21,7 +21,7 @@ const options = {
 /**
  * @classdesc
  * A layer used to display simple images, Sometimes,we need only scan images in a simple scene,such as
- indoor map or game map.Therefor this layer can help you display images in geographical map and simple map.
+ * indoor map or game map.Therefor this layer can help you display images both in geographical map and in simple map.
  * @category layer
  * @extends Layer
  * @param {String|Number} id - image layer's id
@@ -106,7 +106,7 @@ class ImageLayer extends Layer {
 ImageLayer.mergeOptions(options);
 
 class ImageCanvasRenderer extends CanvasRenderer {
-    
+
     needToRedraw() {
         const map = this.layer.getMap();
         if (map.isZooming()) {
