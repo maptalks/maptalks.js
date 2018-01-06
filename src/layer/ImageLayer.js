@@ -20,7 +20,7 @@ const options = {
 
 /**
  * @classdesc
- * A layer used to display simple images, Sometimes,we need only scan images in a simple scene,such as
+ * A layer used to display simple images. Sometimes,we need only scan images in a simple scene,such as
  * indoor map or game map.Therefor this layer can help you display images both in geographical map and in simple map.
  * @category layer
  * @extends Layer
