@@ -75,6 +75,24 @@ describe('ImageLayer', function () {
             map.addLayer(imageLayer);
         });
 
+        it('clear', function (done) {
+            createMap();
+            var imageLayer = new maptalks.ImageLayer('img', {
+                renderer : 'canvas',
+                images : [{
+                   url : '/resources/tile.png',
+                   extent: [-1, -1, 255, 255]
+                }]
+            });
+            imageLayer.once('layerload', function () {
+                expect(imageLayer).to.be.painted();
+                imageLayer.clear()
+                expect(imageLayer).not.to.be.painted();
+                done();
+            });
+            map.addLayer(imageLayer);
+        });
+
         it('many images', function (done) {
             createMap();
             var imageLayer = new maptalks.ImageLayer('img', {
