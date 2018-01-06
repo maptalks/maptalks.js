@@ -400,10 +400,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     _drawBackground() {
         const ctx = this.context;
         const back = this.background;
-        if (back && back.nw && ctx) {
+        if (back && back.southWest && ctx) {
             const map = this.getMap();
             let scale = map._getResolution(back.zoom) / map._getResolution();
-            const cp = map._pointToContainerPoint(back.nw, back.zoom);
+            const cp = map._pointToContainerPoint(back.southWest, back.zoom)._add(0, -map.height * scale);
             const bearing = map.getBearing() - back.bearing;
             if (Browser.retina) {
                 scale *= 1 / 2;
@@ -427,7 +427,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.background = {
             canvas : Canvas2D.copy(this.canvas, this._backCanvas),
             zoom : map.getZoom(),
-            nw : this._northWest,
+            southWest : this._southWest,
             bearing : map.getBearing()
         };
     }
@@ -453,7 +453,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     onZoomEnd(e) {
         if (this._shouldSaveBack() && this._backRefreshed) {
-            this._northWest = this.getMap()._containerPointToPoint(new Point(0, 0));
+            const map = this.getMap();
+            this._southWest = map._containerPointToPoint(new Point(0, map.height));
             this._saveBackground();
             delete this._backRefreshed;
         }
