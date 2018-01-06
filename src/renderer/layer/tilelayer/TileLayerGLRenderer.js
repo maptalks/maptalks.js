@@ -107,7 +107,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         if (this.background) {
             if (!this._gl()) {
                 super._drawBackground();
-            } else if (!this.background.nw) {
+            } else if (!this.background.southWest) {
                 //ignore if background is saved in canvas mode
                 const map = this.getMap();
                 const extent = map.getContainerExtent();

@@ -5,10 +5,6 @@ import Path from './Path';
 
 const JSON_TYPE = 'Polygon';
 
-const options = {
-    'clipToPaint' : true
-};
-
 /**
  * @classdesc
  * Geometry class for polygon type
@@ -322,7 +318,5 @@ class Polygon extends Path {
 }
 
 Polygon.registerJSONType(JSON_TYPE);
-
-Polygon.mergeOptions(options);
 
 export default Polygon;

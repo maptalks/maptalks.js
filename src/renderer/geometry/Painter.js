@@ -179,7 +179,7 @@ class Painter extends Class {
         }
         const map = this.getMap(),
             glZoom = map.getGLZoom(),
-            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
+            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._southWest)._add(0, -map.height);
         let cPoints;
         function pointContainerPoint(point, alt) {
             const p = map._pointToContainerPoint(point, glZoom, alt)._sub(layerPoint);
@@ -193,8 +193,9 @@ class Painter extends Class {
 
         //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
+            const geometry = this.geometry;
             let clipped;
-            if (!noClip) {
+            if (!noClip && geometry.options['enableClip'] && !geometry.options['smoothness']) {
                 clipped = this._clip(points, altitude);
             } else {
                 clipped = {
@@ -252,7 +253,7 @@ class Painter extends Class {
             const c = map.cameraLookAt;
             const pos = map.cameraPosition;
             //add [1px, 1px] towards camera's lookAt
-            extent2D = extent2D.combine(new Point(pos)._add(sign(c.x - pos[0]), sign(c.y - pos[1])));
+            extent2D = extent2D.combine(new Point(pos)._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
         }
         const e = this.get2DExtent();
         let clipPoints = points;

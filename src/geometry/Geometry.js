@@ -1010,18 +1010,23 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     onConfig(conf) {
+        let properties;
+        if (conf['properties']) {
+            properties = conf['properties'];
+            delete conf['properties'];
+        }
         let needRepaint = false;
         for (const p in conf) {
             if (conf.hasOwnProperty(p)) {
                 const prefix = p.slice(0, 5);
-                if (prefix === 'arrow' || prefix === 'shado') {
+                if (prefix === 'arrow' || prefix === 'shado' || prefix === 'smoot') {
                     needRepaint = true;
                     break;
                 }
             }
         }
-        if (conf['properties']) {
-            this.setProperties(conf['properties']);
+        if (properties) {
+            this.setProperties(properties);
         } else if (needRepaint) {
             this._repaint();
         }

@@ -7,11 +7,15 @@ import simplify from 'simplify-js';
 
 /**
  * @property {Object} options - configuration options
+ * @property {String} [options.smoothness=0]      - line smoothing by quad bezier interporating, 0 by default
  * @property {Object} options.symbol - Path's default symbol
  * @memberOf Path
  * @instance
  */
 const options = {
+    'smoothness' : 0,
+    'enableClip' : true,
+    'enableSimplify' : true,
     'symbol': {
         'lineColor': '#000',
         'lineWidth': 2,
@@ -186,10 +190,7 @@ class Path extends Geometry {
             return [];
         }
         const map = this.getMap(),
-            layer = this.getLayer(),
-            properties = this.getProperties(),
-            hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]),
-            isSimplify = !disableSimplify && layer && layer.options['enableSimplify'] && !hasAltitude,
+            isSimplify = !disableSimplify && this._shouldSimplify(),
             tolerance = 2 * map._getResolution(),
             isMulti = Array.isArray(prjCoords[0]);
         delete this._simplified;
@@ -202,6 +203,13 @@ class Path extends Geometry {
             zoom = map.getZoom();
         }
         return mapArrayRecursively(prjCoords, c => map._prjToPoint(c, zoom));
+    }
+
+    _shouldSimplify() {
+        const layer = this.getLayer(),
+            properties = this.getProperties();
+        const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]);
+        return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this.options['smoothness'];
     }
 
     _setPrjCoordinates(prjPoints) {

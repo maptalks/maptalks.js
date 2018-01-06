@@ -1,4 +1,4 @@
-import { IS_NODE, extend } from 'core/util';
+import { IS_NODE, extend, isInteger, log2 } from 'core/util';
 import * as mat4 from 'core/util/mat4';
 import Canvas from 'core/Canvas';
 import Browser from 'core/Browser';
@@ -198,7 +198,10 @@ const ImageGLRenderable = Base => {
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-            gl.generateMipmap(gl.TEXTURE_2D);
+            if (isInteger(log2(image.width)) && isInteger(log2(image.width))) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
+
             return texture;
         }
 

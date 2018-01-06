@@ -1,6 +1,7 @@
 import Map from './Map';
 import Point from 'geo/Point';
 import * as mat4 from 'core/util/mat4';
+import { subtract, add, scale, normalize, dot } from 'core/util/vec3';
 import { clamp, interpolate, wrap } from 'core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from 'core/util/math';
 import Browser from 'core/Browser';
@@ -211,11 +212,9 @@ Map.include(/** @lends Map.prototype */{
             //convert altitude at zoom to current zoom
             altitude *= this.getResolution(zoom) / this.getResolution();
             const scale = this._glScale;
-            const t = [point.x * scale, point.y * scale, altitude * scale];
+            let t = [point.x * scale, point.y * scale, altitude * scale];
 
-            // const t2 = [];
-            // applyMatrix(t2, t, this.viewMatrix);
-            // console.log(t2[2]);
+            t = this._projIfBehindCamera(t, this.cameraPosition, this.cameraForward);
 
             applyMatrix(t, t, this.projViewMatrix);
 
@@ -229,8 +228,32 @@ Map.include(/** @lends Map.prototype */{
         }
     },
 
+    // https://forum.unity.com/threads/camera-worldtoscreenpoint-bug.85311/#post-2121212
+    _projIfBehindCamera: function () {
+        const vectorFromCam = new Array(3);
+        const nVectorFromCam = new Array(3);
+        const proj = new Array(3);
+        const sub = new Array(3);
+        return function (position, cameraPos, camForward) {
+            subtract(vectorFromCam, position, cameraPos);
+            const cameraDot = dot(camForward, normalize(nVectorFromCam, vectorFromCam));
+            //const vectorFromCam = position - camera.transform.position;
+            //const camNormDot = dot(camForward, normalize([], vectorFromCam));
+            //if the point is behind the camera then project it onto the camera plane
+            if (cameraDot <= 0) {
+                //we are beind the camera, project the position on the camera plane
+                const camDot = dot(camForward, vectorFromCam);
+                scale(proj, camForward, camDot * 1.01);   //small epsilon to keep the position infront of the camera
+                add(position, cameraPos, subtract(sub, vectorFromCam, proj));
+            }
+
+            return position;
+        };
+    }(),
+
     /**
      * Convert containerPoint at current zoom to 2d point at target zoom
+     * from mapbox-gl-js
      * @param  {Point} p    container point at current zoom
      * @param  {Number} zoom target zoom, current zoom in default
      * @return {Point}      2d point at target zoom
@@ -329,7 +352,8 @@ Map.include(/** @lends Map.prototype */{
 
         const size = this.getSize(),
             scale = this.getGLScale();
-        const center2D = this.cameraLookAt = this._prjToPoint(this._prjCenter, targetZ);
+        const center2D = this._prjToPoint(this._prjCenter, targetZ);
+        this.cameraLookAt = [center2D.x, center2D.y, 0];
 
         const pitch = this.getPitch() * RADIAN;
         const bearing = -this.getBearing() * RADIAN;
@@ -351,8 +375,12 @@ Map.include(/** @lends Map.prototype */{
         const d = dist || 1;
         const up = [Math.sin(bearing) * d, Math.cos(bearing) * d, 0];
         const m = this.cameraWorldMatrix || createMat4();
-        lookAt(m, [cx, cy, cz], [center2D.x, center2D.y, 0], up);
+        lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 
+        const cameraForward = new Array(3);
+        subtract(cameraForward, this.cameraLookAt, this.cameraPosition);
+        // similar with unity's camera.transform.forward
+        this.cameraForward = normalize(cameraForward, cameraForward);
         // math from THREE.js
         const q = {};
         matrixToQuaternion(q, m);
