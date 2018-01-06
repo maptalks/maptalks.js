@@ -7,6 +7,7 @@ import OverlayLayer from './OverlayLayer';
 import VectorLayer from './VectorLayer';
 import CanvasLayer from './CanvasLayer';
 import ParticleLayer from './ParticleLayer';
+import ImageLayer from './ImageLayer';
 import TileSystem from './tile/tileinfo/TileSystem';
 import TileConfig from './tile/tileinfo/TileConfig';
 
@@ -20,6 +21,7 @@ export {
     VectorLayer,
     CanvasLayer,
     ParticleLayer,
+    ImageLayer,
     TileSystem,
     TileConfig
 };
