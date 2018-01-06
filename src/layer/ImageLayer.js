@@ -5,11 +5,43 @@ import browser from 'core/Browser';
 import Extent from 'geo/Extent';
 import Coordinate from 'geo/Coordinate';
 
+/**
+ * @property {Object}              options                     - ImageLayer's options
+ * @property {Array|Function}      options.images              - ImageLayer's image collection, it includs each image's url and extent. An image's extent should like [xmin,ymin,xmax,ymax]
+ * @property {String}              [options.crossOrigin=null]    - image's corssOrigin
+ * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
+ * @memberOf ImageLayer
+ * @instance
+ */
 const options = {
     renderer: browser.webgl ? 'gl' : 'canvas',
     crossOrigin: null
 };
 
+/**
+ * @classdesc
+ * A layer used to display simple images, Sometimes,we need only scan images in a simple scene,such as
+ indoor map or game map.Therefor this layer can help you display images in geographical map and simple map.
+ * @category layer
+ * @extends Layer
+ * @param {String|Number} id - image layer's id
+ * @param {Object} [options=null] - options defined in [ImageLayer]{@link ImageLayer#options}
+ * @example
+ * new ImageLayer("imagelayer",{
+        images: [
+                    {
+                        url: 'foo1.jpg',
+                        extent: [0, 0, 790 * 1.5, 339 * 1.5]
+                    },
+                    {
+                        url: 'foo2.png',
+                        extent: [100, 100, 2315 * 0.6, 2315 * 0.6]
+                    }
+                ],
+        renderer: 'gl',
+        crossOrigin: 'anonymous'
+    })
+ */
 class ImageLayer extends Layer {
 
     constructor(id, options = {}) {
@@ -26,6 +58,11 @@ class ImageLayer extends Layer {
         return false;
     }
 
+    /**
+     * Add a new image to the layer
+     * @param {Object} imageObject - {url:'foo.jpg', extent:[0,0,100,100]}
+     * @return {ImageLayer} this
+     */
     addImage(imageObject) {
         const img = new Image();
         img.onload = () => {
@@ -35,7 +72,23 @@ class ImageLayer extends Layer {
             this._imageData.push(imgObject);
             renderer.completeRender();
         };
+        this.fire('add');
         img.src = imageObject.url;
+        return this;
+    }
+
+    /**
+     * Clear the layer
+     * @return {ImageLayer} this
+     */
+    clear() {
+        const renderer = this._getRenderer();
+        if (renderer) {
+            renderer.clear();
+        }
+        this._imageData = [];
+        this.fire('clear');
+        return this;
     }
 
     //check whether image is in map's extent
@@ -53,11 +106,7 @@ class ImageLayer extends Layer {
 ImageLayer.mergeOptions(options);
 
 class ImageCanvasRenderer extends CanvasRenderer {
-
-    onAdd() {
-
-    }
-
+    
     needToRedraw() {
         const map = this.layer.getMap();
         if (map.isZooming()) {
