@@ -375,7 +375,7 @@ Map.include(/** @lends Map.prototype */{
         const d = dist || 1;
         const up = [Math.sin(bearing) * d, Math.cos(bearing) * d, 0];
         const m = this.cameraWorldMatrix || createMat4();
-        lookAt(m, [cx, cy, cz], [center2D.x, center2D.y, 0], up);
+        lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 
         const cameraForward = new Array(3);
         subtract(cameraForward, this.cameraLookAt, this.cameraPosition);
