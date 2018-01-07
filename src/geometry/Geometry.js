@@ -1011,7 +1011,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         for (const p in conf) {
             if (conf.hasOwnProperty(p)) {
                 const prefix = p.slice(0, 5);
-                if (prefix === 'arrow' || prefix === 'shado' || prefix === 'smoot') {
+                if (prefix === 'arrow' || prefix === 'smoot') {
                     needRepaint = true;
                     break;
                 }
