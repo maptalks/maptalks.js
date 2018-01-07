@@ -77,7 +77,6 @@ class Painter extends Class {
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
         this._debugSymbolizer = new Symbolizers.DebugSymbolizer(geoSymbol, this.geometry, this);
-        this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
     }
 
@@ -379,8 +378,8 @@ class Painter extends Class {
         this._beforePaint();
         const ctx = context || renderer.context;
         const contexts = [ctx, renderer.resources];
-        this._prepareShadow(ctx);
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            this._prepareShadow(ctx, this.symbolizers[i].symbol);
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._afterPaint();
@@ -406,8 +405,8 @@ class Painter extends Class {
             if (this._renderPoints) {
                 bak = this._renderPoints;
             }
-            const contexts = [canvas.getContext('2d'), resources];
-            this._prepareShadow(canvas.getContext('2d'));
+            const ctx = canvas.getContext('2d');
+            const contexts = [ctx, resources];
             for (let i = this.symbolizers.length - 1; i >= 0; i--) {
                 const dxdy = this.symbolizers[i].getDxDy();
                 this._renderPoints = {
@@ -415,7 +414,7 @@ class Painter extends Class {
                         [origin.add(dxdy)]
                     ]
                 };
-
+                this._prepareShadow(ctx, this.symbolizers[i].symbol);
                 this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
             }
             if (bak) {
@@ -434,12 +433,12 @@ class Painter extends Class {
         return this._genSprite;
     }
 
-    _prepareShadow(ctx) {
-        if (this._hasShadow) {
-            ctx.shadowBlur = this.geometry.options['shadowBlur'];
-            ctx.shadowColor = this.geometry.options['shadowColor'];
-            ctx.shadowOffsetX = this.geometry.options['shadowOffsetX'];
-            ctx.shadowOffsetY = this.geometry.options['shadowOffsetY'];
+    _prepareShadow(ctx, symbol) {
+        if (symbol['shadowBlur']) {
+            ctx.shadowBlur = symbol['shadowBlur'];
+            ctx.shadowColor = symbol['shadowColor'] || 'black';
+            ctx.shadowOffsetX = symbol['shadowOffsetX'] || 0;
+            ctx.shadowOffsetY = symbol['shadowOffsetY'] || 0;
         } else if (ctx.shadowBlur) {
             ctx.shadowBlur = null;
             ctx.shadowColor = null;

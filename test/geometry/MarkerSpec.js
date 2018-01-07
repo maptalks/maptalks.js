@@ -424,7 +424,9 @@ describe('Geometry.Marker', function () {
                     markerWidth : 10,
                     markerHeight : 10,
                     markerDx : { stops: [[7, 8], [14, 20]] },
-                    markerDy : { stops: [[7, 8], [14, 20]] }
+                    markerDy : { stops: [[7, 8], [14, 20]] },
+
+                    shadowBlur : 2
                 }
             });
             var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);

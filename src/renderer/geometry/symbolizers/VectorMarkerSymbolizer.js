@@ -105,7 +105,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _calMarkerSize() {
         const lineWidth = this.strokeAndFill['lineWidth'],
-            shadow = this.geometry.options['shadowBlur'],
+            shadow = 2 * (this.symbol['shadowBlur'] || 0), // add some tolerance for shadowOffsetX/Y
             w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding * 2),
             h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding * 2);
         return [w, h];
@@ -147,7 +147,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getAnchor(w, h) {
-        const shadow = this.geometry.options['shadowBlur'],
+        const shadow = 2 * (this.symbol['shadowBlur'] || 0),
             margin = shadow + this.padding;
         const p = getAlignPoint(new Size(w, h), this.style['markerHorizontalAlignment'], this.style['markerVerticalAlignment']);
         if (p.x !== -w  / 2) {
@@ -160,7 +160,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getCacheImageAnchor(w, h) {
-        const shadow = this.geometry.options['shadowBlur'],
+        const shadow = 2 * (this.symbol['shadowBlur'] || 0),
             margin = shadow + this.padding;
         const markerType = this.style['markerType'];
         if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
