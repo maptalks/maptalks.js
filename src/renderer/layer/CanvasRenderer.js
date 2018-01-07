@@ -365,10 +365,6 @@ class CanvasRenderer extends Class {
 
         this.onCanvasCreate();
 
-        this.layer.fire('canvascreate', {
-            'context' : this.context,
-            'gl' : this.gl
-        });
     }
 
     onCanvasCreate() {
@@ -376,8 +372,8 @@ class CanvasRenderer extends Class {
     }
 
     createContext() {
-        //Be compatible with layer renderers that create context by themselves in overrided createCanvas
-        if (this.gl || this.context) {
+        //Be compatible with layer renderers that overrides create canvas and create gl/context
+        if (this.gl && this.gl.canvas === this.canvas || this.context) {
             return;
         }
         this.context = this.canvas.getContext('2d');
@@ -449,6 +445,20 @@ class CanvasRenderer extends Class {
         if (!this.canvas) {
             this.createCanvas();
             this.createContext();
+            /**
+             * canvascreate event, fired when canvas created.
+             *
+             * @event Layer#canvascreate
+             * @type {Object}
+             * @property {String} type     - canvascreate
+             * @property {Layer} target    - layer
+             * @property {CanvasRenderingContext2D} context - canvas's context
+             * @property {WebGLRenderingContext2D} gl  - canvas's webgl context
+             */
+            this.layer.fire('canvascreate', {
+                'context' : this.context,
+                'gl' : this.gl
+            });
         } else {
             this.clearCanvas();
         }
