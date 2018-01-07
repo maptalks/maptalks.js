@@ -362,14 +362,7 @@ class CanvasRenderer extends Class {
         } else {
             this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
         }
-        this.context = this.canvas.getContext('2d');
-        if (this.layer.options['globalCompositeOperation']) {
-            this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
-        }
-        if (Browser.retina) {
-            const r = 2;
-            this.context.scale(r, r);
-        }
+
         this.onCanvasCreate();
 
         this.layer.fire('canvascreate', {
@@ -380,6 +373,21 @@ class CanvasRenderer extends Class {
 
     onCanvasCreate() {
 
+    }
+
+    createContext() {
+        //Be compatible with layer renderers that create context by themselves in overrided createCanvas
+        if (this.gl || this.context) {
+            return;
+        }
+        this.context = this.canvas.getContext('2d');
+        if (this.layer.options['globalCompositeOperation']) {
+            this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
+        }
+        if (Browser.retina) {
+            const r = 2;
+            this.context.scale(r, r);
+        }
     }
 
     resetCanvasTransform() {
@@ -440,6 +448,7 @@ class CanvasRenderer extends Class {
     prepareCanvas() {
         if (!this.canvas) {
             this.createCanvas();
+            this.createContext();
         } else {
             this.clearCanvas();
         }
