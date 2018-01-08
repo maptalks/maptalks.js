@@ -120,11 +120,12 @@ const ImageGLRenderable = Base => {
          * For layer renderer that needs 2 seperate canvases for 2d and gl
          */
         createCanvas2() {
-            if (this.canvas) {
-                this.canvas2 = Canvas.createCanvas(this.canvas.width, this.canvas.height);
-            }
+            this.canvas2 = Canvas.createCanvas(this.canvas.width, this.canvas.height);
         }
 
+        /**
+         * Get webgl context(this.gl). It prefers canvas2, and will change to this.canvas if canvas2 is not created
+         */
         createGLContext() {
             const gl = this.gl = this._createGLContext(this.canvas2 || this.canvas, this.layer.options['glOptions']);
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
