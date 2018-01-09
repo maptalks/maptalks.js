@@ -8,11 +8,11 @@ import {
     isCssUrl,
     extractCssUrl,
     computeDegree
-} from 'core/util';
-import { isGradient } from 'core/util/style';
-import { createEl } from 'core/util/dom';
-import Browser from 'core/Browser';
-import { getFont, getAlignPoint } from 'core/util/strings';
+} from './util';
+import { isGradient } from './util/style';
+import { createEl } from './util/dom';
+import Browser from './Browser';
+import { getFont, getAlignPoint } from './util/strings';
 
 const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';

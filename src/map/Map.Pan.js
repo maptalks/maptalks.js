@@ -1,7 +1,7 @@
-import Coordinate from 'geo/Coordinate';
-import Point from 'geo/Point';
+import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 import Map from './Map';
-import { isFunction } from 'core/util';
+import { isFunction } from '../core/util';
 
 Map.include(/** @lends Map.prototype */ {
 

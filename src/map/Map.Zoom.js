@@ -1,6 +1,6 @@
-import { isNil } from 'core/util';
-import Browser from 'core/Browser';
-import Point from 'geo/Point';
+import { isNil } from '../core/util';
+import Browser from '../core/Browser';
+import Point from '../geo/Point';
 import Map from './Map';
 
 Map.include(/** @lends Map.prototype */{

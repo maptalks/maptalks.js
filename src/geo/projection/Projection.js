@@ -1,6 +1,6 @@
-import { mapArrayRecursively, sign, wrap } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
+import { mapArrayRecursively, sign, wrap } from '../../core/util';
+import Coordinate from '../Coordinate';
+import Extent from '../Extent';
 
 /**
  * Common Methods of Projections.

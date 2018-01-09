@@ -1,4 +1,4 @@
-import { extend, wrap } from 'core/util';
+import { extend, wrap } from '../../core/util';
 import Coordinate from '../Coordinate';
 import Common from './Common';
 

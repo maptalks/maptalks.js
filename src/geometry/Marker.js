@@ -1,8 +1,8 @@
-import Extent from 'geo/Extent';
+import Extent from '../geo/Extent';
 import CenterMixin from './CenterMixin';
 import Geometry from './Geometry';
-import Painter from 'renderer/geometry/Painter';
-import * as Symbolizers from 'renderer/geometry/symbolizers';
+import Painter from '../renderer/geometry/Painter';
+import * as Symbolizers from '../renderer/geometry/symbolizers';
 
 const options = {
     'symbol': {

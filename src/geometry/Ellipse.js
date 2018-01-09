@@ -1,6 +1,6 @@
-import { extend, isNil } from 'core/util';
-import { withInEllipse } from 'core/util/path';
-import Coordinate from 'geo/Coordinate';
+import { extend, isNil } from '../core/util';
+import { withInEllipse } from '../core/util/path';
+import Coordinate from '../geo/Coordinate';
 import CenterMixin from './CenterMixin';
 import Polygon from './Polygon';
 import Circle from './Circle';

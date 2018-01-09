@@ -1,9 +1,9 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage } from 'core/util';
-import Class from 'core/Class';
-import Browser from 'core/Browser';
-import Promise from 'core/Promise';
-import Canvas2D from 'core/Canvas';
-import Point from 'geo/Point';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage } from '../../core/util';
+import Class from '../../core/Class';
+import Browser from '../../core/Browser';
+import Promise from '../../core/Promise';
+import Canvas2D from '../../core/Canvas';
+import Point from '../../geo/Point';
 
 /**
  * @classdesc

@@ -1,20 +1,20 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { isNil } from 'core/util';
-import { extendSymbol } from 'core/util/style';
-import { getExternalResources } from 'core/util/resource';
-import { stopPropagation } from 'core/util/dom';
-import Coordinate from 'geo/Coordinate';
-import Point from 'geo/Point';
-import Marker from 'geometry/Marker';
-import Polygon from 'geometry/Polygon';
-import LineString from 'geometry/LineString';
-import Circle from 'geometry/Circle';
-import Ellipse from 'geometry/Ellipse';
-import Rectangle from 'geometry/Rectangle';
-import ArcCurve from 'geometry/ArcCurve';
-import CubicBezierCurve from 'geometry/CubicBezierCurve';
-import QuadBezierCurve from 'geometry/QuadBezierCurve';
-import VectorLayer from 'layer/VectorLayer';
+import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
+import { isNil } from '../../core/util';
+import { extendSymbol } from '../../core/util/style';
+import { getExternalResources } from '../../core/util/resource';
+import { stopPropagation } from '../../core/util/dom';
+import Coordinate from '../../geo/Coordinate';
+import Point from '../../geo/Point';
+import Marker from '../../geometry/Marker';
+import Polygon from '../../geometry/Polygon';
+import LineString from '../../geometry/LineString';
+import Circle from '../../geometry/Circle';
+import Ellipse from '../../geometry/Ellipse';
+import Rectangle from '../../geometry/Rectangle';
+import ArcCurve from '../../geometry/ArcCurve';
+import CubicBezierCurve from '../../geometry/CubicBezierCurve';
+import QuadBezierCurve from '../../geometry/QuadBezierCurve';
+import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
 
 /**

@@ -1,6 +1,6 @@
-import { isNil } from 'core/util';
-import Browser from 'core/Browser';
-import { getMarkerPathBase64 } from 'core/util/resource';
+import { isNil } from '../../../core/util';
+import Browser from '../../../core/Browser';
+import { getMarkerPathBase64 } from '../../../core/util/resource';
 import ImageMarkerSymbolizer from './ImageMarkerSymbolizer';
 
 export default class VectorPathMarkerSymbolizer extends ImageMarkerSymbolizer {

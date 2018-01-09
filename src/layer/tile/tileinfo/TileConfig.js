@@ -1,7 +1,7 @@
-import { isString } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
-import Transformation from 'geo/transformation/Transformation';
+import { isString } from '../../../core/util';
+import Coordinate from '../../../geo/Coordinate';
+import Extent from '../../../geo/Extent';
+import Transformation from '../../../geo/transformation/Transformation';
 import TileSystem from './TileSystem';
 
 /**

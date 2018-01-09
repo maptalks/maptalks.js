@@ -1,5 +1,5 @@
-import { extend } from 'core/util';
-import Coordinate from 'geo/Coordinate';
+import { extend } from '../../core/util';
+import Coordinate from '../Coordinate';
 import Common from './Common';
 /**
  * Identity measurer, a measurer for Cartesian coordinate system.

@@ -1,5 +1,5 @@
-import Class from 'core/Class';
-import PointExtent from 'geo/PointExtent';
+import Class from '../../core/Class';
+import PointExtent from '../../geo/PointExtent';
 
 /**
  * @classdesc

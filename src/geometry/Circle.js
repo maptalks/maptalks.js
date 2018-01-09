@@ -1,7 +1,7 @@
-import { extend, isNil } from 'core/util';
-import { withInEllipse } from 'core/util/path';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
+import { extend, isNil } from '../core/util';
+import { withInEllipse } from '../core/util/path';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
 import CenterMixin from './CenterMixin';
 import Polygon from './Polygon';
 

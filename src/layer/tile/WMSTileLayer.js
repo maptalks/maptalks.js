@@ -1,5 +1,5 @@
-import { extend } from 'core/util';
-import Browser from 'core/Browser';
+import { extend } from '../../core/util';
+import Browser from '../../core/Browser';
 import TileLayer from './TileLayer';
 
 /**

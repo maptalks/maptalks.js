@@ -1,10 +1,10 @@
 import Map from './Map';
-import Point from 'geo/Point';
-import * as mat4 from 'core/util/mat4';
-import { subtract, add, scale, normalize, dot } from 'core/util/vec3';
-import { clamp, interpolate, wrap } from 'core/util';
-import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from 'core/util/math';
-import Browser from 'core/Browser';
+import Point from '../geo/Point';
+import * as mat4 from '../core/util/mat4';
+import { subtract, add, scale, normalize, dot } from '../core/util/vec3';
+import { clamp, interpolate, wrap } from '../core/util';
+import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
+import Browser from '../core/Browser';
 
 const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;

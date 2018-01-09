@@ -1,4 +1,4 @@
-import { isNil, isArrayHasData } from 'core/util';
+import { isNil, isArrayHasData } from '../core/util';
 
 /**
  * Represents a 2d point.<br>

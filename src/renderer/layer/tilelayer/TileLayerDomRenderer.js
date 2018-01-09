@@ -10,8 +10,8 @@ import {
     cancelAnimFrame,
     emptyImageUrl,
     now
-} from 'core/util';
-import * as mat4 from 'core/util/mat4';
+} from '../../../core/util';
+import * as mat4 from '../../../core/util/mat4';
 import {
     on,
     createEl,
@@ -21,10 +21,10 @@ import {
     setOpacity,
     TRANSFORM,
     CSSFILTER
-} from 'core/util/dom';
-import Class from 'core/Class';
-import Browser from 'core/Browser';
-import TileLayer from 'layer/tile/TileLayer';
+} from '../../../core/util/dom';
+import Class from '../../../core/Class';
+import Browser from '../../../core/Browser';
+import TileLayer from '../../../layer/tile/TileLayer';
 
 
 const POSITION0 = 'position:absolute;';

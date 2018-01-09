@@ -1,9 +1,9 @@
-import { extend, isNil, isString } from 'core/util';
-import { createEl, setStyle, removeDomNode } from 'core/util/dom';
-import Eventable from 'core/Eventable';
-import Class from 'core/Class';
-import Point from 'geo/Point';
-import Map from 'map/Map';
+import { extend, isNil, isString } from '../core/util';
+import { createEl, setStyle, removeDomNode } from '../core/util/dom';
+import Eventable from '../core/Eventable';
+import Class from '../core/Class';
+import Point from '../geo/Point';
+import Map from '../map/Map';
 
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.

@@ -1,5 +1,5 @@
-import Canvas from 'core/Canvas';
-import CanvasRenderer from 'renderer/layer/CanvasRenderer';
+import Canvas from '../../../core/Canvas';
+import CanvasRenderer from '../../../renderer/layer/CanvasRenderer';
 
 export default class CanvasLayerRenderer extends CanvasRenderer {
 

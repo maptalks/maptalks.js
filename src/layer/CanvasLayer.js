@@ -1,4 +1,4 @@
-import CanvasLayerRenderer from 'renderer/layer/canvaslayer/CanvasLayerRenderer';
+import CanvasLayerRenderer from '../renderer/layer/canvaslayer/CanvasLayerRenderer';
 import Layer from './Layer';
 
 /**

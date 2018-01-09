@@ -1,4 +1,4 @@
-import { isNil, isArrayHasData, removeFromArray } from 'core/util';
+import { isNil, isArrayHasData, removeFromArray } from '../core/util';
 import LineString from './LineString';
 import Geometry from './Geometry';
 import ArcCurve from './ArcCurve';

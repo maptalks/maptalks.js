@@ -1,6 +1,6 @@
-import { isNil, isArrayHasData } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import { pointInsidePolygon, distanceToSegment, clipPolygon } from 'core/util/path';
+import { isNil, isArrayHasData } from '../core/util';
+import Coordinate from '../geo/Coordinate';
+import { pointInsidePolygon, distanceToSegment, clipPolygon } from '../core/util/path';
 import Path from './Path';
 
 const JSON_TYPE = 'Polygon';

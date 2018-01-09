@@ -1,5 +1,5 @@
-import Geometry from 'geometry/Geometry';
-import GeometryEditor from 'geometry/editor/GeometryEditor';
+import Geometry from '../Geometry';
+import GeometryEditor from '../editor/GeometryEditor';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**

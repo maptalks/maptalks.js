@@ -1,6 +1,6 @@
-import { now } from 'core/util';
+import { now } from '../core/util';
 import CanvasLayer from './CanvasLayer';
-import CanvasLayerRenderer from 'renderer/layer/canvaslayer/CanvasLayerRenderer';
+import CanvasLayerRenderer from '../renderer/layer/canvaslayer/CanvasLayerRenderer';
 /**
  * @property {Object} options                  - configuration options
  * @property {Boolean} [options.animation=true]       - if the layer is an animated layer

@@ -1,15 +1,15 @@
-import { pushIn, isNumber } from 'core/util';
-import Size from 'geo/Size';
-import Point from 'geo/Point';
-import Canvas from 'core/Canvas';
-import Geometry from 'geometry/Geometry';
-import Ellipse from 'geometry/Ellipse';
-import Circle from 'geometry/Circle';
-import Sector from 'geometry/Sector';
-import Rectangle from 'geometry/Rectangle';
-import Path from 'geometry/Path';
-import LineString from 'geometry/LineString';
-import Polygon from 'geometry/Polygon';
+import { pushIn, isNumber } from '../../core/util';
+import Size from '../../geo/Size';
+import Point from '../../geo/Point';
+import Canvas from '../../core/Canvas';
+import Geometry from '../../geometry/Geometry';
+import Ellipse from '../../geometry/Ellipse';
+import Circle from '../../geometry/Circle';
+import Sector from '../../geometry/Sector';
+import Rectangle from '../../geometry/Rectangle';
+import Path from '../../geometry/Path';
+import LineString from '../../geometry/LineString';
+import Polygon from '../../geometry/Polygon';
 
 Geometry.include({
     _redrawWhenPitch : () => false,

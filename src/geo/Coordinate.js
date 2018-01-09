@@ -1,4 +1,4 @@
-import { isNil, isNumber, mapArrayRecursively } from 'core/util';
+import { isNil, isNumber, mapArrayRecursively } from '../core/util';
 
 /**
  * Represents a coordinate point <br>

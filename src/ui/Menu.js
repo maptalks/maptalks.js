@@ -1,6 +1,6 @@
-import { isString, isFunction } from 'core/util';
-import { on, createEl, addClass, setStyle, preventDefault } from 'core/util/dom';
-import Point from 'geo/Point';
+import { isString, isFunction } from '../core/util';
+import { on, createEl, addClass, setStyle, preventDefault } from '../core/util/dom';
+import Point from '../geo/Point';
 import UIComponent from './UIComponent';
 
 /**

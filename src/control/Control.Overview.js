@@ -1,9 +1,9 @@
-import { extend } from 'core/util';
-import { on, off, createEl } from 'core/util/dom';
-import Polygon from 'geometry/Polygon';
-import Layer from 'layer/Layer';
-import VectorLayer from 'layer/VectorLayer';
-import Map from 'map/Map';
+import { extend } from '../core/util';
+import { on, off, createEl } from '../core/util/dom';
+import Polygon from '../geometry/Polygon';
+import Layer from '../layer/Layer';
+import VectorLayer from '../layer/VectorLayer';
+import Map from '../map/Map';
 import Control from './Control';
 
 /**

@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend } from '../../../core/util';
 
 /**
  * @classdesc

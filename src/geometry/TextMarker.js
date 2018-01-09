@@ -1,5 +1,5 @@
-import { extend, hasOwn } from 'core/util';
-import { splitTextToRow, escapeSpecialChars } from 'core/util/strings';
+import { extend, hasOwn } from '../core/util';
+import { splitTextToRow, escapeSpecialChars } from '../core/util/strings';
 import Marker from './Marker';
 
 const defaultSymbol = {

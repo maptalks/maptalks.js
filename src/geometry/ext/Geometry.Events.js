@@ -1,5 +1,5 @@
-import { preventDefault, stopPropagation, getEventContainerPoint } from 'core/util/dom';
-import Geometry from 'geometry/Geometry';
+import { preventDefault, stopPropagation, getEventContainerPoint } from '../../core/util/dom';
+import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**

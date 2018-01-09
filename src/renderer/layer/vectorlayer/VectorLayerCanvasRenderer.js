@@ -1,5 +1,5 @@
-import { getExternalResources } from 'core/util/resource';
-import VectorLayer from 'layer/VectorLayer';
+import { getExternalResources } from '../../../core/util/resource';
+import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 
 /**

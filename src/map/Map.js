@@ -1,4 +1,4 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
+import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
 import {
     now,
     extend,
@@ -8,18 +8,18 @@ import {
     isFunction,
     sign,
     UID
-} from 'core/util';
-import Class from 'core/Class';
-import Browser from 'core/Browser';
-import Eventable from 'core/Eventable';
-import Handlerable from 'handler/Handlerable';
-import Point from 'geo/Point';
-import Size from 'geo/Size';
-import PointExtent from 'geo/PointExtent';
-import Extent from 'geo/Extent';
-import Coordinate from 'geo/Coordinate';
-import Layer from 'layer/Layer';
-import Renderable from 'renderer/Renderable';
+} from '../core/util';
+import Class from '../core/Class';
+import Browser from '../core/Browser';
+import Eventable from '../core/Eventable';
+import Handlerable from '../handler/Handlerable';
+import Point from '../geo/Point';
+import Size from '../geo/Size';
+import PointExtent from '../geo/PointExtent';
+import Extent from '../geo/Extent';
+import Coordinate from '../geo/Coordinate';
+import Layer from '../layer/Layer';
+import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
 
 

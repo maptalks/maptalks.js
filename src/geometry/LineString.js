@@ -1,7 +1,7 @@
-import { isNil, isNumber } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import PointExtent from 'geo/PointExtent';
-import { pointInsidePolygon, distanceToSegment, clipLine } from 'core/util/path';
+import { isNil, isNumber } from '../core/util';
+import Coordinate from '../geo/Coordinate';
+import PointExtent from '../geo/PointExtent';
+import { pointInsidePolygon, distanceToSegment, clipLine } from '../core/util/path';
 import Path from './Path';
 
 /**

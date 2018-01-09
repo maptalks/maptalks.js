@@ -1,8 +1,8 @@
-import { isFunction } from 'core/util';
-import { extendSymbol } from 'core/util/style';
-import { Animation } from 'core/Animation';
-import Coordinate from 'geo/Coordinate';
-import Geometry from 'geometry/Geometry';
+import { isFunction } from '../../core/util';
+import { extendSymbol } from '../../core/util/style';
+import { Animation } from '../../core/Animation';
+import Coordinate from '../../geo/Coordinate';
+import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**

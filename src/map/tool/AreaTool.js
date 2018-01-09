@@ -1,5 +1,5 @@
-import Size from 'geo/Size';
-import { Geometry, Marker, Label } from 'geometry';
+import Size from '../../geo/Size';
+import { Geometry, Marker, Label } from '../../geometry';
 import DistanceTool from './DistanceTool';
 
 /**

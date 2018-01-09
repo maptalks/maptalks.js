@@ -1,7 +1,7 @@
-import { isNumber } from 'core/util';
-import Handler from 'handler/Handler';
-import { on, off } from 'core/util/dom';
-import Point from 'geo/Point';
+import { isNumber } from '../core/util';
+import Handler from './Handler';
+import { on, off } from '../core/util/dom';
+import Point from '../geo/Point';
 
 const START_EVENTS = 'touchstart mousedown';
 const MOVE_EVENTS = {

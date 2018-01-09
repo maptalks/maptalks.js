@@ -1,9 +1,9 @@
-import { GEOJSON_TYPES } from 'core/Constants';
-import { isNil, UID, isObject } from 'core/util';
-import Extent from 'geo/Extent';
-import { Geometry, GeometryCollection, LineString } from 'geometry';
+import { GEOJSON_TYPES } from '../core/Constants';
+import { isNil, UID, isObject } from '../core/util';
+import Extent from '../geo/Extent';
+import { Geometry, GeometryCollection, LineString } from '../geometry';
 import Layer from './Layer';
-import GeoJSON from 'geometry/GeoJSON';
+import GeoJSON from '../geometry/GeoJSON';
 
 /**
  * @property {Boolean}  [options.drawImmediate=false] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>

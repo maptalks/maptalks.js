@@ -1,4 +1,4 @@
-import { equalMapView } from 'core/util';
+import { equalMapView } from '../core/util';
 import Map from './Map';
 
 Map.include(/** @lends Map.prototype */ {

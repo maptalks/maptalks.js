@@ -1,6 +1,6 @@
-import { offsetDom } from 'core/util/dom';
-import Class from 'core/Class';
-import Point from 'geo/Point';
+import { offsetDom } from '../../core/util/dom';
+import Class from '../../core/Class';
+import Point from '../../geo/Point';
 
 /**
  * @classdesc

@@ -1,7 +1,7 @@
-import Handler from 'handler/Handler';
+import Handler from '../../handler/Handler';
 import Map from '../Map';
 import DrawTool from '../tool/DrawTool';
-import Extent from 'geo/Extent';
+import Extent from '../../geo/Extent';
 
 class MapBoxZoomHander extends Handler {
     constructor(target) {

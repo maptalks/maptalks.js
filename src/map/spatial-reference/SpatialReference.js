@@ -1,9 +1,9 @@
-import { extend, isNil, isObject, isInteger, hasOwn } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
-import * as projections from 'geo/projection';
-import Transformation from 'geo/transformation/Transformation';
-import { Measurer } from 'geo/measurer';
+import { extend, isNil, isObject, isInteger, hasOwn } from '../../core/util';
+import Coordinate from '../../geo/Coordinate';
+import Extent from '../../geo/Extent';
+import * as projections from '../../geo/projection';
+import Transformation from '../../geo/transformation/Transformation';
+import { Measurer } from '../../geo/measurer';
 
 const DefaultSpatialRef = {
     'EPSG:3857': {

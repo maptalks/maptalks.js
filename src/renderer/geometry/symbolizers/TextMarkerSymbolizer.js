@@ -4,12 +4,12 @@ import {
     isNumber,
     isArrayHasData,
     getValueOrDefault
-} from 'core/util';
-import Point from 'geo/Point';
-import { hasFunctionDefinition } from 'core/mapbox';
-import { splitTextToRow, getAlignPoint, replaceVariable } from 'core/util/strings';
-import PointExtent from 'geo/PointExtent';
-import Canvas from 'core/Canvas';
+} from '../../../core/util';
+import Point from '../../../geo/Point';
+import { hasFunctionDefinition } from '../../../core/mapbox';
+import { splitTextToRow, getAlignPoint, replaceVariable } from '../../../core/util/strings';
+import PointExtent from '../../../geo/PointExtent';
+import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
 export const CACHE_KEY = '___text_symbol_cache';

@@ -1,10 +1,10 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from 'core/util';
-import { createEl, preventSelection, computeDomPosition } from 'core/util/dom';
-import Browser from 'core/Browser';
-import Point from 'geo/Point';
-import Canvas2D from 'core/Canvas';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from '../../core/util';
+import { createEl, preventSelection, computeDomPosition } from '../../core/util/dom';
+import Browser from '../../core/Browser';
+import Point from '../../geo/Point';
+import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
-import Map from 'map/Map';
+import Map from '../../map/Map';
 
 /**
  * @classdesc
