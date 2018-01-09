@@ -246,19 +246,42 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this._tileLoading[id];
         this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
+        /**
+         * tileload event, fired when tile is loaded.
+         *
+         * @event TileLayer#tileload
+         * @type {Object}
+         * @property {String} type - tileload
+         * @property {TileLayer} target - tile layer
+         * @property {Object} tileInfo - tile info
+         * @property {Image} tileImage - tile image
+         */
+        this.layer.fire('tileload', { tile : tileInfo, tileImage: tileImage });
     }
 
     onTileError(tileImage, tileInfo) {
         if (!this.layer) {
             return;
         }
-        tileImage.onload = falseFn;
-        tileImage.onerror = falseFn;
-        tileImage.src = emptyImageUrl;
+        if (tileImage instanceof Image) {
+            tileImage.onload = falseFn;
+            tileImage.onerror = falseFn;
+            tileImage.src = emptyImageUrl;
+        }
         tileImage.loadTime = 0;
         delete this._tileLoading[tileInfo['id']];
         this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
+        /**
+         * tileerror event, fired when tile loading has error.
+         *
+         * @event TileLayer#tileerror
+         * @type {Object}
+         * @property {String} type - tileerror
+         * @property {TileLayer} target - tile layer
+         * @property {Object} tileInfo - tile info
+         */
+        this.layer.fire('tileerror', { tile : tileInfo });
     }
 
     drawTile(tileInfo, tileImage) {
