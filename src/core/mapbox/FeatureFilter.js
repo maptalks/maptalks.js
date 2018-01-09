@@ -1,3 +1,5 @@
+import { extend } from '../util';
+
 /*eslint-disable no-var*/
 /*!
     Feature Filter by
@@ -125,19 +127,15 @@ export function compileStyle(styles) {
     }
     const compiled = [];
     for (let i = 0; i < styles.length; i++) {
+        let filter;
         if (styles[i]['filter'] === true) {
-            compiled.push({
-                filter: function () {
-                    return true;
-                },
-                symbol: styles[i].symbol
-            });
+            filter = function () { return true; };
         } else {
-            compiled.push({
-                filter: createFilter(styles[i]['filter']),
-                symbol: styles[i].symbol
-            });
+            filter = createFilter(styles[i]['filter']);
         }
+        compiled.push(extend({}, styles[i], {
+            filter : filter
+        }));
     }
     return compiled;
 }
