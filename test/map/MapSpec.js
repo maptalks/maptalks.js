@@ -314,6 +314,14 @@ describe('Map.Spec', function () {
             });
             map.setZoom(13);
         });
+
+        it('disable zoom by zoomable', function () {
+            map.config('zoomable', false);
+            var cur = map.getZoom();
+
+            expect(map.zoomIn().getZoom()).to.equal(cur);
+            expect(map.zoomOut().getZoom()).to.equal(cur);
+        });
     });
 
     describe('#setView', function () {

@@ -81,6 +81,22 @@ describe('Map.Anim', function () {
         });
     });
 
+    it('disable zoom by zoomable', function (done) {
+        map.config('zoomable', false);
+        var cur = map.getZoom();
+        var zoom = map.getZoom() - 5;
+        map.getBaseLayer().config('durationToAnimate', 300);
+        map.on('animateend', function () {
+            expect(map.getZoom()).to.be.eql(cur);
+            done();
+        });
+        map.animateTo({
+            zoom : zoom
+        }, {
+            'duration' : 300
+        });
+    });
+
     it('interupt animateTo', function (done) {
         var center = map.getCenter().add(0.1, 0.1);
         var zoom = map.getZoom() - 4;

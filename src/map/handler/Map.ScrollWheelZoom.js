@@ -14,7 +14,7 @@ class MapScrollWheelZoomHandler extends Handler {
 
     _onWheelScroll(evt) {
         const map = this.target;
-        if (map._ignoreEvent(evt)) {
+        if (map._ignoreEvent(evt) || !map.options['zoomable']) {
             return false;
         }
         preventDefault(evt);
