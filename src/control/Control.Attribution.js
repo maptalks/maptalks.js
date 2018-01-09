@@ -1,9 +1,5 @@
-import {
-    createEl
-} from '../core/util/dom';
-import {
-    isString
-} from 'core/util';
+import { createEl } from '../core/util/dom';
+import { isString } from 'core/util';
 import Control from './Control';
 import Map from '../map/Map';
 
