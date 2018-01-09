@@ -183,8 +183,8 @@ class TileLayer extends Layer {
         const c = this._project(map._getPrjCenter());
         const extent2d = map._get2DExtent(),
             center2D = extent2d.getCenter();
-        const pmin = this._project(map._pointToPrj(extent2d.getMin(), zoom)),
-            pmax = this._project(map._pointToPrj(extent2d.getMax(), zoom));
+        const pmin = this._project(map._pointToPrj(extent2d.getMin())),
+            pmax = this._project(map._pointToPrj(extent2d.getMax()));
 
         const centerTile = tileConfig.getTileIndex(c, res),
             ltTile = tileConfig.getTileIndex(pmin, res),
