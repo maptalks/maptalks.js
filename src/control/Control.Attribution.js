@@ -46,14 +46,28 @@ class Attribution extends Control {
         return this;
     }
 
+    onAdd() {
+        if (this.getMap.config['attribution']) {
+            this._createOverview();
+        }
+        this.getMap().on('addlayer removelayer', this._update, this);
+    }
+
     _update() {
         if (!this.getMap()) {
             return;
         }
-        let content = this.options['content'];
-        if (isString(content) && content.charAt(0) !== '<') {
+        const hasAttrLayers = this.getMap().getLayers(function (layer) {
+            return (layer.options['attribution']);
+        });
+        for (const layer of hasAttrLayers) {
+            this.options['content'] += layer.options['attribution'];
+        }
+        const tempContent =  this.options['content'];
+        let content = '';
+        if (isString(tempContent) && tempContent.charAt(0) !== '<') {
             this._attributionContainer.className = 'maptalks-attribution';
-            content = '<span style="padding:0px 4px">' + content + '</span>';
+            content = '<span style="padding:0px 4px">' + tempContent + '</span>';
         }
         this._attributionContainer.innerHTML = content;
     }
@@ -62,7 +76,7 @@ class Attribution extends Control {
 Attribution.mergeOptions(options);
 
 Map.mergeOptions({
-    'attribution': false
+    'attribution': true
 });
 
 Map.addOnLoadHook(function () {
@@ -70,18 +84,6 @@ Map.addOnLoadHook(function () {
     if (a) {
         this.attributionControl = new Attribution(a);
         this.addControl(this.attributionControl);
-    }
-});
-
-Map.on('addlayer', function (type, target, layers) {
-    const layerAtt = [];
-    for (const layer of layers) {
-        if (layer.options['attribution']) {
-            layerAtt.push(layer);
-        }
-    }
-    for (const layer of layerAtt) {
-        this.setContent(layer.options['attribution']);
     }
 });
 
