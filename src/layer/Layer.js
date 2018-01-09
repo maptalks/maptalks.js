@@ -7,6 +7,7 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
+ * @property {Number}  [options.attribution=null] - the attribution of this layer, you can specify compony or other infomation of this layer.
  * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
  * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
  * @property {Boolean} [options.visible=true] - whether to display the layer.
@@ -23,6 +24,7 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
  * @instance
  */
 const options = {
+    'attribution': null,
     'minZoom': null,
     'maxZoom': null,
     'visible': true,

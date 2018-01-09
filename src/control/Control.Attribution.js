@@ -73,4 +73,16 @@ Map.addOnLoadHook(function () {
     }
 });
 
+Map.on('addlayer', function (type, target, layers) {
+    const layerAtt = [];
+    for (const layer of layers) {
+        if (layer.options['attribution']) {
+            layerAtt.push(layer);
+        }
+    }
+    for (const layer of layerAtt) {
+        this.setContent(layer.options['attribution']);
+    }
+});
+
 export default Attribution;

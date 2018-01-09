@@ -3,7 +3,7 @@
 *.iml
 .tern-port
 dist/
-
+yarn.lock
 ### yarn log
 yarn*.log
 
