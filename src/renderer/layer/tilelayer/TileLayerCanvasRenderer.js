@@ -162,6 +162,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return true;
     }
 
+    clear() {
+        this._clearCaches();
+        this._tileRended = {};
+        this._tileLoading = {};
+        super.clear();
+    }
+
     _isLoadingTile(tileId) {
         return !!this._tileLoading[tileId];
     }
@@ -345,6 +352,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onRemove() {
+        this._clearCaches();
+    }
+
+    _clearCaches() {
         delete this._tileRended;
         delete this._tileZoom;
         delete this._tileLoading;
