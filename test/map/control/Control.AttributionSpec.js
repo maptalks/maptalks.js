@@ -62,12 +62,14 @@ it('add attribution of added layer ', function () {
     var tileLayer = new maptalks.TileLayer('boudaries', {
         'urlTemplate': 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',
         'subdomains': ['a', 'b', 'c', 'd'],
-        'attribution': 'test'
+        'attribution': 'guzr'
     });
     map.addLayer(tileLayer);
-    console.log(map);
-    expect(1).to.eql(1);
-    
+    var expectResult = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalkstest</a>guzr'
+    var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
+
+    expect(expectResult).to.eql(realResult);
+
     // expect(control._attributionContainer.innerHTML).to.eql('<div>new content</div>');
     });
 });

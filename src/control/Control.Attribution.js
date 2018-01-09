@@ -1,5 +1,9 @@
-import { createEl } from '../core/util/dom';
-import { isString } from 'core/util';
+import {
+    createEl
+} from '../core/util/dom';
+import {
+    isString
+} from 'core/util';
 import Control from './Control';
 import Map from '../map/Map';
 
@@ -11,8 +15,11 @@ import Map from '../map/Map';
  * @instance
  */
 const options = {
-    'position': { 'bottom' : 0, 'left' : 0 },
-    'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>'
+    'position': {
+        'bottom': 0,
+        'left': 0
+    },
+    'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalkstest</a>'
 };
 
 /**
@@ -22,10 +29,22 @@ const options = {
  * @extends control.Control
  * @memberOf control
  * @example
- * var attribution = new maptalks.control.Attribution({
- *     position : 'bottom-left',
- *     content : 'hello maptalks'
- * }).addTo(map);
+ * var map = new maptalks.Map('map', {
+ *    center: [-0.113049, 51.498568],
+ *    zoom: 14,
+ *    attribution: true, // default to true
+ *    baseLayer: new maptalks.TileLayer('base', {
+ *        urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+ *        subdomains: ['a','b','c','d'],
+ *        attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+ *    })
+ * });
+ * 
+ * map.addLayer(new maptalks.TileLayer('base', {
+ *      urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+ *      subdomains: ['a','b','c','d'],
+ *      attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+ * }));
  */
 class Attribution extends Control {
 
@@ -47,23 +66,31 @@ class Attribution extends Control {
     }
 
     onAdd() {
-        if (this.getMap.config['attribution']) {
-            this._createOverview();
+        if (this.getMap().config['attribution']) {
+            this._update();
         }
-        this.getMap().on('addlayer removelayer', this._update, this);
+        this.getMap().on('addlayer removelayer baselayerload baselayerremove', this._update, this);
     }
 
     _update() {
         if (!this.getMap()) {
             return;
         }
-        const hasAttrLayers = this.getMap().getLayers(function (layer) {
+        const _attrLayers = this.getMap().getLayers(function (layer) {
             return (layer.options['attribution']);
         });
+        const _baseLayer = this.getMap().getBaseLayer();
+        const _attrBaseLayer = _baseLayer.options['attribution'] ? _baseLayer : null;
+        let hasAttrLayers = [];
+        hasAttrLayers = _attrLayers;
+        if (_attrBaseLayer) {
+            hasAttrLayers.push(_attrBaseLayer);
+        }
+        this.options['content'] = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
         for (const layer of hasAttrLayers) {
             this.options['content'] += layer.options['attribution'];
         }
-        const tempContent =  this.options['content'];
+        const tempContent = this.options['content'];
         let content = '';
         if (isString(tempContent) && tempContent.charAt(0) !== '<') {
             this._attributionContainer.className = 'maptalks-attribution';
