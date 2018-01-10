@@ -28,10 +28,6 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
  * @property {Boolean} [options.visible=true]       - whether the geometry is visible.
  * @property {Boolean} [options.editable=true]      - whether the geometry can be edited.
  * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
- * @property {Number} [options.shadowBlur=0]        - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
- * @property {String} [options.shadowColor=black]   - color of the shadow around the geometry, a CSS style color
- * @property {String} [options.shadowOffsetX=0]     - A float specifying the distance that the shadow will be offset in horizontal distance.
- * @property {String} [options.shadowOffsetY=0]     - A float specifying the distance that the shadow will be offset in vertical distance.
  * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
  * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
  * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
@@ -44,10 +40,6 @@ const options = {
     'visible': true,
     'editable': true,
     'cursor': null,
-    'shadowBlur': 0,
-    'shadowColor': 'black',
-    'shadowOffsetX': 0,
-    'shadowOffsetY': 0,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
 };
 
@@ -1019,7 +1011,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         for (const p in conf) {
             if (conf.hasOwnProperty(p)) {
                 const prefix = p.slice(0, 5);
-                if (prefix === 'arrow' || prefix === 'shado' || prefix === 'smoot') {
+                if (prefix === 'arrow' || prefix === 'smoot') {
                     needRepaint = true;
                     break;
                 }

@@ -116,12 +116,18 @@ const ImageGLRenderable = Base => {
         }
 
         /**
-         * Prepare GL canvas and context
+         * Create another GL canvas to draw gl images
+         * For layer renderer that needs 2 seperate canvases for 2d and gl
          */
-        prepareGLCanvas() {
-            const map = this.getMap();
-            this.glCanvas = Canvas.createCanvas(this.canvas.width, this.canvas.height, map.glCanvasClass);
-            const gl = this.gl = this._createGLContext(this.glCanvas, this.layer.options['glOptions']);
+        createCanvas2() {
+            this.canvas2 = Canvas.createCanvas(this.canvas.width, this.canvas.height);
+        }
+
+        /**
+         * Get webgl context(this.gl). It prefers canvas2, and will change to this.canvas if canvas2 is not created
+         */
+        createGLContext() {
+            const gl = this.gl = this._createGLContext(this.canvas2 || this.canvas, this.layer.options['glOptions']);
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
             gl.disable(gl.DEPTH_TEST);
@@ -165,13 +171,15 @@ const ImageGLRenderable = Base => {
          * Resize GL canvas with renderer's 2D canvas
          */
         resizeGLCanvas() {
-            if (!this.glCanvas) {
+            if (this.gl) {
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+            if (!this.canvas2) {
                 return;
             }
-            if (this.glCanvas.width !== this.canvas.width || this.glCanvas.height !== this.canvas.height) {
-                this.glCanvas.width = this.canvas.width;
-                this.glCanvas.height = this.canvas.height;
-                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            if (this.canvas2.width !== this.canvas.width || this.canvas2.height !== this.canvas.height) {
+                this.canvas2.width = this.canvas.width;
+                this.canvas2.height = this.canvas.height;
             }
         }
 
@@ -266,7 +274,7 @@ const ImageGLRenderable = Base => {
             gl.deleteShader(program.fragmentShader);
             gl.deleteShader(program.vertexShader);
             delete this.gl;
-            delete this.glCanvas;
+            delete this.canvas2;
         }
 
         //----------------------- webgl utils unlike to change ---------------------------------

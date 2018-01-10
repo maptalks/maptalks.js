@@ -92,9 +92,35 @@ describe('Map.TouchZoom', function () {
                 done();
             });
         });
-        it('disables scrollZoom', function (done) {
+        it('disables touchZoom', function (done) {
             this.timeout(5000);
             map.config('touchZoom', false);
+            var spy = sinon.spy();
+            testTouchZoom([{
+                clientX : centerPoint.x - 10,
+                clientY : centerPoint.y - 10,
+            },
+            {
+                clientX : centerPoint.x + 10,
+                clientY : centerPoint.y + 10,
+            }], [{
+                clientX : centerPoint.x - 1,
+                clientY : centerPoint.y - 1,
+            },
+            {
+                clientX : centerPoint.x + 1,
+                clientY : centerPoint.y + 1,
+            }], spy);
+
+            setTimeout(function () {
+                expect(spy.called).not.to.be.ok();
+                done();
+            }, map.options['zoomAnimationDuration'] + 100);
+        });
+
+        it('disables touchZoom by zoomable', function (done) {
+            this.timeout(5000);
+            map.config('zoomable', false);
             var spy = sinon.spy();
             testTouchZoom([{
                 clientX : centerPoint.x - 10,

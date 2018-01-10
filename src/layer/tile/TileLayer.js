@@ -100,6 +100,49 @@ class TileLayer extends Layer {
     }
 
     /**
+     * Get tile's url
+     * @param {Number} x
+     * @param {Number} y
+     * @param {Number} z
+     * @returns {String} url
+     */
+    getTileUrl(x, y, z) {
+        const urlTemplate = this.options['urlTemplate'];
+        let domain = '';
+        if (this.options['subdomains']) {
+            const subdomains = this.options['subdomains'];
+            if (isArrayHasData(subdomains)) {
+                const length = subdomains.length;
+                let s = (x + y) % length;
+                if (s < 0) {
+                    s = 0;
+                }
+                domain = subdomains[s];
+            }
+        }
+        if (isFunction(urlTemplate)) {
+            return urlTemplate(x, y, z, domain);
+        }
+        const data = {
+            'x': x,
+            'y': y,
+            'z': z,
+            's': domain
+        };
+        return urlTemplate.replace(urlPattern, function (str, key) {
+            let value = data[key];
+
+            if (value === undefined) {
+                throw new Error('No value provided for variable ' + str);
+
+            } else if (typeof value === 'function') {
+                value = value(data);
+            }
+            return value;
+        });
+    }
+
+    /**
      * Clear the layer
      * @return {TileLayer} this
      */
@@ -183,25 +226,21 @@ class TileLayer extends Layer {
         const c = this._project(map._getPrjCenter());
         const extent2d = map._get2DExtent(),
             center2D = extent2d.getCenter();
-        const pmin = this._project(map._pointToPrj(extent2d.getMin(), zoom)),
-            pmax = this._project(map._pointToPrj(extent2d.getMax(), zoom));
+        const pmin = this._project(map._pointToPrj(extent2d.getMin())),
+            pmax = this._project(map._pointToPrj(extent2d.getMax()));
 
         const centerTile = tileConfig.getTileIndex(c, res),
             ltTile = tileConfig.getTileIndex(pmin, res),
             rbTile = tileConfig.getTileIndex(pmax, res);
 
-        const keepBuffer = 0;
-
         //Number of tiles around the center tile
-        const top = Math.ceil(Math.abs(centerTile.y - ltTile.y)) + keepBuffer,
-            left = Math.ceil(Math.abs(centerTile.x - ltTile.x)) + keepBuffer,
-            bottom = Math.ceil(Math.abs(centerTile.y - rbTile.y)) + keepBuffer,
-            right = Math.ceil(Math.abs(centerTile.x - rbTile.x)) + keepBuffer;
-        const layerId = this.getId();
-        const tileSize = this.getTileSize();
-        const tiles = [];
-        const scale = this._getTileConfig().tileSystem.scale;
-        const extent = new PointExtent();
+        const top = Math.ceil(Math.abs(centerTile.y - ltTile.y)),
+            left = Math.ceil(Math.abs(centerTile.x - ltTile.x)),
+            bottom = Math.ceil(Math.abs(centerTile.y - rbTile.y)),
+            right = Math.ceil(Math.abs(centerTile.x - rbTile.x));
+        const layerId = this.getId(), tileSize = this.getTileSize(),
+            scale = this._getTileConfig().tileSystem.scale;
+        const tiles = [], extent = new PointExtent();
         for (let i = -(left); i <= right; i++) {
             for (let j = -(top); j <= bottom; j++) {
                 const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
@@ -309,42 +348,6 @@ class TileLayer extends Layer {
             this._initTileConfig();
         }
         return this._tileConfig || this._defaultTileConfig;
-    }
-
-    getTileUrl(x, y, z) {
-        const urlTemplate = this.options['urlTemplate'];
-        let domain = '';
-        if (this.options['subdomains']) {
-            const subdomains = this.options['subdomains'];
-            if (isArrayHasData(subdomains)) {
-                const length = subdomains.length;
-                let s = (x + y) % length;
-                if (s < 0) {
-                    s = 0;
-                }
-                domain = subdomains[s];
-            }
-        }
-        if (isFunction(urlTemplate)) {
-            return urlTemplate(x, y, z, domain);
-        }
-        const data = {
-            'x': x,
-            'y': y,
-            'z': z,
-            's': domain
-        };
-        return urlTemplate.replace(urlPattern, function (str, key) {
-            let value = data[key];
-
-            if (value === undefined) {
-                throw new Error('No value provided for variable ' + str);
-
-            } else if (typeof value === 'function') {
-                value = value(data);
-            }
-            return value;
-        });
     }
 
     _bindMap(map) {

@@ -362,6 +362,20 @@ class CanvasRenderer extends Class {
         } else {
             this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
         }
+
+        this.onCanvasCreate();
+
+    }
+
+    onCanvasCreate() {
+
+    }
+
+    createContext() {
+        //Be compatible with layer renderers that overrides create canvas and create gl/context
+        if (this.gl && this.gl.canvas === this.canvas || this.context) {
+            return;
+        }
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
@@ -370,16 +384,6 @@ class CanvasRenderer extends Class {
             const r = 2;
             this.context.scale(r, r);
         }
-        this.onCanvasCreate();
-
-        this.layer.fire('canvascreate', {
-            'context' : this.context,
-            'gl' : this.gl
-        });
-    }
-
-    onCanvasCreate() {
-
     }
 
     resetCanvasTransform() {
@@ -440,6 +444,21 @@ class CanvasRenderer extends Class {
     prepareCanvas() {
         if (!this.canvas) {
             this.createCanvas();
+            this.createContext();
+            /**
+             * canvascreate event, fired when canvas created.
+             *
+             * @event Layer#canvascreate
+             * @type {Object}
+             * @property {String} type     - canvascreate
+             * @property {Layer} target    - layer
+             * @property {CanvasRenderingContext2D} context - canvas's context
+             * @property {WebGLRenderingContext2D} gl  - canvas's webgl context
+             */
+            this.layer.fire('canvascreate', {
+                'context' : this.context,
+                'gl' : this.gl
+            });
         } else {
             this.clearCanvas();
         }

@@ -69,7 +69,12 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
     onCanvasCreate() {
-        this.prepareGLCanvas();
+        this.createCanvas2();
+    }
+
+    createContext() {
+        super.createContext();
+        this.createGLContext();
     }
 
     resizeCanvas(canvasSize) {
@@ -93,7 +98,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return super.getCanvasImage();
         }
         const img = super.getCanvasImage();
-        img.image = this.glCanvas;
+        img.image = this.canvas2;
         return img;
     }
 
@@ -124,12 +129,12 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
                 if (!map.isZooming()) {
                     let backCanvas = this.background.canvas;
                     if (!backCanvas) {
-                        backCanvas = Canvas.copy(this.glCanvas);
+                        backCanvas = Canvas.copy(this.canvas2);
                         this.background.canvas = backCanvas;
                     } else {
-                        backCanvas.width = this.glCanvas.width;
-                        backCanvas.height = this.glCanvas.height;
-                        backCanvas.getContext('2d').drawImage(this.glCanvas, 0, 0);
+                        backCanvas.width = this.canvas2.width;
+                        backCanvas.height = this.canvas2.height;
+                        backCanvas.getContext('2d').drawImage(this.canvas2, 0, 0);
                         const ctx = this.context;
                         if (Browser.retina) {
                             ctx.save();
