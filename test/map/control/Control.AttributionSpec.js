@@ -22,42 +22,6 @@ afterEach(function () {
     REMOVE_CONTAINER(container);
 });
 
-it('contains specified content', function () {
-    var control = new maptalks.control.Attribution({
-        content: 'content'
-    });
-    map.addControl(control);
-    if (maptalks.Browser.ie) {
-        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding: 0px 4px;">content</span>');
-    } else {
-        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">content</span>');
-    }
-});
-
-it('setContent in HTML', function () {
-    var control = new maptalks.control.Attribution({
-        content: 'content'
-    });
-    map.addControl(control);
-    control.setContent('<div>new content</div>');
-
-    expect(control._attributionContainer.innerHTML).to.eql('<div>new content</div>');
-});
-
-it('setContent correctly', function () {
-    var control = new maptalks.control.Attribution({
-        content: 'content'
-    });
-    map.addControl(control);
-    control.setContent('new content');
-    if (maptalks.Browser.ie) {
-        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding: 0px 4px;">new content</span>');
-    } else {
-        expect(control._attributionContainer.innerHTML).to.eql('<span style="padding:0px 4px">new content</span>');
-    }
-
-});
-
 it('add attribution of added layer', function () {
     var tileLayer = new maptalks.TileLayer('boudaries', {
         'urlTemplate': 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',
