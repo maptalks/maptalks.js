@@ -97,14 +97,14 @@ describe('Map.Anim', function () {
         });
     });
 
-    it('interupt animateTo', function (done) {
+    it('interupt animateTo by setCenter', function (done) {
         var center = map.getCenter().add(0.1, 0.1);
         var zoom = map.getZoom() - 4;
         var pitch = map.getPitch() + 10;
         var bearing = map.getBearing() + 60;
         map.on('animateinterupted', function () {
             expect(map.getCenter().toArray()).not.to.be.closeTo(center.toArray());
-            expect(map.getZoom()).to.be.eql(zoom);
+            expect(map.getZoom()).not.to.be.eql(zoom);
             expect(map.getPitch()).not.to.be.eql(pitch);
             expect(map.getBearing()).not.to.be.eql(bearing);
             done();
@@ -119,6 +119,34 @@ describe('Map.Anim', function () {
         });
         setTimeout(function () {
             map.setCenter(map.getCenter().add(-0.1, 0));
+        }, 100);
+    });
+
+    it('interupt animateTo by scrollZoom', function (done) {
+        map.config('zoomAnimationDuration', 100);
+        var cur = map.getZoom();
+        var zoom = map.getZoom() - 4;
+        map.on('animateinterupted', function () {
+            expect(map.getZoom()).not.to.be.eql(zoom);
+        });
+        var zoomendCount = 0;
+        map.on('zoomend', function () {
+            zoomendCount++;
+            if (zoomendCount === 2) {
+                //zoomend fired by scrollzoom
+                done();
+            }
+        });
+        map.animateTo({
+            zoom : zoom
+        }, {
+            'duration' : 2000
+        });
+        setTimeout(function () {
+            happen.once(container, {
+                type: (maptalks.Browser.gecko ? 'DOMMouseScroll' : 'mousewheel'),
+                detail: 100
+            });
         }, 100);
     });
 });
