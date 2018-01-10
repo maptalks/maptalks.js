@@ -7,7 +7,7 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
- * @property {String}  [options.attribution= 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>'] - the attribution of this layer, you can specify compony or other infomation of this layer.
+ * @property {String}  [options.attribution= null] - the attribution of this layer, you can specify company or other infomation of this layer.
  * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
  * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
  * @property {Boolean} [options.visible=true] - whether to display the layer.

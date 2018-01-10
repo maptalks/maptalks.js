@@ -15,7 +15,7 @@ const options = {
         'bottom': 0,
         'left': 0
     },
-    'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalkstest</a>'
+    'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>'
 };
 
 /**
@@ -62,9 +62,6 @@ class Attribution extends Control {
     }
 
     onAdd() {
-        if (this.getMap().config['attribution']) {
-            this._update();
-        }
         this.getMap().on('addlayer removelayer baselayerload baselayerremove', this._update, this);
     }
 
