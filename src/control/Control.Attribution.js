@@ -5,13 +5,16 @@ import Map from '../map/Map';
 
 /**
  * @property {Object} options - options
- * @property {Object} [options.position='bottom-left'] - position of the control
+ * @property {Object} [options.position='bottom-left'] - position of the control.
  * @property {String} [options.content='Powered By <a href="http://www.org" target="_blank">maptalks</a>']  - content of the attribution control, HTML format
  * @memberOf control.Attribution
  * @instance
  */
 const options = {
-    'position': { 'bottom' : 0, 'left' : 0 },
+    'position': {
+        'bottom': 0,
+        'left': 0
+    },
     'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>'
 };
 
@@ -22,38 +25,66 @@ const options = {
  * @extends control.Control
  * @memberOf control
  * @example
- * var attribution = new maptalks.control.Attribution({
- *     position : 'bottom-left',
- *     content : 'hello maptalks'
- * }).addTo(map);
+ * var map = new maptalks.Map('map', {
+ *    center: [-0.113049, 51.498568],
+ *    zoom: 14,
+ *    attribution: true, // default to true
+ *    baseLayer: new maptalks.TileLayer('base', {
+ *        urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+ *        subdomains: ['a','b','c','d'],
+ *        attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+ *    })
+ * });
+ * map.addLayer(new maptalks.TileLayer('base', {
+ *      urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+ *      subdomains: ['a','b','c','d'],
+ *      attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+ * }));
  */
 class Attribution extends Control {
 
     buildOn() {
+        console.log(this.getMap().options);
+        const mapOptions =  this.getMap().config();
+        if (mapOptions.attribution && mapOptions.attribution['content']) {
+            this.options['content'] = mapOptions.attribution['content'];
+        }
         this._attributionContainer = createEl('div');
         this._update();
         return this._attributionContainer;
     }
 
-    /**
-     * Set content of the attribution
-     * @param {String} content - attribution content
-     * @return {Attribution} this
-     */
-    setContent(content) {
-        this.options['content'] = content;
-        this._update();
-        return this;
+    onAdd() {
+        this.getMap().on('addlayer removelayer setbaselayer baselayerremove', this._update, this);
     }
 
     _update() {
         if (!this.getMap()) {
             return;
         }
-        let content = this.options['content'];
-        if (isString(content) && content.charAt(0) !== '<') {
+        let hasAttrLayers = [];
+        const baseLayer = this.getMap().getBaseLayer();
+        if (baseLayer) {
+            const attrBaseLayer = baseLayer.options['attribution'] ? baseLayer : null;
+            if (attrBaseLayer) {
+                hasAttrLayers.push(attrBaseLayer);
+            }
+        }
+        const attrLayers = this.getMap().getLayers(function (layer) {
+            return (layer.options['attribution']);
+        });
+        hasAttrLayers = hasAttrLayers.concat(attrLayers);
+        // this.options['content'] = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
+        if (hasAttrLayers.length > 0) {
+            for (const layer of hasAttrLayers) {
+                this.options['content'] += layer.options['attribution'];
+            }
+        }
+        const tempContent = this.options['content'];
+        let content = '';
+        if (isString(tempContent) && tempContent.charAt(0) !== '<') {
             this._attributionContainer.className = 'maptalks-attribution';
-            content = '<span style="padding:0px 4px">' + content + '</span>';
+            content = '<span style="padding:0px 4px">' + tempContent + '</span>';
         }
         this._attributionContainer.innerHTML = content;
     }
@@ -62,7 +93,7 @@ class Attribution extends Control {
 Attribution.mergeOptions(options);
 
 Map.mergeOptions({
-    'attribution': false
+    'attribution': true
 });
 
 Map.addOnLoadHook(function () {
