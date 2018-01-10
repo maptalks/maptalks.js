@@ -45,7 +45,7 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map}         this
      */
     animateTo(view, options = {}, step) {
-        this._stopAnim();
+        this._stopAnim(this._animPlayer);
         if (isFunction(options)) {
             step = options;
             options = {};
@@ -90,8 +90,8 @@ Map.include(/** @lends Map.prototype */{
             if (player.playState === 'running') {
                 const view = this.getView();
                 if (!equalView(view, preView)) {
-                    // map's view is updated and stop animation
-                    this._stopAnim();
+                    // map's view is updated by another operation, animation should stop
+                    this._stopAnim(player);
                     return;
                 }
                 if (frame.styles['center']) {
@@ -122,7 +122,8 @@ Map.include(/** @lends Map.prototype */{
                         this.setBearing(props['bearing'][1]);
                     }
                 }
-                this._endAnim(props, zoomOrigin, options);
+                this._endAnim(player, props, zoomOrigin, options);
+                preView = this.getView();
             }
             if (step) {
                 step(frame);
@@ -146,18 +147,25 @@ Map.include(/** @lends Map.prototype */{
         return this.isDragRotating() || !!this._animRotating;
     },
 
-    _endAnim(props, zoomOrigin, options) {
+    _endAnim(player, props, zoomOrigin, options) {
         delete this._animRotating;
-        let evtType;
-        if (this._animPlayer) {
-            evtType = this._animPlayer._interupted ? 'animateinterupted' : 'animateend';
+        const evtType = player._interupted ? 'animateinterupted' : 'animateend';
+        if (player === this._animPlayer) {
             delete this._animPlayer;
         }
         if (props['center']) {
-            this.onMoveEnd(this._parseEventFromCoord(props['center'][1]));
+            let endCoord;
+            if (player._interupted) {
+                endCoord = this.getCenter();
+            } else {
+                endCoord = props['center'][1];
+            }
+            this.onMoveEnd(this._parseEventFromCoord(endCoord));
         }
         if (!isNil(props['zoom'])) {
-            if (!options['wheelZoom']) {
+            if (player._interupted) {
+                this.onZoomEnd(this.getZoom(), zoomOrigin);
+            } else if (!options['wheelZoom']) {
                 this.onZoomEnd(props['zoom'][1], zoomOrigin);
             } else {
                 this.onZooming(props['zoom'][1], zoomOrigin);
@@ -185,10 +193,10 @@ Map.include(/** @lends Map.prototype */{
         this._animPlayer.play();
     },
 
-    _stopAnim() {
-        if (this._animPlayer) {
-            this._animPlayer._interupted = true;
-            this._animPlayer.finish();
+    _stopAnim(player) {
+        if (player && player.playState !== 'finished') {
+            player._interupted = true;
+            player.finish();
         }
     }
 });
