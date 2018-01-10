@@ -64,6 +64,17 @@ describe('Map.ScrollZoom', function () {
                 done();
             }, delay + 41);
         });
+
+        it('disables by zoomable', function (done) {
+            map.config('zoomable', false);
+            var spy = sinon.spy();
+            map.on('zoomend', spy);
+            scrollMap(-100);
+            setTimeout(function () {
+                expect(spy.called).not.to.be.ok();
+                done();
+            }, delay + 41);
+        });
     });
 
 });

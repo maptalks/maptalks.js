@@ -14,7 +14,7 @@ class MapScrollWheelZoomHandler extends Handler {
 
     _onWheelScroll(evt) {
         const map = this.target;
-        if (map._ignoreEvent(evt)) {
+        if (map._ignoreEvent(evt) || !map.options['zoomable']) {
             return false;
         }
         preventDefault(evt);
@@ -37,7 +37,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
         this._zooming = true;
         const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
-        if (!map.isZooming()) {
+        if (!this._delta) {
             map.onZoomStart(null, origin);
             this._origin = origin;
             this._delta = levelValue;

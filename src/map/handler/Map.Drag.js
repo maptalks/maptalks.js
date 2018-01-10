@@ -62,7 +62,7 @@ class MapDragHandler extends Handler {
         } else if (this.target.options['dragPan']) {
             this._mode = 'move';
         }
-        this.target._stopAnim();
+        this.target._stopAnim(this._animPlayer);
         preventDefault(param['domEvent']);
     }
 
