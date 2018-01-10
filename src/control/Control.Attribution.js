@@ -5,7 +5,7 @@ import Map from '../map/Map';
 
 /**
  * @property {Object} options - options
- * @property {Object} [options.position='bottom-left'] - position of the control
+ * @property {Object} [options.position='bottom-left'] - position of the control, enmu: bottom-left, bottom-right
  * @property {String} [options.content='Powered By <a href="http://www.org" target="_blank">maptalks</a>']  - content of the attribution control, HTML format
  * @memberOf control.Attribution
  * @instance
@@ -44,6 +44,11 @@ const options = {
 class Attribution extends Control {
 
     buildOn() {
+        console.log(this.getMap().options);
+        const mapOptions =  this.getMap().config();
+        if (mapOptions.attribution && mapOptions.attribution['content']) {
+            this.options['content'] = mapOptions.attribution['content'];
+        }
         this._attributionContainer = createEl('div');
         this._update();
         return this._attributionContainer;
@@ -69,7 +74,7 @@ class Attribution extends Control {
             return (layer.options['attribution']);
         });
         hasAttrLayers = hasAttrLayers.concat(attrLayers);
-        this.options['content'] = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
+        // this.options['content'] = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
         if (hasAttrLayers.length > 0) {
             for (const layer of hasAttrLayers) {
                 this.options['content'] += layer.options['attribution'];
