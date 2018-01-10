@@ -58,7 +58,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  *
  * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
- * @property {Boolean|Object} [options.attribution=false]        - display the attribution control on the map if set to true or a object as the control construct option.
+ * @property {Boolean|Object} [options.attribution=true]                - whether to display the attribution control on the map. if true, attribution display maptalks info; if object, you can specify positon or your base content, and both;
  * @property {Boolean|Object} [options.zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
@@ -70,7 +70,6 @@ import SpatialReference from './spatial-reference/SpatialReference';
 const options = {
     'maxVisualPitch' : 60,
     'maxPitch' : 80,
-
     'centerCross': false,
 
     'zoomInCenter' : false,
@@ -165,7 +164,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete opts['baseLayer'];
         const layers = opts['layers'];
         delete opts['layers'];
-
         super(opts);
 
         Object.defineProperty(this, 'id', {
