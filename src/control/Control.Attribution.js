@@ -50,26 +50,30 @@ class Attribution extends Control {
     }
 
     onAdd() {
-        this.getMap().on('addlayer removelayer baselayerload baselayerremove', this._update, this);
+        this.getMap().on('addlayer removelayer setbaselayer baselayerremove', this._update, this);
     }
 
     _update() {
         if (!this.getMap()) {
             return;
         }
-        const attrLayers = this.getMap().getLayers(function (layer) {
-            return (layer.options['attribution']);
-        });
         let hasAttrLayers = [];
-        hasAttrLayers = attrLayers;
         const baseLayer = this.getMap().getBaseLayer();
         if (baseLayer) {
             const attrBaseLayer = baseLayer.options['attribution'] ? baseLayer : null;
-            hasAttrLayers = attrBaseLayer ? hasAttrLayers.push(attrBaseLayer) : hasAttrLayers;
+            if (attrBaseLayer) {
+                hasAttrLayers.push(attrBaseLayer);
+            }
         }
+        const attrLayers = this.getMap().getLayers(function (layer) {
+            return (layer.options['attribution']);
+        });
+        hasAttrLayers = hasAttrLayers.concat(attrLayers);
         this.options['content'] = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
-        for (const layer of hasAttrLayers) {
-            this.options['content'] += layer.options['attribution'];
+        if (hasAttrLayers.length > 0) {
+            for (const layer of hasAttrLayers) {
+                this.options['content'] += layer.options['attribution'];
+            }
         }
         const tempContent = this.options['content'];
         let content = '';
