@@ -424,7 +424,9 @@ describe('Geometry.Marker', function () {
                     markerWidth : 10,
                     markerHeight : 10,
                     markerDx : { stops: [[7, 8], [14, 20]] },
-                    markerDy : { stops: [[7, 8], [14, 20]] }
+                    markerDy : { stops: [[7, 8], [14, 20]] },
+
+                    shadowBlur : 2
                 }
             });
             var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
@@ -494,6 +496,31 @@ describe('Geometry.Marker', function () {
 
                 done();
             });
+        });
+
+        it('text marker redraws when properties updated', function () {
+            map.config('zoomAnimation', false);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                properties : {
+                    text : '■■■■■■■■■'
+                },
+                symbol : {
+                    textName : '{text}',
+                    textSize : { stops: [[7, 8], [14, 20]] },
+                    textFill : '#000'
+                }
+            });
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            layer.addGeometry([marker]);
+            expect(layer).to.be.painted(52, 0);
+            marker.setProperties({
+                text : '1'
+            });
+            expect(layer).not.to.be.painted(52, 0);
+            marker.config('properties', {
+                text : '■■■■■■■■■'
+            });
+            expect(layer).to.be.painted(52, 0);
         });
     });
 

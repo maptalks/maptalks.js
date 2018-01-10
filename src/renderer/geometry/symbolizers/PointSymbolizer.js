@@ -79,7 +79,7 @@ class PointSymbolizer extends CanvasSymbolizer {
             p0 = map._pointToContainerPoint(rotations[i][0], maxZoom);
             p1 = map._pointToContainerPoint(rotations[i][1], maxZoom);
         }
-        return r + computeDegree(p0, p1);
+        return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
     }
 
     _rotate(ctx, origin, rotation) {
