@@ -12,7 +12,7 @@ beforeEach(function () {
     var option = {
         zoom: 17,
         center: center,
-        attribution: true
+        attribution: true // option
     };
     map = new maptalks.Map(container, option);
 });

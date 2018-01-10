@@ -70,7 +70,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
 const options = {
     'maxVisualPitch' : 60,
     'maxPitch' : 80,
-
+    'attribution': true,
     'centerCross': false,
 
     'zoomInCenter' : false,
@@ -165,7 +165,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete opts['baseLayer'];
         const layers = opts['layers'];
         delete opts['layers'];
-
         super(opts);
 
         Object.defineProperty(this, 'id', {

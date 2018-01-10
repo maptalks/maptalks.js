@@ -49,17 +49,6 @@ class Attribution extends Control {
         return this._attributionContainer;
     }
 
-    /**
-     * Set content of the attribution
-     * @param {String} content - attribution content
-     * @return {Attribution} this
-     */
-    setContent(content) {
-        this.options['content'] = content;
-        this._update();
-        return this;
-    }
-
     onAdd() {
         this.getMap().on('addlayer removelayer baselayerload baselayerremove', this._update, this);
     }
@@ -68,15 +57,15 @@ class Attribution extends Control {
         if (!this.getMap()) {
             return;
         }
-        const _attrLayers = this.getMap().getLayers(function (layer) {
+        const attrLayers = this.getMap().getLayers(function (layer) {
             return (layer.options['attribution']);
         });
-        const _baseLayer = this.getMap().getBaseLayer();
-        const _attrBaseLayer = _baseLayer.options['attribution'] ? _baseLayer : null;
         let hasAttrLayers = [];
-        hasAttrLayers = _attrLayers;
-        if (_attrBaseLayer) {
-            hasAttrLayers.push(_attrBaseLayer);
+        hasAttrLayers = attrLayers;
+        const baseLayer = this.getMap().getBaseLayer();
+        if (baseLayer) {
+            const attrBaseLayer = baseLayer.options['attribution'] ? baseLayer : null;
+            hasAttrLayers = attrBaseLayer ? hasAttrLayers.push(attrBaseLayer) : hasAttrLayers;
         }
         this.options['content'] = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
         for (const layer of hasAttrLayers) {
