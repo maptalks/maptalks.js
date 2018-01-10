@@ -15,7 +15,7 @@ class MapTouchZoomHandler extends Handler {
 
     _onTouchStart(event) {
         const map = this.target;
-        if (!event.touches || event.touches.length !== 2 || map.isZooming()) {
+        if (!event.touches || event.touches.length !== 2 || map.isZooming() || !map.options['zoomable']) {
             return;
         }
         const container = map.getContainer();

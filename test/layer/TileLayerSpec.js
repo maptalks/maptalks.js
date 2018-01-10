@@ -90,6 +90,16 @@ describe('TileLayer', function () {
                 done();
             }, 90);
         });
+
+        it('getTiles in fractional zoom', function () {
+            createMap();
+            map.setZoom(12.5);
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '/resources/tile.png'
+            }).addTo(map);
+            expect(tile.getTiles().tiles.length).to.be.eql(1);
+        });
     });
 
     describe('Different Projections', function () {

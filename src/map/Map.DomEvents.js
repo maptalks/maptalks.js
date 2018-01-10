@@ -293,7 +293,7 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _parseEventFromCoord(coord) {
-        const containerPoint = this._prjToContainerPoint(coord),
+        const containerPoint = this.coordToContainerPoint(coord),
             viewPoint = this.containerPointToViewPoint(containerPoint);
         const e = {
             'coordinate' : coord,

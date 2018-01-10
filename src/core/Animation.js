@@ -430,6 +430,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      */
     pause() {
         this.playState = 'paused';
+        this._run();
         //this.duration = this.duration - this.currentTime;
         return this;
     },
@@ -441,6 +442,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
     cancel() {
         this.playState = 'idle';
         this.finished = false;
+        this._run();
         return this;
     },
 
@@ -451,6 +453,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
     finish() {
         this.playState = 'finished';
         this.finished = true;
+        this._run();
         return this;
     },
 
@@ -465,7 +468,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             this._playStartTime = t;
             elapsed = 0;
         }
-        if (this.playState === 'finished' || this.playState === 'paused' || this.playState === 'idle') {
+        if (this.playState !== 'running') {
             if (onFrame) {
                 if (this.playState === 'finished') {
                     elapsed = this.duration;
@@ -489,7 +492,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         } else if (this.playState === 'running') {
             this._framer(() => {
                 if (this.playState !== 'running') {
-                    this._run();
+                    // this._run();
                     return;
                 }
                 this.currentTime = elapsed;
