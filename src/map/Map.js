@@ -1198,7 +1198,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Converts a 2D point in current zoom or a specific zoom to a coordinate.
      * Usually used in plugin development.
      * @param  {Point} point - 2D point
-     * @param  {Number} zoom  - zoom level
+     * @param  {Number} zoom  - point's zoom level
      * @return {Coordinate} coordinate
      * @example
      * var coord = map.pointToCoordinate(new Point(4E6, 3E4));

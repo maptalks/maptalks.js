@@ -1,11 +1,13 @@
 import { pushIn, isNumber } from 'core/util';
 import Size from 'geo/Size';
+import Point from 'geo/Point';
 import Canvas from 'core/Canvas';
 import Geometry from 'geometry/Geometry';
 import Ellipse from 'geometry/Ellipse';
 import Circle from 'geometry/Circle';
 import Sector from 'geometry/Sector';
 import Rectangle from 'geometry/Rectangle';
+import Path from 'geometry/Path';
 import LineString from 'geometry/LineString';
 import Polygon from 'geometry/Polygon';
 
@@ -106,15 +108,18 @@ Sector.include(el, {
 
 });
 //----------------------------------------------------
+Path.include({
+    _paintAsPath: () => true
+});
+
 
 LineString.include({
-    _paintAsPath: () => true,
 
     arrowStyles: {
         'classic': [3, 4]
     },
 
-    _getArrowPoints(prePoint, point, lineWidth, arrowStyle, tolerance) {
+    _getArrowShape(prePoint, point, lineWidth, arrowStyle, tolerance) {
         if (!tolerance) {
             tolerance = 0;
         }
@@ -122,7 +127,18 @@ LineString.include({
             height = lineWidth * arrowStyle[1] + tolerance,
             hw = width / 2 + tolerance;
 
-        const normal = point.sub(prePoint)._unit();
+        let normal;
+        if (point.nextCtrlPoint || point.prevCtrlPoint) {
+            // use control points to caculate normal if it's a bezier curve
+            if (point.prevCtrlPoint) {
+                normal = point.sub(new Point(point.prevCtrlPoint));
+            } else {
+                normal = point.sub(new Point(point.nextCtrlPoint));
+            }
+        } else {
+            normal = point.sub(prePoint);
+        }
+        normal._unit();
         const p1 = point.sub(normal.multi(height));
         normal._perp();
         const p0 = p1.add(normal.multi(hw));
@@ -138,8 +154,13 @@ LineString.include({
     },
 
     _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
-        Canvas.path(ctx, points, lineOpacity, null, dasharray);
-        this._paintArrow(ctx, points, lineOpacity);
+        if (this.options['smoothness']) {
+            Canvas.paintSmoothLine(ctx, points, lineOpacity, this.options['smoothness']);
+            this._paintArrow(ctx, points, lineOpacity);
+        } else {
+            Canvas.path(ctx, points, lineOpacity, null, dasharray);
+            this._paintArrow(ctx, points, lineOpacity);
+        }
     },
 
     _getArrowPlacement() {
@@ -168,17 +189,21 @@ LineString.include({
             last = map.coordToContainerPoint(this.getLastCoordinate());
         for (let i = segments.length - 1; i >= 0; i--) {
             if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
-                arrows.push(this._getArrowPoints(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));
+                arrows.push(this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));
             }
             if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
-                arrows.push(this._getArrowPoints(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance));
+                arrows.push(this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance));
             } else if (placement === 'point') {
-                for (let ii = 0, ll = segments[i].length - 1; ii < ll; ii++) {
-                    arrows.push(this._getArrowPoints(segments[i][ii], segments[i][ii + 1], lineWidth, arrowStyle, tolerance));
-                }
+                this._getArrowPoints(arrows, segments[i], lineWidth, arrowStyle, tolerance);
             }
         }
         return arrows;
+    },
+
+    _getArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance) {
+        for (let ii = 0, ll = segments.length - 1; ii < ll; ii++) {
+            arrows.push(this._getArrowShape(segments[ii], segments[ii + 1], lineWidth, arrowStyle, tolerance));
+        }
     },
 
     _paintArrow(ctx, points, lineOpacity) {
@@ -202,8 +227,6 @@ LineString.include({
 });
 
 Polygon.include({
-    _paintAsPath: () => true,
-
     _getPaintParams(disableSimplify) {
         const maxZoom = this.getMap().getGLZoom();
         const prjVertexes = this._getPrjShell();
@@ -240,6 +263,9 @@ Polygon.include({
         }
         return [points];
     },
-    _paintOn: Canvas.polygon
+
+    _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
+        Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
+    }
 });
 

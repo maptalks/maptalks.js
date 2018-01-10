@@ -6,15 +6,14 @@ import Path from './Path';
 
 /**
  * @property {Object} [options=null]
- * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+ * @property {String|Number[]} [options.arrowStyle=null]        - style of arrow, can be a pre-defined value or an array [arrow-width, arrow-height] (value in the array is times of linewidth), possible predefined values: classic ([3, 4])
  * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
  * @memberOf LineString
  * @instance
  */
 const options = {
     'arrowStyle': null,
-    'arrowPlacement': 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
-    'clipToPaint' : true
+    'arrowPlacement': 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
 };
 
 /**
@@ -161,7 +160,6 @@ class LineString extends Path {
         }
 
     }
-
 }
 
 LineString.mergeOptions(options);

@@ -77,7 +77,6 @@ class Painter extends Class {
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
         this._debugSymbolizer = new Symbolizers.DebugSymbolizer(geoSymbol, this.geometry, this);
-        this._hasShadow = this.geometry.options['shadowBlur'] > 0;
         return symbolizers;
     }
 
@@ -179,7 +178,7 @@ class Painter extends Class {
         }
         const map = this.getMap(),
             glZoom = map.getGLZoom(),
-            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._northWest);
+            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._southWest)._add(0, -map.height);
         let cPoints;
         function pointContainerPoint(point, alt) {
             const p = map._pointToContainerPoint(point, glZoom, alt)._sub(layerPoint);
@@ -193,8 +192,9 @@ class Painter extends Class {
 
         //convert 2d points to container points needed by canvas
         if (Array.isArray(points)) {
+            const geometry = this.geometry;
             let clipped;
-            if (!noClip) {
+            if (!noClip && geometry.options['enableClip'] && !geometry.options['smoothness']) {
                 clipped = this._clip(points, altitude);
             } else {
                 clipped = {
@@ -252,7 +252,7 @@ class Painter extends Class {
             const c = map.cameraLookAt;
             const pos = map.cameraPosition;
             //add [1px, 1px] towards camera's lookAt
-            extent2D = extent2D.combine(new Point(pos)._add(sign(c.x - pos[0]), sign(c.y - pos[1])));
+            extent2D = extent2D.combine(new Point(pos)._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
         }
         const e = this.get2DExtent();
         let clipPoints = points;
@@ -378,8 +378,8 @@ class Painter extends Class {
         this._beforePaint();
         const ctx = context || renderer.context;
         const contexts = [ctx, renderer.resources];
-        this._prepareShadow(ctx);
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            this._prepareShadow(ctx, this.symbolizers[i].symbol);
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._afterPaint();
@@ -405,8 +405,8 @@ class Painter extends Class {
             if (this._renderPoints) {
                 bak = this._renderPoints;
             }
-            const contexts = [canvas.getContext('2d'), resources];
-            this._prepareShadow(canvas.getContext('2d'));
+            const ctx = canvas.getContext('2d');
+            const contexts = [ctx, resources];
             for (let i = this.symbolizers.length - 1; i >= 0; i--) {
                 const dxdy = this.symbolizers[i].getDxDy();
                 this._renderPoints = {
@@ -414,7 +414,7 @@ class Painter extends Class {
                         [origin.add(dxdy)]
                     ]
                 };
-
+                this._prepareShadow(ctx, this.symbolizers[i].symbol);
                 this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
             }
             if (bak) {
@@ -433,12 +433,12 @@ class Painter extends Class {
         return this._genSprite;
     }
 
-    _prepareShadow(ctx) {
-        if (this._hasShadow) {
-            ctx.shadowBlur = this.geometry.options['shadowBlur'];
-            ctx.shadowColor = this.geometry.options['shadowColor'];
-            ctx.shadowOffsetX = this.geometry.options['shadowOffsetX'];
-            ctx.shadowOffsetY = this.geometry.options['shadowOffsetY'];
+    _prepareShadow(ctx, symbol) {
+        if (symbol['shadowBlur']) {
+            ctx.shadowBlur = symbol['shadowBlur'];
+            ctx.shadowColor = symbol['shadowColor'] || 'black';
+            ctx.shadowOffsetX = symbol['shadowOffsetX'] || 0;
+            ctx.shadowOffsetY = symbol['shadowOffsetY'] || 0;
         } else if (ctx.shadowBlur) {
             ctx.shadowBlur = null;
             ctx.shadowColor = null;
@@ -530,6 +530,15 @@ class Painter extends Class {
 
     repaint() {
         this.removeCache();
+        const layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
+        const renderer = layer.getRenderer();
+        if (!renderer || !renderer.setToRedraw()) {
+            return;
+        }
+        renderer.setToRedraw();
     }
 
     /**
@@ -565,6 +574,9 @@ class Painter extends Class {
         delete this._markerExtent;
         delete this._cachedParams;
         delete this._unsimpledParams;
+        if (this.geometry) {
+            delete this.geometry[Symbolizers.TextMarkerSymbolizer.CACHE_KEY];
+        }
     }
 
     getAltitude() {

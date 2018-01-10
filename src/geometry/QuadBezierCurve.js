@@ -43,17 +43,11 @@ class QuadBezierCurve extends Curve {
         ctx.moveTo(points[0].x, points[0].y);
         this._quadraticCurve(ctx, points, lineOpacity);
         Canvas._stroke(ctx, lineOpacity);
-
         this._paintArrow(ctx, points, lineOpacity);
     }
 
-    _getArrowPlacement() {
-        let placement = this.options['arrowPlacement'];
-        // bezier curves doesn't support point arrows.
-        if (placement === 'point') {
-            placement = 'vertex-last';
-        }
-        return placement;
+    _getArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance) {
+        return this._getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, 2);
     }
 }
 

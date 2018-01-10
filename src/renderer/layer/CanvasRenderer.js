@@ -168,7 +168,7 @@ class CanvasRenderer extends Class {
     remove() {
         this.onRemove();
         delete this._loadingResource;
-        delete this._northWest;
+        delete this._southWest;
         delete this.canvas;
         delete this.context;
         delete this._extent2D;
@@ -196,8 +196,9 @@ class CanvasRenderer extends Class {
      * @return {HTMLCanvasElement}
      */
     getCanvasImage() {
+        const map = this.getMap();
         this._canvasUpdated = false;
-        if (this._renderZoom !== this.getMap().getZoom() || !this.canvas || !this._extent2D) {
+        if (this._renderZoom !== map.getZoom() || !this.canvas || !this._extent2D) {
             return null;
         }
         if (this.isBlank()) {
@@ -206,14 +207,13 @@ class CanvasRenderer extends Class {
         if (this.layer.isEmpty && this.layer.isEmpty()) {
             return null;
         }
-        const map = this.getMap(),
-            size = this._extent2D.getSize(),
-            containerPoint = map._pointToContainerPoint(this._northWest);
+        // size = this._extent2D.getSize(),
+        const containerPoint = map._pointToContainerPoint(this._southWest)._add(0, -map.height);
         return {
             'image': this.canvas,
             'layer': this.layer,
-            'point': containerPoint,
-            'size': size
+            'point': containerPoint/* ,
+            'size': size */
         };
     }
 
@@ -326,7 +326,7 @@ class CanvasRenderer extends Class {
 
     /**
      * Prepare rendering
-     * Set necessary properties, like this._renderZoom/ this._extent2D, this._northWest
+     * Set necessary properties, like this._renderZoom/ this._extent2D, this._southWest
      * @private
      */
     prepareRender() {
@@ -334,7 +334,8 @@ class CanvasRenderer extends Class {
         const map = this.getMap();
         this._renderZoom = map.getZoom();
         this._extent2D = map._get2DExtent();
-        this._northWest = map._containerPointToPoint(new Point(0, 0));
+        //change from northWest to southWest, because northwest's point <=> containerPoint changes when pitch >= 72
+        this._southWest = map._containerPointToPoint(new Point(0, map.height));
     }
 
     /**
@@ -361,6 +362,20 @@ class CanvasRenderer extends Class {
         } else {
             this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
         }
+
+        this.onCanvasCreate();
+
+    }
+
+    onCanvasCreate() {
+
+    }
+
+    createContext() {
+        //Be compatible with layer renderers that overrides create canvas and create gl/context
+        if (this.gl && this.gl.canvas === this.canvas || this.context) {
+            return;
+        }
         this.context = this.canvas.getContext('2d');
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
@@ -369,16 +384,6 @@ class CanvasRenderer extends Class {
             const r = 2;
             this.context.scale(r, r);
         }
-        this.onCanvasCreate();
-
-        this.layer.fire('canvascreate', {
-            'context' : this.context,
-            'gl' : this.gl
-        });
-    }
-
-    onCanvasCreate() {
-
     }
 
     resetCanvasTransform() {
@@ -439,6 +444,21 @@ class CanvasRenderer extends Class {
     prepareCanvas() {
         if (!this.canvas) {
             this.createCanvas();
+            this.createContext();
+            /**
+             * canvascreate event, fired when canvas created.
+             *
+             * @event Layer#canvascreate
+             * @type {Object}
+             * @property {String} type     - canvascreate
+             * @property {Layer} target    - layer
+             * @property {CanvasRenderingContext2D} context - canvas's context
+             * @property {WebGLRenderingContext2D} gl  - canvas's webgl context
+             */
+            this.layer.fire('canvascreate', {
+                'context' : this.context,
+                'gl' : this.gl
+            });
         } else {
             this.clearCanvas();
         }
@@ -482,13 +502,14 @@ class CanvasRenderer extends Class {
         if (!mask && !this._shouldClip) {
             return false;
         }
-        const old = this._northWest;
-        //when clipping, layer's northwest needs to be reset for mask's containerPoint conversion
-        this._northWest = this.getMap()._containerPointToPoint(new Point(0, 0));
+        const old = this._southWest;
+        const map = this.getMap();
+        //when clipping, layer's southwest needs to be reset for mask's containerPoint conversion
+        this._southWest = map._containerPointToPoint(new Point(0, map.height));
         context.save();
         mask._getPainter().paint(null, context);
         context.clip();
-        this._northWest = old;
+        this._southWest = old;
         if (this.isRenderComplete()) {
             this._shouldClip = false;
         }
@@ -497,14 +518,14 @@ class CanvasRenderer extends Class {
 
     /**
      * Get renderer's current view extent in 2d point
-     * @return {Object} view.extent, view.maskExtent, view.zoom, view.northWest
+     * @return {Object} view.extent, view.maskExtent, view.zoom, view.southWest
      */
     getViewExtent() {
         return {
             'extent' : this._extent2D,
             'maskExtent' : this._maskExtent,
             'zoom' : this._renderZoom,
-            'northWest' : this._northWest
+            'southWest' : this._southWest
         };
     }
 

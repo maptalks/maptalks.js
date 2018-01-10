@@ -12,7 +12,7 @@ import PointExtent from 'geo/PointExtent';
 import Canvas from 'core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
-const CACHE_KEY = '___text_symbol_cache';
+export const CACHE_KEY = '___text_symbol_cache';
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {
 
