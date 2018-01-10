@@ -1,12 +1,11 @@
 import { createEl } from '../core/util/dom';
-import { isString } from 'core/util';
 import Control from './Control';
 import Map from '../map/Map';
 
 /**
  * @property {Object} options - options
- * @property {Object} [options.position='bottom-left'] - position of the control.
- * @property {String} [options.content='Powered By <a href="http://www.org" target="_blank">maptalks</a>']  - content of the attribution control, HTML format
+ * @property {Object} [options.position='bottom-left'] - position of the control, enmu: bottom-left, bottom-right
+ * @property {String} [options.content='Powered by <a href="http://maptalks.org" target="_blank">maptalks</a>']  - content of the attribution control, HTML format
  * @memberOf control.Attribution
  * @instance
  */
@@ -15,8 +14,10 @@ const options = {
         'bottom': 0,
         'left': 0
     },
-    'content': 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>'
+    'content': 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a>'
 };
+
+const layerEvents = 'addlayer removelayer setbaselayer baselayerremove';
 
 /**
  * @classdesc
@@ -28,7 +29,10 @@ const options = {
  * var map = new maptalks.Map('map', {
  *    center: [-0.113049, 51.498568],
  *    zoom: 14,
- *    attribution: true, // default to true
+ *    attribution: {
+ *       content : 'my attribution',
+ *       position : 'bottom-left'
+ *    },
  *    baseLayer: new maptalks.TileLayer('base', {
  *        urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
  *        subdomains: ['a','b','c','d'],
@@ -44,49 +48,32 @@ const options = {
 class Attribution extends Control {
 
     buildOn() {
-        console.log(this.getMap().options);
-        const mapOptions =  this.getMap().config();
-        if (mapOptions.attribution && mapOptions.attribution['content']) {
-            this.options['content'] = mapOptions.attribution['content'];
-        }
         this._attributionContainer = createEl('div');
+        this._attributionContainer.className = 'maptalks-attribution';
         this._update();
         return this._attributionContainer;
     }
 
     onAdd() {
-        this.getMap().on('addlayer removelayer setbaselayer baselayerremove', this._update, this);
+        this.getMap().on(layerEvents, this._update, this);
+    }
+
+    onRemove() {
+        this.getMap().off(layerEvents, this._update, this);
     }
 
     _update() {
-        if (!this.getMap()) {
+        const map = this.getMap();
+        if (!map) {
             return;
         }
-        let hasAttrLayers = [];
-        const baseLayer = this.getMap().getBaseLayer();
-        if (baseLayer) {
-            const attrBaseLayer = baseLayer.options['attribution'] ? baseLayer : null;
-            if (attrBaseLayer) {
-                hasAttrLayers.push(attrBaseLayer);
-            }
-        }
-        const attrLayers = this.getMap().getLayers(function (layer) {
-            return (layer.options['attribution']);
-        });
-        hasAttrLayers = hasAttrLayers.concat(attrLayers);
-        // this.options['content'] = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
-        if (hasAttrLayers.length > 0) {
-            for (const layer of hasAttrLayers) {
-                this.options['content'] += layer.options['attribution'];
-            }
-        }
-        const tempContent = this.options['content'];
-        let content = '';
-        if (isString(tempContent) && tempContent.charAt(0) !== '<') {
-            this._attributionContainer.className = 'maptalks-attribution';
-            content = '<span style="padding:0px 4px">' + tempContent + '</span>';
-        }
-        this._attributionContainer.innerHTML = content;
+
+        const attributions = map
+            ._getLayers(layer => layer.options['attribution'])
+            .reverse()
+            .map(layer => layer.options['attribution']);
+        const content = this.options['content'] + (attributions.length > 0 ? ' - ' + attributions.join(', ') : '');
+        this._attributionContainer.innerHTML = '<span style="padding:0px 4px">' + content + '</span>';
     }
 }
 

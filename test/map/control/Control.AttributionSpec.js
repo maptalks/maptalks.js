@@ -25,7 +25,7 @@ describe('Control.Attribution', function () {
         map = new maptalks.Map(container, option);
 
         var tileLayer = new maptalks.TileLayer('boudaries', {
-            'urlTemplate': 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',
+            urlTemplate : '/resources/tile.png',
             'subdomains': ['a', 'b', 'c', 'd'],
             'attribution': 'guzr'
         });
@@ -49,12 +49,12 @@ describe('Control.Attribution', function () {
         map = new maptalks.Map(container, option);
 
         var tileLayer = new maptalks.TileLayer('boudaries', {
-            'urlTemplate': 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',
+            urlTemplate : '/resources/tile.png',
             'subdomains': ['a', 'b', 'c', 'd'],
             'attribution': 'guzr'
         });
         map.addLayer(tileLayer);
-        var expectResult = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>guzr';
+        var expectResult = 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a> - guzr';
         var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
 
         expect(expectResult).to.eql(realResult);
@@ -68,13 +68,13 @@ describe('Control.Attribution', function () {
             zoom: 17,
             center: center,
             baseLayer: new maptalks.TileLayer('base', {
-                urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                urlTemplate : '/resources/tile.png',
                 subdomains: ['a', 'b', 'c', 'd'],
                 attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
             })
         };
         map = new maptalks.Map(container, option);
-        var expectResult = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>© <a href="https://carto.com/">CARTO</a>';
+        var expectResult = 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a> - © <a href="https://carto.com/">CARTO</a>';
         var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
         expect(expectResult).to.eql(realResult);
     });
@@ -91,7 +91,7 @@ describe('Control.Attribution', function () {
             }
         };
         map = new maptalks.Map(container, option);
-        var expectResult = 'Powered By <a href="http://www.maptalks.org" target="_blank">maptalks</a>';
+        var expectResult = 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a>';
         var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
         expect(expectResult).to.eql(realResult);
     });
@@ -128,12 +128,12 @@ describe('Control.Attribution', function () {
         };
         map = new maptalks.Map(container, option);
         var tileLayer = new maptalks.TileLayer('boudaries', {
-            'urlTemplate': 'http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',
+            urlTemplate : '/resources/tile.png',
             'subdomains': ['a', 'b', 'c', 'd'],
             'attribution': 'guzr'
         });
         map.addLayer(tileLayer);
-        var expectResult = 'testsguzr';
+        var expectResult = 'tests - guzr';
         var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
         expect(expectResult).to.eql(realResult);
     });
