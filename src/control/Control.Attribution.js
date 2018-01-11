@@ -4,7 +4,7 @@ import Map from '../map/Map';
 
 /**
  * @property {Object} options - options
- * @property {Object} [options.position='bottom-left'] - position of the control, enmu: bottom-left, bottom-right
+ * @property {Object} [options.position='bottom-left'] - position of the control, this option defined in [Control.position]{@link Control#positions}.
  * @property {String} [options.content='Powered by <a href="http://maptalks.org" target="_blank">maptalks</a>']  - content of the attribution control, HTML format
  * @memberOf control.Attribution
  * @instance
