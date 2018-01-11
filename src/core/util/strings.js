@@ -1,7 +1,7 @@
 import { isString, isNil } from './common';
 import { getDomRuler, removeDomNode } from './dom';
-import Point from 'geo/Point';
-import Size from 'geo/Size';
+import Point from '../../geo/Point';
+import Size from '../../geo/Size';
 
 /**
  * @classdesc

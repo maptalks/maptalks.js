@@ -1,7 +1,7 @@
-import { IS_NODE, extend, isInteger, log2 } from 'core/util';
-import * as mat4 from 'core/util/mat4';
-import Canvas from 'core/Canvas';
-import Browser from 'core/Browser';
+import { IS_NODE, extend, isInteger, log2 } from '../../core/util';
+import * as mat4 from '../../core/util/mat4';
+import Canvas from '../../core/Canvas';
+import Browser from '../../core/Browser';
 
 const shaders = {
     'vertexShader': `

@@ -1,5 +1,5 @@
-import Class from 'core/Class';
-import Eventable from 'core/Eventable';
+import Class from '../../core/Class';
+import Eventable from '../../core/Eventable';
 
 const key = '_map_tool';
 

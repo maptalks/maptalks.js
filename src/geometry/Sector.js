@@ -1,4 +1,4 @@
-import { extend, isNil } from 'core/util';
+import { extend, isNil } from '../core/util';
 import Circle from './Circle';
 
 /**

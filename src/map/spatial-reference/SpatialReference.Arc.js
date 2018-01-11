@@ -1,5 +1,5 @@
-import { isString, parseJSON } from 'core/util';
-import Ajax from 'core/Ajax';
+import { isString, parseJSON } from '../../core/util';
+import Ajax from '../../core/Ajax';
 import SpatialReference from './SpatialReference';
 
 function parse(arcConf) {

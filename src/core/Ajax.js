@@ -1,5 +1,4 @@
-import { IS_NODE, isString, parseJSON, emptyImageUrl, UID } from 'core/util';
-import { isFunction } from './util/common';
+import { IS_NODE, isString, isFunction, parseJSON, emptyImageUrl, UID } from './util';
 
 /**
  * @classdesc

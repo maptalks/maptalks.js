@@ -1,5 +1,5 @@
-import { computeDegree } from 'core/util';
-import PointExtent from 'geo/PointExtent';
+import { computeDegree } from '../../../core/util';
+import PointExtent from '../../../geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
 /**

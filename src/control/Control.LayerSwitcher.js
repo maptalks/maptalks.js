@@ -1,5 +1,5 @@
-import { on, off, createEl, removeDomNode, addClass, hasClass, setClass } from 'core/util/dom';
-import Map from 'map/Map';
+import { on, off, createEl, removeDomNode, addClass, hasClass, setClass } from '../core/util/dom';
+import Map from '../map/Map';
 import Control from './Control';
 
 /**

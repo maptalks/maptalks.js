@@ -1,5 +1,5 @@
-import { isNil } from 'core/util';
-import Coordinate from 'geo/Coordinate';
+import { isNil } from '../core/util';
+import Coordinate from '../geo/Coordinate';
 
 /**
  * Common methods for geometry classes that base on a center, e.g. Marker, Circle, Ellipse , etc

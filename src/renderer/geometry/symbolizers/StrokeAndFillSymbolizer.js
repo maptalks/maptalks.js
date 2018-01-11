@@ -1,8 +1,8 @@
-import { getValueOrDefault } from 'core/util';
-import { isGradient as checkGradient } from 'core/util/style';
-import Canvas from 'core/Canvas';
-import Coordinate from 'geo/Coordinate';
-import PointExtent from 'geo/PointExtent';
+import { getValueOrDefault } from '../../../core/util';
+import { isGradient as checkGradient } from '../../../core/util/style';
+import Canvas from '../../../core/Canvas';
+import Coordinate from '../../../geo/Coordinate';
+import PointExtent from '../../../geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
 export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {

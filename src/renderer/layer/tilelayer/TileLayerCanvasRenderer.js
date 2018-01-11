@@ -3,12 +3,12 @@ import {
     loadImage,
     emptyImageUrl,
     now
-} from 'core/util';
-import Browser from 'core/Browser';
-import Canvas2D from 'core/Canvas';
-import TileLayer from 'layer/tile/TileLayer';
-import CanvasRenderer from 'renderer/layer/CanvasRenderer';
-import Point from 'geo/Point';
+} from '../../../core/util';
+import Browser from '../../../core/Browser';
+import Canvas2D from '../../../core/Canvas';
+import TileLayer from '../../../layer/tile/TileLayer';
+import CanvasRenderer from '../CanvasRenderer';
+import Point from '../../../geo/Point';
 
 /**
  * @classdesc

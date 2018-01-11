@@ -1,5 +1,5 @@
-import { extend } from 'core/util';
-import { trim } from 'core/util/strings';
+import { extend } from '../core/util';
+import { trim } from '../core/util/strings';
 import {
     on,
     off,
@@ -8,13 +8,13 @@ import {
     TRANSFORM,
     TRANSFORMORIGIN,
     TRANSITION
-} from 'core/util/dom';
-import Browser from 'core/Browser';
-import Class from 'core/Class';
-import Eventable from 'core/Eventable';
-import Point from 'geo/Point';
-import Size from 'geo/Size';
-import Geometry from 'geometry/Geometry';
+} from '../core/util/dom';
+import Browser from '../core/Browser';
+import Class from '../core/Class';
+import Eventable from '../core/Eventable';
+import Point from '../geo/Point';
+import Size from '../geo/Size';
+import Geometry from '../geometry/Geometry';
 
 /**
  * @property {Object} options

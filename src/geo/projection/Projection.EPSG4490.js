@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend } from '../../core/util';
 import PROJ4326 from './Projection.EPSG4326';
 
 /**

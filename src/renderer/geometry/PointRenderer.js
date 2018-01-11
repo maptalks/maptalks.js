@@ -1,10 +1,10 @@
-import Marker from 'geometry/Marker';
-import Ellipse from 'geometry/Ellipse';
-import Circle from 'geometry/Circle';
-import Sector from 'geometry/Sector';
-import Rectangle from 'geometry/Rectangle';
-import LineString from 'geometry/LineString';
-import Polygon from 'geometry/Polygon';
+import Marker from '../../geometry/Marker';
+import Ellipse from '../../geometry/Ellipse';
+import Circle from '../../geometry/Circle';
+import Sector from '../../geometry/Sector';
+import Rectangle from '../../geometry/Rectangle';
+import LineString from '../../geometry/LineString';
+import Polygon from '../../geometry/Polygon';
 
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {

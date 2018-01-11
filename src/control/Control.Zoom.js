@@ -1,8 +1,8 @@
-import { isInteger } from 'core/util';
-import { on, off, createEl, preventDefault, getEventContainerPoint } from 'core/util/dom';
-import Map from 'map/Map';
+import { isInteger } from '../core/util';
+import { on, off, createEl, preventDefault, getEventContainerPoint } from '../core/util/dom';
+import Map from '../map/Map';
 import Control from './Control';
-import DragHandler from 'handler/Drag';
+import DragHandler from '../handler/Drag';
 
 /**
  * @property {Object}   options - options

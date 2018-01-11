@@ -1,7 +1,7 @@
-import { isNil, isNumber, isArrayHasData, isFunction, mapArrayRecursively } from 'core/util';
-import { Animation } from 'core/Animation';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
+import { isNil, isNumber, isArrayHasData, isFunction, mapArrayRecursively } from '../core/util';
+import { Animation } from '../core/Animation';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
 import Geometry from './Geometry';
 import simplify from 'simplify-js';
 

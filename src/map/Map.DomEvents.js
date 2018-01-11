@@ -1,10 +1,10 @@
-import { now, extend } from 'core/util';
+import { now, extend } from '../core/util';
 import {
     addDomEvent,
     removeDomEvent,
     preventDefault,
     getEventContainerPoint
-} from 'core/util/dom';
+} from '../core/util/dom';
 import Map from './Map';
 
 const events =

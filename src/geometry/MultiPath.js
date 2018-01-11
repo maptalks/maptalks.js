@@ -1,5 +1,5 @@
 import MultiGeometry from './MultiGeometry';
-import Coordinate from 'geo/Coordinate';
+import Coordinate from '../geo/Coordinate';
 
 /**
  * @classdesc

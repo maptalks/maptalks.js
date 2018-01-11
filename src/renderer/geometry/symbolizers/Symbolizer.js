@@ -1,4 +1,4 @@
-import { isString } from 'core/util';
+import { isString } from '../../../core/util';
 
 /**
  * @classdesc

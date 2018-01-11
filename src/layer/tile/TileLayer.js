@@ -1,7 +1,7 @@
-import { IS_NODE, isNil, isArrayHasData, isFunction, isInteger } from 'core/util';
-import Browser from 'core/Browser';
-import Size from 'geo/Size';
-import PointExtent from 'geo/PointExtent';
+import { IS_NODE, isNil, isArrayHasData, isFunction, isInteger } from '../../core/util';
+import Browser from '../../core/Browser';
+import Size from '../../geo/Size';
+import PointExtent from '../../geo/PointExtent';
 import TileConfig from './tileinfo/TileConfig';
 import TileSystem from './tileinfo/TileSystem';
 import Layer from '../Layer';

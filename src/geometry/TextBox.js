@@ -1,5 +1,5 @@
-import { extend, isNil } from 'core/util';
-import { escapeSpecialChars } from 'core/util/strings';
+import { extend, isNil } from '../core/util';
+import { escapeSpecialChars } from '../core/util/strings';
 import TextMarker from './TextMarker';
 
 /**

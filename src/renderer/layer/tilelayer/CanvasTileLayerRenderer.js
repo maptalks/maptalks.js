@@ -1,9 +1,9 @@
-import Browser from 'core/Browser';
-import CanvasTileLayer from 'layer/tile/CanvasTileLayer';
-import Canvas2D from 'core/Canvas';
+import Browser from '../../../core/Browser';
+import CanvasTileLayer from '../../../layer/tile/CanvasTileLayer';
+import Canvas2D from '../../../core/Canvas';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import TileLayerGLRenderer from './TileLayerCanvasRenderer';
-import Extent from 'geo/Extent';
+import Extent from '../../../geo/Extent';
 
 function loadTile(tile) {
     const tileSize = this.layer.getTileSize(),

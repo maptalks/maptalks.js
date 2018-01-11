@@ -1,9 +1,9 @@
-import Class from 'core/Class';
-import { isNil, isNumber } from 'core/util';
-import Eventable from 'core/Eventable';
-import JSONAble from 'core/JSONAble';
-import Renderable from 'renderer/Renderable';
-import CanvasRenderer from 'renderer/layer/CanvasRenderer';
+import Class from '../core/Class';
+import { isNil, isNumber } from '../core/util';
+import Eventable from '../core/Eventable';
+import JSONAble from '../core/JSONAble';
+import Renderable from '../renderer/Renderable';
+import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 
 /**
  * @property {Object}  [options=null] - base options of layer.

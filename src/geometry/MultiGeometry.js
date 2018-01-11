@@ -1,5 +1,5 @@
 import GeometryCollection from './GeometryCollection';
-import Coordinate from 'geo/Coordinate';
+import Coordinate from '../geo/Coordinate';
 
 /**
  * The parent class for MultiPoint, MultiLineString and MultiPolygon

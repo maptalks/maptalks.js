@@ -1,4 +1,4 @@
-import Point from 'geo/Point';
+import Point from '../../geo/Point';
 
 
 export function clipLine(points, bounds, round) {

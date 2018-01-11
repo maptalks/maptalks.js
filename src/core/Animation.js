@@ -5,9 +5,9 @@ import {
     isString,
     requestAnimFrame,
     now
-} from 'core/util';
-import Point from 'geo/Point';
-import Coordinate from 'geo/Coordinate';
+} from './util';
+import Point from '../geo/Point';
+import Coordinate from '../geo/Coordinate';
 
 /**
  * @classdesc

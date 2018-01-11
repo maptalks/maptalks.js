@@ -1,6 +1,6 @@
-import { off, addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault } from 'core/util/dom';
-import Handler from 'handler/Handler';
-import Point from 'geo/Point';
+import { off, addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault } from '../../core/util/dom';
+import Handler from '../../handler/Handler';
+import Point from '../../geo/Point';
 import Map from '../Map';
 
 //handler to zoom map by pinching

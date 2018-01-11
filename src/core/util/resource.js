@@ -2,8 +2,8 @@ import { IS_NODE } from './env';
 import Browser from '../Browser';
 import { extend, isNil, isNumber, isString } from './common';
 import { isURL, extractCssUrl, btoa } from './util';
-import { isFunctionDefinition, getFunctionTypeResources } from 'core/mapbox';
-import { Symbolizer } from 'renderer/geometry/symbolizers';
+import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
+import { Symbolizer } from '../../renderer/geometry/symbolizers';
 
 
 /**

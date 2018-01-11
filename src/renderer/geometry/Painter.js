@@ -1,11 +1,11 @@
-import { isNumber, sign, pushIn, hasOwn } from 'core/util';
-import { clipPolygon, clipLine } from 'core/util/path';
-import Class from 'core/Class';
-import Size from 'geo/Size';
-import Point from 'geo/Point';
-import PointExtent from 'geo/PointExtent';
-import Canvas from 'core/Canvas';
-import * as Symbolizers from 'renderer/geometry/symbolizers';
+import { isNumber, sign, pushIn, hasOwn } from '../../core/util';
+import { clipPolygon, clipLine } from '../../core/util/path';
+import Class from '../../core/Class';
+import Size from '../../geo/Size';
+import Point from '../../geo/Point';
+import PointExtent from '../../geo/PointExtent';
+import Canvas from '../../core/Canvas';
+import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
 
 //registered symbolizers

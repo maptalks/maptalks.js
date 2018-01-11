@@ -1,13 +1,13 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { isNil, isNumber, sign, removeFromArray, UID } from 'core/util';
-import { lowerSymbolOpacity } from 'core/util/style';
-import Class from 'core/Class';
-import Eventable from 'core/Eventable';
-import Point from 'geo/Point';
-import Coordinate from 'geo/Coordinate';
-import { Marker, TextBox, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from 'geometry';
-import VectorLayer from 'layer/VectorLayer';
-import * as Symbolizers from 'renderer/geometry/symbolizers';
+import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
+import { isNil, isNumber, sign, removeFromArray, UID } from '../../core/util';
+import { lowerSymbolOpacity } from '../../core/util/style';
+import Class from '../../core/Class';
+import Eventable from '../../core/Eventable';
+import Point from '../../geo/Point';
+import Coordinate from '../../geo/Coordinate';
+import { Marker, TextBox, LineString, Polygon, Circle, Ellipse, Sector, Rectangle } from '../';
+import VectorLayer from '../../layer/VectorLayer';
+import * as Symbolizers from '../../renderer/geometry/symbolizers';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 

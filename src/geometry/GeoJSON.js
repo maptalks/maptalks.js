@@ -4,7 +4,7 @@ import {
     parseJSON,
     isArrayHasData,
     pushIn
-} from 'core/util';
+} from '../core/util';
 import Marker from './Marker';
 import LineString from './LineString';
 import Polygon from './Polygon';

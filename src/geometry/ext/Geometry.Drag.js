@@ -1,13 +1,13 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { lowerSymbolOpacity } from 'core/util/style';
-import { on, off } from 'core/util/dom';
-import Browser from 'core/Browser';
-import Handler from 'handler/Handler';
-import Geometry from 'geometry/Geometry';
-import DragHandler from 'handler/Drag';
-import VectorLayer from 'layer/VectorLayer';
-import { ConnectorLine } from 'geometry/ConnectorLine';
-import { ResourceCache } from 'renderer/layer/CanvasRenderer';
+import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
+import { lowerSymbolOpacity } from '../../core/util/style';
+import { on, off } from '../../core/util/dom';
+import Browser from '../../core/Browser';
+import Handler from '../../handler/Handler';
+import Geometry from '../Geometry';
+import DragHandler from '../../handler/Drag';
+import VectorLayer from '../../layer/VectorLayer';
+import { ConnectorLine } from '../ConnectorLine';
+import { ResourceCache } from '../../renderer/layer/CanvasRenderer';
 
 const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 

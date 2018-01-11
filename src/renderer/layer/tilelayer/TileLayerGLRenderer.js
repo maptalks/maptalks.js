@@ -1,10 +1,10 @@
-import Ajax from 'core/Ajax';
-import { emptyImageUrl, hasOwn } from 'core/util';
-import TileLayer from 'layer/tile/TileLayer';
+import Ajax from '../../../core/Ajax';
+import { emptyImageUrl, hasOwn } from '../../../core/util';
+import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
-import Browser from 'core/Browser';
-import Canvas from 'core/Canvas';
+import Browser from '../../../core/Browser';
+import Canvas from '../../../core/Canvas';
 
 /**
  * @classdesc

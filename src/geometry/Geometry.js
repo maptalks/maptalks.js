@@ -1,8 +1,8 @@
-import { GEOMETRY_COLLECTION_TYPES } from 'core/Constants';
-import Class from 'core/Class';
-import Eventable from 'core/Eventable';
-import JSONAble from 'core/JSONAble';
-import Handlerable from 'handler/Handlerable';
+import { GEOMETRY_COLLECTION_TYPES } from '../core/Constants';
+import Class from '../core/Class';
+import Eventable from '../core/Eventable';
+import JSONAble from '../core/JSONAble';
+import Handlerable from '../handler/Handlerable';
 import {
     extend,
     isNil,
@@ -11,15 +11,15 @@ import {
     isObject,
     mapArrayRecursively,
     flash
-} from 'core/util';
-import { extendSymbol } from 'core/util/style';
-import { convertResourceUrl, getExternalResources } from 'core/util/resource';
-import Point from 'geo/Point';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
-import Painter from 'renderer/geometry/Painter';
-import CollectionPainter from 'renderer/geometry/CollectionPainter';
-import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
+} from '../core/util';
+import { extendSymbol } from '../core/util/style';
+import { convertResourceUrl, getExternalResources } from '../core/util/resource';
+import Point from '../geo/Point';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
+import Painter from '../renderer/geometry/Painter';
+import CollectionPainter from '../renderer/geometry/CollectionPainter';
+import Symbolizer from '../renderer/geometry/symbolizers/Symbolizer';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
 
 /**

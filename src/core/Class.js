@@ -1,5 +1,5 @@
 import { extend } from './util/common';
-import Handler from 'handler/Handler';
+import Handler from '../handler/Handler';
 
 /**
  * This library uses ES2015 class system. <br />

@@ -1,4 +1,4 @@
-import { pushIn } from 'core/util';
+import { pushIn } from '../../core/util';
 import Layer from '../Layer';
 import TileLayer from './TileLayer';
 

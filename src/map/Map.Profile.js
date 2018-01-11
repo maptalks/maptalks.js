@@ -4,11 +4,11 @@ import {
     isNil,
     isObject,
     isArrayHasData
-} from 'core/util';
-import Layer from 'layer/Layer';
+} from '../core/util';
+import Layer from '../layer/Layer';
 import Map from './Map';
-import Geometry from 'geometry/Geometry';
-import GeoJSON from 'geometry/GeoJSON';
+import Geometry from '../geometry/Geometry';
+import GeoJSON from '../geometry/GeoJSON';
 
 /**
  * Produce a geometry from one or more [JSON]{@link Geometry#toJSON} or GeoJSON.

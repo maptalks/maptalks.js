@@ -1,6 +1,6 @@
-import { extend, isNil } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
+import { extend, isNil } from '../core/util';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
 import Polygon from './Polygon';
 
 /**

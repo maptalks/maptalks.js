@@ -1,8 +1,8 @@
-import { Animation } from 'core/Animation';
-import Coordinate from 'geo/Coordinate';
-import Point from 'geo/Point';
+import { Animation } from '../core/Animation';
+import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 import Map from './Map';
-import { isNil, isFunction, hasOwn } from 'core/util';
+import { isNil, isFunction, hasOwn } from '../core/util';
 
 function equalView(view1, view2) {
     for (const p in view1) {

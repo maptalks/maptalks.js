@@ -1,5 +1,5 @@
-import { isArrayHasData, pushIn } from 'core/util';
-import CanvasRenderer from 'renderer/layer/CanvasRenderer';
+import { isArrayHasData, pushIn } from '../../../core/util';
+import CanvasRenderer from '../CanvasRenderer';
 
 /**
  * @classdesc

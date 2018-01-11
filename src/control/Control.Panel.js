@@ -1,6 +1,6 @@
-import { extend, isNil, isString } from 'core/util';
-import { createEl } from 'core/util/dom';
-import DragHandler from 'handler/Drag';
+import { extend, isNil, isString } from '../core/util';
+import { createEl } from '../core/util/dom';
+import DragHandler from '../handler/Drag';
 import Control from './Control';
 
 /**

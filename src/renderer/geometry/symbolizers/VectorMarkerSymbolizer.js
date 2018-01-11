@@ -1,11 +1,11 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault, sign } from 'core/util';
-import { isGradient, getGradientStamp } from 'core/util/style';
-import { getAlignPoint } from 'core/util/strings';
-import { hasFunctionDefinition } from 'core/mapbox';
-import Size from 'geo/Size';
-import Point from 'geo/Point';
-import PointExtent from 'geo/PointExtent';
-import Canvas from 'core/Canvas';
+import { isNil, isNumber, isArrayHasData, getValueOrDefault, sign } from '../../../core/util';
+import { isGradient, getGradientStamp } from '../../../core/util/style';
+import { getAlignPoint } from '../../../core/util/strings';
+import { hasFunctionDefinition } from '../../../core/mapbox';
+import Size from '../../../geo/Size';
+import Point from '../../../geo/Point';
+import PointExtent from '../../../geo/PointExtent';
+import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {

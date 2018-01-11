@@ -1,6 +1,6 @@
-import { extend } from 'core/util';
-import { getAlignPoint, escapeSpecialChars } from 'core/util/strings';
-import Size from 'geo/Size';
+import { extend } from '../core/util';
+import { getAlignPoint, escapeSpecialChars } from '../core/util/strings';
+import Size from '../geo/Size';
 import TextMarker from './TextMarker';
 
 /**

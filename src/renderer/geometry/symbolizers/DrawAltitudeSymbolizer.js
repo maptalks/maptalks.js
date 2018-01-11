@@ -1,8 +1,8 @@
-import { isObject } from 'core/util';
-import Point from 'geo/Point';
+import { isObject } from '../../../core/util';
+import Point from '../../../geo/Point';
 import PointSymbolizer from './PointSymbolizer';
 import StrokeAndFillSymbolizer from './StrokeAndFillSymbolizer';
-import Canvas from 'core/Canvas';
+import Canvas from '../../../core/Canvas';
 
 const defaultSymbol = {
     lineWidth : 1,

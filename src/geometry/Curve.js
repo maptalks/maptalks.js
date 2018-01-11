@@ -1,5 +1,5 @@
 import LineString from './LineString';
-import Canvas2d from 'core/Canvas';
+import Canvas2d from '../core/Canvas';
 
 const options = {
     'enableSimplify' : false,

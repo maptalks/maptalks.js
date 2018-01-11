@@ -1,5 +1,5 @@
-import { createEl } from 'core/util/dom';
-import { Geometry } from 'geometry';
+import { createEl } from '../core/util/dom';
+import { Geometry } from '../geometry';
 import UIComponent from './UIComponent';
 
 
