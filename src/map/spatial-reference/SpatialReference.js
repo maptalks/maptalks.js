@@ -56,6 +56,23 @@ const DefaultSpatialRef = {
             'bottom': -33554432,
             'right': 33554432
         }
+    },
+    'IDENTITY' : {
+        'resolutions': (function () {
+            let res = Math.pow(2, 8);
+            const resolutions = [];
+            for (let i = 0; i < 18; i++) {
+                resolutions[i] = res;
+                res *= 0.5;
+            }
+            return resolutions;
+        })(),
+        'fullExtent': {
+            'top': 200000,
+            'left': -200000,
+            'bottom': -200000,
+            'right': 200000
+        }
     }
 };
 
