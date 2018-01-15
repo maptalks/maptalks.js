@@ -155,6 +155,10 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             super._saveBackground();
             return;
         }
+        const map = this.getMap();
+        if (!map || !this.canvas) {
+            return;
+        }
         this.background = {};
         const cache = this._tileRended;
         for (const p in cache) {

@@ -455,6 +455,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _saveBackground() {
         const map = this.getMap();
+        if (!map || !this.canvas) {
+            return;
+        }
         if (!this._backCanvas) {
             this._backCanvas = Canvas2D.createCanvas(1, 1);
         }
