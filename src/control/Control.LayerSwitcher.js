@@ -49,12 +49,14 @@ class LayerSwitcher extends Control {
     onAdd() {
         on(this.button, 'mouseover', this._show, this);
         on(this.panel, 'mouseleave', this._hide, this);
+        on(this.getMap(), 'click', this._hide, this);
     }
 
     onRemove() {
         if (this.panel) {
             off(this.button, 'mouseover', this._show, this);
             off(this.panel, 'mouseleave', this._hide, this);
+            off(this.getMap(), 'click', this._hide, this);
             removeDomNode(this.panel);
             removeDomNode(this.button);
             delete this.panel;
@@ -71,7 +73,7 @@ class LayerSwitcher extends Control {
     }
 
     _hide(e) {
-        if (e.relatedTarget || e.toElement) {
+        if (!this.panel.contains(e.toElement || e.relatedTarget)) {
             setClass(this.container, this.options['containerClass']);
         }
     }
@@ -151,10 +153,17 @@ class LayerSwitcher extends Control {
 
         input.onchange = function (e) {
             if (e.target.type === 'radio') {
-                const baseLayers = map.getBaseLayer().layers;
-                for (let i = 0, len = baseLayers.length; i < len; i++) {
-                    const baseLayer = baseLayers[i];
-                    baseLayer[baseLayer === layer ? 'show' : 'hide']();
+                const baseLayer = map.getBaseLayer(),
+                      baseLayers = baseLayer.layers;
+                if (baseLayers) {
+                    for (let i = 0, len = baseLayers.length; i < len; i++) {
+                        const _baseLayer = baseLayers[i];
+                        _baseLayer[_baseLayer === layer ? 'show' : 'hide']();
+                    }
+                } else {
+                    if (!baseLayer.isVisible()) {
+                        baseLayer.show();
+                    }
                 }
                 map._fireEvent('setbaselayer');
             } else {
