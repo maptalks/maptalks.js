@@ -181,11 +181,13 @@ Map.include(/** @lends Map.prototype */ {
     _registerDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         addDomEvent(dom, events, this._handleDOMEvent, this);
+        addDomEvent(document, 'keyup', this._onKeyPress, this);
     },
 
     _removeDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         removeDomEvent(dom, events, this._handleDOMEvent, this);
+        removeDomEvent(document, 'keyup', this._onKeyPress, this);
     },
 
     _handleDOMEvent(e) {
@@ -316,6 +318,12 @@ Map.include(/** @lends Map.prototype */ {
         }
         const eventParam = this._parseEvent(e, type);
         this._fireEvent(type, eventParam);
+    },
+
+    _onKeyPress(e) {
+        if (!this.isRemoved() && e.keyCode === 48 && e.ctrlKey) {
+            this.setBearing(0);
+        }
     }
 });
 
