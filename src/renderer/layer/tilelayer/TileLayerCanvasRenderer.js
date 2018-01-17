@@ -146,9 +146,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     // limit tile number to load when map is interacting
     _getTileLimitOnInteracting() {
         if (this.getMap().isInteracting()) {
-            return 1;
+            return 3;
         }
-        return 10;
+        return 0;
     }
 
     isDrawable() {
@@ -437,7 +437,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (back && back.southWest && ctx) {
             const map = this.getMap();
             let scale = map._getResolution(back.zoom) / map._getResolution();
-            const cp = map._pointToContainerPoint(back.southWest, back.zoom)._add(0, -map.height * scale);
+            const cp = map._pointToContainerPoint(back.southWest, back.zoom);
             const bearing = map.getBearing() - back.bearing;
             if (Browser.retina) {
                 scale *= 1 / 2;
@@ -448,7 +448,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 ctx.rotate(-bearing * Math.PI / 180);
             }
             ctx.scale(scale, scale);
-            ctx.drawImage(back.canvas, 0, 0);
+            ctx.drawImage(back.canvas, 0, -back.canvas.height);
             ctx.restore();
         }
     }
