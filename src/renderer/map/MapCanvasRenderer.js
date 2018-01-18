@@ -1,5 +1,5 @@
 import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from '../../core/util';
-import { createEl, preventSelection, computeDomPosition } from '../../core/util/dom';
+import { createEl, preventSelection, computeDomPosition, addDomEvent, removeDomEvent } from '../../core/util/dom';
 import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
@@ -382,6 +382,9 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     remove() {
+        if (Browser.webgl && typeof document !== 'undefined') {
+            removeDomEvent(document, 'visibilitychange', this._onVisibilitychange, this);
+        }
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
         }
@@ -736,6 +739,10 @@ class MapCanvasRenderer extends MapRenderer {
         map.on('_spatialreferencechange', () => {
             this._spatialRefChanged = true;
         });
+
+        if (Browser.webgl && typeof document !== 'undefined') {
+            addDomEvent(document, 'visibilitychange', this._onVisibilitychange, this);
+        }
     }
 
     _onMapMouseMove(param) {
@@ -753,6 +760,20 @@ class MapCanvasRenderer extends MapRenderer {
 
     _getCanvasLayers() {
         return this.map._getLayers(layer => layer.isCanvasRender());
+    }
+
+    _onVisibilitychange() {
+        if (document.visibilityState !== 'visible') {
+            return;
+        }
+        const layers = this._getAllLayerToRender();
+        for (let i = 0, l = layers.length; i < l; i++) {
+            const renderer = layers[i].getRenderer();
+            if (renderer && renderer.canvas && renderer.setToRedraw) {
+                //to fix lost webgl context
+                renderer.setToRedraw();
+            }
+        }
     }
 }
 

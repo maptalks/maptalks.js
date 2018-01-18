@@ -52,6 +52,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.dragPan=true]                           - if true, map can be dragged to pan.
  * @property {Boolean} [options.dragRotate=true]                        - default true. If true, map can be dragged to rotate by right click or ctrl + left click.
  * @property {Boolean} [options.dragPitch=true]                         - default true. If true, map can be dragged to pitch by right click or ctrl + left click.
+ * @property {Boolean} [options.dragRotatePitch=false]                  - if true, map is dragged to pitch and rotate at the same time.
  * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
  * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
