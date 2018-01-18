@@ -154,16 +154,14 @@ class LayerSwitcher extends Control {
         input.onchange = function (e) {
             if (e.target.type === 'radio') {
                 const baseLayer = map.getBaseLayer(),
-                      baseLayers = baseLayer.layers;
+                    baseLayers = baseLayer.layers;
                 if (baseLayers) {
                     for (let i = 0, len = baseLayers.length; i < len; i++) {
                         const _baseLayer = baseLayers[i];
                         _baseLayer[_baseLayer === layer ? 'show' : 'hide']();
                     }
-                } else {
-                    if (!baseLayer.isVisible()) {
-                        baseLayer.show();
-                    }
+                } else if (!baseLayer.isVisible()) {
+                    baseLayer.show();
                 }
                 map._fireEvent('setbaselayer');
             } else {
