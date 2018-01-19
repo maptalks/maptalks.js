@@ -373,7 +373,7 @@ Map.include(/** @lends Map.prototype */{
         // let up = new vec3(0,1,0);
         // up.rotateZ(target,radians);
         const d = dist || 1;
-        const up = [Math.sin(bearing) * d, Math.cos(bearing) * d, 0];
+        const up = this.cameraUp = [Math.sin(bearing) * d, Math.cos(bearing) * d, 0];
         const m = this.cameraWorldMatrix || createMat4();
         lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 
