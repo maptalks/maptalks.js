@@ -206,7 +206,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 if (!tileImage.loadTime) {
                     // tile image's loading may not be async
                     tileImage.current = true;
-                    this._tileLoading[tile['id']] = tileImage;
+                    this._tileLoading[tile['id']] = {
+                        image : tileImage,
+                        current : true,
+                        info : tile
+                    };
                 }
             }
         }
@@ -408,9 +412,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const tile = this._tileLoading[i];
             if (!tile.current) {
                 // abort loading tiles
-                tile.onload = falseFn;
-                tile.onerror = falseFn;
-                tile.src = emptyImageUrl;
+                if (tile.image) {
+                    tile.image.onload = falseFn;
+                    tile.image.onerror = falseFn;
+                    tile.image.src = emptyImageUrl;
+                }
                 this.deleteTile(tile);
                 delete this._tileLoading[i];
             }
@@ -418,18 +424,18 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         for (const i in this._tileRended) {
             const tile = this._tileRended[i];
             if (!tile.current) {
-                this.deleteTile(tile.image);
+                this.deleteTile(tile);
                 delete this._tileRended[i];
             }
         }
     }
 
     deleteTile(tile) {
-        if (!tile) {
+        if (!tile || !tile.image) {
             return;
         }
-        delete tile.onload;
-        delete tile.onerror;
+        delete tile.image.onload;
+        delete tile.image.onerror;
     }
 
     _drawBackground() {

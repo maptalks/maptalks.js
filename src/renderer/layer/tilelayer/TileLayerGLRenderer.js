@@ -172,9 +172,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     deleteTile(tile) {
         super.deleteTile(tile);
-        if (tile && !tile.current && tile.texture) {
-            this.saveTexture(tile.texture);
-            delete tile.texture;
+        if (tile && !tile.current && tile.image && tile.image.texture) {
+            this.saveTexture(tile.image.texture);
+            delete tile.image.texture;
         }
     }
 
