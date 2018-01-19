@@ -188,10 +188,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return false;
         }
         const clipExtent = map.getContainerExtent();
+        const r = Browser.retina ? 2 : 1;
         ctx.save();
         ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
         ctx.beginPath();
-        ctx.rect(0, Math.ceil(clipExtent.ymin), Math.ceil(clipExtent.getWidth()), Math.ceil(clipExtent.getHeight()));
+        ctx.rect(0, Math.ceil(clipExtent.ymin) * r, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(clipExtent.getHeight()) * r);
         ctx.stroke();
         ctx.clip();
         return true;

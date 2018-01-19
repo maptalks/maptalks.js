@@ -325,13 +325,13 @@ class MapCanvasRenderer extends MapRenderer {
         }
 
         if (baseLayerImage) {
-            this._drawLayerCanvasImage.apply(this, baseLayerImage);
+            this._drawLayerCanvasImage(baseLayerImage[0], baseLayerImage[1]);
         }
 
         len = images.length;
         const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
         for (let i = start; i < len; i++) {
-            this._drawLayerCanvasImage.apply(this, images[i]);
+            this._drawLayerCanvasImage(images[i][0], images[i][1]);
         }
 
 
