@@ -230,8 +230,8 @@ class Overview extends Control {
             baseLayer = map.getBaseLayer();
         if (baseLayer) {
             const visible = baseLayer.isVisible(),
-                layers = baseLayer.layers,
-                isShow = false,
+                layers = baseLayer.layers;
+            let isShow = false,
                 showIndex = 0;
             if (!visible) {
                 if (layers) {
