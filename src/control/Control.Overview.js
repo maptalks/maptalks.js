@@ -232,7 +232,7 @@ class Overview extends Control {
             const visible = baseLayer.isVisible(),
                 layers = baseLayer.layers,
                 isShow = false,
-                var showIndex = 0;
+                showIndex = 0;
             if (!visible) {
                 if (layers) {
                     for (let i = 0, l = layers.length; i < l; i++) {
