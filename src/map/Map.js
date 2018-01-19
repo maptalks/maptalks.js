@@ -624,7 +624,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
         }
-        if (maxZoom < this._zoomLevel) {
+        if (maxZoom !== null && maxZoom < this._zoomLevel) {
             this.setZoom(maxZoom);
         }
         this.options['maxZoom'] = maxZoom;
@@ -649,7 +649,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     setMinZoom(minZoom) {
         const viewMinZoom = this._spatialReference.getMinZoom();
-        if (minZoom < viewMinZoom) {
+        if (minZoom !== null && minZoom < viewMinZoom) {
             minZoom = viewMinZoom;
         }
         this.options['minZoom'] = minZoom;
