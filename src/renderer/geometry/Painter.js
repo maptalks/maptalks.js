@@ -257,10 +257,10 @@ class Painter extends Class {
         const e = this.get2DExtent();
         let clipPoints = points;
         if (e.within(extent2D)) {
-            if (this.geometry.getJSONType() === 'LineString') {
-                // clip line with altitude
-                return this._clipLineByAlt(clipPoints, altitude);
-            }
+            // if (this.geometry.getJSONType() === 'LineString') {
+            //     // clip line with altitude
+            //     return this._clipLineByAlt(clipPoints, altitude);
+            // }
             return {
                 points : clipPoints,
                 altitude : altitude
@@ -291,8 +291,9 @@ class Painter extends Class {
                 }
             }
             //interpolate line's segment's altitude if altitude is an array
-            const segs = this._interpolateSegAlt(clipPoints, points, altitude);
-            return this._clipLineByAlt(segs.points, segs.altitude);
+            return this._interpolateSegAlt(clipPoints, points, altitude);
+            // const segs = this._interpolateSegAlt(clipPoints, points, altitude);
+            // return this._clipLineByAlt(segs.points, segs.altitude);
         }
 
         return {
@@ -301,16 +302,16 @@ class Painter extends Class {
         };
     }
 
-    _clipLineByAlt(clipSegs, altitude) {
-        const frustumAlt = this.getMap().getFrustumAltitude();
-        if (!Array.isArray(altitude) || this.maxAltitude <= frustumAlt) {
-            return {
-                points : clipSegs,
-                altitude : altitude
-            };
-        }
-        return clipByALt(clipSegs, altitude, frustumAlt);
-    }
+    // _clipLineByAlt(clipSegs, altitude) {
+    //     const frustumAlt = this.getMap().getFrustumAltitude();
+    //     if (!Array.isArray(altitude) || this.maxAltitude <= frustumAlt) {
+    //         return {
+    //             points : clipSegs,
+    //             altitude : altitude
+    //         };
+    //     }
+    //     return clipByALt(clipSegs, altitude, frustumAlt);
+    // }
 
     /**
      * interpolate clipped line segs's altitude
@@ -714,63 +715,63 @@ function interpolateAlt(points, orig, altitude) {
     return parts;
 }
 
-function interpolatePoint(p0, p1, t) {
-    const x = interpolate(p0.x, p1.x, t),
-        y = interpolate(p0.y, p1.y, t);
-    return new Point(x, y);
-}
+// function interpolatePoint(p0, p1, t) {
+//     const x = interpolate(p0.x, p1.x, t),
+//         y = interpolate(p0.y, p1.y, t);
+//     return new Point(x, y);
+// }
 
-function clipByALt(clipSegs, altitude, topAlt) {
-    const points = [];
-    const alt = [];
-    let preAlt;
-    // clip lines with camera altitude
-    for (let i = 0, l = clipSegs.length; i < l; i++) {
-        if (Array.isArray(clipSegs[i])) {
-            const r = clipByALt(clipSegs[i], altitude[i], topAlt);
-            if (!r) {
-                continue;
-            }
-            points.push(r.points);
-            alt.push(r.altitude);
-        } else if (i === 0) {
-            preAlt = altitude[0];
-            points.push(clipSegs[i]);
-            alt.push(preAlt < topAlt ? preAlt : topAlt);
-        } else {
-            // i > 0
-            const a = altitude[i];
-            if (a >= topAlt) {
-                if (preAlt >= topAlt) {
-                    points.push(clipSegs[i]);
-                    alt.push(topAlt);
-                } else {
-                    //ascending interpolate
-                    const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (topAlt - preAlt) / (a - preAlt));
-                    points.push(p);
-                    alt.push(topAlt);
-                    points.push(clipSegs[i]);
-                    alt.push(topAlt);
-                }
-                // a < topAlt
-            } else if (preAlt < topAlt) {
-                points.push(clipSegs[i]);
-                alt.push(a);
-            } else {
-                //descending interpolate
-                const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (preAlt - topAlt) / (preAlt - a));
-                points.push(p);
-                alt.push(topAlt);
-                points.push(clipSegs[i]);
-                alt.push(a);
-            }
-            preAlt = a;
-        }
-    }
-    return {
-        points : points,
-        altitude : alt
-    };
-}
+// function clipByALt(clipSegs, altitude, topAlt) {
+//     const points = [];
+//     const alt = [];
+//     let preAlt;
+//     // clip lines with camera altitude
+//     for (let i = 0, l = clipSegs.length; i < l; i++) {
+//         if (Array.isArray(clipSegs[i])) {
+//             const r = clipByALt(clipSegs[i], altitude[i], topAlt);
+//             if (!r) {
+//                 continue;
+//             }
+//             points.push(r.points);
+//             alt.push(r.altitude);
+//         } else if (i === 0) {
+//             preAlt = altitude[0];
+//             points.push(clipSegs[i]);
+//             alt.push(preAlt < topAlt ? preAlt : topAlt);
+//         } else {
+//             // i > 0
+//             const a = altitude[i];
+//             if (a >= topAlt) {
+//                 if (preAlt >= topAlt) {
+//                     points.push(clipSegs[i]);
+//                     alt.push(topAlt);
+//                 } else {
+//                     //ascending interpolate
+//                     const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (topAlt - preAlt) / (a - preAlt));
+//                     points.push(p);
+//                     alt.push(topAlt);
+//                     points.push(clipSegs[i]);
+//                     alt.push(topAlt);
+//                 }
+//                 // a < topAlt
+//             } else if (preAlt < topAlt) {
+//                 points.push(clipSegs[i]);
+//                 alt.push(a);
+//             } else {
+//                 //descending interpolate
+//                 const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (preAlt - topAlt) / (preAlt - a));
+//                 points.push(p);
+//                 alt.push(topAlt);
+//                 points.push(clipSegs[i]);
+//                 alt.push(a);
+//             }
+//             preAlt = a;
+//         }
+//     }
+//     return {
+//         points : points,
+//         altitude : alt
+//     };
+// }
 
 export default Painter;
