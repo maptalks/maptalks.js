@@ -1,7 +1,7 @@
 import Map from './Map';
 import Point from '../geo/Point';
 import * as mat4 from '../core/util/mat4';
-import { subtract, add, scale, normalize, dot } from '../core/util/vec3';
+import { subtract, add, scale, normalize, dot, set } from '../core/util/vec3';
 import { clamp, interpolate, wrap } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
@@ -206,27 +206,31 @@ Map.include(/** @lends Map.prototype */{
      * @return {Point}       containerPoint at current zoom
      * @private
      */
-    _pointToContainerPoint(point, zoom, altitude = 0) {
-        point = this._pointToPoint(point, zoom);
-        if (this.isTransforming() || altitude) {
-            //convert altitude at zoom to current zoom
-            altitude *= this.getResolution(zoom) / this.getResolution();
-            const scale = this._glScale;
-            let t = [point.x * scale, point.y * scale, altitude * scale];
+    _pointToContainerPoint: function () {
+        const a = [0, 0, 0];
+        return function (point, zoom, altitude = 0) {
+            point = this._pointToPoint(point, zoom);
+            if (this.isTransforming() || altitude) {
+                //convert altitude at zoom to current zoom
+                altitude *= this.getResolution(zoom) / this.getResolution();
+                const scale = this._glScale;
+                set(a, point.x * scale, point.y * scale, altitude * scale);
+                // let t = [point.x * scale, point.y * scale, altitude * scale];
 
-            t = this._projIfBehindCamera(t, this.cameraPosition, this.cameraForward);
+                const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
 
-            applyMatrix(t, t, this.projViewMatrix);
+                applyMatrix(t, t, this.projViewMatrix);
 
-            const w2 = this.width / 2, h2 = this.height / 2;
-            t[0] = (t[0] * w2) + w2;
-            t[1] = -(t[1] * h2) + h2;
-            return new Point(t[0], t[1]);
-        } else {
-            const centerPoint = this._prjToPoint(this._getPrjCenter());
-            return point._sub(centerPoint)._add(this.width / 2, this.height / 2);
-        }
-    },
+                const w2 = this.width / 2, h2 = this.height / 2;
+                t[0] = (t[0] * w2) + w2;
+                t[1] = -(t[1] * h2) + h2;
+                return new Point(t[0], t[1]);
+            } else {
+                const centerPoint = this._prjToPoint(this._getPrjCenter());
+                return point._sub(centerPoint)._add(this.width / 2, this.height / 2);
+            }
+        };
+    }(),
 
     // https://forum.unity.com/threads/camera-worldtoscreenpoint-bug.85311/#post-2121212
     _projIfBehindCamera: function () {
@@ -259,34 +263,40 @@ Map.include(/** @lends Map.prototype */{
      * @return {Point}      2d point at target zoom
      * @private
      */
-    _containerPointToPoint(p, zoom) {
-        if (this.isTransforming()) {
-            const w2 = this.width / 2, h2 = this.height / 2;
-            const cp = [(p.x - w2) / w2, (h2 - p.y) / h2];
+    _containerPointToPoint: function () {
+        const cp = [0, 0, 0],
+            coord0 = [0, 0, 0, 1],
+            coord1 = [0, 0, 0, 1];
+        return function (p, zoom) {
+            if (this.isTransforming()) {
+                const w2 = this.width / 2, h2 = this.height / 2;
+                set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
 
-            const coord0 = [cp[0], cp[1], 0, 1];
-            const coord1 = [cp[0], cp[1], 1, 1];
+                set(coord0, cp[0], cp[1], 0);
+                set(coord1, cp[0], cp[1], 1);
+                coord0[3] = coord1[3] = 1;
 
-            applyMatrix(coord0, coord0, this.projViewMatrixInverse);
-            applyMatrix(coord1, coord1, this.projViewMatrixInverse);
-            const x0 = coord0[0];
-            const x1 = coord1[0];
-            const y0 = coord0[1];
-            const y1 = coord1[1];
-            const z0 = coord0[2];
-            const z1 = coord1[2];
+                applyMatrix(coord0, coord0, this.projViewMatrixInverse);
+                applyMatrix(coord1, coord1, this.projViewMatrixInverse);
+                const x0 = coord0[0];
+                const x1 = coord1[0];
+                const y0 = coord0[1];
+                const y1 = coord1[1];
+                const z0 = coord0[2];
+                const z1 = coord1[2];
 
-            const t = z0 === z1 ? 0 : (0 - z0) / (z1 - z0);
+                const t = z0 === z1 ? 0 : (0 - z0) / (z1 - z0);
 
-            const point = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t))._multi(1 / this._glScale);
-            return ((zoom === undefined || this.getZoom() === zoom) ? point : this._pointToPointAtZoom(point, zoom));
-        }
-        const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
-            scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
-        const x = scale * (p.x - this.width / 2),
-            y = scale * (p.y - this.height / 2);
-        return centerPoint._add(x, y);
-    },
+                const point = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t))._multi(1 / this._glScale);
+                return ((zoom === undefined || this.getZoom() === zoom) ? point : this._pointToPointAtZoom(point, zoom));
+            }
+            const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
+                scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
+            const x = scale * (p.x - this.width / 2),
+                y = scale * (p.y - this.height / 2);
+            return centerPoint._add(x, y);
+        };
+    }(),
 
     /**
      * GL Matrices in maptalks (based on THREE):
@@ -301,7 +311,8 @@ Map.include(/** @lends Map.prototype */{
     _calcMatrices: function () {
         // closure matrixes to reuse
         const m0 = Browser.ie9 ? null : createMat4(),
-            m1 = Browser.ie9 ? null : createMat4();
+            m1 = Browser.ie9 ? null : createMat4(),
+            minusY = [1, -1, 1];
         return function () {
             // get pixel size of map
             const size = this.getSize();
@@ -316,7 +327,7 @@ Map.include(/** @lends Map.prototype */{
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, size.width / size.height, 0.1, farZ);
-            mat4.scale(projMatrix, projMatrix, [1, -1, 1]);
+            mat4.scale(projMatrix, projMatrix, minusY);
             this.projMatrix = projMatrix;
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
@@ -331,10 +342,11 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _calcDomMatrix: function () {
-        const m = Browser.ie9 ? null : createMat4();
+        const m = Browser.ie9 ? null : createMat4(),
+            arr = [0, 0, 0];
         return function () {
             const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
-            mat4.translate(m, this.projMatrix, [0, 0, -cameraToCenterDistance]);
+            mat4.translate(m, this.projMatrix, set(arr, 0, 0, -cameraToCenterDistance));//[0, 0, cameraToCenterDistance]
             if (this._pitch) {
                 mat4.rotateX(m, m, this._pitch);
             }
@@ -342,53 +354,55 @@ Map.include(/** @lends Map.prototype */{
                 mat4.rotateZ(m, m, this._angle);
             }
             const m1 = createMat4();
-            mat4.scale(m1, m1, [this.width / 2, -this.height / 2, 1]);
+            mat4.scale(m1, m1, set(arr, this.width / 2, -this.height / 2, 1)); //[this.width / 2, -this.height / 2, 1]
             return mat4.multiply(this.domCssMatrix || createMat4(), m1, m);
         };
     }(),
 
-    _getCameraWorldMatrix() {
-        const targetZ = this.getGLZoom();
-
-        const size = this.getSize(),
-            scale = this.getGLScale();
-        const center2D = this._prjToPoint(this._prjCenter, targetZ);
-        this.cameraLookAt = [center2D.x, center2D.y, 0];
-
-        const pitch = this.getPitch() * RADIAN;
-        const bearing = -this.getBearing() * RADIAN;
-
-        const ratio = this._getFovRatio();
-        const z = scale * size.height / 2 / ratio;
-        const cz = z * Math.cos(pitch);
-        // and [dist] away from map's center on XY plane to tilt the scene.
-        const dist = Math.sin(pitch) * z;
-        // when map rotates, the camera's xy position is rotating with the given bearing and still keeps [dist] away from map's center
-        const cx = center2D.x + dist * Math.sin(bearing);
-        const cy = center2D.y + dist * Math.cos(bearing);
-        this.cameraPosition = [cx, cy, cz];
-        // when map rotates, camera's up axis is pointing to bearing from south direction of map
-        // default [0,1,0] is the Y axis while the angle of inclination always equal 0
-        // if you want to rotate the map after up an incline,please rotateZ like this:
-        // let up = new vec3(0,1,0);
-        // up.rotateZ(target,radians);
-        const d = dist || 1;
-        const up = this.cameraUp = [Math.sin(bearing) * d, Math.cos(bearing) * d, 0];
-        const m = this.cameraWorldMatrix || createMat4();
-        lookAt(m, this.cameraPosition, this.cameraLookAt, up);
-
-        const cameraForward = new Array(3);
-        subtract(cameraForward, this.cameraLookAt, this.cameraPosition);
-        // similar with unity's camera.transform.forward
-        this.cameraForward = normalize(cameraForward, cameraForward);
-        // math from THREE.js
+    _getCameraWorldMatrix: function () {
         const q = {};
-        matrixToQuaternion(q, m);
-        quaternionToMatrix(m, q);
-        setPosition(m, [cx, cy, cz]);
+        return function () {
+            const targetZ = this.getGLZoom();
 
-        return m;
-    },
+            const size = this.getSize(),
+                scale = this.getGLScale();
+            const center2D = this._prjToPoint(this._prjCenter, targetZ);
+            this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, 0);
+
+            const pitch = this.getPitch() * RADIAN;
+            const bearing = -this.getBearing() * RADIAN;
+
+            const ratio = this._getFovRatio();
+            const z = scale * size.height / 2 / ratio;
+            const cz = z * Math.cos(pitch);
+            // and [dist] away from map's center on XY plane to tilt the scene.
+            const dist = Math.sin(pitch) * z;
+            // when map rotates, the camera's xy position is rotating with the given bearing and still keeps [dist] away from map's center
+            const cx = center2D.x + dist * Math.sin(bearing);
+            const cy = center2D.y + dist * Math.cos(bearing);
+            this.cameraPosition = set(this.cameraPosition || [0, 0, 0], cx, cy, cz);
+            // when map rotates, camera's up axis is pointing to bearing from south direction of map
+            // default [0,1,0] is the Y axis while the angle of inclination always equal 0
+            // if you want to rotate the map after up an incline,please rotateZ like this:
+            // let up = new vec3(0,1,0);
+            // up.rotateZ(target,radians);
+            const d = dist || 1;
+            const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
+            const m = this.cameraWorldMatrix || createMat4();
+            lookAt(m, this.cameraPosition, this.cameraLookAt, up);
+
+            const cameraForward = this.cameraForward || [0, 0, 0];
+            subtract(cameraForward, this.cameraLookAt, this.cameraPosition);
+            // similar with unity's camera.transform.forward
+            this.cameraForward = normalize(cameraForward, cameraForward);
+            // math from THREE.js
+            matrixToQuaternion(q, m);
+            quaternionToMatrix(m, q);
+            setPosition(m, this.cameraPosition);
+
+            return m;
+        };
+    }(),
 
     _getFovRatio() {
         const fov = this.getFov();
