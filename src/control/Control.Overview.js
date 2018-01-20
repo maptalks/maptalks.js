@@ -226,13 +226,54 @@ class Overview extends Control {
         if (!this._overview) {
             return;
         }
-        const map = this.getMap();
-        if (map.getBaseLayer()) {
+        const map = this.getMap(),
+            baseLayer = map.getBaseLayer();
+        if (baseLayer) {
+            const visible = baseLayer.isVisible(),
+                layers = baseLayer.layers;
+            let isShow = false,
+                showIndex = 0;
+            if (!visible) {
+                if (layers) {
+                    for (let i = 0, l = layers.length; i < l; i++) {
+                        const layer = layers[i];
+                        if (layer.isVisible()) {
+                            isShow = true;
+                            showIndex = i;
+                            break;
+                        }
+                    }
+                    if (!isShow) {
+                        layers[0].show();
+                    }
+                }
+                baseLayer.show();
+            }
             const json = map.getBaseLayer().toJSON();
+            if (layers) {
+                this._overview.setMinZoom(json.layers[showIndex].options.minZoom || null)
+                    .setMaxZoom(json.layers[showIndex].options.maxZoom || null);
+                delete json.layers[showIndex].options.minZoom;
+                delete json.layers[showIndex].options.maxZoom;
+            } else {
+                this._overview.setMinZoom(json.options.minZoom || null)
+                    .setMaxZoom(json.options.maxZoom || null);
+                delete json.options.minZoom;
+                delete json.options.maxZoom;
+            }
             delete json.options.canvas;
             json.options.renderer = 'canvas';
             const layer = Layer.fromJSON(json);
             this._overview.setBaseLayer(layer);
+            if (!visible) {
+                if (layers) {
+                    if (!isShow) {
+                        layers[0].hide();
+                    }
+                } else {
+                    baseLayer.hide();
+                }
+            }
         } else {
             this._overview.setBaseLayer(null);
         }
