@@ -620,7 +620,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Map} this
      */
     setMaxZoom(maxZoom) {
-        const viewMaxZoom = this._spatialReference.getMaxZoom();
+        const viewMaxZoom = this.getMaxNativeZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
         }
@@ -648,9 +648,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     setMinZoom(minZoom) {
-        const viewMinZoom = this._spatialReference.getMinZoom();
-        if (minZoom !== null && minZoom < viewMinZoom) {
-            minZoom = viewMinZoom;
+        if (minZoom !== null) {
+            const viewMinZoom = this._spatialReference.getMinZoom();
+            if (minZoom < viewMinZoom) {
+                minZoom = viewMinZoom;
+            }
+            if (minZoom > this._zoomLevel) {
+                this.setZoom(minZoom);
+            }
         }
         this.options['minZoom'] = minZoom;
         return this;
@@ -665,7 +670,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!ref) {
             return null;
         }
-        return ref.getResolutions().length - 1;
+        return ref.getMaxZoom();
     }
 
     /**

@@ -231,6 +231,15 @@ describe('Map.Spec', function () {
             expect(map.getMaxZoom()).to.equal(max);
         });
 
+        it('set min zoom level to bigger than current zoom level', function () {
+            var min = 14, cur = min - 1;
+            map.setZoom(cur);
+            map.setMinZoom(min);
+
+            expect(map.getZoom()).to.equal(min);
+            expect(map.getMinZoom()).to.equal(min);
+        });
+
         it('zoom in/out', function () {
             var min = 3, max = 14, cur = 8;
             map.setMinZoom(min);
