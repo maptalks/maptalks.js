@@ -46,7 +46,9 @@ const options = {
 
     'renderer' : (() => {
         return Browser.webgl ? 'gl' : 'canvas';
-    })()
+    })(),
+
+    'clipByPitch' : true
 };
 
 const urlPattern = /\{ *([\w_]+) *\}/g;

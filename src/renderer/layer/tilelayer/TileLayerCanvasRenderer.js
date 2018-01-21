@@ -187,6 +187,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (map.getPitch() <= map.options['maxVisualPitch']) {
             return false;
         }
+        if (!this.layer.options['clipByPitch']) {
+            return false;
+        }
         const clipExtent = map.getContainerExtent();
         const r = Browser.retina ? 2 : 1;
         ctx.save();
