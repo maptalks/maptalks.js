@@ -232,24 +232,30 @@ class Overview extends Control {
             this._overview.setBaseLayer(null);
             return;
         }
-        let target = baseLayer;
         const layers = baseLayer.layers;
+        let showIndex = 0;
         if (layers) {
             for (let i = 0, l = layers.length; i < l; i++) {
                 const layer = layers[i];
                 if (layer.isVisible()) {
-                    target = layer;
+                    showIndex = i;
                     break;
                 }
             }
         }
 
-        const json = target.toJSON();
-
-        this._overview.setMinZoom(json.options.minZoom || null)
-            .setMaxZoom(json.options.maxZoom || null);
-        delete json.options.minZoom;
-        delete json.options.maxZoom;
+        const json = baseLayer.toJSON();
+        let options = null;
+        if (layers) {
+            options = json.layers[showIndex].options;
+            options.visible = true;
+        } else {
+            options = json.options;
+        }
+        this._overview.setMinZoom(options.minZoom || null)
+            .setMaxZoom(options.maxZoom || null);
+        delete options.minZoom;
+        delete options.maxZoom;
         delete json.options.canvas;
         json.options.visible = true;
         json.options.renderer = 'canvas';

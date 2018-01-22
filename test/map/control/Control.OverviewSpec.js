@@ -110,4 +110,31 @@ describe('Control.Overview', function () {
         expect(overview._overview.getZoom()).to.be.eql(map.getZoom() - overview.options['level']);
         expect(overview._overview.getCenter().toArray()).to.be.eql(map.getCenter().toArray());
     });
+    
+    it('overview base groupLayer visible', function () {
+        var group = new maptalks.GroupTileLayer('group', [
+            new maptalks.TileLayer('tile1', {
+                visible : false,
+                urlTemplate : '/resources/tile.png'
+            }),
+            new maptalks.TileLayer('tile2', {
+                visible : false,
+                urlTemplate : '/resources/tile.png'
+            })
+        ], {
+            renderer : 'canvas'
+        });
+        map.setBaseLayer(group);
+        var overview = new maptalks.control.Overview();
+        overview.addTo(map);
+        expect(overview._overview.getBaseLayer().isVisible()).to.be.ok();
+    });
+
+    it('overview base zoom visible', function () {
+        tile.options.maxZoom = 16;
+        map.setBaseLayer(tile);
+        var overview = new maptalks.control.Overview();
+        overview.addTo(map);
+        expect(overview._overview.getBaseLayer().isVisible()).to.be.ok();
+    });
 });
