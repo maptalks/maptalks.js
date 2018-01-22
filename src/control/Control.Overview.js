@@ -245,20 +245,17 @@ class Overview extends Control {
         }
 
         const json = baseLayer.toJSON();
+        let options = null;
         if (layers) {
-            const options = json.layers[showIndex].options;
-            this._overview.setMinZoom(options.minZoom || null)
-                .setMaxZoom(options.maxZoom || null);
-            delete json.layers[showIndex].options.minZoom;
-            delete json.layers[showIndex].options.maxZoom;
+            options = json.layers[showIndex].options;
             options.visible = true;
         } else {
-            const options = json.options;
-            this._overview.setMinZoom(options.minZoom || null)
-                .setMaxZoom(options.maxZoom || null);
-            delete json.options.minZoom;
-            delete json.options.maxZoom;
+            options = json.options;
         }
+        this._overview.setMinZoom(options.minZoom || null)
+            .setMaxZoom(options.maxZoom || null);
+        delete options.minZoom;
+        delete options.maxZoom;
         delete json.options.canvas;
         json.options.visible = true;
         json.options.renderer = 'canvas';
