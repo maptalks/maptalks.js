@@ -408,7 +408,7 @@ class Extent {
 
     /**
      * Combine it with another extent to a larger extent.
-     * @param  {Extent} extent - another extent
+     * @param  {Extent|Coordinate|Point} extent - extent/coordinate/point to combine into
      * @returns {Extent} extent combined
      */
     combine(extent) {
