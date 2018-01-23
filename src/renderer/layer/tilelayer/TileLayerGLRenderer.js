@@ -63,9 +63,17 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     loadTileImage(tileImage, url) {
-        return Ajax.getImage(tileImage, url);
+        const client = Ajax.getImage(tileImage, url);
+        tileImage.ajax = client;
+        return client;
     }
 
+    retireTileImage(tileImage) {
+        if (tileImage && tileImage.ajax) {
+            tileImage.ajax.abort();
+        }
+        super.retireTileImage(tileImage);
+    }
 
     // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
     onCanvasCreate() {

@@ -80,7 +80,7 @@ const Ajax = {
             }
         }
         client.send(null);
-        return this;
+        return client;
     },
 
     /**
@@ -150,7 +150,7 @@ const Ajax = {
             postData = JSON.stringify(postData);
         }
         client.send(postData);
-        return this;
+        return client;
     },
 
     _wrapCallback: function (client, cb) {

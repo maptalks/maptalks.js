@@ -241,6 +241,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return loadImage(tileImage, [url]);
     }
 
+    retireTileImage(tileImage) {
+        if (!tileImage) return;
+        tileImage.onload = falseFn;
+        tileImage.onerror = falseFn;
+        tileImage.src = emptyImageUrl;
+    }
+
     onTileLoad(tileImage, tileInfo) {
         if (!this.layer) {
             return;
@@ -272,9 +279,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         if (tileImage instanceof Image) {
-            tileImage.onload = falseFn;
-            tileImage.onerror = falseFn;
-            tileImage.src = emptyImageUrl;
+            this.retireTileImage(tileImage);
         }
         tileImage.loadTime = 0;
         delete this._tileLoading[tileInfo['id']];
@@ -416,9 +421,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (!tile.current) {
                 // abort loading tiles
                 if (tile.image) {
-                    tile.image.onload = falseFn;
-                    tile.image.onerror = falseFn;
-                    tile.image.src = emptyImageUrl;
+                    this.retireTileImage(tile.image);
                 }
                 this.deleteTile(tile);
                 delete this._tileLoading[i];
