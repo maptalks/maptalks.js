@@ -269,7 +269,7 @@ Map.include(/** @lends Map.prototype */{
             coord1 = [0, 0, 0, 1];
         return function (p, zoom) {
             if (this.isTransforming()) {
-                const w2 = this.width / 2, h2 = this.height / 2;
+                const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
                 set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
 
                 set(coord0, cp[0], cp[1], 0);
@@ -315,18 +315,21 @@ Map.include(/** @lends Map.prototype */{
             minusY = [1, -1, 1];
         return function () {
             // get pixel size of map
-            const size = this.getSize();
-            if (size.width === 0 || size.height === 0 || Browser.ie9) {
+            if (Browser.ie9) {
                 return;
             }
+            const size = this.getSize();
+            const w = size.width || 1,
+                h = size.height || 1;
+
             this._glScale = this.getGLScale();
             // get field of view
             const fov = this.getFov() * Math.PI / 180;
             const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
-            const farZ = maxScale * size.height / 2 / this._getFovRatio() + 1;
+            const farZ = maxScale * h / 2 / this._getFovRatio() + 1;
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
-            mat4.perspective(projMatrix, fov, size.width / size.height, 0.1, farZ);
+            mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
             mat4.scale(projMatrix, projMatrix, minusY);
             this.projMatrix = projMatrix;
             // camera world matrix
@@ -373,7 +376,7 @@ Map.include(/** @lends Map.prototype */{
             const bearing = -this.getBearing() * RADIAN;
 
             const ratio = this._getFovRatio();
-            const z = scale * size.height / 2 / ratio;
+            const z = scale * (size.height || 1) / 2 / ratio;
             const cz = z * Math.cos(pitch);
             // and [dist] away from map's center on XY plane to tilt the scene.
             const dist = Math.sin(pitch) * z;

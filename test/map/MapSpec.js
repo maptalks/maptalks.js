@@ -779,4 +779,22 @@ describe('Map.Spec', function () {
 
         expect(map.getMainPanel().style.cursor).to.be.eql('default');
     });
+
+    it('point conversion should not throw exception if size is 0', function () {
+        map.remove();
+        container = document.createElement('div');
+        container.style.width = '0px';
+        container.style.height = '0px';
+        document.body.appendChild(container);
+        var option = {
+            zoomAnimation:false,
+            zoom: 17,
+            center: center,
+            pitch : 60,
+            bearing : 20
+        };
+        map = new maptalks.Map(container, option);
+        map.coordToContainerPoint(center);
+        map.containerPointToCoord(new maptalks.Point(0, 0));
+    });
 });
