@@ -1,10 +1,7 @@
-import Ajax from '../../../core/Ajax';
 import { emptyImageUrl, hasOwn } from '../../../core/util';
 import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
-import Browser from '../../../core/Browser';
-import Canvas from '../../../core/Canvas';
 
 /**
  * @classdesc
@@ -63,16 +60,10 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     loadTileImage(tileImage, url) {
-        const client = Ajax.getImage(tileImage, url);
-        tileImage.ajax = client;
-        return client;
-    }
-
-    retireTileImage(tileImage) {
-        if (tileImage && tileImage.ajax) {
-            tileImage.ajax.abort();
-        }
-        super.retireTileImage(tileImage);
+        //image must set cors in webgl
+        tileImage.crossOrigin = this.layer.options['crossOrigin'] || '';
+        tileImage.src = url;
+        return;
     }
 
     // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
@@ -118,40 +109,17 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     drawBackground() {
         if (this.background) {
-            if (!this._gl()) {
+            if (this._gl && !this._gl()) {
                 super.drawBackground();
             } else if (!this.background.southWest) {
                 //ignore if background is saved in canvas mode
                 const map = this.getMap();
                 const extent = map.getContainerExtent();
                 for (const p in this.background) {
-                    if (p === 'canvas') {
-                        continue;
-                    }
                     const parentTile = this.background[p];
-
                     if (this.layer._isTileInExtent(parentTile.info, extent)) {
+                        parentTile.current = true;
                         this.drawTile(parentTile.info, parentTile.image);
-                    }
-                }
-                if (!map.isZooming()) {
-                    let backCanvas = this.background.canvas;
-                    if (!backCanvas) {
-                        backCanvas = Canvas.copy(this.canvas2);
-                        this.background.canvas = backCanvas;
-                    } else {
-                        backCanvas.width = this.canvas2.width;
-                        backCanvas.height = this.canvas2.height;
-                        backCanvas.getContext('2d').drawImage(this.canvas2, 0, 0);
-                        const ctx = this.context;
-                        if (Browser.retina) {
-                            ctx.save();
-                            ctx.scale(1 / 2, 1 / 2);
-                        }
-                        ctx.drawImage(backCanvas, 0, 0);
-                        if (Browser.retina) {
-                            ctx.restore();
-                        }
                     }
                 }
             }
@@ -159,7 +127,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     saveBackground() {
-        if (!this._gl()) {
+        if (this._gl && !this._gl()) {
             super.saveBackground();
             return;
         }
@@ -171,7 +139,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const cache = this._tileRended;
         for (const p in cache) {
             const tile = cache[p];
-            if (hasOwn(cache, p) && tile && tile.image.current) {
+            if (hasOwn(cache, p) && tile && tile.current) {
                 tile.image.loadTime = 0;
                 this.background[p] = tile;
             }
@@ -182,7 +150,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         super.deleteTile(tile);
         if (tile && !tile.current && tile.image && tile.image.texture) {
             this.saveTexture(tile.image.texture);
+            this.saveImageBuffer(tile.image.glBuffer);
             delete tile.image.texture;
+            delete tile.image.glBuffer;
         }
     }
 

@@ -64,9 +64,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         // reset current transformation matrix to the identity matrix
         this.resetCanvasTransform();
-        this.drawBackground();
         const loadingCount = this._markTiles(),
             tileLimit = this._getTileLimitOnInteracting();
+
+        this.drawBackground();
 
         this._tileCountToLoad = 0;
         let loading = false;
@@ -512,8 +513,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.saveBackground();
             delete this._backRefreshed;
         }
-        this._markTiles();
-        this._retireTiles();
         super.onZoomEnd(e);
     }
 }

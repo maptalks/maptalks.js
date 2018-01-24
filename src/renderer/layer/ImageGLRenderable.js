@@ -37,6 +37,9 @@ const shaders = {
     `
 };
 
+
+const tileData = new Float32Array(18);
+
 /**
  * A mixin providing image support in WebGL env
  * @mixin ImageGLRenderable
@@ -57,23 +60,26 @@ const ImageGLRenderable = Base => {
         drawGLImage(image, x, y, w, h, opacity) {
             const gl = this.gl;
             this.loadTexture(image);
-
             gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
             gl.uniform1f(this.program['u_opacity'], opacity);
-            const x1 = x;
-            const x2 = x + w;
-            const y1 = y;
-            const y2 = y + h;
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+            if (!image.glBuffer)  {
+                const x1 = x;
+                const x2 = x + w;
+                const y1 = y;
+                const y2 = y + h;
+                this.loadImageBuffer(image, [
+                    x1, y1, 0.0,  //0
+                    x2, y1, 0.0, //1
+                    x1, y2, 0.0, //2
+                    x1, y2, 0.0,  //2
+                    x2, y1, 0.0, //1
+                    x2, y2, 0.0 //3
+                ]);
+            } else {
+                gl.bindBuffer(gl.ARRAY_BUFFER, image.glBuffer);
+            }
+
             this.enableVertexAttrib(['a_position', 3]);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-                x1, y1, 0.0,  //0
-                x2, y1, 0.0, //1
-                x1, y2, 0.0, //2
-                x1, y2, 0.0,  //2
-                x2, y1, 0.0, //1
-                x2, y2, 0.0 //3
-            ]), gl.DYNAMIC_DRAW);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
 
@@ -247,6 +253,50 @@ const ImageGLRenderable = Base => {
             }
             gl.bindTexture(gl.TEXTURE_2D, texture);
             return texture;
+        }
+
+        /**
+         * Get a texture from cache or create one if cache is empty
+         * @returns {WebGLTexture}
+         */
+        getImageBuffer() {
+            if (!this._imageBuffers) {
+                this._imageBuffers = [];
+            }
+            const imageBuffers = this._imageBuffers;
+            return imageBuffers && imageBuffers.length > 0 ? imageBuffers.pop() : null;
+        }
+
+        /**
+         * Save a texture to the cache
+         * @param {WebGLTexture} texture
+         */
+        saveImageBuffer(buffer) {
+            this._imageBuffers.push(buffer);
+        }
+
+        /**
+         * Load image into a text and bind it with WebGLContext
+         * @param {Image|Canvas} image
+         * @returns {WebGLTexture}
+         */
+        loadImageBuffer(image, data) {
+            const gl = this.gl;
+            let buffer = image.glBuffer;   // Create a texture object
+            if (!buffer) {
+                buffer = this.createImageBuffer();
+                image.glBuffer = buffer;
+            }
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, image.glBuffer);
+
+            tileData.set(data);
+            gl.bufferData(gl.ARRAY_BUFFER, tileData, gl.STATIC_DRAW);
+            return buffer;
+        }
+
+        createImageBuffer() {
+            return this.getImageBuffer() || this.createBuffer();
         }
 
         /**
