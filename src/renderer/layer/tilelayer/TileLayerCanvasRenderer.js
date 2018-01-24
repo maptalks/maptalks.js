@@ -35,7 +35,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const tileZoom = this.layer._getTileZoom();
         const map = this.getMap();
         if (this._shouldSaveBack() && (map.isZooming() && (map.isMoving() || map.isRotating())) && this._tileZoom !== tileZoom) {
-            this._saveBackground();
+            this.saveBackground();
             this._backRefreshed = true;
         }
     }
@@ -64,7 +64,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         // reset current transformation matrix to the identity matrix
         this.resetCanvasTransform();
-        this._drawBackground();
+        this.drawBackground();
         const loadingCount = this._markTiles(),
             tileLimit = this._getTileLimitOnInteracting();
 
@@ -99,7 +99,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (!loading) {
                 if (this.background && !map.isAnimating()) {
                     this.setToRedraw();
-                    delete this.background;
+                    this.deleteBackground();
                 }
                 this.completeRender();
             }
@@ -112,7 +112,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     drawOnInteracting() {
         const map = this.getMap();
         if (map.isZooming() && !map.isMoving() && !map.isRotating()) {
-            this._drawBackground();
+            this.drawBackground();
             this.completeRender();
         } else {
             this.draw();
@@ -444,7 +444,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete tile.image.onerror;
     }
 
-    _drawBackground() {
+    drawBackground() {
         const ctx = this.context;
         const back = this.background;
         if (back && back.southWest && ctx) {
@@ -466,7 +466,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    _saveBackground() {
+    saveBackground() {
         const map = this.getMap();
         if (!map || !this.canvas) {
             return;
@@ -480,6 +480,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             southWest : this._southWest,
             bearing : map.getBearing()
         };
+    }
+
+    deleteBackground() {
+        delete this.background;
     }
 
     _shouldSaveBack() {
@@ -496,7 +500,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     onZoomStart(e) {
         if (this._shouldSaveBack() || this.layer.options['forceRenderOnZooming']) {
-            this._saveBackground();
+            this.saveBackground();
         }
         super.onZoomStart(e);
     }
@@ -505,7 +509,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (this._shouldSaveBack() && this._backRefreshed) {
             const map = this.getMap();
             this._southWest = map._containerPointToPoint(new Point(0, map.height));
-            this._saveBackground();
+            this.saveBackground();
             delete this._backRefreshed;
         }
         this._markTiles();

@@ -116,10 +116,10 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return this.getMap() && !!this.getMap().getPitch() || this.layer && !!this.layer.options['fragmentShader'];
     }
 
-    _drawBackground() {
+    drawBackground() {
         if (this.background) {
             if (!this._gl()) {
-                super._drawBackground();
+                super.drawBackground();
             } else if (!this.background.southWest) {
                 //ignore if background is saved in canvas mode
                 const map = this.getMap();
@@ -158,9 +158,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
-    _saveBackground() {
+    saveBackground() {
         if (!this._gl()) {
-            super._saveBackground();
+            super.saveBackground();
             return;
         }
         const map = this.getMap();
