@@ -35,7 +35,11 @@ class DragHandler extends Handler {
         if (!this.dom) {
             return this;
         }
-        on(this.dom, START_EVENTS, this.onMouseDown, this);
+        //create a dynamic method to resolve conflicts with other drag handler
+        this._onMouseDown = function (e) {
+            return this.onMouseDown(e);
+        };
+        on(this.dom, START_EVENTS, this._onMouseDown, this);
         return this;
     }
 
@@ -45,7 +49,8 @@ class DragHandler extends Handler {
             return this;
         }
         this._offEvents();
-        off(this.dom, START_EVENTS, this.onMouseDown);
+        off(this.dom, START_EVENTS, this._onMouseDown);
+        delete this._onMouseDown;
         return this;
     }
 

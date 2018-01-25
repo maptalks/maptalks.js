@@ -1,5 +1,5 @@
 
-describe('#GeometryDrag', function () {
+describe('Geometry.Drag', function () {
     var container, eventContainer;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);

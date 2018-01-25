@@ -53,13 +53,14 @@ class GeometryDragHandler extends Handler  {
         if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
             return;
         }
+        this.container = map._panels.mapWrapper || map._containerDOM;
         this.target.on('click', this._endDrag, this);
         this._lastCoord = param['coordinate'];
         this._lastPoint = param['containerPoint'];
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
 
-        this.container = map._panels.mapWrapper || map._containerDOM;
+
         on(this.container, 'mouseleave', this._endDrag, this);
 
         this._moved = false;
@@ -79,7 +80,7 @@ class GeometryDragHandler extends Handler  {
     }
 
     _prepareDragHandler() {
-        this._dragHandler = new DragHandler(document);
+        this._dragHandler = new DragHandler(this.container);
         this._dragHandler.on('dragging', this._dragging, this);
         this._dragHandler.on('mouseup', this._endDrag, this);
         this._dragHandler.enable();
