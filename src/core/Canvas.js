@@ -305,7 +305,7 @@ const Canvas = {
             ctx.lineWidth = textHaloRadius * 2;
             ctx.strokeStyle = textHaloFill;
             ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
-            ctx.lineWidth = 1;
+            // ctx.lineWidth = 1;
             ctx.miterLimit = 10; //default
 
             ctx.globalAlpha = alpha;

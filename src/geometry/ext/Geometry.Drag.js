@@ -148,7 +148,10 @@ class GeometryDragHandler extends Handler  {
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID);
+            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
+                enableAltitude : layer.options['enableAltitude'],
+                altitudeProperty : layer.options['altitudeProperty']
+            });
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
@@ -182,24 +185,19 @@ class GeometryDragHandler extends Handler  {
             return;
         }
         const axis = this._shadow.options['dragOnAxis'],
-            coord = eventParam['coordinate'],
             point = eventParam['containerPoint'];
-        if (!this._lastCoord) {
-            this._lastCoord = coord;
-        }
         if (!this._lastPoint) {
             this._lastPoint = point;
         }
-        const coordOffset = coord.sub(this._lastCoord),
-            pointOffset = point.sub(this._lastPoint);
+        const pointOffset = point.sub(this._lastPoint);
         if (axis === 'x') {
-            coordOffset.y = 0;
             pointOffset.y = 0;
         } else if (axis === 'y') {
-            coordOffset.x = 0;
             pointOffset.x = 0;
         }
-        this._lastCoord = coord;
+        const lastCoord = this._shadow.getCenter();
+        const coord = map.locateByPoint(lastCoord, pointOffset.x, pointOffset.y);
+        const coordOffset = coord._sub(lastCoord);
         this._lastPoint = point;
         this._shadow.translate(coordOffset);
         if (!target.options['dragShadow']) {

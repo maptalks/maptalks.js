@@ -443,7 +443,6 @@ class Painter extends Class {
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
         this._hitPoint = cp;
-        // const t = Math.floor(tolerance);
         this.paint(null, ctx, cp);
         delete this._hitPoint;
         const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;

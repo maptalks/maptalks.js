@@ -29,7 +29,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
  * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
  * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
  * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
- * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
+ * @property {Boolean} [options.dragShadow=true]    - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
  * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
  * @property {Number}  [options.zIndex=undefined]   - geometry's initial zIndex
  * @memberOf Geometry
