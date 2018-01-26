@@ -192,7 +192,7 @@ Map.include(/** @lends Map.prototype */{
             return cameraAlt;
         }
         fov = Math.PI * fov / 180;
-        const d1 = new Point(this.cameraPosition).distanceTo(this.cameraLookAt),
+        const d1 = new Point(this.cameraPosition).distanceTo(new Point(this.cameraLookAt)),
             d2 = cameraAlt * Math.tan(fov * 2);
         const d = Math.tan(fov) * (d1 + d2);
         return cameraAlt + d;

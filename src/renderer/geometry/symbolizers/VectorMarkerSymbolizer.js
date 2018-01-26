@@ -174,7 +174,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _getGraidentExtent(points) {
         const e = new PointExtent(),
-            m = this.getMarkerExtent();
+            m = this.getFixedExtent();
         if (Array.isArray(points)) {
             for (let i = points.length - 1; i >= 0; i--) {
                 e._combine(points[i]);
@@ -271,7 +271,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return r * Math.PI / 180;
     }
 
-    getMarkerExtent() {
+    getFixedExtent() {
         const dxdy = this.getDxDy(),
             style = this.style;
         const markerType = style['markerType'].toLowerCase();

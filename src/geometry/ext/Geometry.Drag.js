@@ -55,8 +55,6 @@ class GeometryDragHandler extends Handler  {
         }
         this.container = map._panels.mapWrapper || map._containerDOM;
         this.target.on('click', this._endDrag, this);
-        this._lastCoord = param['coordinate'];
-        this._lastPoint = param['containerPoint'];
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
 
@@ -195,7 +193,7 @@ class GeometryDragHandler extends Handler  {
         } else if (axis === 'y') {
             pointOffset.x = 0;
         }
-        const lastCoord = this._shadow.getCenter();
+        const lastCoord = eventParam['coordinate'];
         const coord = map.locateByPoint(lastCoord, pointOffset.x, pointOffset.y);
         const coordOffset = coord._sub(lastCoord);
         this._lastPoint = point;

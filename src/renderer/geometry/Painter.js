@@ -400,7 +400,7 @@ class Painter extends Class {
         if (!this._sprite && this.symbolizers.length > 0) {
             const extent = new PointExtent();
             this.symbolizers.forEach(s => {
-                const markerExtent = s.getMarkerExtent(resources);
+                const markerExtent = s.getFixedExtent(resources);
                 extent._combine(markerExtent);
             });
             const origin = extent.getMin().multi(-1);
@@ -491,21 +491,21 @@ class Painter extends Class {
         const zoom = map.getZoom();
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             delete this._extent2D;
-            delete this._markerExtent;
+            delete this._fixedExtent;
             if (this.symbolizers) {
                 const extent = this._extent2D = new PointExtent();
-                const markerExt = this._markerExtent = new PointExtent();
+                const fixedExt = this._fixedExtent = new PointExtent();
                 for (let i = this.symbolizers.length - 1; i >= 0; i--) {
                     const symbolizer = this.symbolizers[i];
                     extent._combine(symbolizer.get2DExtent());
-                    if (symbolizer.getMarkerExtent) {
-                        markerExt._combine(symbolizer.getMarkerExtent(resources));
+                    if (symbolizer.getFixedExtent) {
+                        fixedExt._combine(symbolizer.getFixedExtent(resources));
                     }
                 }
                 extent._zoom = zoom;
             }
         }
-        return this._extent2D.add(this._markerExtent);
+        return this._extent2D.add(this._fixedExtent);
     }
 
     getContainerExtent() {
@@ -522,8 +522,13 @@ class Painter extends Class {
             return null;
         }
         const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude / glScale));
+        const maxAltitude = this.getMaxAltitude();
+        if (maxAltitude !== altitude) {
+            const extent2 = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, maxAltitude / glScale));
+            extent._combine(extent2);
+        }
         if (extent) {
-            extent._add(this._markerExtent);
+            extent._add(this._fixedExtent);
         }
         return extent;
     }
@@ -597,7 +602,7 @@ class Painter extends Class {
         delete this._paintParams;
         delete this._sprite;
         delete this._extent2D;
-        delete this._markerExtent;
+        delete this._fixedExtent;
         delete this._cachedParams;
         delete this._unsimpledParams;
         if (this.geometry) {
@@ -621,6 +626,13 @@ class Painter extends Class {
             return 0;
         }
         return this.minAltitude;
+    }
+
+    getMaxAltitude() {
+        if (!this.maxAltitude) {
+            return 0;
+        }
+        return this.maxAltitude;
     }
 
     _getGeometryAltitude() {

@@ -109,7 +109,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         return new Point(dx, dy);
     }
 
-    getMarkerExtent(resources) {
+    getFixedExtent(resources) {
         const url = this.style['markerFile'],
             img = resources ? resources.getImage(url) : null;
         const width = this.style['markerWidth'] || (img ? img.width : 0),

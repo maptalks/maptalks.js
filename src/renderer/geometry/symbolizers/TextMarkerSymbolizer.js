@@ -90,7 +90,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         return new Point(s['textDx'], s['textDy']);
     }
 
-    getMarkerExtent() {
+    getFixedExtent() {
         const dxdy = this.getDxDy(),
             style = this.style;
         let size = this.textDesc['size'];

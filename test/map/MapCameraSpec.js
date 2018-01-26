@@ -378,7 +378,7 @@ describe('Map.Camera', function () {
             var size2 = geometry.getSize();
             expect(size.toPoint()).to.be.closeTo(new maptalks.Point([size2.height, size2.width]));
 
-            map.setPitch(60);
+            map.setPitch(70);
             var size3 = geometry.getSize();
             expect(size3.width).to.be.above(size2.width);
             expect(size3.height).to.be.below(size2.height);
