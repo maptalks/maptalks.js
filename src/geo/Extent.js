@@ -302,6 +302,9 @@ class Extent {
      * @returns {Boolean}
      */
     contains(c) {
+        if (!c) {
+            return false;
+        }
         this._project(this);
         const proj = this.projection;
         if (Array.isArray(c)) {

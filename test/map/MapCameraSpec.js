@@ -19,7 +19,7 @@ describe('Map.Camera', function () {
         map = new maptalks.Map(container, option);
         // bring some offset to map, let view point is different from container point.
         map.setCenter(center._add(0.1, 0.1));
-        layer = new maptalks.VectorLayer('v', { 'enableAltitude' : true }).addTo(map);
+        layer = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableAltitude' : true }).addTo(map);
     });
 
     afterEach(function () {
@@ -498,7 +498,7 @@ describe('Map.Camera', function () {
             expect(geometry.containsPoint(topPt)).not.to.be.ok();
             var newTopPt = map.coordinateToContainerPoint(top);
             expect(geometry.containsPoint(newTopPt)).to.be.ok();
-            expect(geometry.containsPoint(newTopPt.sub(0, 1))).not.to.be.ok();
+            expect(geometry.containsPoint(newTopPt.sub(0, 3))).not.to.be.ok();
             expect(newTopPt.y).to.be.above(topPt.y);
         });
 
@@ -508,7 +508,7 @@ describe('Map.Camera', function () {
             layer.addGeometry(geometry);
             var topPt = map.coordinateToContainerPoint(top);
             expect(geometry.containsPoint(topPt)).to.be.ok();
-            map.setPitch(60);
+            map.setPitch(80);
             expect(geometry.containsPoint(topPt)).not.to.be.ok();
             var newTopPt = map.coordinateToContainerPoint(top);
             expect(geometry.containsPoint(newTopPt)).to.be.ok();

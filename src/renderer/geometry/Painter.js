@@ -154,7 +154,8 @@ class Painter extends Class {
             tr = [], // transformed params
             points = params[0];
 
-        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude);
+        const mapExtent = map.getContainerExtent();
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, !mapExtent.contains(this._hitPoint));
         if (!cPoints) {
             return null;
         }
@@ -441,10 +442,10 @@ class Painter extends Class {
         tolerance = tolerance || 0.5;
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
-        this._hitTesting = true;
+        this._hitPoint = cp;
         // const t = Math.floor(tolerance);
         this.paint(null, ctx, cp);
-        this._hitTesting = false;
+        delete this._hitPoint;
         const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
         for (let i = 3, l = imgData.length; i < l; i += 4) {
             if (imgData[i] > 0) {
@@ -455,7 +456,7 @@ class Painter extends Class {
     }
 
     isHitTesting() {
-        return !!this._hitTesting;
+        return !!this._hitPoint;
     }
 
     _prepareShadow(ctx, symbol) {
