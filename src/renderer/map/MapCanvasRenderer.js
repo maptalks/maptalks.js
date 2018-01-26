@@ -86,7 +86,7 @@ class MapCanvasRenderer extends MapRenderer {
             l = layers.length;
         const baseLayer = map.getBaseLayer();
         let t = 0;
-        for (let i = l - 1; i >= 0; i--) {
+        for (let i = 0; i < l; i++) {
             const layer = layers[i];
             if (!layer.isVisible()) {
                 continue;
