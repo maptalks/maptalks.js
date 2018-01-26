@@ -42,7 +42,14 @@ const Canvas = {
         ctx.fillStyle = Canvas.getRgba(fill, style['textOpacity']);
     },
 
-    prepareCanvas(ctx, style, resources) {
+    /**
+     * Set canvas's fill and stroke style
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {Object} style
+     * @param {Object} resources
+     * @param {Boolean} testing  - paint for testing, ignore stroke and fill patterns
+     */
+    prepareCanvas(ctx, style, resources, testing) {
         if (!style) {
             return;
         }
@@ -50,7 +57,10 @@ const Canvas = {
         if (!isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
             ctx.lineWidth = strokeWidth;
         }
-        const strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
+        let strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
+        if (testing && style['linePatternFile']) {
+            strokeColor = DEFAULT_STROKE_COLOR;
+        }
         if (isImageUrl(strokeColor) && resources) {
             Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
@@ -59,7 +69,7 @@ const Canvas = {
             if (style['lineGradientExtent']) {
                 ctx.strokeStyle = Canvas._createGradient(ctx, strokeColor, style['lineGradientExtent']);
             } else {
-                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.strokeStyle = DEFAULT_STROKE_COLOR;
             }
         } else /*if (ctx.strokeStyle !== strokeColor)*/ {
             ctx.strokeStyle = strokeColor;
@@ -73,7 +83,10 @@ const Canvas = {
         if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-        const fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
+        let fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
+        if (testing && style['polygonPatternFile']) {
+            fill = '#000';
+        }
         if (isImageUrl(fill) && resources) {
             const fillImgUrl = extractImageUrl(fill);
             let fillTexture = resources.getImage([fillImgUrl, null, null]);

@@ -1,6 +1,5 @@
 import { getValueOrDefault } from '../../../core/util';
 import { isGradient as checkGradient } from '../../../core/util/style';
-import Canvas from '../../../core/Canvas';
 import Coordinate from '../../../geo/Coordinate';
 import PointExtent from '../../../geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
@@ -59,7 +58,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
 
         if (isSplitted) {
             for (let i = 0; i < points.length; i++) {
-                Canvas.prepareCanvas(ctx, style, resources);
+                this.prepareCanvas(ctx, style, resources);
                 if (isGradient && isPath && !style['lineColor']['places']) {
                     this._createGradient(ctx, points[i], style['lineColor']);
                 }
@@ -71,7 +70,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                 this.geometry._paintOn.apply(this.geometry, params);
             }
         } else {
-            Canvas.prepareCanvas(ctx, style, resources);
+            this.prepareCanvas(ctx, style, resources);
             if (isGradient && isPath && !style['lineColor']['places']) {
                 this._createGradient(ctx, points, style['lineColor']);
             }

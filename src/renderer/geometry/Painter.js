@@ -20,6 +20,8 @@ const registerSymbolizers = [
 ];
 
 
+const testCanvas = Canvas.createCanvas(1, 1);
+
 /**
  * @classdesc
  * Painter class for all geometry types except the collection types.
@@ -178,10 +180,10 @@ class Painter extends Class {
         }
         const map = this.getMap(),
             glZoom = map.getGLZoom(),
-            layerPoint = map._pointToContainerPoint(this.getLayer()._getRenderer()._southWest)._add(0, -map.height);
+            containerOffset = this.containerOffset;
         let cPoints;
         function pointContainerPoint(point, alt) {
-            const p = map._pointToContainerPoint(point, glZoom, alt)._sub(layerPoint);
+            const p = map._pointToContainerPoint(point, glZoom, alt)._sub(containerOffset);
             if (dx || dy) {
                 p._add(dx || 0, dy || 0);
             }
@@ -231,7 +233,7 @@ class Painter extends Class {
             if (ignoreAltitude) {
                 altitude = 0;
             }
-            cPoints = map._pointToContainerPoint(points, glZoom, altitude)._sub(layerPoint);
+            cPoints = map._pointToContainerPoint(points, glZoom, altitude)._sub(containerOffset);
             if (dx || dy) {
                 cPoints._add(dx, dy);
             }
@@ -358,7 +360,7 @@ class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
-    paint(extent, context) {
+    paint(extent, context, offset) {
         if (!this.symbolizers) {
             return;
         }
@@ -376,6 +378,7 @@ class Painter extends Class {
         if (minAltitude && frustumAlt && frustumAlt < minAltitude) {
             return;
         }
+        this.containerOffset = offset || map._pointToContainerPoint(renderer._southWest)._add(0, -map.height);
         this._beforePaint();
         const ctx = context || renderer.context;
         const contexts = [ctx, renderer.resources];
@@ -392,7 +395,7 @@ class Painter extends Class {
         if (this.geometry.type !== 'Point') {
             return null;
         }
-        this._genSprite = true;
+        this._spriting = true;
         if (!this._sprite && this.symbolizers.length > 0) {
             const extent = new PointExtent();
             this.symbolizers.forEach(s => {
@@ -426,12 +429,33 @@ class Painter extends Class {
                 'offset': extent.getCenter()
             };
         }
-        this._genSprite = false;
+        this._spriting = false;
         return this._sprite;
     }
 
     isSpriting() {
-        return this._genSprite;
+        return !!this._spriting;
+    }
+
+    hitTest(cp, tolerance) {
+        tolerance = tolerance || 0.5;
+        testCanvas.width = testCanvas.height = 2 * tolerance;
+        const ctx = testCanvas.getContext('2d');
+        this._hitTesting = true;
+        // const t = Math.floor(tolerance);
+        this.paint(null, ctx, cp);
+        this._hitTesting = false;
+        const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
+        for (let i = 3, l = imgData.length; i < l; i += 4) {
+            if (imgData[i] > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isHitTesting() {
+        return !!this._hitTesting;
     }
 
     _prepareShadow(ctx, symbol) {
@@ -488,6 +512,7 @@ class Painter extends Class {
         this._verifyProjection();
         const map = this.getMap();
         const zoom = map.getZoom();
+        const glScale = map.getGLScale();
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent();
         }
@@ -496,7 +521,7 @@ class Painter extends Class {
         if (altitude && frustumAlt && frustumAlt < altitude) {
             return null;
         }
-        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude));
+        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude / glScale));
         if (extent) {
             extent._add(this._markerExtent);
         }
@@ -714,64 +739,5 @@ function interpolateAlt(points, orig, altitude) {
     }
     return parts;
 }
-
-// function interpolatePoint(p0, p1, t) {
-//     const x = interpolate(p0.x, p1.x, t),
-//         y = interpolate(p0.y, p1.y, t);
-//     return new Point(x, y);
-// }
-
-// function clipByALt(clipSegs, altitude, topAlt) {
-//     const points = [];
-//     const alt = [];
-//     let preAlt;
-//     // clip lines with camera altitude
-//     for (let i = 0, l = clipSegs.length; i < l; i++) {
-//         if (Array.isArray(clipSegs[i])) {
-//             const r = clipByALt(clipSegs[i], altitude[i], topAlt);
-//             if (!r) {
-//                 continue;
-//             }
-//             points.push(r.points);
-//             alt.push(r.altitude);
-//         } else if (i === 0) {
-//             preAlt = altitude[0];
-//             points.push(clipSegs[i]);
-//             alt.push(preAlt < topAlt ? preAlt : topAlt);
-//         } else {
-//             // i > 0
-//             const a = altitude[i];
-//             if (a >= topAlt) {
-//                 if (preAlt >= topAlt) {
-//                     points.push(clipSegs[i]);
-//                     alt.push(topAlt);
-//                 } else {
-//                     //ascending interpolate
-//                     const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (topAlt - preAlt) / (a - preAlt));
-//                     points.push(p);
-//                     alt.push(topAlt);
-//                     points.push(clipSegs[i]);
-//                     alt.push(topAlt);
-//                 }
-//                 // a < topAlt
-//             } else if (preAlt < topAlt) {
-//                 points.push(clipSegs[i]);
-//                 alt.push(a);
-//             } else {
-//                 //descending interpolate
-//                 const p = interpolatePoint(clipSegs[i - 1], clipSegs[i], (preAlt - topAlt) / (preAlt - a));
-//                 points.push(p);
-//                 alt.push(topAlt);
-//                 points.push(clipSegs[i]);
-//                 alt.push(a);
-//             }
-//             preAlt = a;
-//         }
-//     }
-//     return {
-//         points : points,
-//         altitude : alt
-//     };
-// }
 
 export default Painter;

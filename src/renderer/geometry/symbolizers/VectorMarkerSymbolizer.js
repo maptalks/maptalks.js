@@ -66,7 +66,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const strokeAndFill = this.strokeAndFill;
         const gradient = isGradient(strokeAndFill['lineColor']) || isGradient(strokeAndFill['polygonFill']);
         if (!gradient) {
-            Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+            this.prepareCanvas(ctx, strokeAndFill, resources);
         }
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
@@ -119,7 +119,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const context = canvas.getContext('2d');
         const gradient = isGradient(this.strokeAndFill['lineColor']) || isGradient(this.strokeAndFill['polygonFill']);
         if (!gradient) {
-            Canvas.prepareCanvas(context, this.strokeAndFill, resources);
+            this.prepareCanvas(context, this.strokeAndFill, resources);
         }
         this._drawVectorMarker(context, point, resources);
         return canvas;
@@ -209,7 +209,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
                 }
                 strokeAndFill['polygonGradientExtent'] = gradientExtent;
             }
-            Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+            this.prepareCanvas(ctx, strokeAndFill, resources);
         }
 
 

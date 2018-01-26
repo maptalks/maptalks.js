@@ -57,7 +57,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
         this._descText(textContent);
         this._prepareContext(ctx);
-        Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+        this.prepareCanvas(ctx, strokeAndFill, resources);
         Canvas.prepareCanvasFont(ctx, style);
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];

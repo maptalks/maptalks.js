@@ -1,6 +1,7 @@
 import { isNumber } from '../../../core/util';
 import { loadFunctionTypes } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
+import Canvas from '../../../core/Canvas';
 
 /**
  * @classdesc
@@ -21,6 +22,10 @@ class CanvasSymbolizer extends Symbolizer {
         } else if (ctx.globalAlpha !== 1) {
             ctx.globalAlpha = 1;
         }
+    }
+
+    prepareCanvas(ctx, style, resources) {
+        Canvas.prepareCanvas(ctx, style, resources, this.getPainter().isHitTesting());
     }
 
     remove() {}

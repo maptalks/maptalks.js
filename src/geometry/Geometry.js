@@ -14,7 +14,6 @@ import {
 } from '../core/util';
 import { extendSymbol } from '../core/util/style';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
-import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Painter from '../renderer/geometry/Painter';
@@ -364,7 +363,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (containerPoint instanceof Coordinate) {
             containerPoint = this.getMap().coordToContainerPoint(containerPoint);
         }
-        return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
+        return this._containsPoint(containerPoint, t);
+        // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
+    }
+
+    _containsPoint(containerPoint, t) {
+        const painter = this._getPainter();
+        if (!painter) {
+            return false;
+        }
+        if (isNil(t) && this._hitTestTolerance) {
+            t = this._hitTestTolerance();
+        }
+        return painter.hitTest(containerPoint, t);
     }
 
     /**

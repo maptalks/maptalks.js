@@ -4,6 +4,11 @@ import Geometry from './Geometry';
 import Painter from '../renderer/geometry/Painter';
 import * as Symbolizers from '../renderer/geometry/symbolizers';
 
+/**
+ * @property {String} [options.hitTestForEvent=false] - use hit testing for events, be careful, it may fail due to tainted canvas.
+ * @memberOf Marker
+ * @instance
+ */
 const options = {
     'symbol': {
         'markerType': 'path',
@@ -15,7 +20,8 @@ const options = {
         'markerPathHeight': 23,
         'markerWidth': 24,
         'markerHeight': 34
-    }
+    },
+    'hitTestForEvent' : false
 };
 
 /**
@@ -78,7 +84,15 @@ class Marker extends CenterMixin(Geometry) {
         if (t) {
             extent = extent.expand(t);
         }
-        return extent.contains(this.getMap()._pointToContainerPoint(point));
+        if (extent.contains(point)) {
+            if (this.options['hitTestForEvent']) {
+                return super._containsPoint(point, t);
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     _computeExtent() {
