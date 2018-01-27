@@ -315,8 +315,15 @@ const Canvas = {
         }
         Canvas.fillText(ctx, text, pt);
         if (gco) {
+            const shadow = ctx.shadowBlur;
+            if (shadow) {
+                ctx.shadowBlur = 0;
+            }
             ctx.globalCompositeOperation = gco;
             Canvas.fillText(ctx, text, pt, fill);
+            if (shadow) {
+                ctx.shadowBlur = shadow;
+            }
         }
     },
 
