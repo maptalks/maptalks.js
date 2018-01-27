@@ -530,6 +530,10 @@ class Painter extends Class {
         if (extent) {
             extent._add(this._fixedExtent);
         }
+        const smoothness = this.geometry.options['smoothness'];
+        if (smoothness) {
+            extent._expand(extent.getWidth() / 4);
+        }
         return extent;
     }
 
