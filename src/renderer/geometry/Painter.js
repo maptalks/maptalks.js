@@ -95,7 +95,7 @@ class Painter extends Class {
             this._renderPoints = {};
         }
         if (!placement) {
-            placement = 'point';
+            placement = 'center';
         }
         if (!this._renderPoints[placement]) {
             this._renderPoints[placement] = this.geometry._getRenderPoints(placement);
@@ -415,7 +415,7 @@ class Painter extends Class {
             for (let i = this.symbolizers.length - 1; i >= 0; i--) {
                 const dxdy = this.symbolizers[i].getDxDy();
                 this._renderPoints = {
-                    'point': [
+                    'center': [
                         [origin.add(dxdy)]
                     ]
                 };
