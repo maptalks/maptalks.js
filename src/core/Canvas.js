@@ -57,11 +57,10 @@ const Canvas = {
         if (!isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
             ctx.lineWidth = strokeWidth;
         }
-        let strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
-        if (testing && style['linePatternFile']) {
-            strokeColor = DEFAULT_STROKE_COLOR;
-        }
-        if (isImageUrl(strokeColor) && resources) {
+        const strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
+        if (testing) {
+            ctx.strokeStyle = '#000';
+        } else if (isImageUrl(strokeColor) && resources) {
             Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
@@ -83,11 +82,10 @@ const Canvas = {
         if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-        let fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
-        if (testing && style['polygonPatternFile']) {
-            fill = '#000';
-        }
-        if (isImageUrl(fill) && resources) {
+        const fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
+        if (testing) {
+            ctx.fillStyle = '#000';
+        } else if (isImageUrl(fill) && resources) {
             const fillImgUrl = extractImageUrl(fill);
             let fillTexture = resources.getImage([fillImgUrl, null, null]);
             if (!fillTexture) {
