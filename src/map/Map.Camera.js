@@ -94,7 +94,8 @@ Map.include(/** @lends Map.prototype */{
         this._calcMatrices();
         this._renderLayers();
         /*
-          * rotate event, alias of rotateend
+          * rotate event, alias of rotateend, deprecated
+          *
           * @event Map#rotate
           * @type {Object}
           * @property {String} type                    - rotate
@@ -153,7 +154,7 @@ Map.include(/** @lends Map.prototype */{
         this._calcMatrices();
         this._renderLayers();
         /**
-          * pitch event, alias of pitchend
+          * pitch event, alias of pitchend, deprecated
           * @event Map#pitch
           * @type {Object}
           * @property {String} type                    - pitch
