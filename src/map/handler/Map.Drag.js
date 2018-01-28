@@ -33,10 +33,7 @@ class MapDragHandler extends Handler {
     }
 
     _cancelOn(domEvent) {
-        if (this.target.isZooming()) {
-            return true;
-        }
-        if (this._ignore(domEvent)) {
+        if (this.target.isZooming() || this._ignore(domEvent)) {
             return true;
         }
         return false;
@@ -133,7 +130,7 @@ class MapDragHandler extends Handler {
 
         this._clear();
 
-        if (map._verifyExtent(map.getCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
+        if (!param.interupted && map._verifyExtent(map.getCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
             t = 5 * t * (Math.abs(dx) + Math.abs(dy)) / 500;
             map.panBy(new Point(dx, dy), { 'duration' : t });
         } else {

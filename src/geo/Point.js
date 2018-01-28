@@ -302,6 +302,31 @@ class Point {
     isZero() {
         return this.x === 0 && this.y === 0;
     }
+
+    /**
+     * Get the angle between this point and another point, in radians
+     * from mapbox/point-geometry
+     * @param {Point} b the other point
+     * @return {Number} angle
+     */
+    angleWith(b) {
+        return this.angleWithSep(b.x, b.y);
+    }
+
+    /*
+     * Find the angle of the two vectors, solving the formula for
+     * the cross product a x b = |a||b|sin(θ) for θ.
+     * from mapbox/point-geometry
+     *
+     * @param {Number} x the x-coordinate
+     * @param {Number} y the y-coordinate
+     * @return {Number} the angle in radians
+     */
+    angleWithSep(x, y) {
+        return Math.atan2(
+            this.x * y - this.y * x,
+            this.x * x + this.y * y);
+    }
 }
 
 export default Point;
