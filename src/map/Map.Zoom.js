@@ -43,6 +43,7 @@ Map.include(/** @lends Map.prototype */{
             'zoom' : nextZoom,
             'around' : origin
         }, {
+            'continueOnViewChanged' : true,
             'duration' : duration
         });
     },

@@ -103,7 +103,7 @@ class Player {
      */
     constructor(animation, options, onFrame) {
         this._animation = animation;
-        this._options = options;
+        this.options = options;
         this._onFrame = onFrame;
         this.playState = 'idle';
         this.ready = true;
@@ -383,7 +383,7 @@ Animation._frameFn = Animation._run.bind(Animation);
 
 extend(Player.prototype, /** @lends animation.Player.prototype */{
     _prepare() {
-        const options = this._options;
+        const options = this.options;
         let duration = options['speed'] || options['duration'];
         if (isString(duration)) {
             duration = Animation.speed[duration];
@@ -412,7 +412,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         }
         const t = now();
         if (!this.startTime) {
-            const options = this._options;
+            const options = this.options;
             this.startTime = options['startTime'] ? options['startTime'] : t;
         }
         this._playStartTime = Math.max(t, this.startTime);
@@ -464,7 +464,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         const onFrame = this._onFrame;
         const t = now();
         let elapsed = t - this._playStartTime;
-        if (this._options['repeat'] && elapsed >= this.duration) {
+        if (this.options['repeat'] && elapsed >= this.duration) {
             this._playStartTime = t;
             elapsed = 0;
         }
