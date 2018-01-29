@@ -268,7 +268,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             return null;
         }
         //to radian
-        return r * Math.PI / 180;
+        return -r * Math.PI / 180;
     }
 
     getFixedExtent() {

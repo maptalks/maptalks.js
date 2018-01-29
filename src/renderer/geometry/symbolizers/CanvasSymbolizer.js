@@ -1,4 +1,4 @@
-import { isNumber } from '../../../core/util';
+import { isNumber, extend } from '../../../core/util';
 import { loadFunctionTypes } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';
@@ -37,8 +37,33 @@ class CanvasSymbolizer extends Symbolizer {
     hide() {}
 
     _defineStyle(style) {
-        return loadFunctionTypes(style, () => [this.getMap().getZoom(), this.geometry.getProperties()]);
+        return function () {
+            const arr = [],
+                prop = {};
+            return loadFunctionTypes(style, () => {
+                const map = this.getMap();
+                return set(arr, map.getZoom(),
+                    extend({},
+                        this.geometry.getProperties(),
+                        setProp(prop, map.getBearing(), map.getPitch(), map.getZoom())
+                    )
+                );
+            });
+        }.bind(this)();
     }
+}
+
+function set(arr, a0, a1) {
+    arr[0] = a0;
+    arr[1] = a1;
+    return arr;
+}
+
+function setProp(prop, b, p, z) {
+    prop['{bearing}'] = b;
+    prop['{pitch}'] = p;
+    prop['{zoom}'] = z;
+    return prop;
 }
 
 export default CanvasSymbolizer;
