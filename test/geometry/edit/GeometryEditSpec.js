@@ -139,7 +139,7 @@ describe('Geometry.Edit', function () {
             marker.startEdit();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(33);
+            expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(20);
             expect(fired).to.be.ok();
             marker.undoEdit();
@@ -148,7 +148,7 @@ describe('Geometry.Edit', function () {
             expect(symbol.markerHeight).to.be.approx(20);
             marker.redoEdit();
             symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(33);
+            expect(symbol.markerWidth).to.be.approx(39);
             expect(symbol.markerHeight).to.be.approx(20);
             marker.endEdit();
         });
@@ -169,8 +169,8 @@ describe('Geometry.Edit', function () {
             var size = marker.getSize();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(33);
-            expect(symbol.markerHeight).to.be.approx(33);
+            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerHeight).to.be.approx(39);
             expect(fired).to.be.ok();
             marker.undoEdit();
             symbol = marker.getSymbol();
@@ -178,8 +178,8 @@ describe('Geometry.Edit', function () {
             expect(symbol.markerHeight).to.be.approx(20);
             marker.redoEdit();
             symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(33);
-            expect(symbol.markerHeight).to.be.approx(33);
+            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerHeight).to.be.approx(39);
             marker.endEdit();
         });
 
@@ -330,7 +330,7 @@ describe('Geometry.Edit', function () {
             var size = polygon.getSize();
             dragGeometry(polygon, new maptalks.Point(size.width / 2, size.height / 2));
             expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
-            var expected = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[118.84682499999997,32.04653400000004],[118.85742312186676,32.04653400000004],[118.85748697485064,32.04198785717389],[118.84682499999997,32.04204242358057],[118.84682499999997,32.04653400000004]]]},"properties":null};
+            var expected = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[118.84682499999997,32.04653400000004],[118.85742312186676,32.04653400000004],[118.85751916135894,32.04196057399085],[118.84682499999997,32.04204242358057],[118.84682499999997,32.04653400000004]]]},"properties":null};
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
 
             polygon.undoEdit();

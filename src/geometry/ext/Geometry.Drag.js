@@ -55,6 +55,8 @@ class GeometryDragHandler extends Handler  {
         }
         this.container = map._panels.mapWrapper || map._containerDOM;
         this.target.on('click', this._endDrag, this);
+        this._lastCoord = this._correctCoord(param['coordinate']);
+        this._lastPoint = param['containerPoint'];
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
 
@@ -185,12 +187,8 @@ class GeometryDragHandler extends Handler  {
         const axis = this._shadow.options['dragOnAxis'],
             coord = this._correctCoord(eventParam['coordinate']),
             point = eventParam['containerPoint'];
-        if (!this._lastPoint) {
-            this._lastPoint = point;
-        }
-        if (!this._lastCoord) {
-            this._lastCoord = coord;
-        }
+        this._lastPoint = this._lastPoint || point;
+        this._lastCoord = this._lastCoord || coord;
         const pointOffset = point.sub(this._lastPoint);
         const coordOffset = coord.sub(this._lastCoord);
         if (axis === 'x') {
@@ -296,7 +294,7 @@ class GeometryDragHandler extends Handler  {
         if (!map.getPitch()) {
             return coord;
         }
-        const painter = this._shadow._getPainter();
+        const painter = this.target._getPainter();
         if (!painter.getMinAltitude()) {
             return coord;
         }
