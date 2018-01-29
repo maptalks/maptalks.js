@@ -101,10 +101,15 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             const r = style['textHaloRadius'];
             size = size.add(r * 2, r * 2);
         }
-        return new PointExtent(
+        let result = new PointExtent(
             dxdy.add(alignW, alignH),
             dxdy.add(alignW + size['width'], alignH + size['height'])
         );
+        const rotation = this.getRotation();
+        if (rotation) {
+            result = this._rotateExtent(result, rotation);
+        }
+        return result;
     }
 
     translate() {

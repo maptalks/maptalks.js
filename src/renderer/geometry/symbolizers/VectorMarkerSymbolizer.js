@@ -286,6 +286,10 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         if (this.style['markerLineWidth']) {
             result._expand(this.style['markerLineWidth'] / 2);
         }
+        const rotation = this.getRotation();
+        if (rotation) {
+            result = this._rotateExtent(result, rotation);
+        }
         return result;
     }
 

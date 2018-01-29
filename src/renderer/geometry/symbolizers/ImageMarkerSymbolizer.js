@@ -115,7 +115,12 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         const width = this.style['markerWidth'] || (img ? img.width : 0),
             height = this.style['markerHeight'] || (img ? img.height : 0);
         const dxdy = this.getDxDy();
-        return new PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
+        let result = new PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
+        const rotation = this.getRotation();
+        if (rotation) {
+            result = this._rotateExtent(result, rotation);
+        }
+        return result;
     }
 
     translate() {

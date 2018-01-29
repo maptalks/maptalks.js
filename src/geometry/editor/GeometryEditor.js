@@ -241,29 +241,15 @@ class GeometryEditor extends Eventable(Class) {
     _createOrRefreshOutline() {
         const geometry = this._geometry;
         let outline = this._editOutline;
-        const pixelExtent = geometry._getPainter().get2DExtent(),
-            size = pixelExtent.getSize();
         if (!outline) {
-            outline = new Marker(geometry.getCenter(), {
-                'symbol': {
-                    'markerType' : 'square',
-                    'markerWidth' : size.width,
-                    'markerHeight' : size.height,
-                    'markerLineWidth': 1,
-                    'markerLineColor': '6b707b',
-                    'markerFillOpacity' : 0
-                }
-            });
+            outline = geometry.getOutline();
             this._editStageLayer.addGeometry(outline);
             this._editOutline = outline;
             this._addRefreshHook(this._createOrRefreshOutline);
-            this._addListener([this.getMap(), 'zoomend', this._createOrRefreshOutline.bind(this)]);
         } else {
-            outline.setCoordinates(geometry.getCenter());
-            const symbol = outline.getSymbol();
-            symbol.markerWidth = size.width;
-            symbol.markerHeight = size.height;
-            outline.setSymbol(symbol);
+            outline.remove();
+            this._editOutline = outline = geometry.getOutline();
+            this._editStageLayer.addGeometry(outline);
         }
 
         return outline;

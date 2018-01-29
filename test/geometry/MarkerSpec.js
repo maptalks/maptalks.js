@@ -651,6 +651,23 @@ describe('Geometry.Marker', function () {
             })
                 .addTo(map);
         });
+
+        it('rotate text marker outline', function () {
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    textName : '■■■■■■■■■',
+                    textSize : 20,
+                    textFill : '#000',
+                    textRotation : 45,
+                    textDx : 50,
+                    textDy : 50
+                }
+            });
+            var layer = new maptalks.VectorLayer('vector', marker, { 'drawImmediate' : true }).addTo(map);
+            var outline = marker.getOutline().updateSymbol({ markerFill : '#0f0' }).addTo(layer);
+            expect(layer).to.not.be.painted();
+            expect(layer).to.be.painted(20, 50, [0, 255, 0]);
+        });
     });
 
 });

@@ -35,6 +35,21 @@ const options = {
  */
 class Path extends Geometry {
 
+    getOutline() {
+        const painter = this._getPainter();
+        if (!painter) {
+            return null;
+        }
+        const map = this.getMap();
+        const extent = painter.getContainerExtent().convertTo(c => map.containerPointToCoord(c));
+        return new maptalks.Polygon(extent.toArray(), {
+            symbol : {
+                'lineWidth': 1,
+                'lineColor': '6b707b'
+            }
+        });
+    }
+
     /**
      * Show the linestring with animation
      * @param  {Object} [options=null] animation options

@@ -327,6 +327,28 @@ class Point {
             this.x * y - this.y * x,
             this.x * x + this.y * y);
     }
+
+    _rotate(angle) {
+        const cos = Math.cos(angle),
+            sin = Math.sin(angle),
+            x = cos * this.x - sin * this.y,
+            y = sin * this.x + cos * this.y;
+        this.x = x;
+        this.y = y;
+        return this;
+    }
+
+    /**
+     * Rotate this point around the 0, 0 origin by an angle a,
+     * given in radians
+     * from mapbox/point-geometry
+     *
+     * @param {Number} a angle to rotate around, in radians
+     * @return {Point} output point
+     */
+    rotate(a) {
+        return this.copy()._rotate(a);
+    }
 }
 
 export default Point;
