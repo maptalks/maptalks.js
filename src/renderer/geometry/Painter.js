@@ -37,7 +37,7 @@ class Painter extends Class {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
-        this._altAtMaxZ = this._getGeometryAltitude();
+        this._altAtGLZoom = this._getGeometryAltitude();
     }
 
     getMap() {
@@ -564,6 +564,7 @@ class Painter extends Class {
     }
 
     repaint() {
+        this._altAtGLZoom = this._getGeometryAltitude();
         this.removeCache();
         const layer = this.getLayer();
         if (!layer) {
@@ -615,14 +616,14 @@ class Painter extends Class {
     }
 
     getAltitude() {
-        const propAltitude = this._getAltitudeProperty();
-        if (propAltitude !== this._propAlt) {
-            this._altAtMaxZ = this._getGeometryAltitude();
+        const propAlt = this._getAltitudeProperty();
+        if (propAlt !== this._propAlt) {
+            this._altAtGLZoom = this._getGeometryAltitude();
         }
-        if (!this._altAtMaxZ) {
+        if (!this._altAtGLZoom) {
             return 0;
         }
-        return this._altAtMaxZ;
+        return this._altAtGLZoom;
     }
 
     getMinAltitude() {

@@ -183,20 +183,23 @@ class GeometryDragHandler extends Handler  {
             return;
         }
         const axis = this._shadow.options['dragOnAxis'],
+            coord = this._correctCoord(eventParam['coordinate']),
             point = eventParam['containerPoint'];
         if (!this._lastPoint) {
             this._lastPoint = point;
         }
-        const pointOffset = point.sub(this._lastPoint);
-        if (axis === 'x') {
-            pointOffset.y = 0;
-        } else if (axis === 'y') {
-            pointOffset.x = 0;
+        if (!this._lastCoord) {
+            this._lastCoord = coord;
         }
-        const lastCoord = eventParam['coordinate'];
-        const coord = map.locateByPoint(lastCoord, pointOffset.x, pointOffset.y);
-        const coordOffset = coord._sub(lastCoord);
+        const pointOffset = point.sub(this._lastPoint);
+        const coordOffset = coord.sub(this._lastCoord);
+        if (axis === 'x') {
+            pointOffset.y = coordOffset.y = 0;
+        } else if (axis === 'y') {
+            pointOffset.x = coordOffset.x = 0;
+        }
         this._lastPoint = point;
+        this._lastCoord = coord;
         this._shadow.translate(coordOffset);
         if (!target.options['dragShadow']) {
             target.translate(coordOffset);
@@ -287,6 +290,19 @@ class GeometryDragHandler extends Handler  {
         }
     }
 
+    //find correct coordinate for coordOffset if geometry has altitude
+    _correctCoord(coord) {
+        const map = this.target.getMap();
+        if (!map.getPitch()) {
+            return coord;
+        }
+        const painter = this._shadow._getPainter();
+        if (!painter.getMinAltitude()) {
+            return coord;
+        }
+        const alt = (painter.getMinAltitude() + painter.getMaxAltitude()) / 2;
+        return map.locateByPoint(coord, 0, -alt);
+    }
 }
 
 Geometry.mergeOptions({

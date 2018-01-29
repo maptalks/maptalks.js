@@ -1031,6 +1031,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         if (properties) {
             this.setProperties(properties);
+            this._repaint();
         } else if (needRepaint) {
             this._repaint();
         }
