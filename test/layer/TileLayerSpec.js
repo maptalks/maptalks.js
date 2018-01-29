@@ -206,6 +206,7 @@ describe('TileLayer', function () {
         });
 
         it('3857 map with 4326 tilelayer', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -222,6 +223,7 @@ describe('TileLayer', function () {
         });
 
         it('3857 map with 3857 tilelayer', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',

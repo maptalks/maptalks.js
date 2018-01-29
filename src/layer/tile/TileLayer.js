@@ -53,6 +53,8 @@ const options = {
 
 const urlPattern = /\{ *([\w_]+) *\}/g;
 
+const MAX_VISIBLE_SIZE = 5;
+
 /**
  * @classdesc
  * A layer used to display tiled map services, such as [google maps]{@link http://maps.google.com}, [open street maps]{@link http://www.osm.org}
@@ -371,7 +373,7 @@ class TileLayer extends Layer {
         }
         const tileZoom = tileInfo.z;
         const tileExtent = tileInfo.extent2d.convertTo(c => map._pointToContainerPoint(c, tileZoom));
-        if (tileExtent.getWidth() < 5 || tileExtent.getHeight() < 5) {
+        if (tileExtent.getWidth() < MAX_VISIBLE_SIZE || tileExtent.getHeight() < MAX_VISIBLE_SIZE) {
             return false;
         }
         // add some buffer
