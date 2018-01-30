@@ -217,7 +217,9 @@ function testRemoveHide(geometry, _context) {
                         done();
                     }
                 });
-                geometry.remove();
+                setTimeout(function () {
+                    geometry.remove();
+                },1);
             });
         });
     });
