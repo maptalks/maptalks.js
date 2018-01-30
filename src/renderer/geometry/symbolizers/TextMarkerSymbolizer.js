@@ -57,7 +57,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
         this._descText(textContent);
         this._prepareContext(ctx);
-        Canvas.prepareCanvas(ctx, strokeAndFill, resources);
+        this.prepareCanvas(ctx, strokeAndFill, resources);
         Canvas.prepareCanvasFont(ctx, style);
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
@@ -82,7 +82,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             return null;
         }
         //to radian
-        return r * Math.PI / 180;
+        return -r * Math.PI / 180;
     }
 
     getDxDy() {
@@ -90,7 +90,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         return new Point(s['textDx'], s['textDy']);
     }
 
-    getMarkerExtent() {
+    getFixedExtent() {
         const dxdy = this.getDxDy(),
             style = this.style;
         let size = this.textDesc['size'];
@@ -101,10 +101,15 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             const r = style['textHaloRadius'];
             size = size.add(r * 2, r * 2);
         }
-        return new PointExtent(
+        let result = new PointExtent(
             dxdy.add(alignW, alignH),
             dxdy.add(alignW + size['width'], alignH + size['height'])
         );
+        const rotation = this.getRotation();
+        if (rotation) {
+            result = this._rotateExtent(result, rotation);
+        }
+        return result;
     }
 
     translate() {

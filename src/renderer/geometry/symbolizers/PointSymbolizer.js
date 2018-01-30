@@ -34,6 +34,10 @@ class PointSymbolizer extends CanvasSymbolizer {
         return extent;
     }
 
+    _rotateExtent(fixedExtent, angle) {
+        return fixedExtent.convertTo(p => p._rotate(angle));
+    }
+
     _getRenderPoints() {
         return this.getPainter().getRenderPoints(this.getPlacement());
     }

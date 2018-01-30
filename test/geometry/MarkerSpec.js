@@ -537,7 +537,29 @@ describe('Geometry.Marker', function () {
             var layer = new maptalks.VectorLayer('vector', marker);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
+                expect(layer).to.be.painted(-5, -5);
+                done();
+            })
+                .addTo(map);
+        });
+
+        it('rotate image marker with map', function (done) {
+            map.setBearing(45);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    'markerFile' : 'resources/tile.png',
+                    'markerWidth'  : 10,
+                    'markerHeight' : 20,
+                    'markerRotation' : {
+                        property : '{bearing}',
+                        type : 'identity'
+                    }
+                }
+            });
+            var layer = new maptalks.VectorLayer('vector', marker);
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(-5, -5);
+                expect(layer).not.to.be.painted(5, 5);
                 done();
             })
                 .addTo(map);
@@ -555,25 +577,7 @@ describe('Geometry.Marker', function () {
             var layer = new maptalks.VectorLayer('vector', marker);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
-                done();
-            })
-                .addTo(map);
-        });
-
-        it('rotate vector marker', function (done) {
-            var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerType' : 'bar',
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
-                }
-            });
-            var layer = new maptalks.VectorLayer('vector', marker);
-            layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
+                expect(layer).to.be.painted(-5, -5);
                 done();
             })
                 .addTo(map);
@@ -602,7 +606,7 @@ describe('Geometry.Marker', function () {
             var layer = new maptalks.VectorLayer('vector', marker);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, -9);
-                expect(layer).to.be.painted(5, -5);
+                expect(layer).to.be.painted(-5, -5);
                 done();
             })
                 .addTo(map);
@@ -620,7 +624,29 @@ describe('Geometry.Marker', function () {
             var layer = new maptalks.VectorLayer('vector', marker);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(12, 0);
-                expect(layer).to.be.painted(-11, -11);
+                expect(layer).to.be.painted(11, -11);
+                done();
+            })
+                .addTo(map);
+        });
+
+        it('rotate text marker with map', function (done) {
+            map.setBearing(45);
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    textName : '■■■■■■■■■',
+                    textSize : 20,
+                    textFill : '#000',
+                    textRotation : {
+                        type : 'identity',
+                        property : '{bearing}'
+                    }
+                }
+            });
+            var layer = new maptalks.VectorLayer('vector', marker);
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(15, -15);
+                expect(layer).not.to.be.painted(-11, -11);
                 done();
             })
                 .addTo(map);
@@ -642,14 +668,31 @@ describe('Geometry.Marker', function () {
                 expect(layer).not.to.be.painted(11, 0);
                 expect(layer).not.to.be.painted(-11, -11);
                 if (maptalks.Browser.gecko3d) {
-                    expect(layer).to.be.painted(6, 70);
+                    expect(layer).to.be.painted(104, -35);
                 } else {
-                    expect(layer).to.be.painted(8, 86);
+                    expect(layer).to.be.painted(110, -35);
                 }
 
                 done();
             })
                 .addTo(map);
+        });
+
+        it('rotate text marker outline', function () {
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    textName : '■■■■■■■■■',
+                    textSize : 20,
+                    textFill : '#000',
+                    textRotation : 45,
+                    textDx : 50,
+                    textDy : 50
+                }
+            });
+            var layer = new maptalks.VectorLayer('vector', marker, { 'drawImmediate' : true }).addTo(map);
+            var outline = marker.getOutline().updateSymbol({ markerFill : '#0f0' }).addTo(layer);
+            expect(layer).to.not.be.painted();
+            expect(layer).to.be.painted(50, -10, [0, 255, 0]);
         });
     });
 

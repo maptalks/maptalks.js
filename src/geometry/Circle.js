@@ -110,7 +110,7 @@ class Circle extends CenterMixin(Polygon) {
         if (map.getPitch()) {
             return super._containsPoint(point, tolerance);
         }
-        const center = this._getCenter2DPoint(),
+        const center = map._pointToContainerPoint(this._getCenter2DPoint()),
             size = this.getSize(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             se = center.add(size.width / 2, size.height / 2);

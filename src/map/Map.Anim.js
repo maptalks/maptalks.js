@@ -89,7 +89,7 @@ Map.include(/** @lends Map.prototype */{
             }
             if (player.playState === 'running') {
                 const view = this.getView();
-                if (!equalView(view, preView)) {
+                if (!options['continueOnViewChanged'] && !equalView(view, preView)) {
                     // map's view is updated by another operation, animation should stop
                     this._stopAnim(player);
                     return;

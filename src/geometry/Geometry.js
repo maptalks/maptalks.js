@@ -14,7 +14,6 @@ import {
 } from '../core/util';
 import { extendSymbol } from '../core/util/style';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
-import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Painter from '../renderer/geometry/Painter';
@@ -30,7 +29,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
  * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
  * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
  * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
- * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
+ * @property {Boolean} [options.dragShadow=true]    - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
  * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
  * @property {Number}  [options.zIndex=undefined]   - geometry's initial zIndex
  * @memberOf Geometry
@@ -364,7 +363,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (containerPoint instanceof Coordinate) {
             containerPoint = this.getMap().coordToContainerPoint(containerPoint);
         }
-        return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
+        return this._containsPoint(containerPoint, t);
+        // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
+    }
+
+    _containsPoint(containerPoint, t) {
+        const painter = this._getPainter();
+        if (!painter) {
+            return false;
+        }
+        if (isNil(t) && this._hitTestTolerance) {
+            t = this._hitTestTolerance();
+        }
+        return painter.hitTest(containerPoint, t);
     }
 
     /**
@@ -1020,6 +1031,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         if (properties) {
             this.setProperties(properties);
+            this._repaint();
         } else if (needRepaint) {
             this._repaint();
         }

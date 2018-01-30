@@ -4,7 +4,7 @@ describe('Geometry.Drag', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    function dragGeometry(geometry, isMove) {
+    function dragGeometry(geometry, isMove, offset) {
         var layer = map.getLayer('id').clear();
         map.setCenter(geometry.getFirstCoordinate());
         geometry.addTo(layer);
@@ -13,6 +13,9 @@ describe('Geometry.Drag', function () {
 
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
+        if (offset) {
+            point._add(offset);
+        }
 
         happen.mousedown(eventContainer, {
             'clientX':point.x,
@@ -51,7 +54,8 @@ describe('Geometry.Drag', function () {
         container = setups.container;
         map = setups.map;
         map.config('panAnimation', false);
-        var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
+        map.config('centerCross', true);
+        var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true, 'enableAltitude' : true });
         map.addLayer(layer);
         eventContainer = map._panels.canvasContainer;
     });
@@ -152,6 +156,25 @@ describe('Geometry.Drag', function () {
             });
             dragGeometry(marker);
             expect(marker.getCoordinates()).to.be.closeTo(center);
+        });
+    });
+
+    describe('drag geometry with altitude', function () {
+        it('dragging marker', function () {
+            map.setPitch(80);
+            var marker = new maptalks.Marker(center, {
+                draggable : true,
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : 20,
+                    markerHeight : 20
+                },
+                properties : {
+                    altitude : 50
+                }
+            });
+            dragGeometry(marker, true, new maptalks.Point(0, -45));
+            expect(marker.getCoordinates()).not.to.be.closeTo(center);
         });
     });
 

@@ -47,18 +47,41 @@ Rectangle.include({
 const PolyRenderer = {
     _getRenderPoints(placement) {
         const map = this.getMap();
-        const maxZoom = map.getGLZoom();
+        const glZoom = map.getGLZoom();
         let points, rotations = null;
-        if (placement === 'vertex') {
-            points = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom);
+        if (placement === 'point') {
+            points = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom);
             if (points && points.length > 0 && Array.isArray(points[0])) {
                 //anti-meridian
                 points = points[0].concat(points[1]);
             }
+        } else if (placement === 'vertex') {
+            points = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom);
+            rotations = [];
+            if (points && points.length > 0 && Array.isArray(points[0])) {
+                for (let i = 0, l = points.length; i < l; i++) {
+                    for (let ii = 0, ll = points[i].length; ii < ll; ii++) {
+                        if (ii === 0) {
+                            rotations.push([points[i][ii], points[i][ii + 1]]);
+                        } else {
+                            rotations.push([points[i][ii - 1], points[i][ii]]);
+                        }
+                    }
+                }
+                points = points[0].concat(points[1]);
+            } else {
+                for (let i = 0, l = points.length; i < l; i++) {
+                    if (i === 0) {
+                        rotations.push([points[i], points[i + 1]]);
+                    } else {
+                        rotations.push([points[i - 1], points[i]]);
+                    }
+                }
+            }
         } else if (placement === 'line') {
             points = [];
             rotations = [];
-            const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, maxZoom),
+            const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom),
                 isSplitted =  vertice.length > 0 && Array.isArray(vertice[0]);
             if (isSplitted) {
                 //anti-meridian splitted
@@ -84,14 +107,17 @@ const PolyRenderer = {
             }
 
         } else if (placement === 'vertex-first') {
-            const first = this._getPrjCoordinates()[0];
-            points = [map._prjToPoint(first, maxZoom)];
+            const coords = this._getPrjCoordinates();
+            points = [map._prjToPoint(coords[0], glZoom)];
+            rotations = [[map._prjToPoint(coords[0], glZoom), map._prjToPoint(coords[1], glZoom)]];
         } else if (placement === 'vertex-last') {
-            const last = this._getPrjCoordinates()[this._getPrjCoordinates().length - 1];
-            points = [map._prjToPoint(last, maxZoom)];
+            const coords = this._getPrjCoordinates();
+            const l = coords.length;
+            points = [map._prjToPoint(coords[l - 1], glZoom)];
+            rotations = [[map._prjToPoint(coords[l - 2], glZoom), map._prjToPoint(coords[l - 1], glZoom)]];
         } else {
             const pcenter = this._getProjection().project(this.getCenter());
-            points = [map._prjToPoint(pcenter, maxZoom)];
+            points = [map._prjToPoint(pcenter, glZoom)];
         }
         return [points, rotations];
     }

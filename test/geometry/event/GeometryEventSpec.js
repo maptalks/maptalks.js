@@ -119,7 +119,7 @@ describe('Geometry.Events', function () {
                 'clientX':point.x,
                 'clientY':point.y
             });
-        }, 100);
+        }, 300);
 
     });
 

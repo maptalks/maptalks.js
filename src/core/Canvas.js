@@ -42,7 +42,14 @@ const Canvas = {
         ctx.fillStyle = Canvas.getRgba(fill, style['textOpacity']);
     },
 
-    prepareCanvas(ctx, style, resources) {
+    /**
+     * Set canvas's fill and stroke style
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {Object} style
+     * @param {Object} resources
+     * @param {Boolean} testing  - paint for testing, ignore stroke and fill patterns
+     */
+    prepareCanvas(ctx, style, resources, testing) {
         if (!style) {
             return;
         }
@@ -51,7 +58,9 @@ const Canvas = {
             ctx.lineWidth = strokeWidth;
         }
         const strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
-        if (isImageUrl(strokeColor) && resources) {
+        if (testing) {
+            ctx.strokeStyle = '#000';
+        } else if (isImageUrl(strokeColor) && resources) {
             Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
@@ -59,7 +68,7 @@ const Canvas = {
             if (style['lineGradientExtent']) {
                 ctx.strokeStyle = Canvas._createGradient(ctx, strokeColor, style['lineGradientExtent']);
             } else {
-                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.strokeStyle = DEFAULT_STROKE_COLOR;
             }
         } else /*if (ctx.strokeStyle !== strokeColor)*/ {
             ctx.strokeStyle = strokeColor;
@@ -74,7 +83,9 @@ const Canvas = {
             ctx.setLineDash(style['lineDasharray']);
         }
         const fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
-        if (isImageUrl(fill) && resources) {
+        if (testing) {
+            ctx.fillStyle = '#000';
+        } else if (isImageUrl(fill) && resources) {
             const fillImgUrl = extractImageUrl(fill);
             let fillTexture = resources.getImage([fillImgUrl, null, null]);
             if (!fillTexture) {
@@ -292,7 +303,7 @@ const Canvas = {
             ctx.lineWidth = textHaloRadius * 2;
             ctx.strokeStyle = textHaloFill;
             ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
-            ctx.lineWidth = 1;
+            // ctx.lineWidth = 1;
             ctx.miterLimit = 10; //default
 
             ctx.globalAlpha = alpha;
@@ -304,8 +315,15 @@ const Canvas = {
         }
         Canvas.fillText(ctx, text, pt);
         if (gco) {
+            const shadow = ctx.shadowBlur;
+            if (shadow) {
+                ctx.shadowBlur = 0;
+            }
             ctx.globalCompositeOperation = gco;
             Canvas.fillText(ctx, text, pt, fill);
+            if (shadow) {
+                ctx.shadowBlur = shadow;
+            }
         }
     },
 

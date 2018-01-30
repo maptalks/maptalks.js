@@ -416,7 +416,7 @@ class OverlayLayer extends Layer {
                     continue;
                 }
             }
-            if (geo._containsPoint(point, tolerance) && (!filter || filter(geo))) {
+            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {

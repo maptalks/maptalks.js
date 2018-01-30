@@ -55,7 +55,7 @@ class GeometryDragHandler extends Handler  {
         }
         this.container = map._panels.mapWrapper || map._containerDOM;
         this.target.on('click', this._endDrag, this);
-        this._lastCoord = param['coordinate'];
+        this._lastCoord = this._correctCoord(param['coordinate']);
         this._lastPoint = param['containerPoint'];
         this._prepareDragHandler();
         this._dragHandler.onMouseDown(param['domEvent']);
@@ -148,7 +148,10 @@ class GeometryDragHandler extends Handler  {
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID);
+            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
+                enableAltitude : layer.options['enableAltitude'],
+                altitudeProperty : layer.options['altitudeProperty']
+            });
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
@@ -182,25 +185,19 @@ class GeometryDragHandler extends Handler  {
             return;
         }
         const axis = this._shadow.options['dragOnAxis'],
-            coord = eventParam['coordinate'],
+            coord = this._correctCoord(eventParam['coordinate']),
             point = eventParam['containerPoint'];
-        if (!this._lastCoord) {
-            this._lastCoord = coord;
-        }
-        if (!this._lastPoint) {
-            this._lastPoint = point;
-        }
-        const coordOffset = coord.sub(this._lastCoord),
-            pointOffset = point.sub(this._lastPoint);
+        this._lastPoint = this._lastPoint || point;
+        this._lastCoord = this._lastCoord || coord;
+        const pointOffset = point.sub(this._lastPoint);
+        const coordOffset = coord.sub(this._lastCoord);
         if (axis === 'x') {
-            coordOffset.y = 0;
-            pointOffset.y = 0;
+            pointOffset.y = coordOffset.y = 0;
         } else if (axis === 'y') {
-            coordOffset.x = 0;
-            pointOffset.x = 0;
+            pointOffset.x = coordOffset.x = 0;
         }
-        this._lastCoord = coord;
         this._lastPoint = point;
+        this._lastCoord = coord;
         this._shadow.translate(coordOffset);
         if (!target.options['dragShadow']) {
             target.translate(coordOffset);
@@ -291,6 +288,19 @@ class GeometryDragHandler extends Handler  {
         }
     }
 
+    //find correct coordinate for coordOffset if geometry has altitude
+    _correctCoord(coord) {
+        const map = this.target.getMap();
+        if (!map.getPitch()) {
+            return coord;
+        }
+        const painter = this.target._getPainter();
+        if (!painter.getMinAltitude()) {
+            return coord;
+        }
+        const alt = (painter.getMinAltitude() + painter.getMaxAltitude()) / 2;
+        return map.locateByPoint(coord, 0, -alt);
+    }
 }
 
 Geometry.mergeOptions({

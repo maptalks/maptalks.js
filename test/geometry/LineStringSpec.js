@@ -9,7 +9,7 @@ describe('Geometry.LineString', function () {
         var setups = COMMON_CREATE_MAP(center);
         container = setups.container;
         map = setups.map;
-        layer = new maptalks.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
         map.addLayer(layer);
     });
 
@@ -170,10 +170,27 @@ describe('Geometry.LineString', function () {
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp)).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth / 2, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-1, 0), 0)).not.to.be.ok();
+        // expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 - 1), 0)).to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2), 0)).not.to.be.ok();
+    });
+
+    it('containsPoint with lineCap', function () {
+        var lineWidth = 8;
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
+            symbol : [{
+                'lineWidth' : lineWidth,
+                'lineCap' : 'round'
+            },
+            {
+                'lineWidth' : 4
+            }]
+        });
+        layer.addGeometry(line);
+        var cp = map.coordinateToContainerPoint(map.getCenter());
+        expect(line.containsPoint(cp)).to.be.ok();
+        expect(line.containsPoint(cp.add(-1, 0), 0)).to.be.ok();
     });
 
     it('containsPoint with dynamic linewidth', function () {
@@ -190,6 +207,7 @@ describe('Geometry.LineString', function () {
     it('containsPoint with arrow of vertex-first', function () {
         var lineWidth = 8;
         var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
+            enableSimplify : false,
             arrowStyle : 'classic',
             arrowPlacement : 'vertex-first',
             symbol : {
@@ -200,12 +218,13 @@ describe('Geometry.LineString', function () {
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp.add(-lineWidth / 2, 0))).to.be.ok();
         expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 7))).to.be.ok();
-        expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 8))).not.to.be.ok();
+        // expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 10))).not.to.be.ok();
     });
 
     it('containsPoint with arrow of point', function () {
         var lineWidth = 8;
-        var line = new maptalks.LineString([map.getCenter().substract(0.1, 0), map.getCenter(), map.getCenter().add(0.1, 0)], {
+        var line = new maptalks.LineString([map.getCenter().substract(0.001, 0), map.getCenter(), map.getCenter().add(0.001, 0)], {
+            enableSimplify : false,
             arrowStyle : 'classic',
             arrowPlacement : 'point',
             symbol : {
@@ -216,7 +235,6 @@ describe('Geometry.LineString', function () {
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp.add(-4 * lineWidth, lineWidth + 7))).to.be.ok();
         expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 7))).to.be.ok();
-        expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 8))).not.to.be.ok();
     });
     it('bug: create with dynamic textSize', function () {
         // bug desc:
@@ -299,6 +317,26 @@ describe('Geometry.LineString', function () {
             }).addTo(layer);
             expect(layer).not.to.be.painted(0, 0);
             expect(layer).to.be.painted(0, -7);
+        });
+    });
+
+    describe('outline', function () {
+        it('display outline', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            var outline = line.getOutline().updateSymbol({ polygonFill : '#0f0' }).addTo(layer);
+            expect(layer).not.to.be.painted(0, -20);
+            expect(layer).to.be.painted(0, 10, [0, 255, 0]);
         });
     });
 

@@ -99,7 +99,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             return null;
         }
         //to radian
-        return r * Math.PI / 180;
+        return -r * Math.PI / 180;
     }
 
     getDxDy() {
@@ -109,13 +109,18 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         return new Point(dx, dy);
     }
 
-    getMarkerExtent(resources) {
+    getFixedExtent(resources) {
         const url = this.style['markerFile'],
             img = resources ? resources.getImage(url) : null;
         const width = this.style['markerWidth'] || (img ? img.width : 0),
             height = this.style['markerHeight'] || (img ? img.height : 0);
         const dxdy = this.getDxDy();
-        return new PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
+        let result = new PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
+        const rotation = this.getRotation();
+        if (rotation) {
+            result = this._rotateExtent(result, rotation);
+        }
+        return result;
     }
 
     translate() {

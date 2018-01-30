@@ -91,7 +91,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
 
     _drawMarkerAltitude(ctx, point, groundPoint) {
         const style = this._getStyle();
-        Canvas.prepareCanvas(ctx, style);
+        this.prepareCanvas(ctx, style);
         Canvas.path(ctx, [point, groundPoint], style['lineOpacity'], null, style['lineDasharray']);
     }
 
@@ -114,7 +114,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
 
     _drawLine(ctx, points, groundPoints) {
         const style = this._getStyle();
-        Canvas.prepareCanvas(ctx, style);
+        this.prepareCanvas(ctx, style);
         for (let i = 0, l = points.length - 1; i < l; i++) {
             Canvas.polygon(ctx, [points[i], points[i + 1], groundPoints[i + 1], groundPoints[i]], style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
         }

@@ -332,6 +332,27 @@ describe('Geometry.Polygon', function () {
         });
     });
 
+    describe('outline', function () {
+        it('display outline', function () {
+            map.config('centerCross', true);
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.Polygon([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            var outline = line.getOutline().updateSymbol({ polygonFill : '#0f0' }).addTo(layer);
+            expect(layer).not.to.be.painted(0, -20);
+            expect(layer).to.be.painted(0, 10, [0, 255, 0]);
+        });
+    });
+
     describe('animateShow', function () {
         it('animateShow', function (done) {
             var polygon = new maptalks.Polygon([[

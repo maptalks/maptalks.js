@@ -4,7 +4,7 @@ import './handler/Map.DoubleClickZoom';
 import './handler/Map.Drag';
 import './handler/Map.GeometryEvents';
 import './handler/Map.ScrollWheelZoom';
-import './handler/Map.TouchZoom';
+import './handler/Map.Touch';
 import './handler/Map.BoxZoom';
 
 import './Map.Anim';

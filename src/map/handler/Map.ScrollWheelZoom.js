@@ -48,6 +48,7 @@ class MapScrollWheelZoomHandler extends Handler {
             'zoom' : nextZoom - this._delta * 1 / 2,
             'around' : this._origin
         }, {
+            'continueOnViewChanged' : true,
             'easing' : 'linear',
             'duration' : duration,
             'wheelZoom' : true
@@ -63,6 +64,7 @@ class MapScrollWheelZoomHandler extends Handler {
                     'zoom' : nextZoom,
                     'around' : this._origin
                 }, {
+                    'continueOnViewChanged' : true,
                     'duration' : 1000 / 60 * 10
                 }, frame => {
                     if (frame.state.playState === 'finished') {

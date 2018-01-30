@@ -107,8 +107,12 @@ describe('Map.Drag', function () {
         happen.mouseup(document);
     }
 
-    it('drag to rotate', function () {
+    it('drag to rotate and animation', function (done) {
         var bearing = map.getBearing();
+        var counter = 0;
+        map.on('animateend', function () {
+            done();
+        });
         dragToRotate(1);
         expect(map.getBearing()).not.to.be.eql(bearing);
     });

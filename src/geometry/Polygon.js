@@ -1,6 +1,6 @@
-import { isNil, isArrayHasData } from '../core/util';
+import { isArrayHasData } from '../core/util';
 import Coordinate from '../geo/Coordinate';
-import { pointInsidePolygon, distanceToSegment, clipPolygon } from '../core/util/path';
+import { clipPolygon } from '../core/util/path';
 import Path from './Path';
 
 const JSON_TYPE = 'Polygon';
@@ -245,53 +245,6 @@ class Polygon extends Path {
 
         }
         return result;
-    }
-
-    _containsPoint(point, tolerance) {
-        const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
-            pxExtent = this._getPainter().get2DExtent().expand(t);
-
-        function isContains(points) {
-            const c = pointInsidePolygon(point, points);
-            if (c) {
-                return c;
-            }
-
-            let i, j, p1, p2;
-            const len = points.length;
-
-            for (i = 0, j = len - 1; i < len; j = i++) {
-                p1 = points[i];
-                p2 = points[j];
-
-                if (distanceToSegment(point, p1, p2) <= t) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        if (!pxExtent.contains(point)) {
-            return false;
-        }
-
-        const projection = this.getMap().getProjection();
-        const shell = projection.projectCoords(this.getShell());
-
-        const points = this._getPath2DPoints(shell),
-            isSplitted = Array.isArray(points[0]);
-        if (isSplitted) {
-            for (let i = 0; i < points.length; i++) {
-                if (isContains(points[i])) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return isContains(points);
-        }
-
     }
 
     _updateCache() {

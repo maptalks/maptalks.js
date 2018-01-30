@@ -59,6 +59,9 @@ class DragHandler extends Handler {
             //ignore right mouse down
             return;
         }
+        if (event.touches && event.touches.length > 1) {
+            return;
+        }
         if (this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
             return;
         }
@@ -71,7 +74,7 @@ class DragHandler extends Handler {
         dom['ondragstart'] = function () {
             return false;
         };
-        this.moved = false;
+        delete this.moved;
         const actual = event.touches ? event.touches[0] : event;
         this.startPos = new Point(actual.clientX, actual.clientY);
         on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
@@ -79,6 +82,7 @@ class DragHandler extends Handler {
         if (!this.options['ignoreMouseleave']) {
             on(this.dom, 'mouseleave', this.onMouseUp, this);
         }
+        window.addEventListener('blur', this.onMouseUp);
         this.fire('mousedown', {
             'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)
@@ -87,6 +91,10 @@ class DragHandler extends Handler {
 
     onMouseMove(event) {
         if (event.touches && event.touches.length > 1) {
+            if (this.moved) {
+                this.interupted = true;
+                this.onMouseUp(event);
+            }
             return;
         }
         const actual = event.touches ? event.touches[0] : event;
@@ -120,7 +128,10 @@ class DragHandler extends Handler {
             param['mousePos'] = new Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
         }
         if (this.moved/* && this.moving*/) {
+            param.interupted = this.interupted;
             this.fire('dragend', param);
+            delete this.interupted;
+            delete this.moved;
         }
 
         this.fire('mouseup', param);
@@ -142,6 +153,7 @@ class DragHandler extends Handler {
         } else if (window.captureEvents) {
             window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
         }
+        window.removeEventListener('blur', this.onMouseUp);
     }
 }
 
