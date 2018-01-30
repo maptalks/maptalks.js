@@ -82,7 +82,6 @@ class DragHandler extends Handler {
         if (!this.options['ignoreMouseleave']) {
             on(this.dom, 'mouseleave', this.onMouseUp, this);
         }
-        window.addEventListener('blur', this.onMouseUp, this);
         this.fire('mousedown', {
             'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)
@@ -153,7 +152,6 @@ class DragHandler extends Handler {
         } else if (window.captureEvents) {
             window.captureEvents(window['Event'].MOUSEMOVE | window['Event'].MOUSEUP);
         }
-        window.removeEventListener('blur', this.onMouseUp);
     }
 }
 

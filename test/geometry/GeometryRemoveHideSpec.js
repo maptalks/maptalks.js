@@ -218,6 +218,8 @@ function testRemoveHide(geometry, _context) {
                     }
                 });
                 setTimeout(function () {
+                    //layer throws layerload event right after editLayer in current frame
+                    //remove the geometry in the next frame
                     geometry.remove();
                 },1);
             });
