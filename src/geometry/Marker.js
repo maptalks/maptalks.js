@@ -102,7 +102,7 @@ class Marker extends CenterMixin(Geometry) {
     }
 
     _containsPoint(point, t) {
-        let extent = this._getPainter().getContainerExtent();
+        let extent = this.getContainerExtent();
         if (t) {
             extent = extent.expand(t);
         }

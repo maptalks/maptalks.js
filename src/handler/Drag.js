@@ -82,7 +82,7 @@ class DragHandler extends Handler {
         if (!this.options['ignoreMouseleave']) {
             on(this.dom, 'mouseleave', this.onMouseUp, this);
         }
-        window.addEventListener('blur', this.onMouseUp);
+        window.addEventListener('blur', this.onMouseUp, this);
         this.fire('mousedown', {
             'domEvent': event,
             'mousePos': new Point(actual.clientX, actual.clientY)

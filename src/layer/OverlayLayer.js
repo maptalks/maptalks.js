@@ -408,7 +408,7 @@ class OverlayLayer extends Layer {
             }
             if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
                 // Except for LineString with arrows
-                let extent = geo._getPainter().getContainerExtent();
+                let extent = geo.getContainerExtent();
                 if (tolerance) {
                     extent = extent.expand(tolerance);
                 }

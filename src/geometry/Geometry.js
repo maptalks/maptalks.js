@@ -332,17 +332,23 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * Get geometry's screen extent in pixel
+     *
+     * @returns {PointExtent}
+     */
+    getContainerExtent() {
+        const painter = this._getPainter();
+        return painter ? painter.getContainerExtent() : null;
+    }
+
+    /**
      * Get pixel size of the geometry, which may vary in different zoom levels.
      *
      * @returns {Size}
      */
     getSize() {
-        const map = this.getMap();
-        if (!map) {
-            return null;
-        }
-        const pxExtent = this._getPainter().getContainerExtent();
-        return pxExtent.getSize();
+        const extent = this.getContainerExtent();
+        return extent ? extent.getSize() : null;
     }
 
     /**
