@@ -1008,6 +1008,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!this._layerCache) {
             this._layerCache = {};
         }
+        const mapLayers = this._layers;
         for (let i = 0, len = layers.length; i < len; i++) {
             const layer = layers[i];
             const id = layer.getId();
@@ -1021,12 +1022,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
                 throw new Error('Duplicate layer id in the map: ' + id);
             }
             this._layerCache[id] = layer;
-            layer._bindMap(this, this._layers.length);
-            this._layers.push(layer);
+            layer._bindMap(this);
+            mapLayers.push(layer);
             if (this._loaded) {
                 layer.load();
             }
         }
+
+        this._sortLayersByZIndex();
+
         /**
          * addlayer event, fired when adding layers.
          *
@@ -1716,11 +1720,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const index = layerList.indexOf(layer);
         if (index > -1) {
             layerList.splice(index, 1);
-            for (let j = 0, jlen = layerList.length; j < jlen; j++) {
-                if (layerList[j].setZIndex) {
-                    layerList[j].setZIndex(j);
-                }
-            }
         }
     }
 
@@ -1728,8 +1727,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!this._layers) {
             return;
         }
+        for (let i = 0, l = this._layers.length; i < l; i++) {
+            this._layers[i]._order = i;
+        }
         this._layers.sort(function (a, b) {
-            return a.getZIndex() - b.getZIndex();
+            const c = a.getZIndex() - b.getZIndex();
+            if (c === 0) {
+                return a._order - b._order;
+            }
+            return c;
         });
     }
 

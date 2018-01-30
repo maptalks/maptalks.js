@@ -154,7 +154,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return {Number}
      */
     getZIndex() {
-        return this._zIndex;
+        return this._zIndex || 0;
     }
 
     /**
@@ -418,7 +418,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             return;
         }
         this.map = map;
-        this.setZIndex(zIndex);
+        if (!isNil(zIndex)) {
+            this.setZIndex(zIndex);
+        }
         this._switchEvents('on', this);
 
         if (this.onAdd) {

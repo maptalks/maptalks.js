@@ -1,4 +1,4 @@
-describe('#Layer', function () {
+describe('Layer.Spec', function () {
 
     var container;
     var map;
@@ -81,6 +81,108 @@ describe('#Layer', function () {
             };
             map.addLayer(layer);
 
+        });
+    });
+
+    describe('zindex of layers', function () {
+        it('default zindex is 0', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            expect(layer1.getZIndex()).to.be(0);
+            expect(layer2.getZIndex()).to.be(0);
+            expect(layer3.getZIndex()).to.be(0);
+        });
+
+        it('setZIndex to bring a layer to front', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            layer1.setZIndex(1);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(2);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
+
+            layer3.setZIndex(3);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+        });
+
+        it('setZIndex with 1 and to null later, layer should stay at the same index', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            layer1.setZIndex(1);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(null);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+        });
+
+        it('setZIndex to null, layer index should not change', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            layer1.setZIndex(null);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+        });
+
+        it('remove a layer with z index', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            layer1.setZIndex(3);
+            layer2.setZIndex(2);
+            layer3.setZIndex(1);
+
+            expect(map.getLayers()).to.be.eql([layer3, layer2, layer1]);
+
+            layer2.remove();
+            expect(map.getLayers()).to.be.eql([layer3, layer1]);
+
+            expect(layer1.getZIndex()).to.be(3);
+            expect(layer3.getZIndex()).to.be(1);
+        });
+
+        it('setZIndex before adding to map to bring a layer to front', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            layer1.setZIndex(1);
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(2);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
+
+            layer3.setZIndex(3);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
         });
     });
 
