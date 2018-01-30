@@ -37,53 +37,11 @@ class GeometryDragHandler extends Handler  {
         delete this.container;
     }
 
-    _startDrag(param) {
-        const map = this.target.getMap();
-        if (!map) {
-            return;
-        }
-        const parent = this.target._getParent();
-        if (parent) {
-            return;
-        }
-        if (this.isDragging()) {
-            return;
-        }
-        const domEvent = param['domEvent'];
-        if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
-            return;
-        }
-        this.container = map._panels.mapWrapper || map._containerDOM;
-        this.target.on('click', this._endDrag, this);
-        this._lastCoord = this._correctCoord(param['coordinate']);
-        this._lastPoint = param['containerPoint'];
-        this._prepareDragHandler();
-        this._dragHandler.onMouseDown(param['domEvent']);
-
-
-        on(this.container, 'mouseleave', this._endDrag, this);
-
-        this._moved = false;
-        /**
-         * drag start event
-         * @event Geometry#dragstart
-         * @type {Object}
-         * @property {String} type                    - dragstart
-         * @property {Geometry} target       - the geometry fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        this.target._fireEvent('dragstart', param);
-        return;
-    }
-
     _prepareDragHandler() {
         this._dragHandler = new DragHandler(this.container);
-        this._dragHandler.on('dragging', this._dragging, this);
-        this._dragHandler.on('mouseup', this._endDrag, this);
-        this._dragHandler.enable();
+        this._dragHandler.on('dragging', this._dragging, this)
+            .on('mouseup', this._endDrag, this)
+            .enable();
     }
 
     _prepareShadow() {
@@ -93,9 +51,8 @@ class GeometryDragHandler extends Handler  {
             this._shadow.remove();
         }
 
-        this._shadow = target.copy();
+        const shadow = this._shadow = target.copy();
         this._shadow.setSymbol(target._getInternalSymbol());
-        const shadow = this._shadow;
         if (target.options['dragShadow']) {
             const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
@@ -160,12 +117,42 @@ class GeometryDragHandler extends Handler  {
         this._dragStageLayer._getRenderer().resources = resources;
     }
 
+    _startDrag(param) {
+        const map = this.target.getMap();
+        if (!map) {
+            return;
+        }
+        const parent = this.target._getParent();
+        if (parent) {
+            return;
+        }
+        if (this.isDragging()) {
+            return;
+        }
+        const domEvent = param['domEvent'];
+        if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
+            return;
+        }
+        this.container = map._panels.mapWrapper || map._containerDOM;
+        this.target.on('click', this._endDrag, this);
+        this._lastCoord = this._correctCoord(param['coordinate']);
+        this._lastPoint = param['containerPoint'];
+        this._prepareDragHandler();
+        this._dragHandler.onMouseDown(param['domEvent']);
+
+        on(this.container, 'mouseleave', this._endDrag, this);
+        this._startParam = param;
+        this._moved = false;
+
+        return;
+    }
+
     _dragging(param) {
         const target = this.target;
         const map = target.getMap(),
-            eventParam = map._parseEvent(param['domEvent']);
+            e = map._parseEvent(param['domEvent']);
 
-        const domEvent = eventParam['domEvent'];
+        const domEvent = e['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
@@ -178,15 +165,28 @@ class GeometryDragHandler extends Handler  {
             if (!target.options['dragShadow']) {
                 target.hide();
             }
-            this._shadow._fireEvent('dragstart', eventParam);
+            this._shadow._fireEvent('dragstart', e);
+            /**
+             * drag start event
+             * @event Geometry#dragstart
+             * @type {Object}
+             * @property {String} type           - dragstart
+             * @property {Geometry} target       - the geometry fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            this.target._fireEvent('dragstart', this._startParam || e);
+            delete this._startParam;
             return;
         }
         if (!this._shadow) {
             return;
         }
         const axis = this._shadow.options['dragOnAxis'],
-            coord = this._correctCoord(eventParam['coordinate']),
-            point = eventParam['containerPoint'];
+            coord = this._correctCoord(e['coordinate']),
+            point = e['containerPoint'];
         this._lastPoint = this._lastPoint || point;
         this._lastCoord = this._lastCoord || coord;
         const pointOffset = point.sub(this._lastPoint);
@@ -202,9 +202,9 @@ class GeometryDragHandler extends Handler  {
         if (!target.options['dragShadow']) {
             target.translate(coordOffset);
         }
-        eventParam['coordOffset'] = coordOffset;
-        eventParam['pointOffset'] = pointOffset;
-        this._shadow._fireEvent('dragging', eventParam);
+        e['coordOffset'] = coordOffset;
+        e['pointOffset'] = pointOffset;
+        this._shadow._fireEvent('dragging', e);
 
         /**
          * dragging event
@@ -217,7 +217,7 @@ class GeometryDragHandler extends Handler  {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        target._fireEvent('dragging', eventParam);
+        target._fireEvent('dragging', e);
 
     }
 
@@ -234,27 +234,29 @@ class GeometryDragHandler extends Handler  {
             return;
         }
 
-        const eventParam = map._parseEvent(param['domEvent']);
+        const e = map._parseEvent(param['domEvent']);
         target.off('symbolchange', this._onTargetUpdated, this);
 
-        this._updateTargetAndRemoveShadow(eventParam);
+        this._updateTargetAndRemoveShadow(e);
 
         delete this._lastCoord;
         delete this._lastPoint;
 
         this._isDragging = false;
-        /**
-         * dragend event
-         * @event Geometry#dragend
-         * @type {Object}
-         * @property {String} type                    - dragend
-         * @property {Geometry} target       - the geometry fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        target._fireEvent('dragend', eventParam);
+        if (this._moved) {
+            /**
+             * dragend event
+             * @event Geometry#dragend
+             * @type {Object}
+             * @property {String} type                    - dragend
+             * @property {Geometry} target       - the geometry fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            target._fireEvent('dragend', e);
+        }
     }
 
     isDragging() {
