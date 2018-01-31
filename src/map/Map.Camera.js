@@ -327,7 +327,7 @@ Map.include(/** @lends Map.prototype */{
             // get field of view
             const fov = this.getFov() * Math.PI / 180;
             const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
-            const farZ = maxScale * h / 2 / this._getFovRatio() + 1;
+            const farZ = maxScale * h / 2 / this._getFovRatio() * 1.4;
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
