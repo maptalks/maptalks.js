@@ -3,11 +3,6 @@ import Handler from '../../handler/Handler';
 import Point from '../../geo/Point';
 import Map from '../Map';
 
-function log(msg) {
-    const logger = document.getElementById('logger');
-    logger.innerHTML = msg;
-}
-
 //handler to zoom map by pinching
 class MapTouchZoomHandler extends Handler {
     addHooks() {
@@ -21,9 +16,6 @@ class MapTouchZoomHandler extends Handler {
     _onTouchStart(event) {
         const map = this.target;
         if (!event.touches || event.touches.length !== 2 || map.isInteracting()) {
-            if (map.isInteracting()) {
-                log([map.isZooming(), map.isRotating(), map.isMoving()].join());
-            }
             return;
         }
         const container = map.getContainer();
