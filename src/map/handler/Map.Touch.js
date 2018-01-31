@@ -74,21 +74,22 @@ class MapTouchZoomHandler extends Handler {
             'mousePos': [p1, p2]
         };
         if (!this.mode) {
-            if (map.options['dragRotate'] && Math.abs(bearing) > 8) {
-                this.mode = 'rotate';
-            } else if (map.options['dragPitch'] && d1.y * d2.y > 0 && Math.abs(d1.y) > 10 && Math.abs(d2.y) > 10) {
+            if (map.options['touchRotate'] && Math.abs(bearing) > 8) {
+                this.mode = map.options['touchZoomRotate'] ? 'rotate_zoom' : 'rotate';
+            } else if (map.options['touchPitch'] && d1.y * d2.y > 0 && Math.abs(d1.y) > 10 && Math.abs(d2.y) > 10) {
                 this.mode = 'pitch';
-            } else if (map.options['zoomable'] && Math.abs(1 - scale) > 0.15) {
-                this.mode = 'zoom';
+            } else if (map.options['zoomable'] && map.options['touchZoom'] && Math.abs(1 - scale) > 0.15) {
+                this.mode = map.options['touchZoomRotate'] && map.options['touchRotate'] ? 'rotate_zoom' : 'zoom';
             }
             this._startTouching(param);
         }
-        if (this.mode === 'zoom') {
+        if (this.mode === 'zoom' || this.mode === 'rotate_zoom') {
             this._scale = scale;
             const res = map._getResolution(this._startZoom) / scale;
             const zoom = map.getZoomFromRes(res);
             map.onZooming(zoom, this._Origin);
-        } else if (this.mode === 'rotate') {
+        }
+        if (this.mode === 'rotate' || this.mode === 'rotate_zoom') {
             map.setBearing(this._startBearing + bearing);
             map.onDragRotating(param);
         } else if (this.mode === 'pitch') {
@@ -107,14 +108,14 @@ class MapTouchZoomHandler extends Handler {
 
     _startTouching(param) {
         const map = this.target;
-        if (this.mode === 'rotate' || this.mode === 'pitch') {
-            map.onDragRotateStart(param);
-        } else if (this.mode === 'zoom') {
+        if (this.mode === 'zoom' || this.mode === 'rotate_zoom') {
             const size = map.getSize();
             this._Origin = new Point(size['width'] / 2, size['height'] / 2);
             map.onZoomStart(null, this._Origin);
         }
-
+        if (this.mode === 'rotate' || this.mode === 'pitch' || this.mode === 'rotate_zoom') {
+            map.onDragRotateStart(param);
+        }
     }
 
     _onTouchEnd(event) {
@@ -124,12 +125,13 @@ class MapTouchZoomHandler extends Handler {
         off(document, 'touchmove', this._onTouchMove, this);
         off(document, 'touchend', this._onTouchEnd, this);
 
-        if (this.mode === 'zoom') {
+        if (this.mode === 'zoom' || this.mode === 'rotate_zoom') {
             const scale = this._scale;
             const res = map._getResolution(this._startZoom) / scale;
             const zoom = map.getZoomFromRes(res);
             map.onZoomEnd(zoom, this._Origin);
-        } else if (this.mode === 'pitch' || this.mode === 'rotate') {
+        }
+        if (this.mode === 'pitch' || this.mode === 'rotate' || this.mode === 'rotate_zoom') {
             map.onDragRotateEnd({
                 'domEvent': event
             });
@@ -147,9 +149,13 @@ class MapTouchZoomHandler extends Handler {
 }
 
 Map.mergeOptions({
-    'touchZoom': true
+    'touchPinch' : true,
+    'touchZoom': true,
+    'touchPitch' : true,
+    'touchRotate' : true,
+    'touchZoomRotate' : false
 });
 
-Map.addOnLoadHook('addHandler', 'touchZoom', MapTouchZoomHandler);
+Map.addOnLoadHook('addHandler', 'touchPinch', MapTouchZoomHandler);
 
 export default MapTouchZoomHandler;

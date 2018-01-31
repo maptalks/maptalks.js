@@ -264,4 +264,36 @@ describe('Map.Touch', function () {
         });
     });
 
+    describe('touch rotate and zoom', function () {
+        it('zoom and rotate at the same time', function (done) {
+            map.config('touchZoomRotate', true);
+            var z = map.getZoom();
+            var b = map.getBearing();
+            testTouchMap([{
+                clientX : centerPoint.x - 1,
+                clientY : centerPoint.y - 1,
+            },
+            {
+                clientX : centerPoint.x + 1,
+                clientY : centerPoint.y + 1,
+            }], [{
+                clientX : centerPoint.x + 5,
+                clientY : centerPoint.y - 5,
+            },
+            {
+                clientX : centerPoint.x - 6,
+                clientY : centerPoint.y + 5,
+            }], {
+                'rotateend' : function () {
+                    var b2 = map.getBearing();
+                    var z2 = map.getZoom();
+                    expect(b > b2).to.be.ok();
+                    expect(z2 > z).to.be.ok();
+                    done();
+                }
+            });
+
+        });
+    });
+
 });
