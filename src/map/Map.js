@@ -43,7 +43,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
  *
  * @property {Number}  [options.maxPitch=80]                    - max pitch
- * @property {Number}  [options.maxVisualPitch=60]              - the max pitch to be visual
+ * @property {Number}  [options.maxVisualPitch=56]              - the max pitch to be visual
  *
  * @property {Extent}  [options.viewHistory=true]               -  whether to record view history
  * @property {Extent}  [options.viewHistoryCount=10]            -  the count of view history record.
@@ -68,12 +68,15 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
  *
+ * @property {Boolean}        [options.fog=true]                        - whether to draw fog in far distance.
+ * @property {Number[]}       [options.fogColor=[233, 233, 233]]        - color of fog: [r, g, b]
+ *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @memberOf Map
  * @instance
  */
 const options = {
-    'maxVisualPitch' : 60,
+    'maxVisualPitch' : 56,
     'maxPitch' : 80,
     'centerCross': false,
 
@@ -454,10 +457,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const pitch = this.getPitch(),
             maxVisualPitch = this.options['maxVisualPitch'];
         if (maxVisualPitch && pitch > maxVisualPitch) {
-            const visualDistance = this.height / 2 * Math.tan(maxVisualPitch * Math.PI / 180);
-            visualHeight = this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+            visualHeight = this._getVisualHeight(maxVisualPitch);
         }
         return new PointExtent(0, this.height - visualHeight, this.width, this.height);
+    }
+
+    _getVisualHeight(maxVisualPitch) {
+        const pitch = this.getPitch();
+        const visualDistance = this.height / 2 * Math.tan(maxVisualPitch * Math.PI / 180);
+        return this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
     }
 
     /**
