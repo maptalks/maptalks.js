@@ -9,6 +9,7 @@ import Canvas2D from '../../../core/Canvas';
 import TileLayer from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
+import LruCache from '../../../core/util/LruCache';
 
 /**
  * @classdesc
@@ -28,6 +29,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         super(layer);
         this._tileRended = {};
         this._tileLoading = {};
+        this._tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
     }
 
     prepareRender() {
@@ -87,6 +89,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     loading = true;
                 }
                 this.drawTile(cached.info, cached.image);
+                if (cached !== this._tileCache.get(tileId)) {
+                    this._tileCache.add(tileId, cached);
+                }
             } else {
                 loading = true;
                 const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
@@ -167,6 +172,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._clearCaches();
         this._tileRended = {};
         this._tileLoading = {};
+        this._tileCache.reset();
         super.clear();
     }
 
@@ -242,7 +248,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return loadImage(tileImage, [url]);
     }
 
-    retireTileImage(tileImage) {
+    cancelTileLoading(tileImage) {
         if (!tileImage) return;
         tileImage.onload = falseFn;
         tileImage.onerror = falseFn;
@@ -280,7 +286,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         if (tileImage instanceof Image) {
-            this.retireTileImage(tileImage);
+            this.cancelTileLoading(tileImage);
         }
         tileImage.loadTime = 0;
         delete this._tileLoading[tileInfo['id']];
@@ -363,12 +369,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _getCachedTile(tileId) {
-        const cached = this._tileRended[tileId];
+        let cached = this._tileRended[tileId];
         if (this._tileRended[tileId]) {
             this._tileRended[tileId].current = true;
         }
         if (this._tileLoading && this._tileLoading[tileId]) {
             this._tileLoading[tileId].current = true;
+        }
+        if (!cached) {
+            cached = this._tileCache.get(tileId);
+            if (cached) {
+                cached.current = true;
+                this._tileRended[tileId] = cached;
+            }
         }
         return cached;
     }
@@ -389,6 +402,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onRemove() {
+        this._tileCache.reset();
         this._clearCaches();
     }
 
@@ -422,7 +436,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (!tile.current) {
                 // abort loading tiles
                 if (tile.image) {
-                    this.retireTileImage(tile.image);
+                    this.cancelTileLoading(tile.image);
                 }
                 this.deleteTile(tile);
                 delete this._tileLoading[i];
@@ -430,7 +444,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         for (const i in this._tileRended) {
             const tile = this._tileRended[i];
-            if (!tile.current) {
+            if (!tile.current && !this._tileCache.has(i)) {
                 this.deleteTile(tile);
                 delete this._tileRended[i];
             }

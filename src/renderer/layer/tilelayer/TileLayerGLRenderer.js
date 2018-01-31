@@ -97,7 +97,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return super.getCanvasImage();
         }
         const img = super.getCanvasImage();
-        img.image = this.canvas2;
+        if (img) {
+            img.image = this.canvas2;
+        }
         return img;
     }
 
@@ -148,7 +150,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     deleteTile(tile) {
         super.deleteTile(tile);
-        if (tile && !tile.current && tile.image && tile.image.texture) {
+        if (tile && tile.image && tile.image.texture) {
             this.saveTexture(tile.image.texture);
             this.saveImageBuffer(tile.image.glBuffer);
             delete tile.image.texture;

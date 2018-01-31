@@ -282,14 +282,9 @@ const ImageGLRenderable = Base => {
          */
         loadImageBuffer(image, data) {
             const gl = this.gl;
-            let buffer = image.glBuffer;   // Create a texture object
-            if (!buffer) {
-                buffer = this.createImageBuffer();
-                image.glBuffer = buffer;
-            }
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, image.glBuffer);
-
+            // Create a buffer object
+            const buffer = image.glBuffer = this.createImageBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             tileData.set(data);
             gl.bufferData(gl.ARRAY_BUFFER, tileData, gl.STATIC_DRAW);
             return buffer;

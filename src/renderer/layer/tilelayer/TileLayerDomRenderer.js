@@ -1,3 +1,8 @@
+//--------------------------------------------------------------
+//THIS RENDERER IS NOT USED ANYMORE AND REPLACED BY GL RENDERER.
+//--------------------------------------------------------------
+//
+//
 //------------------
 // It's a little bit tricky to test tilelayer with CI.
 // run gulp test
@@ -32,7 +37,6 @@ const POSITION0 = 'position:absolute;';
 /**
  * @classdesc
  * @deprecated
- * THIS RENDERER IS NOT USED ANYMORE AND REPLACED BY GL RENDERER.
  *
  * A renderer based on HTML Doms for TileLayers.
  * It is implemented based on Leaflet's GridLayer.

@@ -21,6 +21,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
+ * @property {Number}              [options.maxCacheSize=256]    - maximum number of tiles to cache
  * @memberOf TileLayer
  * @instance
  */
@@ -43,6 +44,8 @@ const options = {
     'debug': false,
 
     'spatialReference' : null,
+
+    'maxCacheSize' : 256,
 
     'renderer' : (() => {
         return Browser.webgl ? 'gl' : 'canvas';
