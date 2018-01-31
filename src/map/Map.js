@@ -1684,15 +1684,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _get2DExtent(zoom) {
         const cExtent = this.getContainerExtent();
-        const c1 = this._containerPointToPoint(new Point(cExtent.xmin, cExtent.ymin), zoom),
-            c2 = this._containerPointToPoint(new Point(cExtent.xmax, cExtent.ymin), zoom),
-            c3 = this._containerPointToPoint(new Point(this.width, this.height), zoom),
-            c4 = this._containerPointToPoint(new Point(0, this.height), zoom);
-        const xmin = Math.min(c1.x, c2.x, c3.x, c4.x),
-            xmax = Math.max(c1.x, c2.x, c3.x, c4.x),
-            ymin = Math.min(c1.y, c2.y, c3.y, c4.y),
-            ymax = Math.max(c1.y, c2.y, c3.y, c4.y);
-        return new PointExtent(xmin, ymin, xmax, ymax);
+        return cExtent.convertTo(c => this._containerPointToPoint(c, zoom));
     }
 
     /**
