@@ -184,6 +184,22 @@ describe('Layer.Spec', function () {
             layer3.setZIndex(3);
             expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
         });
+
+        it('setZIndex in options before adding to map to bring a layer to front', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas', zIndex : 1 });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(2);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
+
+            layer3.setZIndex(3);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+        });
     });
 
     describe('change order of layers', function () {
