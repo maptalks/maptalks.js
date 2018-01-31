@@ -174,7 +174,15 @@ class MapDragHandler extends Handler {
         }
 
         if (this._rotateMode.indexOf('rotate') >= 0 && map.options['dragRotate']) {
-            const bearing = map.getBearing() - 0.6 * (this.preX - mx);
+            let bearing;
+            if (map.options['dragPitch'] || dx > dy) {
+                bearing = map.getBearing() - 0.6 * (this.preX - mx);
+            } else if (mx > map.width / 2) {
+                bearing = map.getBearing() + 0.6 * (this.preY - my);
+            } else {
+                bearing = map.getBearing() - 0.6 * (this.preY - my);
+            }
+
             if (!this.db) {
                 this.db = sign(bearing - this.startBearing);
             }
