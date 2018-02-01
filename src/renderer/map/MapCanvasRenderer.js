@@ -210,7 +210,7 @@ class MapCanvasRenderer extends MapRenderer {
             renderer.prepareCanvas();
             renderer.drawOnInteracting(this._eventParam);
             return drawTime;
-        } else if (map.isZooming() && !map.getPitch()) {
+        } else if (map.isZooming() && !map.getPitch() && !map.isRotating()) {
             // when:
             // 1. layer's renderer doesn't have drawOnInteracting
             // 2. timeLimit is exceeded
@@ -657,14 +657,14 @@ class MapCanvasRenderer extends MapRenderer {
         const bottom = clipExtent.ymin * r;
         const h = Math.ceil(bottom - top);
         const color = map.options['fogColor'].join();
-        const gradient = ctx.createLinearGradient(0, top, 0, bottom + h * 0.5);
+        const gradient = ctx.createLinearGradient(0, top, 0, bottom + h * 0.3);
         gradient.addColorStop(0, `rgba(${color}, 0)`);
-        gradient.addColorStop(0.3, `rgba(${color}, 0.4)`);
-        gradient.addColorStop(0.7, `rgba(${color}, 1)`);
+        gradient.addColorStop(0.3, `rgba(${color}, 0.3)`);
+        gradient.addColorStop(0.8, `rgba(${color}, 1)`);
         gradient.addColorStop(1, `rgba(${color}, 0)`);
         ctx.beginPath();
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, top, Math.ceil(clipExtent.getWidth()) * r, h * 1.5);
+        ctx.fillRect(0, top, Math.ceil(clipExtent.getWidth()) * r, h * 1.3);
     }
 
     _getAllLayerToRender() {

@@ -399,29 +399,24 @@ class CanvasRenderer extends Class {
      * @param  {Size} canvasSize the size resizing to
      */
     resizeCanvas(canvasSize) {
-        if (!this.canvas) {
+        const canvas = this.canvas;
+        if (!canvas) {
             return;
         }
-        let size;
-        if (!canvasSize) {
-            const map = this.getMap();
-            size = map.getSize();
-        } else {
-            size = canvasSize;
-        }
+        const size = canvasSize || this.getMap().getSize();
         const r = Browser.retina ? 2 : 1;
-        if (this.canvas.width === r * size.width && this.canvas.height === r * size.height) {
+        if (canvas.width === r * size.width && canvas.height === r * size.height) {
             return;
         }
         //retina support
-        this.canvas.height = r * size.height;
-        this.canvas.width = r * size.width;
+        canvas.height = r * size.height;
+        canvas.width = r * size.width;
         if (Browser.retina && this.context) {
             this.context.scale(r, r);
         }
-        if (this.layer._canvas && this.canvas.style) {
-            this.canvas.style.width = size.width + 'px';
-            this.canvas.style.height = size.height + 'px';
+        if (this.layer._canvas && canvas.style) {
+            canvas.style.width = size.width + 'px';
+            canvas.style.height = size.height + 'px';
         }
     }
 
