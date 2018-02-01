@@ -141,13 +141,13 @@ class MapTouchZoomHandler extends Handler {
 }
 
 Map.mergeOptions({
-    'touchPinch' : true,
+    'touchGesture' : true,
     'touchZoom': true,
     'touchPitch' : true,
     'touchRotate' : true,
     'touchZoomRotate' : false
 });
 
-Map.addOnLoadHook('addHandler', 'touchPinch', MapTouchZoomHandler);
+Map.addOnLoadHook('addHandler', 'touchGesture', MapTouchZoomHandler);
 
 export default MapTouchZoomHandler;
