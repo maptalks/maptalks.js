@@ -27,9 +27,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
      */
     constructor(layer) {
         super(layer);
-        this._tileRended = {};
-        this._tileLoading = {};
-        this._tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
+        this.tilesInView = {};
+        this.tilesLoading = {};
+        this.tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
     }
 
     prepareRender() {
@@ -89,8 +89,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     loading = true;
                 }
                 this.drawTile(cached.info, cached.image);
-                if (cached !== this._tileCache.get(tileId)) {
-                    this._tileCache.add(tileId, cached);
+                if (cached !== this.tileCache.get(tileId)) {
+                    this.tileCache.add(tileId, cached);
                 }
             } else {
                 loading = true;
@@ -170,14 +170,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     clear() {
         this._clearCaches();
-        this._tileRended = {};
-        this._tileLoading = {};
-        this._tileCache.reset();
+        this.tilesInView = {};
+        this.tilesLoading = {};
+        this.tileCache.reset();
         super.clear();
     }
 
     _isLoadingTile(tileId) {
-        return !!this._tileLoading[tileId];
+        return !!this.tilesLoading[tileId];
     }
 
     clipCanvas(context) {
@@ -213,10 +213,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (tileQueue.hasOwnProperty(p)) {
                 const tile = tileQueue[p];
                 const tileImage = this.loadTile(tile);
-                if (!tileImage.loadTime) {
+                if (tileImage.loadTime === undefined) {
                     // tile image's loading may not be async
                     tileImage.current = true;
-                    this._tileLoading[tile['id']] = {
+                    this.tilesLoading[tile['id']] = {
                         image : tileImage,
                         current : true,
                         info : tile
@@ -260,12 +260,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         const id = tileInfo['id'];
-        if (!this._tileRended) {
+        if (!this.tilesInView) {
             // removed
             return;
         }
         tileImage.loadTime = now();
-        delete this._tileLoading[id];
+        delete this.tilesLoading[id];
         this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
         /**
@@ -289,7 +289,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.cancelTileLoading(tileImage);
         }
         tileImage.loadTime = 0;
-        delete this._tileLoading[tileInfo['id']];
+        delete this.tilesLoading[tileInfo['id']];
         this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
         /**
@@ -369,25 +369,27 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _getCachedTile(tileId) {
-        let cached = this._tileRended[tileId];
-        if (this._tileRended[tileId]) {
-            this._tileRended[tileId].current = true;
+        const tilesInView = this.tilesInView;
+        let cached = tilesInView[tileId];
+        if (tilesInView[tileId]) {
+            tilesInView[tileId].current = true;
         }
-        if (this._tileLoading && this._tileLoading[tileId]) {
-            this._tileLoading[tileId].current = true;
+        const tilesLoading = this.tilesLoading;
+        if (tilesLoading && tilesLoading[tileId]) {
+            tilesLoading[tileId].current = true;
         }
         if (!cached) {
-            cached = this._tileCache.get(tileId);
+            cached = this.tileCache.get(tileId);
             if (cached) {
                 cached.current = true;
-                this._tileRended[tileId] = cached;
+                tilesInView[tileId] = cached;
             }
         }
         return cached;
     }
 
     _addTileToCache(tileInfo, tileImage) {
-        this._tileRended[tileInfo.id] = {
+        this.tilesInView[tileInfo.id] = {
             image : tileImage,
             current : true,
             info : tileInfo
@@ -402,28 +404,28 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onRemove() {
-        this._tileCache.reset();
+        this.tileCache.reset();
         this._clearCaches();
     }
 
     _clearCaches() {
-        delete this._tileRended;
+        delete this.tilesInView;
         delete this._tileZoom;
-        delete this._tileLoading;
+        delete this.tilesLoading;
         delete this._backCanvas;
     }
 
     _markTiles() {
         let a = 0, b = 0;
-        if (this._tileLoading) {
-            for (const p in this._tileLoading) {
-                this._tileLoading[p].current = false;
+        if (this.tilesLoading) {
+            for (const p in this.tilesLoading) {
+                this.tilesLoading[p].current = false;
                 a++;
             }
         }
-        if (this._tileRended) {
-            for (const p in this._tileRended) {
-                this._tileRended[p].current = false;
+        if (this.tilesInView) {
+            for (const p in this.tilesInView) {
+                this.tilesInView[p].current = false;
                 b++;
             }
         }
@@ -431,22 +433,24 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _retireTiles() {
-        for (const i in this._tileLoading) {
-            const tile = this._tileLoading[i];
+        for (const i in this.tilesLoading) {
+            const tile = this.tilesLoading[i];
             if (!tile.current) {
                 // abort loading tiles
                 if (tile.image) {
                     this.cancelTileLoading(tile.image);
                 }
                 this.deleteTile(tile);
-                delete this._tileLoading[i];
+                delete this.tilesLoading[i];
             }
         }
-        for (const i in this._tileRended) {
-            const tile = this._tileRended[i];
-            if (!tile.current && !this._tileCache.has(i)) {
-                this.deleteTile(tile);
-                delete this._tileRended[i];
+        for (const i in this.tilesInView) {
+            const tile = this.tilesInView[i];
+            if (!tile.current) {
+                delete this.tilesInView[i];
+                if (!this.tileCache.has(i)) {
+                    this.deleteTile(tile);
+                }
             }
         }
     }

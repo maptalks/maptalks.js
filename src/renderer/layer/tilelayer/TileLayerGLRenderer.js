@@ -121,11 +121,15 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
                     const parentTile = this.background[p];
                     if (this.layer._isTileInExtent(parentTile.info, extent)) {
                         parentTile.current = true;
-                        this.drawTile(parentTile.info, parentTile.image);
+                        this.drawBackgroundTile(parentTile.info, parentTile.image);
                     }
                 }
             }
         }
+    }
+
+    drawBackgroundTile(info, image) {
+        this.drawTile(info, image);
     }
 
     saveBackground() {
@@ -138,11 +142,11 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return;
         }
         this.background = {};
-        const cache = this._tileRended;
+        const cache = this.tilesInView;
         for (const p in cache) {
             const tile = cache[p];
             if (hasOwn(cache, p) && tile && tile.current) {
-                tile.image.loadTime = 0;
+                // tile.image.loadTime = 0;
                 this.background[p] = tile;
             }
         }
