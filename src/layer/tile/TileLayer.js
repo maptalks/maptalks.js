@@ -14,6 +14,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Object}              [options.spatialReference=null] - TileLayer's spatial reference
  * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
  * @property {Number[]}            [options.tileSystem=null]     - tile system number arrays
+ * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {Boolean}             [options.zoomBackground=false] - whether to draw a background of baselayer during or after zooming, false by default
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
@@ -51,7 +52,9 @@ const options = {
         return Browser.webgl ? 'gl' : 'canvas';
     })(),
 
-    'clipByPitch' : true
+    'clipByPitch' : true,
+
+    'maxAvailableZoom' : null
 };
 
 const urlPattern = /\{ *([\w_]+) *\}/g;
@@ -193,6 +196,10 @@ class TileLayer extends Layer {
             } else {
                 zoom = Math.round(zoom);
             }
+        }
+        const maxZoom = this.options['maxAvailableZoom'];
+        if (!isNil(maxZoom) && zoom > maxZoom) {
+            zoom = maxZoom;
         }
         return zoom;
     }

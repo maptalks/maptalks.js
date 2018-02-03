@@ -58,6 +58,27 @@ describe('TileLayer', function () {
             map.addLayer(tile);
         });
 
+        it('with maxAvailableZoom set', function (done) {
+            createMap();
+            var zoom = map.getZoom();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '/resources/tile.png',
+                maxAvailableZoom : zoom - 1
+            });
+            tile.once('layerload', function () {
+                expect(tile).to.be.painted();
+                map.removeLayer(tile);
+                tile.once('layerload', function () {
+                    expect(tile.getTiles().tiles[0].z === zoom - 1).to.be.ok();
+                    expect(tile).to.be.painted();
+                    done();
+                });
+                map.addLayer(tile);
+            });
+            map.addLayer(tile);
+        });
+
         it('set tile size', function () {
             createMap();
             var tile1 = new maptalks.TileLayer('tile', {
