@@ -219,11 +219,13 @@ class InfoWindow extends UIComponent {
 
     _onAutoOpen(e) {
         const owner = this.getOwner();
-        if (owner instanceof Marker) {
-            this.show(owner.getCoordinates());
-        } else {
-            this.show(e.coordinate);
-        }
+        setTimeout(() => {
+            if (owner instanceof Marker) {
+                this.show(owner.getCoordinates());
+            } else {
+                this.show(e.coordinate);
+            }
+        }, 1);
     }
 
     _getWindowWidth() {
