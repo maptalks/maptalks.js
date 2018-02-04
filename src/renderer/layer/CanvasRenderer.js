@@ -502,7 +502,14 @@ class CanvasRenderer extends Class {
         //when clipping, layer's southwest needs to be reset for mask's containerPoint conversion
         this._southWest = map._containerPointToPoint(new Point(0, map.height));
         context.save();
+        if (Browser.retina) {
+            context.save();
+            context.scale(2, 2);
+        }
         mask._getPainter().paint(null, context);
+        if (Browser.retina) {
+            context.restore();
+        }
         context.clip();
         this._southWest = old;
         if (this.isRenderComplete()) {
