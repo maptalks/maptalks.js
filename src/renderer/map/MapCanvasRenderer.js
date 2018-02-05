@@ -649,22 +649,24 @@ class MapCanvasRenderer extends MapRenderer {
         if (map.getPitch() <= map.options['maxVisualPitch'] || !map.options['fog']) {
             return;
         }
-        const ctx = this.context;
-        const r = Browser.retina ? 2 : 1;
-        const clipExtent = map.getContainerExtent();
-        let top = (map.height - map._getVisualHeight(75) * r);
+        const fogThickness = 30,
+            r = Browser.retina ? 2 : 1;
+        const ctx = this.context,
+            clipExtent = map.getContainerExtent();
+        let top = (map.height - map._getVisualHeight(75)) * r;
         if (top < 0) top = 0;
-        const bottom = clipExtent.ymin * r;
-        const h = Math.ceil(bottom - top);
-        const color = map.options['fogColor'].join();
-        const gradient = ctx.createLinearGradient(0, top, 0, bottom + h * 0.3);
+        const bottom = clipExtent.ymin * r,
+            h = Math.ceil(bottom - top),
+            color = map.options['fogColor'].join();
+        const gradient = ctx.createLinearGradient(0, top, 0, bottom + fogThickness);
+        const landscape = 1 - fogThickness / (h + fogThickness);
         gradient.addColorStop(0, `rgba(${color}, 0)`);
         gradient.addColorStop(0.3, `rgba(${color}, 0.3)`);
-        gradient.addColorStop(0.8, `rgba(${color}, 1)`);
+        gradient.addColorStop(landscape, `rgba(${color}, 1)`);
         gradient.addColorStop(1, `rgba(${color}, 0)`);
         ctx.beginPath();
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, top, Math.ceil(clipExtent.getWidth()) * r, h * 1.3);
+        ctx.fillRect(0, top, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(h + fogThickness));
     }
 
     _getAllLayerToRender() {
