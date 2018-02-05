@@ -434,6 +434,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onRemove() {
+        this._retireTiles(true);
         this.tileCache.reset();
         this._clearCaches();
     }
