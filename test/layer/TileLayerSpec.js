@@ -29,6 +29,7 @@ describe('TileLayer', function () {
 
     describe('add to map', function () {
         it('tile 404', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -41,6 +42,7 @@ describe('TileLayer', function () {
         });
 
         it('add again', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -59,6 +61,7 @@ describe('TileLayer', function () {
         });
 
         it('with maxAvailableZoom set', function (done) {
+            this.timeout(10000);
             createMap();
             var zoom = map.getZoom();
             var tile = new maptalks.TileLayer('tile', {
@@ -80,6 +83,7 @@ describe('TileLayer', function () {
         });
 
         it('set tile size', function () {
+            this.timeout(10000);
             createMap();
             var tile1 = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -98,6 +102,7 @@ describe('TileLayer', function () {
         });
 
         it('render after setting zoom without animation, bug found by sgh', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -113,6 +118,7 @@ describe('TileLayer', function () {
         });
 
         it('getTiles in fractional zoom', function () {
+            this.timeout(10000);
             createMap();
             map.setZoom(12.5);
             var tile = new maptalks.TileLayer('tile', {
@@ -125,6 +131,7 @@ describe('TileLayer', function () {
 
     describe('Different Projections', function () {
         it('webmercator', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -139,6 +146,7 @@ describe('TileLayer', function () {
         });
 
         it('lonlat', function (done) {
+            this.timeout(10000);
             createMap();
             map.config({
                 minZoom:1,
@@ -170,6 +178,7 @@ describe('TileLayer', function () {
         });
 
         it('baidu', function (done) {
+            this.timeout(10000);
             createMap();
             map.config({
                 minZoom: 1,
@@ -193,6 +202,7 @@ describe('TileLayer', function () {
         });
 
         it('3857 map with baidu tilelayer', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -325,6 +335,7 @@ describe('TileLayer', function () {
 
     describe('In a canvas container', function () {
         it('can be loaded', function (done) {
+            this.timeout(10000);
             container = document.createElement('canvas');
             container.style.width = '1px';
             container.style.height = '1px';
@@ -349,6 +360,7 @@ describe('TileLayer', function () {
         });
 
         it('with rotation', function (done) {
+            this.timeout(10000);
             container = document.createElement('canvas');
             container.style.width = '1px';
             container.style.height = '1px';
@@ -410,6 +422,7 @@ describe('TileLayer', function () {
                 done();
                 return;
             }
+            this.timeout(10000);
             container = document.createElement('div');
             container.style.width = '10px';
             container.style.height = '10px';
