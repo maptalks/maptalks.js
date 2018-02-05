@@ -263,6 +263,7 @@ describe('TileLayer', function () {
 
     describe('Different Renderers', function () {
         it('canvas', function (done) {
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
@@ -284,6 +285,7 @@ describe('TileLayer', function () {
                 done();
                 return;
             }
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
@@ -305,6 +307,7 @@ describe('TileLayer', function () {
                 done();
                 return;
             }
+            this.timeout(10000);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 urlTemplate : '/resources/not-exist.png',
