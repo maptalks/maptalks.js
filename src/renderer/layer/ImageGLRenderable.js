@@ -63,24 +63,28 @@ const ImageGLRenderable = Base => {
             gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
             gl.uniform1f(this.program['u_opacity'], opacity);
             if (!image.glBuffer)  {
-                const x1 = x;
-                const x2 = x + w;
-                const y1 = y;
-                const y2 = y + h;
-                this.loadImageBuffer(image, [
-                    x1, y1, 0.0,  //0
-                    x2, y1, 0.0, //1
-                    x1, y2, 0.0, //2
-                    x1, y2, 0.0,  //2
-                    x2, y1, 0.0, //1
-                    x2, y2, 0.0 //3
-                ]);
+                this.bufferTileData(image, x, y, w, h);
             } else {
                 gl.bindBuffer(gl.ARRAY_BUFFER, image.glBuffer);
             }
 
             this.enableVertexAttrib(['a_position', 3]);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+
+        bufferTileData(image, x, y, w, h) {
+            const x1 = x;
+            const x2 = x + w;
+            const y1 = y;
+            const y2 = y + h;
+            this.loadImageBuffer(image, [
+                x1, y1, 0.0,  //0
+                x2, y1, 0.0, //1
+                x1, y2, 0.0, //2
+                x1, y2, 0.0,  //2
+                x2, y1, 0.0, //1
+                x2, y2, 0.0 //3
+            ]);
         }
 
         /**

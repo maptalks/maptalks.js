@@ -1,4 +1,4 @@
-import { extend, isNil, isObject, isInteger, hasOwn } from '../../core/util';
+import { extend, isNil, isObject, isInteger, hasOwn, sign } from '../../core/util';
 import Coordinate from '../../geo/Coordinate';
 import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
@@ -219,4 +219,7 @@ export default class SpatialReference {
         return this._resolutions.length - 1;
     }
 
+    getZoomDirection() {
+        return sign(this._resolutions[0] - this._resolutions[this._resolutions.length - 1]);
+    }
 }

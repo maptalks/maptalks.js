@@ -72,7 +72,7 @@ class TileConfig {
         const tileSystem = this.tileSystem;
         // tileSize = this['tileSize'];
         const point = this.transformation.transform(pCoord, 1);
-        let tileIndex = this._getTileNum(point, res);
+        const tileIndex = this._getTileNum(point, res);
 
         // const tileLeft = tileIndex['x'] * tileSize['width'];
         // const tileTop = tileIndex['y'] * tileSize['height'];
@@ -90,13 +90,7 @@ class TileConfig {
         }
 
         //有可能tileIndex超出世界范围
-        tileIndex = this.getNeighorTileIndex(tileIndex['x'], tileIndex['y'], 0, 0, true);
-
-        return {
-            'x': tileIndex['x'],
-            'y': tileIndex['y']/* ,
-            'offset': new Point(offsetLeft, offsetTop) */
-        };
+        return this.getNeighorTileIndex(tileIndex['x'], tileIndex['y'], 0, 0, true);
     }
 
     /**

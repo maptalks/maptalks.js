@@ -16,7 +16,8 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Number[]}            [options.tileSystem=null]     - tile system number arrays
  * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
- * @property {Boolean}             [options.zoomBackground=false] - whether to draw a background of baselayer during or after zooming, false by default
+ * @property {Boolean}             [options.background=true]   - whether to draw a background during or after interacting, true by default
+ * @property {Boolean}             [options.backgroundZoomDiff=3]   - the zoom diff to find parent tile as background
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
@@ -32,7 +33,8 @@ const options = {
 
     'repeatWorld': true,
 
-    'zoomBackground' : false,
+    'background' : true,
+    'backgroundZoomDiff' : 3,
 
     'crossOrigin': null,
 
@@ -251,14 +253,14 @@ class TileLayer extends Layer {
             left = Math.ceil(Math.abs(centerTile.x - ltTile.x)),
             bottom = Math.ceil(Math.abs(centerTile.y - rbTile.y)),
             right = Math.ceil(Math.abs(centerTile.x - rbTile.x));
-        const layerId = this.getId(), tileSize = this.getTileSize(),
+        const tileSize = this.getTileSize(),
             scale = this._getTileConfig().tileSystem.scale;
         const tiles = [], extent = new PointExtent();
         for (let i = -(left); i <= right; i++) {
             for (let j = -(top); j <= bottom; j++) {
                 const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
                     url = this.getTileUrl(idx.x, idx.y, zoom),
-                    id = [layerId, idx.idy, idx.idx, zoom].join('__'),
+                    id = this._getTileId(idx, zoom),
                     pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res),
                     p = map._prjToPoint(this._unproject(pnw), zoom);
                 let width, height;
@@ -310,6 +312,11 @@ class TileLayer extends Layer {
             'tiles': tiles
         };
     }
+
+    _getTileId(idx, zoom) {
+        return [this.getId(), idx.idy, idx.idx, zoom].join('__');
+    }
+
 
     _project(pcoord) {
         const map = this.getMap();

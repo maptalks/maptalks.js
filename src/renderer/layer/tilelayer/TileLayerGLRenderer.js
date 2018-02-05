@@ -1,4 +1,4 @@
-import { emptyImageUrl, hasOwn } from '../../../core/util';
+import { emptyImageUrl } from '../../../core/util';
 import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
@@ -28,16 +28,11 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     drawTile(tileInfo, tileImage) {
-        if (!this._gl()) {
-            // fall back to canvas 2D
-            super.drawTile(tileInfo, tileImage);
+        const map = this.getMap();
+        if (!tileInfo || !map) {
             return;
         }
         if (tileImage.src === emptyImageUrl) {
-            return;
-        }
-        const map = this.getMap();
-        if (!tileInfo || !map) {
             return;
         }
         const point = tileInfo.point,
@@ -50,6 +45,15 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             w = tileInfo.size[0] * scale,
             h = tileInfo.size[1] * scale;
 
+        if (!this._gl()) {
+            // fall back to canvas 2D
+            if (!tileImage.glBuffer)  {
+                //prepare tileImage's webgl buffer to save bufferData later
+                this.bufferTileData(tileImage, x, y, w, h);
+            }
+            super.drawTile(tileInfo, tileImage);
+            return;
+        }
         this.drawGLImage(tileImage, x, y, w, h, opacity);
 
         if (opacity < 1) {
@@ -107,49 +111,6 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     // when map is pitching, or fragmentShader is set in options
     _gl() {
         return this.getMap() && !!this.getMap().getPitch() || this.layer && !!this.layer.options['fragmentShader'];
-    }
-
-    drawBackground() {
-        if (this.background) {
-            if (this._gl && !this._gl()) {
-                super.drawBackground();
-            } else if (!this.background.southWest) {
-                //ignore if background is saved in canvas mode
-                const map = this.getMap();
-                const extent = map.getContainerExtent();
-                for (const p in this.background) {
-                    const parentTile = this.background[p];
-                    if (this.layer._isTileInExtent(parentTile.info, extent)) {
-                        parentTile.current = true;
-                        this.drawBackgroundTile(parentTile.info, parentTile.image);
-                    }
-                }
-            }
-        }
-    }
-
-    drawBackgroundTile(info, image) {
-        this.drawTile(info, image);
-    }
-
-    saveBackground() {
-        if (this._gl && !this._gl()) {
-            super.saveBackground();
-            return;
-        }
-        const map = this.getMap();
-        if (!map || !this.canvas) {
-            return;
-        }
-        this.background = {};
-        const cache = this.tilesInView;
-        for (const p in cache) {
-            const tile = cache[p];
-            if (hasOwn(cache, p) && tile && tile.current) {
-                // tile.image.loadTime = 0;
-                this.background[p] = tile;
-            }
-        }
     }
 
     deleteTile(tile) {
