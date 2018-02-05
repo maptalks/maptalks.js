@@ -98,9 +98,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._drawTiles(tiles, parentTiles);
         if (this._tileCountToLoad === 0) {
             if (!loading) {
-                //when map is animating, zooming session doesn't complete yet
-                if (this._zoomSession && !map.isAnimating()) {
-                    delete this._zoomSession;
+                //when map is animating, tiles loading doesn't complete yet
+                if (!map.isAnimating()) {
+                    //remove parent tiles if any left from last session
+                    this.setToRedraw();
                 }
                 this.completeRender();
             }
@@ -490,11 +491,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         delete tile.image.onload;
         delete tile.image.onerror;
-    }
-
-    onZoomStart(e) {
-        this._zoomSession = 1;
-        super.onZoomStart(e);
     }
 }
 
