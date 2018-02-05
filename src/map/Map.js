@@ -29,7 +29,6 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
- * @property {Boolean} [options.zoomBackground=true]            - override baseLayer's zoomBackground option, true by default.
  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
@@ -85,8 +84,6 @@ const options = {
         return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
-
-    'zoomBackground': true,
 
     'panAnimation': (function () {
         return !IS_NODE;

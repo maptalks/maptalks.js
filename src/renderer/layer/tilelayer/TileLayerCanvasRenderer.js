@@ -1,5 +1,4 @@
 import {
-    IS_NODE,
     loadImage,
     emptyImageUrl,
     now
@@ -50,7 +49,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.completeRender();
             return;
         }
-        const tiles = tileGrid['tiles'];
+        const allTiles = tileGrid['tiles'];
 
         this._tileZoom = tileGrid.zoom;
 
@@ -61,27 +60,28 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         this._tileCountToLoad = 0;
         let loading = false;
-        const drawTiles = [], parentTiles = [], parentKeys = {};
+        const tiles = [], parentTiles = [], parentKeys = {};
         //visit all the tiles
         const tileQueue = {};
-        for (let i = tiles.length - 1; i >= 0; i--) {
-            const tile = tiles[i],
-                tileId = tiles[i]['id'];
+        for (let i = allTiles.length - 1; i >= 0; i--) {
+            const tile = allTiles[i],
+                tileId = allTiles[i]['id'];
             //load tile in cache at first if it has.
             const cached = this._getCachedTile(tileId);
             let tileIsLoading = false;
             if (this._isLoadingTile(tileId)) {
                 tileIsLoading = loading = true;
+                this.tilesLoading[tileId].current = true;
             } else if (cached) {
                 if (this.getTileOpacity(cached.image) < 1) {
                     tileIsLoading = loading = true;
                 }
-                drawTiles.push(cached);
+                tiles.push(cached);
                 this.tileCache.add(tileId, cached);
             } else {
                 tileIsLoading = loading = true;
                 const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
-                if (!hitLimit && (!map.isInteracting() || !map.isZooming())) {
+                if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
                     this._tileCountToLoad++;
                     tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
                 }
@@ -95,12 +95,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
         }
-        this._drawTiles(drawTiles, parentTiles);
+        this._drawTiles(tiles, parentTiles);
         if (this._tileCountToLoad === 0) {
             if (!loading) {
                 //when map is animating, zooming session doesn't complete yet
                 if (this._zoomSession && !map.isAnimating()) {
-                    console.log('clear zoom session');
                     delete this._zoomSession;
                 }
                 this.completeRender();
@@ -114,28 +113,33 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     _drawTiles(tiles, parentTiles) {
         if (parentTiles.length > 0) {
             parentTiles.sort((t1, t2) => Math.abs(t1.info.z - this._tileZoom) - Math.abs(t2.info.z - this._tileZoom));
-            parentTiles.forEach(t => this.drawTile(t.info, t.image));
+            parentTiles.forEach(t => this._drawTileAndRecord(t));
         }
-        tiles.forEach(t => this.drawTile(t.info, t.image));
-        if (tiles.length === 0 && parentTiles.length === 0) {
-            const tiles = Object.keys(this.tilesInView);
-            tiles.forEach(key => {
+        tiles.forEach(t => this._drawTileAndRecord(t));
+        if (this.layer.options['background'] && tiles.length === 0 && parentTiles.length === 0) {
+            const keys = Object.keys(this.tilesInView);
+            const extent = this.getMap().getContainerExtent();
+            keys.forEach(key => {
                 const tile = this.tilesInView[key];
-                tile.current = true;
-                this.drawTile(tile.info, tile.image);
+                if (this.layer._isTileInExtent(tile.info, extent)) {
+                    this._drawTileAndRecord(tile);
+                }
             });
         }
         // console.log(Object.keys(this.tilesInView).length);
         // console.log(tiles.length, parentTiles.length);
     }
 
+    _drawTileAndRecord(tile) {
+        tile.current = true;
+        this.tilesInView[tile.info.id] = tile;
+        this.drawTile(tile.info, tile.image);
+    }
+
     drawOnInteracting() {
         this.draw();
     }
 
-    // Unlike other layers, TileLayerCanvasRenderer is special in drawing on interacting:
-    // 1. it doesn't need to redraw on zooming and moving, map just merges layer's canvas as it is into map canvas with necessary transforming.
-    // 2. it needs to redraw on drag rotating: when rotating, every tile needs to be rotated.
     needToRedraw() {
         const map = this.getMap();
         if (map.getPitch()) {
@@ -220,7 +224,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 const tileImage = this.loadTile(tile);
                 if (tileImage.loadTime === undefined) {
                     // tile image's loading may not be async
-                    tileImage.current = true;
                     this.tilesLoading[tile['id']] = {
                         image : tileImage,
                         current : true,
@@ -399,20 +402,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _getCachedTile(tileId) {
         const tilesInView = this.tilesInView;
-        let cached = tilesInView[tileId];
-        if (tilesInView[tileId]) {
-            tilesInView[tileId].current = true;
-        }
-        const tilesLoading = this.tilesLoading;
-        if (tilesLoading && tilesLoading[tileId]) {
-            tilesLoading[tileId].current = true;
-        }
-        if (!cached) {
-            cached = this.tileCache.getAndRemove(tileId);
-            if (cached) {
-                cached.current = true;
-                tilesInView[tileId] = cached;
+        let cached = this.tileCache.getAndRemove(tileId);
+        if (cached) {
+            tilesInView[tileId] = cached;
+            const tilesLoading = this.tilesLoading;
+            if (tilesLoading && tilesLoading[tileId]) {
+                tilesLoading[tileId].current = false;
+                this.cancelTileLoading(tilesLoading[tileId]);
+                delete tilesLoading[tileId];
             }
+        } else {
+            cached = tilesInView[tileId];
         }
         return cached;
     }

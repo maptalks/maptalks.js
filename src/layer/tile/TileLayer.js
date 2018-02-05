@@ -17,7 +17,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {Boolean}             [options.background=true]   - whether to draw a background during or after interacting, true by default
- * @property {Boolean}             [options.backgroundZoomDiff=3]   - the zoom diff to find parent tile as background
+ * @property {Number}              [options.backgroundZoomDiff=3] - the zoom diff to find parent tile as background
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles

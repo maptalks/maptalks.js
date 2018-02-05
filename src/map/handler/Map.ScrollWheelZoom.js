@@ -56,7 +56,7 @@ class MapScrollWheelZoomHandler extends Handler {
             if (frame.state.playState !== 'finished') {
                 return;
             }
-            if (this._requesting < 2 || Math.abs(nextZoom - this._startZoom) > 3 ||
+            if (this._requesting < 2 || Math.abs(nextZoom - this._startZoom) > 2 ||
                 //finish zooming if target zoom hits min/max
                 nextZoom === map.getMaxZoom() || nextZoom === map.getMinZoom()) {
 
