@@ -116,7 +116,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const extent = this.getMap().getContainerExtent();
         if (parentTiles.length > 0) {
             this._parentTiles = [];
-            parentTiles.sort((t1, t2) => Math.abs(t1.info.z - this._tileZoom) - Math.abs(t2.info.z - this._tileZoom));
+            //closer the latter (to draw on top)
+            parentTiles.sort((t1, t2) => Math.abs(t2.info.z - this._tileZoom) - Math.abs(t1.info.z - this._tileZoom));
             parentTiles.forEach(t => {
                 this._parentTiles.push(t);
             });
