@@ -38,7 +38,7 @@ const shaders = {
 };
 
 
-const tileData = new Float32Array(18);
+const v2 = new Array(2);
 
 /**
  * A mixin providing image support in WebGL env
@@ -63,28 +63,27 @@ const ImageGLRenderable = Base => {
             gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
             gl.uniform1f(this.program['u_opacity'], opacity);
             if (!image.glBuffer)  {
-                this.bufferTileData(image, x, y, w, h);
+                image.glBuffer = this.bufferTileData(x, y, w, h);
             } else {
                 gl.bindBuffer(gl.ARRAY_BUFFER, image.glBuffer);
             }
 
-            this.enableVertexAttrib(['a_position', 3]);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            v2[0] = 'a_position';
+            v2[1] = 3;
+            this.enableVertexAttrib(v2); // ['a_position', 3]
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
 
-        bufferTileData(image, x, y, w, h) {
+        bufferTileData(x, y, w, h, buffer) {
             const x1 = x;
             const x2 = x + w;
             const y1 = y;
             const y2 = y + h;
-            this.loadImageBuffer(image, [
-                x1, y1, 0.0,  //0
-                x2, y1, 0.0, //1
-                x1, y2, 0.0, //2
-                x1, y2, 0.0,  //2
-                x2, y1, 0.0, //1
-                x2, y2, 0.0 //3
-            ]);
+            return this.loadImageBuffer(this.set12(
+                x1, y1, 0,
+                x1, y2, 0,
+                x2, y1, 0,
+                x2, y2, 0), buffer);
         }
 
         /**
@@ -104,6 +103,7 @@ const ImageGLRenderable = Base => {
             //bufferdata vertices
             gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
             this.enableVertexAttrib(['a_position', 3]);
+            //TODO save buffer to avoid repeatedly bufferData
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
 
             //bufferdata tex coords
@@ -153,13 +153,12 @@ const ImageGLRenderable = Base => {
             this.texBuffer = this.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
             this.enableVertexAttrib(['a_texCoord', 2]);
-            gl.bufferData(gl.ARRAY_BUFFER, this.copy12([
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
                 0.0, 0.0,
-                1.0, 0.0,
-                0.0, 1.0,
                 0.0, 1.0,
                 1.0, 0.0,
-                1.0, 1.0]), gl.STATIC_DRAW);
+                1.0, 1.0
+            ]), gl.STATIC_DRAW);
 
             this.enableSampler('u_image');
 
@@ -281,16 +280,14 @@ const ImageGLRenderable = Base => {
 
         /**
          * Load image into a text and bind it with WebGLContext
-         * @param {Image|Canvas} image
          * @returns {WebGLTexture}
          */
-        loadImageBuffer(image, data) {
+        loadImageBuffer(data, glBuffer) {
             const gl = this.gl;
             // Create a buffer object
-            const buffer = image.glBuffer = this.createImageBuffer();
+            const buffer = glBuffer || this.createImageBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            tileData.set(data);
-            gl.bufferData(gl.ARRAY_BUFFER, tileData, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
             return buffer;
         }
 
@@ -531,17 +528,29 @@ const ImageGLRenderable = Base => {
     };
 
     extend(renderable.prototype, {
-        copy12: function () {
-            const m = Browser.ie9 ? null : new Float32Array(12);
+        copy16: function () {
+            const m = Browser.ie9 ? null : new Float32Array(16);
             return function (arr) {
                 return mat4.copy(m, arr);
             };
         }(),
 
-        copy16: function () {
-            const m = Browser.ie9 ? null : new Float32Array(16);
-            return function (arr) {
-                return mat4.copy(m, arr);
+        set12: function () {
+            const out = new Float32Array(12);
+            return function (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+                out[0] = a0;
+                out[1] = a1;
+                out[2] = a2;
+                out[3] = a3;
+                out[4] = a4;
+                out[5] = a5;
+                out[6] = a6;
+                out[7] = a7;
+                out[8] = a8;
+                out[9] = a9;
+                out[10] = a10;
+                out[11] = a11;
+                return out;
             };
         }()
     });

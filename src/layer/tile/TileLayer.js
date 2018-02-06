@@ -393,7 +393,6 @@ class TileLayer extends Layer {
         if (tileExtent.getWidth() < MAX_VISIBLE_SIZE || tileExtent.getHeight() < MAX_VISIBLE_SIZE) {
             return false;
         }
-        // add some buffer
         return extent.intersects(tileExtent);
     }
 

@@ -28,6 +28,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         super(layer);
         this.tilesInView = {};
         this.tilesLoading = {};
+        this._parentTiles = [];
         this.tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
     }
 
@@ -98,9 +99,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._drawTiles(tiles, parentTiles);
         if (this._tileCountToLoad === 0) {
             if (!loading) {
-                //when map is animating, tiles loading doesn't complete yet
-                if (!map.isAnimating()) {
-                    //remove parent tiles if any left from last session
+                //redraw to remove parent tiles if any left in last paint
+                if (!map.isAnimating() && this._parentTiles.length > 0) {
+                    this._parentTiles = [];
                     this.setToRedraw();
                 }
                 this.completeRender();
@@ -112,21 +113,30 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _drawTiles(tiles, parentTiles) {
+        const extent = this.getMap().getContainerExtent();
         if (parentTiles.length > 0) {
+            this._parentTiles = [];
             parentTiles.sort((t1, t2) => Math.abs(t1.info.z - this._tileZoom) - Math.abs(t2.info.z - this._tileZoom));
-            parentTiles.forEach(t => this._drawTileAndRecord(t));
+            parentTiles.forEach(t => {
+                this._parentTiles.push(t);
+            });
         }
-        tiles.forEach(t => this._drawTileAndRecord(t));
         if (this.layer.options['background'] && tiles.length === 0 && parentTiles.length === 0) {
+            this._parentTiles = [];
             const keys = Object.keys(this.tilesInView);
-            const extent = this.getMap().getContainerExtent();
             keys.forEach(key => {
                 const tile = this.tilesInView[key];
                 if (this.layer._isTileInExtent(tile.info, extent)) {
-                    this._drawTileAndRecord(tile);
+                    this._parentTiles.push(tile);
                 }
             });
         }
+        this._parentTiles.forEach(t => {
+            if (this.layer._isTileInExtent(t.info, extent)) {
+                this._drawTileAndRecord(t);
+            }
+        });
+        tiles.forEach(t => this._drawTileAndRecord(t));
         // console.log(Object.keys(this.tilesInView).length);
         // console.log(tiles.length, parentTiles.length);
     }
