@@ -456,6 +456,8 @@ class CanvasRenderer extends Class {
             });
         } else {
             this.clearCanvas();
+            this.resizeCanvas();
+            this.resetCanvasTransform();
         }
         delete this._maskExtent;
         const mask = this.layer.getMask();

@@ -54,8 +54,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         this._tileZoom = tileGrid.zoom;
 
-        // reset current transformation matrix to the identity matrix
-        this.resetCanvasTransform();
         const loadingCount = this._markTiles(),
             tileLimit = this._getTileLimitOnInteracting();
 
