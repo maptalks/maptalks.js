@@ -220,6 +220,6 @@ export default class SpatialReference {
     }
 
     getZoomDirection() {
-        return sign(this._resolutions[0] - this._resolutions[this._resolutions.length - 1]);
+        return sign(this._resolutions[this.getMinZoom()] - this._resolutions[this.getMaxZoom()]);
     }
 }

@@ -557,8 +557,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isFraction) {
             return scaleZoom;
         } else {
-            const resolutions = this._getResolutions();
-            return resolutions[0] < resolutions[resolutions.length - 1] ?
+            return this.getSpatialReference().getZoomDirection() < 0 ?
                 Math.ceil(scaleZoom) : Math.floor(scaleZoom);
         }
     }
@@ -774,8 +773,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             h = containerExtent.getHeight();
         const scaleX = size['width'] / w,
             scaleY = size['height'] / h;
-        const resolutions = this._getResolutions();
-        const scale = resolutions[0] < resolutions[resolutions.length - 1] ?
+        const scale = this.getSpatialReference().getZoomDirection() < 0 ?
             Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
         const zoom = this.getZoomForScale(scale);
         return zoom;
