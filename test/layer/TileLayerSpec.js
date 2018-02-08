@@ -46,7 +46,8 @@ describe('TileLayer', function () {
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : '/resources/tile.png',
+                placeholder : true
             });
             tile.once('layerload', function () {
                 expect(tile).to.be.painted();

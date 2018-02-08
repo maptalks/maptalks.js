@@ -1,7 +1,8 @@
 import {
     loadImage,
     emptyImageUrl,
-    now
+    now,
+    isFunction
 } from '../../../core/util';
 import Browser from '../../../core/Browser';
 import Canvas2D from '../../../core/Canvas';
@@ -9,6 +10,7 @@ import TileLayer from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
 import LruCache from '../../../core/util/LruCache';
+import Canvas from '../../../core/Canvas';
 
 /**
  * @classdesc
@@ -57,14 +59,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const loadingCount = this._markTiles(),
             tileLimit = this._getTileLimitOnInteracting();
 
+        const placeholder = this._generatePlaceHolder(tileGrid.zoom);
+
         this._tileCountToLoad = 0;
         let loading = false;
-        const tiles = [], parentTiles = [], parentKeys = {};
+        const tiles = [], parentTiles = [], placeholders = [], parentKeys = {};
         //visit all the tiles
         const tileQueue = {};
         for (let i = allTiles.length - 1; i >= 0; i--) {
             const tile = allTiles[i],
-                tileId = allTiles[i]['id'];
+                tileId = tile['id'];
             //load tile in cache at first if it has.
             const cached = this._getCachedTile(tileId);
             let tileIsLoading = false;
@@ -86,6 +90,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
 
+            if (!cached && placeholder) {
+                //tell gl renderer not to bind gl buffer with image
+                tile.cache = false;
+                placeholders.push({
+                    image : placeholder,
+                    info : tile
+                });
+            }
+
             if (tileIsLoading) {
                 const parentTile = this.findParentTile(tile);
                 if (parentTile && !parentKeys[parentTile.info.id]) {
@@ -94,7 +107,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
         }
-        this._drawTiles(tiles, parentTiles);
+        this._drawTiles(tiles, parentTiles, placeholders);
         if (this._tileCountToLoad === 0) {
             if (!loading) {
                 //redraw to remove parent tiles if any left in last paint
@@ -110,7 +123,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._retireTiles();
     }
 
-    _drawTiles(tiles, parentTiles) {
+    _drawTiles(tiles, parentTiles, placeholders) {
         const extent = this.getMap().getContainerExtent();
         if (parentTiles.length > 0) {
             this._parentTiles = [];
@@ -135,6 +148,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this._drawTileAndRecord(t);
             }
         });
+        placeholders.forEach(t => this.drawTile(t.info, t.image));
         tiles.forEach(t => this._drawTileAndRecord(t));
         // console.log(Object.keys(this.tilesInView).length);
         // console.log(tiles.length, parentTiles.length);
@@ -436,7 +450,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     getTileOpacity(tileImage) {
-        if (!this.layer.options['fadeAnimation']) {
+        if (!this.layer.options['fadeAnimation'] || !tileImage.loadTime) {
             return 1;
         }
         return Math.min(1, (now() - tileImage.loadTime) / (1000 / 60 * 10));
@@ -444,15 +458,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     onRemove() {
         this._retireTiles(true);
-        this.tileCache.reset();
         this._clearCaches();
+        this.tileCache.reset();
+        delete this.tileCache;
     }
 
     _clearCaches() {
         delete this.tilesInView;
         delete this._tileZoom;
         delete this.tilesLoading;
-        delete this._backCanvas;
+        delete this._tilePlaceHolder;
     }
 
     _markTiles() {
@@ -502,10 +517,55 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete tile.image.onload;
         delete tile.image.onerror;
     }
+
+    _generatePlaceHolder(z) {
+        const map = this.getMap();
+        const placeholder = this.layer.options['placeholder'];
+        if (!placeholder || map.getPitch()) {
+            return null;
+        }
+        const tileSize = this.layer.getTileSize(),
+            scale = map._getResolution(z) / map._getResolution(),
+            canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1);
+        canvas.width = tileSize.width * scale;
+        canvas.height = tileSize.height * scale;
+        if (isFunction(placeholder)) {
+            placeholder(canvas);
+        } else {
+            defaultPlaceholder(canvas);
+        }
+        return canvas;
+    }
 }
 
 TileLayer.registerRenderer('canvas', TileLayerCanvasRenderer);
 
 function falseFn() { return false; }
+
+function defaultPlaceholder(canvas) {
+    const ctx = canvas.getContext('2d'),
+        cw = canvas.width, ch = canvas.height,
+        w = cw / 16, h = ch / 16;
+    ctx.beginPath();
+    for (let i = 0; i < 16; i++) {
+        ctx.moveTo(0, i * h);
+        ctx.lineTo(cw, i * h);
+        ctx.moveTo(i * w, 0);
+        ctx.lineTo(i * w, ch);
+    }
+    ctx.strokeStyle = 'rgba(180, 180, 180, 0.1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.beginPath();
+    const path = [
+        [0, 0], [cw, 0], [0, ch], [cw, ch], [0, 0], [0, ch], [cw, 0], [cw, ch], [0, ch / 2], [cw, ch / 2], [cw / 2, 0], [cw / 2, ch]
+    ];
+    for (let i = 1; i < path.length; i += 2) {
+        ctx.moveTo(path[i - 1][0], path[i - 1][1]);
+        ctx.lineTo(path[i][0], path[i][1]);
+    }
+    ctx.lineWidth = 1 * 4;
+    ctx.stroke();
+}
 
 export default TileLayerCanvasRenderer;

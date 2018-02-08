@@ -44,7 +44,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             y = pp.y,
             w = tileInfo.size[0] * scale,
             h = tileInfo.size[1] * scale;
-        this._bindGLBuffer(tileImage, x, y, w, h);
+        if (tileInfo.cache !== false) {
+            this._bindGLBuffer(tileImage, x, y, w, h);
+        }
 
         if (!this._gl()) {
             // fall back to canvas 2D

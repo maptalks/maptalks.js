@@ -18,6 +18,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {Boolean}             [options.background=true]   - whether to draw a background during or after interacting, true by default
  * @property {Number}              [options.backgroundZoomDiff=3] - the zoom diff to find parent tile as background
+ * @property {Boolean|Function}    [options.placeholder=false]    - a placeholder image to replace loading tile, can be a function with a parameter of the tile canvas
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
@@ -35,6 +36,8 @@ const options = {
 
     'background' : true,
     'backgroundZoomDiff' : 3,
+
+    'placeholder' : false,
 
     'crossOrigin': null,
 
