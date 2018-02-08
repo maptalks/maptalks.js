@@ -312,8 +312,7 @@ Map.include(/** @lends Map.prototype */{
     _calcMatrices: function () {
         // closure matrixes to reuse
         const m0 = Browser.ie9 ? null : createMat4(),
-            m1 = Browser.ie9 ? null : createMat4(),
-            minusY = [1, -1, 1];
+            m1 = Browser.ie9 ? null : createMat4();
         return function () {
             // get pixel size of map
             if (Browser.ie9) {
@@ -331,7 +330,6 @@ Map.include(/** @lends Map.prototype */{
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
-            mat4.scale(projMatrix, projMatrix, minusY);
             this.projMatrix = projMatrix;
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
@@ -347,10 +345,12 @@ Map.include(/** @lends Map.prototype */{
 
     _calcDomMatrix: function () {
         const m = Browser.ie9 ? null : createMat4(),
+            minusY = [1, -1, 1],
             arr = [0, 0, 0];
         return function () {
             const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
-            mat4.translate(m, this.projMatrix, set(arr, 0, 0, -cameraToCenterDistance));//[0, 0, cameraToCenterDistance]
+            mat4.scale(m, this.projMatrix, minusY);
+            mat4.translate(m, m, set(arr, 0, 0, -cameraToCenterDistance));//[0, 0, cameraToCenterDistance]
             if (this._pitch) {
                 mat4.rotateX(m, m, this._pitch);
             }
@@ -364,7 +364,8 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _getCameraWorldMatrix: function () {
-        const q = {};
+        const q = {},
+            minusY = [1, -1, 1];
         return function () {
             const targetZ = this.getGLZoom();
 
@@ -392,7 +393,7 @@ Map.include(/** @lends Map.prototype */{
             // up.rotateZ(target,radians);
             const d = dist || 1;
             const up = this.cameraUp = set(this.cameraUp || [0, 0, 0], Math.sin(bearing) * d, Math.cos(bearing) * d, 0);
-            const m = this.cameraWorldMatrix || createMat4();
+            const m = this.cameraWorldMatrix = this.cameraWorldMatrix || createMat4();
             lookAt(m, this.cameraPosition, this.cameraLookAt, up);
 
             const cameraForward = this.cameraForward || [0, 0, 0];
@@ -403,7 +404,7 @@ Map.include(/** @lends Map.prototype */{
             matrixToQuaternion(q, m);
             quaternionToMatrix(m, q);
             setPosition(m, this.cameraPosition);
-
+            mat4.scale(m, m, minusY);
             return m;
         };
     }(),
