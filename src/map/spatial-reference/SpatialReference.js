@@ -10,7 +10,7 @@ const DefaultSpatialRef = {
         'resolutions': (function () {
             const resolutions = [];
             const d = 2 * 6378137 * Math.PI;
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 21; i++) {
                 resolutions[i] = d / (256 * Math.pow(2, i));
             }
             return resolutions;
