@@ -502,6 +502,10 @@ class Extent {
         ];
     }
 
+    toString() {
+        return `${this.xmin},${this.ymin},${this.xmax},${this.ymax}`;
+    }
+
     /**
      * Get a copy of the extent.
      * @return {Extent} copy

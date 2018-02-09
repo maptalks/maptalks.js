@@ -17,7 +17,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {Boolean}             [options.background=true]   - whether to draw a background during or after interacting, true by default
- * @property {Number}              [options.backgroundZoomDiff=3] - the zoom diff to find parent tile as background
+ * @property {Number}              [options.backgroundZoomDiff=6] - the zoom diff to find parent tile as background
  * @property {Boolean|Function}    [options.placeholder=false]    - a placeholder image to replace loading tile, can be a function with a parameter of the tile canvas
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
@@ -35,7 +35,7 @@ const options = {
     'repeatWorld': true,
 
     'background' : true,
-    'backgroundZoomDiff' : 3,
+    'backgroundZoomDiff' : 6,
 
     'placeholder' : false,
 
@@ -256,14 +256,14 @@ class TileLayer extends Layer {
             left = Math.ceil(Math.abs(centerTile.x - ltTile.x)),
             bottom = Math.ceil(Math.abs(centerTile.y - rbTile.y)),
             right = Math.ceil(Math.abs(centerTile.x - rbTile.x));
-        const tileSize = this.getTileSize(),
+        const layerId = this.getId(),
+            renderer = this.getRenderer(),
+            tileSize = this.getTileSize(),
             scale = this._getTileConfig().tileSystem.scale;
         const tiles = [], extent = new PointExtent();
         for (let i = -(left); i <= right; i++) {
             for (let j = -(top); j <= bottom; j++) {
                 const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
-                    url = this.getTileUrl(idx.x, idx.y, zoom),
-                    id = this._getTileId(idx, zoom),
                     pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res),
                     p = map._prjToPoint(this._unproject(pnw), zoom);
                 let width, height;
@@ -287,16 +287,21 @@ class TileLayer extends Layer {
                 }
                 const tileExtent = new PointExtent(p, p.add(width, height)),
                     tileInfo = {
-                        'url': url,
                         'point': p,
-                        'id': id,
                         'z': zoom,
                         'x' : idx.x,
                         'y' : idx.y,
                         'extent2d' : tileExtent,
-                        'size' : [width, height]
+                        'layer' : layerId
                     };
                 if (this._isTileInExtent(tileInfo, containerExtent)) {
+                    tileInfo.size = [width, height];
+                    tileInfo.xyz = tileExtent.toString(); //xyz id of the tile
+                    tileInfo.id = this._getTileId(idx, zoom); //unique id of the tile
+                    if (!renderer || !renderer.isTileCachedOrLoading(tileInfo.id)) {
+                        //getTileUrl is expensive, save it when tile is being processed by renderer
+                        tileInfo.url = this.getTileUrl(idx.x, idx.y, zoom);
+                    }
                     tiles.push(tileInfo);
                     extent._combine(tileExtent);
                 }
@@ -316,8 +321,8 @@ class TileLayer extends Layer {
         };
     }
 
-    _getTileId(idx, zoom) {
-        return [this.getId(), idx.idy, idx.idx, zoom].join('__');
+    _getTileId(idx, zoom, id) {
+        return [id || this.getId(), idx.idy, idx.idx, zoom].join('__');
     }
 
 
