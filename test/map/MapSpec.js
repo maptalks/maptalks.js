@@ -300,7 +300,7 @@ describe('Map.Spec', function () {
                 h = extent.getHeight();
             var fitZoom = map.getFitZoom(new maptalks.Extent(extent.min + w / 4, extent.ymin + h / 4, extent.xmax - w / 4, extent.ymax - h / 4));
 
-            expect(fitZoom).to.eql(zoom + 2);
+            expect(fitZoom).to.eql(zoom + 3);
         });
 
         it('fit to extent', function (done) {

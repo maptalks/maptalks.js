@@ -107,7 +107,7 @@ describe('Geometry.Altitude', function () {
         it('draw linestring with altitude array in large zoom', function (done) {
             map.setPitch(60);
             map.setBearing(60);
-            map.setZoom(20, { animation : false });
+            map.setZoom(19, { animation : false });
             var center = map.getCenter();
             layer.config('drawAltitude', {
                 lineWidth : 5,
