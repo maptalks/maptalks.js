@@ -557,8 +557,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isFraction) {
             return scaleZoom;
         } else {
+            const delta = 1E-6; //avoid precision
             return this.getSpatialReference().getZoomDirection() < 0 ?
-                Math.ceil(scaleZoom) : Math.floor(scaleZoom);
+                Math.ceil(scaleZoom - delta) : Math.floor(scaleZoom + delta);
         }
     }
 

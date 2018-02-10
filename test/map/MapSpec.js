@@ -293,6 +293,17 @@ describe('Map.Spec', function () {
             expect(fitZoom).to.eql(zoom);
         });
 
+        it('getFitZoom with baidu projection', function () {
+            map.setSpatialReference({
+                projection : 'baidu'
+            });
+            var extent = map.getExtent();
+            var zoom = map.getZoom();
+            var fitZoom = map.getFitZoom(extent);
+
+            expect(fitZoom).to.eql(zoom);
+        });
+
         it('getFitZoom 2', function () {
             var extent = map.getExtent();
             var zoom = map.getZoom();
