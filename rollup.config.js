@@ -1,28 +1,28 @@
 import resolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
-import multidest from 'rollup-plugin-multidest';
 
 
 export default {
-    entry: './src/init.js',
-    format: 'umd',
-    dest: './dist/bundle.js',
-    moduleName: 'Fusion',
-    // sourceMap: 'inline',
+    input:'./src/init.js',
+    output:{
+        name:'fusion',
+        exports: 'named',
+        format:'iife',
+        file:'./dist/bundle.js'
+    },
     external: [
         'fs',
-        'path'
+        'path',
     ],
     plugins: [
-        resolve(),
+        resolve({
+            jsnext: true,
+            main: true
+        }),
         commonjs(),
-        multidest([{
-            dest: 'debug/lib/bundle.js',
-            format: 'umd'
-        }]),
         babel({
-            //exclude: 'node_modules/**'
+            exclude: 'node_modules/**'
         })
     ]
 };

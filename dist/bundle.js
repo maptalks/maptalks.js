@@ -1,600 +1,127 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.Fusion = factory());
-}(this, (function () { 'use strict';
+var fusion = (function (exports) {
+'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var isObject_1 = createCommonjsModule(function (module) {
+/**
+ * reference:
+ * http://www.css88.com/doc/underscore/docs/underscore.html
+ * 
+ */
+
+const isObject = (obj) => {
+    const type = typeof obj;
+    return type === 'function' || type === 'object' && !!obj
 };
 
-var jsx = function () {
-  var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol.for && Symbol.for("react.element") || 0xeac7;
-  return function createRawReactElement(type, props, key, children) {
-    var defaultProps = type && type.defaultProps;
-    var childrenLength = arguments.length - 3;
-
-    if (!props && childrenLength !== 0) {
-      props = {};
-    }
-
-    if (props && defaultProps) {
-      for (var propName in defaultProps) {
-        if (props[propName] === void 0) {
-          props[propName] = defaultProps[propName];
-        }
-      }
-    } else if (!props) {
-      props = defaultProps || {};
-    }
-
-    if (childrenLength === 1) {
-      props.children = children;
-    } else if (childrenLength > 1) {
-      var childArray = Array(childrenLength);
-
-      for (var i = 0; i < childrenLength; i++) {
-        childArray[i] = arguments[i + 3];
-      }
-
-      props.children = childArray;
-    }
-
-    return {
-      $$typeof: REACT_ELEMENT_TYPE,
-      type: type,
-      key: key === undefined ? null : '' + key,
-      ref: null,
-      props: props,
-      _owner: null
-    };
-  };
-}();
-
-var asyncIterator = function (iterable) {
-  if (typeof Symbol === "function") {
-    if (Symbol.asyncIterator) {
-      var method = iterable[Symbol.asyncIterator];
-      if (method != null) return method.call(iterable);
-    }
-
-    if (Symbol.iterator) {
-      return iterable[Symbol.iterator]();
-    }
-  }
-
-  throw new TypeError("Object is not async iterable");
-};
-
-var asyncGenerator = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function (fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function (value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
-
-var asyncGeneratorDelegate = function (inner, awaitWrap) {
-  var iter = {},
-      waiting = false;
-
-  function pump(key, value) {
-    waiting = true;
-    value = new Promise(function (resolve) {
-      resolve(inner[key](value));
-    });
-    return {
-      done: false,
-      value: awaitWrap(value)
-    };
-  }
-
-  
-
-  if (typeof Symbol === "function" && Symbol.iterator) {
-    iter[Symbol.iterator] = function () {
-      return this;
-    };
-  }
-
-  iter.next = function (value) {
-    if (waiting) {
-      waiting = false;
-      return value;
-    }
-
-    return pump("next", value);
-  };
-
-  if (typeof inner.throw === "function") {
-    iter.throw = function (value) {
-      if (waiting) {
-        waiting = false;
-        throw value;
-      }
-
-      return pump("throw", value);
-    };
-  }
-
-  if (typeof inner.return === "function") {
-    iter.return = function (value) {
-      return pump("return", value);
-    };
-  }
-
-  return iter;
-};
-
-var asyncToGenerator = function (fn) {
-  return function () {
-    var gen = fn.apply(this, arguments);
-    return new Promise(function (resolve, reject) {
-      function step(key, arg) {
-        try {
-          var info = gen[key](arg);
-          var value = info.value;
-        } catch (error) {
-          reject(error);
-          return;
-        }
-
-        if (info.done) {
-          resolve(value);
-        } else {
-          return Promise.resolve(value).then(function (value) {
-            step("next", value);
-          }, function (err) {
-            step("throw", err);
-          });
-        }
-      }
-
-      return step("next");
-    });
-  };
-};
-
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-var defineEnumerableProperties = function (obj, descs) {
-  for (var key in descs) {
-    var desc = descs[key];
-    desc.configurable = desc.enumerable = true;
-    if ("value" in desc) desc.writable = true;
-    Object.defineProperty(obj, key, desc);
-  }
-
-  return obj;
-};
-
-var defaults = function (obj, defaults) {
-  var keys = Object.getOwnPropertyNames(defaults);
-
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var value = Object.getOwnPropertyDescriptor(defaults, key);
-
-    if (value && value.configurable && obj[key] === undefined) {
-      Object.defineProperty(obj, key, value);
-    }
-  }
-
-  return obj;
-};
-
-var defineProperty = function (obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-};
-
-var _extends = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];
-
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  return target;
-};
-
-var get = function get(object, property, receiver) {
-  if (object === null) object = Function.prototype;
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent === null) {
-      return undefined;
-    } else {
-      return get(parent, property, receiver);
-    }
-  } else if ("value" in desc) {
-    return desc.value;
-  } else {
-    var getter = desc.get;
-
-    if (getter === undefined) {
-      return undefined;
-    }
-
-    return getter.call(receiver);
-  }
-};
-
-var inherits = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-var _instanceof = function (left, right) {
-  if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
-    return right[Symbol.hasInstance](left);
-  } else {
-    return left instanceof right;
-  }
-};
-
-var interopRequireDefault = function (obj) {
-  return obj && obj.__esModule ? obj : {
-    default: obj
-  };
-};
-
-var interopRequireWildcard = function (obj) {
-  if (obj && obj.__esModule) {
-    return obj;
-  } else {
-    var newObj = {};
-
-    if (obj != null) {
-      for (var key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-      }
-    }
-
-    newObj.default = obj;
-    return newObj;
-  }
-};
-
-var newArrowCheck = function (innerThis, boundThis) {
-  if (innerThis !== boundThis) {
-    throw new TypeError("Cannot instantiate an arrow function");
-  }
-};
-
-var objectDestructuringEmpty = function (obj) {
-  if (obj == null) throw new TypeError("Cannot destructure undefined");
-};
-
-var objectWithoutProperties = function (obj, keys) {
-  var target = {};
-
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
-
-var possibleConstructorReturn = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-};
-
-var selfGlobal = typeof global === "undefined" ? self : global;
-
-var set = function set(object, property, value, receiver) {
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent !== null) {
-      set(parent, property, value, receiver);
-    }
-  } else if ("value" in desc && desc.writable) {
-    desc.value = value;
-  } else {
-    var setter = desc.set;
-
-    if (setter !== undefined) {
-      setter.call(receiver, value);
-    }
-  }
-
-  return value;
-};
-
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
-  };
-}();
-
-var slicedToArrayLoose = function (arr, i) {
-  if (Array.isArray(arr)) {
-    return arr;
-  } else if (Symbol.iterator in Object(arr)) {
-    var _arr = [];
-
-    for (var _iterator = arr[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) {
-      _arr.push(_step.value);
-
-      if (i && _arr.length === i) break;
-    }
-
-    return _arr;
-  } else {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
-  }
-};
-
-var taggedTemplateLiteral = function (strings, raw) {
-  return Object.freeze(Object.defineProperties(strings, {
-    raw: {
-      value: Object.freeze(raw)
-    }
-  }));
-};
-
-var taggedTemplateLiteralLoose = function (strings, raw) {
-  strings.raw = raw;
-  return strings;
-};
-
-var temporalRef = function (val, name, undef) {
-  if (val === undef) {
-    throw new ReferenceError(name + " is not defined - temporal dead zone");
-  } else {
-    return val;
-  }
-};
-
-var temporalUndefined = {};
-
-var toArray = function (arr) {
-  return Array.isArray(arr) ? arr : Array.from(arr);
-};
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
-
-
-
-var babelHelpers$1 = Object.freeze({
-	jsx: jsx,
-	asyncIterator: asyncIterator,
-	asyncGenerator: asyncGenerator,
-	asyncGeneratorDelegate: asyncGeneratorDelegate,
-	asyncToGenerator: asyncToGenerator,
-	classCallCheck: classCallCheck,
-	createClass: createClass,
-	defineEnumerableProperties: defineEnumerableProperties,
-	defaults: defaults,
-	defineProperty: defineProperty,
-	get: get,
-	inherits: inherits,
-	interopRequireDefault: interopRequireDefault,
-	interopRequireWildcard: interopRequireWildcard,
-	newArrowCheck: newArrowCheck,
-	objectDestructuringEmpty: objectDestructuringEmpty,
-	objectWithoutProperties: objectWithoutProperties,
-	possibleConstructorReturn: possibleConstructorReturn,
-	selfGlobal: selfGlobal,
-	set: set,
-	slicedToArray: slicedToArray,
-	slicedToArrayLoose: slicedToArrayLoose,
-	taggedTemplateLiteral: taggedTemplateLiteral,
-	taggedTemplateLiteralLoose: taggedTemplateLiteralLoose,
-	temporalRef: temporalRef,
-	temporalUndefined: temporalUndefined,
-	toArray: toArray,
-	toConsumableArray: toConsumableArray,
-	typeof: _typeof,
-	extends: _extends,
-	instanceof: _instanceof
+module.exports = isObject;
 });
+
+var isString_1 = createCommonjsModule(function (module) {
+/**
+ * reference:
+ *  http://www.css88.com/doc/underscore/docs/underscore.html
+ */
+
+const isString = (str) => {
+    return (typeof str == 'string') && str.constructor == String;
+};
+
+module.exports = isString;
+});
+
+var stamp_1 = createCommonjsModule(function (module) {
+/**
+ * assign kiwi.gl object to be an unique id in the global
+ * @author yellow 2017/5/26
+ */
+
+const _prefix = '_kiwi.gl_',
+    _prefixId = _prefix + 'id_';
+/**
+ * the seed of id
+ */
+let i = 1;
+/**
+ * get uniqueId and count++
+ * @param {String} prefix 
+ */
+const getId = (prefix) => {
+    return (prefix || _prefixId) + '_' + (i++);
+};
+/**
+ * 
+ * @param {Object} obj 
+ * @param {String} id 
+ */
+const setId = (obj, id) => {
+    if (isObject_1(obj) && isString_1(id)) {
+        obj._kiwi_gl_id_ = id;
+        return id;
+    }
+    return null;
+};
+/**
+ * get the unique id
+ * @method stamp
+ * @param {Object} obj 
+ * @return {String} error if returned 'null'
+ */
+const stamp = (obj, prefix = _prefix) => {
+    if(!obj)
+        return null;
+    if (!obj._kiwi_gl_id_) {
+        const id = getId(prefix);
+        return setId(obj, id);
+    } else {
+        return obj._kiwi_gl_id_;
+    }
+};
+
+module.exports = stamp;
+});
+
+/**
+ * 设计思路为.net framework 的 IDispose接口
+ * 除此之外提供额外的属性：
+ * -id
+ * -handle
+ * -create handle
+ * -dispose
+ */
+
+
+
+/**
+ * @class
+ */
+class Dispose {
+    /**
+     * 构建一个可被销毁的资源对象,提供prefix
+     */
+    constructor(prefix = null) {
+        this._id = stamp_1(this, prefix);
+    }
+    /**
+     * 获取资源id
+     */
+    get id() {
+        return this._id;
+    }
+    /**
+     * 资源销毁方法，执行完一段后，统一调用
+     * must be implement be child class
+     * @abstract
+     */
+    dispose() {
+        throw new Error(`no implementation of function dispose`);
+    }
+}
+
+var Dispose_1 = Dispose;
 
 /**
 *   @author }{yellow 2017/4/18
@@ -604,120 +131,9 @@ var babelHelpers$1 = Object.freeze({
 /**
  * @func
  */
-var merge = function merge() {
-  var _babelHelpers;
-
-  for (var _len = arguments.length, sources = Array(_len), _key = 0; _key < _len; _key++) {
-    sources[_key] = arguments[_key];
-  }
-
-  return (_babelHelpers = babelHelpers$1).extends.apply(_babelHelpers, [{}].concat(sources));
-};
+const merge=(...sources) => Object.assign({},...sources);
 
 var merge_1 = merge;
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var isFunction_1 = createCommonjsModule(function (module) {
-  /**
-   * reference:
-   *  http://www.css88.com/doc/underscore/docs/underscore.html
-   */
-
-  var isFunction = function isFunction(func) {
-    return typeof func == 'function';
-    // return toString.call(obj) === '[object Function]';
-  };
-
-  module.exports = isFunction;
-});
-
-/**
- * reference:
- * https://github.com/uber/luma.gl/blob/master/src/utils/is-browser.js
- */
-var isNode = (typeof process === 'undefined' ? 'undefined' : _typeof(process)) === 'object' && String(process) === '[object process]' && !process.browser;
-
-var isNode_1 = isNode;
-
-/**
- * 解决js不能重载函数问题
- * refernece:
- * http://www.cnblogs.com/yugege/p/5539020.html
- */
-/**
- * @func
- * @param {Object} ctx
- * @param {string} funcName,
- * @param {Function} fn
- */
-
-var isObject_1 = createCommonjsModule(function (module) {
-  /**
-   * reference:
-   * http://www.css88.com/doc/underscore/docs/underscore.html
-   * 
-   */
-
-  var isObject = function isObject(obj) {
-    var type = typeof obj === 'undefined' ? 'undefined' : _typeof(obj);
-    return type === 'function' || type === 'object' && !!obj;
-  };
-
-  module.exports = isObject;
-});
-
-var isString_1 = createCommonjsModule(function (module) {
-  /**
-   * reference:
-   *  http://www.css88.com/doc/underscore/docs/underscore.html
-   */
-
-  var isString = function isString(str) {
-    return typeof str == 'string' && str.constructor == String;
-  };
-
-  module.exports = isString;
-});
-
-var stamp_1 = createCommonjsModule(function (module) {
-    /**
-     * assign kiwi.gl object to be an unique id in the global
-     * @author yellow 2017/5/26
-     */
-
-    var prefix = '_fusion_',
-        prefixId = prefix + 'id_';
-
-    var i = 1;
-
-    var getId = function getId() {
-        return prefixId + i++;
-    };
-
-    var setId = function setId(obj, id) {
-        isObject_1(obj) && isString_1(id) ? obj._fusion_id_ = id : null;
-    };
-
-    /**
-     * get the unique id
-     * @method stamp
-     * @param {Object} obj 
-     * @return {String} error if returned 'null'
-     */
-    var stamp = function stamp(obj) {
-        if (isObject_1(obj)) {
-            obj._fusion_id_ = obj._fusion_id_ || getId();
-            return obj._fusion_id_;
-        } else if (isString_1(obj)) {
-            return prefix + obj;
-        } else return null;
-    };
-
-    module.exports = { stamp: stamp, prefix: prefix, getId: getId, setId: setId };
-});
 
 /**
  * reference:
@@ -730,1092 +146,750 @@ var stamp_1 = createCommonjsModule(function (module) {
  */
 
 /**
- * reference:
- * https://github.com/pixijs/pixi.js/blob/dev/src/core/ticker/TickerListener.js
- * 
- * 
- * Internal class for handling the priority sorting of ticker handlers.
+ * 操作记单元
+ * @author yellow date 2018/1/4
+ */
+
+/**
  * @class
- * 
  */
-var TickerListener = function () {
-  /**
-   * Constructor
-   *
-   * @param {Function} fn - The listener function to be added for one update
-   * @param {Function} [context=null] - The listener context
-   * @param {number} [priority=0] - The priority for emitting
-   * @param {boolean} [once=false] - If the handler should fire once
-   */
-  function TickerListener(fn) {
-    var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-    var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-    var once = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-    classCallCheck(this, TickerListener);
-
+class Record {
     /**
-     * The handler function to execute.
-     * @member {Function}
+     * 
+     * @param {*} opName 
+     * @param {*} rest 
      */
-    this.fn = fn;
+    constructor(opName, ...rest) {
+        /**
+         * webgl operation name
+         */
+        this._opName = opName;
+        /**
+         * args
+         */
+        this._rest = this._exact(rest);
+        /**
+         * use prfix instead of value in args
+         * @type {Int}
+         */
+        this._ptMapIndex = {};
+        /**
+         * indicate this record needs to return value
+         * @type {String}
+         */
+        this._returnId = null;
+    }
     /**
-     * The calling to execute.
-     * @member {Function}
+     * operation name
      */
-    this.context = context;
+    get opName() {
+        return this._opName;
+    }
     /**
-     * The current priority.
-     * @member {number}
+     * arguments of record
      */
-    this.priority = priority;
+    get args() {
+        return this._rest;
+    }
     /**
-     * If this should only execute once.
-     * @member {boolean}
+     * @returns {String}
      */
-    this.once = once;
+    get returnId() {
+        return this._returnId;
+    }
     /**
-     * The next item in chain.
-     * @member {TickerListener}
+     * @returns {String}
      */
-    this.next = null;
+    get returanIdPrefix() {
+        return this._returanIdPrefix;
+    }
     /**
-     * The previous item in chain.
-     * @member {TickerListener}
+     * @type {Int}
      */
-    this.previous = null;
+    get ptMapIndex() {
+        return this._ptMapIndex;
+    }
     /**
-     * `true` if this listener has been destroyed already.
-     * @member {boolean}
+     * }{debug arraybuffer.set much more faster than copy
+     * 
      * @private
-     */
-    this._destroyed = false;
-    /**
-     * 
-     */
-    this._data = data || [];
-  }
-  /**
-   * Simple compare function to figure out if a function and context match.
-   *
-   * @param {Function} fn - The listener function to be added for one update
-   * @param {Function} context - The listener context
-   * @return {boolean} `true` if the listener match the arguments
-   */
-
-
-  createClass(TickerListener, [{
-    key: "match",
-    value: function match(fn, context) {
-      context = context || null;
-      return this.fn === fn && this.context === context;
-    }
-    /**
-     * Emit by calling the current function.
-     * @param {number} deltaTime - time since the last emit.
-     * @return {TickerListener} Next ticker
-     */
-
-  }, {
-    key: "emit",
-    value: function emit(deltaTime) {
-      if (this.fn) {
-        if (this.context) {
-          this.fn.apply(this.context, [deltaTime].concat([this._data]));
-        } else {
-          this.fn(deltaTime, this._data);
-        }
-      }
-      var redirect = this.next;
-      if (this.once) {
-        this.destroy(true);
-      }
-      // Soft-destroying should remove
-      // the next reference
-      if (this._destroyed) {
-        this.next = null;
-      }
-      return redirect;
-    }
-    /**
-     * Connect to the list.
-     * @param {TickerListener} previous - Input node, previous listener
-     */
-
-  }, {
-    key: "connect",
-    value: function connect(previous) {
-      this.previous = previous;
-      if (previous.next) {
-        previous.next.previous = this;
-      }
-      this.next = previous.next;
-      previous.next = this;
-    }
-    /**
-     * Destroy and don't use after this.
-     * @param {boolean} [hard = false] `true` to remove the `next` reference, this
-     *        is considered a hard destroy. Soft destroy maintains the next reference.
-     * @return {TickerListener} The listener to redirect while emitting or removing.
-     */
-
-  }, {
-    key: "destroy",
-    value: function destroy() {
-      var hard = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-      this._destroyed = true;
-      this.fn = null;
-      this.context = null;
-      // Disconnect, hook up next and previous
-      if (this.previous) {
-        this.previous.next = this.next;
-      }
-      if (this.next) {
-        this.next.previous = this.previous;
-      }
-      // Redirect to the next item
-      var redirect = this.previous;
-      // Remove references
-      this.next = hard ? null : redirect;
-      this.previous = null;
-      return redirect;
-    }
-  }]);
-  return TickerListener;
-}();
-
-var TickerListener_1 = TickerListener;
-
-/**
- * reference:
- * https://github.com/pixijs/pixi.js/blob/dev/src/core/ticker/index.js
- */
-
-var TARGET_FPMS = 0.06;
-
-var UPDATE_PRIORITY = {
-    INTERACTION: 50,
-    HIGH: 25,
-    NORMAL: 0,
-    LOW: -25,
-    UTILITY: -50
-};
-
-var Ticker = function () {
-    /**
-     * 
-     * @param {Object} [options] 
-     */
-    function Ticker() {
-        var _this = this;
-
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        classCallCheck(this, Ticker);
-
-        /**
-         * @type {boolean}
-         */
-        var autoStart = options.autoStart;
-        /**
-         * The first listener. All new listeners added are chained on this.
-         * @private
-         * @type {TickerListener}
-         */
-
-        this._head = new TickerListener_1(null, null, null, Infinity);
-        /**
-         * Internal current frame request ID
-         * @private
-         */
-        this._requestId = null;
-        /**
-         * Internal value managed by minFPS property setter and getter.
-         * This is the maximum allowed milliseconds between updates.
-         * @private
-         */
-        this._maxElapsedMS = 100;
-        /**
-         * Whether or not this ticker should invoke the method
-         * {@link PIXI.ticker.Ticker#start} automatically
-         * when a listener is added.
-         *
-         * @member {boolean}
-         * @default false
-         */
-        this.autoStart = autoStart || false;
-        /**
-         * Scalar time value from last frame to this frame.
-         * This value is capped by setting {@link PIXI.ticker.Ticker#minFPS}
-         * and is scaled with {@link PIXI.ticker.Ticker#speed}.
-         * **Note:** The cap may be exceeded by scaling.
-         *
-         * @member {number}
-         * @default 1
-         */
-        this.deltaTime = 1;
-        /**
-         * Time elapsed in milliseconds from last frame to this frame.
-         * Opposed to what the scalar {@link PIXI.ticker.Ticker#deltaTime}
-         * is based, this value is neither capped nor scaled.
-         * If the platform supports DOMHighResTimeStamp,
-         * this value will have a precision of 1 µs.
-         * Defaults to target frame time
-         *
-         * @member {number}
-         * @default 16.66
-         */
-        this.elapsedMS = 1 / TARGET_FPMS;
-        /**
-         * The last time {@link PIXI.ticker.Ticker#update} was invoked.
-         * This value is also reset internally outside of invoking
-         * update, but only when a new animation frame is requested.
-         * If the platform supports DOMHighResTimeStamp,
-         * this value will have a precision of 1 µs.
-         *
-         * @member {number}
-         * @default -1
-         */
-        this.lastTime = -1;
-        /**
-         * Factor of current {@link PIXI.ticker.Ticker#deltaTime}.
-         * @example
-         * // Scales ticker.deltaTime to what would be
-         * // the equivalent of approximately 120 FPS
-         * ticker.speed = 2;
-         *
-         * @member {number}
-         * @default 1
-         */
-        this.speed = 1;
-        /**
-         * Whether or not this ticker has been started.
-         * `true` if {@link PIXI.ticker.Ticker#start} has been called.
-         * `false` if {@link PIXI.ticker.Ticker#stop} has been called.
-         * While `false`, this value may change to `true` in the
-         * event of {@link PIXI.ticker.Ticker#autoStart} being `true`
-         * and a listener is added.
-         *
-         * @member {boolean}
-         * @default false
-         */
-        this.started = false;
-        /**
-         * Internal tick method bound to ticker instance.
-         * This is because in early 2015, Function.bind
-         * is still 60% slower in high performance scenarios.
-         * Also separating frame requests from update method
-         * so listeners may be called at any time and with
-         * any animation API, just invoke ticker.update(time).
-         *
-         * @private
-         * @param {number} time - Time since last tick.
-         */
-        this._tick = function (time) {
-            _this._requestId = null;
-            if (_this.started) {
-                // Invoke listeners now
-                _this.update(time);
-                // Listener side effects may have modified ticker state.
-                if (_this.started && _this._requestId === null && _this._head.next) {
-                    _this._requestId = requestAnimationFrame(_this._tick);
-                }
-            }
-        };
-    }
-    /**
-     * Conditionally requests a new animation frame.
-     * If a frame has not already been requested, and if the internal
-     * emitter has listeners, a new frame is requested.
-     *
-     * @private
-     */
-
-
-    createClass(Ticker, [{
-        key: '_requestIfNeeded',
-        value: function _requestIfNeeded() {
-            if (this._requestId === null && this._head.next) {
-                // ensure callbacks get correct delta
-                this.lastTime = performance.now();
-                this._requestId = requestAnimationFrame(this._tick);
-            }
-        }
-        /**
-         * Conditionally cancels a pending animation frame.
-         *
-         * @private
-         */
-
-    }, {
-        key: '_cancelIfNeeded',
-        value: function _cancelIfNeeded() {
-            if (this._requestId !== null) {
-                cancelAnimationFrame(this._requestId);
-                this._requestId = null;
-            }
-        }
-        /**
-         * Conditionally requests a new animation frame.
-         * If the ticker has been started it checks if a frame has not already
-         * been requested, and if the internal emitter has listeners. If these
-         * conditions are met, a new frame is requested. If the ticker has not
-         * been started, but autoStart is `true`, then the ticker starts now,
-         * and continues with the previous conditions to request a new frame.
-         *
-         * @private
-         */
-
-    }, {
-        key: '_startIfPossible',
-        value: function _startIfPossible() {
-            if (this.started) {
-                this._requestIfNeeded();
-            } else if (this.autoStart) {
-                this.start();
-            }
-        }
-        /**
-         * Register a handler for tick events. Calls continuously unless
-         * it is removed or the ticker is stopped.
-         *
-         * @param {Function} fn - The listener function to be added for updates
-         * @param {Function} [context] - The listener context
-         * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: 'add',
-        value: function add(fn, context) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-            var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
-
-            return this._addListener(new TickerListener_1(fn, context, data, priority, false));
-        }
-        /**
-         * Add a handler for the tick event which is only execute once.
-         *
-         * @param {Function} fn - The listener function to be added for one update
-         * @param {Function} [context] - The listener context
-         * @param {number} [priority=PIXI.UPDATE_PRIORITY.NORMAL] - The priority for emitting
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: 'addOnce',
-        value: function addOnce(fn, context) {
-            var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-            var priority = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : UPDATE_PRIORITY.NORMAL;
-
-            return this._addListener(new TickerListener_1(fn, context, data, priority, true));
-        }
-        /**
-         * Internally adds the event handler so that it can be sorted by priority.
-         * Priority allows certain handler (user, AnimatedSprite, Interaction) to be run
-         * before the rendering.
-         *
-         * @private
-         * @param {TickerListener} listener - Current listener being added.
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: '_addListener',
-        value: function _addListener(listener) {
-            // For attaching to head
-            var current = this._head.next;
-            var previous = this._head;
-            // Add the first item
-            if (!current) {
-                listener.connect(previous);
-            } else {
-                // Go from highest to lowest priority
-                while (current) {
-                    if (listener.priority > current.priority) {
-                        listener.connect(previous);
-                        break;
-                    }
-                    previous = current;
-                    current = current.next;
-                }
-                // Not yet connected
-                if (!listener.previous) {
-                    listener.connect(previous);
-                }
-            }
-            this._startIfPossible();
-            return this;
-        }
-        /**
-         * Removes any handlers matching the function and context parameters.
-         * If no handlers are left after removing, then it cancels the animation frame.
-         *
-         * @param {Function} fn - The listener function to be removed
-         * @param {Function} [context] - The listener context to be removed
-         * @returns {PIXI.ticker.Ticker} This instance of a ticker
-         */
-
-    }, {
-        key: 'remove',
-        value: function remove(fn, context) {
-            var listener = this._head.next;
-            while (listener) {
-                // We found a match, lets remove it
-                // no break to delete all possible matches
-                // incase a listener was added 2+ times
-                if (listener.match(fn, context)) {
-                    listener = listener.destroy();
-                } else {
-                    listener = listener.next;
-                }
-            }
-            if (!this._head.next) {
-                this._cancelIfNeeded();
-            }
-            return this;
-        }
-        /**
-         * Starts the ticker. If the ticker has listeners
-         * a new animation frame is requested at this point.
-         */
-
-    }, {
-        key: 'start',
-        value: function start() {
-            if (!this.started) {
-                this.started = true;
-                this._requestIfNeeded();
-            }
-        }
-        /**
-         * Stops the ticker. If the ticker has requested
-         * an animation frame it is canceled at this point.
-         */
-
-    }, {
-        key: 'stop',
-        value: function stop() {
-            if (this.started) {
-                this.started = false;
-                this._cancelIfNeeded();
-            }
-        }
-        /**
-         * Destroy the ticker and don't use after this. Calling
-         * this method removes all references to internal events.
-         */
-
-    }, {
-        key: 'destroy',
-        value: function destroy() {
-            this.stop();
-            var listener = this._head.next;
-            while (listener) {
-                listener = listener.destroy(true);
-            }
-            this._head.destroy();
-            this._head = null;
-        }
-        /**
-         * Triggers an update. An update entails setting the
-         * current {@link PIXI.ticker.Ticker#elapsedMS},
-         * the current {@link PIXI.ticker.Ticker#deltaTime},
-         * invoking all listeners with current deltaTime,
-         * and then finally setting {@link PIXI.ticker.Ticker#lastTime}
-         * with the value of currentTime that was provided.
-         * This method will be called automatically by animation
-         * frame callbacks if the ticker instance has been started
-         * and listeners are added.
-         *
-         * @param {number} [currentTime=performance.now()] - the current time of execution
-         */
-
-    }, {
-        key: 'update',
-        value: function update() {
-            var currentTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : performance.now();
-
-            var elapsedMS = void 0;
-            // If the difference in time is zero or negative, we ignore most of the work done here.
-            // If there is no valid difference, then should be no reason to let anyone know about it.
-            // A zero delta, is exactly that, nothing should update.
-            //
-            // The difference in time can be negative, and no this does not mean time traveling.
-            // This can be the result of a race condition between when an animation frame is requested
-            // on the current JavaScript engine event loop, and when the ticker's start method is invoked
-            // (which invokes the internal _requestIfNeeded method). If a frame is requested before
-            // _requestIfNeeded is invoked, then the callback for the animation frame the ticker requests,
-            // can receive a time argument that can be less than the lastTime value that was set within
-            // _requestIfNeeded. This difference is in microseconds, but this is enough to cause problems.
-            //
-            // This check covers this browser engine timing issue, as well as if consumers pass an invalid
-            // currentTime value. This may happen if consumers opt-out of the autoStart, and update themselves.
-            if (currentTime > this.lastTime) {
-                // Save uncapped elapsedMS for measurement
-                elapsedMS = this.elapsedMS = currentTime - this.lastTime;
-                // cap the milliseconds elapsed used for deltaTime
-                if (elapsedMS > this._maxElapsedMS) {
-                    elapsedMS = this._maxElapsedMS;
-                }
-                this.deltaTime = elapsedMS * TARGET_FPMS * this.speed;
-
-                // Cache a local reference, in-case ticker is destroyed
-                // during the emit, we can still check for head.next
-                var head = this._head;
-                // Invoke listeners added to internal emitter
-                var listener = head.next;
-                while (listener) {
-                    listener = listener.emit(this.deltaTime);
-                }
-                if (!head.next) {
-                    this._cancelIfNeeded();
-                }
-            } else {
-                this.deltaTime = this.elapsedMS = 0;
-            }
-            this.lastTime = currentTime;
-        }
-        /**
-         * The frames per second at which this ticker is running.
-         * The default is approximately 60 in most modern browsers.
-         * **Note:** This does not factor in the value of
-         * {@link PIXI.ticker.Ticker#speed}, which is specific
-         * to scaling {@link PIXI.ticker.Ticker#deltaTime}.
-         *
-         * @member {number}
-         * @readonly
-         */
-
-    }, {
-        key: 'FPS',
-        get: function get$$1() {
-            return 1000 / this.elapsedMS;
-        }
-        /**
-         * Manages the maximum amount of milliseconds allowed to
-         * elapse between invoking {@link PIXI.ticker.Ticker#update}.
-         * This value is used to cap {@link PIXI.ticker.Ticker#deltaTime},
-         * but does not effect the measured value of {@link PIXI.ticker.Ticker#FPS}.
-         * When setting this property it is clamped to a value between
-         * `0` and `PIXI.settings.TARGET_FPMS * 1000`.
-         *
-         * @member {number}
-         * @default 10
-         */
-
-    }, {
-        key: 'minFPS',
-        get: function get$$1() {
-            return 1000 / this._maxElapsedMS;
-        }
-        /**
-         * eslint-disable-line require-jsdoc
-         */
-        ,
-        set: function set$$1(fps) {
-            // Clamp: 0 to TARGET_FPMS
-            var minFPMS = Math.min(Math.max(0, fps) / 1000, TARGET_FPMS);
-            this._maxElapsedMS = 1 / minFPMS;
-        }
-    }]);
-    return Ticker;
-}();
-
-var Ticker_1 = Ticker;
-
-var _OVERRAL_ENUM;
-
-/**
- * 操作分类
- * @author yellow date 2017/9/4
- */
-
-/**
-* 与program相关的操作
-*/
-var INTERNAL_ENUM$1 = {
-    'lineWidth': true,
-    'deleteBuffer': true,
-    'deleteShader': true,
-    'deleteProgram': true,
-    'deleteFramebuffer': true,
-    'deleteRenderbuffer': true,
-    'deleteTexture': true,
-    //
-    'bindAttribLocation': true,
-    'bindRenderbuffer': true,
-    'renderbufferStorage': true,
-    'framebufferRenderbuffer': true,
-    //
-    'bindFramebuffer': true,
-    'framebufferTexture2D': true,
-    'readPixels': true,
-    //buffer-uinform-attrib
-    'bindBuffer': true,
-    'bufferData': true,
-    'bufferSubData': true,
-    'disableVertexAttribArray': true,
-    'enableVertexAttribArray': true,
-    'vertexAttribPointer': true,
-    //uniformMatrix
-    'uniformMatrix2fv': true,
-    'uniformMatrix3fv': true,
-    'uniformMatrix4fv': true,
-    //uniform1[f][i][v]
-    'uniform1f': true,
-    'uniform1fv': true,
-    'uniform1i': true,
-    'uniform1iv': true,
-    //uniform2[f][i][v]
-    'uniform2f': true,
-    'uniform2fv': true,
-    'uniform2i': true,
-    'uniform2iv': true,
-    //uniform3[f][i][v]
-    'uniform3f': true,
-    'uniform3fv': true,
-    'uniform3i': true,
-    'uniform3iv': true,
-    //uniform4[f][i][v]
-    'uniform4f': true,
-    'uniform4fv': true,
-    'uniform4i': true,
-    'uniform4iv': true,
-    //vertexAttrib1f
-    'vertexAttrib1f': true,
-    'vertexAttrib2f': true,
-    'vertexAttrib3f': true,
-    'vertexAttrib4f': true,
-    //vertexAttrib1fv
-    'vertexAttrib1fv': true,
-    'vertexAttrib2fv': true,
-    'vertexAttrib3fv': true,
-    'vertexAttrib4fv': true
-    /**
-     * 需要记住前序状态的webgl操作
-     */
-};var OVERRAL_ENUM$1 = (_OVERRAL_ENUM = {
-    'texParameterf': true,
-    'texParameteri': true,
-    'bindTexture': true,
-    'compressedTexImage2D': true,
-    'compressedTexSubImage2D': true,
-    'viewport': true,
-    'scissor': true,
-    'enable': true,
-    'disable': true
-}, defineProperty(_OVERRAL_ENUM, 'texParameteri', true), defineProperty(_OVERRAL_ENUM, 'texImage2D', true), defineProperty(_OVERRAL_ENUM, 'texSubImage2D', true), defineProperty(_OVERRAL_ENUM, 'depthFunc', true), defineProperty(_OVERRAL_ENUM, 'depthMask', true), defineProperty(_OVERRAL_ENUM, 'colorMask', true), defineProperty(_OVERRAL_ENUM, 'frontFace', true), defineProperty(_OVERRAL_ENUM, 'cullFace', true), defineProperty(_OVERRAL_ENUM, 'blendEquationSeparate', true), defineProperty(_OVERRAL_ENUM, 'blendFuncSeparate', true), defineProperty(_OVERRAL_ENUM, 'pixelStorei', true), defineProperty(_OVERRAL_ENUM, 'generateMipmap', true), defineProperty(_OVERRAL_ENUM, 'activeTexture', true), defineProperty(_OVERRAL_ENUM, 'blendEquation', true), defineProperty(_OVERRAL_ENUM, 'blendFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilOp', true), defineProperty(_OVERRAL_ENUM, 'stencilFunc', true), defineProperty(_OVERRAL_ENUM, 'stencilMask', true), defineProperty(_OVERRAL_ENUM, 'texParameterf', true), defineProperty(_OVERRAL_ENUM, 'hint', true), _OVERRAL_ENUM);
-
-var TICKER_ENUM$1 = {
-    'drawElements': true,
-    'drawArrays': true
-};
-
-var GL2_ENUM = {
-    'bindTransformFeedback': true
-};
-
-var ALL_ENUM$1 = merge_1({}, INTERNAL_ENUM$1, OVERRAL_ENUM$1, TICKER_ENUM$1, GL2_ENUM);
-
-/**
- * internal ticker
- */
-var ticker$1 = new Ticker_1();
-
-var handle = {
-    INTERNAL_ENUM: INTERNAL_ENUM$1,
-    OVERRAL_ENUM: OVERRAL_ENUM$1,
-    TICKER_ENUM: TICKER_ENUM$1,
-    ALL_ENUM: ALL_ENUM$1,
-    ticker: ticker$1
-};
-
-/**
- * 状态记录器
- * @author yellow date 2017/11/10
- * @description 提供状态的搜集，上一状态存储，下一状态应用
- */
-
-/**
- * 每个glProgram对应一个Recoder对象
- * @class Recorder
- */
-var Recorder = function () {
-  /**
-   * 
-   * @param {Oject} [options]
-   * @param {boolean} [options.forceUpdate] 指定是否record强制应用本次应用 
-   */
-  function Recorder() {
-    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    classCallCheck(this, Recorder);
-
-    /**
-     * @type {boolean}
-     */
-    var forceUpdate = options.forceUpdate;
-    /**
-     * 
-     */
-
-    this._lastQueue = [];
-    /**
-     * 操作集
-     * @param {Array} _queue
-     */
-    this._queue = [];
-  }
-  /**
-   * 深拷贝数组对象，防止原应用处理数组引用导致应用时数值错误
-   * @private
-   * @param {Array} rest 
-   */
-
-
-  createClass(Recorder, [{
-    key: "_exact",
-    value: function _exact(rest) {
-      for (var i = 0, len = rest.length; i < len; i++) {
-        var target = rest[i];
-        if (target instanceof Float32Array) {
-          rest[i] = new Float32Array(target);
-        }
-      }
-      return rest;
-    }
-    /**
-     * 组织执行操作的队列
-     * @method increase
-     * @param {String} name 
      * @param {Array} rest 
      */
-
-  }, {
-    key: "increase",
-    value: function increase(name) {
-      for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        rest[_key - 1] = arguments[_key];
-      }
-
-      this._queue.push({
-        name: name,
-        rest: this._exact(rest)
-      });
+    _exact(rest) {
+        for (let i = 0, len = rest.length; i < len; i++) {
+            let target = rest[i];
+            if (target instanceof Float32Array) {
+                rest[i] = new Float32Array(target);
+            }
+        }
+        return rest;
+    }
+    /**
+     * 修改某处指令的值
+     * @param {int} ptIndex 
+     * @param {String} ptName always represents shaderId/porgramId/
+     */
+    exactIndexByValue(ptIndex, ptName) {
+        const arr = ptName.split('_');
+        //map to _ptIndex
+        this._ptMapIndex[ptIndex] = {
+            prefix: arr[0],
+            index: ptIndex,
+            id: ptName
+        };
+        //replace value
+        this._rest[ptIndex] = ptName;
     }
     /**
      * 
-     * @param {GLProgram} glProgram 
+     * @param {Array} ptIndex 
      */
-
-  }, {
-    key: "apply",
-    value: function apply(glProgram) {
-      //1.deep copy the target operation queue
-      var _queue$reverse = this._queue.reverse(),
-          _queue$reverse2 = toArray(_queue$reverse),
-          cp = _queue$reverse2.slice(0);
-
-      this._lastQueue = cp;
-      //2.清理queue
-      this._queue = [];
-      //3.应用
-      this.reapply(glProgram);
+    exactIndexByObject(ptIndexs) {
+        for (let i = 0, len = ptIndexs.length; i < len; i++) {
+            const ptIndex = ptIndexs[i],
+                ptName = stamp_1(this._rest[ptIndex]);
+            ptName&&ptName.indexOf('_')!==-1?this.exactIndexByValue(ptIndex, ptName):null;
+        }
     }
     /**
-     * 应用对象
-     * @param {GLProgram} glProgram 
+     * 
+     * @param {Array} refs 
      */
-
-  }, {
-    key: "reapply",
-    value: function reapply(glProgram) {
-      glProgram.useProgram();
-      var len = this._lastQueue.length,
-          gl = glProgram.gl;
-      var task = this._lastQueue.pop();
-      while (task != null) {
-        gl[task.name].apply(gl, task.rest);
-        task.pop();
-      }
+    replace(refs) {
+        for (const key in refs)
+            this._rest[key] = refs[key];
     }
-  }]);
-  return Recorder;
-}();
+    /**
+     * 设置返回的id
+     */
+    setReturnId(v,needToAnalysis = true) {
+        this._returnId = v;
+        needToAnalysis?this._analysisReturnId(v):null;
+    }
+    /**
+     * 
+     * @param {String} v 
+     */
+    _analysisReturnId(v) {
+        const val = isString_1(v)?v:stamp_1(v);
+        const arr = val.split('_');
+        //map to _ptIndex
+        this._returanIdPrefix = arr[0];
+    }
+
+}
+
+var Record_1 = Record;
 
 /**
- * 全局HTMLCanvasElement
+ * reference:
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext
+ * 
+ * 具有返回对象的操作
+ * -code 操作代码
+ * -return 具有返回值的操作,特指需要返回代替索引的操作
+ * -replace 需要使用新对象代替引用的操作
+ * -ptIndex 替换参数的位置索引
  */
-var CANVASES$1 = {};
-/**
- * 全局GLCONTEXT
- */
-var GLCONTEXTS$1 = {};
-/**
- * 全局WEBGLCONTEXT
- */
-var WEBGLCONTEXTS$1 = {};
-/**
- * 全局limit存储
- */
-var GLLIMITS$1 = {};
-/**
- * 全局扩展存储
- */
-var GLEXTENSIONS$1 = {};
-/**
- * 全局扩展，glShader存储
- */
-var GLSHADERS$2 = {};
-/**
- * 全局扩展，glTexture纹理存储
- */
-var GLTEXTURES$2 = {};
-/**
- * 全局扩展，GLPrograms存储
- */
-var GLPROGRAMS$2 = {};
 
-var util = {
-  CANVASES: CANVASES$1,
-  GLCONTEXTS: GLCONTEXTS$1,
-  WEBGLCONTEXTS: WEBGLCONTEXTS$1,
-  GLEXTENSIONS: GLEXTENSIONS$1,
-  GLLIMITS: GLLIMITS$1,
-  GLPROGRAMS: GLPROGRAMS$2,
-  GLSHADERS: GLSHADERS$2,
-  GLTEXTURES: GLTEXTURES$2
+
+
+const Encrypt_WebGLContext = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/canvas
+     * @property
+     */
+    'canvas': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/commit
+     */
+    'commit': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawingBufferWidth
+     * @property
+     */
+    'drawingBufferWidth': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawingBufferHeight
+     * @property
+     */
+    'drawingBufferHeight': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getContextAttributes
+     */
+    'getContextAttributes': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isContextLost
+     */
+    'isContextLost': { code: 0, return: 1, replace: 0 },
 };
 
+const Encrypt_Viewing_And_Clipping = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+     */
+    'scissor': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
+     */
+    'viewport': { code: 0, return: 0, replace: 0 },
+};
+
+const Encrypt_State_Information = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/activeTexture
+     */
+    'activeTexture': { code: 0, return: 0, replace: 0},
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendColor
+     */
+    'blendColor': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
+     */
+    'blendEquation': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquationSeparate
+     */
+    'blendEquationSeparate': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
+     */
+    'blendFunc': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate
+     */
+    'blendFuncSeparate': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor
+     */
+    'clearColor': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearDepth
+     */
+    'clearDepth': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearStencil
+     */
+    'clearStencil': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+     */
+    'colorMask': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
+     */
+    'cullFace': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
+     */
+    'depthFunc': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
+     */
+    'depthMask': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthRange
+     */
+    'depthRange': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disable
+     */
+    'disable': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
+     */
+    'enable': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
+     */
+    'frontFace': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
+     * @description 
+     * warning return appropriate value by the parameter 'pname'
+     */
+    'getParameter': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
+     */
+    'getError': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/hint
+     */
+    'hint': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isEnabled
+     */
+    'isEnabled': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+     */
+    'lineWidth': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
+     */
+    'pixelStorei': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
+     */
+    'polygonOffset': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/sampleCoverage
+     */
+    'sampleCoverage': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+     */
+    'stencilFunc': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFuncSeparate
+     */
+    'stencilFuncSeparate': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
+     */
+    'stencilMask': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMaskSeparate
+     */
+    'stencilMaskSeparate': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOp
+     */
+    'stencilOp': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOpSeparate
+     */
+    'stencilOpSeparate': { code: 0, return: 0, replace: 0 },
+};
+
+const Encrypt_Buffers = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindBuffer
+     */
+    'bindBuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+     */
+    'bufferData': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferSubData
+     */
+    'bufferSubData': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createBuffer
+     */
+    'createBuffer': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteBuffer
+     */
+    'deleteBuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getBufferParameter
+     */
+    'getBufferParameter': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isBuffer
+     */
+    'isBuffer': { code: 0, return: 1, replace: 0 },
+};
+
+const Encrypt_Framebuffers = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindFramebuffer
+     */
+    'bindFramebuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/checkFramebufferStatus
+     */
+    'checkFramebufferStatus': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
+     */
+    'createFramebuffer': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteFramebuffer
+     */
+    'deleteFramebuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferRenderbuffer
+     */
+    'framebufferRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [3] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferTexture2D
+     */
+    'framebufferTexture2D': { code: 0, return: 0, replace: 1, ptIndex: [3] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getFramebufferAttachmentParameter
+     */
+    'getFramebufferAttachmentParameter': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isFramebuffer
+     */
+    'isFramebuffer': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels
+     */
+    'readPixels': { code: 0, return: 0, replace: 0 },
+};
+
+const Encrypt_Renderbuffers = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindRenderbuffer
+     */
+    'bindRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createRenderbuffer
+     */
+    'createRenderbuffer': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteRenderbuffer
+     */
+    'deleteRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getRenderbufferParameter
+     */
+    'getRenderbufferParameter': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isRenderbuffer
+     */
+    'isRenderbuffer': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
+     */
+    'renderbufferStorage': { code: 0, return: 0, replace: 0 },
+};
+
+const Encrypt_Textures = {
+        /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
+     */
+    'bindTexture': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compressedTexImage2D
+     */
+    'compressedTexImage2D': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/copyTexImage2D
+     */
+    'copyTexImage2D': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/copyTexSubImage2D
+     */
+    'copyTexSubImage2D': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
+     */
+    'createTexture': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteTexture
+     */
+    'deleteTexture': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/generateMipmap
+     */
+    'generateMipmap': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getTexParameter
+     */
+    'getTexParameter': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isTexture
+     */
+    'isTexture': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+     */
+    'texImage2D': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texSubImage2D
+     */
+    'texSubImage2D': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    'texParameterf': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+     */
+    'texParameteri': { code: 0, return: 0, replace: 0 },
+};
+
+const Encrypt_Programs_And_Shaders = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/attachShader
+     * @augments
+     */
+    'attachShader': { code: 0, return: 0, replace: 2, ptIndex: [0, 1] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindAttribLocation
+     * @augments
+     */
+    'bindAttribLocation': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
+     */
+    'compileShader': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+     */
+    'createProgram': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
+     */
+    'createShader': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteProgram
+     */
+    'deleteProgram': { code: 0, return: 0, replace: 1, ptIndex:[0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteShader
+     */
+    'deleteShader': { code: 0, return: 0, replace: 1, ptIndex:[0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/detachShader
+     */
+    'detachShader': { code: 0, return: 0, replace: 2, ptIndex: [0, 1] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttachedShaders
+     */
+    'getAttachedShaders': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramParameter
+     */
+    'getProgramParameter': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
+     */
+    'getProgramInfoLog': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
+     */
+    'getShaderParameter': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderPrecisionFormat
+     */
+    'getShaderPrecisionFormat': { code: 0, return: 1, replace: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
+     */
+    'getShaderInfoLog': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderSource
+     */
+    'getShaderSource': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isProgram
+     */
+    'isProgram': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isShader
+     */
+    'isShader': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/linkProgram
+     */
+    'linkProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
+     */
+    'shaderSource': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/useProgram
+     */
+    'useProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/validateProgram
+     */
+    'validateProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+};
+
+const Encrypt_Uniforms_And_Attributes = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disableVertexAttribArray
+     */
+    'disableVertexAttribArray': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
+     */
+    'enableVertexAttribArray': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveAttrib
+     */
+    'getActiveAttrib': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
+     */
+    'getActiveUniform': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttribLocation
+     * }{ debug return directly,no need to cache,
+     */
+    'getAttribLocation': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
+     */
+    'getUniformLocation':{ code: 0, return: 1, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getVertexAttrib
+     */
+    'getVertexAttrib': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getVertexAttribOffset
+     */
+    'getVertexAttribOffset': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
+     */
+    'vertexAttribPointer': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
+     */
+    'uniformMatrix2fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniformMatrix3fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniformMatrix4fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+     */
+    'uniform1f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform1fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform1i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform1iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform2f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform2fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform2i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform2iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform3f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform3fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform3i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform3iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform4f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform4fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform4i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    'uniform4iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttrib
+     */
+    'vertexAttrib1f': { code: 0, return: 0, replace: 0 },
+    'vertexAttrib2f': { code: 0, return: 0, replace: 0 },
+    'vertexAttrib3f': { code: 0, return: 0, replace: 0 },
+    'vertexAttrib4f': { code: 0, return: 0, replace: 0 },
+    'vertexAttrib1fv': { code: 0, return: 0, replace: 0 },
+    'vertexAttrib2fv': { code: 0, return: 0, replace: 0 },
+    'vertexAttrib3fv': { code: 0, return: 0, replace: 0 },
+    'vertexAttrib4fv': { code: 0, return: 0, replace: 0 },
+};
+
+const Encrypt_Drawing_Buffers = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
+     */
+    'clear': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
+     */
+    'drawArrays': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+     */
+    'drawElements': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish
+     */
+    'finish': { code: 0, return: 0, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/flush
+     */
+    'flush': { code: 0, return: 0, replace: 0 },
+};
+
+const Encrypt_Working_With_Extensions = {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getSupportedExtensions
+     */
+    'getSupportedExtensions': { code: 0, return: 1, replace: 0 },
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getExtension
+     */
+    'getExtension': { code: 0, return: 1, replace: 0 },
+};
+
+var Encrypt = merge_1({},
+    Encrypt_Buffers,
+    Encrypt_Drawing_Buffers,
+    Encrypt_Framebuffers,
+    Encrypt_Programs_And_Shaders,
+    Encrypt_Renderbuffers,
+    Encrypt_State_Information,
+    Encrypt_Textures,
+    Encrypt_Uniforms_And_Attributes,
+    Encrypt_Viewing_And_Clipping,
+    Encrypt_WebGLContext,
+    Encrypt_Working_With_Extensions);
+
 /**
- * Tiny的作用与策略，详情请参见：
- * https://github.com/axmand/fusion.gl/wiki/Tiny
- * 
+ * @author yellow date 2018/1/4
  */
-var stamp$2 = stamp_1.stamp;
-var ticker = handle.ticker;
-var TICKER_ENUM = handle.TICKER_ENUM;
-var GLPROGRAMS$1 = util.GLPROGRAMS;
+
+
+
+
 /**
  * @class
  */
+class Recorder {
 
-var Tiny = function () {
-    /**
-     * 
-     * @param {GLContext} glContext 
-     */
-    function Tiny(glContext) {
-        classCallCheck(this, Tiny);
-
+    constructor(glContext, storeInstance = true) {
         /**
          * @type {GLContext}
          */
         this._glContext = glContext;
         /**
-         * @type {WebGLRenderingContext}
+         * @type {Array}
          */
-        this._gl = glContext.gl;
+        this._records = [];
         /**
-         * the operations which need's to be updated all without program context change
+         * 注册到全局实例中
          */
-        this._overrall = [];
-        /**
-         * the operations which need's to be updated in a tick combine with program context 
-         */
-        this._programInternal = null;
-        /**
-         * 
-         */
-        this._tinyProgramCache = {};
-        /**
-         * @type {GLProgram}
-         */
-        this._glPrgram = null;
-        /**
-         * store this instance to Global
-         */
-        Tiny.instances.push(this);
+        storeInstance ? Recorder.instances[glContext.id] = this : null;
     }
     /**
-     * indicate wether it's need to be updated
+     * 新增record
+     * @param {Record} record 
      */
+    increase(record) {
+        this._records.push(record);
+    }
+    /**
+     * 将现有的记录转换成指令
+     */
+    toInstruction(programId = null) {
+        const record = new Record_1('useProgram', null);
+        record.exactIndexByValue(0, programId);
+        const len = this._records.length,
+            list = this._records.splice(0, len);
+        const first = list[0];
+        if (first && first.opName === 'clear')
+            list.shift();
+        return [record].concat(list);
+    }
+    /** 
+     * 将现有记录转化成操作，与gl指令无关
+    */
+    toOperation() {
+        const len = this._records.length,
+            list = this._records.splice(0, len);
+        return list;
+    }
 
-
-    createClass(Tiny, [{
-        key: 'switchPorgarm',
-
-        /**
-         * 
-         * @param {GLProgram} glProgram
-         * @returns {Array} [] 
-         */
-        value: function switchPorgarm(glProgram) {
-            //如果在切换program的时候，上一个program的代码未执行，则先执行
-            if (!!this._glPrgram && !!this._programInternal && this._programInternal.length > 0) this._tick(this._glPrgram, this._programInternal.splice(0, this._programInternal.length), this._overrall.splice(0, this._overrall.length));
-            this._glPrgram = glProgram;
-            var id = stamp$2(glProgram),
-                tinyProgramCache = this._tinyProgramCache;
-            //切换program
-            if (!tinyProgramCache[id]) tinyProgramCache[id] = [];
-            this._programInternal = tinyProgramCache[id];
-        }
-        /**
-         * 
-         * @param {String} name 
-         * @param {Array} rest 
-         */
-
-    }, {
-        key: 'push',
-        value: function push(name) {
-            var glPrograms = GLPROGRAMS$1,
-                glProgram = this._glPrgram,
-                gl = this._gl,
-                overrall = this._overrall,
-                programInternal = this._programInternal;
-
-            for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                rest[_key - 1] = arguments[_key];
-            }
-
-            if (!glProgram) gl[name].apply(gl, rest);else programInternal.push({ name: name, rest: this._exact(rest) });
-            //如果是TICKER_ENUM,则需要加入ticker
-            if (TICKER_ENUM[name]) this._tick(glProgram, programInternal.splice(0, programInternal.length), overrall.splice(0, overrall.length));
-        }
-        /**
-         * 
-         * @param {GLProgram} glProgram 
-         * @param {*} internal 
-         * @param {*} overrall 
-         */
-
-    }, {
-        key: '_tick',
-        value: function _tick(glProgram, internal, overrall) {
-            //
-            ticker.addOnce(function (deltaTime, bucket) {
-                bucket.glProgram.useProgram();
-                var gl = bucket.glProgram.gl;
-                var queue = bucket.overrall.concat(bucket.internal).reverse();
-                var task = queue.pop();
-                while (task != null) {
-                    gl[task.name].apply(gl, task.rest);
-                    task = queue.pop();
-                }
-            }, this, {
-                overrall: overrall,
-                internal: internal,
-                glProgram: glProgram
-            });
-            //update RenderFrame
-            ticker.update();
-        }
-        /**
-         * 拷贝float32数组
-         * @param {number} rest 
-         */
-
-    }, {
-        key: '_exact',
-        value: function _exact(rest) {
-            for (var i = 0, len = rest.length; i < len; i++) {
-                var target = rest[i];
-                if (target instanceof Float32Array) {
-                    rest[i] = new Float32Array(target);
-                }
-            }
-            return rest;
-        }
-    }, {
-        key: 'isEmpty',
-        get: function get$$1() {
-            return this._programInternal.length === 0;
-        }
-    }]);
-    return Tiny;
-}();
+}
 /**
- * Global instances of Tiny
+ * 
  */
+Recorder.instances = {};
 
-
-Tiny.instances = [];
-
-var Tiny_1 = Tiny;
-
-/**
- * 设计思路为.net framework 的 IDispose接口
- * 除此之外提供额外的属性：
- * -id
- * -handle
- * -create handle
- * -dispose
- */
-
-var stamp$3 = stamp_1.stamp;
-
-/**
- * @class
- */
-
-var Dispose = function () {
-  /**
-   * 构建一个可被销毁的资源对象
-   */
-  function Dispose() {
-    classCallCheck(this, Dispose);
-
-    this._id = stamp$3(this);
-  }
-  /**
-   * 资源销毁方法，执行完一段后，统一调用
-   * must be implement be child class
-   * @abstract
-   */
-
-
-  createClass(Dispose, [{
-    key: 'dispose',
-    value: function dispose() {
-      throw new Error('no implementation of function dispose');
-    }
-    /**
-     * 获取资源id
-     */
-
-  }, {
-    key: '_createHandle',
-
-    /**
-     * 创建资源
-     * @abstract
-     */
-    value: function _createHandle() {
-      // arguments.callee.toString();
-      throw new Error('no implementation of function _createHandle');
-    }
-  }, {
-    key: 'id',
-    get: function get$$1() {
-      return this._id;
-    }
-    /**
-     * 获取资源核心对象
-     * @readonly
-     * @member
-     */
-
-  }, {
-    key: 'handle',
-    get: function get$$1() {
-      return this._handle;
-    }
-  }]);
-  return Dispose;
-}();
-
-var Dispose_1 = Dispose;
+var Recorder_1 = Recorder;
 
 /**
  * reference https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
@@ -1825,7 +899,7 @@ var Dispose_1 = Dispose;
  * webgl2 used within a WebGL2RenderingContext,add GLint64(GLuint64EXT) 
  * @author yellow date 2017/6/15
  */
-var GLConstants = {
+const GLConstants = {
     /**
      * 深度缓冲，常用与 gl.clear(gl.Enum)
      * Passed to clear to clear the current depth buffer.
@@ -2703,389 +1777,153 @@ var GLConstants = {
 var GLConstants_1 = GLConstants;
 
 /**
- * 提供shader程序创建，销毁，应用等
- * @author yellow 2017/6/12
- */
-
-var setId$1 = stamp_1.setId;
-
-/** 
- * Shader抽象类
- * @class
- */
-
-var GLShader = function (_Dispose) {
-    inherits(GLShader, _Dispose);
-
-    /**
-     * Creates an instance of Shader.
-     * @constructor
-     * @param {WebGLRenderingContext} gl 
-     * @param {Object} source
-     * @param {String} [source.source]
-     * @param {String} [source.name] 
-     * @param {String} shaderType 
-     * @param {GLExtension} extension
-     */
-    function GLShader(gl, source, shaderType, extension) {
-        classCallCheck(this, GLShader);
-
-        var _this = possibleConstructorReturn(this, (GLShader.__proto__ || Object.getPrototypeOf(GLShader)).call(this));
-
-        _this._gl = gl;
-        _this._extension = extension;
-        _this._shaderType = shaderType;
-        _this._handle = _this._createHandle();
-        if (!!source) {
-            _this.source = source;
-            _this.compile();
-        }
-        return _this;
-    }
-    /**
-     * return the complied source
-     * @readonly
-     * @memberof Shader
-     */
-
-
-    createClass(GLShader, [{
-        key: 'compile',
-
-        /**
-         * use gl to compile the shader
-         * @memberof Shader
-         */
-        value: function compile() {
-            var gl = this._gl;
-            gl.compileShader(this._handle);
-            var compileStatus = gl.getShaderParameter(this._handle, GLConstants_1.COMPILE_STATUS);
-            if (!compileStatus) {
-                var infoLog = gl.getShaderInfoLog(this.handle);
-                this.dispose();
-                throw new Error(infoLog);
-            }
-        }
-        /**
-         * delete shader form gl
-         */
-
-    }, {
-        key: 'dispose',
-        value: function dispose() {
-            this._gl.deleteShader(this._handle);
-        }
-        /**
-         * overwrite 
-         */
-
-    }, {
-        key: '_createHandle',
-        value: function _createHandle() {
-            var gl = this._gl;
-            var shader = gl.createShader(this._shaderType);
-            setId$1(shader, this._id);
-            return shader;
-        }
-    }, {
-        key: 'translateSource',
-        get: function get$$1() {
-            var ext = this._extension['WEBGL_debug_shaders'];
-            return ext ? ext.getTranslatedShaderSource(this.handle) : 'No translated source available. WEBGL_debug_shaders not implemented';
-        }
-        /**
-         * @readonly
-         * @memberof Shader
-         */
-
-    }, {
-        key: 'source',
-        get: function get$$1() {
-            return this._source;
-        }
-        /**
-         * set the source
-         */
-        ,
-        set: function set$$1(value) {
-            var gl = this._gl;
-            this._source = value;
-            gl.shaderSource(this._handle, this._source);
-        }
-    }]);
-    return GLShader;
-}(Dispose_1);
-
-var GLShader_1 = GLShader;
-
-/**
- * vertex shader object
- * @author yellow date 2017/6/12
- */
-
-/**
- * @class
- */
-
-var GLVertexShader = function (_GLShader) {
-  inherits(GLVertexShader, _GLShader);
-
-  /**
-   * 创建vertex shader
-   * @param {WebGLRenderingContext} gl 
-   * @param {String} source 
-   * @param {GLExtension} extension
-   */
-  function GLVertexShader(gl, source, extension) {
-    classCallCheck(this, GLVertexShader);
-    return possibleConstructorReturn(this, (GLVertexShader.__proto__ || Object.getPrototypeOf(GLVertexShader)).call(this, gl, source, GLConstants_1.VERTEX_SHADER, extension));
-  }
-
-  return GLVertexShader;
-}(GLShader_1);
-
-var GLVertexShader_1 = GLVertexShader;
-
-/**
- * fragment shader object
- * @author yellow date 2017/6/12
- */
-
-/**
- * @class
- */
-
-var GLFragmentShader = function (_GLShader) {
-  inherits(GLFragmentShader, _GLShader);
-
-  /**
-   * 创建fragment shader
-   * @param {WebGLRenderingContext} gl 
-   * @param {String} source 
-   * @param {GLExtension} extension
-   */
-  function GLFragmentShader(gl, source, extension) {
-    classCallCheck(this, GLFragmentShader);
-    return possibleConstructorReturn(this, (GLFragmentShader.__proto__ || Object.getPrototypeOf(GLFragmentShader)).call(this, gl, source, GLConstants_1.FRAGMENT_SHADER, extension));
-  }
-
-  return GLFragmentShader;
-}(GLShader_1);
-
-var GLFragmentShader_1 = GLFragmentShader;
-
-/**
- * use texture soruce to create the texture form
  * reference:
- * https://webgl2fundamentals.org/webgl/lessons/webgl-2-textures.html
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/texImage3D
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGLTexture
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
- * 
- * -mipmap
- * -支持非2的n次方规格的textures
- * 
+ * https://github.com/uber/luma.gl/blob/master/src/utils/is-browser.js
  */
-var setId$2 = stamp_1.setId;
-var GLTEXTURES$3 = util.GLTEXTURES;
+const isNode = typeof process === 'object' && String(process) === '[object process]' && !process.browser;
 
+/**
+ * store mapping data and default value
+ */
+const _polyfill = {};
+/**
+ * source poly
+ */
+const _poly = {
+    'MAX_VIEWPORT_DIMS': {
+        name: 'MAX_VIEWPORT_DIMS',
+        key: GLConstants_1.MAX_VIEWPORT_DIMS,
+        webgl: new Float32Array([32767, 32767]),
+        webgl2: new Float32Array([32767, 32767]),
+    },
+    'ALIASED_POINT_SIZE_RANGE': {
+        name: 'ALIASED_POINT_SIZE_RANGE',
+        key: GLConstants_1.ALIASED_POINT_SIZE_RANGE,
+        webgl: new Float32Array([1, 1024]),
+        webgl2: new Float32Array([1, 1024]),
+    },
+    'ALIASED_LINE_WIDTH_RANGE': {
+        name: 'ALIASED_LINE_WIDTH_RANGE',
+        key: GLConstants_1.ALIASED_LINE_WIDTH_RANGE,
+        webgl: new Float32Array([1, 1]),
+        webgl2: new Float32Array([1, 1]),
+    },
+    'MAX_VERTEX_UNIFORM_VECTORS': {
+        name: 'MAX_VERTEX_UNIFORM_VECTORS',
+        key: GLConstants_1.MAX_VERTEX_UNIFORM_VECTORS,
+        webgl: 128,
+        webgl2: 128,
+    },
+    'MAX_VERTEX_TEXTURE_IMAGE_UNITS': {
+        name: 'MAX_VERTEX_TEXTURE_IMAGE_UNITS',
+        key: GLConstants_1.MAX_VERTEX_TEXTURE_IMAGE_UNITS,
+        webgl: 0,
+        webgl2: 0,
+    },
+    'MAX_VERTEX_ATTRIBS': {
+        name: 'MAX_VERTEX_ATTRIBS',
+        key: GLConstants_1.MAX_VERTEX_ATTRIBS,
+        webgl: 8,
+        webgl2: 8,
+    },
+    'MAX_VARYING_VECTORS': {
+        name: 'MAX_VARYING_VECTORS',
+        key: GLConstants_1.MAX_VARYING_VECTORS,
+        webgl: 8,
+        webgl2: 8,
+    },
+    'MAX_TEXTURE_SIZE': {
+        name: 'MAX_TEXTURE_SIZE',
+        key: GLConstants_1.MAX_TEXTURE_SIZE,
+        webgl: 64,
+        webgl2: 64,
+    },
+    'MAX_RENDERBUFFER_SIZE': {
+        name: 'MAX_RENDERBUFFER_SIZE',
+        key: GLConstants_1.MAX_RENDERBUFFER_SIZE,
+        webgl: 1,
+        webgl2: 1,
+    },
+    'MAX_TEXTURE_IMAGE_UNITS': {
+        name: 'MAX_TEXTURE_IMAGE_UNITS',
+        key: GLConstants_1.MAX_TEXTURE_IMAGE_UNITS,
+        webgl: 8,
+        webgl2: 8,
+    },
+    'MAX_FRAGMENT_UNIFORM_VECTORS': {
+        name: 'MAX_FRAGMENT_UNIFORM_VECTORS',
+        key: GLConstants_1.MAX_FRAGMENT_UNIFORM_VECTORS,
+        webgl: 16,
+        webgl2: 16,
+    },
+    'MAX_CUBE_MAP_TEXTURE_SIZE': {
+        name: 'MAX_CUBE_MAP_TEXTURE_SIZE',
+        key: GLConstants_1.MAX_CUBE_MAP_TEXTURE_SIZE,
+        webgl: 16,
+        webgl2: 16,
+    },
+    'MAX_COMBINED_TEXTURE_IMAGE_UNITS': {
+        name: 'MAX_COMBINED_TEXTURE_IMAGE_UNITS',
+        key: GLConstants_1.MAX_COMBINED_TEXTURE_IMAGE_UNITS,
+        webgl: 8,
+        webgl2: 8,
+
+    },
+    'VERSION': {
+        name: 'VERSION',
+        key: GLConstants_1.VERSION,
+        webgl: 'WebGL 1.0',
+        webgl2: 'WebGL 2.0'
+    }
+};
+/**
+ * map GLConstants location to key
+ */
+for (const key in _poly) {
+    const target = _poly[key];
+    _polyfill[key] = _polyfill[target.key] = target;
+}
 /**
  * @class
  */
-
-var GLTexture = function (_Dispose) {
-    inherits(GLTexture, _Dispose);
-
+class GLLimits {
     /**
      * 
-     * @param {WebGLRenderingContext} gl 
-     * @param {object} [options] 
-     * @param {number} [options.width] 
-     * @param {number} [options.height] 
-     * @param {GLExtension} [options.extenson] 
-     * @param {GLLimits} [options.limits] 
-     * @param {number} [options.format] 
-     * @param {number} [options.type] 
+     * @param {GLContext} glContext 
      */
-    function GLTexture(gl) {
-        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-        classCallCheck(this, GLTexture);
+    constructor(glContext) {
+        this._glContext = glContext;
+        this._type = glContext.renderType;
+        this._indexs = [];
+        this._map(_polyfill);
+    }
+    /**
+     * will be call while change or set WebGLRenderingContext
+     */
+    _include() {
 
-        var _this = possibleConstructorReturn(this, (GLTexture.__proto__ || Object.getPrototypeOf(GLTexture)).call(this));
-
-        GLTEXTURES$3[_this._id] = _this;
-        var width = options.width,
-            height = options.height,
-            extension = options.extension,
-            limits = options.limits,
-            format = options.format,
-            type = options.type;
-
-        _this._gl = gl;
-        _this._extension = extension || null;
-        _this._limits = limits || null;
-        _this._width = width || -1;
-        _this._height = height || -1;
-        _this._format = format || GLConstants_1.RGBA; //usually, UNSINGED_BYTE use 8bit per channel,which suit for RGBA.
-        _this._type = type || GLConstants_1.UNSIGNED_BYTE;
-        _this._handle = _this._createHandle();
-        return _this;
     }
 
-    createClass(GLTexture, [{
-        key: '_createHandle',
-
-        /**
-         * overwrite
-         */
-        value: function _createHandle() {
-            var gl = this._gl,
-                texture = gl.createTexture();
-            setId$2(texture, this.id);
-            return texture;
+    _map(mapObject) {
+        const type = this._type;
+        for (const key in mapObject) {
+            if (!this.hasOwnProperty(key)) {
+                const target = mapObject[key];
+                if (!this[key])
+                    this[key] = target[type];
+            }
         }
-    }, {
-        key: 'dispose',
+    }
 
-        /**
-         * 释放texture资源
-         */
-        value: function dispose() {
-            var gl = this._gl;
-            gl.deleteTexture(this.handle);
-        }
-    }, {
-        key: 'loadImage',
+}
 
-        /**
-         * 
-         * @param {Image|Html} element 
-         */
-        value: function loadImage(image) {
-            this.bind();
-            var gl = this._gl,
-                mipmapLevel = 0;
-            gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, this._format, this._format, this._type, image);
-        }
-        /**
-         * Use a data source and uploads this texture to the GPU
-         * @param {TypedArray} data the data to upload to the texture
-         */
-
-    }, {
-        key: 'loadData',
-        value: function loadData(data) {
-            this.bind();
-            var gl = this._gl,
-                ext = this._extension['textureFloat'];
-            this._type = data instanceof Float32Array ? gl.FLOAT : this._type;
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._premultiplyAlpha);
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, data || null);
-        }
-        /**
-         * 对纹理做插值，在不同分辨率下，当获取不到纹理原始值时，可以根据点位置和周围点的值插值计算。
-         * 建议优先调用此方法
-         */
-
-    }, {
-        key: 'enableMipmap',
-        value: function enableMipmap() {
-            var gl = this._gl;
-            this.bind();
-            this._mipmap = true;
-            gl.generateMipmap(GLConstants_1.TEXTURE_2D);
-        }
-        /**
-         * 纹理延展到边界
-         */
-
-    }, {
-        key: 'enableWrapClamp',
-        value: function enableWrapClamp() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_S, GLConstants_1.CLAMP_TO_EDGE);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_T, GLConstants_1.CLAMP_TO_EDGE);
-        }
-        /**
-         * 纹理超过边际，镜像repeat
-         */
-
-    }, {
-        key: 'enableWrapMirrorRepeat',
-        value: function enableWrapMirrorRepeat() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_S, GLConstants_1.MIRRORED_REPEAT);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_WRAP_T, GLConstants_1.MIRRORED_REPEAT);
-        }
-        /**
-         * 纹理显现拉伸，使用线性插值法
-         */
-
-    }, {
-        key: 'enableLinearScaling',
-        value: function enableLinearScaling() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants_1.LINEAR_MIPMAP_LINEAR : GLConstants_1.LINEAR);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MAG_FILTER, GLConstants_1.LINEAR);
-        }
-        /**
-         * 纹理临近拉伸，使用最临近插值法
-         */
-
-    }, {
-        key: 'enableNearstScaling',
-        value: function enableNearstScaling() {
-            var gl = this._gl;
-            this.bind();
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MIN_FILTER, this._mipmap ? GLConstants_1.NEAREST_MIPMAP_NEAREST : GLConstants_1.NEAREST);
-            gl.texParameteri(GLConstants_1.TEXTURE_2D, GLConstants_1.TEXTURE_MAG_FILTER, GLConstants_1.NEAREST);
-        }
-        /**
-         * binds the texture
-         * @type {texture}
-         */
-
-    }, {
-        key: 'bind',
-        value: function bind(location) {
-            var gl = this._gl;
-            if (location !== undefined) gl.activeTexture(GLConstants_1.TEXTURE0 + location);
-            gl.bindTexture(GLConstants_1.TEXTURE_2D, this.handle);
-        }
-    }, {
-        key: 'unbind',
-
-        /**
-         * unbinds the texture
-         */
-        value: function unbind() {
-            var gl = this._gl;
-            gl.bindTexture(gl.TEXTURE_2D, null);
-        }
-    }, {
-        key: 'mipmap',
-
-        /**
-         * return the flag mipmap
-         * @member
-         */
-        get: function get$$1() {
-            return this._mipmap;
-        }
-    }]);
-    return GLTexture;
-}(Dispose_1);
-
-var GLTexture_1 = GLTexture;
+var GLLimits_1 = GLLimits;
 
 /**
- * @author yellow date 2017/6/15
  * management of GLExtension
+ * @author yellow date 2017/6/15
  */
-var GL_STANDEXTENSIONS = {
+const GL_STANDEXTENSIONS = {
     standardDerivatives: ['OES_standard_derivatives'],
     elementIndexUint: ['OES_element_index_uint'],
     depthTexture: ['WEBGL_depth_texture', 'WEBKIT_WEBGL_depth_texture'],
@@ -3096,1369 +1934,10171 @@ var GL_STANDEXTENSIONS = {
     pvrtc: ['WEBGL_compressed_texture_pvrtc', 'WEBKIT_WEBGL_compressed_texture_pvrtc'],
     etc1: ['WEBGL_compressed_texture_etc1'],
     textureFilterAnisotropic: ['EXT_texture_filter_anisotropic', 'MOZ_EXT_texture_filter_anisotropic', 'WEBKIT_EXT_texture_filter_anisotropic'],
-    vertexArrayObject: ['OES_vertex_array_object', 'MOZ_OES_vertex_array_object', 'WEBKIT_OES_vertex_array_object'],
-    angleInstancedArrays: ['ANGLE_instanced_arrays']
+    vertexArrayObject:['OES_vertex_array_object','MOZ_OES_vertex_array_object','WEBKIT_OES_vertex_array_object'],
+    angleInstancedArrays:['ANGLE_instanced_arrays']
 };
 /**
- * 
  * @class
- * @example
- *  let extension = new GLExtension(gl);
- *  let standardDerivatives = extension['standardDerivatives']; 
- *  //or
- *  let standardDerivatives = extension.standardDerivatives; 
  */
-
-var GLExtension = function () {
+class GLExtension{
     /**
      * 
-     * @param {WebGLRenderingContext} gl 
-     * @param {Array} [names] the arry of extension names
+     * @param {GLContext} glContext 
      */
-    function GLExtension(gl) {
-        classCallCheck(this, GLExtension);
-
-        this._gl = gl;
-        this._extensions = {};
-        this._includeExtension();
-        this._map();
+    constructor(glContext){
+        /**
+         * quote of GLContext instance
+         */
+        this._glContext = glContext;
+        /**
+         * store key and value of extension
+         * @type {Object}
+         */
+        this._options = {};
     }
     /**
-     * @private
+     * rebuild
      */
-
-
-    createClass(GLExtension, [{
-        key: '_includeExtension',
-        value: function _includeExtension() {
-            var gl = this._gl;
-            for (var key in GL_STANDEXTENSIONS) {
-                if (GL_STANDEXTENSIONS.hasOwnProperty(key)) {
-                    var extensionName = GL_STANDEXTENSIONS[key],
-                        extension = this.getExtension(extensionName);
-                    if (!!extension) this._extensions[key] = extension;
-                }
+    _include(){
+        for (var key in GL_STANDEXTENSIONS) {
+            if (GL_STANDEXTENSIONS.hasOwnProperty(key)) {
+                let extensionName = GL_STANDEXTENSIONS[key],
+                    extension = this.getExtension(extensionName);
+                if (!!extension)
+                    this._options[key] = extension;
             }
         }
-        /**
-         * 
-         * @param {String[]} extNames 
-         */
-
-    }, {
-        key: 'getExtension',
-        value: function getExtension() {
-            var _ref;
-
-            var gl = this._gl,
-                names = (_ref = []).concat.apply(_ref, arguments),
-                len = names.length;
-            for (var i = 0; i < len; ++i) {
-                var name = names[i];
-                var extension = gl.getExtension(name);
-                if (extension) return extension;
-            }
-            return null;
+    }
+     /**
+     * 
+     * @param {String[]} extNames 
+     */
+    getExtension(...extNames) {
+        const gl = this._glContext.gl,
+            names = [].concat(...extNames),
+            len = names.length;
+        for (let i = 0; i < len; ++i) {
+            const name = names[i];
+            let extension = gl.getExtension(name);
+            if (extension)
+                return extension;
         }
-        /**
-         * map gl.extension to GLContext instance
-         */
-
-    }, {
-        key: '_map',
-        value: function _map() {
-            for (var key in this._extensions) {
-                if (this._extensions.hasOwnProperty(key)) {
-                    var target = this._extensions[key];
-                    if (!this[key] && !!target) this[key] = target;
-                }
+        return null;
+    }
+    /**
+     * map available extension 
+     */
+    _map() {
+        for (var key in this._extensions) {
+            if (this._options.hasOwnProperty(key)) {
+                let target = this._options[key];
+                if (!this[key] && !!target)
+                    this[key] = target;
             }
         }
-    }]);
-    return GLExtension;
-}();
+    }
+
+}
 
 var GLExtension_1 = GLExtension;
 
-/**
- * reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/NavigatorConcurrentHardware/hardwareConcurrency
- * 
- * detect hardware env to fix the number of Limits
- * @author yellow date 2017/6/15
+/*
+ * Generated by PEG.js 0.10.0.
+ *
+ * http://pegjs.org/
  */
 
-var Limits = {
-    maximumCombinedTextureImageUnits: 0,
-    maximumCubeMapSize: 0,
-    maximumFragmentUniformVectors: 0,
-    maximumTextureImageUnits: 0,
-    maximumRenderbufferSize: 0,
-    maximumTextureSize: 0,
-    maximumVaryingVectors: 0,
-    maximumVertexAttributes: 0,
-    maximumVertexTextureImageUnits: 0,
-    maximumVertexUniformVectors: 0,
-    minimumAliasedLineWidth: 0,
-    maximumAliasedLineWidth: 0,
-    minimumAliasedPointSize: 0,
-    maximumAliasedPointSize: 0,
-    maximumViewportWidth: 0,
-    maximumViewportHeight: 0,
-    maximumTextureFilterAnisotropy: 0,
-    maximumDrawBuffers: 0,
-    maximumColorAttachments: 0,
-    highpFloatSupported: false,
-    highpIntSupported: false,
-    hardwareConcurrency: 0
+ /**
+  * reference:
+  * https://github.com/axmand/glsl-man/blob/master/src/parser.js
+  * @date 2018/1/31
+  */
+function peg$subclass(child, parent) {
+  function ctor() { this.constructor = child; }
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor();
+}
+
+function peg$SyntaxError(message, expected, found, location) {
+  this.message  = message;
+  this.expected = expected;
+  this.found    = found;
+  this.location = location;
+  this.name     = "SyntaxError";
+
+  if (typeof Error.captureStackTrace === "function") {
+    Error.captureStackTrace(this, peg$SyntaxError);
+  }
+}
+
+peg$subclass(peg$SyntaxError, Error);
+
+peg$SyntaxError.buildMessage = function(expected, found) {
+  var DESCRIBE_EXPECTATION_FNS = {
+        literal: function(expectation) {
+          return "\"" + literalEscape(expectation.text) + "\"";
+        },
+
+        "class": function(expectation) {
+          var escapedParts = "",
+              i;
+
+          for (i = 0; i < expectation.parts.length; i++) {
+            escapedParts += expectation.parts[i] instanceof Array
+              ? classEscape(expectation.parts[i][0]) + "-" + classEscape(expectation.parts[i][1])
+              : classEscape(expectation.parts[i]);
+          }
+
+          return "[" + (expectation.inverted ? "^" : "") + escapedParts + "]";
+        },
+
+        any: function(expectation) {
+          return "any character";
+        },
+
+        end: function(expectation) {
+          return "end of input";
+        },
+
+        other: function(expectation) {
+          return expectation.description;
+        }
+      };
+
+  function hex(ch) {
+    return ch.charCodeAt(0).toString(16).toUpperCase();
+  }
+
+  function literalEscape(s) {
+    return s
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g,  '\\"')
+      .replace(/\0/g, '\\0')
+      .replace(/\t/g, '\\t')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/[\x00-\x0F]/g,          function(ch) { return '\\x0' + hex(ch); })
+      .replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) { return '\\x'  + hex(ch); });
+  }
+
+  function classEscape(s) {
+    return s
+      .replace(/\\/g, '\\\\')
+      .replace(/\]/g, '\\]')
+      .replace(/\^/g, '\\^')
+      .replace(/-/g,  '\\-')
+      .replace(/\0/g, '\\0')
+      .replace(/\t/g, '\\t')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/[\x00-\x0F]/g,          function(ch) { return '\\x0' + hex(ch); })
+      .replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) { return '\\x'  + hex(ch); });
+  }
+
+  function describeExpectation(expectation) {
+    return DESCRIBE_EXPECTATION_FNS[expectation.type](expectation);
+  }
+
+  function describeExpected(expected) {
+    var descriptions = new Array(expected.length),
+        i, j;
+
+    for (i = 0; i < expected.length; i++) {
+      descriptions[i] = describeExpectation(expected[i]);
+    }
+
+    descriptions.sort();
+
+    if (descriptions.length > 0) {
+      for (i = 1, j = 1; i < descriptions.length; i++) {
+        if (descriptions[i - 1] !== descriptions[i]) {
+          descriptions[j] = descriptions[i];
+          j++;
+        }
+      }
+      descriptions.length = j;
+    }
+
+    switch (descriptions.length) {
+      case 1:
+        return descriptions[0];
+
+      case 2:
+        return descriptions[0] + " or " + descriptions[1];
+
+      default:
+        return descriptions.slice(0, -1).join(", ")
+          + ", or "
+          + descriptions[descriptions.length - 1];
+    }
+  }
+
+  function describeFound(found) {
+    return found ? "\"" + literalEscape(found) + "\"" : "end of input";
+  }
+
+  return "Expected " + describeExpected(expected) + " but " + describeFound(found) + " found.";
+};
+
+function peg$parse(input, options) {
+  options = options !== void 0 ? options : {};
+
+  var peg$FAILED = {},
+
+      peg$startRuleFunctions = { start: peg$parsestart },
+      peg$startRuleFunction  = peg$parsestart,
+
+      peg$c0 = function() {   },
+      peg$c1 = function(root) {
+            
+          },
+      peg$c2 = function() {   },
+      peg$c3 = /^[\n]/,
+      peg$c4 = peg$classExpectation(["\n"], false, false),
+      peg$c5 = function() {
+          return "\n";
+        },
+      peg$c6 = peg$anyExpectation(),
+      peg$c7 = peg$otherExpectation("whitespace"),
+      peg$c8 = /^[\\\n]/,
+      peg$c9 = peg$classExpectation(["\\", "\n"], false, false),
+      peg$c10 = /^[\r\t\f\x0B ]/,
+      peg$c11 = peg$classExpectation(["\r", "\t", "\f", "\x0B", " "], false, false),
+      peg$c12 = "/*",
+      peg$c13 = peg$literalExpectation("/*", false),
+      peg$c14 = "*/",
+      peg$c15 = peg$literalExpectation("*/", false),
+      peg$c16 = "//",
+      peg$c17 = peg$literalExpectation("//", false),
+      peg$c18 = /^[^\n]/,
+      peg$c19 = peg$classExpectation(["\n"], true, false),
+      peg$c20 = peg$otherExpectation("comment"),
+      peg$c21 = ";",
+      peg$c22 = peg$literalExpectation(";", false),
+      peg$c23 = ",",
+      peg$c24 = peg$literalExpectation(",", false),
+      peg$c25 = "[",
+      peg$c26 = peg$literalExpectation("[", false),
+      peg$c27 = "]",
+      peg$c28 = peg$literalExpectation("]", false),
+      peg$c29 = "=",
+      peg$c30 = peg$literalExpectation("=", false),
+      peg$c31 = "(",
+      peg$c32 = peg$literalExpectation("(", false),
+      peg$c33 = ")",
+      peg$c34 = peg$literalExpectation(")", false),
+      peg$c35 = "{",
+      peg$c36 = peg$literalExpectation("{", false),
+      peg$c37 = "}",
+      peg$c38 = peg$literalExpectation("}", false),
+      peg$c39 = function(statements) {
+            // Skip blank statements.  These were either whitespace or
+            var result = new node({
+              type: "root",
+              statements: []
+            });
+            for (var i = 0; i < statements.length; i++) {
+              if (statements[i]) {
+                result.statements = result.statements.concat(statements[i]);
+              }
+            }
+            return result;
+          },
+      peg$c40 = function(statement) { return statement; },
+      peg$c41 = function() { return ""; },
+      peg$c42 = "#",
+      peg$c43 = peg$literalExpectation("#", false),
+      peg$c44 = "undef",
+      peg$c45 = peg$literalExpectation("undef", false),
+      peg$c46 = "pragma",
+      peg$c47 = peg$literalExpectation("pragma", false),
+      peg$c48 = "version",
+      peg$c49 = peg$literalExpectation("version", false),
+      peg$c50 = "error",
+      peg$c51 = peg$literalExpectation("error", false),
+      peg$c52 = "extension",
+      peg$c53 = peg$literalExpectation("extension", false),
+      peg$c54 = "line",
+      peg$c55 = peg$literalExpectation("line", false),
+      peg$c56 = "include",
+      peg$c57 = peg$literalExpectation("include", false),
+      peg$c58 = function(directive, defname) {return defname.join("")},
+      peg$c59 = function(directive, value) {
+          return new node({
+            type: "preprocessor",
+            directive: "#" + directive,
+            value: value
+          });
+        },
+      peg$c60 = /^[A-Za-z_]/,
+      peg$c61 = peg$classExpectation([["A", "Z"], ["a", "z"], "_"], false, false),
+      peg$c62 = /^[A-Za-z_0-9]/,
+      peg$c63 = peg$classExpectation([["A", "Z"], ["a", "z"], "_", ["0", "9"]], false, false),
+      peg$c64 = function(head, tail) {
+           return new node({
+             type: "identifier",
+             name: head + tail.join("")
+           });
+        },
+      peg$c65 = function(head, tail) {
+          if (!head) {
+            return [];
+          }
+          return [ head ].concat(tail.map(function(item) { return item[1]; }));
+        },
+      peg$c66 = /^[^()]/,
+      peg$c67 = peg$classExpectation(["(", ")"], true, false),
+      peg$c68 = function(head, paren, tail) {
+          
+        },
+      peg$c69 = function(value) {
+          
+        },
+      peg$c70 = /^[^,)]/,
+      peg$c71 = peg$classExpectation([",", ")"], true, false),
+      peg$c72 = function(value) {
+          
+        },
+      peg$c73 = function(head, tail) {
+          
+        },
+      peg$c74 = function(macro_name, parameters) {
+            var result = new node({
+              type: "macro_call",
+              macro_name: macro_name,
+              parameters: parameters
+            });
+            if (!parameters) {
+              result.parameters = [];
+            }
+            return result;
+          },
+      peg$c75 = function(head, tail) {
+          
+        },
+      peg$c76 = "define",
+      peg$c77 = peg$literalExpectation("define", false),
+      peg$c78 = /^[ \t]/,
+      peg$c79 = peg$classExpectation([" ", "\t"], false, false),
+      peg$c80 = function(identifier, parameters, defname) {return defname.join("")},
+      peg$c81 = function(identifier, parameters, token_string) {
+          return new node({
+               type: "preprocessor",
+               directive: "#define",
+               identifier: identifier.name,
+               token_string: token_string,
+               parameters: parameters || null
+             });
+           },
+      peg$c82 = "ifdef",
+      peg$c83 = peg$literalExpectation("ifdef", false),
+      peg$c84 = "ifndef",
+      peg$c85 = peg$literalExpectation("ifndef", false),
+      peg$c86 = "if",
+      peg$c87 = peg$literalExpectation("if", false),
+      peg$c88 = function(directive, value) {
+             return new node({
+               type: "preprocessor",
+               directive: "#" + directive,
+               value: value
+             });
+           },
+      peg$c89 = "elif",
+      peg$c90 = peg$literalExpectation("elif", false),
+      peg$c91 = function(defname) {return defname.join("")},
+      peg$c92 = function(value) {
+            return new node({
+              type: "preprocessor",
+              directive: "#elif",
+              value: value
+            });
+          },
+      peg$c93 = "else",
+      peg$c94 = peg$literalExpectation("else", false),
+      peg$c95 = function() {
+          return new node({
+            type: "preprocessor",
+            directive: "#else"
+          });
+        },
+      peg$c96 = "endif",
+      peg$c97 = peg$literalExpectation("endif", false),
+      peg$c98 = function(if_directive, elif_directive, else_directive) {
+            return preprocessor_branch(if_directive, elif_directive, else_directive);
+          },
+      peg$c99 = function(prototype, body) {
+            var result = new node({
+              type: "function_declaration",
+              name: prototype.name,
+              returnType: prototype.returnType,
+              parameters: prototype.parameters,
+              body: body
+            });
+            return result;
+        },
+      peg$c100 = function(statements) {
+            var result = new node({
+              type: "scope",
+              statements: []
+            });
+            if (statements && statements.statements) {
+              result.statements = statements.statements;
+            }
+            return result;
+          },
+      peg$c101 = function(list) {return {statements: list};},
+      peg$c102 = function(statement) {
+          return statement;
+        },
+      peg$c103 = function(condition, if_body, else_body) {
+             var result = new node({
+               type:"if_statement",
+               condition:condition,
+               body:if_body
+             });
+             if (else_body) {
+               result.elseBody = else_body[2];
+             }
+             return result;
+           },
+      peg$c104 = "for",
+      peg$c105 = peg$literalExpectation("for", false),
+      peg$c106 = function(initializer, condition, increment, body) {
+              return new node({
+                type:"for_statement",
+                initializer:initializer,
+                condition:condition,
+                increment:increment,
+                body:body
+              });
+            },
+      peg$c107 = "while",
+      peg$c108 = peg$literalExpectation("while", false),
+      peg$c109 = function(condition) {
+             return {
+               condition:condition
+             };
+           },
+      peg$c110 = function(w, body) {
+            return new node({
+              type: "while_statement",
+              condition: w.condition,
+              body: body
+            });
+          },
+      peg$c111 = "do",
+      peg$c112 = peg$literalExpectation("do", false),
+      peg$c113 = function(body, w) {
+             return new node({
+               type: "do_statement",
+               condition: w.condition,
+               body: body
+             });
+           },
+      peg$c114 = "return",
+      peg$c115 = peg$literalExpectation("return", false),
+      peg$c116 = "++",
+      peg$c117 = peg$literalExpectation("++", false),
+      peg$c118 = "--",
+      peg$c119 = peg$literalExpectation("--", false),
+      peg$c120 = "!",
+      peg$c121 = peg$literalExpectation("!", false),
+      peg$c122 = "~",
+      peg$c123 = peg$literalExpectation("~", false),
+      peg$c124 = "+",
+      peg$c125 = peg$literalExpectation("+", false),
+      peg$c126 = "-",
+      peg$c127 = peg$literalExpectation("-", false),
+      peg$c128 = function(head, expression) {
+            return new node({
+              type: "return",
+              value: expression
+            });
+          },
+      peg$c129 = "continue",
+      peg$c130 = peg$literalExpectation("continue", false),
+      peg$c131 = "break",
+      peg$c132 = peg$literalExpectation("break", false),
+      peg$c133 = "discard",
+      peg$c134 = peg$literalExpectation("discard", false),
+      peg$c135 = function(type) {
+                  return new node({
+                    type:type[0]
+                  });
+                },
+      peg$c136 = function(e) {
+            return new node({
+              type: "expression",
+              expression: e
+            });
+        },
+      peg$c137 = function(head, tail) {
+            return new node({
+              type: "sequence",
+              expressions: [ head ].concat(tail.map(function(item) { return item[1] }))
+            })
+          },
+      peg$c138 = peg$otherExpectation("declaration"),
+      peg$c139 = function(function_prototype) {
+            return function_prototype;
+          },
+      peg$c140 = function(type, declarators) {
+            return new node({
+              type: "declarator",
+              typeAttribute: type,
+              declarators: declarators
+            });
+          },
+      peg$c141 = function() { return shaderType == "vs"; },
+      peg$c142 = "invariant",
+      peg$c143 = peg$literalExpectation("invariant", false),
+      peg$c144 = function(head, tail) {
+              var items = [ head ].concat(tail.map(function(item) {
+                return item[1]; }));
+              return new node({
+                type: "invariant",
+                identifiers: items
+              });
+            },
+      peg$c145 = "precision",
+      peg$c146 = peg$literalExpectation("precision", false),
+      peg$c147 = function(precission, type) {
+            return new node({
+              type:"precision",
+              precision: precission,
+              typeName: type
+            });
+          },
+      peg$c148 = function(type, declarators) {
+          return new node({
+            type: "declarator",
+            typeAttribute: type,
+            declarators: declarators
+          });
+        },
+      peg$c149 = "void",
+      peg$c150 = peg$literalExpectation("void", false),
+      peg$c151 = function(head, tail) {
+            return [ head ].concat(tail.map(function(item) { return item[1]; }));
+          },
+      peg$c152 = function(type, identifier, parameters) {
+            var result = new node({
+              type:"function_prototype",
+              name: identifier.name,
+              returnType: type,
+              parameters: parameters
+            });
+            if (parameters == "void" || !parameters) {
+              result.parameters = [];
+            }
+            return result;
+          },
+      peg$c153 = "inout",
+      peg$c154 = peg$literalExpectation("inout", false),
+      peg$c155 = "in",
+      peg$c156 = peg$literalExpectation("in", false),
+      peg$c157 = "out",
+      peg$c158 = peg$literalExpectation("out", false),
+      peg$c159 = function(const_qualifier, parameter, precision, type_name, identifier, array_size) {
+          var result = new node({
+            type: "parameter",
+            type_name: type_name,
+            name: identifier.name
+          });
+          if (const_qualifier) result.typeQualifier = const_qualifier[0];
+          if (parameter) result.parameterQualifier = parameter[0];
+          if (precision) result.precision = precision[0];
+          if (array_size) result.arraySize = array_size[1];
+          // "const" is only legal on "in" parameter qualifiers.
+          if (result.typeQualifier &&
+              result.parameterQualifier &&
+              result.parameterQualifier != "in") {
+            return null;
+          } else {
+            return result;
+          }
+        },
+      peg$c160 = function(head, tail) {
+          return [ head ].concat(tail.map(function(item) { return item[1]; }));
+        },
+      peg$c161 = function(name) {
+            return new node({
+              type: "declarator_item",
+              name:name
+            });
+          },
+      peg$c162 = function(name, arraySize) {
+            return new node({
+              type: "declarator_item",
+              name: name,
+              arraySize: arraySize,
+              isArray: true
+            });
+          },
+      peg$c163 = function(name) {
+            return new node({
+              type: "declarator_item",
+              name: name,
+              isArray: true
+            });
+          },
+      peg$c164 = function(name, initializer) {
+            return new node({
+              type: "declarator_item",
+              name: name,
+              initializer:initializer
+            });
+          },
+      peg$c165 = function(declarators) {
+           return declarators.map(function(item) {
+             return new node({
+               type: "declarator",
+               typeAttribute: item[0],
+               declarators: item[2]
+             })
+            });
+        },
+      peg$c166 = "struct",
+      peg$c167 = peg$literalExpectation("struct", false),
+      peg$c168 = function(qualifier, identifier, members, declarators) {
+            var result = new node({
+              type: "struct_definition",
+              members:members
+            });
+            if (qualifier) {
+              result.qualifier = qualifier[0];
+            }
+            if (identifier) {
+              result.name = identifier[1].name;
+              
+            }
+            if (declarators) {
+              result.declarators = declarators;
+            }
+            return result;
+          },
+      peg$c169 = function(precision, name) {
+          var result = new node({
+            type: "type",
+            name: name
+          });
+          if (precision) result.precision = precision[0];
+          return result;
+        },
+      peg$c170 = peg$otherExpectation("locally specified type"),
+      peg$c171 = function(qualifier, type) {
+          var result = type;
+          if (qualifier) result.qualifier = qualifier[0];
+          return result;
+        },
+      peg$c172 = "attribute",
+      peg$c173 = peg$literalExpectation("attribute", false),
+      peg$c174 = function() {
+          return "attribute";
+        },
+      peg$c175 = function(qualifier, type) {
+          var result = type;
+          result.qualifier = qualifier;
+          return result;
+        },
+      peg$c176 = peg$otherExpectation("fully specified type"),
+      peg$c177 = peg$otherExpectation("precision qualifier"),
+      peg$c178 = "highp",
+      peg$c179 = peg$literalExpectation("highp", false),
+      peg$c180 = "mediump",
+      peg$c181 = peg$literalExpectation("mediump", false),
+      peg$c182 = "lowp",
+      peg$c183 = peg$literalExpectation("lowp", false),
+      peg$c184 = "const",
+      peg$c185 = peg$literalExpectation("const", false),
+      peg$c186 = peg$otherExpectation("type qualifier"),
+      peg$c187 = "varying",
+      peg$c188 = peg$literalExpectation("varying", false),
+      peg$c189 = function() { return "invariant varying"; },
+      peg$c190 = "uniform",
+      peg$c191 = peg$literalExpectation("uniform", false),
+      peg$c192 = peg$otherExpectation("void"),
+      peg$c193 = function() {
+          return new node({
+            type: "type",
+            name: "void"
+          })
+        },
+      peg$c194 = peg$otherExpectation("type name"),
+      peg$c195 = "float",
+      peg$c196 = peg$literalExpectation("float", false),
+      peg$c197 = "double",
+      peg$c198 = peg$literalExpectation("double", false),
+      peg$c199 = "int",
+      peg$c200 = peg$literalExpectation("int", false),
+      peg$c201 = "uint",
+      peg$c202 = peg$literalExpectation("uint", false),
+      peg$c203 = "bool",
+      peg$c204 = peg$literalExpectation("bool", false),
+      peg$c205 = function(name) {
+            return name.name;
+          },
+      peg$c206 = peg$otherExpectation("identifier"),
+      peg$c207 = /^[^A-Za-z_0-9]/,
+      peg$c208 = peg$classExpectation([["A", "Z"], ["a", "z"], "_", ["0", "9"]], true, false),
+      peg$c209 = /^[$A-Za-z_]/,
+      peg$c210 = peg$classExpectation(["$", ["A", "Z"], ["a", "z"], "_"], false, false),
+      peg$c211 = /^[$A-Za-z_0-9]/,
+      peg$c212 = peg$classExpectation(["$", ["A", "Z"], ["a", "z"], "_", ["0", "9"]], false, false),
+      peg$c213 = peg$otherExpectation("keyword"),
+      peg$c214 = "sampler2D",
+      peg$c215 = peg$literalExpectation("sampler2D", false),
+      peg$c216 = "samplerCube",
+      peg$c217 = peg$literalExpectation("samplerCube", false),
+      peg$c218 = "true",
+      peg$c219 = peg$literalExpectation("true", false),
+      peg$c220 = "false",
+      peg$c221 = peg$literalExpectation("false", false),
+      peg$c222 = /^[biud]/,
+      peg$c223 = peg$classExpectation(["b", "i", "u", "d"], false, false),
+      peg$c224 = "vec",
+      peg$c225 = peg$literalExpectation("vec", false),
+      peg$c226 = /^[234]/,
+      peg$c227 = peg$classExpectation(["2", "3", "4"], false, false),
+      peg$c228 = function(a) { return a.join(""); },
+      peg$c229 = /^[d]/,
+      peg$c230 = peg$classExpectation(["d"], false, false),
+      peg$c231 = "mat",
+      peg$c232 = peg$literalExpectation("mat", false),
+      peg$c233 = /^[x]/,
+      peg$c234 = peg$classExpectation(["x"], false, false),
+      peg$c235 = /^[iu]/,
+      peg$c236 = peg$classExpectation(["i", "u"], false, false),
+      peg$c237 = "sampler",
+      peg$c238 = peg$literalExpectation("sampler", false),
+      peg$c239 = /^[123]/,
+      peg$c240 = peg$classExpectation(["1", "2", "3"], false, false),
+      peg$c241 = "D",
+      peg$c242 = peg$literalExpectation("D", false),
+      peg$c243 = "Array",
+      peg$c244 = peg$literalExpectation("Array", false),
+      peg$c245 = "Shadow",
+      peg$c246 = peg$literalExpectation("Shadow", false),
+      peg$c247 = "sampler2DRect",
+      peg$c248 = peg$literalExpectation("sampler2DRect", false),
+      peg$c249 = "sampler2DMS",
+      peg$c250 = peg$literalExpectation("sampler2DMS", false),
+      peg$c251 = "samplerBuffer",
+      peg$c252 = peg$literalExpectation("samplerBuffer", false),
+      peg$c253 = peg$otherExpectation("reserved name"),
+      peg$c254 = "__",
+      peg$c255 = peg$literalExpectation("__", false),
+      peg$c256 = /^[A-Za-z0-9]/,
+      peg$c257 = peg$classExpectation([["A", "Z"], ["a", "z"], ["0", "9"]], false, false),
+      peg$c258 = "_",
+      peg$c259 = peg$literalExpectation("_", false),
+      peg$c260 = /^[\-1-9]/,
+      peg$c261 = peg$classExpectation(["-", ["1", "9"]], false, false),
+      peg$c262 = /^[0-9]/,
+      peg$c263 = peg$classExpectation([["0", "9"]], false, false),
+      peg$c264 = /^[Uu]/,
+      peg$c265 = peg$classExpectation(["U", "u"], false, false),
+      peg$c266 = function(head, tail, unsigned) {
+            return new node({
+              type: "int",
+              format: "number",
+              value_base10: parseInt([head].concat(tail).join(""), 10),
+              value: [head].concat(tail).join("") + (unsigned ? unsigned : '')
+            });
+          },
+      peg$c267 = "0",
+      peg$c268 = peg$literalExpectation("0", false),
+      peg$c269 = /^[Xx]/,
+      peg$c270 = peg$classExpectation(["X", "x"], false, false),
+      peg$c271 = /^[0-9A-Fa-f]/,
+      peg$c272 = peg$classExpectation([["0", "9"], ["A", "F"], ["a", "f"]], false, false),
+      peg$c273 = function(digits, unsigned) {
+            return new node({
+              type: "int",
+              format: "hex",
+              value_base10: parseInt(digits.join(""), 16),
+              value: "0x" + digits.join("") + (unsigned ? unsigned : '')
+            });
+          },
+      peg$c274 = /^[0-7]/,
+      peg$c275 = peg$classExpectation([["0", "7"]], false, false),
+      peg$c276 = function(digits, unsigned) {
+            return new node({
+              type: "int",
+              format: "octal",
+              value_base10: parseInt(digits.join(""), 8),
+              value: "0" + digits.join("") + (unsigned ? unsigned : '')
+            });
+          },
+      peg$c277 = function(unsigned) {
+            return new node({
+              type: "int",
+              format: "number",
+              value_base10: 0,
+              value: "0" + (unsigned ? unsigned : '')
+            });
+          },
+      peg$c278 = /^[\-0-9]/,
+      peg$c279 = peg$classExpectation(["-", ["0", "9"]], false, false),
+      peg$c280 = ".",
+      peg$c281 = peg$literalExpectation(".", false),
+      peg$c282 = /^[fF]/,
+      peg$c283 = peg$classExpectation(["f", "F"], false, false),
+      peg$c284 = "lf",
+      peg$c285 = peg$literalExpectation("lf", false),
+      peg$c286 = "LF",
+      peg$c287 = peg$literalExpectation("LF", false),
+      peg$c288 = function(digits, suffix) {
+            digits[0] = digits[0].join("");
+            digits[2] = digits[2].join("");
+            return new node({
+              type: "float",
+              value_base10: parseFloat(digits.join("")),
+              value: digits.join("") + (suffix ? suffix : '')
+            });
+          },
+      peg$c289 = /^[f]/,
+      peg$c290 = peg$classExpectation(["f"], false, false),
+      peg$c291 = function(digits, suffix) {
+            return new node({
+              type: "float",
+              value_base10: parseFloat(digits[0].join("") + digits[1]),
+              value: digits.join("") + (suffix ? suffix : '')
+            });
+        },
+      peg$c292 = /^[Ee]/,
+      peg$c293 = peg$classExpectation(["E", "e"], false, false),
+      peg$c294 = /^[+\-]/,
+      peg$c295 = peg$classExpectation(["+", "-"], false, false),
+      peg$c296 = function(sign, exponent) {
+            return ["e", sign].concat(exponent).join("");
+         },
+      peg$c297 = function(expression) {
+            return expression;
+          },
+      peg$c298 = function(value) {
+          return new node({
+            type: "bool",
+            value: value == "true"
+          });
+        },
+      peg$c299 = function(index) {
+          return new node({
+            type: "accessor",
+            index: index
+          });
+        },
+      peg$c300 = function(id) {
+          return new node({
+            type: "field_selector",
+            selection: id.name
+          })
+        },
+      peg$c301 = function(head, tail) {
+            var result = head;
+            for (var i = 0; i < tail.length; i++) {
+              result = new node({
+                type: "postfix",
+                operator: tail[i],
+                expression: result
+              });
+            }
+            return result;
+          },
+      peg$c302 = function(head, tail, rest) {
+            var result = head;
+            if(tail) {
+              result = new node({
+                type: "postfix",
+                operator: new node({
+                  id: next_id++,
+                  type: "operator",
+                  operator: tail
+                }),
+                expression: result
+              });
+            }
+            for (var i = 0; i < rest.length; i++) {
+              result = new node({
+                type: "postfix",
+                operator: rest[i],
+                expression: result
+              });
+            }
+            return result;
+          },
+      peg$c303 = function() {return []; },
+      peg$c304 = function(head, tail) {
+            return [ head ].concat(tail.map(function(item) { return item[1] }));
+          },
+      peg$c305 = function(function_name, parameters) {
+            var result = new node({
+              type: "function_call",
+              function_name: function_name,
+              parameters: parameters
+            });
+            if (!parameters) {
+              result.parameters = [];
+            }
+            return result;
+          },
+      peg$c306 = function(id) {return id.name;},
+      peg$c307 = function(head, tail) {
+            var result = tail;
+            if (head) {
+              result = new node({
+                type: "unary",
+                expression: result,
+                operator: new node({
+                  type: "operator",
+                  operator: head
+                })
+              });
+            }
+            return result;
+          },
+      peg$c308 = "*",
+      peg$c309 = peg$literalExpectation("*", false),
+      peg$c310 = "/",
+      peg$c311 = peg$literalExpectation("/", false),
+      peg$c312 = "%",
+      peg$c313 = peg$literalExpectation("%", false),
+      peg$c314 = function(operator) {
+          return new node({
+            type: "operator",
+            operator: operator
+          });
+        },
+      peg$c315 = function(head, tail) {
+            return daisy_chain(head, tail);
+          },
+      peg$c316 = function() {
+          return new node({
+            type: "operator",
+            operator: "+"
+          });
+        },
+      peg$c317 = function() {
+          return new node({
+            type: "operator",
+            operator: "-"
+          });
+        },
+      peg$c318 = "<<",
+      peg$c319 = peg$literalExpectation("<<", false),
+      peg$c320 = ">>",
+      peg$c321 = peg$literalExpectation(">>", false),
+      peg$c322 = "<",
+      peg$c323 = peg$literalExpectation("<", false),
+      peg$c324 = function(equal) {
+          return new node({
+            type: "operator",
+            operator: "<" + (equal ? equal : '')
+          });
+        },
+      peg$c325 = ">",
+      peg$c326 = peg$literalExpectation(">", false),
+      peg$c327 = function(equal) {
+          return new node({
+            type: "operator",
+            operator: ">" + (equal ? equal : '')
+          });
+        },
+      peg$c328 = "==",
+      peg$c329 = peg$literalExpectation("==", false),
+      peg$c330 = "!=",
+      peg$c331 = peg$literalExpectation("!=", false),
+      peg$c332 = function(operator) {
+           return new node({
+             type: "operator",
+             operator: operator
+           });
+         },
+      peg$c333 = "&",
+      peg$c334 = peg$literalExpectation("&", false),
+      peg$c335 = function() {
+           return new node({
+             type: "operator",
+             operator: "&"
+           });
+         },
+      peg$c336 = "^",
+      peg$c337 = peg$literalExpectation("^", false),
+      peg$c338 = function() {
+           return new node({
+             type: "operator",
+             operator: "^"
+           });
+         },
+      peg$c339 = "|",
+      peg$c340 = peg$literalExpectation("|", false),
+      peg$c341 = function() {
+           return new node({
+             type: "operator",
+             operator: "|"
+           });
+         },
+      peg$c342 = "&&",
+      peg$c343 = peg$literalExpectation("&&", false),
+      peg$c344 = function() {
+           return new node({
+             type: "operator",
+             operator: "&&"
+           });
+         },
+      peg$c345 = "^^",
+      peg$c346 = peg$literalExpectation("^^", false),
+      peg$c347 = function() {
+           return new node({
+             type: "operator",
+             operator: "^^"
+           });
+         },
+      peg$c348 = "||",
+      peg$c349 = peg$literalExpectation("||", false),
+      peg$c350 = function() {
+           return new node({
+             type: "operator",
+             operator: "||"
+           });
+         },
+      peg$c351 = "?",
+      peg$c352 = peg$literalExpectation("?", false),
+      peg$c353 = ":",
+      peg$c354 = peg$literalExpectation(":", false),
+      peg$c355 = function(head, tail) {
+            var result = head;
+            if (tail) {
+              result = new node({
+                type: "ternary",
+                condition: head,
+                is_true: tail[3],
+                is_false: tail[7]
+              });
+            }
+            return result;
+          },
+      peg$c356 = "*=",
+      peg$c357 = peg$literalExpectation("*=", false),
+      peg$c358 = "/=",
+      peg$c359 = peg$literalExpectation("/=", false),
+      peg$c360 = "%=",
+      peg$c361 = peg$literalExpectation("%=", false),
+      peg$c362 = "+=",
+      peg$c363 = peg$literalExpectation("+=", false),
+      peg$c364 = "-=",
+      peg$c365 = peg$literalExpectation("-=", false),
+      peg$c366 = "<<=",
+      peg$c367 = peg$literalExpectation("<<=", false),
+      peg$c368 = ">>=",
+      peg$c369 = peg$literalExpectation(">>=", false),
+      peg$c370 = "&=",
+      peg$c371 = peg$literalExpectation("&=", false),
+      peg$c372 = "^=",
+      peg$c373 = peg$literalExpectation("^=", false),
+      peg$c374 = "|=",
+      peg$c375 = peg$literalExpectation("|=", false),
+      peg$c376 = function(variable, operator, expression) {
+            return new node({
+              type: "binary",
+              operator: new node({
+                type: "operator",
+                operator: operator
+              }),
+              left: variable,
+              right: expression
+            });
+          },
+
+      peg$currPos          = 0,
+      peg$savedPos         = 0,
+      peg$posDetailsCache  = [{ line: 1, column: 1 }],
+      peg$maxFailPos       = 0,
+      peg$maxFailExpected  = [],
+      peg$silentFails      = 0,
+
+      peg$result;
+
+  if ("startRule" in options) {
+    if (!(options.startRule in peg$startRuleFunctions)) {
+      throw new Error("Can't start parsing from rule \"" + options.startRule + "\".");
+    }
+
+    peg$startRuleFunction = peg$startRuleFunctions[options.startRule];
+  }
+
+  function peg$literalExpectation(text, ignoreCase) {
+    return { type: "literal", text: text, ignoreCase: ignoreCase };
+  }
+
+  function peg$classExpectation(parts, inverted, ignoreCase) {
+    return { type: "class", parts: parts, inverted: inverted, ignoreCase: ignoreCase };
+  }
+
+  function peg$anyExpectation() {
+    return { type: "any" };
+  }
+
+  function peg$endExpectation() {
+    return { type: "end" };
+  }
+
+  function peg$otherExpectation(description) {
+    return { type: "other", description: description };
+  }
+
+  function peg$computePosDetails(pos) {
+    var details = peg$posDetailsCache[pos], p;
+
+    if (details) {
+      return details;
+    } else {
+      p = pos - 1;
+      while (!peg$posDetailsCache[p]) {
+        p--;
+      }
+
+      details = peg$posDetailsCache[p];
+      details = {
+        line:   details.line,
+        column: details.column
+      };
+
+      while (p < pos) {
+        if (input.charCodeAt(p) === 10) {
+          details.line++;
+          details.column = 1;
+        } else {
+          details.column++;
+        }
+
+        p++;
+      }
+
+      peg$posDetailsCache[pos] = details;
+      return details;
+    }
+  }
+
+  function peg$computeLocation(startPos, endPos) {
+    var startPosDetails = peg$computePosDetails(startPos),
+        endPosDetails   = peg$computePosDetails(endPos);
+
+    return {
+      start: {
+        offset: startPos,
+        line:   startPosDetails.line,
+        column: startPosDetails.column
+      },
+      end: {
+        offset: endPos,
+        line:   endPosDetails.line,
+        column: endPosDetails.column
+      }
+    };
+  }
+
+  function peg$fail(expected) {
+    if (peg$currPos < peg$maxFailPos) { return; }
+
+    if (peg$currPos > peg$maxFailPos) {
+      peg$maxFailPos = peg$currPos;
+      peg$maxFailExpected = [];
+    }
+
+    peg$maxFailExpected.push(expected);
+  }
+
+  function peg$buildStructuredError(expected, found, location) {
+    return new peg$SyntaxError(
+      peg$SyntaxError.buildMessage(expected, found),
+      expected,
+      found,
+      location
+    );
+  }
+
+  function peg$parsestart() {
+    var s0;
+
+    s0 = peg$parseexternal_statement_list();
+
+    return s0;
+  }
+
+  function peg$parsenewLine() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    if (peg$c3.test(input.charAt(peg$currPos))) {
+      s1 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c4); }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c5();
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parseEOF() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    peg$silentFails++;
+    if (input.length > peg$currPos) {
+      s1 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c6); }
+    }
+    peg$silentFails--;
+    if (s1 === peg$FAILED) {
+      s0 = void 0;
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parse_() {
+    var s0, s1;
+
+    peg$silentFails++;
+    s0 = [];
+    s1 = peg$parsenewLine();
+    if (s1 === peg$FAILED) {
+      if (peg$c8.test(input.charAt(peg$currPos))) {
+        s1 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c9); }
+      }
+      if (s1 === peg$FAILED) {
+        if (peg$c10.test(input.charAt(peg$currPos))) {
+          s1 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s1 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c11); }
+        }
+        if (s1 === peg$FAILED) {
+          s1 = peg$parsecomment();
+        }
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      while (s1 !== peg$FAILED) {
+        s0.push(s1);
+        s1 = peg$parsenewLine();
+        if (s1 === peg$FAILED) {
+          if (peg$c8.test(input.charAt(peg$currPos))) {
+            s1 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s1 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c9); }
+          }
+          if (s1 === peg$FAILED) {
+            if (peg$c10.test(input.charAt(peg$currPos))) {
+              s1 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s1 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c11); }
+            }
+            if (s1 === peg$FAILED) {
+              s1 = peg$parsecomment();
+            }
+          }
+        }
+      }
+    } else {
+      s0 = peg$FAILED;
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c7); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsenoNewlineComment() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c12) {
+      s1 = peg$c12;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c13); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$currPos;
+      peg$silentFails++;
+      if (input.substr(peg$currPos, 2) === peg$c14) {
+        s5 = peg$c14;
+        peg$currPos += 2;
+      } else {
+        s5 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c15); }
+      }
+      peg$silentFails--;
+      if (s5 === peg$FAILED) {
+        s4 = void 0;
+      } else {
+        peg$currPos = s4;
+        s4 = peg$FAILED;
+      }
+      if (s4 !== peg$FAILED) {
+        if (input.length > peg$currPos) {
+          s5 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s5 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c6); }
+        }
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$currPos;
+        peg$silentFails++;
+        if (input.substr(peg$currPos, 2) === peg$c14) {
+          s5 = peg$c14;
+          peg$currPos += 2;
+        } else {
+          s5 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+        }
+        peg$silentFails--;
+        if (s5 === peg$FAILED) {
+          s4 = void 0;
+        } else {
+          peg$currPos = s4;
+          s4 = peg$FAILED;
+        }
+        if (s4 !== peg$FAILED) {
+          if (input.length > peg$currPos) {
+            s5 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s5 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c6); }
+          }
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 2) === peg$c14) {
+          s3 = peg$c14;
+          peg$currPos += 2;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      if (input.substr(peg$currPos, 2) === peg$c16) {
+        s1 = peg$c16;
+        peg$currPos += 2;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c17); }
+      }
+      if (s1 !== peg$FAILED) {
+        s2 = [];
+        if (peg$c18.test(input.charAt(peg$currPos))) {
+          s3 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c19); }
+        }
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          if (peg$c18.test(input.charAt(peg$currPos))) {
+            s3 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c19); }
+          }
+        }
+        if (s2 !== peg$FAILED) {
+          s1 = [s1, s2];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsenoNewlineWhitespace() {
+    var s0, s1;
+
+    s0 = [];
+    if (peg$c10.test(input.charAt(peg$currPos))) {
+      s1 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c11); }
+    }
+    if (s1 === peg$FAILED) {
+      s1 = peg$parsenoNewlineComment();
+    }
+    if (s1 !== peg$FAILED) {
+      while (s1 !== peg$FAILED) {
+        s0.push(s1);
+        if (peg$c10.test(input.charAt(peg$currPos))) {
+          s1 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s1 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c11); }
+        }
+        if (s1 === peg$FAILED) {
+          s1 = peg$parsenoNewlineComment();
+        }
+      }
+    } else {
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsecomment() {
+    var s0, s1, s2, s3, s4, s5;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c12) {
+      s1 = peg$c12;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c13); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$currPos;
+      peg$silentFails++;
+      if (input.substr(peg$currPos, 2) === peg$c14) {
+        s5 = peg$c14;
+        peg$currPos += 2;
+      } else {
+        s5 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c15); }
+      }
+      peg$silentFails--;
+      if (s5 === peg$FAILED) {
+        s4 = void 0;
+      } else {
+        peg$currPos = s4;
+        s4 = peg$FAILED;
+      }
+      if (s4 !== peg$FAILED) {
+        if (input.length > peg$currPos) {
+          s5 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s5 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c6); }
+        }
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$currPos;
+        peg$silentFails++;
+        if (input.substr(peg$currPos, 2) === peg$c14) {
+          s5 = peg$c14;
+          peg$currPos += 2;
+        } else {
+          s5 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+        }
+        peg$silentFails--;
+        if (s5 === peg$FAILED) {
+          s4 = void 0;
+        } else {
+          peg$currPos = s4;
+          s4 = peg$FAILED;
+        }
+        if (s4 !== peg$FAILED) {
+          if (input.length > peg$currPos) {
+            s5 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s5 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c6); }
+          }
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 2) === peg$c14) {
+          s3 = peg$c14;
+          peg$currPos += 2;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      if (input.substr(peg$currPos, 2) === peg$c16) {
+        s1 = peg$c16;
+        peg$currPos += 2;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c17); }
+      }
+      if (s1 !== peg$FAILED) {
+        s2 = [];
+        if (peg$c18.test(input.charAt(peg$currPos))) {
+          s3 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c19); }
+        }
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          if (peg$c18.test(input.charAt(peg$currPos))) {
+            s3 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c19); }
+          }
+        }
+        if (s2 !== peg$FAILED) {
+          s3 = peg$parsenewLine();
+          if (s3 === peg$FAILED) {
+            s3 = peg$parseEOF();
+          }
+          if (s3 !== peg$FAILED) {
+            s1 = [s1, s2, s3];
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c20); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsesemicolon() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 59) {
+        s2 = peg$c21;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c22); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsecomma() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 44) {
+        s2 = peg$c23;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c24); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseleft_bracket() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 91) {
+        s2 = peg$c25;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c26); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseright_bracket() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 93) {
+        s2 = peg$c27;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c28); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseequals() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 61) {
+        s2 = peg$c29;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseleft_paren() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 40) {
+        s2 = peg$c31;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c32); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseright_paren() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 41) {
+        s2 = peg$c33;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c34); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseleft_brace() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 123) {
+        s2 = peg$c35;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c36); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseright_brace() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 125) {
+        s2 = peg$c37;
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c38); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = [s1, s2, s3];
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseexternal_statement_list() {
+    var s0, s1, s2;
+
+    s0 = peg$currPos;
+    s1 = [];
+    s2 = peg$parseexternal_statement();
+    while (s2 !== peg$FAILED) {
+      s1.push(s2);
+      s2 = peg$parseexternal_statement();
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c39(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parseexternal_statement() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    s1 = peg$parsepreprocessor_external_branch();
+    if (s1 === peg$FAILED) {
+      s1 = peg$parseexternal_declaration();
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c40(s1);
+    }
+    s0 = s1;
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parse_();
+      if (s1 !== peg$FAILED) {
+        s1 = peg$c41();
+      }
+      s0 = s1;
+    }
+
+    return s0;
+  }
+
+  function peg$parseexternal_declaration() {
+    var s0;
+
+    s0 = peg$parsefunction_definition();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parseglobal_declaration();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsepreprocessor_define();
+        if (s0 === peg$FAILED) {
+          s0 = peg$parsepreprocessor_operator();
+          if (s0 === peg$FAILED) {
+            s0 = peg$parsestruct_definition();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parsemacro_call();
+            }
+          }
+        }
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_operator() {
+    var s0, s1, s2, s3, s4, s5, s6;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 35) {
+      s1 = peg$c42;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 5) === peg$c44) {
+        s2 = peg$c44;
+        peg$currPos += 5;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c45); }
+      }
+      if (s2 === peg$FAILED) {
+        if (input.substr(peg$currPos, 6) === peg$c46) {
+          s2 = peg$c46;
+          peg$currPos += 6;
+        } else {
+          s2 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c47); }
+        }
+        if (s2 === peg$FAILED) {
+          if (input.substr(peg$currPos, 7) === peg$c48) {
+            s2 = peg$c48;
+            peg$currPos += 7;
+          } else {
+            s2 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c49); }
+          }
+          if (s2 === peg$FAILED) {
+            if (input.substr(peg$currPos, 5) === peg$c50) {
+              s2 = peg$c50;
+              peg$currPos += 5;
+            } else {
+              s2 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c51); }
+            }
+            if (s2 === peg$FAILED) {
+              if (input.substr(peg$currPos, 9) === peg$c52) {
+                s2 = peg$c52;
+                peg$currPos += 9;
+              } else {
+                s2 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c53); }
+              }
+              if (s2 === peg$FAILED) {
+                if (input.substr(peg$currPos, 4) === peg$c54) {
+                  s2 = peg$c54;
+                  peg$currPos += 4;
+                } else {
+                  s2 = peg$FAILED;
+                  if (peg$silentFails === 0) { peg$fail(peg$c55); }
+                }
+                if (s2 === peg$FAILED) {
+                  if (input.substr(peg$currPos, 7) === peg$c56) {
+                    s2 = peg$c56;
+                    peg$currPos += 7;
+                  } else {
+                    s2 = peg$FAILED;
+                    if (peg$silentFails === 0) { peg$fail(peg$c57); }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$currPos;
+          s5 = [];
+          if (peg$c18.test(input.charAt(peg$currPos))) {
+            s6 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s6 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c19); }
+          }
+          while (s6 !== peg$FAILED) {
+            s5.push(s6);
+            if (peg$c18.test(input.charAt(peg$currPos))) {
+              s6 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s6 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c19); }
+            }
+          }
+          if (s5 !== peg$FAILED) {
+            s5 = peg$c58(s2, s5);
+          }
+          s4 = s5;
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsenewLine();
+            if (s5 === peg$FAILED) {
+              s5 = peg$parseEOF();
+            }
+            if (s5 !== peg$FAILED) {
+              s1 = peg$c59(s2, s4);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsemacro_identifier() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (peg$c60.test(input.charAt(peg$currPos))) {
+      s1 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c61); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      if (peg$c62.test(input.charAt(peg$currPos))) {
+        s3 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c63); }
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        if (peg$c62.test(input.charAt(peg$currPos))) {
+          s3 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c63); }
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c64(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_parameter_list() {
+    var s0, s1, s2, s3, s4, s5, s6;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 40) {
+      s1 = peg$c31;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c32); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsemacro_identifier();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = [];
+        s4 = peg$currPos;
+        s5 = peg$parsecomma();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parsemacro_identifier();
+          if (s6 !== peg$FAILED) {
+            s5 = [s5, s6];
+            s4 = s5;
+          } else {
+            peg$currPos = s4;
+            s4 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s4;
+          s4 = peg$FAILED;
+        }
+        while (s4 !== peg$FAILED) {
+          s3.push(s4);
+          s4 = peg$currPos;
+          s5 = peg$parsecomma();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parsemacro_identifier();
+            if (s6 !== peg$FAILED) {
+              s5 = [s5, s6];
+              s4 = s5;
+            } else {
+              peg$currPos = s4;
+              s4 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s4;
+            s4 = peg$FAILED;
+          }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseright_paren();
+          if (s4 !== peg$FAILED) {
+            s1 = peg$c65(s2, s3);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsemacro_call() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parsemacro_identifier();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseleft_paren();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseparameter_list();
+          if (s4 === peg$FAILED) {
+            s4 = null;
+          }
+          if (s4 !== peg$FAILED) {
+            if (input.charCodeAt(peg$currPos) === 41) {
+              s5 = peg$c33;
+              peg$currPos++;
+            } else {
+              s5 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c34); }
+            }
+            if (s5 !== peg$FAILED) {
+              s1 = peg$c74(s1, s4);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_define() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 35) {
+      s1 = peg$c42;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 6) === peg$c76) {
+          s3 = peg$c76;
+          peg$currPos += 6;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c77); }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parse_();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsemacro_identifier();
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parsepreprocessor_parameter_list();
+              if (s6 === peg$FAILED) {
+                s6 = null;
+              }
+              if (s6 !== peg$FAILED) {
+                s7 = [];
+                if (peg$c78.test(input.charAt(peg$currPos))) {
+                  s8 = input.charAt(peg$currPos);
+                  peg$currPos++;
+                } else {
+                  s8 = peg$FAILED;
+                  if (peg$silentFails === 0) { peg$fail(peg$c79); }
+                }
+                while (s8 !== peg$FAILED) {
+                  s7.push(s8);
+                  if (peg$c78.test(input.charAt(peg$currPos))) {
+                    s8 = input.charAt(peg$currPos);
+                    peg$currPos++;
+                  } else {
+                    s8 = peg$FAILED;
+                    if (peg$silentFails === 0) { peg$fail(peg$c79); }
+                  }
+                }
+                if (s7 !== peg$FAILED) {
+                  s8 = peg$currPos;
+                  s9 = [];
+                  if (peg$c18.test(input.charAt(peg$currPos))) {
+                    s10 = input.charAt(peg$currPos);
+                    peg$currPos++;
+                  } else {
+                    s10 = peg$FAILED;
+                    if (peg$silentFails === 0) { peg$fail(peg$c19); }
+                  }
+                  while (s10 !== peg$FAILED) {
+                    s9.push(s10);
+                    if (peg$c18.test(input.charAt(peg$currPos))) {
+                      s10 = input.charAt(peg$currPos);
+                      peg$currPos++;
+                    } else {
+                      s10 = peg$FAILED;
+                      if (peg$silentFails === 0) { peg$fail(peg$c19); }
+                    }
+                  }
+                  if (s9 !== peg$FAILED) {
+                    s9 = peg$c80(s5, s6, s9);
+                  }
+                  s8 = s9;
+                  if (s8 !== peg$FAILED) {
+                    s9 = peg$parsenewLine();
+                    if (s9 === peg$FAILED) {
+                      s9 = peg$parseEOF();
+                    }
+                    if (s9 !== peg$FAILED) {
+                      s1 = peg$c81(s5, s6, s8);
+                      s0 = s1;
+                    } else {
+                      peg$currPos = s0;
+                      s0 = peg$FAILED;
+                    }
+                  } else {
+                    peg$currPos = s0;
+                    s0 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s0;
+                  s0 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_if() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 35) {
+      s1 = peg$c42;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 5) === peg$c82) {
+          s3 = peg$c82;
+          peg$currPos += 5;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c83); }
+        }
+        if (s3 === peg$FAILED) {
+          if (input.substr(peg$currPos, 6) === peg$c84) {
+            s3 = peg$c84;
+            peg$currPos += 6;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c85); }
+          }
+          if (s3 === peg$FAILED) {
+            if (input.substr(peg$currPos, 2) === peg$c86) {
+              s3 = peg$c86;
+              peg$currPos += 2;
+            } else {
+              s3 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c87); }
+            }
+          }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parse_();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$currPos;
+            s6 = [];
+            if (peg$c18.test(input.charAt(peg$currPos))) {
+              s7 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s7 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c19); }
+            }
+            while (s7 !== peg$FAILED) {
+              s6.push(s7);
+              if (peg$c18.test(input.charAt(peg$currPos))) {
+                s7 = input.charAt(peg$currPos);
+                peg$currPos++;
+              } else {
+                s7 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c19); }
+              }
+            }
+            if (s6 !== peg$FAILED) {
+              s6 = peg$c58(s3, s6);
+            }
+            s5 = s6;
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parsenewLine();
+              if (s6 === peg$FAILED) {
+                s6 = peg$parseEOF();
+              }
+              if (s6 !== peg$FAILED) {
+                s1 = peg$c88(s3, s5);
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_else_if() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 35) {
+      s1 = peg$c42;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 4) === peg$c89) {
+          s3 = peg$c89;
+          peg$currPos += 4;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c90); }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parse_();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$currPos;
+            s6 = [];
+            if (peg$c18.test(input.charAt(peg$currPos))) {
+              s7 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s7 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c19); }
+            }
+            while (s7 !== peg$FAILED) {
+              s6.push(s7);
+              if (peg$c18.test(input.charAt(peg$currPos))) {
+                s7 = input.charAt(peg$currPos);
+                peg$currPos++;
+              } else {
+                s7 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c19); }
+              }
+            }
+            if (s6 !== peg$FAILED) {
+              s6 = peg$c91(s6);
+            }
+            s5 = s6;
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parsenewLine();
+              if (s6 === peg$FAILED) {
+                s6 = peg$parseEOF();
+              }
+              if (s6 !== peg$FAILED) {
+                s1 = peg$c92(s5);
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_else() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 35) {
+      s1 = peg$c42;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 4) === peg$c93) {
+          s3 = peg$c93;
+          peg$currPos += 4;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c94); }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsenoNewlineWhitespace();
+          if (s4 === peg$FAILED) {
+            s4 = null;
+          }
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsenewLine();
+            if (s5 !== peg$FAILED) {
+              s1 = peg$c95();
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_end() {
+    var s0, s1, s2, s3, s4, s5, s6;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 35) {
+      s1 = peg$c42;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 5) === peg$c96) {
+          s3 = peg$c96;
+          peg$currPos += 5;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c97); }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsenoNewlineWhitespace();
+          if (s4 === peg$FAILED) {
+            s4 = null;
+          }
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsenewLine();
+            if (s5 === peg$FAILED) {
+              s5 = peg$parseEOF();
+            }
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parse_();
+              if (s6 === peg$FAILED) {
+                s6 = null;
+              }
+              if (s6 !== peg$FAILED) {
+                s1 = [s1, s2, s3, s4, s5, s6];
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_external_branch() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = peg$parsepreprocessor_if();
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parseexternal_statement_list();
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parsepreprocessor_else_if();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parseexternal_statement_list();
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parsepreprocessor_else_if();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseexternal_statement_list();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$currPos;
+        s4 = peg$parsepreprocessor_else();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseexternal_statement_list();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsepreprocessor_end();
+          if (s4 !== peg$FAILED) {
+            s1 = peg$c98(s1, s2, s3);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepreprocessor_statement_branch() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = peg$parsepreprocessor_if();
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parsestatement_list();
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parsepreprocessor_else_if();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsestatement_list();
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parsepreprocessor_else_if();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsestatement_list();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$currPos;
+        s4 = peg$parsepreprocessor_else();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsestatement_list();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsepreprocessor_end();
+          if (s4 !== peg$FAILED) {
+            s1 = peg$c98(s1, s2, s3);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsefunction_definition() {
+    var s0, s1, s2;
+
+    s0 = peg$currPos;
+    s1 = peg$parsefunction_prototype();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsecompound_statement();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c99(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsecompound_statement() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parseleft_brace();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsestatement_list();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseright_brace();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c100(s2);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsestatement_list() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parse_();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$parsestatement_no_new_scope();
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$parsestatement_no_new_scope();
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c101(s2);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsestatement_no_new_scope() {
+    var s0;
+
+    s0 = peg$parsecompound_statement();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsesimple_statement();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsepreprocessor_statement_branch();
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsestatement_with_scope() {
+    var s0;
+
+    s0 = peg$parsecompound_statement();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsesimple_statement();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsepreprocessor_statement_branch();
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsesimple_statement() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    s1 = peg$parsedeclaration();
+    if (s1 === peg$FAILED) {
+      s1 = peg$parseexpression_statement();
+      if (s1 === peg$FAILED) {
+        s1 = peg$parseselection_statement();
+        if (s1 === peg$FAILED) {
+          s1 = peg$parseiteration_statement();
+          if (s1 === peg$FAILED) {
+            s1 = peg$parsejump_statement();
+            if (s1 === peg$FAILED) {
+              s1 = peg$parsepreprocessor_define();
+              if (s1 === peg$FAILED) {
+                s1 = peg$parsepreprocessor_operator();
+                if (s1 === peg$FAILED) {
+                  s1 = peg$parsesequence_expression();
+                  if (s1 === peg$FAILED) {
+                    s1 = peg$parsemacro_call();
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c102(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parseselection_statement() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c86) {
+      s1 = peg$c86;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c87); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseleft_paren();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseassignment_expression();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseright_paren();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsestatement_with_scope();
+            if (s5 !== peg$FAILED) {
+              s6 = peg$currPos;
+              if (input.substr(peg$currPos, 4) === peg$c93) {
+                s7 = peg$c93;
+                peg$currPos += 4;
+              } else {
+                s7 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c94); }
+              }
+              if (s7 !== peg$FAILED) {
+                s8 = peg$parse_();
+                if (s8 === peg$FAILED) {
+                  s8 = null;
+                }
+                if (s8 !== peg$FAILED) {
+                  s9 = peg$parsestatement_with_scope();
+                  if (s9 !== peg$FAILED) {
+                    s7 = [s7, s8, s9];
+                    s6 = s7;
+                  } else {
+                    peg$currPos = s6;
+                    s6 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s6;
+                  s6 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s6;
+                s6 = peg$FAILED;
+              }
+              if (s6 === peg$FAILED) {
+                s6 = null;
+              }
+              if (s6 !== peg$FAILED) {
+                s1 = peg$c103(s3, s5, s6);
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsefor_loop() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 3) === peg$c104) {
+      s1 = peg$c104;
+      peg$currPos += 3;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c105); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseleft_paren();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseexpression_statement();
+        if (s3 === peg$FAILED) {
+          s3 = peg$parsedeclaration();
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsecondition();
+          if (s4 === peg$FAILED) {
+            s4 = null;
+          }
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsesemicolon();
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parseassignment_expression();
+              if (s6 === peg$FAILED) {
+                s6 = null;
+              }
+              if (s6 !== peg$FAILED) {
+                s7 = peg$parseright_paren();
+                if (s7 !== peg$FAILED) {
+                  s8 = peg$parsestatement_no_new_scope();
+                  if (s8 !== peg$FAILED) {
+                    s1 = peg$c106(s3, s4, s6, s8);
+                    s0 = s1;
+                  } else {
+                    peg$currPos = s0;
+                    s0 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s0;
+                  s0 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsewhile_statement() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 5) === peg$c107) {
+      s1 = peg$c107;
+      peg$currPos += 5;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c108); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseleft_paren();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parsecondition();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseright_paren();
+          if (s4 !== peg$FAILED) {
+            s1 = peg$c109(s3);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsewhile_loop() {
+    var s0, s1, s2;
+
+    s0 = peg$currPos;
+    s1 = peg$parsewhile_statement();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsestatement_no_new_scope();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c110(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsedo_while() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c111) {
+      s1 = peg$c111;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c112); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsestatement_with_scope();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parsewhile_statement();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c113(s2, s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseiteration_statement() {
+    var s0;
+
+    s0 = peg$parsewhile_loop();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsedo_while();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsefor_loop();
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsejump_statement() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 6) === peg$c114) {
+      s1 = peg$c114;
+      peg$currPos += 6;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c115); }
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 2) === peg$c116) {
+        s2 = peg$c116;
+        peg$currPos += 2;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c117); }
+      }
+      if (s2 === peg$FAILED) {
+        if (input.substr(peg$currPos, 2) === peg$c118) {
+          s2 = peg$c118;
+          peg$currPos += 2;
+        } else {
+          s2 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c119); }
+        }
+        if (s2 === peg$FAILED) {
+          if (input.charCodeAt(peg$currPos) === 33) {
+            s2 = peg$c120;
+            peg$currPos++;
+          } else {
+            s2 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c121); }
+          }
+          if (s2 === peg$FAILED) {
+            if (input.charCodeAt(peg$currPos) === 126) {
+              s2 = peg$c122;
+              peg$currPos++;
+            } else {
+              s2 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c123); }
+            }
+            if (s2 === peg$FAILED) {
+              if (input.charCodeAt(peg$currPos) === 43) {
+                s2 = peg$c124;
+                peg$currPos++;
+              } else {
+                s2 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c125); }
+              }
+              if (s2 === peg$FAILED) {
+                if (input.charCodeAt(peg$currPos) === 45) {
+                  s2 = peg$c126;
+                  peg$currPos++;
+                } else {
+                  s2 = peg$FAILED;
+                  if (peg$silentFails === 0) { peg$fail(peg$c127); }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parse_();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseassignment_expression();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsesemicolon();
+            if (s5 !== peg$FAILED) {
+              s1 = peg$c128(s2, s4);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$currPos;
+      if (input.substr(peg$currPos, 8) === peg$c129) {
+        s2 = peg$c129;
+        peg$currPos += 8;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c130); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parsesemicolon();
+        if (s3 !== peg$FAILED) {
+          s2 = [s2, s3];
+          s1 = s2;
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+      if (s1 === peg$FAILED) {
+        s1 = peg$currPos;
+        if (input.substr(peg$currPos, 5) === peg$c131) {
+          s2 = peg$c131;
+          peg$currPos += 5;
+        } else {
+          s2 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c132); }
+        }
+        if (s2 !== peg$FAILED) {
+          s3 = peg$parsesemicolon();
+          if (s3 !== peg$FAILED) {
+            s2 = [s2, s3];
+            s1 = s2;
+          } else {
+            peg$currPos = s1;
+            s1 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+        if (s1 === peg$FAILED) {
+          s1 = peg$currPos;
+          if (input.substr(peg$currPos, 6) === peg$c114) {
+            s2 = peg$c114;
+            peg$currPos += 6;
+          } else {
+            s2 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c115); }
+          }
+          if (s2 !== peg$FAILED) {
+            s3 = peg$parsesemicolon();
+            if (s3 !== peg$FAILED) {
+              s2 = [s2, s3];
+              s1 = s2;
+            } else {
+              peg$currPos = s1;
+              s1 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s1;
+            s1 = peg$FAILED;
+          }
+          if (s1 === peg$FAILED) {
+            s1 = peg$currPos;
+            if (input.substr(peg$currPos, 7) === peg$c133) {
+              s2 = peg$c133;
+              peg$currPos += 7;
+            } else {
+              s2 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c134); }
+            }
+            if (s2 !== peg$FAILED) {
+              s3 = peg$parsesemicolon();
+              if (s3 !== peg$FAILED) {
+                s2 = [s2, s3];
+                s1 = s2;
+              } else {
+                peg$currPos = s1;
+                s1 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s1;
+              s1 = peg$FAILED;
+            }
+          }
+        }
+      }
+      if (s1 !== peg$FAILED) {
+        s1 = peg$c135(s1);
+      }
+      s0 = s1;
+    }
+
+    return s0;
+  }
+
+  function peg$parseexpression_statement() {
+    var s0, s1, s2;
+
+    s0 = peg$currPos;
+    s1 = peg$parseassignment_expression();
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsesemicolon();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c136(s1);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsesequence_expression() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parseassignment_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parsecomma();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parseassignment_expression();
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parsecomma();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseassignment_expression();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c137(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsedeclaration() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    s1 = peg$parsefunction_prototype();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsesemicolon();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c139(s1);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parselocally_specified_type();
+      if (s1 !== peg$FAILED) {
+        s2 = peg$parse_();
+        if (s2 !== peg$FAILED) {
+          s3 = peg$parseinit_declarator_list();
+          if (s3 !== peg$FAILED) {
+            s4 = peg$parsesemicolon();
+            if (s4 !== peg$FAILED) {
+              s1 = peg$c140(s1, s3);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+      if (s0 === peg$FAILED) {
+        s0 = peg$currPos;
+        s1 = peg$c141();
+        if (s1) {
+          s1 = void 0;
+        } else {
+          s1 = peg$FAILED;
+        }
+        if (s1 !== peg$FAILED) {
+          if (input.substr(peg$currPos, 9) === peg$c142) {
+            s2 = peg$c142;
+            peg$currPos += 9;
+          } else {
+            s2 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c143); }
+          }
+          if (s2 !== peg$FAILED) {
+            s3 = peg$parse_();
+            if (s3 !== peg$FAILED) {
+              s4 = peg$parseidentifier();
+              if (s4 !== peg$FAILED) {
+                s5 = [];
+                s6 = peg$currPos;
+                s7 = peg$parsecomma();
+                if (s7 !== peg$FAILED) {
+                  s8 = peg$parseidentifier();
+                  if (s8 !== peg$FAILED) {
+                    s7 = [s7, s8];
+                    s6 = s7;
+                  } else {
+                    peg$currPos = s6;
+                    s6 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s6;
+                  s6 = peg$FAILED;
+                }
+                while (s6 !== peg$FAILED) {
+                  s5.push(s6);
+                  s6 = peg$currPos;
+                  s7 = peg$parsecomma();
+                  if (s7 !== peg$FAILED) {
+                    s8 = peg$parseidentifier();
+                    if (s8 !== peg$FAILED) {
+                      s7 = [s7, s8];
+                      s6 = s7;
+                    } else {
+                      peg$currPos = s6;
+                      s6 = peg$FAILED;
+                    }
+                  } else {
+                    peg$currPos = s6;
+                    s6 = peg$FAILED;
+                  }
+                }
+                if (s5 !== peg$FAILED) {
+                  s6 = peg$parsesemicolon();
+                  if (s6 !== peg$FAILED) {
+                    s1 = peg$c144(s4, s5);
+                    s0 = s1;
+                  } else {
+                    peg$currPos = s0;
+                    s0 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s0;
+                  s0 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+        if (s0 === peg$FAILED) {
+          s0 = peg$currPos;
+          if (input.substr(peg$currPos, 9) === peg$c145) {
+            s1 = peg$c145;
+            peg$currPos += 9;
+          } else {
+            s1 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c146); }
+          }
+          if (s1 !== peg$FAILED) {
+            s2 = peg$parse_();
+            if (s2 !== peg$FAILED) {
+              s3 = peg$parseprecision_qualifier();
+              if (s3 !== peg$FAILED) {
+                s4 = peg$parse_();
+                if (s4 !== peg$FAILED) {
+                  s5 = peg$parsetype_name();
+                  if (s5 !== peg$FAILED) {
+                    s6 = peg$parsesemicolon();
+                    if (s6 !== peg$FAILED) {
+                      s1 = peg$c147(s3, s5);
+                      s0 = s1;
+                    } else {
+                      peg$currPos = s0;
+                      s0 = peg$FAILED;
+                    }
+                  } else {
+                    peg$currPos = s0;
+                    s0 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s0;
+                  s0 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        }
+      }
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c138); }
+    }
+
+    return s0;
+  }
+
+  function peg$parseglobal_declaration() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$parsedeclaration();
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parsefully_specified_type();
+      if (s1 !== peg$FAILED) {
+        s2 = peg$parse_();
+        if (s2 !== peg$FAILED) {
+          s3 = peg$parseinit_declarator_list();
+          if (s3 !== peg$FAILED) {
+            s4 = peg$parsesemicolon();
+            if (s4 !== peg$FAILED) {
+              s1 = peg$c148(s1, s3);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+      if (s0 === peg$FAILED) {
+        s0 = peg$currPos;
+        s1 = peg$parseattribute_type();
+        if (s1 !== peg$FAILED) {
+          s2 = peg$parse_();
+          if (s2 !== peg$FAILED) {
+            s3 = peg$parsedeclarator_list_no_array();
+            if (s3 !== peg$FAILED) {
+              s4 = peg$parsesemicolon();
+              if (s4 !== peg$FAILED) {
+                s1 = peg$c148(s1, s3);
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsefunction_prototype_parameter_list() {
+    var s0, s1, s2, s3, s4, s5;
+
+    if (input.substr(peg$currPos, 4) === peg$c149) {
+      s0 = peg$c149;
+      peg$currPos += 4;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c150); }
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parseparameter_declaration();
+      if (s1 !== peg$FAILED) {
+        s2 = [];
+        s3 = peg$currPos;
+        s4 = peg$parsecomma();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseparameter_declaration();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          s3 = peg$currPos;
+          s4 = peg$parsecomma();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parseparameter_declaration();
+            if (s5 !== peg$FAILED) {
+              s4 = [s4, s5];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        }
+        if (s2 !== peg$FAILED) {
+          s1 = peg$c151(s1, s2);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsefunction_prototype() {
+    var s0, s1, s2, s3, s4, s5, s6;
+
+    s0 = peg$currPos;
+    s1 = peg$parsevoid_type();
+    if (s1 === peg$FAILED) {
+      s1 = peg$parseprecision_type();
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseidentifier();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseleft_paren();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsefunction_prototype_parameter_list();
+            if (s5 === peg$FAILED) {
+              s5 = null;
+            }
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parseright_paren();
+              if (s6 !== peg$FAILED) {
+                s1 = peg$c152(s1, s3, s5);
+                s0 = s1;
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseparameter_qualifier() {
+    var s0;
+
+    if (input.substr(peg$currPos, 5) === peg$c153) {
+      s0 = peg$c153;
+      peg$currPos += 5;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c154); }
+    }
+    if (s0 === peg$FAILED) {
+      if (input.substr(peg$currPos, 2) === peg$c155) {
+        s0 = peg$c155;
+        peg$currPos += 2;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c156); }
+      }
+      if (s0 === peg$FAILED) {
+        if (input.substr(peg$currPos, 3) === peg$c157) {
+          s0 = peg$c157;
+          peg$currPos += 3;
+        } else {
+          s0 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c158); }
+        }
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parseparameter_declaration() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = peg$parseconst_qualifier();
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parse_();
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      s3 = peg$parseparameter_qualifier();
+      if (s3 !== peg$FAILED) {
+        s4 = peg$parse_();
+        if (s4 !== peg$FAILED) {
+          s3 = [s3, s4];
+          s2 = s3;
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$currPos;
+        s4 = peg$parseprecision_qualifier();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parse_();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parsetype_name();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parse_();
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parseidentifier();
+              if (s6 !== peg$FAILED) {
+                s7 = peg$currPos;
+                s8 = peg$parseleft_bracket();
+                if (s8 !== peg$FAILED) {
+                  s9 = peg$parseconditional_expression();
+                  if (s9 !== peg$FAILED) {
+                    s10 = peg$parseright_bracket();
+                    if (s10 !== peg$FAILED) {
+                      s8 = [s8, s9, s10];
+                      s7 = s8;
+                    } else {
+                      peg$currPos = s7;
+                      s7 = peg$FAILED;
+                    }
+                  } else {
+                    peg$currPos = s7;
+                    s7 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s7;
+                  s7 = peg$FAILED;
+                }
+                if (s7 === peg$FAILED) {
+                  s7 = null;
+                }
+                if (s7 !== peg$FAILED) {
+                  s1 = peg$c159(s1, s2, s3, s4, s6, s7);
+                  s0 = s1;
+                } else {
+                  peg$currPos = s0;
+                  s0 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseinit_declarator_list() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parseinit_declarator();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parsecomma();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parseinit_declarator();
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parsecomma();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseinit_declarator();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c160(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsedeclarator_list() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parsedeclarator();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parsecomma();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsedeclarator();
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parsecomma();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsedeclarator();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c160(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsedeclarator_list_no_array() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parsedeclarator_no_array();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parsecomma();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsedeclarator_no_array();
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parsecomma();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsedeclarator_no_array();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c160(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsedeclarator_list_arrays_have_size() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parsedeclarator_array_with_size();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parsecomma();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsedeclarator_array_with_size();
+        if (s5 !== peg$FAILED) {
+          s4 = [s4, s5];
+          s3 = s4;
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parsecomma();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsedeclarator_array_with_size();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c160(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsedeclarator_no_array() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    s1 = peg$parseidentifier();
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c161(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsedeclarator_array_with_size() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    s1 = peg$parseidentifier();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseleft_bracket();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseconditional_expression();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseright_bracket();
+          if (s4 !== peg$FAILED) {
+            s1 = peg$c162(s1, s3);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsedeclarator_no_array();
+    }
+
+    return s0;
+  }
+
+  function peg$parsedeclarator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parseidentifier();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseleft_bracket();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseright_bracket();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c163(s1);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsedeclarator_array_with_size();
+    }
+
+    return s0;
+  }
+
+  function peg$parseinit_declarator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parseidentifier();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseequals();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseconditional_expression();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c164(s1, s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsedeclarator();
+    }
+
+    return s0;
+  }
+
+  function peg$parsemember_list() {
+    var s0, s1, s2, s3, s4, s5, s6;
+
+    s0 = peg$currPos;
+    s1 = [];
+    s2 = peg$currPos;
+    s3 = peg$parselocally_specified_type();
+    if (s3 !== peg$FAILED) {
+      s4 = peg$parse_();
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsedeclarator_list_arrays_have_size();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parsesemicolon();
+          if (s6 !== peg$FAILED) {
+            s3 = [s3, s4, s5, s6];
+            s2 = s3;
+          } else {
+            peg$currPos = s2;
+            s2 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s2;
+      s2 = peg$FAILED;
+    }
+    if (s2 !== peg$FAILED) {
+      while (s2 !== peg$FAILED) {
+        s1.push(s2);
+        s2 = peg$currPos;
+        s3 = peg$parselocally_specified_type();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parse_();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsedeclarator_list_arrays_have_size();
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parsesemicolon();
+              if (s6 !== peg$FAILED) {
+                s3 = [s3, s4, s5, s6];
+                s2 = s3;
+              } else {
+                peg$currPos = s2;
+                s2 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s2;
+              s2 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s2;
+            s2 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+      }
+    } else {
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c165(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsestruct_definition() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = peg$parsetype_qualifier();
+    if (s2 === peg$FAILED) {
+      s2 = peg$parseattribute_qualifier();
+    }
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parse_();
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 6) === peg$c166) {
+        s2 = peg$c166;
+        peg$currPos += 6;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c167); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseidentifier();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseleft_brace();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsemember_list();
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parseright_brace();
+              if (s6 !== peg$FAILED) {
+                s7 = peg$parsedeclarator_list();
+                if (s7 === peg$FAILED) {
+                  s7 = null;
+                }
+                if (s7 !== peg$FAILED) {
+                  s8 = peg$parsesemicolon();
+                  if (s8 !== peg$FAILED) {
+                    s1 = peg$c168(s1, s3, s5, s7);
+                    s0 = s1;
+                  } else {
+                    peg$currPos = s0;
+                    s0 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s0;
+                  s0 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseprecision_type() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = peg$parseprecision_qualifier();
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parse_();
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parsetype_name();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c169(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parselocally_specified_type() {
+    var s0, s1, s2, s3;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = peg$parseconst_qualifier();
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parse_();
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseprecision_type();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c171(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c170); }
+    }
+
+    return s0;
+  }
+
+  function peg$parseattribute_qualifier() {
+    var s0, s1, s2;
+
+    s0 = peg$currPos;
+    s1 = peg$c141();
+    if (s1) {
+      s1 = void 0;
+    } else {
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 9) === peg$c172) {
+        s2 = peg$c172;
+        peg$currPos += 9;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c173); }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c174();
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseattribute_type() {
+    var s0, s1, s2, s3;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    s1 = peg$parseattribute_qualifier();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseprecision_type();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c175(s1, s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c170); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsefully_specified_type() {
+    var s0, s1, s2, s3;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = peg$parsetype_qualifier();
+    if (s2 !== peg$FAILED) {
+      s3 = peg$parse_();
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseprecision_type();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c171(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c176); }
+    }
+
+    return s0;
+  }
+
+  function peg$parseprecision_qualifier() {
+    var s0;
+
+    peg$silentFails++;
+    if (input.substr(peg$currPos, 5) === peg$c178) {
+      s0 = peg$c178;
+      peg$currPos += 5;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c179); }
+    }
+    if (s0 === peg$FAILED) {
+      if (input.substr(peg$currPos, 7) === peg$c180) {
+        s0 = peg$c180;
+        peg$currPos += 7;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c181); }
+      }
+      if (s0 === peg$FAILED) {
+        if (input.substr(peg$currPos, 4) === peg$c182) {
+          s0 = peg$c182;
+          peg$currPos += 4;
+        } else {
+          s0 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c183); }
+        }
+      }
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      if (peg$silentFails === 0) { peg$fail(peg$c177); }
+    }
+
+    return s0;
+  }
+
+  function peg$parseconst_qualifier() {
+    var s0;
+
+    if (input.substr(peg$currPos, 5) === peg$c184) {
+      s0 = peg$c184;
+      peg$currPos += 5;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c185); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsetype_qualifier() {
+    var s0, s1, s2, s3;
+
+    peg$silentFails++;
+    s0 = peg$parseconst_qualifier();
+    if (s0 === peg$FAILED) {
+      if (input.substr(peg$currPos, 7) === peg$c187) {
+        s0 = peg$c187;
+        peg$currPos += 7;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c188); }
+      }
+      if (s0 === peg$FAILED) {
+        s0 = peg$currPos;
+        if (input.substr(peg$currPos, 9) === peg$c142) {
+          s1 = peg$c142;
+          peg$currPos += 9;
+        } else {
+          s1 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c143); }
+        }
+        if (s1 !== peg$FAILED) {
+          s2 = peg$parse_();
+          if (s2 !== peg$FAILED) {
+            if (input.substr(peg$currPos, 7) === peg$c187) {
+              s3 = peg$c187;
+              peg$currPos += 7;
+            } else {
+              s3 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c188); }
+            }
+            if (s3 !== peg$FAILED) {
+              s1 = peg$c189();
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+        if (s0 === peg$FAILED) {
+          if (input.substr(peg$currPos, 7) === peg$c190) {
+            s0 = peg$c190;
+            peg$currPos += 7;
+          } else {
+            s0 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c191); }
+          }
+        }
+      }
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c186); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsevoid_type() {
+    var s0, s1;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c149) {
+      s1 = peg$c149;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c150); }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c193();
+    }
+    s0 = s1;
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c192); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsetype_name() {
+    var s0, s1;
+
+    peg$silentFails++;
+    if (input.substr(peg$currPos, 5) === peg$c195) {
+      s0 = peg$c195;
+      peg$currPos += 5;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c196); }
+    }
+    if (s0 === peg$FAILED) {
+      if (input.substr(peg$currPos, 6) === peg$c197) {
+        s0 = peg$c197;
+        peg$currPos += 6;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c198); }
+      }
+      if (s0 === peg$FAILED) {
+        if (input.substr(peg$currPos, 3) === peg$c199) {
+          s0 = peg$c199;
+          peg$currPos += 3;
+        } else {
+          s0 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c200); }
+        }
+        if (s0 === peg$FAILED) {
+          if (input.substr(peg$currPos, 4) === peg$c201) {
+            s0 = peg$c201;
+            peg$currPos += 4;
+          } else {
+            s0 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c202); }
+          }
+          if (s0 === peg$FAILED) {
+            if (input.substr(peg$currPos, 4) === peg$c203) {
+              s0 = peg$c203;
+              peg$currPos += 4;
+            } else {
+              s0 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c204); }
+            }
+            if (s0 === peg$FAILED) {
+              s0 = peg$parsesampler_buffer();
+              if (s0 === peg$FAILED) {
+                s0 = peg$parsesampler_rect();
+                if (s0 === peg$FAILED) {
+                  s0 = peg$parsesampler_ms();
+                  if (s0 === peg$FAILED) {
+                    s0 = peg$parsesampler();
+                    if (s0 === peg$FAILED) {
+                      s0 = peg$parsesampler_cube();
+                      if (s0 === peg$FAILED) {
+                        s0 = peg$parsevector();
+                        if (s0 === peg$FAILED) {
+                          s0 = peg$parsematrix();
+                          if (s0 === peg$FAILED) {
+                            s0 = peg$currPos;
+                            s1 = peg$parseidentifier();
+                            if (s1 !== peg$FAILED) {
+                              s1 = peg$c205(s1);
+                            }
+                            s0 = s1;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c194); }
+    }
+
+    return s0;
+  }
+
+  function peg$parseidentifier() {
+    var s0, s1, s2, s3, s4;
+
+    peg$silentFails++;
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    peg$silentFails++;
+    s2 = peg$currPos;
+    s3 = peg$parsekeyword();
+    if (s3 !== peg$FAILED) {
+      if (peg$c207.test(input.charAt(peg$currPos))) {
+        s4 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s4 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c208); }
+      }
+      if (s4 !== peg$FAILED) {
+        s3 = [s3, s4];
+        s2 = s3;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s2;
+      s2 = peg$FAILED;
+    }
+    peg$silentFails--;
+    if (s2 === peg$FAILED) {
+      s1 = void 0;
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      if (peg$c209.test(input.charAt(peg$currPos))) {
+        s2 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c210); }
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = [];
+        if (peg$c211.test(input.charAt(peg$currPos))) {
+          s4 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c212); }
+        }
+        while (s4 !== peg$FAILED) {
+          s3.push(s4);
+          if (peg$c211.test(input.charAt(peg$currPos))) {
+            s4 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s4 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c212); }
+          }
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c64(s2, s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c206); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsekeyword() {
+    var s0;
+
+    peg$silentFails++;
+    if (input.substr(peg$currPos, 4) === peg$c203) {
+      s0 = peg$c203;
+      peg$currPos += 4;
+    } else {
+      s0 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c204); }
+    }
+    if (s0 === peg$FAILED) {
+      if (input.substr(peg$currPos, 5) === peg$c195) {
+        s0 = peg$c195;
+        peg$currPos += 5;
+      } else {
+        s0 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c196); }
+      }
+      if (s0 === peg$FAILED) {
+        if (input.substr(peg$currPos, 6) === peg$c197) {
+          s0 = peg$c197;
+          peg$currPos += 6;
+        } else {
+          s0 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c198); }
+        }
+        if (s0 === peg$FAILED) {
+          if (input.substr(peg$currPos, 3) === peg$c199) {
+            s0 = peg$c199;
+            peg$currPos += 3;
+          } else {
+            s0 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c200); }
+          }
+          if (s0 === peg$FAILED) {
+            if (input.substr(peg$currPos, 4) === peg$c201) {
+              s0 = peg$c201;
+              peg$currPos += 4;
+            } else {
+              s0 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c202); }
+            }
+            if (s0 === peg$FAILED) {
+              s0 = peg$parsesampler_buffer();
+              if (s0 === peg$FAILED) {
+                s0 = peg$parsesampler_rect();
+                if (s0 === peg$FAILED) {
+                  s0 = peg$parsesampler_ms();
+                  if (s0 === peg$FAILED) {
+                    s0 = peg$parsesampler();
+                    if (s0 === peg$FAILED) {
+                      s0 = peg$parsesampler_cube();
+                      if (s0 === peg$FAILED) {
+                        s0 = peg$parsevector();
+                        if (s0 === peg$FAILED) {
+                          s0 = peg$parsematrix();
+                          if (s0 === peg$FAILED) {
+                            if (input.substr(peg$currPos, 5) === peg$c131) {
+                              s0 = peg$c131;
+                              peg$currPos += 5;
+                            } else {
+                              s0 = peg$FAILED;
+                              if (peg$silentFails === 0) { peg$fail(peg$c132); }
+                            }
+                            if (s0 === peg$FAILED) {
+                              if (input.substr(peg$currPos, 8) === peg$c129) {
+                                s0 = peg$c129;
+                                peg$currPos += 8;
+                              } else {
+                                s0 = peg$FAILED;
+                                if (peg$silentFails === 0) { peg$fail(peg$c130); }
+                              }
+                              if (s0 === peg$FAILED) {
+                                if (input.substr(peg$currPos, 2) === peg$c111) {
+                                  s0 = peg$c111;
+                                  peg$currPos += 2;
+                                } else {
+                                  s0 = peg$FAILED;
+                                  if (peg$silentFails === 0) { peg$fail(peg$c112); }
+                                }
+                                if (s0 === peg$FAILED) {
+                                  if (input.substr(peg$currPos, 4) === peg$c93) {
+                                    s0 = peg$c93;
+                                    peg$currPos += 4;
+                                  } else {
+                                    s0 = peg$FAILED;
+                                    if (peg$silentFails === 0) { peg$fail(peg$c94); }
+                                  }
+                                  if (s0 === peg$FAILED) {
+                                    if (input.substr(peg$currPos, 3) === peg$c104) {
+                                      s0 = peg$c104;
+                                      peg$currPos += 3;
+                                    } else {
+                                      s0 = peg$FAILED;
+                                      if (peg$silentFails === 0) { peg$fail(peg$c105); }
+                                    }
+                                    if (s0 === peg$FAILED) {
+                                      if (input.substr(peg$currPos, 2) === peg$c86) {
+                                        s0 = peg$c86;
+                                        peg$currPos += 2;
+                                      } else {
+                                        s0 = peg$FAILED;
+                                        if (peg$silentFails === 0) { peg$fail(peg$c87); }
+                                      }
+                                      if (s0 === peg$FAILED) {
+                                        if (input.substr(peg$currPos, 7) === peg$c133) {
+                                          s0 = peg$c133;
+                                          peg$currPos += 7;
+                                        } else {
+                                          s0 = peg$FAILED;
+                                          if (peg$silentFails === 0) { peg$fail(peg$c134); }
+                                        }
+                                        if (s0 === peg$FAILED) {
+                                          if (input.substr(peg$currPos, 6) === peg$c114) {
+                                            s0 = peg$c114;
+                                            peg$currPos += 6;
+                                          } else {
+                                            s0 = peg$FAILED;
+                                            if (peg$silentFails === 0) { peg$fail(peg$c115); }
+                                          }
+                                          if (s0 === peg$FAILED) {
+                                            if (input.substr(peg$currPos, 9) === peg$c172) {
+                                              s0 = peg$c172;
+                                              peg$currPos += 9;
+                                            } else {
+                                              s0 = peg$FAILED;
+                                              if (peg$silentFails === 0) { peg$fail(peg$c173); }
+                                            }
+                                            if (s0 === peg$FAILED) {
+                                              if (input.substr(peg$currPos, 5) === peg$c184) {
+                                                s0 = peg$c184;
+                                                peg$currPos += 5;
+                                              } else {
+                                                s0 = peg$FAILED;
+                                                if (peg$silentFails === 0) { peg$fail(peg$c185); }
+                                              }
+                                              if (s0 === peg$FAILED) {
+                                                if (input.substr(peg$currPos, 2) === peg$c155) {
+                                                  s0 = peg$c155;
+                                                  peg$currPos += 2;
+                                                } else {
+                                                  s0 = peg$FAILED;
+                                                  if (peg$silentFails === 0) { peg$fail(peg$c156); }
+                                                }
+                                                if (s0 === peg$FAILED) {
+                                                  if (input.substr(peg$currPos, 3) === peg$c157) {
+                                                    s0 = peg$c157;
+                                                    peg$currPos += 3;
+                                                  } else {
+                                                    s0 = peg$FAILED;
+                                                    if (peg$silentFails === 0) { peg$fail(peg$c158); }
+                                                  }
+                                                  if (s0 === peg$FAILED) {
+                                                    if (input.substr(peg$currPos, 5) === peg$c153) {
+                                                      s0 = peg$c153;
+                                                      peg$currPos += 5;
+                                                    } else {
+                                                      s0 = peg$FAILED;
+                                                      if (peg$silentFails === 0) { peg$fail(peg$c154); }
+                                                    }
+                                                    if (s0 === peg$FAILED) {
+                                                      if (input.substr(peg$currPos, 7) === peg$c190) {
+                                                        s0 = peg$c190;
+                                                        peg$currPos += 7;
+                                                      } else {
+                                                        s0 = peg$FAILED;
+                                                        if (peg$silentFails === 0) { peg$fail(peg$c191); }
+                                                      }
+                                                      if (s0 === peg$FAILED) {
+                                                        if (input.substr(peg$currPos, 7) === peg$c187) {
+                                                          s0 = peg$c187;
+                                                          peg$currPos += 7;
+                                                        } else {
+                                                          s0 = peg$FAILED;
+                                                          if (peg$silentFails === 0) { peg$fail(peg$c188); }
+                                                        }
+                                                        if (s0 === peg$FAILED) {
+                                                          if (input.substr(peg$currPos, 9) === peg$c214) {
+                                                            s0 = peg$c214;
+                                                            peg$currPos += 9;
+                                                          } else {
+                                                            s0 = peg$FAILED;
+                                                            if (peg$silentFails === 0) { peg$fail(peg$c215); }
+                                                          }
+                                                          if (s0 === peg$FAILED) {
+                                                            if (input.substr(peg$currPos, 11) === peg$c216) {
+                                                              s0 = peg$c216;
+                                                              peg$currPos += 11;
+                                                            } else {
+                                                              s0 = peg$FAILED;
+                                                              if (peg$silentFails === 0) { peg$fail(peg$c217); }
+                                                            }
+                                                            if (s0 === peg$FAILED) {
+                                                              if (input.substr(peg$currPos, 6) === peg$c166) {
+                                                                s0 = peg$c166;
+                                                                peg$currPos += 6;
+                                                              } else {
+                                                                s0 = peg$FAILED;
+                                                                if (peg$silentFails === 0) { peg$fail(peg$c167); }
+                                                              }
+                                                              if (s0 === peg$FAILED) {
+                                                                if (input.substr(peg$currPos, 4) === peg$c149) {
+                                                                  s0 = peg$c149;
+                                                                  peg$currPos += 4;
+                                                                } else {
+                                                                  s0 = peg$FAILED;
+                                                                  if (peg$silentFails === 0) { peg$fail(peg$c150); }
+                                                                }
+                                                                if (s0 === peg$FAILED) {
+                                                                  if (input.substr(peg$currPos, 5) === peg$c107) {
+                                                                    s0 = peg$c107;
+                                                                    peg$currPos += 5;
+                                                                  } else {
+                                                                    s0 = peg$FAILED;
+                                                                    if (peg$silentFails === 0) { peg$fail(peg$c108); }
+                                                                  }
+                                                                  if (s0 === peg$FAILED) {
+                                                                    if (input.substr(peg$currPos, 5) === peg$c178) {
+                                                                      s0 = peg$c178;
+                                                                      peg$currPos += 5;
+                                                                    } else {
+                                                                      s0 = peg$FAILED;
+                                                                      if (peg$silentFails === 0) { peg$fail(peg$c179); }
+                                                                    }
+                                                                    if (s0 === peg$FAILED) {
+                                                                      if (input.substr(peg$currPos, 7) === peg$c180) {
+                                                                        s0 = peg$c180;
+                                                                        peg$currPos += 7;
+                                                                      } else {
+                                                                        s0 = peg$FAILED;
+                                                                        if (peg$silentFails === 0) { peg$fail(peg$c181); }
+                                                                      }
+                                                                      if (s0 === peg$FAILED) {
+                                                                        if (input.substr(peg$currPos, 4) === peg$c182) {
+                                                                          s0 = peg$c182;
+                                                                          peg$currPos += 4;
+                                                                        } else {
+                                                                          s0 = peg$FAILED;
+                                                                          if (peg$silentFails === 0) { peg$fail(peg$c183); }
+                                                                        }
+                                                                        if (s0 === peg$FAILED) {
+                                                                          if (input.substr(peg$currPos, 4) === peg$c218) {
+                                                                            s0 = peg$c218;
+                                                                            peg$currPos += 4;
+                                                                          } else {
+                                                                            s0 = peg$FAILED;
+                                                                            if (peg$silentFails === 0) { peg$fail(peg$c219); }
+                                                                          }
+                                                                          if (s0 === peg$FAILED) {
+                                                                            if (input.substr(peg$currPos, 5) === peg$c220) {
+                                                                              s0 = peg$c220;
+                                                                              peg$currPos += 5;
+                                                                            } else {
+                                                                              s0 = peg$FAILED;
+                                                                              if (peg$silentFails === 0) { peg$fail(peg$c221); }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    peg$silentFails--;
+    if (s0 === peg$FAILED) {
+      if (peg$silentFails === 0) { peg$fail(peg$c213); }
+    }
+
+    return s0;
+  }
+
+  function peg$parsevector() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    if (peg$c222.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c223); }
+    }
+    if (s2 === peg$FAILED) {
+      s2 = null;
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 3) === peg$c224) {
+        s3 = peg$c224;
+        peg$currPos += 3;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c225); }
+      }
+      if (s3 !== peg$FAILED) {
+        if (peg$c226.test(input.charAt(peg$currPos))) {
+          s4 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c227); }
+        }
+        if (s4 !== peg$FAILED) {
+          s2 = [s2, s3, s4];
+          s1 = s2;
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c228(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsematrix() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    if (peg$c229.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c230); }
+    }
+    if (s2 === peg$FAILED) {
+      s2 = null;
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 3) === peg$c231) {
+        s3 = peg$c231;
+        peg$currPos += 3;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c232); }
+      }
+      if (s3 !== peg$FAILED) {
+        if (peg$c226.test(input.charAt(peg$currPos))) {
+          s4 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c227); }
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$currPos;
+          s6 = peg$currPos;
+          if (peg$c233.test(input.charAt(peg$currPos))) {
+            s7 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s7 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c234); }
+          }
+          if (s7 !== peg$FAILED) {
+            if (peg$c226.test(input.charAt(peg$currPos))) {
+              s8 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s8 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c227); }
+            }
+            if (s8 !== peg$FAILED) {
+              s7 = [s7, s8];
+              s6 = s7;
+            } else {
+              peg$currPos = s6;
+              s6 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s6;
+            s6 = peg$FAILED;
+          }
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s5 = input.substring(s5, peg$currPos);
+          } else {
+            s5 = s6;
+          }
+          if (s5 !== peg$FAILED) {
+            s2 = [s2, s3, s4, s5];
+            s1 = s2;
+          } else {
+            peg$currPos = s1;
+            s1 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c228(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsesampler() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    if (peg$c235.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+    }
+    if (s2 === peg$FAILED) {
+      s2 = null;
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 7) === peg$c237) {
+        s3 = peg$c237;
+        peg$currPos += 7;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c238); }
+      }
+      if (s3 !== peg$FAILED) {
+        if (peg$c239.test(input.charAt(peg$currPos))) {
+          s4 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c240); }
+        }
+        if (s4 !== peg$FAILED) {
+          if (input.charCodeAt(peg$currPos) === 68) {
+            s5 = peg$c241;
+            peg$currPos++;
+          } else {
+            s5 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c242); }
+          }
+          if (s5 !== peg$FAILED) {
+            if (input.substr(peg$currPos, 5) === peg$c243) {
+              s6 = peg$c243;
+              peg$currPos += 5;
+            } else {
+              s6 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c244); }
+            }
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              if (input.substr(peg$currPos, 6) === peg$c245) {
+                s7 = peg$c245;
+                peg$currPos += 6;
+              } else {
+                s7 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c246); }
+              }
+              if (s7 === peg$FAILED) {
+                s7 = null;
+              }
+              if (s7 !== peg$FAILED) {
+                s2 = [s2, s3, s4, s5, s6, s7];
+                s1 = s2;
+              } else {
+                peg$currPos = s1;
+                s1 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s1;
+              s1 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s1;
+            s1 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c228(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsesampler_cube() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    if (peg$c235.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+    }
+    if (s2 === peg$FAILED) {
+      s2 = null;
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 11) === peg$c216) {
+        s3 = peg$c216;
+        peg$currPos += 11;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c217); }
+      }
+      if (s3 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 5) === peg$c243) {
+          s4 = peg$c243;
+          peg$currPos += 5;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c244); }
+        }
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          if (input.substr(peg$currPos, 6) === peg$c245) {
+            s5 = peg$c245;
+            peg$currPos += 6;
+          } else {
+            s5 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c246); }
+          }
+          if (s5 === peg$FAILED) {
+            s5 = null;
+          }
+          if (s5 !== peg$FAILED) {
+            s2 = [s2, s3, s4, s5];
+            s1 = s2;
+          } else {
+            peg$currPos = s1;
+            s1 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c228(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsesampler_rect() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    if (peg$c235.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+    }
+    if (s2 === peg$FAILED) {
+      s2 = null;
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 13) === peg$c247) {
+        s3 = peg$c247;
+        peg$currPos += 13;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c248); }
+      }
+      if (s3 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 6) === peg$c245) {
+          s4 = peg$c245;
+          peg$currPos += 6;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c246); }
+        }
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s2 = [s2, s3, s4];
+          s1 = s2;
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c228(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsesampler_ms() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    if (peg$c235.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+    }
+    if (s2 === peg$FAILED) {
+      s2 = null;
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 11) === peg$c249) {
+        s3 = peg$c249;
+        peg$currPos += 11;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c250); }
+      }
+      if (s3 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 5) === peg$c243) {
+          s4 = peg$c243;
+          peg$currPos += 5;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c244); }
+        }
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s2 = [s2, s3, s4];
+          s1 = s2;
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c228(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsesampler_buffer() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    if (peg$c235.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s2 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+    }
+    if (s2 === peg$FAILED) {
+      s2 = null;
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.substr(peg$currPos, 13) === peg$c251) {
+        s3 = peg$c251;
+        peg$currPos += 13;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c252); }
+      }
+      if (s3 !== peg$FAILED) {
+        s2 = [s2, s3];
+        s1 = s2;
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c228(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parseint_constant() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    if (peg$c260.test(input.charAt(peg$currPos))) {
+      s1 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c261); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      if (peg$c262.test(input.charAt(peg$currPos))) {
+        s3 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c263); }
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        if (peg$c262.test(input.charAt(peg$currPos))) {
+          s3 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c263); }
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        if (peg$c264.test(input.charAt(peg$currPos))) {
+          s3 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c265); }
+        }
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c266(s1, s2, s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      if (input.charCodeAt(peg$currPos) === 48) {
+        s1 = peg$c267;
+        peg$currPos++;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c268); }
+      }
+      if (s1 !== peg$FAILED) {
+        if (peg$c269.test(input.charAt(peg$currPos))) {
+          s2 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s2 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c270); }
+        }
+        if (s2 !== peg$FAILED) {
+          s3 = [];
+          if (peg$c271.test(input.charAt(peg$currPos))) {
+            s4 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s4 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c272); }
+          }
+          if (s4 !== peg$FAILED) {
+            while (s4 !== peg$FAILED) {
+              s3.push(s4);
+              if (peg$c271.test(input.charAt(peg$currPos))) {
+                s4 = input.charAt(peg$currPos);
+                peg$currPos++;
+              } else {
+                s4 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c272); }
+              }
+            }
+          } else {
+            s3 = peg$FAILED;
+          }
+          if (s3 !== peg$FAILED) {
+            if (peg$c264.test(input.charAt(peg$currPos))) {
+              s4 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s4 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c265); }
+            }
+            if (s4 === peg$FAILED) {
+              s4 = null;
+            }
+            if (s4 !== peg$FAILED) {
+              s1 = peg$c273(s3, s4);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+      if (s0 === peg$FAILED) {
+        s0 = peg$currPos;
+        if (input.charCodeAt(peg$currPos) === 48) {
+          s1 = peg$c267;
+          peg$currPos++;
+        } else {
+          s1 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c268); }
+        }
+        if (s1 !== peg$FAILED) {
+          s2 = [];
+          if (peg$c274.test(input.charAt(peg$currPos))) {
+            s3 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c275); }
+          }
+          if (s3 !== peg$FAILED) {
+            while (s3 !== peg$FAILED) {
+              s2.push(s3);
+              if (peg$c274.test(input.charAt(peg$currPos))) {
+                s3 = input.charAt(peg$currPos);
+                peg$currPos++;
+              } else {
+                s3 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c275); }
+              }
+            }
+          } else {
+            s2 = peg$FAILED;
+          }
+          if (s2 !== peg$FAILED) {
+            if (peg$c264.test(input.charAt(peg$currPos))) {
+              s3 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s3 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c265); }
+            }
+            if (s3 === peg$FAILED) {
+              s3 = null;
+            }
+            if (s3 !== peg$FAILED) {
+              s1 = peg$c276(s2, s3);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+        if (s0 === peg$FAILED) {
+          s0 = peg$currPos;
+          if (input.charCodeAt(peg$currPos) === 48) {
+            s1 = peg$c267;
+            peg$currPos++;
+          } else {
+            s1 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c268); }
+          }
+          if (s1 !== peg$FAILED) {
+            if (peg$c264.test(input.charAt(peg$currPos))) {
+              s2 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s2 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c265); }
+            }
+            if (s2 === peg$FAILED) {
+              s2 = null;
+            }
+            if (s2 !== peg$FAILED) {
+              s1 = peg$c277(s2);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        }
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsefloat_constant() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = [];
+    if (peg$c278.test(input.charAt(peg$currPos))) {
+      s3 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s3 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c279); }
+    }
+    while (s3 !== peg$FAILED) {
+      s2.push(s3);
+      if (peg$c278.test(input.charAt(peg$currPos))) {
+        s3 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c279); }
+      }
+    }
+    if (s2 !== peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 46) {
+        s3 = peg$c280;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c281); }
+      }
+      if (s3 !== peg$FAILED) {
+        s4 = [];
+        if (peg$c262.test(input.charAt(peg$currPos))) {
+          s5 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s5 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c263); }
+        }
+        if (s5 !== peg$FAILED) {
+          while (s5 !== peg$FAILED) {
+            s4.push(s5);
+            if (peg$c262.test(input.charAt(peg$currPos))) {
+              s5 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s5 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c263); }
+            }
+          }
+        } else {
+          s4 = peg$FAILED;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsefloat_exponent();
+          if (s5 === peg$FAILED) {
+            s5 = null;
+          }
+          if (s5 !== peg$FAILED) {
+            s2 = [s2, s3, s4, s5];
+            s1 = s2;
+          } else {
+            peg$currPos = s1;
+            s1 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 === peg$FAILED) {
+      s1 = peg$currPos;
+      s2 = [];
+      if (peg$c262.test(input.charAt(peg$currPos))) {
+        s3 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c263); }
+      }
+      if (s3 !== peg$FAILED) {
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          if (peg$c262.test(input.charAt(peg$currPos))) {
+            s3 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c263); }
+          }
+        }
+      } else {
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 46) {
+          s3 = peg$c280;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c281); }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = [];
+          if (peg$c262.test(input.charAt(peg$currPos))) {
+            s5 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s5 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c263); }
+          }
+          while (s5 !== peg$FAILED) {
+            s4.push(s5);
+            if (peg$c262.test(input.charAt(peg$currPos))) {
+              s5 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s5 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c263); }
+            }
+          }
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parsefloat_exponent();
+            if (s5 === peg$FAILED) {
+              s5 = null;
+            }
+            if (s5 !== peg$FAILED) {
+              s2 = [s2, s3, s4, s5];
+              s1 = s2;
+            } else {
+              peg$currPos = s1;
+              s1 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s1;
+            s1 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      if (peg$c282.test(input.charAt(peg$currPos))) {
+        s2 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c283); }
+      }
+      if (s2 === peg$FAILED) {
+        if (input.substr(peg$currPos, 2) === peg$c284) {
+          s2 = peg$c284;
+          peg$currPos += 2;
+        } else {
+          s2 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c285); }
+        }
+        if (s2 === peg$FAILED) {
+          if (input.substr(peg$currPos, 2) === peg$c286) {
+            s2 = peg$c286;
+            peg$currPos += 2;
+          } else {
+            s2 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c287); }
+          }
+        }
+      }
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c288(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$currPos;
+      s2 = [];
+      if (peg$c278.test(input.charAt(peg$currPos))) {
+        s3 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c279); }
+      }
+      if (s3 !== peg$FAILED) {
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          if (peg$c278.test(input.charAt(peg$currPos))) {
+            s3 = input.charAt(peg$currPos);
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c279); }
+          }
+        }
+      } else {
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parsefloat_exponent();
+        if (s3 !== peg$FAILED) {
+          s2 = [s2, s3];
+          s1 = s2;
+        } else {
+          peg$currPos = s1;
+          s1 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s1;
+        s1 = peg$FAILED;
+      }
+      if (s1 !== peg$FAILED) {
+        if (peg$c289.test(input.charAt(peg$currPos))) {
+          s2 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s2 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c290); }
+        }
+        if (s2 === peg$FAILED) {
+          s2 = null;
+        }
+        if (s2 !== peg$FAILED) {
+          s1 = peg$c291(s1, s2);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsefloat_exponent() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    if (peg$c292.test(input.charAt(peg$currPos))) {
+      s1 = input.charAt(peg$currPos);
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c293); }
+    }
+    if (s1 !== peg$FAILED) {
+      if (peg$c294.test(input.charAt(peg$currPos))) {
+        s2 = input.charAt(peg$currPos);
+        peg$currPos++;
+      } else {
+        s2 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c295); }
+      }
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = [];
+        if (peg$c262.test(input.charAt(peg$currPos))) {
+          s4 = input.charAt(peg$currPos);
+          peg$currPos++;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c263); }
+        }
+        if (s4 !== peg$FAILED) {
+          while (s4 !== peg$FAILED) {
+            s3.push(s4);
+            if (peg$c262.test(input.charAt(peg$currPos))) {
+              s4 = input.charAt(peg$currPos);
+              peg$currPos++;
+            } else {
+              s4 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c263); }
+            }
+          }
+        } else {
+          s3 = peg$FAILED;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c296(s2, s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseparen_expression() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parseleft_paren();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseassignment_expression();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseright_paren();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c297(s2);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsebool_constant() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c218) {
+      s1 = peg$c218;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c219); }
+    }
+    if (s1 === peg$FAILED) {
+      if (input.substr(peg$currPos, 5) === peg$c220) {
+        s1 = peg$c220;
+        peg$currPos += 5;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c221); }
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c298(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parseprimary_expression() {
+    var s0;
+
+    s0 = peg$parsefunction_call();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parseidentifier();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsefloat_constant();
+        if (s0 === peg$FAILED) {
+          s0 = peg$parseint_constant();
+          if (s0 === peg$FAILED) {
+            s0 = peg$parsebool_constant();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parseparen_expression();
+            }
+          }
+        }
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parseindex_accessor() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parseleft_bracket();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseassignment_expression();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseright_bracket();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c299(s2);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsefield_selector() {
+    var s0, s1, s2;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 46) {
+      s1 = peg$c280;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c281); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseidentifier();
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c300(s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepostfix_expression() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$parseprimary_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$parsefield_selector();
+      if (s3 === peg$FAILED) {
+        s3 = peg$parseindex_accessor();
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$parsefield_selector();
+        if (s3 === peg$FAILED) {
+          s3 = peg$parseindex_accessor();
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c301(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsepostfix_expression_no_repeat() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parsepostfix_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 2) === peg$c116) {
+          s3 = peg$c116;
+          peg$currPos += 2;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c117); }
+        }
+        if (s3 === peg$FAILED) {
+          if (input.substr(peg$currPos, 2) === peg$c118) {
+            s3 = peg$c118;
+            peg$currPos += 2;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c119); }
+          }
+        }
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = [];
+          s5 = peg$parsefield_selector();
+          if (s5 === peg$FAILED) {
+            s5 = peg$parseindex_accessor();
+          }
+          while (s5 !== peg$FAILED) {
+            s4.push(s5);
+            s5 = peg$parsefield_selector();
+            if (s5 === peg$FAILED) {
+              s5 = peg$parseindex_accessor();
+            }
+          }
+          if (s4 !== peg$FAILED) {
+            s1 = peg$c302(s1, s3, s4);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseparameter_list() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 4) === peg$c149) {
+      s1 = peg$c149;
+      peg$currPos += 4;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c150); }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c303();
+    }
+    s0 = s1;
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parseassignment_expression();
+      if (s1 !== peg$FAILED) {
+        s2 = [];
+        s3 = peg$currPos;
+        s4 = peg$parsecomma();
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseassignment_expression();
+          if (s5 !== peg$FAILED) {
+            s4 = [s4, s5];
+            s3 = s4;
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+        while (s3 !== peg$FAILED) {
+          s2.push(s3);
+          s3 = peg$currPos;
+          s4 = peg$parsecomma();
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parseassignment_expression();
+            if (s5 !== peg$FAILED) {
+              s4 = [s4, s5];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        }
+        if (s2 !== peg$FAILED) {
+          s1 = peg$c304(s1, s2);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parsefunction_call() {
+    var s0, s1, s2, s3, s4;
+
+    s0 = peg$currPos;
+    s1 = peg$parsefunction_identifier();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseleft_paren();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseparameter_list();
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parseright_paren();
+          if (s4 !== peg$FAILED) {
+            s1 = peg$c305(s1, s3);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsefunction_identifier() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    s1 = peg$parseidentifier();
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c306(s1);
+    }
+    s0 = s1;
+    if (s0 === peg$FAILED) {
+      s0 = peg$parsetype_name();
+    }
+
+    return s0;
+  }
+
+  function peg$parseunary_expression() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c116) {
+      s1 = peg$c116;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c117); }
+    }
+    if (s1 === peg$FAILED) {
+      if (input.substr(peg$currPos, 2) === peg$c118) {
+        s1 = peg$c118;
+        peg$currPos += 2;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c119); }
+      }
+      if (s1 === peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 33) {
+          s1 = peg$c120;
+          peg$currPos++;
+        } else {
+          s1 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c121); }
+        }
+        if (s1 === peg$FAILED) {
+          if (input.charCodeAt(peg$currPos) === 126) {
+            s1 = peg$c122;
+            peg$currPos++;
+          } else {
+            s1 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c123); }
+          }
+          if (s1 === peg$FAILED) {
+            if (input.charCodeAt(peg$currPos) === 43) {
+              s1 = peg$c124;
+              peg$currPos++;
+            } else {
+              s1 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c125); }
+            }
+            if (s1 === peg$FAILED) {
+              if (input.charCodeAt(peg$currPos) === 45) {
+                s1 = peg$c126;
+                peg$currPos++;
+              } else {
+                s1 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c127); }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (s1 === peg$FAILED) {
+      s1 = null;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parsepostfix_expression_no_repeat();
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c307(s1, s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsemultiplicative_operator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 42) {
+      s1 = peg$c308;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c309); }
+    }
+    if (s1 === peg$FAILED) {
+      if (input.charCodeAt(peg$currPos) === 47) {
+        s1 = peg$c310;
+        peg$currPos++;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c311); }
+      }
+      if (s1 === peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 37) {
+          s1 = peg$c312;
+          peg$currPos++;
+        } else {
+          s1 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c313); }
+        }
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      peg$silentFails++;
+      if (input.charCodeAt(peg$currPos) === 61) {
+        s3 = peg$c29;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+      }
+      peg$silentFails--;
+      if (s3 === peg$FAILED) {
+        s2 = void 0;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c314(s1);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsemultiplicative_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parseunary_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsemultiplicative_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parseunary_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsemultiplicative_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parseunary_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseadditive_operator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 43) {
+      s1 = peg$c124;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c125); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      peg$silentFails++;
+      if (input.charCodeAt(peg$currPos) === 43) {
+        s3 = peg$c124;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c125); }
+      }
+      if (s3 === peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 61) {
+          s3 = peg$c29;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        }
+      }
+      peg$silentFails--;
+      if (s3 === peg$FAILED) {
+        s2 = void 0;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c316();
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      if (input.charCodeAt(peg$currPos) === 45) {
+        s1 = peg$c126;
+        peg$currPos++;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c127); }
+      }
+      if (s1 !== peg$FAILED) {
+        s2 = peg$currPos;
+        peg$silentFails++;
+        if (input.charCodeAt(peg$currPos) === 45) {
+          s3 = peg$c126;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c127); }
+        }
+        if (s3 === peg$FAILED) {
+          if (input.charCodeAt(peg$currPos) === 61) {
+            s3 = peg$c29;
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c30); }
+          }
+        }
+        peg$silentFails--;
+        if (s3 === peg$FAILED) {
+          s2 = void 0;
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+        if (s2 !== peg$FAILED) {
+          s1 = peg$c317();
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parseadditive_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parsemultiplicative_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parseadditive_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parsemultiplicative_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseadditive_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parsemultiplicative_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseshift_operator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c318) {
+      s1 = peg$c318;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c319); }
+    }
+    if (s1 === peg$FAILED) {
+      if (input.substr(peg$currPos, 2) === peg$c320) {
+        s1 = peg$c320;
+        peg$currPos += 2;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c321); }
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      peg$silentFails++;
+      if (input.charCodeAt(peg$currPos) === 61) {
+        s3 = peg$c29;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+      }
+      peg$silentFails--;
+      if (s3 === peg$FAILED) {
+        s2 = void 0;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c314(s1);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseshift_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parseadditive_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parseshift_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parseadditive_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseshift_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parseadditive_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parserelational_operator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 60) {
+      s1 = peg$c322;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c323); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      peg$silentFails++;
+      if (input.charCodeAt(peg$currPos) === 60) {
+        s3 = peg$c322;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c323); }
+      }
+      peg$silentFails--;
+      if (s3 === peg$FAILED) {
+        s2 = void 0;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 61) {
+          s3 = peg$c29;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        }
+        if (s3 === peg$FAILED) {
+          s3 = null;
+        }
+        if (s3 !== peg$FAILED) {
+          s1 = peg$c324(s3);
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      if (input.charCodeAt(peg$currPos) === 62) {
+        s1 = peg$c325;
+        peg$currPos++;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c326); }
+      }
+      if (s1 !== peg$FAILED) {
+        s2 = peg$currPos;
+        peg$silentFails++;
+        if (input.charCodeAt(peg$currPos) === 62) {
+          s3 = peg$c325;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c326); }
+        }
+        peg$silentFails--;
+        if (s3 === peg$FAILED) {
+          s2 = void 0;
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+        if (s2 !== peg$FAILED) {
+          if (input.charCodeAt(peg$currPos) === 61) {
+            s3 = peg$c29;
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c30); }
+          }
+          if (s3 === peg$FAILED) {
+            s3 = null;
+          }
+          if (s3 !== peg$FAILED) {
+            s1 = peg$c327(s3);
+            s0 = s1;
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
+
+    return s0;
+  }
+
+  function peg$parserelational_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parseshift_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parserelational_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parseshift_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parserelational_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parseshift_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseequality_operator() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c328) {
+      s1 = peg$c328;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c329); }
+    }
+    if (s1 === peg$FAILED) {
+      if (input.substr(peg$currPos, 2) === peg$c330) {
+        s1 = peg$c330;
+        peg$currPos += 2;
+      } else {
+        s1 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c331); }
+      }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c332(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parseequality_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parserelational_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parseequality_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parserelational_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parseequality_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parserelational_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsebitwise_and_operator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 38) {
+      s1 = peg$c333;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c334); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      peg$silentFails++;
+      if (input.charCodeAt(peg$currPos) === 61) {
+        s3 = peg$c29;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+      }
+      if (s3 === peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 38) {
+          s3 = peg$c333;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c334); }
+        }
+      }
+      peg$silentFails--;
+      if (s3 === peg$FAILED) {
+        s2 = void 0;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c335();
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsebitwise_and_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parseequality_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsebitwise_and_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parseequality_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsebitwise_and_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parseequality_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsebitwise_xor_operator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 94) {
+      s1 = peg$c336;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c337); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      peg$silentFails++;
+      if (input.charCodeAt(peg$currPos) === 61) {
+        s3 = peg$c29;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+      }
+      if (s3 === peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 94) {
+          s3 = peg$c336;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c337); }
+        }
+      }
+      peg$silentFails--;
+      if (s3 === peg$FAILED) {
+        s2 = void 0;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c338();
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsebitwise_xor_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parsebitwise_and_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsebitwise_xor_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parsebitwise_and_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsebitwise_xor_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parsebitwise_and_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsebitwise_or_operator() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    if (input.charCodeAt(peg$currPos) === 124) {
+      s1 = peg$c339;
+      peg$currPos++;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c340); }
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      peg$silentFails++;
+      if (input.charCodeAt(peg$currPos) === 61) {
+        s3 = peg$c29;
+        peg$currPos++;
+      } else {
+        s3 = peg$FAILED;
+        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+      }
+      if (s3 === peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 124) {
+          s3 = peg$c339;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c340); }
+        }
+      }
+      peg$silentFails--;
+      if (s3 === peg$FAILED) {
+        s2 = void 0;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c341();
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parsebitwise_or_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parsebitwise_xor_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parsebitwise_or_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parsebitwise_xor_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parsebitwise_or_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parsebitwise_xor_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parselogical_and_operator() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c342) {
+      s1 = peg$c342;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c343); }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c344();
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parselogical_and_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parsebitwise_or_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parselogical_and_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parsebitwise_or_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parselogical_and_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parsebitwise_or_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parselogical_xor_operator() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c345) {
+      s1 = peg$c345;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c346); }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c347();
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parselogical_xor_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parselogical_and_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parselogical_xor_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parselogical_and_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parselogical_xor_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parselogical_and_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parselogical_or_operator() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    if (input.substr(peg$currPos, 2) === peg$c348) {
+      s1 = peg$c348;
+      peg$currPos += 2;
+    } else {
+      s1 = peg$FAILED;
+      if (peg$silentFails === 0) { peg$fail(peg$c349); }
+    }
+    if (s1 !== peg$FAILED) {
+      s1 = peg$c350();
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parselogical_or_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parselogical_xor_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = [];
+      s3 = peg$currPos;
+      s4 = peg$parse_();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
+      if (s4 !== peg$FAILED) {
+        s5 = peg$parselogical_or_operator();
+        if (s5 !== peg$FAILED) {
+          s6 = peg$parse_();
+          if (s6 === peg$FAILED) {
+            s6 = null;
+          }
+          if (s6 !== peg$FAILED) {
+            s7 = peg$parselogical_xor_expression();
+            if (s7 !== peg$FAILED) {
+              s4 = [s4, s5, s6, s7];
+              s3 = s4;
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s3;
+        s3 = peg$FAILED;
+      }
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$currPos;
+        s4 = peg$parse_();
+        if (s4 === peg$FAILED) {
+          s4 = null;
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parselogical_or_operator();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parse_();
+            if (s6 === peg$FAILED) {
+              s6 = null;
+            }
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parselogical_xor_expression();
+              if (s7 !== peg$FAILED) {
+                s4 = [s4, s5, s6, s7];
+                s3 = s4;
+              } else {
+                peg$currPos = s3;
+                s3 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s3;
+              s3 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s3;
+            s3 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s3;
+          s3 = peg$FAILED;
+        }
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c315(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseconditional_expression() {
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
+
+    s0 = peg$currPos;
+    s1 = peg$parselogical_or_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      s3 = peg$parse_();
+      if (s3 === peg$FAILED) {
+        s3 = null;
+      }
+      if (s3 !== peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 63) {
+          s4 = peg$c351;
+          peg$currPos++;
+        } else {
+          s4 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c352); }
+        }
+        if (s4 !== peg$FAILED) {
+          s5 = peg$parse_();
+          if (s5 === peg$FAILED) {
+            s5 = null;
+          }
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parseassignment_expression();
+            if (s6 !== peg$FAILED) {
+              s7 = peg$parse_();
+              if (s7 === peg$FAILED) {
+                s7 = null;
+              }
+              if (s7 !== peg$FAILED) {
+                if (input.charCodeAt(peg$currPos) === 58) {
+                  s8 = peg$c353;
+                  peg$currPos++;
+                } else {
+                  s8 = peg$FAILED;
+                  if (peg$silentFails === 0) { peg$fail(peg$c354); }
+                }
+                if (s8 !== peg$FAILED) {
+                  s9 = peg$parse_();
+                  if (s9 === peg$FAILED) {
+                    s9 = null;
+                  }
+                  if (s9 !== peg$FAILED) {
+                    s10 = peg$parseassignment_expression();
+                    if (s10 !== peg$FAILED) {
+                      s3 = [s3, s4, s5, s6, s7, s8, s9, s10];
+                      s2 = s3;
+                    } else {
+                      peg$currPos = s2;
+                      s2 = peg$FAILED;
+                    }
+                  } else {
+                    peg$currPos = s2;
+                    s2 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s2;
+                  s2 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s2;
+                s2 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s2;
+              s2 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s2;
+            s2 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s2;
+          s2 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        s1 = peg$c355(s1, s2);
+        s0 = s1;
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseassignment_expression() {
+    var s0, s1, s2, s3, s4, s5;
+
+    s0 = peg$currPos;
+    s1 = peg$parseconditional_expression();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 === peg$FAILED) {
+        s2 = null;
+      }
+      if (s2 !== peg$FAILED) {
+        if (input.charCodeAt(peg$currPos) === 61) {
+          s3 = peg$c29;
+          peg$currPos++;
+        } else {
+          s3 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        }
+        if (s3 === peg$FAILED) {
+          if (input.substr(peg$currPos, 2) === peg$c356) {
+            s3 = peg$c356;
+            peg$currPos += 2;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$c357); }
+          }
+          if (s3 === peg$FAILED) {
+            if (input.substr(peg$currPos, 2) === peg$c358) {
+              s3 = peg$c358;
+              peg$currPos += 2;
+            } else {
+              s3 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c359); }
+            }
+            if (s3 === peg$FAILED) {
+              if (input.substr(peg$currPos, 2) === peg$c360) {
+                s3 = peg$c360;
+                peg$currPos += 2;
+              } else {
+                s3 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$c361); }
+              }
+              if (s3 === peg$FAILED) {
+                if (input.substr(peg$currPos, 2) === peg$c362) {
+                  s3 = peg$c362;
+                  peg$currPos += 2;
+                } else {
+                  s3 = peg$FAILED;
+                  if (peg$silentFails === 0) { peg$fail(peg$c363); }
+                }
+                if (s3 === peg$FAILED) {
+                  if (input.substr(peg$currPos, 2) === peg$c364) {
+                    s3 = peg$c364;
+                    peg$currPos += 2;
+                  } else {
+                    s3 = peg$FAILED;
+                    if (peg$silentFails === 0) { peg$fail(peg$c365); }
+                  }
+                  if (s3 === peg$FAILED) {
+                    if (input.substr(peg$currPos, 3) === peg$c366) {
+                      s3 = peg$c366;
+                      peg$currPos += 3;
+                    } else {
+                      s3 = peg$FAILED;
+                      if (peg$silentFails === 0) { peg$fail(peg$c367); }
+                    }
+                    if (s3 === peg$FAILED) {
+                      if (input.substr(peg$currPos, 3) === peg$c368) {
+                        s3 = peg$c368;
+                        peg$currPos += 3;
+                      } else {
+                        s3 = peg$FAILED;
+                        if (peg$silentFails === 0) { peg$fail(peg$c369); }
+                      }
+                      if (s3 === peg$FAILED) {
+                        if (input.substr(peg$currPos, 2) === peg$c370) {
+                          s3 = peg$c370;
+                          peg$currPos += 2;
+                        } else {
+                          s3 = peg$FAILED;
+                          if (peg$silentFails === 0) { peg$fail(peg$c371); }
+                        }
+                        if (s3 === peg$FAILED) {
+                          if (input.substr(peg$currPos, 2) === peg$c372) {
+                            s3 = peg$c372;
+                            peg$currPos += 2;
+                          } else {
+                            s3 = peg$FAILED;
+                            if (peg$silentFails === 0) { peg$fail(peg$c373); }
+                          }
+                          if (s3 === peg$FAILED) {
+                            if (input.substr(peg$currPos, 2) === peg$c374) {
+                              s3 = peg$c374;
+                              peg$currPos += 2;
+                            } else {
+                              s3 = peg$FAILED;
+                              if (peg$silentFails === 0) { peg$fail(peg$c375); }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parse_();
+          if (s4 === peg$FAILED) {
+            s4 = null;
+          }
+          if (s4 !== peg$FAILED) {
+            s5 = peg$parseassignment_expression();
+            if (s5 !== peg$FAILED) {
+              s1 = peg$c376(s1, s3, s5);
+              s0 = s1;
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$parseconditional_expression();
+    }
+
+    return s0;
+  }
+
+  function peg$parsecondition() {
+    var s0, s1, s2, s3, s4, s5, s6, s7;
+
+    s0 = peg$currPos;
+    s1 = peg$parselocally_specified_type();
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parse_();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseidentifier();
+        if (s3 !== peg$FAILED) {
+          s4 = peg$parse_();
+          if (s4 === peg$FAILED) {
+            s4 = null;
+          }
+          if (s4 !== peg$FAILED) {
+            if (input.charCodeAt(peg$currPos) === 61) {
+              s5 = peg$c29;
+              peg$currPos++;
+            } else {
+              s5 = peg$FAILED;
+              if (peg$silentFails === 0) { peg$fail(peg$c30); }
+            }
+            if (s5 !== peg$FAILED) {
+              s6 = peg$parse_();
+              if (s6 === peg$FAILED) {
+                s6 = null;
+              }
+              if (s6 !== peg$FAILED) {
+                s7 = peg$parseassignment_expression();
+                if (s7 !== peg$FAILED) {
+                  s1 = [s1, s2, s3, s4, s5, s6, s7];
+                  s0 = s1;
+                } else {
+                  peg$currPos = s0;
+                  s0 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s0;
+                s0 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s0;
+              s0 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+    if (s0 === peg$FAILED) {
+      s0 = peg$parseassignment_expression();
+    }
+
+    return s0;
+  }
+
+
+    // Map containing the names of structs defined in the shader mapped to "true".
+    var next_id = 0;
+
+    // The type of shader being parsed.  This sould be set before parsing begins.
+    // This allows us to reject invalid constructs such as attribute declaration
+    // in a fragment shader or discard ina vertex shader.
+    var shaderType = "vs";
+
+    /** @constructor */
+    function node(extraProperties) {
+      this._isNode = true;
+      this.id = next_id++;
+      for (var prop in extraProperties) {
+          if (extraProperties.hasOwnProperty(prop)) {
+            this[prop] = extraProperties[prop];
+          }
+      }
+    }
+
+    // Helper function to daisy chain together a series of binary operations.
+    function daisy_chain(head, tail) {
+      var result = head;
+      for (var i = 0; i < tail.length; i++) {
+        result = new node({
+          type: "binary",
+          operator: tail[i][1],
+          left: result,
+          right: tail[i][3]
+        });
+      }
+      return result;
+    }
+
+    // Generates AST Nodes for a preprocessor branch.
+    function preprocessor_branch(if_directive,
+                                 elif_directives,
+                                 else_directive) {
+      var elseList = elif_directives;
+      if (else_directive) {
+        elseList = elseList.concat([else_directive]);
+      }
+      var result = if_directive[0];
+      result.guarded_statements = if_directive[1].statements;
+      var current_branch = result;
+      for (var i = 0; i < elseList.length; i++) {
+        current_branch.elseBody = elseList[i][0];
+        current_branch.elseBody.guarded_statements =
+          elseList[i][1].statements;
+        current_branch = current_branch.elseBody;
+      }
+      return result;
+    }
+
+
+  peg$result = peg$startRuleFunction();
+
+  if (peg$result !== peg$FAILED && peg$currPos === input.length) {
+    return peg$result;
+  } else {
+    if (peg$result !== peg$FAILED && peg$currPos < input.length) {
+      peg$fail(peg$endExpectation());
+    }
+
+    throw peg$buildStructuredError(
+      peg$maxFailExpected,
+      peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
+      peg$maxFailPos < input.length
+        ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
+        : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)
+    );
+  }
+}
+
+var parser = {
+  SyntaxError: peg$SyntaxError,
+  parse:       peg$parse
 };
 
 /**
- * @class
+ * 
+ */
+const extend = function () {
+    for (var i = 1; i < arguments.length; i++)
+        for (var key in arguments[i])
+            if (arguments[i].hasOwnProperty(key))
+                arguments[0][key] = arguments[i][key];
+    return arguments[0];
+};
+
+var extend_1 = extend;
+
+/**
+ * @author yellow
  */
 
-var GLLimits = function () {
+
+const traverseDepthFirstSync = function (rootNode, options) {
+    options = extend_1({
+        subnodesAccessor: function (node) { return node.subnodes; },
+        userdataAccessor: function (node, userdata) { return userdata; },
+        onNode: function (node, userdata) { },
+        userdata: null
+    }, options);
+
+    var stack = [];
+    stack.push([rootNode, options.userdata]);
+    while (stack.length > 0) {
+        var top = stack.pop();
+        var node = top[0];
+        var data = top[1];
+        options.onNode(node, data);
+        var subnodeData = options.userdataAccessor(node, data);
+        var subnodes = options.subnodesAccessor(node);
+        for (var i = 0; i < subnodes.length; i++)
+            stack.push([subnodes[i], subnodeData]);
+    }
+    return rootNode;
+};
+
+var tree = traverseDepthFirstSync;
+
+/**
+ * @author yellow 
+ * @param {*} node 
+ */
+const subnodes = function (node) {
+    var subnodes = [];
+    for (var param in node) {
+        if (!node.hasOwnProperty(param) || node[param] === null)
+            continue;
+        if (param == 'parent')
+            continue;
+        if (node[param] instanceof Array) {
+            subnodes = subnodes.concat(node[param]);
+        }
+        else if (node[param]._isNode) {
+            subnodes.push(node[param]);
+        }
+    }
+    return subnodes;
+};
+
+var subnodes_1 = subnodes;
+
+/**
+ * @author yellow
+ */
+const pegjsParse = parser.parse;
+
+
+
+const build = function (node) {
+	tree(node, {
+		subnodesAccessor: function (node) {
+			var list = subnodes_1(node);
+			if (!list)
+				return [];
+			for (var i = 0; i < list.length; i++)
+				list[i].parent = node;
+			return list;
+		}
+	});
+	return node;
+};
+/**
+ * parse nodes
+ */
+const parse = function (str) {
+	const nodes = pegjsParse(str);
+	return build(nodes);
+};
+/**
+ * search node by depth
+ */
+const getUniformsAndAttributes = function (ast) {
+	const active = {};
+	const define = {};
+	const uniforms = [], attributes = [];
+	const _uniforms = [], _attributes = [];
+
+	const next = function (nodes, identify = 'none') {
+		//顺序遍历
+		nodes.forEach(node => {
+			//处理宏定义
+			if (node.type === 'preprocessor') {
+				//1.首先寻找define
+				if (node.directive === '#define') {
+					define[node.identifier] = node.token_string;
+				}
+				if ((node.directive === '#ifdef' && define[node.value]) || (node.directive === '#ifndef' && !define[node.value])) {
+					if (node.guarded_statements) {
+						next(node.guarded_statements, identify);
+					}
+				}
+				if (node.directive === '#if') {
+					for (const key in define) {
+						const reg = new RegExp(`\\b${key}\\b`, 'gi');
+						if (node.value.match(reg)) {
+							next(node.guarded_statements, identify);
+						}
+					}
+				}
+				if (node.elseBody) {
+					next([node.elseBody], identify);
+				}
+			}
+			else if (node.type === 'function_declaration') {
+				if (node.name === 'main') {
+					next(node.body.statements, 'main');
+				}
+			}
+			else if(node.type === 'postfix'){
+				if(identify === 'main'){
+					next([node.expression],identify);
+				}
+			}
+			else if (node.type === 'expression') {
+				next([node.expression], identify);
+			}
+			else if (node.type === 'binary') {
+				//左边是等式
+				if(node.left.type === 'identifier'){
+					active[node.left.name] = 1;
+				}else{
+					next([node.left], identify);
+				}
+				if (node.right.type === 'identifier') {
+					active[node.right.name] = 1;
+				} else {
+					next([node.right], identify);
+				}
+			}
+			else if (node.type === 'function_call') {
+				if(identify === 'main'){
+					node.parameters.forEach(parameter => {
+						next([parameter], identify);
+					});
+				}
+			}
+			else if (node.type === 'identifier') {
+				if (identify === 'main')
+					active[node.name] = 1;
+			}
+			else if (node.type === 'declarator') {
+				if (node.typeAttribute) {
+					next(node.declarators, node.typeAttribute.qualifier||identify);
+				} else {
+					next(node.declarators, identify);
+				}
+			}
+			else if (node.type === 'declarator_item') {
+				if (identify === 'uniform') {
+					_uniforms.push({
+						name: node.name.name,
+						type: node.parent.typeAttribute.name
+					});
+				} else if (identify === 'attribute') {
+					_attributes.push({
+						name: node.name.name,
+						type: node.parent.typeAttribute.name
+					});
+				} else if (identify === 'varying') {
+					
+				} else if(identify === 'main') {
+					if(node.initializer)
+						next([node.initializer],identify);
+					else if(node.arraySize)
+						next([node.arraySize],identify);
+				}
+			}
+		});
+	};
+	next(ast.statements);
+	//过滤non-actived的变量或者对象
+	_uniforms.forEach(uniform => {
+		if (active[uniform.name])
+			uniforms.push(uniform);
+	});
+	_attributes.forEach(attribute => {
+		if (active[attribute.name])
+			attributes.push(attribute);
+	});
+	return [uniforms, attributes];
+};
+
+var init$4 = {
+	parse: parse,
+	getUniformsAndAttributes: getUniformsAndAttributes
+};
+
+/**
+ * birgde to attach shader
+ * reference:
+ * https://github.com/KhronosGroup/glslang/blob/04f4566f285beb1e3619eb40baa7629eb5eb3946/glslang/MachineIndependent/Initialize.cpp
+ * https://www.cnblogs.com/bitzhuwei/p/LALR1-library-and-a-GLSL-parser-in-csharp.html
+ * https://github.com/aras-p/glsl-optimizer
+ * 
+ * @author yellow
+ */
+
+/**
+ * complier
+ */
+
+/**
+ * the prefix of Shader type
+ */
+const prefix$2 = 'SHADER';
+/**
+ * convert DOMString to value
+ */
+const GLSL_TYPE_ENUM={
+    'float':0x1406,
+    'vec2':0x8b50,
+    'vec3':0x8b51,
+    'vec4':0x8b52,
+    'mat2':0x8b5a,
+    'mat3':0x8b5b,
+    'mat4':0x8b5c,
+    'sampler2D':0x8b5e,
+    'sampler_external_oes':0x8d66,
+    'sampler_cube':'0x8b60',
+    'int':0x1404,
+    'bool':0x8b56,
+};
+/**
+ * @class
+ */
+class GLShader extends Dispose_1 {
     /**
      * 
-     * @param {WebGLRenderingContext} gl 
+     * @param {GLenum} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+     * @param {GLContext} glContext 
      */
-    function GLLimits(gl) {
-        classCallCheck(this, GLLimits);
-
-        this._gl = gl;
-        this._limits = merge_1({}, Limits);
-        this._includeParamter(this._gl);
-        this._map();
+    constructor(type, glContext) {
+        super(prefix$2);
+        /**
+         * @type {GLenum}
+         */
+        this._type = type;
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
+        /**
+         * @type {String} shaderSource 
+         */
+        this._source = null;
+        /**
+         * @type {boolean}
+         */
+        this._isDelete = false;
+        /**
+         * @type {boolean}
+         */
+        this._isComplied = false;
+    }
+    /**
+     * @returns {GLenum}
+     */
+    get type() {
+        return this._type;
+    }
+    /**
+     * @type {String}
+     */
+    set source(v) {
+        this._source = v;
+    }
+    /**
+     * @returns {String}
+     */
+    get source() {
+        return this._source;
+    }
+    /**
+     * bridge to shader
+     * @param {GLenum} pname 
+     */
+    getParameters(pname) {
+        if (pname === GLConstants_1.DELETE_STATUS)
+            return this._isDelete;
+        else if (pname === GLConstants_1.COMPILE_STATUS)
+            return this._isComplied;
+        else if (pname === GLConstants_1.SHADER_TYPE)
+            return this._type;
+    }
+    /**
+     * reference:
+     * https://github.com/WebKit/webkit/blob/4c0ce4f62b30a6d39140ac9841c416dee3bd07e0/Source/ThirdParty/ANGLE/util/shader_utils.cpp
+     * https://github.com/SDL-mirror/SDL/blob/865821287c68ff8039544a35e86eb56289bd162d/src/render/opengl/SDL_shaders_gl.c
+     * 
+     * }{yellow 寻找power vr sdk下 opengl es的实现
+     * use regex pattern to analy active attri/uniforms
+     */
+    complie() {
+        const source = this._source;
+        const [uniforms,attributes] = this._parseShaderStrings(source);
+        this._uniforms = uniforms;
+        this._attributes = attributes;
+    }
+    /**
+     * @returns {Array}
+     */
+    get uniforms() {
+        return this._uniforms;
+    }
+    /**
+     * @returns {Array}
+     */
+    get attributes() {
+        return this._attributes;
+    }
+    /**
+     * reference:
+     * https://github.com/KhronosGroup/glslang/blob/eb2c0c72bf4c2f7a972883003b5f5fca3f8c94bd/glslang/MachineIndependent/ParseHelper.cpp#L186
+     */
+    _parseShaderStrings(str) {
+        const ast = init$4.parse(str);
+        const [uniforms,attributes] = init$4.getUniformsAndAttributes(ast);
+        return [this._convert(uniforms),this._convert(attributes)];
+    }
+    /**
+     * @param {Array} nodes
+     * @param {Array} attributeNodes
+     */
+    _convert(nodes){
+        const collection = [];
+        //deal with no struct type only 
+        nodes.forEach(element => {
+            collection.push({
+                name:element.name,
+                type:GLSL_TYPE_ENUM[element.type]
+            });
+        });
+        return collection;
     }
 
-    createClass(GLLimits, [{
-        key: '_includeParamter',
-        value: function _includeParamter(gl) {
-            this._limits.hardwareConcurrency = isNode_1 ? 2 : window.navigator.hardwareConcurrency || 2;
-            this._limits.maximumCombinedTextureImageUnits = gl.getParameter(GLConstants_1.MAX_COMBINED_TEXTURE_IMAGE_UNITS); // min: 8
-            this._limits.maximumCubeMapSize = gl.getParameter(GLConstants_1.MAX_CUBE_MAP_TEXTURE_SIZE); // min: 16
-            this._limits.maximumFragmentUniformVectors = gl.getParameter(GLConstants_1.MAX_FRAGMENT_UNIFORM_VECTORS); // min: 16
-            this._limits.maximumTextureImageUnits = gl.getParameter(GLConstants_1.MAX_TEXTURE_IMAGE_UNITS); // min: 8
-            this._limits.maximumRenderbufferSize = gl.getParameter(GLConstants_1.MAX_RENDERBUFFER_SIZE); // min: 1
-            this._limits.maximumTextureSize = gl.getParameter(GLConstants_1.MAX_TEXTURE_SIZE); // min: 64
-            this._limits.maximumVaryingVectors = gl.getParameter(GLConstants_1.MAX_VARYING_VECTORS); // min: 8
-            this._limits.maximumVertexAttributes = gl.getParameter(GLConstants_1.MAX_VERTEX_ATTRIBS); // min: 8
-            this._limits.maximumVertexTextureImageUnits = gl.getParameter(GLConstants_1.MAX_VERTEX_TEXTURE_IMAGE_UNITS); // min: 0
-            this._limits.maximumVertexUniformVectors = gl.getParameter(GLConstants_1.MAX_VERTEX_UNIFORM_VECTORS); // min: 128
-            this._limits.highpFloatSupported = gl.getShaderPrecisionFormat(GLConstants_1.FRAGMENT_SHADER, GLConstants_1.HIGH_FLOAT) !== 0;
-            this._limits.highpIntSupported = gl.getShaderPrecisionFormat(GLConstants_1.FRAGMENT_SHADER, GLConstants_1.HIGH_INT) !== 0;
-            this._limits.minimumAliasedLineWidth = gl.getParameter(GLConstants_1.ALIASED_LINE_WIDTH_RANGE)[0]; //must include 1
-            this._limits.maximumAliasedLineWidth = gl.getParameter(GLConstants_1.ALIASED_LINE_WIDTH_RANGE)[1];
-            this._limits.minimumAliasedPointSize = gl.getParameter(GLConstants_1.ALIASED_POINT_SIZE_RANGE)[0];
-            this._limits.maximumAliasedPointSize = gl.getParameter(GLConstants_1.ALIASED_POINT_SIZE_RANGE)[1]; //must include 1
-            this._limits.maximumViewportWidth = gl.getParameter(GLConstants_1.MAX_VIEWPORT_DIMS)[0];
-            this._limits.maximumViewportHeight = gl.getParameter(GLConstants_1.MAX_VIEWPORT_DIMS)[1];
-        }
-    }, {
-        key: '_map',
+}
 
-        /**
-         * map the limits to GLLimits instance
-         */
-        value: function _map() {
-            for (var key in this._limits) {
-                if (this._limits.hasOwnProperty(key)) {
-                    var target = this._limits[key];
-                    if (!this[key] && !!target) this[key] = target;
-                }
-            }
-        }
-    }]);
-    return GLLimits;
-}();
+var GLShader_1 = GLShader;
 
-var GLLimits_1 = GLLimits;
-
-/**
- * 
- * 提供 buffer,vertexbuffer,indexbuffer 三种类型
- * -vertexbuffer对应draw
- * -indexbuffer对应element draw
- */
-
-var EMPTY_BUFFER = new ArrayBuffer(0);
+const prefix$3 = 'BUFFER';
 
 /**
  * @class
  */
-
-var GLBuffer = function (_Dispose) {
-  inherits(GLBuffer, _Dispose);
-
-  /**
-   * 
-   * @param {WebGLRenderingContext} gl 
-   * @param {gl.ArrayBuffer|gl.ELEMENT_ARRAY_BUFFER} type 
-   * @param {ArrayBuffer|SharedArrayBuffer|ArrayBufferView} data an array of data
-   * @param {gl.STATIC_DRAW|gl.DYNAMIC_DRAW|gl.STREAM_DRAW} drawType 
-   */
-  function GLBuffer(gl, type, data, drawType) {
-    classCallCheck(this, GLBuffer);
-
-    var _this = possibleConstructorReturn(this, (GLBuffer.__proto__ || Object.getPrototypeOf(GLBuffer)).call(this));
-
-    _this._gl = gl;
-    _this._type = type || GLConstants_1.ARRAY_BUFFER;
-    _this._data = data || EMPTY_BUFFER;
-    _this._drawType = drawType || GLConstants_1.STATIC_DRAW;
-    _this._handle = _this._createHandle();
-    return _this;
-  }
-  /**
-   * 创建句柄/对象
-   */
-
-
-  createClass(GLBuffer, [{
-    key: '_createHandle',
-    value: function _createHandle() {
-      var gl = this._gl;
-      return gl.createBuffer();
-    }
+class GLBuffer extends Dispose_1{
     /**
-     * 资源销毁
+     * 
+     * @param {GLContext} glContext 
      */
-
-  }, {
-    key: 'dispose',
-    value: function dispose() {
-      var gl = this._gl;
-      gl.deleteBuffer(this.handle);
+    constructor(glContext){
+        super(prefix$3);
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
     }
-    /**
-     * bind buffer
-     */
 
-  }, {
-    key: 'bind',
-    value: function bind() {
-      var gl = this._gl;
-      gl.bindBuffer(this._type, this._handle);
-    }
-    /**
-     * 获取buffer的长度
-     */
-
-  }, {
-    key: 'len',
-    get: function get$$1() {
-      return this._data.length;
-    }
-    /**
-     * 获取buffer data 的type,例如 gl.Float
-     */
-
-  }, {
-    key: 'type',
-    get: function get$$1() {
-      return this._type;
-    }
-    /**
-     * 绘制类型
-     */
-
-  }, {
-    key: 'drawType',
-    get: function get$$1() {
-      return this._drawType;
-    }
-    /**
-     * 获取buffer的Float32aArray类型数据
-     * @readonly
-     * @memberof GLBuffer
-     * @return {Float32Array} 
-     */
-
-  }, {
-    key: 'float32',
-    get: function get$$1() {
-      var array = this._data;
-      return new Float32Array(array);
-    }
-  }]);
-  return GLBuffer;
-}(Dispose_1);
-
+}
 
 
 var GLBuffer_1 = GLBuffer;
 
-/**
- * 
- */
+const prefix$4 = 'FRAMEBUFFER';
 
 /**
  * @class
  */
-
-var GLVertexbuffer = function (_GLBuffer) {
-  inherits(GLVertexbuffer, _GLBuffer);
-
-  /**
-   * 
-   * @param {WebGLRenderingContext} gl 
-   * @param {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} data 
-   * @param {gl.STATIC_DRAW|gl.DYNAMIC_DRAW|gl.STREAM_DRAW} drawType 
-   */
-  function GLVertexbuffer(gl, data, drawType) {
-    classCallCheck(this, GLVertexbuffer);
-    return possibleConstructorReturn(this, (GLVertexbuffer.__proto__ || Object.getPrototypeOf(GLVertexbuffer)).call(this, gl, GLConstants_1.ARRAY_BUFFER, data, drawType));
-  }
-
-  return GLVertexbuffer;
-}(GLBuffer_1);
-
-var GLVertexbuffer_1 = GLVertexbuffer;
-
-/**
- *
- */
-
-/**
- * @class
- */
-
-var GLIndexbuffer = function (_GLBuffer) {
-  inherits(GLIndexbuffer, _GLBuffer);
-
-  /**
-   * 
-   * @param {WebGLRenderingContext} gl 
-   * @param {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} data 
-   * @param {gl.STATIC_DRAW|gl.DYNAMIC_DRAW|gl.STREAM_DRAW} drawType 
-   */
-  function GLIndexbuffer(gl, data, drawType) {
-    classCallCheck(this, GLIndexbuffer);
-    return possibleConstructorReturn(this, (GLIndexbuffer.__proto__ || Object.getPrototypeOf(GLIndexbuffer)).call(this, gl, GLConstants_1.ELEMENT_ARRAY_BUFFER, data, drawType));
-  }
-
-  return GLIndexbuffer;
-}(GLBuffer_1);
-
-var GLIndexbuffer_1 = GLIndexbuffer;
-
-/**
- * 使用 ext 扩展的VertexArrayObject
- * reference https://developer.mozilla.org/zh-CN/docs/Web/API/OES_vertex_array_object
- * 
- * @class GLVertexArrayObject
- */
-
-/**
- * @class
- */
-
-var GLVertexArrayObject = function (_Dispose) {
-    inherits(GLVertexArrayObject, _Dispose);
-
+class GLFramebuffer extends Dispose_1{
     /**
-     * @param {WebGLRenderingContext} gl 
-     * @param {GLExtension} extension 
-     * @param {GLLimits} limits
+     * 
+     * @param {GLContext} glContext 
      */
-    function GLVertexArrayObject(gl, extension, limits) {
-        classCallCheck(this, GLVertexArrayObject);
+    constructor(glContext){
+        super(prefix$4);
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
+    }
 
+}
+
+
+var GLFramebuffer_1 = GLFramebuffer;
+
+const prefix$5 = 'RENDERBUFFER';
+
+/**
+ * @class
+ */
+class GLRenderbuffer extends Dispose_1{
+    /**
+     * 
+     * @param {GLContext} glContext 
+     */
+    constructor(glContext){
+        super(prefix$5);
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
+    }
+
+}
+
+
+var GLRenderbuffer_1 = GLRenderbuffer;
+
+/**
+ * birgde to attach texture
+ */
+
+/**
+ * the prefix of Texture type
+ */
+const prefix$6 = 'TEXTURE';
+
+class GLTexture extends Dispose_1{
+    /**
+     * @param {GLContext} glContext 
+     */
+    constructor(glContext){
+        super(prefix$6);
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = glContext;
+    }
+}
+
+var GLTexture_1 = GLTexture;
+
+/**
+ * @author yellow
+ */
+
+/**
+ * prefix of Cache
+ */
+const prefixProgram = 'PROGRAM';
+const prefixUniform = 'UNIFOMR';
+/**
+ * @class
+ */
+class GLProgram extends Dispose_1 {
+    /**
+     * 
+     * @param {GLContext} glContext 
+     */
+    constructor(glContext) {
+        super(prefixProgram);
+        /**
+         * 索引glContext对象
+         */
+        this._glContext = glContext;
+        /**
+         * 映射attribute 和返回值
+         */
+        this._attributeCache = {};
+        /**
+         * 映射uniforms
+         */
+        this._uniformCache = {};
+        /**
+         * @type {GLShader}
+         */
+        this._vs=null;
+        /**
+         * @type {GLShader}
+         */
+        this._fs=null;
+    }
+    /**
+     * @returns {Number}
+     */
+    get attachNum(){
+        let num = 0;
+        if(this._vs)
+            num++;
+        if(this._fs)
+            num++;
+        return num;
+    }
+    /**
+     * @returns {Array}
+     */
+    get uniforms(){
+        return this._uniforms;
+    }
+    /**
+     * @returns {Array}
+     */
+    get attributes(){
+        return this._attributes;
+    }
+    /**
+     * attach shader
+     * @param {GLShader} shader 
+     */
+    attachShader(shader){
+        if(shader.type === GLConstants_1.FRAGMENT_SHADER)
+            this._fs = shader;
+        else if(shader.type === GLConstants_1.VERTEX_SHADER)
+            this._vs = shader;
+    }
+    /**
+     * initial shader and analysis uniform/attribute
+     */
+    link(){
+        //complier vShader and fShader
+        this._vs.complie();
+        this._fs.complie();
+        //store uniforms and attributes
+        this._uniforms = [].concat(this._vs.uniforms).concat(this._fs.uniforms);
+        this._attributes = [].concat(this._vs.attributes).concat(this._fs.attributes);
+        //reverse value and key
+        this._updateKeyValue();
+    }
+    /**
+     * 
+     */
+    _updateKeyValue(){
+        const uniforms = this._uniforms,
+            attributes = this._attributes,
+            uniformCache = this._uniformCache,
+            attributeCache = this._attributeCache;
+        //attribute location index
+        let index = 0;
+        //unifrom map
+        uniforms.forEach(uniform => {
+            const uniformLocation = {};
+            stamp_1(uniformLocation,prefixUniform);
+            uniformCache[uniform.name] = uniformLocation;
+        });
+        //attribute map
+        attributes.forEach(attribute => {
+            attributeCache[attribute.name] = index++;
+        });
+    }
+    /**
+     * no longer need to replace,return location directly
+     * @param {GLenum} pname 
+     */
+    getAttribLocation(pname) {
+        return this._attributeCache[pname];
+    }
+    /**
+     * 
+     * @param {DOMString} pname 
+     */
+    getUnifromLocation(pname){
+        const uniformLocation = {};
+        stamp_1(uniformLocation,prefixUniform);
+        this._uniformCache[pname] = this._uniformCache[pname]|| uniformLocation;
+        return this._uniformCache[pname];
+    }
+    
+}
+
+var GLProgram_1 = GLProgram;
+
+/**
+ * 执行器，用于执行Record操作，全局自带一个Actuator
+ * @author yellow date 2018/1/3
+ */
+
+/**
+ * Cahce store
+ */
+const CHACHE = {
+    /**
+     * store program
+     */
+    PROGRAM: {},
+    /**
+    * store shader
+    */
+    SHADER: {},
+    /**
+    * store texture
+    */
+    TEXTURE: {},
+    /**
+     * store BUFFER
+     */
+    BUFFER: {},
+    /**
+     * store FRAMEBUFFER
+     */
+    FRAMEBUFFER:{},
+    /**
+     * store RENDERBUFFER
+     */
+    RENDERBUFFER:{},
+    /**
+     * store uinform
+     */
+    UNIFOMR: {},
+};
+/**
+ * @class
+ */
+class Actuator {
+
+    constructor() {
+        /**
+         * @type {Array}
+         */
+        this._records = [];
         /**
          * @type {WebGLRenderingContext}
          */
-        var _this = possibleConstructorReturn(this, (GLVertexArrayObject.__proto__ || Object.getPrototypeOf(GLVertexArrayObject)).call(this));
-
-        _this._gl = gl;
-        /**
-         * 存储 indexbuffer ，用于重新排列 vertexbuffer顶点
-         */
-        _this._indexBuffer = null;
-        /**
-         * 存储 vertexbuffer和其相关属性
-         */
-        _this._attributes = [];
-
-        /**
-         * @type {GLExtension}
-         */
-        _this._ext = extension ? extension['vertexArrayObject'] : null;
-        /**
-         * @type {vertexArrayObject}
-         */
-        _this._handle = _this._createHandle();
-        return _this;
+        this._gl = null;
     }
     /**
-     * 创建vao对象
-     * @description polyfill
-     * @return va
-     */
-
-
-    createClass(GLVertexArrayObject, [{
-        key: '_createHandle',
-        value: function _createHandle() {
-            var gl = this._gl,
-                ext = this._ext;
-            if (!!ext) return ext.createVertexArrayOES();
-            if (!!gl.createVertexArray) return gl.createVertexArray();
-            return null;
-        }
-        /**
-         * 销毁vao对象
-         */
-
-    }, {
-        key: 'dispose',
-        value: function dispose() {}
-        /**
-         * 绑定上下文
-         */
-
-    }, {
-        key: 'bind',
-        value: function bind() {
-            var ext = this._ext,
-                gl = this._gl;
-            if (!!ext) ext.bindVertexArrayOES(this._handle);else gl.bindVertexArray(this._handle);
-        }
-        /**
-         * 解除上下文绑定
-         */
-
-    }, {
-        key: 'unbind',
-        value: function unbind() {
-            var ext = this._ext,
-                gl = this._gl;
-            if (!!ext) ext.bindVertexArrayOES(null);else gl.bindVertexArray(null);
-        }
-        /**
-         * 启动vertexbuffer和indexbuffer
-         */
-
-    }, {
-        key: '_active',
-        value: function _active() {
-            this._activeVertexBuffer();
-            this._activeIndexBuffer();
-        }
-        /**
-         * 启用indexbuffer
-         */
-
-    }, {
-        key: '_activeIndexBuffer',
-        value: function _activeIndexBuffer() {
-            this._indexBuffer.bind();
-        }
-        /**
-         * bufferData到指定vao
-         */
-
-    }, {
-        key: '_activeVertexBuffer',
-        value: function _activeVertexBuffer() {
-            var gl = this._gl;
-            //设置 vertexbuffer 
-            for (var i = 0, len = this._attributes.length; i < len; i++) {
-                var att = this._attributes[i];
-                //1.bind buffer
-                att.buffer.bind();
-                //2.setting vertexAttrib
-                gl.vertexAttribPointer(att.location, att.size, att.type, att.normalized, att.stride, att.offset);
-            }
-        }
-        /**
-         * 
-         * @param {GLVertexBuffer} buffer ,buffer数据存储器
-         * @param {number} location ,需要修改的订单属性的索引值，例如 gPositionLocation
-         * @param {number} size, 指定数据的纬度，如 [x,y] 则size=2 ,[x,y,z,w] 则size=4
-         * @param {boolean} normalized 
-         * @param {number} stride 指定连续顶点属性之间的偏移量。如果为0，那么顶点属性会被理解为：它们是紧密排列在一起的。初始值为0。
-         * @param {number} offset 指定第一个组件在数组的第一个顶点属性中的偏移量。该数组与GL_ARRAY_BUFFER绑定，储存于缓冲区中。初始值为0；
-         */
-
-    }, {
-        key: 'addAttribute',
-        value: function addAttribute(buffer, location, size, normalized, stride, offset) {
-            this._attributes.push({
-                glBuffer: buffer,
-                location: location,
-                size: size,
-                type: buffer.type || GLConstants_1.FLOAT,
-                normalized: normalized || false,
-                stride: stride || 0,
-                offset: offset || 0
-            });
-        }
-        /**
-         * reference
-         * http://www.cnblogs.com/excalibur/articles/1573892.html
-         * 使用indexbuffer优势：
-         * - 不改动vertexbuffer的情况下，排列绘制顶点顺序
-         * - 复用转换后的顶点
-         * 但是vertex cache数量有限，尽力将indexbuffer的数据放在相互靠近的地方。
-         * @param {GLIndexBuffer} buffer 
-         */
-
-    }, {
-        key: 'addIndex',
-        value: function addIndex(buffer) {
-            this._indexBuffer = buffer;
-        }
-        /**
-         * 清空vao对象
-         */
-
-    }, {
-        key: 'clear',
-        value: function clear() {
-            this.unbind();
-            this.bind();
-            this._attributes = [];
-            this._indexBuffer = null;
-        }
-        /**
-         * 
-         * @param {*} type 
-         * @param {*} size 
-         * @param {number} offset 
-         */
-
-    }, {
-        key: 'draw',
-        value: function draw(type, size, offset) {
-            var gl = this._gl;
-            if (!!this._indexBuffer) {
-                gl.drawElements(type, size || this._indexBuffer.length, this._indexBuffer.type, (offset || 0) << 1);
-            } else {
-                gl.drawArrays(type, offset, size || this.size);
-            }
-        }
-        /**
-         * 获取vao规格
-         */
-
-    }, {
-        key: 'size',
-        get: function get$$1() {
-            var attrib = this._attributes[0];
-            return attrib.buffer.length / (attrib.stride / 4 || attrib.size);
-        }
-    }]);
-    return GLVertexArrayObject;
-}(Dispose_1);
-
-var GLVertexArrayObject_1 = GLVertexArrayObject;
-
-var GLProgram_1 = createCommonjsModule(function (module) {
-    /**
-     * reference:
-     * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLProgram
-     * https://github.com/pixijs/pixi-gl-core/blob/master/src/GLShader.js
-     * https://github.com/pixijs/pixi-gl-core/blob/master/src/shader/extractAttributes.js
-     * https://github.com/pixijs/pixi-gl-core/blob/master/src/shader/extractUniforms.js
      * 
-     * 合并shader，并缓存进gl，便于之后使用
-     * 不提倡luma.gl的写法，即对gl对象添加属性，形如 gl.luma = {}
-     * 所以在此类提供两个方法，为不同的实例化
-     *
-     * -解决 uniform 和 attribute 通过属性即可设置的问题
-     * -unifrom 涉及数据类型转换，所以规定属性使用 GLUniform
-     * -attribuet 涉及数据转换，规定attribute使用 GLBuffer
-     * 
-     * @author yellow date 2017/6/12
+     * @param {WebGLRenderingContext} gl 
      */
-    var stamp = stamp_1.stamp,
-        setId = stamp_1.setId;
+    setGl(v) {
+        this._gl = v;
+        this.play();
+    }
     /**
-     * 统一使用array方式调用， ..args
+     * 执行
+     * @param {Array} records 
      */
-    var GLSL_UNIFORM = {
-        'float': 'uniform1fv', //(location, value)
-        'vec2': 'uniform2fv', //(location, value)
-        'vec3': 'uniform3fv', //(location, value)
-        'vec4': 'uniform4fv', //(location, value)
-        'int': 'uniform1iv', //(location, value)
-        'ivec2': 'uniform2iv', //(location, value)
-        'ivec3': 'uniform3iv', //(location, value)
-        'ivec4': 'uniform4iv', //(location, value)
-        'bool': 'uniform1iv', //(location, value)
-        'bvec2': 'uniform2iv', //(location, value)
-        'bvec3': 'uniform3iv', //(location, value)
-        'bvec4': 'uniform4iv', //
-        'sampler2D': 'uniform1iv' //(location, value)
-    };
-    /**
-     * 
-     */
-    var GL_GLSL = {
-        'FLOAT': 'float',
-        'FLOAT_VEC2': 'vec2',
-        'FLOAT_VEC3': 'vec3',
-        'FLOAT_VEC4': 'vec4',
-        'INT': 'int',
-        'INT_VEC2': 'ivec2',
-        'INT_VEC3': 'ivec3',
-        'INT_VEC4': 'ivec4',
-        'BOOL': 'bool',
-        'BOOL_VEC2': 'bvec2',
-        'BOOL_VEC3': 'bvec3',
-        'BOOL_VEC4': 'bvec4',
-        'FLOAT_MAT2': 'mat2',
-        'FLOAT_MAT3': 'mat3',
-        'FLOAT_MAT4': 'mat4',
-        'SAMPLER_2D': 'sampler2D'
-    };
-    /**
-     * 
-     */
-    var GLSL_SIZE = {
-        'float': 1,
-        'vec2': 2,
-        'vec3': 3,
-        'vec4': 4,
-        'int': 1,
-        'ivec2': 2,
-        'ivec3': 3,
-        'ivec4': 4,
-        'bool': 1,
-        'bvec2': 2,
-        'bvec3': 3,
-        'bvec4': 4,
-        'mat2': 4,
-        'mat3': 9,
-        'mat4': 16,
-        'sampler2D': 1
-    };
-    /**
-     * 构建gl类型（number）和 glsl类型映射表
-     */
-    var NATIVE_GL_TABLE = function (keys) {
-        var _gl_table = {};
-        for (var i = 0, len = keys.length; i < len; i++) {
-            var key = keys[i];
-            _gl_table[GLConstants_1[key]] = GL_GLSL[key];
-        }
-        return _gl_table;
-    }(Object.keys(GL_GLSL));
-    /**
-     * 获取glsl对象类型的size
-     * @param {String} glslType 
-     * @return {number}
-     */
-    var getGLSLTypeSize = function getGLSLTypeSize(glslType) {
-        return GLSL_SIZE[glslType];
-    };
-    /**
-     * 获取gltype对应glsl的type
-     * @param {number} glType 
-     */
-    var getGLSLType = function getGLSLType(glType) {
-        return NATIVE_GL_TABLE[glType];
-    };
-    /**
-     * glsl类型转换成获取uniform设置属性的方法
-     * @param {String} glslType 
-     */
-    var getUniformFunc = function getUniformFunc(glslType) {
-        return GLSL_UNIFORM[glslType];
-    };
-    /**
-     * @class
-     */
-
-    var GLProgram = function (_Dispose) {
-        inherits(GLProgram, _Dispose);
-
-        /**
-         * 创建program
-         * @param {WebGLRenderingContext} gl 
-         * @param {object} [options]
-         * @param {GLExtension} [options.extension] 
-         * @param {GLLimits} [options.limits]
-         * @param {GLFragmentShader} [options.fs] 
-         * @param {GLVertexShader} [options.vs]
-         */
-        function GLProgram(gl) {
-            var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-            classCallCheck(this, GLProgram);
-
-            /**
-             * destruction options
-             */
-            var _this = possibleConstructorReturn(this, (GLProgram.__proto__ || Object.getPrototypeOf(GLProgram)).call(this));
-
-            var extension = options.extension,
-                limits = options.limits,
-                vs = options.vs,
-                fs = options.fs;
-            /**
-             * @type {WebGLRenderingContext}
-             */
-
-            _this._gl = gl;
-            /**
-             *  program active attribute
-             */
-            _this._attributes = {};
-            /**
-             * program active 
-             */
-            _this._uniforms = {};
-            /**
-             * @type {GLExtension}
-             */
-            _this._extension = extension;
-            /**
-             * @type {GLLimits}
-             */
-            _this._limits = limits;
-            /**
-             * 混合存储 oes_vertex_array_object
-             * @type {GLVertexArrayObject}
-             * @memberof GLProgram
-             */
-            _this._vao = new GLVertexArrayObject_1(gl, extension, limits);
-            /**
-             * @type {WebGLProgram}
-             */
-            _this._handle = _this._createHandle();
-            /**
-             * vertex_shader
-             * @type {GLVertexShader}
-             */
-            _this._vs = vs || null;
-            /**
-             * fragment_shader
-             * @type {GLFragmentShader}
-             */
-            _this._fs = fs || null;
-            return _this;
-        }
-        /**
-         * 获取attribues
-         * @readonly
-         * @memberof GLProgram
-         */
-
-
-        createClass(GLProgram, [{
-            key: 'attachShader',
-
-            /**
-             * attach shader
-             * @param {GLVertexShader|GLFragmentShader} glShader 
-             */
-            value: function attachShader(glShader) {
-                if (glShader instanceof GLVertexShader_1) {
-                    this._vs = glShader;
-                    this._gl.attachShader(this._handle, this._vs.handle);
-                } else if (glShader instanceof GLFragmentShader_1) {
-                    this._fs = glShader;
-                    this._gl.attachShader(this._handle, this._fs.handle);
+    play(records = []) {
+        this._records = this._records.concat(records);
+        const gl = this._gl;
+        if (gl) {
+            let record = this._records.shift();
+            while (record) {
+                const opName = record.opName,
+                    encrypt = Encrypt[opName] || {};
+                //replace the reference object
+                if (encrypt.replace > 0) {
+                    const refObjects = {};
+                    for (const key in record.ptMapIndex) {
+                        const target = record.ptMapIndex[key],
+                            ptIndex = target.index,
+                            ptName = target.id,
+                            cacheName = target.prefix,
+                            refObject = CHACHE[cacheName][ptName];
+                        refObjects[ptIndex] = refObject;
+                    }
+                    record.replace(refObjects);
                 }
-            }
-            /**
-             * extract attributes
-             * 展开attributes
-             */
-
-        }, {
-            key: '_extractAttributes',
-            value: function _extractAttributes() {
-                var _this2 = this;
-
-                var isWebGL2 = !!this._vao.handle,
-                    gl = this._gl,
-                    vao = this._vao,
-                    attribLen = gl.getProgramParameter(this._handle, GLConstants_1.ACTIVE_ATTRIBUTES);
-                var attributes = {};
-                //get attributes and store mapdata
-
-                var _loop = function _loop(i) {
-                    var attrib = gl.getActiveAttrib(_this2._handle, i),
-                        type = getGLSLType(attrib.type),
-                        name = attrib.name,
-                        size = getGLSLTypeSize(type),
-                        location = gl.getAttribLocation(_this2._handle, name);
-                    Object.defineProperty(attributes, name, {
-                        get: function get$$1() {
-                            return location;
-                        },
-                        set: function (gl2, loc, typ, ne, se) {
-                            return gl2 ? function (value) {
-                                var glBuffer = value;
-                                gl.enableVertexAttribArray(location);
-                                gl.bindBuffer(glBuffer.type, glBuffer.handle);
-                                gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
-                                vao.addAttribute(glBuffer, loc, se);
-                            } : function (value) {
-                                var glBuffer = value;
-                                gl.enableVertexAttribArray(location);
-                                gl.bindBuffer(glBuffer.type, glBuffer.handle);
-                                gl.bufferData(glBuffer.type, glBuffer.float32, glBuffer.drawType);
-                                gl.vertexAttribPointer(loc, se, glBuffer.type, false, 0, 0);
-                            };
-                        }(isWebGL2, location, type, name, size)
-                    });
-                };
-
-                for (var i = 0; i < attribLen; i++) {
-                    _loop(i);
+                //if need to return and cache,
+                if (encrypt.return) {
+                    // case of uniform returned is not string
+                    const returnId = isString_1(record.returnId) ? record.returnId : stamp_1(record.returnId),
+                        returanIdPrefix = record.returanIdPrefix;
+                    CHACHE[returanIdPrefix][returnId] = gl[opName].apply(gl, record.args);
                 }
-                //
-                this._attributes = attributes;
-            }
-            /**
-             * 展开uniforms并map到对象
-             * @memberof GLProgram
-             */
-
-        }, {
-            key: '_extractUniforms',
-            value: function _extractUniforms() {
-                var _this3 = this;
-
-                var isWebGL2 = !!this._vao.handle,
-                    gl = this._gl,
-                    uniformsLen = gl.getProgramParameter(this._handle, GLConstants_1.ACTIVE_UNIFORMS);
-                var uniforms = {};
-                //1.get uniforms and store mapdata
-
-                var _loop2 = function _loop2(i) {
-                    var uniform = gl.getActiveUniform(_this3._handle, i),
-                        type = getGLSLType(uniform.type),
-                        name = uniform.name.replace(/\[.*?\]/, ""),
-                        size = uniform.size,
-                        location = gl.getUniformLocation(_this3._handle, name);
-                    //map the WebGLUniformLocation
-                    setId(location, _this3._id);
-                    //提供attribute属性访问
-                    Object.defineProperty(uniforms, name, {
-                        /**
-                         * 
-                         */
-                        get: function get$$1() {
-                            return location;
-                        },
-                        /**
-                         * @param {glMatrix.*} value
-                         */
-                        set: function set$$1(value) {
-                            var funcName = getUniformFunc(type);
-                            gl[funcName](location, value);
-                        }
-                    });
-                };
-
-                for (var i = 0; i < uniformsLen; i++) {
-                    _loop2(i);
+                else {
+                    gl[opName].apply(gl, record.args);
                 }
-                //
-                this._uniforms = uniforms;
+                //next record
+                record = this._records.shift();
             }
-        }, {
-            key: '_createHandle',
-            value: function _createHandle() {
-                var gl = this._gl,
-                    program = gl.createProgram();
-                setId(program, this.id);
-                return program;
-            }
-            /**
-             * 使用此program
-             */
+        }
+    }
+}
+/**
+ * instance of Actuator
+ */
+const actuator = new Actuator();
 
-        }, {
-            key: 'useProgram',
-            value: function useProgram() {
-                var gl = this._gl;
-                gl.useProgram(this.handle);
-            }
-            /**
-             * 清理绑定信息，销毁program对象
-             */
-
-        }, {
-            key: 'dispose',
-            value: function dispose() {
-                var gl = this._gl;
-                gl.deleteProgram(this._handle);
-            }
-            /**
-             * retrun WebGLRenderContext
-             * @return {WebGLRenderContext}
-             */
-
-        }, {
-            key: 'attributes',
-            get: function get$$1() {
-                return this._attributes;
-            }
-        }, {
-            key: 'uniforms',
-
-            /**
-             * 获取unfiroms
-             * @readonly
-             * @memberof GLProgram
-             */
-            get: function get$$1() {
-                return this._uniforms;
-            }
-        }, {
-            key: 'gl',
-            get: function get$$1() {
-                var gl = this._gl;
-                return gl;
-            }
-        }]);
-        return GLProgram;
-    }(Dispose_1);
-
-    
-
-    module.exports = GLProgram;
-});
+var Actuator_1 = actuator;
 
 /**
- * warpped the WebGLRenderingContext
- * reference:
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext
- * 
- * 管理
- * -cache
- * 
- * reference https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapRenderingContext/transferFromImageBitmap
- * 使用 OffscreenCanvas 创建不可见绘制canvas,后基于此canvas绘制图像，并保存成bitmap缓存帧
- * var htmlCanvas = document.getElementById("htmlCanvas").getContext("bitmaprenderer");
- * 预留一定的帧数后，使用bitmaprender绘制bitmap到前端canvas即可
- * htmlCanvas.transferFromImageBitmap(bitmap);
- * context相当于webglRender
- * 
- * @author yellow 2017/6/11
- * @modify yellow 2017/8/8
- * 
- * 
+ * @author yellow
  */
-var stamp$1 = stamp_1.stamp;
-
-var ALL_ENUM = handle.ALL_ENUM;
-
-var GLPROGRAMS = util.GLPROGRAMS;
-var GLSHADERS = util.GLSHADERS;
-var GLTEXTURES = util.GLTEXTURES;
 
 /**
- * 实时处理的函数,多为直接获取结果函数
- * needs to be executing in real time1
+ * bridge object
  */
-var BRIDGE_ARRAY = ['isShader', 'isBuffer', 'isProgram', 'isTexture', 'isContextLost', 'getBufferParameter', 'getProgramParameter', 'getShaderParameter', 'getTexParameter', 'getParameter', 'getContextAttributes',
-//'getExtension',
-'getError', 'getProgramInfoLog', 'getShaderInfoLog', 'getActiveAttrib', 'getActiveUniform', 'getAttribLocation', 'getUniform', 'getUniformLocation', 'getVertexAttrib', 'getVertexAttribOffset',
-//
-'checkFramebufferStatus'];
+
+/**
+ * singleton
+ */
+
+/**
+ * the prefix of GLContext
+ */
+const prefix$1 = "WEBGLRENDERGINGCONTEXT";
 /**
  * @class
- * @example
  */
-
-var GLContext = function (_Dispose) {
-    inherits(GLContext, _Dispose);
-
+class GLContext extends Dispose_1 {
     /**
-     * @param {Object} options
-     * @param {HTMLCanvasElement} options.canvas
-     * @param {WebGLRenderingContext} options.gl
-     * @param {String} options.renderType 'webgl'、'webgl2'
-     * @param {GLExtension} [options.glExtension] 
-     * @param {GLLimits} [options.glLimits]
+     * 
+     * @param {String} id parentId,just as the glCanvas'id
+     * @param {String} renderType support 'webgl' or 'webgl2'
+     * @param {Object} [options] 
      */
-    function GLContext() {
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        classCallCheck(this, GLContext);
-
+    constructor(id, renderType, options = {}) {
+        super(prefix$1);
         /**
-         * @type {HTMLCanvasElement}
+         * @type {String}
          */
-        var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this));
-
-        _this._canvas = options.canvas || null;
+        this._renderType = renderType;
         /**
-         *  @type {WebGLRenderingContext}
+         * @type {Object}
          */
-        _this._gl = options.gl;
+        this._options = options;
         /**
-         * webgl扩展
-         * @type {GLExtension}
+         * @type {Recorder}
          */
-        _this._glExtension = options.glExtension;
+        this._recorder = new Recorder_1(this);
         /**
-         * get parameter and extensions
          * @type {GLLimits}
          */
-        _this._glLimits = options.glLimits;
+        this._glLimits = new GLLimits_1(this);
         /**
-         * the ticker datasource
-         * @type {Tiny}
+         * @type {GLExtension}
          */
-        _this._tiny = new Tiny_1(_this);
+        this._glExtension = new GLExtension_1(this);
         /**
-         * setup env
+         * @type {String}
          */
-        _this._setup();
+        this._programId = null;
         /**
-         * map glContext to Context
+         * real WebGLRenderingContext
+         * @type {WebGLRenderingContext}
          */
-        _this._map();
-        return _this;
+        this._gl = null;
+        /**
+         * @type {Array}
+         */
+        this._clear = [];
+        /**
+         * map funciont
+         */
+        this._map();
     }
-
-    createClass(GLContext, [{
-        key: '_setup',
-
-        /**
-         * 设置绘制区域的规则
-         * 1. 混合颜色
-         * 2. 深度
-         * 3.
-         */
-        value: function _setup() {
-            var gl = this._gl;
-            //reference http://www.cppblog.com/wc250en007/archive/2012/07/18/184088.html
-            //gl.ONE 使用1.0作为因子，相当于完全使用了这种颜色参与混合运算
-            //gl.ONE_MINUS_SRC_ALPHA 使用1.0-源颜色alpha值作为因子，
-            //作用为：源颜色的alpha作为不透明度，即源颜色alpha值越大，混合时占比越高，混合时最常用的方式
-            gl.enable(GLConstants_1.BLEND);
-            gl.blendFunc(GLConstants_1.ONE, GLConstants_1.ONE_MINUS_SRC_ALPHA);
-            //为了模仿真实物体和透明物体的混合颜色，需要使用深度信息
-            //http://www.cnblogs.com/aokman/archive/2010/12/13/1904723.html
-            //模版缓存区测试，用来对比当前值与预设值，用以判断是否更新此值
-            //顺序为：(framment + associated data) - pixel ownership test - scissor test
-            //       - alpha test - stencil test - depth test
-            //       - blending - dithering - logic op - framebuffer
-            //在模板测试的过程中，可以先使用一个比较用掩码（comparison mask）与模板缓冲区中的值进行位与运算，
-            //再与参考值进行比较，从而实现对模板缓冲区中的值的某一位上的置位状态的判断。
-            gl.enable(GLConstants_1.STENCIL_TEST);
-            //gl.stencilFunc(gl)
-            gl.enable(GLConstants_1.DEPTH_TEST);
-            //深度参考值小于模版值时，测试通过
-            gl.depthFunc(GLConstants_1.LEQUAL);
-            gl.depthMask(false);
+    /**
+     * map function and constants to Class
+     */
+    _map() {
+        const recorder = this._recorder;
+        //1.map constants
+        for (const key in GLConstants_1) {
+            if (!this.hasOwnProperty(key)) {
+                const target = GLConstants_1[key];
+                if (!this[key])
+                    this[key] = target;
+            }
         }
-        /**
-         * map相关属性与方法
-         */
-
-    }, {
-        key: '_map',
-        value: function _map() {
-            var _this2 = this;
-
-            //get the WebGLRenderingContext
-            var gl = this._gl;
-            //get tiny
-            var tiny = this._tiny;
-            //map constant
-            for (var key in GLConstants_1) {
-                if (!this.hasOwnProperty(key)) {
-                    var target = GLConstants_1[key];
-                    if (!this[key] && !!target) this[key] = target;
+        //2.map void function(include replace and no replace)
+        for (const key in Encrypt) {
+            if (!this.hasOwnProperty(key)) {
+                const target = Encrypt[key];
+                //2.1 void and no replace
+                if (!target.return && target.replace === 0) {
+                    if (!this[key] && !!target) {
+                        this[key] = (...rest) => {
+                            const record = new Record_1(key, ...rest);
+                            recorder.increase(record);
+                        };
+                    }
                 }
-            }
-            //map ImplementBridge
-
-            var _loop = function _loop(i, len) {
-                var key = BRIDGE_ARRAY[i];
-                _this2[key] = function () {
-                    for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
-                        rest[_key2] = arguments[_key2];
+                //2.2 void and replace 
+                else if (!target.return && target.replace > 0) {
+                    if (!this[key] && !!target) {
+                        this[key] = (...rest) => {
+                            const record = new Record_1(key, ...rest),
+                                index = target.ptIndex;
+                            record.exactIndexByObject(index);
+                            recorder.increase(record);
+                        };
                     }
-
-                    return gl[key].apply(gl, rest);
-                };
-            };
-
-            for (var i = 0, len = BRIDGE_ARRAY.length; i < len; i++) {
-                _loop(i, len);
-            }
-            //map internalTinyOperation
-
-            var _loop2 = function _loop2(_key) {
-                _this2[_key] = function () {
-                    for (var _len2 = arguments.length, rest = Array(_len2), _key3 = 0; _key3 < _len2; _key3++) {
-                        rest[_key3] = arguments[_key3];
-                    }
-
-                    //gl[key].apply(gl, rest);
-                    tiny.push.apply(tiny, [_key].concat(rest));
-                };
-            };
-
-            for (var _key in ALL_ENUM) {
-                _loop2(_key);
+                }
+                //2.3 return(make birdge to origin,should not to be implemented)
             }
         }
-        /**
-         * @return {WebGLRenderingContext}
-         */
-
-    }, {
-        key: 'createProgram',
-
-        /**
-         * @return {WebGLProgram}
-         */
-        value: function createProgram() {
-            var gl = this._gl;
-            //1.创建GLProgram
-            var glProgram = new GLProgram_1(gl);
-            //2.缓存program
-            GLPROGRAMS[glProgram.id] = glProgram;
-            //3.返回句柄
-            return glProgram.handle;
+    }
+    /*
+     * private ,only used in GLCanvas.link[Cnavas/GL] funcitons
+     * @param {WebGLRenderingContext} gl 
+     */
+    _setgl(gl) {
+        this._gl = gl;
+        this._glLimits._include();
+        this._glExtension._include();
+        //替换绘制实体
+        Actuator_1.setGl(gl);
+    }
+    /**
+     * @returns {String} 'webgl' or 'webgl2'
+     */
+    get renderType(){
+        return this._renderType;
+    }
+    /**
+     * 
+     * @returns {WebGLRenderingContext}
+     */
+    get gl() {
+        return this._gl;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
+     * @param {String} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER 
+     */
+    createShader(type) {
+        const glShader = new GLShader_1(type, this),
+            record = new Record_1('createShader', type);
+        //createShader 操作必需返回值
+        record.setReturnId(glShader.id);
+        this._recorder.increase(record);
+        return glShader;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
+     * @param {GLShader} shader 
+     * @param {String} source 
+     */
+    shaderSource(shader, source) {
+        shader.source = source;
+        const returnId = shader.id,
+            record = new Record_1('shaderSource', shader, source);
+        record.exactIndexByValue(0, returnId);
+        this._recorder.increase(record);
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
+     * @param {GLShader} shader 
+     */
+    compileShader(shader) {
+        const returnId = shader.id,
+            record = new Record_1('compileShader', shader);
+        record.exactIndexByValue(0, returnId);
+        shader._isComplied = true;
+        this._recorder.increase(record);
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+     * 创建program对象
+     */
+    createProgram() {
+        const glProgram = new GLProgram_1(this),
+            record = new Record_1('createProgram');
+        record.setReturnId(glProgram.id);
+        this._recorder.increase(record);
+        return glProgram;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+     */
+    createBuffer() {
+        const glBuffer = new GLBuffer_1(this),
+            record = new Record_1('createBuffer');
+        record.setReturnId(glBuffer.id);
+        this._recorder.increase(record);
+        return glBuffer;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
+     */
+    createFramebuffer(){
+        const glFramebuffer = new GLFramebuffer_1(this),
+            record = new Record_1('createFramebuffer');
+        record.setReturnId(glFramebuffer.id);
+        this._recorder.increase(record);
+        return glFramebuffer;
+    }
+    createRenderbuffer(){
+        const glRenderbuffer = new GLRenderbuffer_1(this),
+            record = new Record_1('createRenderbuffer');
+        record.setReturnId(glRenderbuffer.id);
+        this._recorder.increase(record);
+        return glRenderbuffer;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
+     */
+    createTexture(){
+        const glTexture = new GLTexture_1(this),
+            record = new Record_1('createTexture');
+        record.setReturnId(glTexture.id);
+        this._recorder.increase(record);
+        return glTexture;
+    }
+    /**
+     * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/attachShader
+     * @param {GLProgram} program 
+     * @param {GLShader} shader 
+     */
+    attachShader(program, shader) {
+        const record = new Record_1('attachShader', program, shader);
+        record.exactIndexByValue(0, program.id);
+        record.exactIndexByValue(1, shader.id);
+        this._recorder.increase(record);
+        //
+        program.attachShader(shader);
+    }
+    /**
+     * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/linkProgram
+     * @param {GLProgram} program 
+     */
+    linkProgram(program) {
+        const record = new Record_1('linkProgram', program);
+        record.exactIndexByValue(0, program.id);
+        this._recorder.increase(record);
+        program.link();
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttribLocation
+     * @modify yellow date 2018/2/3 direction return 
+     * 
+     * @param {GLProgram} program 
+     * @param {String} name 
+     */
+    getAttribLocation(program, name) {
+        const returnId = program.getAttribLocation(name),
+            record = new Record_1('getAttribLocation', program, name);
+        record.exactIndexByValue(0, program.id);
+        record.setReturnId(returnId,false);
+        this._recorder.increase(record);
+        return returnId;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
+     * @param {GLProgram} program 
+     * @param {DOMString} name 
+     */
+    getUniformLocation(program,name){
+        const returnId = program.getUnifromLocation(name),
+            record = new Record_1('getUniformLocation', program, name);
+        record.exactIndexByValue(0, program.id);
+        record.setReturnId(returnId);
+        this._recorder.increase(record);
+        return returnId;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
+     * @param {GLShader} shader 
+     * @param {GLenum} pname 
+     */
+    getShaderParameter(shader,pname){
+        return shader.getParameters(pname);
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
+     * @param {GLShader} shader 
+     */
+    getShaderInfoLog(shader){
+        return '';
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
+     * @param {GLProgram} program 
+     */
+    getProgramInfoLog(program){
+        return '';
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveAttrib
+     * @param {GLProgram} program 
+     * @param {GLuint} index 
+     */
+    getActiveAttrib(program,index){
+        return program.attributes[index];
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
+     * @param {GLProgram} program 
+     * @param {GLuint} index 
+     */
+    getActiveUniform(program,index){
+        return program.uniforms[index];
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramParameter
+     * @type {GLProgram} program
+     * @type {GLenum} pname
+     */
+    getProgramParameter(program, pname){
+        if(pname === GLConstants_1.ACTIVE_UNIFORMS){
+            return program.uniforms.length;
+        }else if(pname === GLConstants_1.ACTIVE_ATTRIBUTES){
+            return program.attributes.length;
+        }else if(pname === GLConstants_1.ATTACHED_SHADERS){
+            return program.attachNum;
+        }else if(pname === GLConstants_1.LINK_STATUS){
+            return true;
+        }else if(pname === GLConstants_1.DELETE_STATUS){
+            return true;
         }
-        /**
-         * create shader
-         * @param {number} type
-         * @return {WebGLShader}
-         */
+    }
+    /**
+     * 
+     * @param {GLProgram} program 
+     */
+    useProgram(program) {
+        const programId = program.id;
+        const record = new Record_1('useProgram', program);
+        record.exactIndexByValue(0, programId);
+        this._recorder.increase(record);
+        this._programId = programId;
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getExtension
+     * @param {String} name 
+     */
+    getExtension(name) {
+        const glExtension = this._glExtension;
+        return glExtension[name];
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
+     * @param {String} pname 
+     */
+    getParameter(pname) {
+        //parameter search from limits
+        const glLimits = this._glLimits;
+        return glLimits[pname];
+    }
+    /**
+     * 特别的方法
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
+     * @param {*} mode 
+     * @param {*} first 
+     * @param {*} count 
+     */
+    drawArrays(mode, first, count) {
+        const record = new Record_1('drawArrays', mode, first, count),
+            programId = this._programId;
+        this._recorder.increase(record);
+        Actuator_1.play(this._recorder.toInstruction(programId));
+    }
+    /**
+     * 特别的方法
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+     * @param {*} mode 
+     * @param {*} count 
+     * @param {*} type 
+     * @param {*} offset 
+     */
+    drawElements(mode, count, type, offset) {
+        const record = new Record_1('drawElements', mode, count, type, offset),
+            programId = this._programId;
+        this._recorder.increase(record);
+        Actuator_1.play(this._recorder.toInstruction(programId));
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
+     */
+    // clear(mask){
+    //     // const record = new Record('clear', mask);
+    //     // this._recorder.increase(record);
+    //     console.log(`clear:${mask}`);
+    // }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor
+     */
+    // clearColor(red, green, blue, alpha){
+    //     // const record = new Record('clearColor', red, green, blue, alpha);
+    //     // this._recorder.increase(record);
+    //     console.log(`clearColor:${red}-${green}-${blue}-${alpha}`);
+    // }
 
-    }, {
-        key: 'createShader',
-        value: function createShader(type) {
-            var gl = this._gl,
-                glExtension = this._glExtension;
-            var glShader = null;
-            if (type === GLConstants_1.VERTEX_SHADER) {
-                glShader = new GLVertexShader_1(gl, null, glExtension);
-            } else if (type === GLConstants_1.FRAGMENT_SHADER) {
-                glShader = new GLFragmentShader_1(gl, null, glExtension);
-            }
-            if (!!glShader) {
-                GLSHADERS[glShader.id] = glShader;
-                return glShader.handle;
-            }
-            return null;
-        }
-        /**
-         * @return {WebGLTexture}
-         */
-
-    }, {
-        key: 'createTexture',
-        value: function createTexture() {
-            var gl = this._gl;
-            var glTexture = new GLTexture_1(gl);
-            GLTEXTURES[glTexture.id] = glTexture;
-            return glTexture.handle;
-        }
-        /**
-         * @return {WebGLBuffer}
-         */
-
-    }, {
-        key: 'createBuffer',
-        value: function createBuffer() {
-            var gl = this._gl;
-            return gl.createBuffer();
-        }
-        /**
-         * @type {WebGLFramebuffer}
-         */
-
-    }, {
-        key: 'createFramebuffer',
-        value: function createFramebuffer() {
-            var gl = this._gl;
-            return gl.createFramebuffer();
-        }
-        /**
-         * @type {WebGLRenderbuffer}
-         */
-
-    }, {
-        key: 'createRenderbuffer',
-        value: function createRenderbuffer() {
-            var gl = this._gl;
-            return gl.createRenderbuffer();
-        }
-        /**
-         * 注意在处理tiny的时候，需先useProgram
-         * @param {WebGLProgram} program
-         */
-
-    }, {
-        key: 'useProgram',
-        value: function useProgram(program) {
-            var id = stamp$1(program),
-                tiny = this._tiny,
-                glProgram = GLPROGRAMS[id];
-            tiny.switchPorgarm(glProgram);
-        }
-        /**
-         * 获取extension
-         */
-
-    }, {
-        key: 'getExtension',
-        value: function getExtension(name) {
-            var glExtension = this._glExtension;
-            return glExtension.getExtension(name);
-        }
-        /**
-         * 
-         * @param {WebGLProgram} program 
-         * @param {WebGLShader} shader 
-         */
-
-    }, {
-        key: 'attachShader',
-        value: function attachShader(program, shader) {
-            var glProgram = GLPROGRAMS[stamp$1(program)];
-            var glShader = GLSHADERS[stamp$1(shader)];
-            glProgram.attachShader(glShader);
-        }
-        /**
-         * 
-         * @param {WebGLShader} shader 
-         * @param {String} source 
-         */
-
-    }, {
-        key: 'shaderSource',
-        value: function shaderSource(shader, source) {
-            var gl = this._gl;
-            //1.如果不存在'precision mediump float;'则添加
-            source = source.indexOf('precision') === -1 ? 'precision mediump float;\n' + source : source;
-            //指定glsl版本
-            //source = source.indexOf('#version') === -1?`#version 300 es\n${source}`:source;
-            gl.shaderSource(shader, source);
-        }
-        /**
-         * no need to implement
-         */
-
-    }, {
-        key: 'compileShader',
-        value: function compileShader(shader) {
-            var gl = this._gl;
-            gl.compileShader(shader);
-        }
-        /**
-         * no needs to implement this function
-         * @param {WebGLProgram} program 
-         */
-
-    }, {
-        key: 'linkProgram',
-        value: function linkProgram(program) {
-            var gl = this._gl;
-            gl.linkProgram(program);
-        }
-
-        //webgl2 
-
-    }, {
-        key: 'createTransformFeedback',
-        value: function createTransformFeedback() {
-            var gl = this._gl;
-            gl.createTransformFeedback.apply(gl, arguments);
-        }
-    }, {
-        key: 'clear',
-        value: function clear() {}
-    }, {
-        key: 'clearColor',
-        value: function clearColor() {}
-    }, {
-        key: 'clearDepth',
-        value: function clearDepth() {}
-    }, {
-        key: 'clearStencil',
-        value: function clearStencil() {}
-    }, {
-        key: 'gl',
-        get: function get$$1() {
-            return this._gl;
-        }
-        /**
-         * 获取canvas
-         */
-
-    }, {
-        key: 'canvas',
-        get: function get$$1() {
-            var gl = this._gl;
-            return gl.canvas;
-        }
-        /**
-         * 获取drawingBuffer的width
-         */
-
-    }, {
-        key: 'drawingBufferWidth',
-        get: function get$$1() {
-            var gl = this._gl;
-            return gl.drawingBufferWidth;
-        }
-        /**
-         * 获取drawingBuffer的height
-         */
-
-    }, {
-        key: 'drawingBufferHeight',
-        get: function get$$1() {
-            var gl = this._gl;
-            return gl.drawingBufferHeight;
-        }
-    }]);
-    return GLContext;
-}(Dispose_1);
+}
 
 var GLContext_1 = GLContext;
 
 /**
- * a virtual doom element
- * -simulate HTMLCanvasElement action
- * -using GLContext instead of WebGLRenderingContext
- * @author yellow date 2017/8/23
+ * store WebGLRenderingContext
  */
-var stamp = stamp_1.stamp;
-var CANVASES = util.CANVASES;
-var GLCONTEXTS = util.GLCONTEXTS;
-var WEBGLCONTEXTS = util.WEBGLCONTEXTS;
-var GLEXTENSIONS = util.GLEXTENSIONS;
-var GLLIMITS = util.GLLIMITS;
+const CACHE_GL = {};
 /**
- * a virtual HTMLCanvasElement element
- * @class
+ * the prefix of GLCanvas
  */
-
-var GLCanvas = function (_Dispose) {
-    inherits(GLCanvas, _Dispose);
-
+const prefix = 'CANVASELEMENT';
+/**
+ * @class
+ * @example
+ * const glCavnas = new GLCanvas('mapCanvas',{
+ *  mock:new Mock(canvanElement,['width','height']);
+ * });
+ */
+class GLCanvas extends Dispose_1 {
     /**
      * 
-     * @param {HTMLCanvasElement} canvas 
+     * @param {String} id the real htmlCanvasElement id 
      * @param {Object} [options]
-     * @param {number} [options.width]
-     * @param {number} [options.height]
+     * @param {Object} [options.mock]
      */
-    function GLCanvas(canvas) {
-        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-        classCallCheck(this, GLCanvas);
-
-        var _this = possibleConstructorReturn(this, (GLCanvas.__proto__ || Object.getPrototypeOf(GLCanvas)).call(this));
-
-        _this._rootId = stamp(canvas);
-        canvas.width = options.width || canvas.clientWidth;
-        canvas.height = options.height || canvas.clientHeight;
-        CANVASES[_this._rootId] = canvas;
-        return _this;
+    constructor(id, options = {}) {
+        super(prefix);
+        /**
+         * @type {String}
+         */
+        this._canvasId = id;
+        /**
+         * @type {Object}
+         */
+        this._options = merge_1({}, options);
+        /**
+         * @type {String}
+         */
+        this._glType = 'webgl';
+        /**
+         * store the 'getContext' options
+         * @type {Object}
+         */
+        this._contextOptions = {};
+        /**
+         * real html canvas element
+         * https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
+         * @type {HtmlCanvasElement}
+         */
+        this._canvas = null;
+        /**
+         * @type {GLContext}
+         */
+        this._glContext = null;
+        /**
+         * @type {Object}
+         */
+        this._style = {};
+        /**
+         * store canvas operations
+         * @type {Recorder}
+         */
+        this._records = new Recorder_1(null, false);
+        /**
+         * mock function
+         */
+        this._mock();
+    }
+    /**
+     * 
+     */
+    _mock(){
+        const mock = this._options.mock;
+        if(!mock) return;
+        const mockList = mock.mockList;
+        mockList.forEach(key => {
+            if (!this.hasOwnProperty(key)) {
+                const target = mock.getTarget(key);
+                if (!this[key])
+                    this[key] = target;
+            }
+        });
     }
     /**
      * get context attributes
@@ -4466,265 +12106,170 @@ var GLCanvas = function (_Dispose) {
      * reference https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
      * @param {Object} [options] 
      */
-
-
-    createClass(GLCanvas, [{
-        key: '_getContextAttributes',
-        value: function _getContextAttributes() {
-            var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-            return {
-                alpha: options.alpha || false,
-                depth: options.depth || true,
-                stencil: options.stencil || true,
-                antialias: options.antialias || false,
-                premultipliedAlpha: options.premultipliedAlpha || true,
-                preserveDrawingBuffer: options.preserveDrawingBuffer || false,
-                failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false
-            };
+    _getContextAttributes(options = {}) {
+        return {
+            alpha: options.alpha || false,
+            depth: options.depth || true,
+            stencil: options.stencil || true,
+            antialias: options.antialias || false,
+            premultipliedAlpha: options.premultipliedAlpha || true,
+            preserveDrawingBuffer: options.preserveDrawingBuffer || false,
+            failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
         }
-        /**
-         * 
-         * @param {String} renderType ,default is 'webgl',experiment-webgl
-         * @param {Object} [options]
-         * @param {boolean} [options.alpha]
-         * @param {boolean} [options.depth]
-         * @param {boolean} [options.stencil]
-         * @param {boolean} [options.antialias]
-         * @param {boolean} [options.premultipliedAlpha]
-         * @param {boolean} [options.preserveDrawingBuffer]
-         * @param {boolean} [options.failIfMajorPerformanceCaveat]
-         */
-
-    }, {
-        key: 'getContext',
-        value: function getContext() {
-            var renderType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'webgl';
-            var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-            var id = this._id,
-                rootId = this._rootId;
-            if (!GLCONTEXTS[id]) {
-                var attrib = this._getContextAttributes(options);
-                var canvas = CANVASES[rootId];
-                if (!WEBGLCONTEXTS[rootId]) WEBGLCONTEXTS[rootId] = canvas.getContext(renderType, attrib) || canvas.getContext('experimental-' + renderType, attrib);
-                var gl = WEBGLCONTEXTS[rootId];
-                if (!GLLIMITS[rootId]) GLLIMITS[rootId] = new GLLimits_1(gl);
-                if (!GLEXTENSIONS[rootId]) GLEXTENSIONS[rootId] = new GLExtension_1(gl);
-                var glLimits = GLLIMITS[rootId],
-                    glExtension = GLEXTENSIONS[rootId];
-                GLCONTEXTS[id] = new GLContext_1({ renderType: renderType, canvas: canvas, gl: gl, glLimits: glLimits, glExtension: glExtension });
-            }
-            return GLCONTEXTS[id];
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style
+     * https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration
+     * @type {CSSStyleDeclaration}
+     */
+    get style() {
+        return this._style;
+    }
+    /**
+     * get GLContext
+     * @param {String} renderType 
+     * @param {Object} [options]
+     * @returns {GLContext}
+     */
+    getContext(renderType = 'webgl', options = {}) {
+        const canvasId = this._canvasId,
+            id = this.id;
+        this._glType = this._glType || renderType;
+        this._contextOptions = this._contextOptions || this._getContextAttributes(options);
+        this._glContext = this._glContext ||new GLContext_1(id, this._glType, this._contextOptions);
+        // if (!CACHE_GLCONTEXT[canvasId]) {
+        //     CACHE_GLCONTEXT[canvasId] = new GLContext(id, this._glType, this._contextOptions);
+        // }
+        return this._glContext;
+    }
+    /**
+     * https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/addEventListener
+     * @param {String} type 
+     * @param {Function} listener 
+     * @param {Object} options 
+     */
+    addEventListener(type, listener, options) {
+        const canvas = this._canvas;
+        if (canvas) {
+            canvas.addEventListener(type, listener, options);
+        } else {
+            const record = new Record_1('addEventListener', type, listener, options);
+            this._records.increase(record);
         }
-        /**
-         * return HTMLCanvasElement.style 
-         */
-
-    }, {
-        key: 'getBoundingClientRect',
-
-        /**
-         * 
-         */
-        value: function getBoundingClientRect() {
-            var id = this._rootId;
-            CANVASES[id].getBoundingClientRect();
+    }
+    /**
+     * link virtual rendering context to real htmlCanvas
+     * @param {HtmlCanvasElement} canvas 
+     */
+    linkToCanvas(canvas) {
+        const id = stamp_1(canvas);
+        this._canvas = canvas;
+        this._canvasId = id;
+        //1. set style
+        this._canvas.style.width = this.style.width || `${this._canvas.clientWidth}px`;
+        this._canvas.style.height = this.style.height || `${this._canvas.clientHeight}px`;
+        //2.
+        const records = this._records.toOperation();
+        let record = records.shift();
+        while(record){
+            canvas[record.opName].apply(canvas,record.args);
+            record = records.shift();
         }
-        /**
-         * 
-         * @param {*} type 
-         * @param {*} Listener 
-         * @param {*} useCapture 
-         */
+        //3. set gl
+        CACHE_GL[id] = CACHE_GL[id] || canvas.getContext(this._glType, this._contextOptions) || canvas.getContext(`experimental-${this._glType}`, this._contextOptions);
+        const glContext = this.getContext('webgl');
+        glContext._setgl(CACHE_GL[id]);
+    }
+    /**
+     * link virtual rendering context to real htmlCanvas
+     * @param {WebGLRenderingContext} gl 
+     */
+    linkToWebGLRenderingContext(gl) {
+        if(this._canvas){
+            throw new Error('exist htmlcanvaselement');
+        }
+        const canvas = gl.canvas;
+        if(canvas){
+            this.linkToCanvas(canvas);
+        }else{
+            const glContext = this.getContext('webgl');
+            glContext._setgl(gl);
+        }
+    }
 
-    }, {
-        key: 'addEventListener',
-        value: function addEventListener(type, Listener, useCapture) {
-            var id = this._rootId;
-            CANVASES[id].addEventListener(type, Listener, useCapture);
-        }
-        /**
-         * 
-         */
-
-    }, {
-        key: 'style',
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].style;
-        }
-        /**
-         * 
-         */
-
-    }, {
-        key: 'parentElement',
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].parentElement;
-        }
-        /**
-         * @type {HTMLCanvasElement}
-         */
-
-    }, {
-        key: 'HTMLCanvasElement',
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id];
-        }
-    }, {
-        key: 'width',
-        set: function set$$1(v) {
-            var id = this._rootId;
-            CANVASES[id].width = v;
-        }
-        /**
-         * 
-         */
-        ,
-
-        /**
-         * 
-         */
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].width;
-        }
-        /**
-         * 
-         */
-
-    }, {
-        key: 'height',
-        set: function set$$1(v) {
-            var id = this._rootId;
-            CANVASES[id].height = v;
-        },
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].height;
-        }
-        /**
-         * 
-         */
-
-    }, {
-        key: 'clientWidth',
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].clientWidth;
-        }
-        /**
-         * 
-         */
-
-    }, {
-        key: 'clientHeight',
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].clientHeight;
-        }
-        /**
-         * 
-         */
-
-    }, {
-        key: 'offsetLeft',
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].offsetLeft;
-        }
-        /**
-         * 
-         */
-
-    }, {
-        key: 'offsetTop',
-        get: function get$$1() {
-            var id = this._rootId;
-            return CANVASES[id].offsetTop;
-        }
-    }]);
-    return GLCanvas;
-}(Dispose_1);
+}
 
 var GLCanvas_1 = GLCanvas;
 
-var glsl = "\nprecision mediump float;\nvoid main() {\n  gl_FragColor  = vec4(1, 0, 0.5, 1);\n}\n\n";
-
-var default_fragment_glsl = glsl;
-
-var glsl$1 = "\nattribute vec4 a_position;\nvoid main() {\n  gl_Position = a_position;\n}\n";
-
-var default_vertex_glsl = glsl$1;
-
 /**
- * 
- * @author yellow date 2017/8/4
+ * https://developer.mozilla.org/en-US/docs/Web/API/Element
+ * @class
+ * @author yellow date 2018/2/5
+ * @example
+ * const mock = new Mock(canvasElement,['width','heigh']);
  */
-
-/**
- * import glsl from shaderlib
- */
-var shaderLib = {
-  default_fragment: default_fragment_glsl,
-  default_vertex: default_vertex_glsl
-  /**
-   * @class
-   * @static
-   */
-};
-var GLShaderFactory = function () {
-  function GLShaderFactory() {
-    classCallCheck(this, GLShaderFactory);
-  }
-
-  createClass(GLShaderFactory, null, [{
-    key: 'create',
-
+class Mock {
     /**
-     * create shaders
-     * @param {String} name 
-     * @param {WebGLRenderingContext} gl 
-     * @param {GLExtension} extension 
-     * @return {Array} [VertexShader,FragmentShader]
+     * 
+     * @param {HtmlCanvasElement} element 
      */
-    value: function create(name, gl, extension) {
-      var vertexKey = name + '_vertex',
-          fragmentKey = name + '_fragment';
-
-      return [new GLVertexShader_1(gl, shaderLib[vertexKey], extension), new GLFragmentShader_1(gl, shaderLib[fragmentKey], extension)];
+    constructor(element,mockList){
+        /**
+         * @type {HtmlCanvasElement}
+         */
+        this._element = element;
+        /**
+         * @type {Array}
+         */
+        this._mockList = mockList;
     }
-  }]);
-  return GLShaderFactory;
-}();
+    /**
+     * @type {Array}
+     */
+    set mockList(v){
+        this._mockList = v;
+    }
+    /**
+     * @type {Array}
+     */
+    get mockList(){
+        return this._mockList;
+    }
+    /**
+     * 
+     * @param {String} name 
+     */
+    getTarget(name){
+        return this._element[name];
+    }
 
-var GLShaderFactory_1 = GLShaderFactory;
+}
 
-/**
- * -import from namespace renderer
- * -const polyfill = require('babel-polyfill'); 
- * @author yellow date 2017/6/20
- * @modify yellow date 2017/9/11
- */
+var Mock_1 = Mock;
 
-var init = {
+var init$2 = {
+    Mock: Mock_1,
     gl: {
         GLCanvas: GLCanvas_1,
-        GLContext: GLContext_1,
-        GLIndexbuffer: GLIndexbuffer_1,
-        GLVertexbuffer: GLVertexbuffer_1,
-        GLProgram: GLProgram_1,
-        GLFragmentShader: GLFragmentShader_1,
-        GLVertexShader: GLVertexShader_1,
-        GLTexture: GLTexture_1,
-        GLShaderFactory: GLShaderFactory_1,
-        GLVertexArrayObject: GLVertexArrayObject_1
+        GLContext: GLContext_1
     }
 };
 
-return init;
+var init = createCommonjsModule(function (module) {
+  /**
+   * @author yellow date 2018/2/11
+   */
 
-})));
+  module.exprots = {
+    Mock: init$2.Mock,
+    gl: {
+      glCanvas: init$2.gl.GLCanvas
+    }
+  };
+});
+
+exports['default'] = init;
+
+return exports;
+
+}({}));
