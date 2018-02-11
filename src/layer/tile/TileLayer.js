@@ -292,15 +292,15 @@ class TileLayer extends Layer {
                         'x' : idx.x,
                         'y' : idx.y,
                         'extent2d' : tileExtent,
-                        'layer' : layerId
+                        'layer' : layerId,
                     };
                 if (this._isTileInExtent(tileInfo, containerExtent)) {
-                    tileInfo.size = [width, height];
-                    tileInfo.xyz = tileExtent.toString(); //xyz id of the tile
-                    tileInfo.id = this._getTileId(idx, zoom); //unique id of the tile
+                    tileInfo['size'] = [width, height];
+                    tileInfo['dupKey'] = tileExtent.round().toString(); //duplicate key of the tile
+                    tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
                     if (!renderer || !renderer.isTileCachedOrLoading(tileInfo.id)) {
                         //getTileUrl is expensive, save it when tile is being processed by renderer
-                        tileInfo.url = this.getTileUrl(idx.x, idx.y, zoom);
+                        tileInfo['url'] = this.getTileUrl(idx.x, idx.y, zoom);
                     }
                     tiles.push(tileInfo);
                     extent._combine(tileExtent);
@@ -311,7 +311,7 @@ class TileLayer extends Layer {
         //sort tiles according to tile's distance to center
         const center = map._containerPointToPoint(containerExtent.getCenter(), zoom);
         tiles.sort(function (a, b) {
-            return (b.point.distanceTo(center) - a.point.distanceTo(center));
+            return a.point.distanceTo(center) - b.point.distanceTo(center);
         });
 
         return {

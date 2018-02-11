@@ -28,6 +28,7 @@ describe('GroupTileLayer', function () {
     });
 
     it('add to map', function (done) {
+        this.timeout(10000);
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 urlTemplate : '/resources/tile.png'
@@ -57,6 +58,7 @@ describe('GroupTileLayer', function () {
     });
 
     it('show and hide', function (done) {
+        this.timeout(10000);
         var tile1 = new maptalks.TileLayer('tile1', {
             urlTemplate : '/resources/tile.png'
         });
@@ -109,6 +111,7 @@ describe('GroupTileLayer', function () {
     });
 
     it('json', function (done) {
+        this.timeout(10000);
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 urlTemplate : '/resources/tile.png'
@@ -142,6 +145,7 @@ describe('GroupTileLayer', function () {
     });
 
     it('zoom isVisible', function (done) {
+        this.timeout(10000);
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 maxZoom : 17,
@@ -183,5 +187,34 @@ describe('GroupTileLayer', function () {
 
         expect(group._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['baidu']);
         expect(t1._getTileConfig().tileSystem).to.be.eql(maptalks.TileSystem['baidu']);
+    });
+
+    it('should load less tile placeholders than actual tiles', function (done) {
+        this.timeout(10000);
+        var group = new maptalks.GroupTileLayer('group', [
+            new maptalks.TileLayer('tile0', {
+                urlTemplate : '/resources/tile.png'
+            }),
+            new maptalks.TileLayer('tile1', {
+                urlTemplate : '/resources/tile.png'
+            }),
+            new maptalks.TileLayer('tile2', {
+                urlTemplate : '/resources/tile.png'
+            }),
+            new maptalks.TileLayer('tile3', {
+                urlTemplate : '/resources/tile.png'
+            }),
+        ], {
+            placeholder : true,
+            renderer : 'canvas'
+        });
+        map.addLayer(group);
+        var allTiles = group.getTiles().tiles;
+        var renderer = group.getRenderer();
+        renderer._drawTiles = function (tiles, parentTiles, childTiles, placeholders) {
+            expect(placeholders.length > 0);
+            expect(placeholders.length === allTiles.length / 4);
+            done();
+        };
     });
 });

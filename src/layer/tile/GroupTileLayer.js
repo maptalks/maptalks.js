@@ -90,7 +90,7 @@ class GroupTileLayer extends TileLayer {
         const layers = this.layers;
         const tiles = [];
         let grid;
-        for (let i = layers.length - 1; i >= 0; i--) {
+        for (let i = 0, l = layers.length; i < l; i++) {
             const layer = layers[i];
             if (!layer.options['visible']) {
                 continue;

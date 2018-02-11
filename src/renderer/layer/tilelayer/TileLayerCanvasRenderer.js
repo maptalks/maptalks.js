@@ -70,7 +70,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             placeholders = [], placeholderKeys = {};
         //visit all the tiles
         const tileQueue = {};
-        for (let i = allTiles.length - 1; i >= 0; i--) {
+        for (let i = 0, l = allTiles.length; i < l; i++) {
             const tile = allTiles[i],
                 tileId = tile['id'];
             //load tile in cache at first if it has.
@@ -84,7 +84,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     tileIsLoading = loading = true;
                 }
                 tiles.push(cached);
-                this.tileCache.add(tileId, cached);
             } else {
                 tileIsLoading = loading = true;
                 const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
@@ -93,33 +92,38 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
                 }
             }
+            if (!tileIsLoading) continue;
 
-            if (tileIsLoading && placeholder && !placeholderKeys[tile.xyz]) {
+            if (placeholder && !placeholderKeys[tile.dupKey]) {
                 //tell gl renderer not to bind gl buffer with image
                 tile.cache = false;
                 placeholders.push({
                     image : placeholder,
                     info : tile
                 });
-                placeholderKeys[tile.xyz] = 1;
+
+                placeholderKeys[tile.dupKey] = 1;
             }
 
-            if (tileIsLoading) {
-                const parentTile = this._findParentTile(tile);
-                if (parentTile && !parentKeys[parentTile.info.xyz]) {
+            const parentTile = this._findParentTile(tile);
+            if (parentTile) {
+                const dupKey = parentTile.info.dupKey;
+                if (parentKeys[dupKey] === undefined) {
+                    parentKeys[dupKey] = parentTiles.length;
                     parentTiles.push(parentTile);
-                    parentKeys[parentTile.info.xyz] = 1;
+                } else {
+                    //replace with parentTile of above tiles
+                    parentTiles[parentKeys[dupKey]] = parentTile;
                 }
-                if (!parentTile) {
-                    const children = this._findChildTiles(tile);
-                    if (children.length) {
-                        children.forEach(c => {
-                            if (!childKeys[c.info.xyz]) {
-                                childTiles.push(c);
-                                childKeys[c.info.xyz] = 1;
-                            }
-                        });
-                    }
+            } else {
+                const children = this._findChildTiles(tile);
+                if (children.length) {
+                    children.forEach(c => {
+                        if (!childKeys[c.info.dupKey]) {
+                            childTiles.push(c);
+                            childKeys[c.info.dupKey] = 1;
+                        }
+                    });
                 }
             }
         }
@@ -176,6 +180,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
         this.drawTile(tile.info, tile.image);
+        this.tileCache.add(tile.info.id, tile);
     }
 
     drawOnInteracting() {
