@@ -5,6 +5,11 @@ config.format = 'umd';
 module.exports = {
     frameworks: ['mocha', 'expect', 'expect-maptalks', 'sinon', 'happen'],
     basePath: '..',
+    client: {
+        mocha: {
+          timeout : 10000
+        }
+    },
     files: [
         'src/index.js',
         'test/core/ClassSpec.js',

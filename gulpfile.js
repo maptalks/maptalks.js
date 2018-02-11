@@ -85,11 +85,15 @@ gulp.task('test', function (done) {
         karmaConfig.configFile = path.join(__dirname, 'build/karma.cover.config.js');
     }
     if (options.pattern) {
-        karmaConfig.client = {
-            mocha: {
-                grep: options.pattern
-            }
-        };
+        if (!karmaConfig.client) {
+            karmaConfig.client = {
+                mocha: {
+                    grep: options.pattern
+                }
+            };
+        } else {
+            karmaConfig.client.mocha.grep = options.pattern;
+        }
     }
     new Server(karmaConfig, done).start();
 });
@@ -111,6 +115,18 @@ gulp.task('tdd', function (done) {
             }
         };
     }
+    if (options.pattern) {
+        if (!karmaConfig.client) {
+            karmaConfig.client = {
+                mocha: {
+                    grep: options.pattern
+                }
+            };
+        } else {
+            karmaConfig.client.mocha.grep = options.pattern;
+        }
+    }
+
     let started = false;
     rollupWatch(() => {
         if (!started) {
