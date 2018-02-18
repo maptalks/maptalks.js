@@ -3,8 +3,46 @@ import Browser from '../Browser';
 import { extend, isNil, isNumber, isString } from './common';
 import { isURL, extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
-import { Symbolizer } from '../../renderer/geometry/symbolizers';
 
+
+export const resourceProperties = [
+    'markerFile', 'polygonPatternFile', 'linePatternFile', 'markerFillPatternFile', 'markerLinePatternFile'
+];
+
+export const resourceSizeProperties = [
+    ['markerWidth', 'markerHeight'],
+    [],
+    [null, 'lineWidth'],
+    [],
+    [null, 'markerLineWidth']
+];
+
+export const numericalProperties = {
+    'lineWidth': 1,
+    'lineOpacity': 1,
+    'lineDx': 1,
+    'lineDy': 1,
+    'polygonOpacity': 1,
+    'markerWidth': 1,
+    'markerHeight': 1,
+    'markerDx': 1,
+    'markerDy': 1,
+    'markerOpacity': 1,
+    'markerFillOpacity': 1,
+    'markerLineWidth': 1,
+    'markerLineOpacity': 1,
+    'textSize': 1,
+    'textOpacity': 1,
+    'textHaloRadius': 1,
+    'textWrapWidth': 1,
+    'textLineSpacing': 1,
+    'textDx': 1,
+    'textDy': 1
+};
+
+export const colorProperties = [
+    'lineColor', 'polygonFill', 'markerFill', 'markerLineColor', 'textFill'
+];
 
 /**
  * Translate symbol properties to SVG properties
@@ -138,7 +176,7 @@ export function getExternalResources(symbol, toAbsolute) {
         symbols = [symbol];
     }
     const resources = [];
-    const props = Symbolizer.resourceProperties;
+    const props = resourceProperties;
     let res, resSizeProp;
     let w, h;
     for (let i = symbols.length - 1; i >= 0; i--) {
@@ -164,7 +202,7 @@ export function getExternalResources(symbol, toAbsolute) {
                 if (res[iii].slice(0, 4) === 'url(') {
                     res[iii] = extractCssUrl(res[iii]);
                 }
-                resSizeProp = Symbolizer.resourceSizeProperties[ii];
+                resSizeProp = resourceSizeProperties[ii];
                 resources.push([res[iii], symbol[resSizeProp[0]], symbol[resSizeProp[1]]]);
             }
         }
@@ -202,7 +240,7 @@ export function convertResourceUrl(symbol) {
     if (IS_NODE) {
         return s;
     }
-    const props = Symbolizer.resourceProperties;
+    const props = resourceProperties;
     let res;
     for (let ii = 0, len = props.length; ii < len; ii++) {
         res = s[props[ii]];

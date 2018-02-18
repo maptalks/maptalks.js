@@ -10,7 +10,8 @@ import {
     isNumber,
     isObject,
     mapArrayRecursively,
-    flash
+    flash,
+    numericalProperties
 } from '../core/util';
 import { extendSymbol } from '../core/util/style';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
@@ -18,7 +19,6 @@ import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
-import Symbolizer from '../renderer/geometry/symbolizers/Symbolizer';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
 
 /**
@@ -819,7 +819,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _checkAndCopySymbol(symbol) {
         const s = {};
-        const numericalProperties = Symbolizer.numericalProperties;
         for (const i in symbol) {
             if (numericalProperties[i] && isString(symbol[i])) {
                 s[i] = +symbol[i];
