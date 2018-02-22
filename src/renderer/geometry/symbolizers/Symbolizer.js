@@ -1,4 +1,5 @@
-import { isString, colorProperties } from '../../../core/util';
+import { COLOR_PROPERTIES } from '../../../core/Constants';
+import { isString } from '../../../core/util';
 
 /**
  * @classdesc
@@ -29,7 +30,7 @@ class Symbolizer {
         if (!prop || !isString(prop)) {
             return false;
         }
-        if (colorProperties.indexOf(prop) >= 0) {
+        if (COLOR_PROPERTIES.indexOf(prop) >= 0) {
             return true;
         }
         return false;

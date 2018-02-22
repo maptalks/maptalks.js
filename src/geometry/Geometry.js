@@ -1,4 +1,4 @@
-import { GEOMETRY_COLLECTION_TYPES } from '../core/Constants';
+import { GEOMETRY_COLLECTION_TYPES, NUMERICAL_PROPERTIES } from '../core/Constants';
 import Class from '../core/Class';
 import Eventable from '../core/Eventable';
 import JSONAble from '../core/JSONAble';
@@ -10,8 +10,7 @@ import {
     isNumber,
     isObject,
     mapArrayRecursively,
-    flash,
-    numericalProperties
+    flash
 } from '../core/util';
 import { extendSymbol } from '../core/util/style';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
@@ -820,7 +819,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     _checkAndCopySymbol(symbol) {
         const s = {};
         for (const i in symbol) {
-            if (numericalProperties[i] && isString(symbol[i])) {
+            if (NUMERICAL_PROPERTIES[i] && isString(symbol[i])) {
                 s[i] = +symbol[i];
             } else {
                 s[i] = symbol[i];
