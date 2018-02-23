@@ -195,6 +195,7 @@ class OverlayLayer extends Layer {
             extent = new Extent();
         }
         this._toSort = this._maxZIndex > 0;
+        const geos = [];
         for (let i = 0, l = geometries.length; i < l; i++) {
             let geo = geometries[i];
             if (!geo) {
@@ -205,16 +206,18 @@ class OverlayLayer extends Layer {
                 if (Array.isArray(geo)) {
                     for (let ii = 0, ll = geo.length; ii < ll; ii++) {
                         this._add(geo[ii], extent, i);
+                        geos.push(geo[ii]);
                     }
                 }
             }
             if (!Array.isArray(geo)) {
                 this._add(geo, extent, i);
+                geos.push(geo);
             }
         }
         const map = this.getMap();
         if (map) {
-            this._getRenderer().onGeometryAdd(geometries);
+            this._getRenderer().onGeometryAdd(geos);
             if (fitView === true && !isNil(extent.xmin)) {
                 const z = map.getFitZoom(extent);
                 map.setCenterAndZoom(extent.getCenter(), z);

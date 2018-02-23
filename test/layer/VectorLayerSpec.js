@@ -175,6 +175,23 @@ describe('VectorLayer.Spec', function () {
             layer = new maptalks.VectorLayer('v', collection);
             expect(layer.getCount()).to.be.eql(collection.features.length);
         });
+
+        it('add geojson and paint', function (done) {
+            var geos = [
+                {
+                    type: "Feature",
+                    geometry: {
+                        "type": "Point",
+                        "coordinates": map.getCenter().toArray()
+                    }
+              }
+            ];
+            layer.on('layerload', function () {
+                expect(layer).to.be.painted(0, -1);
+                done();
+            });
+            layer.addGeometry(geos);
+        });
     });
 
     describe('paint geometry', function () {
