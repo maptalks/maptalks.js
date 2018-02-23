@@ -1,4 +1,4 @@
-import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES, NUMERICAL_PROPERTIES } from '../Constants';
+import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES } from '../Constants';
 import { IS_NODE } from './env';
 import Browser from '../Browser';
 import { extend, isNil, isNumber, isString } from './common';
