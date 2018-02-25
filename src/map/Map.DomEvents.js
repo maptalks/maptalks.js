@@ -221,12 +221,6 @@ Map.include(/** @lends Map.prototype */ {
                 }
             }
         }
-        // if (type === 'click') {
-        //     const button = e.button;
-        //     if (button === 2) {
-        //         type = 'contextmenu';
-        //     }
-        // }
         this._fireDOMEvent(this, e, type);
         if (mimicClick) {
             if (this._clickTime && (now() - this._clickTime <= 300)) {
@@ -248,12 +242,14 @@ Map.include(/** @lends Map.prototype */ {
             return true;
         }
         let target = domEvent.srcElement || domEvent.target;
+        let preTarget;
         if (target) {
             while (target && target !== this._containerDOM) {
                 if (target.className && target.className.indexOf &&
-                    (target.className.indexOf('maptalks-control') >= 0 || target.className.indexOf('maptalks-ui') >= 0)) {
+                    (target.className.indexOf('maptalks-control') >= 0  || (target.className.indexOf('maptalks-ui') >= 0 && !preTarget['eventsPropagation']))) {
                     return true;
                 }
+                preTarget = target;
                 target = target.parentNode;
             }
 

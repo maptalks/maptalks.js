@@ -17,6 +17,7 @@ import UIComponent from './UIComponent';
  * @instance
  */
 const options = {
+    'eventsPropagation' : true,
     'draggable': false,
     'single': false,
     'content': null

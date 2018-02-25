@@ -18,7 +18,8 @@ import Geometry from '../geometry/Geometry';
 
 /**
  * @property {Object} options
- * @property {Boolean} [options.eventsToStop='mousedown dblclick']  - UI's dom events to stop propagation.
+ * @property {Boolean} [options.eventsPropagation=false]  - whether stop ALL events' propagation.
+ * @property {Boolean} [options.eventsToStop=null]  - UI's dom events to stop propagation if eventsPropagation is true.
  * @property {Number}  [options.dx=0]     - pixel offset on x axis
  * @property {Number}  [options.dy=0]     - pixel offset on y axis
  * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
@@ -30,7 +31,8 @@ import Geometry from '../geometry/Geometry';
  * @instance
  */
 const options = {
-    'eventsToStop': 'mousedown dblclick',
+    'eventsPropagation' : false,
+    'eventsToStop': null,
     'dx': 0,
     'dy': 0,
     'autoPan': false,
@@ -150,6 +152,7 @@ class UIComponent extends Eventable(Class) {
         this._coordinate = coordinate;
         this._removePrevDOM();
         const dom = this.__uiDOM = this.buildOn(map);
+        dom['eventsPropagation'] = this.options['eventsPropagation'];
 
         if (!dom) {
             /**

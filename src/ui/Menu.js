@@ -17,7 +17,6 @@ const defaultOptions = {
     'animation': null,
     'animationDelay': 10,
     'animationOnHide': false,
-    'eventsToStop': 'mousewheel mousedown dblclick click',
     'autoPan': false,
     'width': 160,
     'maxHeight' : 0,
