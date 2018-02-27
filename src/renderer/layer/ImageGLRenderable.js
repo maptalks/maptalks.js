@@ -405,17 +405,8 @@ const ImageGLRenderable = Base => {
 
             // Link the program object
             gl.linkProgram(program);
-            gl.vertexShader = vertexShader;
-            gl.fragmentShader = fragmentShader;
-            // Check the result of linking
-            const linked = gl.getProgramParameter(program, gl.LINK_STATUS);
-            if (!linked) {
-                const error = gl.getProgramInfoLog(program);
-                gl.deleteProgram(program);
-                gl.deleteShader(fragmentShader);
-                gl.deleteShader(vertexShader);
-                throw new Error('Failed to link program: ' + error);
-            }
+            program.vertexShader = vertexShader;
+            program.fragmentShader = fragmentShader;
 
             this._initUniforms(program, uniforms);
 
@@ -480,9 +471,6 @@ const ImageGLRenderable = Base => {
         _compileShader(gl, type, source) {
             // Create shader object
             const shader = gl.createShader(type);
-            if (shader == null) {
-                throw new Error('unable to create shader');
-            }
 
             // Set the shader program
             gl.shaderSource(shader, source);
