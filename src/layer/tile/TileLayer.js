@@ -362,7 +362,7 @@ class TileLayer extends Layer {
             this._tileConfig = new TileConfig(this.options['tileSystem'], fullExtent, tileSize);
         }
         //inherit baselayer's tileconfig
-        if (map &&
+        if (map && !this._tileConfig &&
             map.getSpatialReference() === sr &&
             map.getBaseLayer() &&
             map.getBaseLayer() !== this &&
