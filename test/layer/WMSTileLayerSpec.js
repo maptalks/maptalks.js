@@ -226,7 +226,7 @@ describe('WMSTileLayer', function () {
         });
         map.addLayer(tile2);
         tile2.getFeatureInfo(new maptalks.Point(100,100),function(url){
-            expect(url).to.be.equal("/resources/tile.png?SERVICE=WMS&REQUEST=GetFeatureInfo&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&INFO_FORMAT=application%2Fjson&WIDTH=3&HEIGHT=3&CRS=EPSG%3A3857&QUERY_LAYERS=layer&INFO_FORMAT=text%2Fhtml&I=100&J=100&BBOX=118.84680890674588,32.04651790674595,118.84684109325406,32.046550093254126");
+            expect(url).to.be.equal("/resources/tile.png?SERVICE=WMS&REQUEST=GetFeatureInfo&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&INFO_FORMAT=application%2Fjson&WIDTH=3&HEIGHT=3&CRS=EPSG%3A4326&QUERY_LAYERS=layer&INFO_FORMAT=text%2Fhtml&I=100&J=100&BBOX=32.04651790674595,118.84680890674588,32.046550093254126,118.84684109325406");
         });
     });
 
