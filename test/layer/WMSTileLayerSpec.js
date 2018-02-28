@@ -190,4 +190,44 @@ describe('WMSTileLayer', function () {
         map.addLayer(layer);
         expect(layer.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&BBOX=0,-40075016.68557848,20037508.342789244,-20037508.342789244');
     });
+
+    it('getFeatrueInfo',function(){
+        map.setSpatialReference({
+            'projection' : 'EPSG:4326'
+        });
+        //epsg must be set equal as map projection
+        var tile = new maptalks.WMSTileLayer('tile', {
+            urlTemplate : '/resources/tile.png',
+            'layers' : 'layer',
+            'styles' : 'styles',
+            'version' : '1.3.0',
+            'format': 'image/png',
+            'transparent' : true,
+            'uppercase' : true,
+            'crs' : 'EPSG:4326',
+            'renderer' : 'canvas',
+            'info_format':'text/html'
+        });
+        map.addLayer(tile);
+        tile.getFeatureInfo(new maptalks.Point(100,100),function(url){
+            expect(url).to.be.equal("/resources/tile.png?SERVICE=WMS&REQUEST=GetFeatureInfo&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&INFO_FORMAT=text%2Fhtml&WIDTH=3&HEIGHT=3&CRS=EPSG%3A4326&QUERY_LAYERS=layer&INFO_FORMAT=text%2Fhtml&I=100&J=100&BBOX=32.04651790674595,118.84680890674588,32.046550093254126,118.84684109325406");
+        });
+        var tile2 = new maptalks.WMSTileLayer('tile2', {
+            urlTemplate : '/resources/tile.png',
+            'layers' : 'layer',
+            'styles' : 'styles',
+            'version' : '1.3.0',
+            'format': 'image/png',
+            'transparent' : true,
+            'uppercase' : true,
+            'crs' : 'EPSG:4326',
+            'renderer' : 'canvas',
+            'info_format':'application/json'
+        });
+        map.addLayer(tile2);
+        tile2.getFeatureInfo(new maptalks.Point(100,100),function(url){
+            expect(url).to.be.equal("/resources/tile.png?SERVICE=WMS&REQUEST=GetFeatureInfo&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&INFO_FORMAT=application%2Fjson&WIDTH=3&HEIGHT=3&CRS=EPSG%3A4326&QUERY_LAYERS=layer&INFO_FORMAT=text%2Fhtml&I=100&J=100&BBOX=32.04651790674595,118.84680890674588,32.046550093254126,118.84684109325406");
+        });
+    });
+
 });
