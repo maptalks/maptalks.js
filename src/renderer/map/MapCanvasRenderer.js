@@ -467,7 +467,7 @@ class MapCanvasRenderer extends MapRenderer {
         const POSITION0 = 'position:absolute;top:0px;left:0px;';
 
         const mapWrapper = createContainer('mapWrapper', 'maptalks-wrapper', 'position:absolute;overflow:hidden;', true),
-            mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;z-index:0', true),
+            mapAllLayers = createContainer('allLayers', 'maptalks-all-layers', POSITION0 + 'padding:0px;margin:0px;z-index:0;overflow:visible;', true),
             backStatic = createContainer('backStatic', 'maptalks-back-static', POSITION0 + 'z-index:0;', true),
             back = createContainer('back', 'maptalks-back', POSITION0 + 'z-index:1;'),
             backLayer = createContainer('backLayer', 'maptalks-back-layer', POSITION0),
