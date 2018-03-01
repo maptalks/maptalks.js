@@ -623,25 +623,21 @@ DrawTool.registerMode('ellipse', {
 DrawTool.registerMode('rectangle', {
     'action': 'drag',
     'create': function (coordinate, param) {
-        const rect = new Rectangle(coordinate, 0, 0);
+        const rect = new Polygon([]);
         rect._firstClick = param['containerPoint'];
-        rect._firstCoord = coordinate;
         return rect;
     },
     'update': function (coordinate, geometry, param) {
         const map = geometry.getMap();
-        const firstCoord = geometry._firstCoord,
-            firstPoint = geometry._firstClick;
-
-        const cnw = firstPoint,
-            cc = param['containerPoint'];
-        const x = Math.min(cnw.x, cc.x),
-            y = Math.min(cnw.y, cc.y);
-        const width = map.computeLength(firstCoord, new Coordinate(coordinate.x, firstCoord.y)),
-            height = map.computeLength(firstCoord, new Coordinate(firstCoord.x, coordinate.y));
-        geometry.setCoordinates(map.containerPointToCoordinate(new Point(x, y)));
-        geometry.setWidth(width);
-        geometry.setHeight(height);
+        const containerPoint = param['containerPoint'];
+        const firstClick = geometry._firstClick;
+        const ring = [
+            [firstClick.x, firstClick.y],
+            [containerPoint.x, firstClick.y],
+            [containerPoint.x, containerPoint.y],
+            [firstClick.x, containerPoint.y],
+        ];
+        geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new maptalks.Point(c))));
     },
     'generate': function (geometry) {
         return geometry;

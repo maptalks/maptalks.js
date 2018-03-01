@@ -12,7 +12,7 @@ import Circle from './Circle';
  * @instance
  */
 const options = {
-    'numberOfShellPoints': 60
+    'numberOfShellPoints': 80
 };
 
 /**
