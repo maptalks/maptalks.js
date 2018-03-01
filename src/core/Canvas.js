@@ -580,25 +580,20 @@ const Canvas = {
 
             return [ctrl1X, ctrl1Y, ctrl2X, ctrl2Y];
         }
-        // if (close) {
-        //     points = points.concat([points[0]]);
-        // }
         const count = points.length;
         const l = close ? count : count - 1;
 
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
-        let preCtrlPoints, lastCtrlPoints;
+        let preCtrlPoints;
         for (let i = 0; i < l; i++) {
             const x1 = points[i].x, y1 = points[i].y;
 
             let x0, y0, x2, y2, x3, y3;
             if (i - 1 < 0) {
                 if (!close) {
-                    const d = points[i + 1].sub(points[i]);
-                    //the first point's prev point
-                    x0 = 2 * points[i].x - (points[i].x - d.x);
-                    y0 = 2 * points[i].y - (points[i].y - d.y);
+                    x0 = points[i + 1].x;
+                    y0 = points[i + 1].y;
                 } else {
                     x0 = points[l - 1].x;
                     y0 = points[l - 1].y;
@@ -618,26 +613,24 @@ const Canvas = {
                 x3 = points[i + 2].x;
                 y3 = points[i + 2].y;
             } else if (!close) {
-                const d = points[i + 1].sub(points[i]);
-                //the last point's next point
-                x3 = 2 * points[i + 1].x - (points[i + 1].x + d.x);
-                y3 = 2 * points[i + 1].y - (points[i + 1].y + d.y);
+                x3 = points[i].x;
+                y3 = points[i].y;
             } else {
                 x3 = points[i + 2 - count].x;
                 y3 = points[i + 2 - count].y;
             }
 
-
             const ctrlPoints = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x3, y3, smoothValue);
             ctx.bezierCurveTo(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2], ctrlPoints[3], x2, y2);
-            if (i === count - 1) {
-                lastCtrlPoints = ctrlPoints;
-            }
             points[i].nextCtrlPoint = ctrlPoints.slice(0, 2);
             points[i].prevCtrlPoint = preCtrlPoints ? preCtrlPoints.slice(2) : null;
             preCtrlPoints = ctrlPoints;
         }
-        points[points.length - 1].prevCtrlPoint = lastCtrlPoints ? lastCtrlPoints.slice(2) : null;
+        if (!close) {
+            points[0].nextCtrlPoint = points[1].prevCtrlPoint;
+            delete points[0].prevCtrlPoint;
+        }
+        points[count - 1].prevCtrlPoint = points[count - 2].nextCtrlPoint;
         Canvas._stroke(ctx, lineOpacity);
     },
 
