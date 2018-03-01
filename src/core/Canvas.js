@@ -595,9 +595,10 @@ const Canvas = {
             let x0, y0, x2, y2, x3, y3;
             if (i - 1 < 0) {
                 if (!close) {
+                    const d = points[i + 1].sub(points[i]);
                     //the first point's prev point
-                    x0 = 2 * points[i].x - points[i + 1].x;
-                    y0 = 2 * points[i].y - points[i + 1].y;
+                    x0 = 2 * points[i].x - (points[i].x - d.x);
+                    y0 = 2 * points[i].y - (points[i].y - d.y);
                 } else {
                     x0 = points[l - 1].x;
                     y0 = points[l - 1].y;
@@ -617,9 +618,10 @@ const Canvas = {
                 x3 = points[i + 2].x;
                 y3 = points[i + 2].y;
             } else if (!close) {
-            //the last point's next point
-                x3 = 2 * points[i + 1].x - points[i].x;
-                y3 = 2 * points[i + 1].y - points[i].y;
+                const d = points[i + 1].sub(points[i]);
+                //the last point's next point
+                x3 = 2 * points[i + 1].x - (points[i + 1].x + d.x);
+                y3 = 2 * points[i + 1].y - (points[i + 1].y + d.y);
             } else {
                 x3 = points[i + 2 - count].x;
                 y3 = points[i + 2 - count].y;
