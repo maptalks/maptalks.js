@@ -194,12 +194,9 @@ describe('DrawTool', function () {
                 first = param.coordinate;
             }
             function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Rectangle).to.be.ok();
-                expect(param.geometry.getWidth()).to.above(0);
-                expect(param.geometry.getHeight()).to.above(0);
-                var nw = param.geometry.getCoordinates();
-                expect(nw.x < first.x).to.be.ok();
-                expect(nw.y > first.y).to.be.ok();
+                expect(param.geometry instanceof maptalks.Polygon).to.be.ok();
+                var coordinates = param.geometry.getCoordinates()[0];
+                expect(coordinates.length === 5).to.be.ok();
                 done();
             }
             var drawTool = new maptalks.DrawTool({
