@@ -13,6 +13,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {String[]|Number[]}   [options.subdomains=null]   - subdomains to replace '{s}' in urlTemplate
  * @property {Object}              [options.spatialReference=null] - TileLayer's spatial reference
  * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
+ * @property {Number[]|Function}   [options.offset=[0, 0]]       - overall tile offset, [dx, dy], useful for tile sources from difference coordinate systems, e.g. (wgs84 and gcj02)
  * @property {Number[]}            [options.tileSystem=null]     - tile system number arrays
  * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
@@ -42,6 +43,8 @@ const options = {
     'crossOrigin': null,
 
     'tileSize': [256, 256],
+
+    'offset' : [0, 0],
 
     'tileSystem': null,
 
@@ -228,8 +231,15 @@ class TileLayer extends Layer {
             'tiles' : []
         };
 
+        let offset = this.options['offset'];
+        if (isFunction(offset)) {
+            offset = offset();
+        }
+
+        const absOffset = [Math.abs(offset[0]), Math.abs(offset[1])];
+
         let containerExtent = map.getContainerExtent();
-        const extent2d = map._get2DExtent();
+        const extent2d = map._get2DExtent()._expand(absOffset);
         const maskExtent = this._getMask2DExtent();
         if (maskExtent) {
             const intersection = maskExtent.intersection(extent2d);
@@ -238,6 +248,9 @@ class TileLayer extends Layer {
             }
             containerExtent = intersection.convertTo(c => map._pointToContainerPoint(c));
         }
+
+        containerExtent._expand(absOffset);
+
         const sr = this._sr;
         const mapSR = map.getSpatialReference();
         const res = sr.getResolution(zoom);
@@ -287,7 +300,7 @@ class TileLayer extends Layer {
                 }
                 const tileExtent = new PointExtent(p, p.add(width, height)),
                     tileInfo = {
-                        'point': p,
+                        'point': p._add(offset[0], offset[1]),
                         'z': zoom,
                         'x' : idx.x,
                         'y' : idx.y,

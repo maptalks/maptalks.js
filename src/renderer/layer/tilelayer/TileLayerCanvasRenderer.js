@@ -80,6 +80,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tileIsLoading = loading = true;
                 this.tilesLoading[tileId].current = true;
             } else if (cached) {
+                //update tile's point which may change from previous frame
+                cached.info.point = tile.point;
                 if (this.getTileOpacity(cached.image) < 1) {
                     tileIsLoading = loading = true;
                 }
