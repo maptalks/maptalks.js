@@ -128,7 +128,6 @@ describe('Spec of Masks', function () {
             });
 
             it('zoom with mask,' + layerToTest.getJSONType(), function (done) {
-                this.timeout(10000);
                 layerToTest.once('layerload', function () {
                     var zoomed = false;
                     layerToTest.on('layerload', function () {

@@ -1,4 +1,4 @@
-describe('#ToolTip', function () {
+describe('UI.ToolTip', function () {
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -6,8 +6,8 @@ describe('#ToolTip', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation: false,

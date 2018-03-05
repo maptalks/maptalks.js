@@ -7,7 +7,10 @@ describe('Geometry.Rectangle', function () {
     var canvasContainer;
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
         layer = new maptalks.VectorLayer('id');

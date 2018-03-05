@@ -14,8 +14,8 @@ describe('Control.Attribution', function () {
     });
     it('set map.options.attribution to false', function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -38,8 +38,8 @@ describe('Control.Attribution', function () {
 
     it('add attribution of added layer; no baseLayer', function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -61,8 +61,8 @@ describe('Control.Attribution', function () {
     });
     it('has baseLayer', function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -80,8 +80,8 @@ describe('Control.Attribution', function () {
     });
     it('no attribution content in map options', function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -97,8 +97,8 @@ describe('Control.Attribution', function () {
     });
     it('set custom attribution content', function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -115,8 +115,8 @@ describe('Control.Attribution', function () {
     });
     it('set custom attribution content and add layer', function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,

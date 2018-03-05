@@ -96,8 +96,8 @@ describe('Ajax.Spec', function () {
         var url = 'http://localhost:9876/resources/tile.png';
         var image = new Image();
         image.onload = function () {
-            expect(image.width).to.be.eql(256);
-            expect(image.height).to.be.eql(256);
+            expect(image.width).to.be.eql(13);
+            expect(image.height).to.be.eql(13);
             done();
         };
         maptalks.Ajax.getImage(image, url, {
@@ -109,8 +109,8 @@ describe('Ajax.Spec', function () {
         var url = 'http://localhost:9876/resources/tile.png';
         var image = new Image();
         image.onload = function () {
-            expect(image.width).to.be.eql(256);
-            expect(image.height).to.be.eql(256);
+            expect(image.width).to.be.eql(13);
+            expect(image.height).to.be.eql(13);
             done();
         };
         maptalks.Ajax.getImage(image, url);

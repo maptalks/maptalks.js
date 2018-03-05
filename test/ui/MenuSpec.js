@@ -7,7 +7,10 @@ describe('UI.ContextMenu', function () {
     };
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
         context.map = map;

@@ -6,8 +6,8 @@ describe('Map.Projection', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '800px';
-        container.style.height = '600px';
+        container.style.width = '100px';
+        container.style.height = '100px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation:false,
@@ -154,7 +154,7 @@ describe('Map.Projection', function () {
             });
             map.setMaxExtent(new maptalks.Extent([453136.979,4078961.066,533971.862,4145348.864]));
             var z = map.getFitZoom(map.getMaxExtent());
-            expect(z).to.be.eql(10);
+            expect(z).to.be.eql(7);
         });
     });
 

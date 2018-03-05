@@ -7,7 +7,10 @@ describe('Geometry.Marker', function () {
     var layer;
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 300,
+            height : 200
+        });
         container = setups.container;
         map = setups.map;
         map.config('centerCross', true);
@@ -319,10 +322,9 @@ describe('Geometry.Marker', function () {
         });
 
         it('change marker file by updateSymbol', function (done) {
-            this.timeout(10000);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
-                    'markerFile' : 'resources/tile.png'
+                    'markerFile' : 'resources/tile-256.png'
                 }
             });
             var layer = new maptalks.VectorLayer('vector', [marker]);

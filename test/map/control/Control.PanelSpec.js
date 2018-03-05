@@ -5,7 +5,10 @@ describe('Control.Panel', function () {
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
     });

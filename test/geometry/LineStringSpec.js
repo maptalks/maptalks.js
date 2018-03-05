@@ -6,7 +6,10 @@ describe('Geometry.LineString', function () {
     var layer;
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 400,
+            height : 300
+        });
         container = setups.container;
         map = setups.map;
         layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});

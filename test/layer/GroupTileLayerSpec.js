@@ -28,7 +28,6 @@ describe('GroupTileLayer', function () {
     });
 
     it('add to map', function (done) {
-        this.timeout(10000);
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 urlTemplate : '/resources/tile.png'
@@ -58,7 +57,6 @@ describe('GroupTileLayer', function () {
     });
 
     it('show and hide', function (done) {
-        this.timeout(10000);
         var tile1 = new maptalks.TileLayer('tile1', {
             urlTemplate : '/resources/tile.png'
         });
@@ -111,7 +109,6 @@ describe('GroupTileLayer', function () {
     });
 
     it('json', function (done) {
-        this.timeout(10000);
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 urlTemplate : '/resources/tile.png'
@@ -145,7 +142,6 @@ describe('GroupTileLayer', function () {
     });
 
     it('zoom isVisible', function (done) {
-        this.timeout(10000);
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 maxZoom : 17,
@@ -190,7 +186,6 @@ describe('GroupTileLayer', function () {
     });
 
     it('should load less tile placeholders than actual tiles', function (done) {
-        this.timeout(10000);
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile0', {
                 urlTemplate : '/resources/tile.png'
