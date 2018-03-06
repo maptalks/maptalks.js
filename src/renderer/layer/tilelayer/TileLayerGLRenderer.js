@@ -45,7 +45,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             w = tileInfo.size[0] * scale,
             h = tileInfo.size[1] * scale;
         if (tileInfo.cache !== false) {
-            this._bindGLBuffer(tileImage, x, y, w, h);
+            this._bindGLBuffer(tileImage, w, h);
         }
 
         if (!this._gl()) {
@@ -63,9 +63,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
     }
 
-    _bindGLBuffer(image, x, y, w, h) {
+    _bindGLBuffer(image, w, h) {
         if (!image.glBuffer) {
-            image.glBuffer = this.bufferTileData(x, y, w, h);
+            image.glBuffer = this.bufferTileData(0, 0, w, h);
         }
     }
 

@@ -155,7 +155,7 @@ export function rotateZ(out, a, rad) {
     return out;
 }
 
-export function copy(out, a) {
+/* export function copy(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -173,7 +173,7 @@ export function copy(out, a) {
     out[14] = a[14];
     out[15] = a[15];
     return out;
-}
+} */
 
 export function multiply(out, a, b) {
     var a00 = a[0],
@@ -267,6 +267,32 @@ export function invert(out, a) {
     out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
     out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
 
+    return out;
+}
+
+/**
+ * Set a mat4 to the identity matrix
+ *
+ * @param {mat4} out the receiving matrix
+ * @returns {mat4} out
+ */
+export function identity(out) {
+    out[0] = 1;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = 1;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = 1;
+    out[11] = 0;
+    out[12] = 0;
+    out[13] = 0;
+    out[14] = 0;
+    out[15] = 1;
     return out;
 }
 /*eslint-enable no-var*/

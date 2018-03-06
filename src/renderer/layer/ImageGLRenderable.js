@@ -1,7 +1,6 @@
 import { IS_NODE, extend, isInteger, log2 } from '../../core/util';
 import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
-import Browser from '../../core/Browser';
 
 const shaders = {
     'vertexShader': `
@@ -37,8 +36,10 @@ const shaders = {
     `
 };
 
-
-const v2 = new Array(2);
+//reusable temporary variables
+const v2 = [0, 0],
+    v3 = [0, 0, 0],
+    arr16 = new Array(16);
 
 /**
  * A mixin providing image support in WebGL env
@@ -60,10 +61,16 @@ const ImageGLRenderable = Base => {
         drawGLImage(image, x, y, w, h, opacity) {
             const gl = this.gl;
             this.loadTexture(image);
-            gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
+
+            v3[0] = x || 0;
+            v3[1] = y || 0;
+            const uMatrix = mat4.identity(arr16);
+            mat4.translate(uMatrix, uMatrix, v3);
+            mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
+            gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
             if (!image.glBuffer)  {
-                image.glBuffer = this.bufferTileData(x, y, w, h);
+                image.glBuffer = this.bufferTileData(0, 0, w, h);
             } else {
                 gl.bindBuffer(gl.ARRAY_BUFFER, image.glBuffer);
             }
@@ -97,7 +104,7 @@ const ImageGLRenderable = Base => {
         drawTinImage(image, vertices, texCoords, indices, opacity) {
             const gl = this.gl;
             this.loadTexture(image);
-            gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getProjViewMatrix());
+            gl.uniformMatrix4fv(this.program['u_matrix'], false, this.getMap().projViewMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
 
             //bufferdata vertices
@@ -115,14 +122,6 @@ const ImageGLRenderable = Base => {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
             //draw
             gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
-        }
-
-        /**
-         * Return map's projection view matrix
-         * @returns {Float32Array}
-         */
-        getProjViewMatrix() {
-            return this.copy16(this.getMap().projViewMatrix);
         }
 
         /**
@@ -516,13 +515,6 @@ const ImageGLRenderable = Base => {
     };
 
     extend(renderable.prototype, {
-        copy16: function () {
-            const m = Browser.ie9 ? null : new Float32Array(16);
-            return function (arr) {
-                return mat4.copy(m, arr);
-            };
-        }(),
-
         set12: function () {
             const out = new Float32Array(12);
             return function (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
