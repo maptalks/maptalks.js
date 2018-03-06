@@ -45,14 +45,14 @@ describe('GroupTileLayer', function () {
         ], {
             renderer : 'canvas'
         });
-        group.once('layerload', function () {
+        setTimeout(function () {
             var grid = group.getTiles();
             var grid2 = group2.getTiles();
             expect(grid.tiles.length).to.be.eql(2);
             expect(grid2.tiles.length).to.be.eql(1);
             map.removeLayer(group);
             done();
-        });
+        }, 80);
         map.addLayer([group, group2]);
     });
 
