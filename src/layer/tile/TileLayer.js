@@ -231,10 +231,7 @@ class TileLayer extends Layer {
             'tiles' : []
         };
 
-        let offset = this.options['offset'];
-        if (isFunction(offset)) {
-            offset = offset();
-        }
+        const offset = this._getTileOffset(zoom);
 
         const absOffset = [Math.abs(offset[0]), Math.abs(offset[1])];
 
@@ -332,6 +329,18 @@ class TileLayer extends Layer {
             'extent' : extent,
             'tiles': tiles
         };
+    }
+
+    _getTileOffset(z) {
+        const map = this.getMap();
+        const scale = map._getResolution() / map._getResolution(z);
+        let offset = this.options['offset'];
+        if (isFunction(offset)) {
+            offset = offset();
+        }
+        offset[0] *= scale;
+        offset[1] *= scale;
+        return offset;
     }
 
     _getTileId(idx, zoom, id) {
