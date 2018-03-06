@@ -62,6 +62,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         const placeholder = this._generatePlaceHolder(tileGrid.zoom);
 
+        const offset = this.layer._getTileOffset(tileGrid.zoom);
+
         this._tileCountToLoad = 0;
         let loading = false;
         const tiles = [],
@@ -82,6 +84,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             } else if (cached) {
                 //update tile's point which may change from previous frame
                 cached.info.point = tile.point;
+                cached.info.extent2d = tile.extent2d;
                 if (this.getTileOpacity(cached.image) < 1) {
                     tileIsLoading = loading = true;
                 }
@@ -107,7 +110,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 placeholderKeys[tile.dupKey] = 1;
             }
 
-            const parentTile = this._findParentTile(tile);
+            const parentTile = this._findParentTile(tile, offset);
             if (parentTile) {
                 const dupKey = parentTile.info.dupKey;
                 if (parentKeys[dupKey] === undefined) {
@@ -118,7 +121,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     parentTiles[parentKeys[dupKey]] = parentTile;
                 }
             } else {
-                const children = this._findChildTiles(tile);
+                const children = this._findChildTiles(tile, offset);
                 if (children.length) {
                     children.forEach(c => {
                         if (!childKeys[c.info.dupKey]) {
@@ -425,15 +428,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.setCanvasUpdated();
     }
 
-    _findChildTiles(info) {
+    _findChildTiles(info, offset) {
         const map = this.getMap(),
             layer = this.layer,
             childZoom = info.z + 1,
             res = map.getResolution(childZoom);
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            pmin = map._pointToPrj(min, info.z),
-            pmax = map._pointToPrj(max, info.z);
+            pmin = map._pointToPrj(min._sub(offset[0], offset[1]), info.z),
+            pmax = map._pointToPrj(max._sub(offset[0], offset[1]), info.z);
         const dmin = layer._getTileConfig().getTileIndex(pmin, res),
             dmax = layer._getTileConfig().getTileIndex(pmax, res);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
@@ -453,7 +456,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return children;
     }
 
-    _findParentTile(info) {
+    _findParentTile(info, offset) {
         const map = this.getMap();
         if (!this.layer.options['background']) {
             return null;
@@ -462,7 +465,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             layer = this.layer,
             zoomDiff = layer.options['backgroundZoomDiff'];
         const center = info.extent2d.getCenter(),
-            prj = map._pointToPrj(center, info.z);
+            prj = map._pointToPrj(center._sub(offset[0], offset[1]), info.z);
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
             const res = map.getResolution(z);

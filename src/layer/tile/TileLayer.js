@@ -21,7 +21,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Number}              [options.backgroundZoomDiff=6] - the zoom diff to find parent tile as background
  * @property {Boolean|Function}    [options.placeholder=false]    - a placeholder image to replace loading tile, can be a function with a parameter of the tile canvas
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
- * @property {String}              [options.crossOrigin=null]  - tile image's corssOrigin
+ * @property {String}              [options.crossOrigin=null]    - tile image's corssOrigin
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
@@ -295,9 +295,11 @@ class TileLayer extends Layer {
                     width++; //plus 1 to prevent white gaps
                     height++;
                 }
+                const dupKey = p.round().toArray().join() + ',' + width + ',' + height;
+                p._add(offset[0], offset[1]);
                 const tileExtent = new PointExtent(p, p.add(width, height)),
                     tileInfo = {
-                        'point': p._add(offset[0], offset[1]),
+                        'point': p,
                         'z': zoom,
                         'x' : idx.x,
                         'y' : idx.y,
@@ -306,7 +308,7 @@ class TileLayer extends Layer {
                     };
                 if (this._isTileInExtent(tileInfo, containerExtent)) {
                     tileInfo['size'] = [width, height];
-                    tileInfo['dupKey'] = tileExtent.round().toString(); //duplicate key of the tile
+                    tileInfo['dupKey'] = dupKey; //duplicate key of the tile
                     tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
                     if (!renderer || !renderer.isTileCachedOrLoading(tileInfo.id)) {
                         //getTileUrl is expensive, save it when tile is being processed by renderer
