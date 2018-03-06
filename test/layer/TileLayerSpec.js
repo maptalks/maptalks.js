@@ -266,7 +266,7 @@ describe('TileLayer', function () {
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
                 debug : true,
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 subdomains:['a', 'b', 'c']
             });
             tile.once('layerload', function () {
@@ -286,7 +286,7 @@ describe('TileLayer', function () {
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 subdomains:['a', 'b', 'c'],
                 renderer : 'gl'
             });
@@ -306,7 +306,7 @@ describe('TileLayer', function () {
             }
             createMap();
             var tile = new maptalks.TileLayer('tile', {
-                urlTemplate : '/resources/not-exist.png',
+                urlTemplate : '#',
                 renderer : 'gl'
             });
             tile.once('layerload', function () {
