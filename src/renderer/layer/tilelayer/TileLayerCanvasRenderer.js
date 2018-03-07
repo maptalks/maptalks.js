@@ -429,6 +429,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _findChildTiles(info, offset) {
+        if (!this.layer.options['background']) {
+            return [];
+        }
         const map = this.getMap(),
             layer = this.layer,
             childZoom = info.z + 1,
