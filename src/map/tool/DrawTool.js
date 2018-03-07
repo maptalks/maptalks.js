@@ -4,6 +4,7 @@ import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
 import Coordinate from '../../geo/Coordinate';
+import Point from '../../geo/Point';
 import Marker from '../../geometry/Marker';
 import Polygon from '../../geometry/Polygon';
 import LineString from '../../geometry/LineString';
@@ -635,7 +636,7 @@ DrawTool.registerMode('rectangle', {
             [containerPoint.x, containerPoint.y],
             [firstClick.x, containerPoint.y],
         ];
-        geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new maptalks.Point(c))));
+        geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
     },
     'generate': function (geometry) {
         return geometry;

@@ -3,6 +3,7 @@ import { Animation } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Geometry from './Geometry';
+import Polygon from './Polygon';
 import simplify from 'simplify-js';
 
 /**
@@ -42,7 +43,7 @@ class Path extends Geometry {
         }
         const map = this.getMap();
         const extent = painter.getContainerExtent().convertTo(c => map.containerPointToCoord(c));
-        return new maptalks.Polygon(extent.toArray(), {
+        return new Polygon(extent.toArray(), {
             symbol : {
                 'lineWidth': 1,
                 'lineColor': '6b707b'
