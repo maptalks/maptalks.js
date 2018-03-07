@@ -48,7 +48,7 @@
     "babel-preset-es2015": "^6.24.1",
     "del": "^3.0.0",
     "eslint": "^4.5.0",
-    "eslint-config-maptalks": "^0.2.2",
+    "eslint-config-maptalks": "^0.3.0",
     "eslint-plugin-mocha": "^4.11.0",
     "expect-maptalks": "^0.4.1",
     "expect.js": "^0.3.1",
