@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>maptalks-plot</title>
+<link rel="stylesheet" href="../dist/maptalks.css">
+<style type="text/css">
+  html, body {
+    margin: 0px;
+    height: 100%;
+    width: 100%
+  }
+
+  .container {
+    width: 100%;
+    height: 100%
+  }
+</style>
+<body>
+<div id="map" class="container"></div>
+<script src="../dist/maptalks.js"></script>
+<script type="text/javascript">
+  var map = new maptalks.Map('map', {
+    center: [-0.113049,51.498568],
+    zoom: 14,
+    baseLayer: new maptalks.TileLayer('base', {
+      urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+      subdomains: ['a','b','c','d'],
+      attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+    })
+  });
+
+  var layer = new maptalks.VectorLayer('vector').addTo(map);
+
+  var drawTool = new maptalks.DrawTool({
+    mode: 'Point'
+  }).addTo(map).disable();
+
+  drawTool.on('drawend', function (param) {
+    console.log(param.geometry);
+    layer.addGeometry(param.geometry);
+  });
+
+  var items = ['Point', 'LineString', 'Polygon', 'Circle', 'Ellipse', 'Rectangle'].map(function (value) {
+    return {
+      item: value,
+      click: function () {
+        drawTool.setMode(value).enable();
+      }
+    };
+  });
+
+  var toolbar = new maptalks.control.Toolbar({
+    items: [
+      {
+        item: 'Shape',
+        children: items
+      },
+      {
+        item: 'Disable',
+        click: function () {
+          drawTool.disable();
+        }
+      },
+      {
+        item: 'Clear',
+        click: function () {
+          layer.clear();
+        }
+      }
+    ]
+  }).addTo(map);
+
+</script>
+</body>
+</html>
