@@ -19,7 +19,7 @@ describe('Control.Overview', function () {
         tile = new maptalks.TileLayer('tile', {
             renderer : 'canvas',
             fadeAnimation : false,
-            urlTemplate:'/resources/tile.png'
+            urlTemplate : TILE_IMAGE
         });
 
     });
@@ -110,16 +110,16 @@ describe('Control.Overview', function () {
         expect(overview._overview.getZoom()).to.be.eql(map.getZoom() - overview.options['level']);
         expect(overview._overview.getCenter().toArray()).to.be.eql(map.getCenter().toArray());
     });
-    
+
     it('overview base groupLayer visible', function () {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 visible : false,
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             }),
             new maptalks.TileLayer('tile2', {
                 visible : false,
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             })
         ], {
             renderer : 'canvas'

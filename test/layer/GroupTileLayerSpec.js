@@ -30,17 +30,17 @@ describe('GroupTileLayer', function () {
     it('add to map', function (done) {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             }),
             new maptalks.TileLayer('tile2', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             })
         ], {
             renderer : 'canvas'
         });
         var group2 = new maptalks.GroupTileLayer('group2', [
             new maptalks.TileLayer('tile1', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             })
         ], {
             renderer : 'canvas'
@@ -58,10 +58,10 @@ describe('GroupTileLayer', function () {
 
     it('show and hide', function (done) {
         var tile1 = new maptalks.TileLayer('tile1', {
-            urlTemplate : '/resources/tile.png'
+            urlTemplate : TILE_IMAGE
         });
         var tile2 = new maptalks.TileLayer('tile2', {
-            urlTemplate : '/resources/tile.png'
+            urlTemplate : TILE_IMAGE
         });
         var group = new maptalks.GroupTileLayer('group', [
             tile1, tile2
@@ -87,10 +87,10 @@ describe('GroupTileLayer', function () {
 
     it('event bindings', function () {
         var tile1 = new maptalks.TileLayer('tile1', {
-            urlTemplate : '/resources/tile.png'
+            urlTemplate : TILE_IMAGE
         });
         var tile2 = new maptalks.TileLayer('tile2', {
-            urlTemplate : '/resources/tile.png'
+            urlTemplate : TILE_IMAGE
         });
         var group = new maptalks.GroupTileLayer('group', [
             tile1, tile2
@@ -111,10 +111,10 @@ describe('GroupTileLayer', function () {
     it('json', function (done) {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             }),
             new maptalks.TileLayer('tile2', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             })
         ], {
             renderer : 'canvas'
@@ -145,7 +145,7 @@ describe('GroupTileLayer', function () {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 maxZoom : 17,
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             })
         ], {
             renderer : 'canvas'
@@ -164,7 +164,7 @@ describe('GroupTileLayer', function () {
     it('update child layer tile config if map\'s spatial reference changed', function () {
         var t1 = new maptalks.TileLayer('tile1', {
             maxZoom : 17,
-            urlTemplate : '/resources/tile.png'
+            urlTemplate : TILE_IMAGE
         });
         var group = new maptalks.GroupTileLayer('group', [
             t1
@@ -188,16 +188,16 @@ describe('GroupTileLayer', function () {
     it('should load less tile placeholders than actual tiles', function (done) {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile0', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             }),
             new maptalks.TileLayer('tile1', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             }),
             new maptalks.TileLayer('tile2', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             }),
             new maptalks.TileLayer('tile3', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             }),
         ], {
             placeholder : true,

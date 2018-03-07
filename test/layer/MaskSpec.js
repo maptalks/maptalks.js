@@ -74,7 +74,7 @@ describe('Spec of Masks', function () {
 
     //test tilelayer
     runTests(new maptalks.TileLayer('tile', {
-        urlTemplate:'/resources/tile.png',
+        urlTemplate : TILE_IMAGE,
         renderer:'canvas'
     }), context);
 

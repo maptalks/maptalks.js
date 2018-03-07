@@ -20,7 +20,7 @@ describe('SpatialReference.Update', function () {
 
     it('TileLayer', function (done) {
         var tileLayer = new maptalks.TileLayer('base', {
-            urlTemplate:'/resources/tile.png'
+            urlTemplate : TILE_IMAGE
         });
         tileLayer.once('layerload', function () {
             map.setSpatialReference({

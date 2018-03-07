@@ -765,7 +765,7 @@ describe('Map.Spec', function () {
         var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
         layer.addGeometry(geometries, true);
         var tilelayer = new maptalks.TileLayer('t2', {
-            urlTemplate:'/resources/tile.png',
+            urlTemplate:'#',
             subdomains: [1, 2, 3],
             visible : false,
             renderer : 'canvas'

@@ -27,8 +27,9 @@ describe('#CanvasMap', function () {
     });
 
     it('map rendering when zooming', function (done) {
+        this.timeout(9600);
         var tile = new maptalks.TileLayer('tile', {
-            urlTemplate:'/resources/tile.png',
+            urlTemplate : TILE_IMAGE,
             renderer : 'canvas'
         });
         tile.on('layerload', function () {
