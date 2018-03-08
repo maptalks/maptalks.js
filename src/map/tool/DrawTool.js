@@ -31,7 +31,7 @@ const options = {
 };
 
 const registeredMode = {};
-const baseMode = ['circle', 'ellipse'];
+const baseMode = ['circle', 'ellipse', 'linestring', 'polygon'];
 
 /**
  * A map tool to help draw geometries.
@@ -177,6 +177,7 @@ class DrawTool extends MapTool {
         const _modeKey = mode && mode.toLowerCase();
         if (_modeKey && baseMode.indexOf(_modeKey) > -1) {
             const _mode = DrawTool.getRegisterMode(_modeKey);
+            _mode['freehand'] = true;
             _mode['action'] = ['mousedown', 'drag', 'mouseup'];
             if (_mode.hasOwnProperty('limitClickCount')) {
                 delete  _mode.limitClickCount;
@@ -477,7 +478,16 @@ class DrawTool extends MapTool {
         if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
             return;
         }
-        registerMode['update'](path.concat([coordinate]), this._geometry, event);
+        if (!registerMode.freehand) {
+            registerMode['update'](path.concat([coordinate]), this._geometry, event);
+        } else {
+            if (!(this._historyPointer === null)) {
+                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+            }
+            this._clickCoords.push(coordinate);
+            this._historyPointer = this._clickCoords.length;
+            registerMode['update'](this._clickCoords, this._geometry, event);
+        }
         /**
          * mousemove event.
          *
