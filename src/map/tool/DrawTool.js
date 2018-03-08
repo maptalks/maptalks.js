@@ -6,7 +6,7 @@ import { stopPropagation } from '../../core/util/dom';
 import Polygon from '../../geometry/Polygon';
 import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
-import RegisterGeometries from './DrawToolGeometry';
+import RegisterGeometries from './DrawToolRegister';
 
 /**
  * @property {Object} [options=null] - construct options
@@ -79,9 +79,9 @@ class DrawTool extends MapTool {
      */
     static registeredModes(modes) {
         if (modes) {
-            for (const key of Reflect.ownKeys(modes)) {
+            Object.keys(modes).forEach(function (key) {
                 DrawTool.registerMode(key, modes[key]);
-            }
+            });
         }
     }
 
@@ -174,17 +174,20 @@ class DrawTool extends MapTool {
      * @returns {DrawTool}
      */
     enableFreeHand(mode) {
-        const _modeKey = mode && mode.toLowerCase();
+        const currentMode_ = mode || this.getMode();
+        if (!currentMode_) return this;
+        const _modeKey = currentMode_ && currentMode_.toLowerCase();
         if (_modeKey && baseMode.indexOf(_modeKey) > -1) {
             const _mode = DrawTool.getRegisterMode(_modeKey);
             _mode['freehand'] = true;
             _mode['action'] = ['mousedown', 'drag', 'mouseup'];
             if (_mode.hasOwnProperty('limitClickCount')) {
+                _mode['limitClickCount__clone'] = _mode.limitClickCount;
                 delete  _mode.limitClickCount;
             }
             DrawTool.registerMode(_modeKey, _mode);
         } else {
-            throw new Error(mode + 'action do not support modification');
+            throw new Error(currentMode_ + 'action do not support modification');
         }
         return this;
     }
@@ -195,11 +198,22 @@ class DrawTool extends MapTool {
      * @returns {DrawTool}
      */
     disableFreeHand(mode) {
-        const _modeKey = mode && mode.toLowerCase();
+        const currentMode_ = mode || this.getMode();
+        if (!currentMode_) return this;
+        const _modeKey = currentMode_ && currentMode_.toLowerCase();
         if (_modeKey && baseMode.indexOf(_modeKey) > -1) {
-            DrawTool.registerMode(_modeKey, RegisterGeometries[_modeKey.toLowerCase()]);
+            const _mode = RegisterGeometries[_modeKey.toLowerCase()];
+            _mode['action'] = ['click', 'mousemove', 'click'];
+            if (_mode.hasOwnProperty('limitClickCount__clone')) {
+                _mode['limitClickCount'] = _mode.limitClickCount__clone;
+                delete  _mode.limitClickCount__clone;
+            }
+            if (_mode.hasOwnProperty('freehand')) {
+                delete  _mode.freehand
+            }
+            DrawTool.registerMode(_modeKey, _mode);
         } else {
-            throw new Error(mode + 'action do not support modification');
+            throw new Error(currentMode_ + 'action do not support modification');
         }
         return this;
     }

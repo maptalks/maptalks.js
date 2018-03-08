@@ -78,6 +78,7 @@ describe('DrawTool', function () {
             'clientY':point.y - 10
         });
     }
+
     function drawPoint() {
         var center = map.getCenter();
 
@@ -90,6 +91,34 @@ describe('DrawTool', function () {
         happen.click(eventContainer, {
             'clientX':point.x,
             'clientY':point.y
+        });
+    }
+
+    function drawRegularShape () { // ['circle', 'ellipse', 'rectangle']
+        var center = map.getCenter();
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        happen.mousedown(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
+        happen.click(eventContainer, {
+            'clientX':point.x,
+            'clientY':point.y
+        });
+        for (var i = 0; i < 10; i++) {
+            happen.mousemove(eventContainer, {
+                'clientX':point.x + i,
+                'clientY':point.y + i
+            });
+        }
+        happen.mousedown(eventContainer, {
+            'clientX':point.x - 1,
+            'clientY':point.y + 5
+        });
+        happen.click(eventContainer, {
+            'clientX':point.x - 1,
+            'clientY':point.y + 5
         });
     }
     beforeEach(function () {
@@ -185,7 +214,7 @@ describe('DrawTool', function () {
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
-            dragDraw();
+            drawRegularShape();
         });
 
         it('can draw Rectangle', function (done) {
@@ -205,9 +234,8 @@ describe('DrawTool', function () {
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
             drawTool.on('drawstart', drawStart);
-            dragDraw();
+            drawRegularShape();
         });
-
 
         it('can draw Ellipse', function (done) {
             function drawEnd(param) {
@@ -221,7 +249,7 @@ describe('DrawTool', function () {
             });
             drawTool.addTo(map);
             drawTool.on('drawend', drawEnd);
-            dragDraw();
+            drawRegularShape();
         });
     });
 
@@ -258,7 +286,7 @@ describe('DrawTool', function () {
             drawTool.addTo(map);
             drawTool.setMode('Ellipse');
             drawTool.on('drawend', drawEnd);
-            dragDraw();
+            drawRegularShape();
         });
 
         it('setMode after disable', function () {
@@ -290,7 +318,7 @@ describe('DrawTool', function () {
             };
             drawTool.setSymbol(symbol);
             drawTool.on('drawend', drawEnd);
-            dragDraw();
+            drawRegularShape();
         });
 
         it('getSymbol', function () {
@@ -300,6 +328,36 @@ describe('DrawTool', function () {
             drawTool.addTo(map);
 
             expect(drawTool.getSymbol()).to.not.be(null);
+        });
+
+        it('enableFreeHand', function (done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
+                expect(param.geometry.getWidth()).to.above(0);
+                expect(param.geometry.getHeight()).to.above(0);
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode: 'Ellipse'
+            }).addTo(map).disable();
+            drawTool.enableFreeHand().enable();
+            drawTool.on('drawend', drawEnd);
+            dragDraw(drawTool);
+        });
+
+        it('disableFreeHand', function (done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof maptalks.Circle).to.be.ok();
+                expect(param.geometry.getRadius()).to.above(0);
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode: 'LineString'
+            });
+            drawTool.addTo(map);
+            drawTool.enableFreeHand('Circle').disableFreeHand('Circle').setMode('Circle');
+            drawTool.on('drawend', drawEnd);
+            drawRegularShape();
         });
     });
 
