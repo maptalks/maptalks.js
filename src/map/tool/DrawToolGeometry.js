@@ -13,15 +13,14 @@ import Point from '../../geo/Point';
 const RegisterModes = {};
 
 RegisterModes['circle'] = {
-    'freehand': false,
-    'limitClickCount': 1,
-    'action': ['click'],
+    'limitClickCount': 2,
+    'action': ['click', 'mousemove', 'click'],
     'create': function (coordinate) {
-        return new Circle(coordinate, 0);
+        return new Circle(coordinate[0], 0);
     },
-    'update': function (coordinate, geometry) {
+    'update': function (path, geometry) {
         const map = geometry.getMap();
-        const radius = map.computeLength(geometry.getCenter(), coordinate);
+        const radius = map.computeLength(geometry.getCenter(), path[path.length - 1]);
         geometry.setRadius(radius);
     },
     'generate': function (geometry) {
@@ -30,21 +29,21 @@ RegisterModes['circle'] = {
 };
 
 RegisterModes['ellipse'] = {
-    'freehand': true,
-    'action': ['mousedown', 'drag', 'mouseup'],
-    'create': function (coordinate) {
-        return new Ellipse(coordinate, 0, 0);
+    'limitClickCount': 2,
+    'action': ['click', 'mousemove', 'click'],
+    'create': function (coordinates) {
+        return new Ellipse(coordinates[0], 0, 0);
     },
-    'update': function (coordinate, geometry) {
+    'update': function (path, geometry) {
         const map = geometry.getMap();
         const center = geometry.getCenter();
         const rx = map.computeLength(center, new Coordinate({
-            x: coordinate.x,
+            x: path[path.length - 1].x,
             y: center.y
         }));
         const ry = map.computeLength(center, new Coordinate({
             x: center.x,
-            y: coordinate.y
+            y: path[path.length - 1].y
         }));
         geometry.setWidth(rx * 2);
         geometry.setHeight(ry * 2);
@@ -55,7 +54,8 @@ RegisterModes['ellipse'] = {
 };
 
 RegisterModes['rectangle'] = {
-    'action': 'drag',
+    'limitClickCount': 2,
+    'action': ['click', 'mousemove', 'click'],
     'create': function (coordinate, param) {
         const rect = new Polygon([]);
         rect._firstClick = param['containerPoint'];
@@ -79,9 +79,10 @@ RegisterModes['rectangle'] = {
 };
 
 RegisterModes['point'] = {
-    'action': 'click',
+    'limitClickCount': 1,
+    'action': ['click'],
     'create': function (coordinate) {
-        return new Marker(coordinate);
+        return new Marker(coordinate[0]);
     },
     'generate': function (geometry) {
         return geometry;
@@ -89,7 +90,7 @@ RegisterModes['point'] = {
 };
 
 RegisterModes['polygon'] = {
-    'action': 'clickDblclick',
+    'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new LineString(path);
     },
@@ -125,7 +126,7 @@ RegisterModes['polygon'] = {
 };
 
 RegisterModes['linestring'] = {
-    'action': 'clickDblclick',
+    'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new LineString(path);
     },
@@ -138,7 +139,7 @@ RegisterModes['linestring'] = {
 };
 
 RegisterModes['arccurve'] = {
-    'action': 'clickDblclick',
+    'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new ArcCurve(path);
     },
@@ -151,7 +152,7 @@ RegisterModes['arccurve'] = {
 };
 
 RegisterModes['quadbeziercurve'] = {
-    'action': 'clickDblclick',
+    'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new QuadBezierCurve(path);
     },
@@ -164,7 +165,7 @@ RegisterModes['quadbeziercurve'] = {
 };
 
 RegisterModes['cubicbeziercurve'] = {
-    'action': 'clickDblclick',
+    'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new CubicBezierCurve(path);
     },
@@ -177,18 +178,18 @@ RegisterModes['cubicbeziercurve'] = {
 };
 
 RegisterModes['boxZoom'] = {
-    'action': 'drag',
-    'create': function (coordinate) {
-        const marker = new Marker(coordinate);
-        marker._firstClick = coordinate;
+    'action': ['mousedown', 'drag', 'mouseup'],
+    'create': function (coordinates) {
+        const marker = new Marker(coordinates[0]);
+        marker._firstClick = coordinates[0];
         return marker;
     },
-    'update': function (coordinate, geometry, param) {
+    'update': function (path, geometry, param) {
         const map = geometry.getMap();
         const p1 = map.coordToContainerPoint(geometry._firstClick),
             p2 = param['containerPoint'];
-        const coord = map.containerPointToCoordinate(new Coordinate(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)));
-        geometry.setCoordinates(coord)
+        const coords = map.containerPointToCoordinate(new Coordinate(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)));
+        geometry.setCoordinates(coords)
             .updateSymbol({
                 markerWidth  : Math.abs(p1.x - p2.x),
                 markerHeight : Math.abs(p1.y - p2.y)
