@@ -439,7 +439,9 @@ class Painter extends Class {
     }
 
     hitTest(cp, tolerance) {
-        tolerance = tolerance || 0.5;
+        if (!tolerance || tolerance < 0.5) {
+            tolerance = 0.5;
+        }
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
         this._hitPoint = cp;
