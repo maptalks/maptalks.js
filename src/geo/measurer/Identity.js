@@ -1,5 +1,6 @@
 import { extend } from '../../core/util';
 import Coordinate from '../Coordinate';
+import Point from '../Point';
 import Common from './Common';
 /**
  * Identity measurer, a measurer for Cartesian coordinate system.
@@ -57,6 +58,11 @@ export default extend(/** @lends measurer.Identity */{
         return Math.abs(area / 2);
     },
 
+    locate : function (c, xDist, yDist) {
+        c = new Coordinate(c.x, c.y);
+        return this._locate(c, xDist, yDist);
+    },
+
     /**
      * Locate a coordinate from the given source coordinate with a x-axis distance and a y-axis distance.
      * @param  {Coordinate} c     - source coordinate
@@ -64,7 +70,7 @@ export default extend(/** @lends measurer.Identity */{
      * @param  {Number} yDist     - y-axis distance
      * @return {Coordinate}
      */
-    locate: function (c, xDist, yDist) {
+    _locate: function (c, xDist, yDist) {
         if (!c) {
             return null;
         }
@@ -77,6 +83,30 @@ export default extend(/** @lends measurer.Identity */{
         if (!xDist && !yDist) {
             return c;
         }
-        return new Coordinate(c.x + xDist, c.y + yDist);
-    }
+        c.x = c.x + xDist;
+        c.y = c.y + yDist;
+        return c;
+    },
+
+    rotate : function (c, pivot, angle) {
+        c = new Coordinate(c.x, c.y);
+        return this._rotate(c, pivot, angle);
+    },
+
+    /**
+     * Rotate a coordinate of given angle around pivot
+     * @param {Coordinate} c  - source coordinate
+     * @param {Coordinate} pivot - pivot
+     * @param {Number} angle - angle in degree
+     * @return {Coordinate}
+     */
+    _rotate : function () {
+        const tmp = new Point(0, 0);
+        return function (c, pivot, angle) {
+            tmp.x = c.x - pivot.x;
+            tmp.y = c.y - pivot.y;
+            tmp._rotate(angle * Math.PI / 180);
+            return c._add(tmp.x, tmp.y);
+        };
+    }()
 }, Common);

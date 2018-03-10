@@ -120,7 +120,7 @@ export function removeFromArray(obj, array) {
     }
 }
 
-export function mapArrayRecursively(arr, fn, context) {
+export function forEachCoord(arr, fn, context) {
     if (!Array.isArray(arr)) {
         return context ? fn.call(context, arr) : fn(arr);
     }
@@ -133,7 +133,7 @@ export function mapArrayRecursively(arr, fn, context) {
             continue;
         }
         if (Array.isArray(p)) {
-            result.push(mapArrayRecursively(p, fn, context));
+            result.push(forEachCoord(p, fn, context));
         } else {
             pp = context ? fn.call(context, p) : fn(p);
             result.push(pp);

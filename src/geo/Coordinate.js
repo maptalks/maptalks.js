@@ -1,4 +1,4 @@
-import { isNil, isNumber, mapArrayRecursively } from '../core/util';
+import { isNil, isNumber, forEachCoord } from '../core/util';
 
 /**
  * Represents a coordinate point <br>
@@ -53,7 +53,7 @@ class Coordinate {
         if (!Array.isArray(coordinates)) {
             return [coordinates.x, coordinates.y];
         }
-        return mapArrayRecursively(coordinates, function (coord) {
+        return forEachCoord(coordinates, function (coord) {
             return [coord.x, coord.y];
         });
     }

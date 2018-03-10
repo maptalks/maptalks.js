@@ -9,7 +9,7 @@ import {
     isString,
     isNumber,
     isObject,
-    mapArrayRecursively,
+    forEachCoord,
     flash
 } from '../core/util';
 import { extendSymbol } from '../core/util/style';
@@ -569,7 +569,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const coordinates = this.getCoordinates();
         if (coordinates) {
             if (Array.isArray(coordinates)) {
-                const translated = mapArrayRecursively(coordinates, function (coord) {
+                const translated = forEachCoord(coordinates, function (coord) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);
@@ -758,6 +758,34 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     getArea() {
         return this._computeGeodesicArea(this._getMeasurer());
+    }
+
+    rotate(angle, pivot) {
+        if (this.type === 'GeometryCollection') {
+            const geometries = this.getGeometries();
+            geometries.forEach(g => g.rotate(angle, pivot));
+            return this;
+        }
+        if (!pivot) {
+            pivot = this.getCenter();
+        }
+        angle = 90 - angle;
+        const measurer = this._getMeasurer();
+        const coordinates = this.getCoordinates();
+        if (!Array.isArray(coordinates)) {
+            const c = measurer._rotate(coordinates, pivot, angle);
+            this.setCoordinates(c);
+            return this;
+        }
+        forEachCoord(coordinates, c => {
+            return measurer._rotate(c, pivot, angle);
+        });
+        this.setCoordinates(coordinates);
+        return this;
+    }
+
+    forEachCoord() {
+
     }
 
     /**
