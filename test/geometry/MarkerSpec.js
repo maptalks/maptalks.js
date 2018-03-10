@@ -698,4 +698,19 @@ describe('Geometry.Marker', function () {
         });
     });
 
+
+    describe('rotate the geometry', function () {
+        it('without a pivot', function () {
+            var marker = new maptalks.Marker(map.getCenter());
+            marker.rotate(10);
+            expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().toArray());
+        });
+
+        it('with a pivot', function () {
+            var marker = new maptalks.Marker(map.getCenter());
+            marker.rotate(10, map.getCenter().sub(1, 1));
+            var newCoords = marker.getCoordinates().toArray();
+            expect(newCoords).to.be.eql([118.62842615843942, 32.17932019579005]);
+        });
+    });
 });

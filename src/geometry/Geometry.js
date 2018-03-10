@@ -760,6 +760,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return this._computeGeodesicArea(this._getMeasurer());
     }
 
+    /**
+     * Rotate the geometry of given angle around a pivot point
+     * @param {Number} angle - angle to rotate in degree
+     * @param {Coordinate} [pivot=null]  - optional, will be the geometry's center by default
+     * @returns {Geometry} this
+     */
     rotate(angle, pivot) {
         if (this.type === 'GeometryCollection') {
             const geometries = this.getGeometries();
@@ -768,13 +774,16 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         if (!pivot) {
             pivot = this.getCenter();
+        } else {
+            pivot = new Coordinate(pivot);
         }
-        angle = 90 - angle;
         const measurer = this._getMeasurer();
         const coordinates = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
-            const c = measurer._rotate(coordinates, pivot, angle);
-            this.setCoordinates(c);
+            if (pivot.x !== coordinates.x || pivot.y !== coordinates.y) {
+                const c = measurer._rotate(coordinates, pivot, angle);
+                this.setCoordinates(c);
+            }
             return this;
         }
         forEachCoord(coordinates, c => {
@@ -782,10 +791,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         });
         this.setCoordinates(coordinates);
         return this;
-    }
-
-    forEachCoord() {
-
     }
 
     /**
