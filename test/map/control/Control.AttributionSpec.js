@@ -25,7 +25,7 @@ describe('Control.Attribution', function () {
         map = new maptalks.Map(container, option);
 
         var tileLayer = new maptalks.TileLayer('boudaries', {
-            urlTemplate : TILE_IMAGE,
+            urlTemplate : '#',
             'subdomains': ['a', 'b', 'c', 'd'],
             'attribution': 'guzr'
         });
@@ -49,7 +49,7 @@ describe('Control.Attribution', function () {
         map = new maptalks.Map(container, option);
 
         var tileLayer = new maptalks.TileLayer('boudaries', {
-            urlTemplate : TILE_IMAGE,
+            urlTemplate : '#',
             'subdomains': ['a', 'b', 'c', 'd'],
             'attribution': 'guzr'
         });
@@ -68,7 +68,7 @@ describe('Control.Attribution', function () {
             zoom: 17,
             center: center,
             baseLayer: new maptalks.TileLayer('base', {
-                urlTemplate : TILE_IMAGE,
+                urlTemplate : '#',
                 subdomains: ['a', 'b', 'c', 'd'],
                 attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
             })
@@ -128,7 +128,7 @@ describe('Control.Attribution', function () {
         };
         map = new maptalks.Map(container, option);
         var tileLayer = new maptalks.TileLayer('boudaries', {
-            urlTemplate : TILE_IMAGE,
+            urlTemplate : '#',
             'subdomains': ['a', 'b', 'c', 'd'],
             'attribution': 'guzr'
         });
