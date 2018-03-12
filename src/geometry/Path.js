@@ -225,7 +225,7 @@ class Path extends Geometry {
         const layer = this.getLayer(),
             properties = this.getProperties();
         const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]);
-        return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this.options['smoothness'];
+        return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify']/* && !this.options['smoothness'] */;
     }
 
     _setPrjCoordinates(prjPoints) {
