@@ -445,7 +445,7 @@ class Painter extends Class {
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
         this._hitPoint = cp;
-        this.paint(null, ctx, cp);
+        this.paint(null, ctx, cp.sub(tolerance, tolerance));
         delete this._hitPoint;
         const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
         for (let i = 3, l = imgData.length; i < l; i += 4) {
