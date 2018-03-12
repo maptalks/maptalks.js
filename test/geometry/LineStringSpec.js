@@ -207,7 +207,7 @@ describe('Geometry.LineString', function () {
         expect(line.containsPoint(cp.add(-1, 0), 0)).not.to.be.ok();
         // expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
         expect(line.containsPoint(cp.add(0, lineWidth / 2 - 1), 0)).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2), 0)).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1), 0)).not.to.be.ok();
     });
 
     it('containsPoint with lineCap', function () {
