@@ -496,7 +496,7 @@ class CanvasRenderer extends Class {
 
     clipCanvas(context) {
         const mask = this.layer.getMask();
-        if (!mask && !this._shouldClip) {
+        if (!mask || !this._shouldClip) {
             return false;
         }
         const old = this._southWest;
