@@ -353,6 +353,7 @@ class TileLayer extends Layer {
     }
 
     _getTileId(idx, zoom, id) {
+        //id is to mark GroupTileLayer's child layers
         return [id || this.getId(), idx.idy, idx.idx, zoom].join('__');
     }
 

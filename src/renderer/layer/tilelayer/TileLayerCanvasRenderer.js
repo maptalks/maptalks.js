@@ -444,23 +444,32 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer.options['background']) {
             return [];
         }
-        const map = this.getMap(),
-            layer = this.layer,
-            childZoom = info.z + 1,
-            res = map.getResolution(childZoom);
+        const map = this.getMap();
+        const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
             pmin = map._pointToPrj(min, info.z),
             pmax = map._pointToPrj(max, info.z);
+        const zoomDiff = 3;
+        for (let i = 1; i < zoomDiff; i++) {
+            this._findChildTilesAt(children, pmin, pmax, info.layer, info.z + i);
+        }
+
+        return children;
+    }
+
+    _findChildTilesAt(children, pmin, pmax, layerId, childZoom) {
+        const map = this.getMap(),
+            layer = this.layer,
+            res = map.getResolution(childZoom);
         const dmin = layer._getTileConfig().getTileIndex(pmin, res),
             dmax = layer._getTileConfig().getTileIndex(pmax, res);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
         const sy = Math.min(dmin.idy, dmax.idy), ey = Math.max(dmin.idy, dmax.idy);
         let id, tile;
-        const children = [];
         for (let i = sx; i < ex; i++) {
             for (let ii = sy; ii < ey; ii++) {
-                id = layer._getTileId({ idx : i, idy : ii }, childZoom, info.layer);
+                id = layer._getTileId({ idx : i, idy : ii }, childZoom, layerId);
                 if (this.tileCache.has(id)) {
                     tile = this.tileCache.getAndRemove(id);
                     children.push(tile);
@@ -468,7 +477,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
         }
-        return children;
     }
 
     _findParentTile(info) {
