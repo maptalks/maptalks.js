@@ -1,4 +1,4 @@
-import { now, extend } from '../core/util';
+import { now, extend, IS_NODE } from '../core/util';
 import {
     addDomEvent,
     removeDomEvent,
@@ -181,13 +181,13 @@ Map.include(/** @lends Map.prototype */ {
     _registerDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         addDomEvent(dom, events, this._handleDOMEvent, this);
-        addDomEvent(document, 'keyup', this._onKeyPress, this);
+        if (!IS_NODE) addDomEvent(document, 'keyup', this._onKeyPress, this);
     },
 
     _removeDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         removeDomEvent(dom, events, this._handleDOMEvent, this);
-        removeDomEvent(document, 'keyup', this._onKeyPress, this);
+        if (!IS_NODE) removeDomEvent(document, 'keyup', this._onKeyPress, this);
     },
 
     _handleDOMEvent(e) {

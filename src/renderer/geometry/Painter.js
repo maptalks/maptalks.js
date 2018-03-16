@@ -20,7 +20,7 @@ const registerSymbolizers = [
 ];
 
 
-const testCanvas = Canvas.createCanvas(1, 1);
+let testCanvas;
 
 /**
  * @classdesc
@@ -443,6 +443,9 @@ class Painter extends Class {
     hitTest(cp, tolerance) {
         if (!tolerance || tolerance < 0.5) {
             tolerance = 0.5;
+        }
+        if (!testCanvas) {
+            testCanvas = Canvas.createCanvas(1, 1);
         }
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
