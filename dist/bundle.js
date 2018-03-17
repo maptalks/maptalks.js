@@ -339,7 +339,7 @@ const Encrypt_State_Information = {
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/activeTexture
      */
-    'activeTexture': { code: 0, return: 0, replace: 0},
+    'activeTexture': { code: 0, return: 0, replace: 0 },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendColor
      */
@@ -562,9 +562,9 @@ const Encrypt_Renderbuffers = {
 };
 
 const Encrypt_Textures = {
-        /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
-     */
+    /**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
+ */
     'bindTexture': { code: 0, return: 0, replace: 1, ptIndex: [1] },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compressedTexImage2D
@@ -642,11 +642,11 @@ const Encrypt_Programs_And_Shaders = {
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteProgram
      */
-    'deleteProgram': { code: 0, return: 0, replace: 1, ptIndex:[0] },
+    'deleteProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteShader
      */
-    'deleteShader': { code: 0, return: 0, replace: 1, ptIndex:[0] },
+    'deleteShader': { code: 0, return: 0, replace: 1, ptIndex: [0] },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/detachShader
      */
@@ -730,7 +730,7 @@ const Encrypt_Uniforms_And_Attributes = {
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
      */
-    'getUniformLocation':{ code: 0, return: 1, replace: 1, ptIndex: [0] },
+    'getUniformLocation': { code: 0, return: 1, replace: 1, ptIndex: [0] },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getVertexAttrib
      */
@@ -832,8 +832,9 @@ var Encrypt = merge_1({},
  * @author yellow date 2018/1/4
  */
 
-
-
+/** 
+ * 
+*/
 
 /**
  * @class
@@ -862,20 +863,18 @@ class Recorder {
         this._records.push(record);
     }
     /**
-     * 将现有的记录转换成指令
+     * convert to gl commands collection
      */
-    toInstruction(programId = null) {
-        const record = new Record_1('useProgram', null);
+    toInstruction(programId) {
+        const reocrds = this._records,
+            len = reocrds.length,
+            record = new Record_1('useProgram', null);
         record.exactIndexByValue(0, programId);
-        const len = this._records.length,
-            list = this._records.splice(0, len);
-        const first = list[0];
-        if (first && first.opName === 'clear')
-            list.shift();
-        return [record].concat(list);
+        return [record].concat(reocrds.splice(0, len));
     }
     /** 
-     * 将现有记录转化成操作，与gl指令无关
+     * convert to commands collection which not just webgl operation
+     * makes recorder as a general logger.(such as htmlElement logger)
     */
     toOperation() {
         const len = this._records.length,
@@ -884,9 +883,7 @@ class Recorder {
     }
 
 }
-/**
- * 
- */
+
 Recorder.instances = {};
 
 var Recorder_1 = Recorder;
@@ -1782,6 +1779,8 @@ var GLConstants_1 = GLConstants;
  */
 const isNode = typeof process === 'object' && String(process) === '[object process]' && !process.browser;
 
+var isNode_1 = isNode;
+
 /**
  * store mapping data and default value
  */
@@ -1920,80 +1919,321 @@ class GLLimits {
 var GLLimits_1 = GLLimits;
 
 /**
+ * reference:
+ * http://keenwon.com/851.html
+ */
+
+
+/**
+ * 
+ */
+const sys = {};
+
+if (!isNode_1) {
+    const ua = navigator.userAgent.toLowerCase();
+    //store version
+    let s;
+    (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? sys.ie = s[1] :
+    (s = ua.match(/msie ([\d.]+)/)) ? sys.ie = s[1] :
+    (s = ua.match(/firefox\/([\d.]+)/)) ? sys.firefox = s[1] :
+    (s = ua.match(/chrome\/([\d.]+)/)) ? sys.chrome = s[1] :
+    (s = ua.match(/opera.([\d.]+)/)) ? sys.opera = s[1] :
+    (s = ua.match(/version\/([\d.]+).*safari/)) ? sys.safari = s[1] : 0;
+}
+
+var browser = sys;
+
+/**
  * management of GLExtension
  * @author yellow date 2017/6/15
  */
-const GL_STANDEXTENSIONS = {
-    standardDerivatives: ['OES_standard_derivatives'],
-    elementIndexUint: ['OES_element_index_uint'],
-    depthTexture: ['WEBGL_depth_texture', 'WEBKIT_WEBGL_depth_texture'],
-    textureFloat: ['OES_texture_float'],
-    fragDepth: ['EXT_frag_depth'],
-    debugShaders: ['WEBGL_debug_shaders'],
-    s3tc: ['WEBGL_compressed_texture_s3tc', 'MOZ_WEBGL_compressed_texture_s3tc', 'WEBKIT_WEBGL_compressed_texture_s3tc'],
-    pvrtc: ['WEBGL_compressed_texture_pvrtc', 'WEBKIT_WEBGL_compressed_texture_pvrtc'],
-    etc1: ['WEBGL_compressed_texture_etc1'],
-    textureFilterAnisotropic: ['EXT_texture_filter_anisotropic', 'MOZ_EXT_texture_filter_anisotropic', 'WEBKIT_EXT_texture_filter_anisotropic'],
-    vertexArrayObject:['OES_vertex_array_object','MOZ_OES_vertex_array_object','WEBKIT_OES_vertex_array_object'],
-    angleInstancedArrays:['ANGLE_instanced_arrays']
+/**
+ * contain ie firefox chrome opera safari
+ */
+
+/** 
+ * extension index
+*/
+const EXTENSION_INDEX = {
+    OES_standard_derivatives: ['OES_standard_derivatives'],
+    OES_element_index_uint: ['OES_element_index_uint'],
+    WEBGL_depth_texture: ['WEBGL_depth_texture', 'WEBKIT_WEBGL_depth_texture'],
+    OES_texture_float: ['OES_texture_float'],
+    EXT_frag_depth: ['EXT_frag_depth'],
+    WEBGL_debug_shaders: ['WEBGL_debug_shaders'],
+    WEBGL_compressed_texture_s3tc: ['WEBGL_compressed_texture_s3tc', 'MOZ_WEBGL_compressed_texture_s3tc', 'WEBKIT_WEBGL_compressed_texture_s3tc'],
+    WEBGL_compressed_texture_pvrtc: ['WEBGL_compressed_texture_pvrtc', 'WEBKIT_WEBGL_compressed_texture_pvrtc'],
+    WEBGL_compressed_texture_etc1: ['WEBGL_compressed_texture_etc1'],
+    EXT_texture_filter_anisotropic: ['EXT_texture_filter_anisotropic', 'MOZ_EXT_texture_filter_anisotropic', 'WEBKIT_EXT_texture_filter_anisotropic'],
+    OES_vertex_array_object: ['OES_vertex_array_object', 'MOZ_OES_vertex_array_object', 'WEBKIT_OES_vertex_array_object'],
+    ANGLE_instanced_arrays: ['ANGLE_instanced_arrays']
 };
+/** 
+ * webgl1 available extension
+*/
+const extensions1 = {};
+/** 
+ * webgl2 available extension
+*/
+const extensions2 = {};
+/** 
+ * }{debug
+ * needs to be extend
+ * @class
+*/
+class Extension {
+    constructor(extName) {
+        this._name = extName;
+    }
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 33) || (browser.ie && parseInt(browser.ie) >= 11)) {
+    extensions1['ANGLE_instanced_arrays'] = new Extension('ANGLE_instanced_arrays');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_blend_minmax
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 33) {
+    extensions1['EXT_blend_minmax'] = new Extension('EXT_blend_minmax');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_color_buffer_float
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 49) {
+    extensions2['EXT_color_buffer_float'] = new Extension('EXT_color_buffer_float');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_color_buffer_half_float
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 30) {
+    extensions1['EXT_color_buffer_half_float'] = new Extension('EXT_color_buffer_half_float');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_disjoint_timer_query
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 51) || (browser.chrome && parseInt(browser.chrome) >= 47)) {
+    extensions1['EXT_disjoint_timer_query'] = new Extension('EXT_disjoint_timer_query');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_frag_depth
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 30) || browser.ie) {
+    extensions1['EXT_frag_depth'] = new Extension('EXT_frag_depth');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_sRGB
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 28) {
+    extensions1['EXT_sRGB'] = new Extension('EXT_sRGB');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_shader_texture_lod
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 50) {
+    extensions1['EXT_shader_texture_lod'] = new Extension('EXT_shader_texture_lod');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/EXT_texture_filter_anisotropic
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 17) || browser.ie) {
+    extensions2['EXT_texture_filter_anisotropic'] = extensions1['EXT_texture_filter_anisotropic'] = new Extension('EXT_texture_filter_anisotropic');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/OES_element_index_uint
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 24) || browser.ie) {
+    extensions2['OES_element_index_uint'] = extensions1['OES_element_index_uint'] = new Extension('OES_element_index_uint');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/OES_standard_derivatives
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 10) || browser.ie) {
+    extensions1['OES_standard_derivatives'] = new Extension('OES_standard_derivatives');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 6) || browser.ie) {
+    extensions1['OES_texture_float'] = new Extension('OES_texture_float');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float_linear
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 24) || browser.ie) {
+    extensions2['OES_texture_float_linear'] = extensions1['OES_texture_float_linear'] = new Extension('OES_texture_float_linear');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_half_float
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 29) || browser.ie) {
+    extensions1['OES_texture_half_float'] = new Extension('OES_texture_half_float');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_half_float_linear
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 30) || browser.ie) {
+    extensions2['OES_texture_half_float_linear'] = extensions1['OES_texture_half_float_linear'] = new Extension('OES_texture_half_float_linear');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/OES_vertex_array_object
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 25) {
+    extensions1['OES_vertex_array_object'] = new Extension('OES_vertex_array_object');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_color_buffer_float
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 30) {
+    extensions1['WEBGL_color_buffer_float'] = new Extension('WEBGL_color_buffer_float');
+}
+/**
+ * }{debug mobile/hardware
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_astc
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 53) || (browser.chrome && parseInt(browser.chrome) >= 47)) {
+    extensions2['WEBGL_compressed_texture_astc'] = extensions1['WEBGL_compressed_texture_astc'] = new Extension('WEBGL_compressed_texture_astc');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_atc
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 18) {
+    extensions2['WEBGL_compressed_texture_atc'] = extensions1['WEBGL_compressed_texture_atc'] = new Extension('WEBGL_compressed_texture_atc');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_etc
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 51) {
+    extensions2['WEBGL_compressed_texture_etc'] = extensions1['WEBGL_compressed_texture_etc'] = new Extension('WEBGL_compressed_texture_etc');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_etc1
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 30) {
+    extensions2['WEBGL_compressed_texture_etc1'] = extensions1['WEBGL_compressed_texture_etc1'] = new Extension('WEBGL_compressed_texture_etc1');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_pvrtc
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 18) {
+    extensions2['WEBGL_compressed_texture_pvrtc'] = extensions1['WEBGL_compressed_texture_pvrtc'] = new Extension('WEBGL_compressed_texture_pvrtc');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_s3tc
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 22) || browser.ie) {
+    extensions2['WEBGL_compressed_texture_s3tc'] = extensions1['WEBGL_compressed_texture_s3tc'] = new Extension('WEBGL_compressed_texture_s3tc');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_s3tc_srgb
+ */
+if (browser.firefox && parseInt(browser.firefox) >= 55) {
+    extensions2['WEBGL_compressed_texture_s3tc_srgb'] = extensions1['WEBGL_compressed_texture_s3tc_srgb'] = new Extension('WEBGL_compressed_texture_s3tc_srgb');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_debug_renderer_info
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 53) || browser.ie) {
+    extensions2['WEBGL_debug_renderer_info'] = extensions1['WEBGL_debug_renderer_info'] = new Extension('WEBGL_debug_renderer_info');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_debug_shaders
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 30) || (browser.chrome && parseInt(browser.chrome) >= 47)) {
+    extensions2['WEBGL_debug_shaders'] = extensions1['WEBGL_debug_shaders'] = new Extension('WEBGL_debug_shaders');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_depth_texture
+ */
+if ((browser.firefox && parseInt(browser.firefox) >= 22) || browser.ie) {
+    extensions1['WEBGL_debug_renderer_info'] = new Extension('WEBGL_debug_renderer_info');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_draw_buffers
+ */
+if (browser.firefox && parseInt(browser.firefox) === 28) {
+    extensions1['WEBGL_draw_buffers'] = new Extension('WEBGL_draw_buffers');
+}
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_lose_context
+ */
+if (browser.firefox && parseInt(browser.firefox) === 22) {
+    extensions2['WEBGL_lose_context'] = extensions1['WEBGL_lose_context'] = new Extension('WEBGL_lose_context');
+}
 /**
  * @class
  */
-class GLExtension{
+class GLExtension {
     /**
      * 
      * @param {GLContext} glContext 
      */
-    constructor(glContext){
+    constructor(glContext) {
         /**
          * quote of GLContext instance
          */
         this._glContext = glContext;
         /**
+         * indicate context webgl version,'webgl' or 'webgl2'
+         */
+        this._renderType = glContext.renderType;
+        /**
          * store key and value of extension
          * @type {Object}
          */
         this._options = {};
+        /**
+         * @type {Object}
+         */
+        this._extension = this._renderType === 'webgl' ? extensions1 : extensions2;
+        /**
+         * map webgl extension
+         */
+        this._map();
     }
     /**
      * rebuild
      */
-    _include(){
-        for (var key in GL_STANDEXTENSIONS) {
-            if (GL_STANDEXTENSIONS.hasOwnProperty(key)) {
-                let extensionName = GL_STANDEXTENSIONS[key],
-                    extension = this.getExtension(extensionName);
-                if (!!extension)
-                    this._options[key] = extension;
+    _include() {
+        //1.map exist
+        const extension = this._renderType === 'webgl' ? extensions1 : extensions2;
+        for (var key in extension) {
+            if (extension.hasOwnProperty(key)) {
+                const extent = this.getExtension(key);
+                if (extent) this[key] = extent;
+            }
+        }
+        //2.map standard
+        for (var key in EXTENSION_INDEX) {
+            if (EXTENSION_INDEX.hasOwnProperty(key)) {
+                const extent = this.getExtension(EXTENSION_INDEX[key]);
+                if (extent) this[key] = extent;
             }
         }
     }
-     /**
-     * 
-     * @param {String[]} extNames 
-     */
+    /**
+    * 
+    * @param {String[]} extNames 
+    */
     getExtension(...extNames) {
         const gl = this._glContext.gl,
-            names = [].concat(...extNames),
-            len = names.length;
-        for (let i = 0; i < len; ++i) {
-            const name = names[i];
-            let extension = gl.getExtension(name);
+            names = [].concat(...extNames);
+        for (let i = 0, len = names.length; i < len; ++i) {
+            const extension = gl.getExtension(names[i]);
             if (extension)
                 return extension;
         }
         return null;
     }
     /**
-     * map available extension 
+     * 
      */
     _map() {
-        for (var key in this._extensions) {
-            if (this._options.hasOwnProperty(key)) {
-                let target = this._options[key];
-                if (!this[key] && !!target)
-                    this[key] = target;
+        const extension = this._extension;
+        for (var key in extension) {
+            if (extension.hasOwnProperty(key)) {
+                this[key] = extension[key];
             }
         }
     }
@@ -11312,7 +11552,6 @@ class GLBuffer extends Dispose_1{
 
 }
 
-
 var GLBuffer_1 = GLBuffer;
 
 const prefix$4 = 'FRAMEBUFFER';
@@ -11362,20 +11601,42 @@ class GLRenderbuffer extends Dispose_1{
 var GLRenderbuffer_1 = GLRenderbuffer;
 
 /**
+ * @author yellow date 2018/2/27
+ */
+
+
+const prefix$6 = 'VERTEXARRAYOBJRCT ';
+/** 
+ * @class
+*/
+class GLVertexArray extends Dispose_1 {
+    /**
+     * 
+     * @param {GLContext} glContext 
+     */
+    constructor(glContext) {
+        super(prefix$6);
+        this._glContext = glContext;
+    }
+}
+
+var GLVertexArray_1 = GLVertexArray;
+
+/**
  * birgde to attach texture
  */
 
 /**
  * the prefix of Texture type
  */
-const prefix$6 = 'TEXTURE';
+const prefix$7 = 'TEXTURE';
 
 class GLTexture extends Dispose_1{
     /**
      * @param {GLContext} glContext 
      */
     constructor(glContext){
-        super(prefix$6);
+        super(prefix$7);
         /**
          * @type {GLContext}
          */
@@ -11542,15 +11803,19 @@ const CHACHE = {
     /**
      * store FRAMEBUFFER
      */
-    FRAMEBUFFER:{},
+    FRAMEBUFFER: {},
     /**
      * store RENDERBUFFER
      */
-    RENDERBUFFER:{},
+    RENDERBUFFER: {},
     /**
      * store uinform
      */
     UNIFOMR: {},
+    /**
+     * store vao
+     */
+    VERTEXARRAYOBJRCT:{},
 };
 /**
  * @class
@@ -11566,14 +11831,42 @@ class Actuator {
          * @type {WebGLRenderingContext}
          */
         this._gl = null;
+        /**
+         * @type {Boolean}
+         */
+        this._debug = false;
+        /**
+         * debug logger
+         * @type {Array}
+         */
+        this._logger = [];
     }
     /**
      * 
-     * @param {WebGLRenderingContext} gl 
+     * @param {WebGLRenderingContext} v
      */
-    setGl(v) {
+    apply(v) {
         this._gl = v;
         this.play();
+    }
+    /**
+     * get the excuted commands
+     */
+    get logger() {
+        return this._logger;
+    }
+    /**
+     * 
+     */
+    get debug() {
+        return this._debug;
+    }
+    /**
+     * @param {Boolean} v
+     */
+    set debug(v) {
+        this._debug = v;
+        !v ? this._logger = [] : null;
     }
     /**
      * 执行
@@ -11610,6 +11903,8 @@ class Actuator {
                 else {
                     gl[opName].apply(gl, record.args);
                 }
+                //debug logger
+                this._debug ? this._logger.push(opName) : null;
                 //next record
                 record = this._records.shift();
             }
@@ -11738,21 +12033,28 @@ class GLContext extends Dispose_1 {
         this._gl = gl;
         this._glLimits._include();
         this._glExtension._include();
-        //替换绘制实体
-        Actuator_1.setGl(gl);
+        Actuator_1.apply(gl);
     }
     /**
+     * get the version of webgl
      * @returns {String} 'webgl' or 'webgl2'
      */
-    get renderType(){
+    get renderType() {
         return this._renderType;
     }
     /**
-     * 
+     * get webglrendercontext
      * @returns {WebGLRenderingContext}
      */
     get gl() {
         return this._gl;
+    }
+    /**
+     * get glcontext's recorder
+     * @returns {Recorder}
+     */
+    get recorder(){
+        return this._recorder;
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
@@ -11761,7 +12063,6 @@ class GLContext extends Dispose_1 {
     createShader(type) {
         const glShader = new GLShader_1(type, this),
             record = new Record_1('createShader', type);
-        //createShader 操作必需返回值
         record.setReturnId(glShader.id);
         this._recorder.increase(record);
         return glShader;
@@ -11791,7 +12092,7 @@ class GLContext extends Dispose_1 {
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
-     * 创建program对象
+     * @returns {GLProgram}
      */
     createProgram() {
         const glProgram = new GLProgram_1(this),
@@ -11802,6 +12103,7 @@ class GLContext extends Dispose_1 {
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+     * @returns {GLBuffer}
      */
     createBuffer() {
         const glBuffer = new GLBuffer_1(this),
@@ -11812,25 +12114,43 @@ class GLContext extends Dispose_1 {
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
+     * @returns {GLFramebuffer}
      */
-    createFramebuffer(){
+    createFramebuffer() {
         const glFramebuffer = new GLFramebuffer_1(this),
             record = new Record_1('createFramebuffer');
         record.setReturnId(glFramebuffer.id);
         this._recorder.increase(record);
         return glFramebuffer;
     }
-    createRenderbuffer(){
+    /** 
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createRenderbuffer
+     * @returns {GLRenderbuffer}
+     */
+    createRenderbuffer() {
         const glRenderbuffer = new GLRenderbuffer_1(this),
             record = new Record_1('createRenderbuffer');
         record.setReturnId(glRenderbuffer.id);
         this._recorder.increase(record);
         return glRenderbuffer;
     }
+    /** 
+     * needs ext 'OES_vertex_array_object' support
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLVertexArrayObject
+     * @returns {GL}
+    */
+    createVertexArray(){
+        const glVao = new GLVertexArray_1(this),
+            record = new Record_1('createVertexArray');
+        record.setReturnId(glVao.id);
+        this._recorder.increase(record);
+        return glVao;
+    }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
+     * @returns {GLTexture}
      */
-    createTexture(){
+    createTexture() {
         const glTexture = new GLTexture_1(this),
             record = new Record_1('createTexture');
         record.setReturnId(glTexture.id);
@@ -11871,7 +12191,7 @@ class GLContext extends Dispose_1 {
         const returnId = program.getAttribLocation(name),
             record = new Record_1('getAttribLocation', program, name);
         record.exactIndexByValue(0, program.id);
-        record.setReturnId(returnId,false);
+        record.setReturnId(returnId, false);
         this._recorder.increase(record);
         return returnId;
     }
@@ -11880,7 +12200,7 @@ class GLContext extends Dispose_1 {
      * @param {GLProgram} program 
      * @param {DOMString} name 
      */
-    getUniformLocation(program,name){
+    getUniformLocation(program, name) {
         const returnId = program.getUnifromLocation(name),
             record = new Record_1('getUniformLocation', program, name);
         record.exactIndexByValue(0, program.id);
@@ -11893,21 +12213,21 @@ class GLContext extends Dispose_1 {
      * @param {GLShader} shader 
      * @param {GLenum} pname 
      */
-    getShaderParameter(shader,pname){
+    getShaderParameter(shader, pname) {
         return shader.getParameters(pname);
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
      * @param {GLShader} shader 
      */
-    getShaderInfoLog(shader){
+    getShaderInfoLog(shader) {
         return '';
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
      * @param {GLProgram} program 
      */
-    getProgramInfoLog(program){
+    getProgramInfoLog(program) {
         return '';
     }
     /**
@@ -11915,7 +12235,7 @@ class GLContext extends Dispose_1 {
      * @param {GLProgram} program 
      * @param {GLuint} index 
      */
-    getActiveAttrib(program,index){
+    getActiveAttrib(program, index) {
         return program.attributes[index];
     }
     /**
@@ -11923,7 +12243,7 @@ class GLContext extends Dispose_1 {
      * @param {GLProgram} program 
      * @param {GLuint} index 
      */
-    getActiveUniform(program,index){
+    getActiveUniform(program, index) {
         return program.uniforms[index];
     }
     /**
@@ -11931,21 +12251,20 @@ class GLContext extends Dispose_1 {
      * @type {GLProgram} program
      * @type {GLenum} pname
      */
-    getProgramParameter(program, pname){
-        if(pname === GLConstants_1.ACTIVE_UNIFORMS){
+    getProgramParameter(program, pname) {
+        if (pname === GLConstants_1.ACTIVE_UNIFORMS) {
             return program.uniforms.length;
-        }else if(pname === GLConstants_1.ACTIVE_ATTRIBUTES){
+        } else if (pname === GLConstants_1.ACTIVE_ATTRIBUTES) {
             return program.attributes.length;
-        }else if(pname === GLConstants_1.ATTACHED_SHADERS){
+        } else if (pname === GLConstants_1.ATTACHED_SHADERS) {
             return program.attachNum;
-        }else if(pname === GLConstants_1.LINK_STATUS){
+        } else if (pname === GLConstants_1.LINK_STATUS) {
             return true;
-        }else if(pname === GLConstants_1.DELETE_STATUS){
+        } else if (pname === GLConstants_1.DELETE_STATUS) {
             return true;
         }
     }
     /**
-     * 
      * @param {GLProgram} program 
      */
     useProgram(program) {
@@ -11973,11 +12292,20 @@ class GLContext extends Dispose_1 {
         return glLimits[pname];
     }
     /**
-     * 特别的方法
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
+     */
+    clear(mask) {
+        //}{hack igonre 'screen clearing operations'
+        //1.GLConstants.COLOR_BUFFER_BIT|GLConstants.DEPTH_BUFFER_BIT|GLConstants.STENCIL_BUFFER_BIT  = 17664
+        //2.mask alpah !== 0
+        if (mask !== 17664) {
+            const record = new Record_1('clear', mask);
+            this._recorder.increase(record);
+        }
+    }
+    /**
+     * turning function
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
-     * @param {*} mode 
-     * @param {*} first 
-     * @param {*} count 
      */
     drawArrays(mode, first, count) {
         const record = new Record_1('drawArrays', mode, first, count),
@@ -11986,12 +12314,8 @@ class GLContext extends Dispose_1 {
         Actuator_1.play(this._recorder.toInstruction(programId));
     }
     /**
-     * 特别的方法
+     * turning function
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-     * @param {*} mode 
-     * @param {*} count 
-     * @param {*} type 
-     * @param {*} offset 
      */
     drawElements(mode, count, type, offset) {
         const record = new Record_1('drawElements', mode, count, type, offset),
@@ -11999,23 +12323,6 @@ class GLContext extends Dispose_1 {
         this._recorder.increase(record);
         Actuator_1.play(this._recorder.toInstruction(programId));
     }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
-     */
-    // clear(mask){
-    //     // const record = new Record('clear', mask);
-    //     // this._recorder.increase(record);
-    //     console.log(`clear:${mask}`);
-    // }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor
-     */
-    // clearColor(red, green, blue, alpha){
-    //     // const record = new Record('clearColor', red, green, blue, alpha);
-    //     // this._recorder.increase(record);
-    //     console.log(`clearColor:${red}-${green}-${blue}-${alpha}`);
-    // }
-
 }
 
 var GLContext_1 = GLContext;
@@ -12040,7 +12347,7 @@ class GLCanvas extends Dispose_1 {
      * 
      * @param {String} id the real htmlCanvasElement id 
      * @param {Object} [options]
-     * @param {Object} [options.mock]
+     * @param {HtmlMock} [options.mock]
      */
     constructor(id, options = {}) {
         super(prefix);
@@ -12088,16 +12395,19 @@ class GLCanvas extends Dispose_1 {
     /**
      * 
      */
-    _mock(){
+    _mock() {
         const mock = this._options.mock;
-        if(!mock) return;
+        if (!mock) return;
         const mockList = mock.mockList;
         mockList.forEach(key => {
-            if (!this.hasOwnProperty(key)) {
-                const target = mock.getTarget(key);
-                if (!this[key])
-                    this[key] = target;
-            }
+            if (!this.hasOwnProperty(key) && !this[key])
+                if (!mock.isAttribute(key))
+                    this[key] = (...rest) => {
+                        const element = mock.element;
+                        return element[key].apply(element, rest);
+                    };
+                else
+                    this[key] = mock.element[key];
         });
     }
     /**
@@ -12132,14 +12442,10 @@ class GLCanvas extends Dispose_1 {
      * @returns {GLContext}
      */
     getContext(renderType = 'webgl', options = {}) {
-        const canvasId = this._canvasId,
-            id = this.id;
+        const id = this.id;
         this._glType = this._glType || renderType;
         this._contextOptions = this._contextOptions || this._getContextAttributes(options);
-        this._glContext = this._glContext ||new GLContext_1(id, this._glType, this._contextOptions);
-        // if (!CACHE_GLCONTEXT[canvasId]) {
-        //     CACHE_GLCONTEXT[canvasId] = new GLContext(id, this._glType, this._contextOptions);
-        // }
+        this._glContext = this._glContext || new GLContext_1(id, this._glType, this._contextOptions);
         return this._glContext;
     }
     /**
@@ -12171,8 +12477,8 @@ class GLCanvas extends Dispose_1 {
         //2.
         const records = this._records.toOperation();
         let record = records.shift();
-        while(record){
-            canvas[record.opName].apply(canvas,record.args);
+        while (record) {
+            canvas[record.opName].apply(canvas, record.args);
             record = records.shift();
         }
         //3. set gl
@@ -12185,13 +12491,13 @@ class GLCanvas extends Dispose_1 {
      * @param {WebGLRenderingContext} gl 
      */
     linkToWebGLRenderingContext(gl) {
-        if(this._canvas){
+        if (this._canvas) {
             throw new Error('exist htmlcanvaselement');
         }
         const canvas = gl.canvas;
-        if(canvas){
+        if (canvas) {
             this.linkToCanvas(canvas);
-        }else{
+        } else {
             const glContext = this.getContext('webgl');
             glContext._setgl(gl);
         }
@@ -12208,12 +12514,23 @@ var GLCanvas_1 = GLCanvas;
  * @example
  * const mock = new Mock(canvasElement,['width','heigh']);
  */
-class Mock {
+
+const attribute = {
+    'style': 1,
+    'nodeName': 1,
+    'width': 1,
+    'height': 1
+};
+
+/**
+ * @class
+ */
+class HtmlMock {
     /**
      * 
      * @param {HtmlCanvasElement} element 
      */
-    constructor(element,mockList){
+    constructor(element, mockList) {
         /**
          * @type {HtmlCanvasElement}
          */
@@ -12226,49 +12543,83 @@ class Mock {
     /**
      * @type {Array}
      */
-    set mockList(v){
+    set mockList(v) {
         this._mockList = v;
     }
     /**
      * @type {Array}
      */
-    get mockList(){
+    get mockList() {
         return this._mockList;
     }
-    /**
-     * 
-     * @param {String} name 
-     */
-    getTarget(name){
-        return this._element[name];
+
+    get element() {
+        return this._element;
+    }
+
+    isAttribute(name) {
+        return attribute[name] === 1;
     }
 
 }
 
-var Mock_1 = Mock;
+var HtmlMock_1 = HtmlMock;
 
 var init$2 = {
-    Mock: Mock_1,
     gl: {
+        /**
+         * mock html element functions and attributes
+         */
+        HtmlMock: HtmlMock_1,
+        /**
+         * virtual HtmlCanvasElement
+         */
         GLCanvas: GLCanvas_1,
-        GLContext: GLContext_1
+        /**
+         * debug settings
+         */
+        Debug: {
+            /**
+             * enable debug logger
+             */
+            Enable: function () {
+                Actuator_1.debug = true;
+            },
+            /**
+             * disable debug logger
+             */
+            Disable: function () {
+                Actuator_1.debug = false;
+            },
+            /**
+             * executed commands
+             */
+            GetLogger: function(){
+                return Actuator_1.logger;
+            }
+        },
     }
 };
 
-var init = createCommonjsModule(function (module) {
-  /**
-   * @author yellow date 2018/2/11
-   */
+/**
+ * @author yellow date 2018/2/11
+ */
 
-  module.exprots = {
-    Mock: init$2.Mock,
-    gl: {
-      glCanvas: init$2.gl.GLCanvas
-    }
-  };
-});
+var init = {
+  /**
+   * WebGL namespace
+   */
+  gl: {
+    HtmlMock: init$2.gl.HtmlMock,
+    GLCanvas: init$2.gl.GLCanvas
+  }
+
+};
+
+var init_1 = init.gl;
 
 exports['default'] = init;
+exports.gl = init_1;
 
 return exports;
 

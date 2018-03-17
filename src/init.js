@@ -3,9 +3,13 @@
  */
 const kiwi = require('kiwi.gl');
 
-module.exprots = {
-  Mock: kiwi.Mock,
+module.exports = {
+  /**
+   * WebGL namespace
+   */
   gl: {
-    glCanvas: kiwi.gl.GLCanvas
+    HtmlMock: kiwi.gl.HtmlMock,
+    GLCanvas: kiwi.gl.GLCanvas
   }
+
 }
