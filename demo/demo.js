@@ -69,7 +69,7 @@ gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0,0);
 gl.enableVertexAttribArray(a_texCoord);
 //赋纹理
 const image = new Image();
-image.src = "./assets/wall.jpg"
+image.src = "./assets/wall.jpg";
 image.onload = function(){
         //纹理进行y轴反转
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,1);
