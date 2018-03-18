@@ -224,18 +224,23 @@ class TileLayer extends Layer {
             return null;
         }
 
-        const zoom = isNil(z) ? this._getTileZoom() : z;
+        const zoom = isNil(z) ? this._getTileZoom() : z,
+            sr = this._sr,
+            mapSR = map.getSpatialReference(),
+            res = sr.getResolution(zoom);
         const emptyGrid = {
             'zoom' : zoom,
             'extent' : null,
             'tiles' : []
         };
 
-        const offset = this._getTileOffset(zoom);
-        const hasOffset = offset[0] || offset[1];
+        const offset = this._getTileOffset(zoom),
+            hasOffset = offset[0] || offset[1];
 
         let containerExtent = map.getContainerExtent();
-        const extent2d = map._get2DExtent()._add(offset);
+        const extent2d = map._get2DExtent()._add(offset),
+            innerExtent2D = this._getInnerExtent(zoom, containerExtent, extent2d);
+
         const maskExtent = this._getMask2DExtent();
         if (maskExtent) {
             const intersection = maskExtent.intersection(extent2d);
@@ -244,9 +249,6 @@ class TileLayer extends Layer {
             }
             containerExtent = intersection.convertTo(c => map._pointToContainerPoint(c));
         }
-        const sr = this._sr;
-        const mapSR = map.getSpatialReference();
-        const res = sr.getResolution(zoom);
 
         //Get description of center tile including left and top offset
         let c;
@@ -307,7 +309,7 @@ class TileLayer extends Layer {
                         'y' : idx.y,
                         'extent2d' : tileExtent
                     };
-                if (this._isTileInExtent(tileInfo, containerExtent)) {
+                if (innerExtent2D.intersects(tileExtent) || this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
                         tileInfo.point._add(offset);
                         tileInfo.extent2d._add(offset);
@@ -338,6 +340,19 @@ class TileLayer extends Layer {
             'extent' : extent,
             'tiles': tiles
         };
+    }
+
+    _getInnerExtent(zoom, containerExtent, extent2d) {
+        const map = this.getMap(),
+            res = map.getResolution(zoom),
+            scale = map.getResolution() / res,
+            center = extent2d.getCenter()._multi(scale),
+            bearing = map.getBearing() * Math.PI / 180,
+            ch = containerExtent.getHeight() / 2 * scale,
+            cw  = containerExtent.getWidth() / 2 * scale,
+            h = Math.abs(Math.cos(bearing) * ch) || ch,
+            w  = Math.abs(Math.sin(bearing) * ch) || cw;
+        return new PointExtent(center.sub(w, h), center.add(w, h));
     }
 
     _getTileOffset(z) {
