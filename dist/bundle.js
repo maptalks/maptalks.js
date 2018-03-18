@@ -1,87 +1,684 @@
-var fusion = (function (exports) {
-'use strict';
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.fusion = {})));
+}(this, (function (exports) { 'use strict';
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
-var isObject_1 = createCommonjsModule(function (module) {
-/**
- * reference:
- * http://www.css88.com/doc/underscore/docs/underscore.html
- * 
- */
-
-const isObject = (obj) => {
-    const type = typeof obj;
-    return type === 'function' || type === 'object' && !!obj
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
-module.exports = isObject;
+var jsx = function () {
+  var REACT_ELEMENT_TYPE = typeof Symbol === "function" && Symbol.for && Symbol.for("react.element") || 0xeac7;
+  return function createRawReactElement(type, props, key, children) {
+    var defaultProps = type && type.defaultProps;
+    var childrenLength = arguments.length - 3;
+
+    if (!props && childrenLength !== 0) {
+      props = {};
+    }
+
+    if (props && defaultProps) {
+      for (var propName in defaultProps) {
+        if (props[propName] === void 0) {
+          props[propName] = defaultProps[propName];
+        }
+      }
+    } else if (!props) {
+      props = defaultProps || {};
+    }
+
+    if (childrenLength === 1) {
+      props.children = children;
+    } else if (childrenLength > 1) {
+      var childArray = Array(childrenLength);
+
+      for (var i = 0; i < childrenLength; i++) {
+        childArray[i] = arguments[i + 3];
+      }
+
+      props.children = childArray;
+    }
+
+    return {
+      $$typeof: REACT_ELEMENT_TYPE,
+      type: type,
+      key: key === undefined ? null : '' + key,
+      ref: null,
+      props: props,
+      _owner: null
+    };
+  };
+}();
+
+var asyncIterator = function (iterable) {
+  if (typeof Symbol === "function") {
+    if (Symbol.asyncIterator) {
+      var method = iterable[Symbol.asyncIterator];
+      if (method != null) return method.call(iterable);
+    }
+
+    if (Symbol.iterator) {
+      return iterable[Symbol.iterator]();
+    }
+  }
+
+  throw new TypeError("Object is not async iterable");
+};
+
+var asyncGenerator = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
+
+  function AsyncGenerator(gen) {
+    var front, back;
+
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
+
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
+
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
+
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
+
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
+
+        case "throw":
+          front.reject(value);
+          break;
+
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
+
+      front = front.next;
+
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
+
+    this._invoke = send;
+
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
+
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
+
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
+
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
+
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
+
+  return {
+    wrap: function (fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function (value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
+
+var asyncGeneratorDelegate = function (inner, awaitWrap) {
+  var iter = {},
+      waiting = false;
+
+  function pump(key, value) {
+    waiting = true;
+    value = new Promise(function (resolve) {
+      resolve(inner[key](value));
+    });
+    return {
+      done: false,
+      value: awaitWrap(value)
+    };
+  }
+
+  
+
+  if (typeof Symbol === "function" && Symbol.iterator) {
+    iter[Symbol.iterator] = function () {
+      return this;
+    };
+  }
+
+  iter.next = function (value) {
+    if (waiting) {
+      waiting = false;
+      return value;
+    }
+
+    return pump("next", value);
+  };
+
+  if (typeof inner.throw === "function") {
+    iter.throw = function (value) {
+      if (waiting) {
+        waiting = false;
+        throw value;
+      }
+
+      return pump("throw", value);
+    };
+  }
+
+  if (typeof inner.return === "function") {
+    iter.return = function (value) {
+      return pump("return", value);
+    };
+  }
+
+  return iter;
+};
+
+var asyncToGenerator = function (fn) {
+  return function () {
+    var gen = fn.apply(this, arguments);
+    return new Promise(function (resolve, reject) {
+      function step(key, arg) {
+        try {
+          var info = gen[key](arg);
+          var value = info.value;
+        } catch (error) {
+          reject(error);
+          return;
+        }
+
+        if (info.done) {
+          resolve(value);
+        } else {
+          return Promise.resolve(value).then(function (value) {
+            step("next", value);
+          }, function (err) {
+            step("throw", err);
+          });
+        }
+      }
+
+      return step("next");
+    });
+  };
+};
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+var defineEnumerableProperties = function (obj, descs) {
+  for (var key in descs) {
+    var desc = descs[key];
+    desc.configurable = desc.enumerable = true;
+    if ("value" in desc) desc.writable = true;
+    Object.defineProperty(obj, key, desc);
+  }
+
+  return obj;
+};
+
+var defaults = function (obj, defaults) {
+  var keys = Object.getOwnPropertyNames(defaults);
+
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var value = Object.getOwnPropertyDescriptor(defaults, key);
+
+    if (value && value.configurable && obj[key] === undefined) {
+      Object.defineProperty(obj, key, value);
+    }
+  }
+
+  return obj;
+};
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+var get = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
+    }
+  } else if ("value" in desc) {
+    return desc.value;
+  } else {
+    var getter = desc.get;
+
+    if (getter === undefined) {
+      return undefined;
+    }
+
+    return getter.call(receiver);
+  }
+};
+
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+var _instanceof = function (left, right) {
+  if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
+    return right[Symbol.hasInstance](left);
+  } else {
+    return left instanceof right;
+  }
+};
+
+var interopRequireDefault = function (obj) {
+  return obj && obj.__esModule ? obj : {
+    default: obj
+  };
+};
+
+var interopRequireWildcard = function (obj) {
+  if (obj && obj.__esModule) {
+    return obj;
+  } else {
+    var newObj = {};
+
+    if (obj != null) {
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+      }
+    }
+
+    newObj.default = obj;
+    return newObj;
+  }
+};
+
+var newArrowCheck = function (innerThis, boundThis) {
+  if (innerThis !== boundThis) {
+    throw new TypeError("Cannot instantiate an arrow function");
+  }
+};
+
+var objectDestructuringEmpty = function (obj) {
+  if (obj == null) throw new TypeError("Cannot destructure undefined");
+};
+
+var objectWithoutProperties = function (obj, keys) {
+  var target = {};
+
+  for (var i in obj) {
+    if (keys.indexOf(i) >= 0) continue;
+    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+    target[i] = obj[i];
+  }
+
+  return target;
+};
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+var selfGlobal = typeof global === "undefined" ? self : global;
+
+var set = function set(object, property, value, receiver) {
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent !== null) {
+      set(parent, property, value, receiver);
+    }
+  } else if ("value" in desc && desc.writable) {
+    desc.value = value;
+  } else {
+    var setter = desc.set;
+
+    if (setter !== undefined) {
+      setter.call(receiver, value);
+    }
+  }
+
+  return value;
+};
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
+  };
+}();
+
+var slicedToArrayLoose = function (arr, i) {
+  if (Array.isArray(arr)) {
+    return arr;
+  } else if (Symbol.iterator in Object(arr)) {
+    var _arr = [];
+
+    for (var _iterator = arr[Symbol.iterator](), _step; !(_step = _iterator.next()).done;) {
+      _arr.push(_step.value);
+
+      if (i && _arr.length === i) break;
+    }
+
+    return _arr;
+  } else {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+};
+
+var taggedTemplateLiteral = function (strings, raw) {
+  return Object.freeze(Object.defineProperties(strings, {
+    raw: {
+      value: Object.freeze(raw)
+    }
+  }));
+};
+
+var taggedTemplateLiteralLoose = function (strings, raw) {
+  strings.raw = raw;
+  return strings;
+};
+
+var temporalRef = function (val, name, undef) {
+  if (val === undef) {
+    throw new ReferenceError(name + " is not defined - temporal dead zone");
+  } else {
+    return val;
+  }
+};
+
+var temporalUndefined = {};
+
+var toArray = function (arr) {
+  return Array.isArray(arr) ? arr : Array.from(arr);
+};
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
+
+
+
+var babelHelpers = Object.freeze({
+	jsx: jsx,
+	asyncIterator: asyncIterator,
+	asyncGenerator: asyncGenerator,
+	asyncGeneratorDelegate: asyncGeneratorDelegate,
+	asyncToGenerator: asyncToGenerator,
+	classCallCheck: classCallCheck,
+	createClass: createClass,
+	defineEnumerableProperties: defineEnumerableProperties,
+	defaults: defaults,
+	defineProperty: defineProperty,
+	get: get,
+	inherits: inherits,
+	interopRequireDefault: interopRequireDefault,
+	interopRequireWildcard: interopRequireWildcard,
+	newArrowCheck: newArrowCheck,
+	objectDestructuringEmpty: objectDestructuringEmpty,
+	objectWithoutProperties: objectWithoutProperties,
+	possibleConstructorReturn: possibleConstructorReturn,
+	selfGlobal: selfGlobal,
+	set: set,
+	slicedToArray: slicedToArray,
+	slicedToArrayLoose: slicedToArrayLoose,
+	taggedTemplateLiteral: taggedTemplateLiteral,
+	taggedTemplateLiteralLoose: taggedTemplateLiteralLoose,
+	temporalRef: temporalRef,
+	temporalUndefined: temporalUndefined,
+	toArray: toArray,
+	toConsumableArray: toConsumableArray,
+	typeof: _typeof,
+	extends: _extends,
+	instanceof: _instanceof
+});
+
+var isObject_1 = createCommonjsModule(function (module) {
+  /**
+   * reference:
+   * http://www.css88.com/doc/underscore/docs/underscore.html
+   * 
+   */
+
+  var isObject = function isObject(obj) {
+    var type = typeof obj === 'undefined' ? 'undefined' : _typeof(obj);
+    return type === 'function' || type === 'object' && !!obj;
+  };
+
+  module.exports = isObject;
 });
 
 var isString_1 = createCommonjsModule(function (module) {
-/**
- * reference:
- *  http://www.css88.com/doc/underscore/docs/underscore.html
- */
+  /**
+   * reference:
+   *  http://www.css88.com/doc/underscore/docs/underscore.html
+   */
 
-const isString = (str) => {
-    return (typeof str == 'string') && str.constructor == String;
-};
+  var isString = function isString(str) {
+    return typeof str == 'string' && str.constructor == String;
+  };
 
-module.exports = isString;
+  module.exports = isString;
 });
 
 var stamp_1 = createCommonjsModule(function (module) {
-/**
- * assign kiwi.gl object to be an unique id in the global
- * @author yellow 2017/5/26
- */
+    /**
+     * assign kiwi.gl object to be an unique id in the global
+     * @author yellow 2017/5/26
+     */
 
-const _prefix = '_kiwi.gl_',
-    _prefixId = _prefix + 'id_';
-/**
- * the seed of id
- */
-let i = 1;
-/**
- * get uniqueId and count++
- * @param {String} prefix 
- */
-const getId = (prefix) => {
-    return (prefix || _prefixId) + '_' + (i++);
-};
-/**
- * 
- * @param {Object} obj 
- * @param {String} id 
- */
-const setId = (obj, id) => {
-    if (isObject_1(obj) && isString_1(id)) {
-        obj._kiwi_gl_id_ = id;
-        return id;
-    }
-    return null;
-};
-/**
- * get the unique id
- * @method stamp
- * @param {Object} obj 
- * @return {String} error if returned 'null'
- */
-const stamp = (obj, prefix = _prefix) => {
-    if(!obj)
+    var _prefix = '_kiwi.gl_',
+        _prefixId = _prefix + 'id_';
+    /**
+     * the seed of id
+     */
+    var i = 1;
+    /**
+     * get uniqueId and count++
+     * @param {String} prefix 
+     */
+    var getId = function getId(prefix) {
+        return (prefix || _prefixId) + '_' + i++;
+    };
+    /**
+     * 
+     * @param {Object} obj 
+     * @param {String} id 
+     */
+    var setId = function setId(obj, id) {
+        if (isObject_1(obj) && isString_1(id)) {
+            obj._kiwi_gl_id_ = id;
+            return id;
+        }
         return null;
-    if (!obj._kiwi_gl_id_) {
-        const id = getId(prefix);
-        return setId(obj, id);
-    } else {
-        return obj._kiwi_gl_id_;
-    }
-};
+    };
+    /**
+     * get the unique id
+     * @method stamp
+     * @param {Object} obj 
+     * @return {String} error if returned 'null'
+     */
+    var stamp = function stamp(obj) {
+        var prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _prefix;
 
-module.exports = stamp;
+        if (!obj) return null;
+        if (!obj._kiwi_gl_id_) {
+            var id = getId(prefix);
+            return setId(obj, id);
+        } else {
+            return obj._kiwi_gl_id_;
+        }
+    };
+
+    module.exports = stamp;
 });
 
 /**
@@ -93,33 +690,44 @@ module.exports = stamp;
  * -dispose
  */
 
-
-
 /**
  * @class
  */
-class Dispose {
-    /**
-     * 构建一个可被销毁的资源对象,提供prefix
-     */
-    constructor(prefix = null) {
-        this._id = stamp_1(this, prefix);
-    }
-    /**
-     * 获取资源id
-     */
-    get id() {
-        return this._id;
-    }
+
+var Dispose = function () {
+  /**
+   * 构建一个可被销毁的资源对象,提供prefix
+   */
+  function Dispose() {
+    var prefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    classCallCheck(this, Dispose);
+
+    this._id = stamp_1(this, prefix);
+  }
+  /**
+   * 获取资源id
+   */
+
+
+  createClass(Dispose, [{
+    key: 'dispose',
+
     /**
      * 资源销毁方法，执行完一段后，统一调用
      * must be implement be child class
      * @abstract
      */
-    dispose() {
-        throw new Error(`no implementation of function dispose`);
+    value: function dispose() {
+      throw new Error('no implementation of function dispose');
     }
-}
+  }, {
+    key: 'id',
+    get: function get$$1() {
+      return this._id;
+    }
+  }]);
+  return Dispose;
+}();
 
 var Dispose_1 = Dispose;
 
@@ -131,7 +739,15 @@ var Dispose_1 = Dispose;
 /**
  * @func
  */
-const merge=(...sources) => Object.assign({},...sources);
+var merge = function merge() {
+  var _babelHelpers;
+
+  for (var _len = arguments.length, sources = Array(_len), _key = 0; _key < _len; _key++) {
+    sources[_key] = arguments[_key];
+  }
+
+  return (_babelHelpers = babelHelpers).extends.apply(_babelHelpers, [{}].concat(sources));
+};
 
 var merge_1 = merge;
 
@@ -153,131 +769,177 @@ var merge_1 = merge;
 /**
  * @class
  */
-class Record {
+
+var Record = function () {
+  /**
+   * 
+   * @param {*} opName 
+   * @param {*} rest 
+   */
+  function Record(opName) {
+    classCallCheck(this, Record);
+
     /**
-     * 
-     * @param {*} opName 
-     * @param {*} rest 
+     * webgl operation name
      */
-    constructor(opName, ...rest) {
-        /**
-         * webgl operation name
-         */
-        this._opName = opName;
-        /**
-         * args
-         */
-        this._rest = this._exact(rest);
-        /**
-         * use prfix instead of value in args
-         * @type {Int}
-         */
-        this._ptMapIndex = {};
-        /**
-         * indicate this record needs to return value
-         * @type {String}
-         */
-        this._returnId = null;
-    }
+    this._opName = opName;
     /**
-     * operation name
+     * args
      */
-    get opName() {
-        return this._opName;
+
+    for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      rest[_key - 1] = arguments[_key];
     }
+
+    this._rest = this._exact(rest);
     /**
-     * arguments of record
-     */
-    get args() {
-        return this._rest;
-    }
-    /**
-     * @returns {String}
-     */
-    get returnId() {
-        return this._returnId;
-    }
-    /**
-     * @returns {String}
-     */
-    get returanIdPrefix() {
-        return this._returanIdPrefix;
-    }
-    /**
+     * use prfix instead of value in args
      * @type {Int}
      */
-    get ptMapIndex() {
-        return this._ptMapIndex;
-    }
+    this._ptMapIndex = {};
+    /**
+     * indicate this record needs to return value
+     * @type {String}
+     */
+    this._returnId = null;
+  }
+  /**
+   * operation name
+   */
+
+
+  createClass(Record, [{
+    key: '_exact',
+
     /**
      * }{debug arraybuffer.set much more faster than copy
      * 
      * @private
      * @param {Array} rest 
      */
-    _exact(rest) {
-        for (let i = 0, len = rest.length; i < len; i++) {
-            let target = rest[i];
-            if (target instanceof Float32Array) {
-                rest[i] = new Float32Array(target);
-            }
+    value: function _exact(rest) {
+      for (var i = 0, len = rest.length; i < len; i++) {
+        var target = rest[i];
+        if (target instanceof Float32Array) {
+          rest[i] = new Float32Array(target);
         }
-        return rest;
+      }
+      return rest;
     }
     /**
      * 修改某处指令的值
      * @param {int} ptIndex 
      * @param {String} ptName always represents shaderId/porgramId/
      */
-    exactIndexByValue(ptIndex, ptName) {
-        const arr = ptName.split('_');
-        //map to _ptIndex
-        this._ptMapIndex[ptIndex] = {
-            prefix: arr[0],
-            index: ptIndex,
-            id: ptName
-        };
-        //replace value
-        this._rest[ptIndex] = ptName;
+
+  }, {
+    key: 'exactIndexByValue',
+    value: function exactIndexByValue(ptIndex, ptName) {
+      var arr = ptName.split('_');
+      //map to _ptIndex
+      this._ptMapIndex[ptIndex] = {
+        prefix: arr[0],
+        index: ptIndex,
+        id: ptName
+      };
+      //replace value
+      this._rest[ptIndex] = ptName;
     }
     /**
      * 
      * @param {Array} ptIndex 
      */
-    exactIndexByObject(ptIndexs) {
-        for (let i = 0, len = ptIndexs.length; i < len; i++) {
-            const ptIndex = ptIndexs[i],
-                ptName = stamp_1(this._rest[ptIndex]);
-            ptName&&ptName.indexOf('_')!==-1?this.exactIndexByValue(ptIndex, ptName):null;
-        }
+
+  }, {
+    key: 'exactIndexByObject',
+    value: function exactIndexByObject(ptIndexs) {
+      for (var i = 0, len = ptIndexs.length; i < len; i++) {
+        var ptIndex = ptIndexs[i],
+            ptName = stamp_1(this._rest[ptIndex]);
+        ptName && ptName.indexOf('_') !== -1 ? this.exactIndexByValue(ptIndex, ptName) : null;
+      }
     }
     /**
      * 
      * @param {Array} refs 
      */
-    replace(refs) {
-        for (const key in refs)
-            this._rest[key] = refs[key];
+
+  }, {
+    key: 'replace',
+    value: function replace(refs) {
+      for (var key in refs) {
+        this._rest[key] = refs[key];
+      }
     }
     /**
      * 设置返回的id
      */
-    setReturnId(v,needToAnalysis = true) {
-        this._returnId = v;
-        needToAnalysis?this._analysisReturnId(v):null;
+
+  }, {
+    key: 'setReturnId',
+    value: function setReturnId(v) {
+      var needToAnalysis = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+      this._returnId = v;
+      needToAnalysis ? this._analysisReturnId(v) : null;
     }
     /**
      * 
      * @param {String} v 
      */
-    _analysisReturnId(v) {
-        const val = isString_1(v)?v:stamp_1(v);
-        const arr = val.split('_');
-        //map to _ptIndex
-        this._returanIdPrefix = arr[0];
-    }
 
-}
+  }, {
+    key: '_analysisReturnId',
+    value: function _analysisReturnId(v) {
+      var val = isString_1(v) ? v : stamp_1(v);
+      var arr = val.split('_');
+      //map to _ptIndex
+      this._returanIdPrefix = arr[0];
+    }
+  }, {
+    key: 'opName',
+    get: function get$$1() {
+      return this._opName;
+    }
+    /**
+     * arguments of record
+     */
+
+  }, {
+    key: 'args',
+    get: function get$$1() {
+      return this._rest;
+    }
+    /**
+     * @returns {String}
+     */
+
+  }, {
+    key: 'returnId',
+    get: function get$$1() {
+      return this._returnId;
+    }
+    /**
+     * @returns {String}
+     */
+
+  }, {
+    key: 'returanIdPrefix',
+    get: function get$$1() {
+      return this._returanIdPrefix;
+    }
+    /**
+     * @type {Int}
+     */
+
+  }, {
+    key: 'ptMapIndex',
+    get: function get$$1() {
+      return this._ptMapIndex;
+    }
+  }]);
+  return Record;
+}();
 
 var Record_1 = Record;
 
@@ -292,541 +954,530 @@ var Record_1 = Record;
  * -ptIndex 替换参数的位置索引
  */
 
-
-
-const Encrypt_WebGLContext = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/canvas
-     * @property
-     */
-    'canvas': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/commit
-     */
-    'commit': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawingBufferWidth
-     * @property
-     */
-    'drawingBufferWidth': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawingBufferHeight
-     * @property
-     */
-    'drawingBufferHeight': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getContextAttributes
-     */
-    'getContextAttributes': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isContextLost
-     */
-    'isContextLost': { code: 0, return: 1, replace: 0 },
+var Encrypt_WebGLContext = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/canvas
+   * @property
+   */
+  'canvas': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/commit
+   */
+  'commit': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawingBufferWidth
+   * @property
+   */
+  'drawingBufferWidth': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawingBufferHeight
+   * @property
+   */
+  'drawingBufferHeight': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getContextAttributes
+   */
+  'getContextAttributes': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isContextLost
+   */
+  'isContextLost': { code: 0, return: 1, replace: 0 }
 };
 
-const Encrypt_Viewing_And_Clipping = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
-     */
-    'scissor': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
-     */
-    'viewport': { code: 0, return: 0, replace: 0 },
+var Encrypt_Viewing_And_Clipping = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
+   */
+  'scissor': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/viewport
+   */
+  'viewport': { code: 0, return: 0, replace: 0 }
 };
 
-const Encrypt_State_Information = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/activeTexture
-     */
-    'activeTexture': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendColor
-     */
-    'blendColor': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
-     */
-    'blendEquation': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquationSeparate
-     */
-    'blendEquationSeparate': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
-     */
-    'blendFunc': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate
-     */
-    'blendFuncSeparate': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor
-     */
-    'clearColor': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearDepth
-     */
-    'clearDepth': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearStencil
-     */
-    'clearStencil': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
-     */
-    'colorMask': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
-     */
-    'cullFace': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
-     */
-    'depthFunc': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
-     */
-    'depthMask': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthRange
-     */
-    'depthRange': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disable
-     */
-    'disable': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
-     */
-    'enable': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
-     */
-    'frontFace': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
-     * @description 
-     * warning return appropriate value by the parameter 'pname'
-     */
-    'getParameter': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
-     */
-    'getError': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/hint
-     */
-    'hint': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isEnabled
-     */
-    'isEnabled': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
-     */
-    'lineWidth': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
-     */
-    'pixelStorei': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
-     */
-    'polygonOffset': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/sampleCoverage
-     */
-    'sampleCoverage': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
-     */
-    'stencilFunc': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFuncSeparate
-     */
-    'stencilFuncSeparate': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
-     */
-    'stencilMask': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMaskSeparate
-     */
-    'stencilMaskSeparate': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOp
-     */
-    'stencilOp': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOpSeparate
-     */
-    'stencilOpSeparate': { code: 0, return: 0, replace: 0 },
+var Encrypt_State_Information = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/activeTexture
+   */
+  'activeTexture': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendColor
+   */
+  'blendColor': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquation
+   */
+  'blendEquation': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendEquationSeparate
+   */
+  'blendEquationSeparate': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFunc
+   */
+  'blendFunc': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/blendFuncSeparate
+   */
+  'blendFuncSeparate': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor
+   */
+  'clearColor': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearDepth
+   */
+  'clearDepth': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearStencil
+   */
+  'clearStencil': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/colorMask
+   */
+  'colorMask': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/cullFace
+   */
+  'cullFace': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthFunc
+   */
+  'depthFunc': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthMask
+   */
+  'depthMask': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/depthRange
+   */
+  'depthRange': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disable
+   */
+  'disable': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enable
+   */
+  'enable': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/frontFace
+   */
+  'frontFace': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
+   * @description 
+   * warning return appropriate value by the parameter 'pname'
+   */
+  'getParameter': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
+   */
+  'getError': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/hint
+   */
+  'hint': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isEnabled
+   */
+  'isEnabled': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
+   */
+  'lineWidth': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
+   */
+  'pixelStorei': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/polygonOffset
+   */
+  'polygonOffset': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/sampleCoverage
+   */
+  'sampleCoverage': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFunc
+   */
+  'stencilFunc': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilFuncSeparate
+   */
+  'stencilFuncSeparate': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMask
+   */
+  'stencilMask': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilMaskSeparate
+   */
+  'stencilMaskSeparate': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOp
+   */
+  'stencilOp': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/stencilOpSeparate
+   */
+  'stencilOpSeparate': { code: 0, return: 0, replace: 0 }
 };
 
-const Encrypt_Buffers = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindBuffer
-     */
-    'bindBuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
-     */
-    'bufferData': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferSubData
-     */
-    'bufferSubData': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createBuffer
-     */
-    'createBuffer': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteBuffer
-     */
-    'deleteBuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getBufferParameter
-     */
-    'getBufferParameter': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isBuffer
-     */
-    'isBuffer': { code: 0, return: 1, replace: 0 },
+var Encrypt_Buffers = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindBuffer
+   */
+  'bindBuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
+   */
+  'bufferData': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferSubData
+   */
+  'bufferSubData': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createBuffer
+   */
+  'createBuffer': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteBuffer
+   */
+  'deleteBuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getBufferParameter
+   */
+  'getBufferParameter': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isBuffer
+   */
+  'isBuffer': { code: 0, return: 1, replace: 0 }
 };
 
-const Encrypt_Framebuffers = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindFramebuffer
-     */
-    'bindFramebuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/checkFramebufferStatus
-     */
-    'checkFramebufferStatus': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
-     */
-    'createFramebuffer': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteFramebuffer
-     */
-    'deleteFramebuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferRenderbuffer
-     */
-    'framebufferRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [3] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferTexture2D
-     */
-    'framebufferTexture2D': { code: 0, return: 0, replace: 1, ptIndex: [3] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getFramebufferAttachmentParameter
-     */
-    'getFramebufferAttachmentParameter': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isFramebuffer
-     */
-    'isFramebuffer': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels
-     */
-    'readPixels': { code: 0, return: 0, replace: 0 },
+var Encrypt_Framebuffers = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindFramebuffer
+   */
+  'bindFramebuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/checkFramebufferStatus
+   */
+  'checkFramebufferStatus': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
+   */
+  'createFramebuffer': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteFramebuffer
+   */
+  'deleteFramebuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferRenderbuffer
+   */
+  'framebufferRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [3] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/framebufferTexture2D
+   */
+  'framebufferTexture2D': { code: 0, return: 0, replace: 1, ptIndex: [3] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getFramebufferAttachmentParameter
+   */
+  'getFramebufferAttachmentParameter': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isFramebuffer
+   */
+  'isFramebuffer': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels
+   */
+  'readPixels': { code: 0, return: 0, replace: 0 }
 };
 
-const Encrypt_Renderbuffers = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindRenderbuffer
-     */
-    'bindRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createRenderbuffer
-     */
-    'createRenderbuffer': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteRenderbuffer
-     */
-    'deleteRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getRenderbufferParameter
-     */
-    'getRenderbufferParameter': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isRenderbuffer
-     */
-    'isRenderbuffer': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
-     */
-    'renderbufferStorage': { code: 0, return: 0, replace: 0 },
+var Encrypt_Renderbuffers = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindRenderbuffer
+   */
+  'bindRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createRenderbuffer
+   */
+  'createRenderbuffer': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteRenderbuffer
+   */
+  'deleteRenderbuffer': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getRenderbufferParameter
+   */
+  'getRenderbufferParameter': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isRenderbuffer
+   */
+  'isRenderbuffer': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/renderbufferStorage
+   */
+  'renderbufferStorage': { code: 0, return: 0, replace: 0 }
 };
 
-const Encrypt_Textures = {
-    /**
- * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
- */
-    'bindTexture': { code: 0, return: 0, replace: 1, ptIndex: [1] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compressedTexImage2D
-     */
-    'compressedTexImage2D': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/copyTexImage2D
-     */
-    'copyTexImage2D': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/copyTexSubImage2D
-     */
-    'copyTexSubImage2D': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
-     */
-    'createTexture': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteTexture
-     */
-    'deleteTexture': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/generateMipmap
-     */
-    'generateMipmap': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getTexParameter
-     */
-    'getTexParameter': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isTexture
-     */
-    'isTexture': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
-     */
-    'texImage2D': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texSubImage2D
-     */
-    'texSubImage2D': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    'texParameterf': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
-     */
-    'texParameteri': { code: 0, return: 0, replace: 0 },
+var Encrypt_Textures = {
+  /**
+  * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindTexture
+  */
+  'bindTexture': { code: 0, return: 0, replace: 1, ptIndex: [1] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compressedTexImage2D
+   */
+  'compressedTexImage2D': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/copyTexImage2D
+   */
+  'copyTexImage2D': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/copyTexSubImage2D
+   */
+  'copyTexSubImage2D': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
+   */
+  'createTexture': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteTexture
+   */
+  'deleteTexture': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/generateMipmap
+   */
+  'generateMipmap': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getTexParameter
+   */
+  'getTexParameter': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isTexture
+   */
+  'isTexture': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+   */
+  'texImage2D': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texSubImage2D
+   */
+  'texSubImage2D': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+   */
+  'texParameterf': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
+   */
+  'texParameteri': { code: 0, return: 0, replace: 0 }
 };
 
-const Encrypt_Programs_And_Shaders = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/attachShader
-     * @augments
-     */
-    'attachShader': { code: 0, return: 0, replace: 2, ptIndex: [0, 1] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindAttribLocation
-     * @augments
-     */
-    'bindAttribLocation': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
-     */
-    'compileShader': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
-     */
-    'createProgram': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
-     */
-    'createShader': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteProgram
-     */
-    'deleteProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteShader
-     */
-    'deleteShader': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/detachShader
-     */
-    'detachShader': { code: 0, return: 0, replace: 2, ptIndex: [0, 1] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttachedShaders
-     */
-    'getAttachedShaders': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramParameter
-     */
-    'getProgramParameter': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
-     */
-    'getProgramInfoLog': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
-     */
-    'getShaderParameter': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderPrecisionFormat
-     */
-    'getShaderPrecisionFormat': { code: 0, return: 1, replace: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
-     */
-    'getShaderInfoLog': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderSource
-     */
-    'getShaderSource': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isProgram
-     */
-    'isProgram': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isShader
-     */
-    'isShader': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/linkProgram
-     */
-    'linkProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
-     */
-    'shaderSource': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/useProgram
-     */
-    'useProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/validateProgram
-     */
-    'validateProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+var Encrypt_Programs_And_Shaders = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/attachShader
+   * @augments
+   */
+  'attachShader': { code: 0, return: 0, replace: 2, ptIndex: [0, 1] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bindAttribLocation
+   * @augments
+   */
+  'bindAttribLocation': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
+   */
+  'compileShader': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+   */
+  'createProgram': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
+   */
+  'createShader': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteProgram
+   */
+  'deleteProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteShader
+   */
+  'deleteShader': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/detachShader
+   */
+  'detachShader': { code: 0, return: 0, replace: 2, ptIndex: [0, 1] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttachedShaders
+   */
+  'getAttachedShaders': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramParameter
+   */
+  'getProgramParameter': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
+   */
+  'getProgramInfoLog': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
+   */
+  'getShaderParameter': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderPrecisionFormat
+   */
+  'getShaderPrecisionFormat': { code: 0, return: 1, replace: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
+   */
+  'getShaderInfoLog': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderSource
+   */
+  'getShaderSource': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isProgram
+   */
+  'isProgram': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isShader
+   */
+  'isShader': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/linkProgram
+   */
+  'linkProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
+   */
+  'shaderSource': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/useProgram
+   */
+  'useProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/validateProgram
+   */
+  'validateProgram': { code: 0, return: 0, replace: 1, ptIndex: [0] }
 };
 
-const Encrypt_Uniforms_And_Attributes = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disableVertexAttribArray
-     */
-    'disableVertexAttribArray': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
-     */
-    'enableVertexAttribArray': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveAttrib
-     */
-    'getActiveAttrib': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
-     */
-    'getActiveUniform': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttribLocation
-     * }{ debug return directly,no need to cache,
-     */
-    'getAttribLocation': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
-     */
-    'getUniformLocation': { code: 0, return: 1, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getVertexAttrib
-     */
-    'getVertexAttrib': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getVertexAttribOffset
-     */
-    'getVertexAttribOffset': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
-     */
-    'vertexAttribPointer': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
-     */
-    'uniformMatrix2fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniformMatrix3fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniformMatrix4fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
-     */
-    'uniform1f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform1fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform1i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform1iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform2f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform2fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform2i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform2iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform3f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform3fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform3i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform3iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform4f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform4fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform4i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    'uniform4iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttrib
-     */
-    'vertexAttrib1f': { code: 0, return: 0, replace: 0 },
-    'vertexAttrib2f': { code: 0, return: 0, replace: 0 },
-    'vertexAttrib3f': { code: 0, return: 0, replace: 0 },
-    'vertexAttrib4f': { code: 0, return: 0, replace: 0 },
-    'vertexAttrib1fv': { code: 0, return: 0, replace: 0 },
-    'vertexAttrib2fv': { code: 0, return: 0, replace: 0 },
-    'vertexAttrib3fv': { code: 0, return: 0, replace: 0 },
-    'vertexAttrib4fv': { code: 0, return: 0, replace: 0 },
+var Encrypt_Uniforms_And_Attributes = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/disableVertexAttribArray
+   */
+  'disableVertexAttribArray': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
+   */
+  'enableVertexAttribArray': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveAttrib
+   */
+  'getActiveAttrib': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
+   */
+  'getActiveUniform': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttribLocation
+   * }{ debug return directly,no need to cache,
+   */
+  'getAttribLocation': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
+   */
+  'getUniformLocation': { code: 0, return: 1, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getVertexAttrib
+   */
+  'getVertexAttrib': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getVertexAttribOffset
+   */
+  'getVertexAttribOffset': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
+   */
+  'vertexAttribPointer': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
+   */
+  'uniformMatrix2fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniformMatrix3fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniformMatrix4fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniform
+   */
+  'uniform1f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform1fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform1i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform1iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform2f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform2fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform2i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform2iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform3f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform3fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform3i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform3iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform4f': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform4fv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform4i': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  'uniform4iv': { code: 0, return: 0, replace: 1, ptIndex: [0] },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttrib
+   */
+  'vertexAttrib1f': { code: 0, return: 0, replace: 0 },
+  'vertexAttrib2f': { code: 0, return: 0, replace: 0 },
+  'vertexAttrib3f': { code: 0, return: 0, replace: 0 },
+  'vertexAttrib4f': { code: 0, return: 0, replace: 0 },
+  'vertexAttrib1fv': { code: 0, return: 0, replace: 0 },
+  'vertexAttrib2fv': { code: 0, return: 0, replace: 0 },
+  'vertexAttrib3fv': { code: 0, return: 0, replace: 0 },
+  'vertexAttrib4fv': { code: 0, return: 0, replace: 0 }
 };
 
-const Encrypt_Drawing_Buffers = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
-     */
-    'clear': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
-     */
-    'drawArrays': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-     */
-    'drawElements': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish
-     */
-    'finish': { code: 0, return: 0, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/flush
-     */
-    'flush': { code: 0, return: 0, replace: 0 },
+var Encrypt_Drawing_Buffers = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
+   */
+  'clear': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
+   */
+  'drawArrays': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+   */
+  'drawElements': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish
+   */
+  'finish': { code: 0, return: 0, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/flush
+   */
+  'flush': { code: 0, return: 0, replace: 0 }
 };
 
-const Encrypt_Working_With_Extensions = {
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getSupportedExtensions
-     */
-    'getSupportedExtensions': { code: 0, return: 1, replace: 0 },
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getExtension
-     */
-    'getExtension': { code: 0, return: 1, replace: 0 },
-};
+var Encrypt_Working_With_Extensions = {
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getSupportedExtensions
+   */
+  'getSupportedExtensions': { code: 0, return: 1, replace: 0 },
+  /**
+   * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getExtension
+   */
+  'getExtension': { code: 0, return: 1, replace: 0 }
 
-var Encrypt = merge_1({},
-    Encrypt_Buffers,
-    Encrypt_Drawing_Buffers,
-    Encrypt_Framebuffers,
-    Encrypt_Programs_And_Shaders,
-    Encrypt_Renderbuffers,
-    Encrypt_State_Information,
-    Encrypt_Textures,
-    Encrypt_Uniforms_And_Attributes,
-    Encrypt_Viewing_And_Clipping,
-    Encrypt_WebGLContext,
-    Encrypt_Working_With_Extensions);
+  /** 
+   * only in webgl2
+  */
+};var Encrypt = merge_1({}, Encrypt_Buffers, Encrypt_Drawing_Buffers, Encrypt_Framebuffers, Encrypt_Programs_And_Shaders, Encrypt_Renderbuffers, Encrypt_State_Information, Encrypt_Textures, Encrypt_Uniforms_And_Attributes, Encrypt_Viewing_And_Clipping, Encrypt_WebGLContext, Encrypt_Working_With_Extensions);
 
 /**
  * @author yellow date 2018/1/4
@@ -839,50 +1490,64 @@ var Encrypt = merge_1({},
 /**
  * @class
  */
-class Recorder {
 
-    constructor(glContext, storeInstance = true) {
-        /**
-         * @type {GLContext}
-         */
-        this._glContext = glContext;
-        /**
-         * @type {Array}
-         */
-        this._records = [];
-        /**
-         * 注册到全局实例中
-         */
-        storeInstance ? Recorder.instances[glContext.id] = this : null;
-    }
+var Recorder = function () {
+  function Recorder(glContext) {
+    var storeInstance = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+    classCallCheck(this, Recorder);
+
     /**
-     * 新增record
-     * @param {Record} record 
+     * @type {GLContext}
      */
-    increase(record) {
-        this._records.push(record);
+    this._glContext = glContext;
+    /**
+     * @type {Array}
+     */
+    this._records = [];
+    /**
+     * 注册到全局实例中
+     */
+    storeInstance ? Recorder.instances[glContext.id] = this : null;
+  }
+  /**
+   * 新增record
+   * @param {Record} record 
+   */
+
+
+  createClass(Recorder, [{
+    key: 'increase',
+    value: function increase(record) {
+      this._records.push(record);
     }
     /**
      * convert to gl commands collection
      */
-    toInstruction(programId) {
-        const reocrds = this._records,
-            len = reocrds.length,
-            record = new Record_1('useProgram', null);
-        record.exactIndexByValue(0, programId);
-        return [record].concat(reocrds.splice(0, len));
+
+  }, {
+    key: 'toInstruction',
+    value: function toInstruction(programId) {
+      var reocrds = this._records,
+          len = reocrds.length,
+          record = new Record_1('useProgram', null);
+      record.exactIndexByValue(0, programId);
+      return [record].concat(reocrds.splice(0, len));
     }
     /** 
      * convert to commands collection which not just webgl operation
      * makes recorder as a general logger.(such as htmlElement logger)
     */
-    toOperation() {
-        const len = this._records.length,
-            list = this._records.splice(0, len);
-        return list;
-    }
 
-}
+  }, {
+    key: 'toOperation',
+    value: function toOperation() {
+      var len = this._records.length,
+          list = this._records.splice(0, len);
+      return list;
+    }
+  }]);
+  return Recorder;
+}();
 
 Recorder.instances = {};
 
@@ -896,7 +1561,7 @@ var Recorder_1 = Recorder;
  * webgl2 used within a WebGL2RenderingContext,add GLint64(GLuint64EXT) 
  * @author yellow date 2017/6/15
  */
-const GLConstants = {
+var GLConstants = {
     /**
      * 深度缓冲，常用与 gl.clear(gl.Enum)
      * Passed to clear to clear the current depth buffer.
@@ -1777,95 +2442,95 @@ var GLConstants_1 = GLConstants;
  * reference:
  * https://github.com/uber/luma.gl/blob/master/src/utils/is-browser.js
  */
-const isNode = typeof process === 'object' && String(process) === '[object process]' && !process.browser;
+var isNode = (typeof process === 'undefined' ? 'undefined' : _typeof(process)) === 'object' && String(process) === '[object process]' && !process.browser;
 
 var isNode_1 = isNode;
 
 /**
  * store mapping data and default value
  */
-const _polyfill = {};
+var _polyfill = {};
 /**
  * source poly
  */
-const _poly = {
+var _poly = {
     'MAX_VIEWPORT_DIMS': {
         name: 'MAX_VIEWPORT_DIMS',
         key: GLConstants_1.MAX_VIEWPORT_DIMS,
         webgl: new Float32Array([32767, 32767]),
-        webgl2: new Float32Array([32767, 32767]),
+        webgl2: new Float32Array([32767, 32767])
     },
     'ALIASED_POINT_SIZE_RANGE': {
         name: 'ALIASED_POINT_SIZE_RANGE',
         key: GLConstants_1.ALIASED_POINT_SIZE_RANGE,
         webgl: new Float32Array([1, 1024]),
-        webgl2: new Float32Array([1, 1024]),
+        webgl2: new Float32Array([1, 1024])
     },
     'ALIASED_LINE_WIDTH_RANGE': {
         name: 'ALIASED_LINE_WIDTH_RANGE',
         key: GLConstants_1.ALIASED_LINE_WIDTH_RANGE,
         webgl: new Float32Array([1, 1]),
-        webgl2: new Float32Array([1, 1]),
+        webgl2: new Float32Array([1, 1])
     },
     'MAX_VERTEX_UNIFORM_VECTORS': {
         name: 'MAX_VERTEX_UNIFORM_VECTORS',
         key: GLConstants_1.MAX_VERTEX_UNIFORM_VECTORS,
         webgl: 128,
-        webgl2: 128,
+        webgl2: 128
     },
     'MAX_VERTEX_TEXTURE_IMAGE_UNITS': {
         name: 'MAX_VERTEX_TEXTURE_IMAGE_UNITS',
         key: GLConstants_1.MAX_VERTEX_TEXTURE_IMAGE_UNITS,
         webgl: 0,
-        webgl2: 0,
+        webgl2: 0
     },
     'MAX_VERTEX_ATTRIBS': {
         name: 'MAX_VERTEX_ATTRIBS',
         key: GLConstants_1.MAX_VERTEX_ATTRIBS,
         webgl: 8,
-        webgl2: 8,
+        webgl2: 8
     },
     'MAX_VARYING_VECTORS': {
         name: 'MAX_VARYING_VECTORS',
         key: GLConstants_1.MAX_VARYING_VECTORS,
         webgl: 8,
-        webgl2: 8,
+        webgl2: 8
     },
     'MAX_TEXTURE_SIZE': {
         name: 'MAX_TEXTURE_SIZE',
         key: GLConstants_1.MAX_TEXTURE_SIZE,
         webgl: 64,
-        webgl2: 64,
+        webgl2: 64
     },
     'MAX_RENDERBUFFER_SIZE': {
         name: 'MAX_RENDERBUFFER_SIZE',
         key: GLConstants_1.MAX_RENDERBUFFER_SIZE,
         webgl: 1,
-        webgl2: 1,
+        webgl2: 1
     },
     'MAX_TEXTURE_IMAGE_UNITS': {
         name: 'MAX_TEXTURE_IMAGE_UNITS',
         key: GLConstants_1.MAX_TEXTURE_IMAGE_UNITS,
         webgl: 8,
-        webgl2: 8,
+        webgl2: 8
     },
     'MAX_FRAGMENT_UNIFORM_VECTORS': {
         name: 'MAX_FRAGMENT_UNIFORM_VECTORS',
         key: GLConstants_1.MAX_FRAGMENT_UNIFORM_VECTORS,
         webgl: 16,
-        webgl2: 16,
+        webgl2: 16
     },
     'MAX_CUBE_MAP_TEXTURE_SIZE': {
         name: 'MAX_CUBE_MAP_TEXTURE_SIZE',
         key: GLConstants_1.MAX_CUBE_MAP_TEXTURE_SIZE,
         webgl: 16,
-        webgl2: 16,
+        webgl2: 16
     },
     'MAX_COMBINED_TEXTURE_IMAGE_UNITS': {
         name: 'MAX_COMBINED_TEXTURE_IMAGE_UNITS',
         key: GLConstants_1.MAX_COMBINED_TEXTURE_IMAGE_UNITS,
         webgl: 8,
-        webgl2: 8,
+        webgl2: 8
 
     },
     'VERSION': {
@@ -1878,19 +2543,22 @@ const _poly = {
 /**
  * map GLConstants location to key
  */
-for (const key in _poly) {
-    const target = _poly[key];
+for (var key in _poly) {
+    var target = _poly[key];
     _polyfill[key] = _polyfill[target.key] = target;
 }
 /**
  * @class
  */
-class GLLimits {
+
+var GLLimits = function () {
     /**
      * 
      * @param {GLContext} glContext 
      */
-    constructor(glContext) {
+    function GLLimits(glContext) {
+        classCallCheck(this, GLLimits);
+
         this._glContext = glContext;
         this._type = glContext.renderType;
         this._indexs = [];
@@ -1899,22 +2567,25 @@ class GLLimits {
     /**
      * will be call while change or set WebGLRenderingContext
      */
-    _include() {
 
-    }
 
-    _map(mapObject) {
-        const type = this._type;
-        for (const key in mapObject) {
-            if (!this.hasOwnProperty(key)) {
-                const target = mapObject[key];
-                if (!this[key])
-                    this[key] = target[type];
+    createClass(GLLimits, [{
+        key: '_include',
+        value: function _include() {}
+    }, {
+        key: '_map',
+        value: function _map(mapObject) {
+            var type = this._type;
+            for (var _key in mapObject) {
+                if (!this.hasOwnProperty(_key)) {
+                    var _target = mapObject[_key];
+                    if (!this[_key]) this[_key] = _target[type];
+                }
             }
         }
-    }
-
-}
+    }]);
+    return GLLimits;
+}();
 
 var GLLimits_1 = GLLimits;
 
@@ -1923,22 +2594,16 @@ var GLLimits_1 = GLLimits;
  * http://keenwon.com/851.html
  */
 
-
 /**
  * 
  */
-const sys = {};
+var sys = {};
 
 if (!isNode_1) {
-    const ua = navigator.userAgent.toLowerCase();
-    //store version
-    let s;
-    (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? sys.ie = s[1] :
-    (s = ua.match(/msie ([\d.]+)/)) ? sys.ie = s[1] :
-    (s = ua.match(/firefox\/([\d.]+)/)) ? sys.firefox = s[1] :
-    (s = ua.match(/chrome\/([\d.]+)/)) ? sys.chrome = s[1] :
-    (s = ua.match(/opera.([\d.]+)/)) ? sys.opera = s[1] :
-    (s = ua.match(/version\/([\d.]+).*safari/)) ? sys.safari = s[1] : 0;
+  var ua = navigator.userAgent.toLowerCase();
+  //store version
+  var s = void 0;
+  (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? sys.ie = s[1] : (s = ua.match(/msie ([\d.]+)/)) ? sys.ie = s[1] : (s = ua.match(/firefox\/([\d.]+)/)) ? sys.firefox = s[1] : (s = ua.match(/chrome\/([\d.]+)/)) ? sys.chrome = s[1] : (s = ua.match(/opera.([\d.]+)/)) ? sys.opera = s[1] : (s = ua.match(/version\/([\d.]+).*safari/)) ? sys.safari = s[1] : 0;
 }
 
 var browser = sys;
@@ -1954,7 +2619,7 @@ var browser = sys;
 /** 
  * extension index
 */
-const EXTENSION_INDEX = {
+var EXTENSION_INDEX = {
     OES_standard_derivatives: ['OES_standard_derivatives'],
     OES_element_index_uint: ['OES_element_index_uint'],
     WEBGL_depth_texture: ['WEBGL_depth_texture', 'WEBKIT_WEBGL_depth_texture'],
@@ -1967,29 +2632,31 @@ const EXTENSION_INDEX = {
     EXT_texture_filter_anisotropic: ['EXT_texture_filter_anisotropic', 'MOZ_EXT_texture_filter_anisotropic', 'WEBKIT_EXT_texture_filter_anisotropic'],
     OES_vertex_array_object: ['OES_vertex_array_object', 'MOZ_OES_vertex_array_object', 'WEBKIT_OES_vertex_array_object'],
     ANGLE_instanced_arrays: ['ANGLE_instanced_arrays']
-};
-/** 
- * webgl1 available extension
-*/
-const extensions1 = {};
+    /** 
+     * webgl1 available extension
+    */
+};var extensions1 = {};
 /** 
  * webgl2 available extension
 */
-const extensions2 = {};
+var extensions2 = {};
 /** 
  * }{debug
  * needs to be extend
  * @class
 */
-class Extension {
-    constructor(extName) {
-        this._name = extName;
-    }
-}
+
+var Extension = function Extension(extName) {
+    classCallCheck(this, Extension);
+
+    this._name = extName;
+};
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/ANGLE_instanced_arrays
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 33) || (browser.ie && parseInt(browser.ie) >= 11)) {
+
+
+if (browser.firefox && parseInt(browser.firefox) >= 33 || browser.ie && parseInt(browser.ie) >= 11) {
     extensions1['ANGLE_instanced_arrays'] = new Extension('ANGLE_instanced_arrays');
 }
 /**
@@ -2013,13 +2680,13 @@ if (browser.firefox && parseInt(browser.firefox) >= 30) {
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/EXT_disjoint_timer_query
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 51) || (browser.chrome && parseInt(browser.chrome) >= 47)) {
+if (browser.firefox && parseInt(browser.firefox) >= 51 || browser.chrome && parseInt(browser.chrome) >= 47) {
     extensions1['EXT_disjoint_timer_query'] = new Extension('EXT_disjoint_timer_query');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/EXT_frag_depth
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 30) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 30 || browser.ie) {
     extensions1['EXT_frag_depth'] = new Extension('EXT_frag_depth');
 }
 /**
@@ -2037,43 +2704,43 @@ if (browser.firefox && parseInt(browser.firefox) >= 50) {
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/EXT_texture_filter_anisotropic
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 17) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 17 || browser.ie) {
     extensions2['EXT_texture_filter_anisotropic'] = extensions1['EXT_texture_filter_anisotropic'] = new Extension('EXT_texture_filter_anisotropic');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/OES_element_index_uint
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 24) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 24 || browser.ie) {
     extensions2['OES_element_index_uint'] = extensions1['OES_element_index_uint'] = new Extension('OES_element_index_uint');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/OES_standard_derivatives
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 10) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 10 || browser.ie) {
     extensions1['OES_standard_derivatives'] = new Extension('OES_standard_derivatives');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 6) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 6 || browser.ie) {
     extensions1['OES_texture_float'] = new Extension('OES_texture_float');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_float_linear
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 24) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 24 || browser.ie) {
     extensions2['OES_texture_float_linear'] = extensions1['OES_texture_float_linear'] = new Extension('OES_texture_float_linear');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_half_float
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 29) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 29 || browser.ie) {
     extensions1['OES_texture_half_float'] = new Extension('OES_texture_half_float');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/OES_texture_half_float_linear
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 30) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 30 || browser.ie) {
     extensions2['OES_texture_half_float_linear'] = extensions1['OES_texture_half_float_linear'] = new Extension('OES_texture_half_float_linear');
 }
 /**
@@ -2092,7 +2759,7 @@ if (browser.firefox && parseInt(browser.firefox) >= 30) {
  * }{debug mobile/hardware
  * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_astc
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 53) || (browser.chrome && parseInt(browser.chrome) >= 47)) {
+if (browser.firefox && parseInt(browser.firefox) >= 53 || browser.chrome && parseInt(browser.chrome) >= 47) {
     extensions2['WEBGL_compressed_texture_astc'] = extensions1['WEBGL_compressed_texture_astc'] = new Extension('WEBGL_compressed_texture_astc');
 }
 /**
@@ -2122,7 +2789,7 @@ if (browser.firefox && parseInt(browser.firefox) >= 18) {
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_s3tc
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 22) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 22 || browser.ie) {
     extensions2['WEBGL_compressed_texture_s3tc'] = extensions1['WEBGL_compressed_texture_s3tc'] = new Extension('WEBGL_compressed_texture_s3tc');
 }
 /**
@@ -2134,19 +2801,19 @@ if (browser.firefox && parseInt(browser.firefox) >= 55) {
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_debug_renderer_info
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 53) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 53 || browser.ie) {
     extensions2['WEBGL_debug_renderer_info'] = extensions1['WEBGL_debug_renderer_info'] = new Extension('WEBGL_debug_renderer_info');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_debug_shaders
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 30) || (browser.chrome && parseInt(browser.chrome) >= 47)) {
+if (browser.firefox && parseInt(browser.firefox) >= 30 || browser.chrome && parseInt(browser.chrome) >= 47) {
     extensions2['WEBGL_debug_shaders'] = extensions1['WEBGL_debug_shaders'] = new Extension('WEBGL_debug_shaders');
 }
 /**
  * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_depth_texture
  */
-if ((browser.firefox && parseInt(browser.firefox) >= 22) || browser.ie) {
+if (browser.firefox && parseInt(browser.firefox) >= 22 || browser.ie) {
     extensions1['WEBGL_debug_renderer_info'] = new Extension('WEBGL_debug_renderer_info');
 }
 /**
@@ -2164,12 +2831,15 @@ if (browser.firefox && parseInt(browser.firefox) === 22) {
 /**
  * @class
  */
-class GLExtension {
+
+var GLExtension = function () {
     /**
      * 
      * @param {GLContext} glContext 
      */
-    constructor(glContext) {
+    function GLExtension(glContext) {
+        classCallCheck(this, GLExtension);
+
         /**
          * quote of GLContext instance
          */
@@ -2195,50 +2865,62 @@ class GLExtension {
     /**
      * rebuild
      */
-    _include() {
-        //1.map exist
-        const extension = this._renderType === 'webgl' ? extensions1 : extensions2;
-        for (var key in extension) {
-            if (extension.hasOwnProperty(key)) {
-                const extent = this.getExtension(key);
-                if (extent) this[key] = extent;
-            }
-        }
-        //2.map standard
-        for (var key in EXTENSION_INDEX) {
-            if (EXTENSION_INDEX.hasOwnProperty(key)) {
-                const extent = this.getExtension(EXTENSION_INDEX[key]);
-                if (extent) this[key] = extent;
-            }
-        }
-    }
-    /**
-    * 
-    * @param {String[]} extNames 
-    */
-    getExtension(...extNames) {
-        const gl = this._glContext.gl,
-            names = [].concat(...extNames);
-        for (let i = 0, len = names.length; i < len; ++i) {
-            const extension = gl.getExtension(names[i]);
-            if (extension)
-                return extension;
-        }
-        return null;
-    }
-    /**
-     * 
-     */
-    _map() {
-        const extension = this._extension;
-        for (var key in extension) {
-            if (extension.hasOwnProperty(key)) {
-                this[key] = extension[key];
-            }
-        }
-    }
 
-}
+
+    createClass(GLExtension, [{
+        key: '_include',
+        value: function _include() {
+            //1.map exist
+            var extension = this._renderType === 'webgl' ? extensions1 : extensions2;
+            for (var key in extension) {
+                if (extension.hasOwnProperty(key)) {
+                    var extent = this.getExtension(key);
+                    if (extent) this[key] = extent;
+                }
+            }
+            //2.map standard
+            for (var key in EXTENSION_INDEX) {
+                if (EXTENSION_INDEX.hasOwnProperty(key)) {
+                    var _extent = this.getExtension(EXTENSION_INDEX[key]);
+                    if (_extent) this[key] = _extent;
+                }
+            }
+        }
+        /**
+        * 
+        * @param {String[]} extNames 
+        */
+
+    }, {
+        key: 'getExtension',
+        value: function getExtension() {
+            var _ref;
+
+            var gl = this._glContext.gl,
+                names = (_ref = []).concat.apply(_ref, arguments);
+            for (var i = 0, len = names.length; i < len; ++i) {
+                var extension = gl.getExtension(names[i]);
+                if (extension) return extension;
+            }
+            return null;
+        }
+        /**
+         * 
+         */
+
+    }, {
+        key: '_map',
+        value: function _map() {
+            var extension = this._extension;
+            for (var key in extension) {
+                if (extension.hasOwnProperty(key)) {
+                    this[key] = extension[key];
+                }
+            }
+        }
+    }]);
+    return GLExtension;
+}();
 
 var GLExtension_1 = GLExtension;
 
@@ -2248,23 +2930,25 @@ var GLExtension_1 = GLExtension;
  * http://pegjs.org/
  */
 
- /**
-  * reference:
-  * https://github.com/axmand/glsl-man/blob/master/src/parser.js
-  * @date 2018/1/31
-  */
+/**
+ * reference:
+ * https://github.com/axmand/glsl-man/blob/master/src/parser.js
+ * @date 2018/1/31
+ */
 function peg$subclass(child, parent) {
-  function ctor() { this.constructor = child; }
+  function ctor() {
+    this.constructor = child;
+  }
   ctor.prototype = parent.prototype;
   child.prototype = new ctor();
 }
 
 function peg$SyntaxError(message, expected, found, location) {
-  this.message  = message;
+  this.message = message;
   this.expected = expected;
-  this.found    = found;
+  this.found = found;
   this.location = location;
-  this.name     = "SyntaxError";
+  this.name = "SyntaxError";
 
   if (typeof Error.captureStackTrace === "function") {
     Error.captureStackTrace(this, peg$SyntaxError);
@@ -2273,66 +2957,54 @@ function peg$SyntaxError(message, expected, found, location) {
 
 peg$subclass(peg$SyntaxError, Error);
 
-peg$SyntaxError.buildMessage = function(expected, found) {
+peg$SyntaxError.buildMessage = function (expected, found) {
   var DESCRIBE_EXPECTATION_FNS = {
-        literal: function(expectation) {
-          return "\"" + literalEscape(expectation.text) + "\"";
-        },
+    literal: function literal(expectation) {
+      return "\"" + literalEscape(expectation.text) + "\"";
+    },
 
-        "class": function(expectation) {
-          var escapedParts = "",
-              i;
+    "class": function _class(expectation) {
+      var escapedParts = "",
+          i;
 
-          for (i = 0; i < expectation.parts.length; i++) {
-            escapedParts += expectation.parts[i] instanceof Array
-              ? classEscape(expectation.parts[i][0]) + "-" + classEscape(expectation.parts[i][1])
-              : classEscape(expectation.parts[i]);
-          }
+      for (i = 0; i < expectation.parts.length; i++) {
+        escapedParts += expectation.parts[i] instanceof Array ? classEscape(expectation.parts[i][0]) + "-" + classEscape(expectation.parts[i][1]) : classEscape(expectation.parts[i]);
+      }
 
-          return "[" + (expectation.inverted ? "^" : "") + escapedParts + "]";
-        },
+      return "[" + (expectation.inverted ? "^" : "") + escapedParts + "]";
+    },
 
-        any: function(expectation) {
-          return "any character";
-        },
+    any: function any(expectation) {
+      return "any character";
+    },
 
-        end: function(expectation) {
-          return "end of input";
-        },
+    end: function end(expectation) {
+      return "end of input";
+    },
 
-        other: function(expectation) {
-          return expectation.description;
-        }
-      };
+    other: function other(expectation) {
+      return expectation.description;
+    }
+  };
 
   function hex(ch) {
     return ch.charCodeAt(0).toString(16).toUpperCase();
   }
 
   function literalEscape(s) {
-    return s
-      .replace(/\\/g, '\\\\')
-      .replace(/"/g,  '\\"')
-      .replace(/\0/g, '\\0')
-      .replace(/\t/g, '\\t')
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/[\x00-\x0F]/g,          function(ch) { return '\\x0' + hex(ch); })
-      .replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) { return '\\x'  + hex(ch); });
+    return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\0/g, '\\0').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\x00-\x0F]/g, function (ch) {
+      return '\\x0' + hex(ch);
+    }).replace(/[\x10-\x1F\x7F-\x9F]/g, function (ch) {
+      return '\\x' + hex(ch);
+    });
   }
 
   function classEscape(s) {
-    return s
-      .replace(/\\/g, '\\\\')
-      .replace(/\]/g, '\\]')
-      .replace(/\^/g, '\\^')
-      .replace(/-/g,  '\\-')
-      .replace(/\0/g, '\\0')
-      .replace(/\t/g, '\\t')
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/[\x00-\x0F]/g,          function(ch) { return '\\x0' + hex(ch); })
-      .replace(/[\x10-\x1F\x7F-\x9F]/g, function(ch) { return '\\x'  + hex(ch); });
+    return s.replace(/\\/g, '\\\\').replace(/\]/g, '\\]').replace(/\^/g, '\\^').replace(/-/g, '\\-').replace(/\0/g, '\\0').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\x00-\x0F]/g, function (ch) {
+      return '\\x0' + hex(ch);
+    }).replace(/[\x10-\x1F\x7F-\x9F]/g, function (ch) {
+      return '\\x' + hex(ch);
+    });
   }
 
   function describeExpectation(expectation) {
@@ -2341,7 +3013,8 @@ peg$SyntaxError.buildMessage = function(expected, found) {
 
   function describeExpected(expected) {
     var descriptions = new Array(expected.length),
-        i, j;
+        i,
+        j;
 
     for (i = 0; i < expected.length; i++) {
       descriptions[i] = describeExpectation(expected[i]);
@@ -2367,9 +3040,7 @@ peg$SyntaxError.buildMessage = function(expected, found) {
         return descriptions[0] + " or " + descriptions[1];
 
       default:
-        return descriptions.slice(0, -1).join(", ")
-          + ", or "
-          + descriptions[descriptions.length - 1];
+        return descriptions.slice(0, -1).join(", ") + ", or " + descriptions[descriptions.length - 1];
     }
   }
 
@@ -2384,20 +3055,22 @@ function peg$parse(input, options) {
   options = options !== void 0 ? options : {};
 
   var peg$FAILED = {},
-
       peg$startRuleFunctions = { start: peg$parsestart },
-      peg$startRuleFunction  = peg$parsestart,
-
-      peg$c0 = function() {   },
-      peg$c1 = function(root) {
-            
-          },
-      peg$c2 = function() {   },
+      peg$startRuleFunction = peg$parsestart,
+      peg$c0 = function peg$c0() {
+    
+  },
+      peg$c1 = function peg$c1(root) {
+    
+  },
+      peg$c2 = function peg$c2() {
+    
+  },
       peg$c3 = /^[\n]/,
       peg$c4 = peg$classExpectation(["\n"], false, false),
-      peg$c5 = function() {
-          return "\n";
-        },
+      peg$c5 = function peg$c5() {
+    return "\n";
+  },
       peg$c6 = peg$anyExpectation(),
       peg$c7 = peg$otherExpectation("whitespace"),
       peg$c8 = /^[\\\n]/,
@@ -2431,21 +3104,25 @@ function peg$parse(input, options) {
       peg$c36 = peg$literalExpectation("{", false),
       peg$c37 = "}",
       peg$c38 = peg$literalExpectation("}", false),
-      peg$c39 = function(statements) {
-            // Skip blank statements.  These were either whitespace or
-            var result = new node({
-              type: "root",
-              statements: []
-            });
-            for (var i = 0; i < statements.length; i++) {
-              if (statements[i]) {
-                result.statements = result.statements.concat(statements[i]);
-              }
-            }
-            return result;
-          },
-      peg$c40 = function(statement) { return statement; },
-      peg$c41 = function() { return ""; },
+      peg$c39 = function peg$c39(statements) {
+    // Skip blank statements.  These were either whitespace or
+    var result = new node({
+      type: "root",
+      statements: []
+    });
+    for (var i = 0; i < statements.length; i++) {
+      if (statements[i]) {
+        result.statements = result.statements.concat(statements[i]);
+      }
+    }
+    return result;
+  },
+      peg$c40 = function peg$c40(statement) {
+    return statement;
+  },
+      peg$c41 = function peg$c41() {
+    return "";
+  },
       peg$c42 = "#",
       peg$c43 = peg$literalExpectation("#", false),
       peg$c44 = "undef",
@@ -2462,179 +3139,189 @@ function peg$parse(input, options) {
       peg$c55 = peg$literalExpectation("line", false),
       peg$c56 = "include",
       peg$c57 = peg$literalExpectation("include", false),
-      peg$c58 = function(directive, defname) {return defname.join("")},
-      peg$c59 = function(directive, value) {
-          return new node({
-            type: "preprocessor",
-            directive: "#" + directive,
-            value: value
-          });
-        },
+      peg$c58 = function peg$c58(directive, defname) {
+    return defname.join("");
+  },
+      peg$c59 = function peg$c59(directive, value) {
+    return new node({
+      type: "preprocessor",
+      directive: "#" + directive,
+      value: value
+    });
+  },
       peg$c60 = /^[A-Za-z_]/,
       peg$c61 = peg$classExpectation([["A", "Z"], ["a", "z"], "_"], false, false),
       peg$c62 = /^[A-Za-z_0-9]/,
       peg$c63 = peg$classExpectation([["A", "Z"], ["a", "z"], "_", ["0", "9"]], false, false),
-      peg$c64 = function(head, tail) {
-           return new node({
-             type: "identifier",
-             name: head + tail.join("")
-           });
-        },
-      peg$c65 = function(head, tail) {
-          if (!head) {
-            return [];
-          }
-          return [ head ].concat(tail.map(function(item) { return item[1]; }));
-        },
+      peg$c64 = function peg$c64(head, tail) {
+    return new node({
+      type: "identifier",
+      name: head + tail.join("")
+    });
+  },
+      peg$c65 = function peg$c65(head, tail) {
+    if (!head) {
+      return [];
+    }
+    return [head].concat(tail.map(function (item) {
+      return item[1];
+    }));
+  },
       peg$c66 = /^[^()]/,
       peg$c67 = peg$classExpectation(["(", ")"], true, false),
-      peg$c68 = function(head, paren, tail) {
-          
-        },
-      peg$c69 = function(value) {
-          
-        },
+      peg$c68 = function peg$c68(head, paren, tail) {
+    
+  },
+      peg$c69 = function peg$c69(value) {
+    
+  },
       peg$c70 = /^[^,)]/,
       peg$c71 = peg$classExpectation([",", ")"], true, false),
-      peg$c72 = function(value) {
-          
-        },
-      peg$c73 = function(head, tail) {
-          
-        },
-      peg$c74 = function(macro_name, parameters) {
-            var result = new node({
-              type: "macro_call",
-              macro_name: macro_name,
-              parameters: parameters
-            });
-            if (!parameters) {
-              result.parameters = [];
-            }
-            return result;
-          },
-      peg$c75 = function(head, tail) {
-          
-        },
+      peg$c72 = function peg$c72(value) {
+    
+  },
+      peg$c73 = function peg$c73(head, tail) {
+    
+  },
+      peg$c74 = function peg$c74(macro_name, parameters) {
+    var result = new node({
+      type: "macro_call",
+      macro_name: macro_name,
+      parameters: parameters
+    });
+    if (!parameters) {
+      result.parameters = [];
+    }
+    return result;
+  },
+      peg$c75 = function peg$c75(head, tail) {
+    
+  },
       peg$c76 = "define",
       peg$c77 = peg$literalExpectation("define", false),
       peg$c78 = /^[ \t]/,
       peg$c79 = peg$classExpectation([" ", "\t"], false, false),
-      peg$c80 = function(identifier, parameters, defname) {return defname.join("")},
-      peg$c81 = function(identifier, parameters, token_string) {
-          return new node({
-               type: "preprocessor",
-               directive: "#define",
-               identifier: identifier.name,
-               token_string: token_string,
-               parameters: parameters || null
-             });
-           },
+      peg$c80 = function peg$c80(identifier, parameters, defname) {
+    return defname.join("");
+  },
+      peg$c81 = function peg$c81(identifier, parameters, token_string) {
+    return new node({
+      type: "preprocessor",
+      directive: "#define",
+      identifier: identifier.name,
+      token_string: token_string,
+      parameters: parameters || null
+    });
+  },
       peg$c82 = "ifdef",
       peg$c83 = peg$literalExpectation("ifdef", false),
       peg$c84 = "ifndef",
       peg$c85 = peg$literalExpectation("ifndef", false),
       peg$c86 = "if",
       peg$c87 = peg$literalExpectation("if", false),
-      peg$c88 = function(directive, value) {
-             return new node({
-               type: "preprocessor",
-               directive: "#" + directive,
-               value: value
-             });
-           },
+      peg$c88 = function peg$c88(directive, value) {
+    return new node({
+      type: "preprocessor",
+      directive: "#" + directive,
+      value: value
+    });
+  },
       peg$c89 = "elif",
       peg$c90 = peg$literalExpectation("elif", false),
-      peg$c91 = function(defname) {return defname.join("")},
-      peg$c92 = function(value) {
-            return new node({
-              type: "preprocessor",
-              directive: "#elif",
-              value: value
-            });
-          },
+      peg$c91 = function peg$c91(defname) {
+    return defname.join("");
+  },
+      peg$c92 = function peg$c92(value) {
+    return new node({
+      type: "preprocessor",
+      directive: "#elif",
+      value: value
+    });
+  },
       peg$c93 = "else",
       peg$c94 = peg$literalExpectation("else", false),
-      peg$c95 = function() {
-          return new node({
-            type: "preprocessor",
-            directive: "#else"
-          });
-        },
+      peg$c95 = function peg$c95() {
+    return new node({
+      type: "preprocessor",
+      directive: "#else"
+    });
+  },
       peg$c96 = "endif",
       peg$c97 = peg$literalExpectation("endif", false),
-      peg$c98 = function(if_directive, elif_directive, else_directive) {
-            return preprocessor_branch(if_directive, elif_directive, else_directive);
-          },
-      peg$c99 = function(prototype, body) {
-            var result = new node({
-              type: "function_declaration",
-              name: prototype.name,
-              returnType: prototype.returnType,
-              parameters: prototype.parameters,
-              body: body
-            });
-            return result;
-        },
-      peg$c100 = function(statements) {
-            var result = new node({
-              type: "scope",
-              statements: []
-            });
-            if (statements && statements.statements) {
-              result.statements = statements.statements;
-            }
-            return result;
-          },
-      peg$c101 = function(list) {return {statements: list};},
-      peg$c102 = function(statement) {
-          return statement;
-        },
-      peg$c103 = function(condition, if_body, else_body) {
-             var result = new node({
-               type:"if_statement",
-               condition:condition,
-               body:if_body
-             });
-             if (else_body) {
-               result.elseBody = else_body[2];
-             }
-             return result;
-           },
+      peg$c98 = function peg$c98(if_directive, elif_directive, else_directive) {
+    return preprocessor_branch(if_directive, elif_directive, else_directive);
+  },
+      peg$c99 = function peg$c99(prototype, body) {
+    var result = new node({
+      type: "function_declaration",
+      name: prototype.name,
+      returnType: prototype.returnType,
+      parameters: prototype.parameters,
+      body: body
+    });
+    return result;
+  },
+      peg$c100 = function peg$c100(statements) {
+    var result = new node({
+      type: "scope",
+      statements: []
+    });
+    if (statements && statements.statements) {
+      result.statements = statements.statements;
+    }
+    return result;
+  },
+      peg$c101 = function peg$c101(list) {
+    return { statements: list };
+  },
+      peg$c102 = function peg$c102(statement) {
+    return statement;
+  },
+      peg$c103 = function peg$c103(condition, if_body, else_body) {
+    var result = new node({
+      type: "if_statement",
+      condition: condition,
+      body: if_body
+    });
+    if (else_body) {
+      result.elseBody = else_body[2];
+    }
+    return result;
+  },
       peg$c104 = "for",
       peg$c105 = peg$literalExpectation("for", false),
-      peg$c106 = function(initializer, condition, increment, body) {
-              return new node({
-                type:"for_statement",
-                initializer:initializer,
-                condition:condition,
-                increment:increment,
-                body:body
-              });
-            },
+      peg$c106 = function peg$c106(initializer, condition, increment, body) {
+    return new node({
+      type: "for_statement",
+      initializer: initializer,
+      condition: condition,
+      increment: increment,
+      body: body
+    });
+  },
       peg$c107 = "while",
       peg$c108 = peg$literalExpectation("while", false),
-      peg$c109 = function(condition) {
-             return {
-               condition:condition
-             };
-           },
-      peg$c110 = function(w, body) {
-            return new node({
-              type: "while_statement",
-              condition: w.condition,
-              body: body
-            });
-          },
+      peg$c109 = function peg$c109(condition) {
+    return {
+      condition: condition
+    };
+  },
+      peg$c110 = function peg$c110(w, body) {
+    return new node({
+      type: "while_statement",
+      condition: w.condition,
+      body: body
+    });
+  },
       peg$c111 = "do",
       peg$c112 = peg$literalExpectation("do", false),
-      peg$c113 = function(body, w) {
-             return new node({
-               type: "do_statement",
-               condition: w.condition,
-               body: body
-             });
-           },
+      peg$c113 = function peg$c113(body, w) {
+    return new node({
+      type: "do_statement",
+      condition: w.condition,
+      body: body
+    });
+  },
       peg$c114 = "return",
       peg$c115 = peg$literalExpectation("return", false),
       peg$c116 = "++",
@@ -2649,198 +3336,205 @@ function peg$parse(input, options) {
       peg$c125 = peg$literalExpectation("+", false),
       peg$c126 = "-",
       peg$c127 = peg$literalExpectation("-", false),
-      peg$c128 = function(head, expression) {
-            return new node({
-              type: "return",
-              value: expression
-            });
-          },
+      peg$c128 = function peg$c128(head, expression) {
+    return new node({
+      type: "return",
+      value: expression
+    });
+  },
       peg$c129 = "continue",
       peg$c130 = peg$literalExpectation("continue", false),
       peg$c131 = "break",
       peg$c132 = peg$literalExpectation("break", false),
       peg$c133 = "discard",
       peg$c134 = peg$literalExpectation("discard", false),
-      peg$c135 = function(type) {
-                  return new node({
-                    type:type[0]
-                  });
-                },
-      peg$c136 = function(e) {
-            return new node({
-              type: "expression",
-              expression: e
-            });
-        },
-      peg$c137 = function(head, tail) {
-            return new node({
-              type: "sequence",
-              expressions: [ head ].concat(tail.map(function(item) { return item[1] }))
-            })
-          },
+      peg$c135 = function peg$c135(type) {
+    return new node({
+      type: type[0]
+    });
+  },
+      peg$c136 = function peg$c136(e) {
+    return new node({
+      type: "expression",
+      expression: e
+    });
+  },
+      peg$c137 = function peg$c137(head, tail) {
+    return new node({
+      type: "sequence",
+      expressions: [head].concat(tail.map(function (item) {
+        return item[1];
+      }))
+    });
+  },
       peg$c138 = peg$otherExpectation("declaration"),
-      peg$c139 = function(function_prototype) {
-            return function_prototype;
-          },
-      peg$c140 = function(type, declarators) {
-            return new node({
-              type: "declarator",
-              typeAttribute: type,
-              declarators: declarators
-            });
-          },
-      peg$c141 = function() { return shaderType == "vs"; },
+      peg$c139 = function peg$c139(function_prototype) {
+    return function_prototype;
+  },
+      peg$c140 = function peg$c140(type, declarators) {
+    return new node({
+      type: "declarator",
+      typeAttribute: type,
+      declarators: declarators
+    });
+  },
+      peg$c141 = function peg$c141() {
+    return shaderType == "vs";
+  },
       peg$c142 = "invariant",
       peg$c143 = peg$literalExpectation("invariant", false),
-      peg$c144 = function(head, tail) {
-              var items = [ head ].concat(tail.map(function(item) {
-                return item[1]; }));
-              return new node({
-                type: "invariant",
-                identifiers: items
-              });
-            },
+      peg$c144 = function peg$c144(head, tail) {
+    var items = [head].concat(tail.map(function (item) {
+      return item[1];
+    }));
+    return new node({
+      type: "invariant",
+      identifiers: items
+    });
+  },
       peg$c145 = "precision",
       peg$c146 = peg$literalExpectation("precision", false),
-      peg$c147 = function(precission, type) {
-            return new node({
-              type:"precision",
-              precision: precission,
-              typeName: type
-            });
-          },
-      peg$c148 = function(type, declarators) {
-          return new node({
-            type: "declarator",
-            typeAttribute: type,
-            declarators: declarators
-          });
-        },
+      peg$c147 = function peg$c147(precission, type) {
+    return new node({
+      type: "precision",
+      precision: precission,
+      typeName: type
+    });
+  },
+      peg$c148 = function peg$c148(type, declarators) {
+    return new node({
+      type: "declarator",
+      typeAttribute: type,
+      declarators: declarators
+    });
+  },
       peg$c149 = "void",
       peg$c150 = peg$literalExpectation("void", false),
-      peg$c151 = function(head, tail) {
-            return [ head ].concat(tail.map(function(item) { return item[1]; }));
-          },
-      peg$c152 = function(type, identifier, parameters) {
-            var result = new node({
-              type:"function_prototype",
-              name: identifier.name,
-              returnType: type,
-              parameters: parameters
-            });
-            if (parameters == "void" || !parameters) {
-              result.parameters = [];
-            }
-            return result;
-          },
+      peg$c151 = function peg$c151(head, tail) {
+    return [head].concat(tail.map(function (item) {
+      return item[1];
+    }));
+  },
+      peg$c152 = function peg$c152(type, identifier, parameters) {
+    var result = new node({
+      type: "function_prototype",
+      name: identifier.name,
+      returnType: type,
+      parameters: parameters
+    });
+    if (parameters == "void" || !parameters) {
+      result.parameters = [];
+    }
+    return result;
+  },
       peg$c153 = "inout",
       peg$c154 = peg$literalExpectation("inout", false),
       peg$c155 = "in",
       peg$c156 = peg$literalExpectation("in", false),
       peg$c157 = "out",
       peg$c158 = peg$literalExpectation("out", false),
-      peg$c159 = function(const_qualifier, parameter, precision, type_name, identifier, array_size) {
-          var result = new node({
-            type: "parameter",
-            type_name: type_name,
-            name: identifier.name
-          });
-          if (const_qualifier) result.typeQualifier = const_qualifier[0];
-          if (parameter) result.parameterQualifier = parameter[0];
-          if (precision) result.precision = precision[0];
-          if (array_size) result.arraySize = array_size[1];
-          // "const" is only legal on "in" parameter qualifiers.
-          if (result.typeQualifier &&
-              result.parameterQualifier &&
-              result.parameterQualifier != "in") {
-            return null;
-          } else {
-            return result;
-          }
-        },
-      peg$c160 = function(head, tail) {
-          return [ head ].concat(tail.map(function(item) { return item[1]; }));
-        },
-      peg$c161 = function(name) {
-            return new node({
-              type: "declarator_item",
-              name:name
-            });
-          },
-      peg$c162 = function(name, arraySize) {
-            return new node({
-              type: "declarator_item",
-              name: name,
-              arraySize: arraySize,
-              isArray: true
-            });
-          },
-      peg$c163 = function(name) {
-            return new node({
-              type: "declarator_item",
-              name: name,
-              isArray: true
-            });
-          },
-      peg$c164 = function(name, initializer) {
-            return new node({
-              type: "declarator_item",
-              name: name,
-              initializer:initializer
-            });
-          },
-      peg$c165 = function(declarators) {
-           return declarators.map(function(item) {
-             return new node({
-               type: "declarator",
-               typeAttribute: item[0],
-               declarators: item[2]
-             })
-            });
-        },
+      peg$c159 = function peg$c159(const_qualifier, parameter, precision, type_name, identifier, array_size) {
+    var result = new node({
+      type: "parameter",
+      type_name: type_name,
+      name: identifier.name
+    });
+    if (const_qualifier) result.typeQualifier = const_qualifier[0];
+    if (parameter) result.parameterQualifier = parameter[0];
+    if (precision) result.precision = precision[0];
+    if (array_size) result.arraySize = array_size[1];
+    // "const" is only legal on "in" parameter qualifiers.
+    if (result.typeQualifier && result.parameterQualifier && result.parameterQualifier != "in") {
+      return null;
+    } else {
+      return result;
+    }
+  },
+      peg$c160 = function peg$c160(head, tail) {
+    return [head].concat(tail.map(function (item) {
+      return item[1];
+    }));
+  },
+      peg$c161 = function peg$c161(name) {
+    return new node({
+      type: "declarator_item",
+      name: name
+    });
+  },
+      peg$c162 = function peg$c162(name, arraySize) {
+    return new node({
+      type: "declarator_item",
+      name: name,
+      arraySize: arraySize,
+      isArray: true
+    });
+  },
+      peg$c163 = function peg$c163(name) {
+    return new node({
+      type: "declarator_item",
+      name: name,
+      isArray: true
+    });
+  },
+      peg$c164 = function peg$c164(name, initializer) {
+    return new node({
+      type: "declarator_item",
+      name: name,
+      initializer: initializer
+    });
+  },
+      peg$c165 = function peg$c165(declarators) {
+    return declarators.map(function (item) {
+      return new node({
+        type: "declarator",
+        typeAttribute: item[0],
+        declarators: item[2]
+      });
+    });
+  },
       peg$c166 = "struct",
       peg$c167 = peg$literalExpectation("struct", false),
-      peg$c168 = function(qualifier, identifier, members, declarators) {
-            var result = new node({
-              type: "struct_definition",
-              members:members
-            });
-            if (qualifier) {
-              result.qualifier = qualifier[0];
-            }
-            if (identifier) {
-              result.name = identifier[1].name;
-              
-            }
-            if (declarators) {
-              result.declarators = declarators;
-            }
-            return result;
-          },
-      peg$c169 = function(precision, name) {
-          var result = new node({
-            type: "type",
-            name: name
-          });
-          if (precision) result.precision = precision[0];
-          return result;
-        },
+      peg$c168 = function peg$c168(qualifier, identifier, members, declarators) {
+    var result = new node({
+      type: "struct_definition",
+      members: members
+    });
+    if (qualifier) {
+      result.qualifier = qualifier[0];
+    }
+    if (identifier) {
+      result.name = identifier[1].name;
+      
+    }
+    if (declarators) {
+      result.declarators = declarators;
+    }
+    return result;
+  },
+      peg$c169 = function peg$c169(precision, name) {
+    var result = new node({
+      type: "type",
+      name: name
+    });
+    if (precision) result.precision = precision[0];
+    return result;
+  },
       peg$c170 = peg$otherExpectation("locally specified type"),
-      peg$c171 = function(qualifier, type) {
-          var result = type;
-          if (qualifier) result.qualifier = qualifier[0];
-          return result;
-        },
+      peg$c171 = function peg$c171(qualifier, type) {
+    var result = type;
+    if (qualifier) result.qualifier = qualifier[0];
+    return result;
+  },
       peg$c172 = "attribute",
       peg$c173 = peg$literalExpectation("attribute", false),
-      peg$c174 = function() {
-          return "attribute";
-        },
-      peg$c175 = function(qualifier, type) {
-          var result = type;
-          result.qualifier = qualifier;
-          return result;
-        },
+      peg$c174 = function peg$c174() {
+    return "attribute";
+  },
+      peg$c175 = function peg$c175(qualifier, type) {
+    var result = type;
+    result.qualifier = qualifier;
+    return result;
+  },
       peg$c176 = peg$otherExpectation("fully specified type"),
       peg$c177 = peg$otherExpectation("precision qualifier"),
       peg$c178 = "highp",
@@ -2854,16 +3548,18 @@ function peg$parse(input, options) {
       peg$c186 = peg$otherExpectation("type qualifier"),
       peg$c187 = "varying",
       peg$c188 = peg$literalExpectation("varying", false),
-      peg$c189 = function() { return "invariant varying"; },
+      peg$c189 = function peg$c189() {
+    return "invariant varying";
+  },
       peg$c190 = "uniform",
       peg$c191 = peg$literalExpectation("uniform", false),
       peg$c192 = peg$otherExpectation("void"),
-      peg$c193 = function() {
-          return new node({
-            type: "type",
-            name: "void"
-          })
-        },
+      peg$c193 = function peg$c193() {
+    return new node({
+      type: "type",
+      name: "void"
+    });
+  },
       peg$c194 = peg$otherExpectation("type name"),
       peg$c195 = "float",
       peg$c196 = peg$literalExpectation("float", false),
@@ -2875,9 +3571,9 @@ function peg$parse(input, options) {
       peg$c202 = peg$literalExpectation("uint", false),
       peg$c203 = "bool",
       peg$c204 = peg$literalExpectation("bool", false),
-      peg$c205 = function(name) {
-            return name.name;
-          },
+      peg$c205 = function peg$c205(name) {
+    return name.name;
+  },
       peg$c206 = peg$otherExpectation("identifier"),
       peg$c207 = /^[^A-Za-z_0-9]/,
       peg$c208 = peg$classExpectation([["A", "Z"], ["a", "z"], "_", ["0", "9"]], true, false),
@@ -2900,7 +3596,9 @@ function peg$parse(input, options) {
       peg$c225 = peg$literalExpectation("vec", false),
       peg$c226 = /^[234]/,
       peg$c227 = peg$classExpectation(["2", "3", "4"], false, false),
-      peg$c228 = function(a) { return a.join(""); },
+      peg$c228 = function peg$c228(a) {
+    return a.join("");
+  },
       peg$c229 = /^[d]/,
       peg$c230 = peg$classExpectation(["d"], false, false),
       peg$c231 = "mat",
@@ -2938,46 +3636,46 @@ function peg$parse(input, options) {
       peg$c263 = peg$classExpectation([["0", "9"]], false, false),
       peg$c264 = /^[Uu]/,
       peg$c265 = peg$classExpectation(["U", "u"], false, false),
-      peg$c266 = function(head, tail, unsigned) {
-            return new node({
-              type: "int",
-              format: "number",
-              value_base10: parseInt([head].concat(tail).join(""), 10),
-              value: [head].concat(tail).join("") + (unsigned ? unsigned : '')
-            });
-          },
+      peg$c266 = function peg$c266(head, tail, unsigned) {
+    return new node({
+      type: "int",
+      format: "number",
+      value_base10: parseInt([head].concat(tail).join(""), 10),
+      value: [head].concat(tail).join("") + (unsigned ? unsigned : '')
+    });
+  },
       peg$c267 = "0",
       peg$c268 = peg$literalExpectation("0", false),
       peg$c269 = /^[Xx]/,
       peg$c270 = peg$classExpectation(["X", "x"], false, false),
       peg$c271 = /^[0-9A-Fa-f]/,
       peg$c272 = peg$classExpectation([["0", "9"], ["A", "F"], ["a", "f"]], false, false),
-      peg$c273 = function(digits, unsigned) {
-            return new node({
-              type: "int",
-              format: "hex",
-              value_base10: parseInt(digits.join(""), 16),
-              value: "0x" + digits.join("") + (unsigned ? unsigned : '')
-            });
-          },
+      peg$c273 = function peg$c273(digits, unsigned) {
+    return new node({
+      type: "int",
+      format: "hex",
+      value_base10: parseInt(digits.join(""), 16),
+      value: "0x" + digits.join("") + (unsigned ? unsigned : '')
+    });
+  },
       peg$c274 = /^[0-7]/,
       peg$c275 = peg$classExpectation([["0", "7"]], false, false),
-      peg$c276 = function(digits, unsigned) {
-            return new node({
-              type: "int",
-              format: "octal",
-              value_base10: parseInt(digits.join(""), 8),
-              value: "0" + digits.join("") + (unsigned ? unsigned : '')
-            });
-          },
-      peg$c277 = function(unsigned) {
-            return new node({
-              type: "int",
-              format: "number",
-              value_base10: 0,
-              value: "0" + (unsigned ? unsigned : '')
-            });
-          },
+      peg$c276 = function peg$c276(digits, unsigned) {
+    return new node({
+      type: "int",
+      format: "octal",
+      value_base10: parseInt(digits.join(""), 8),
+      value: "0" + digits.join("") + (unsigned ? unsigned : '')
+    });
+  },
+      peg$c277 = function peg$c277(unsigned) {
+    return new node({
+      type: "int",
+      format: "number",
+      value_base10: 0,
+      value: "0" + (unsigned ? unsigned : '')
+    });
+  },
       peg$c278 = /^[\-0-9]/,
       peg$c279 = peg$classExpectation(["-", ["0", "9"]], false, false),
       peg$c280 = ".",
@@ -2988,236 +3686,242 @@ function peg$parse(input, options) {
       peg$c285 = peg$literalExpectation("lf", false),
       peg$c286 = "LF",
       peg$c287 = peg$literalExpectation("LF", false),
-      peg$c288 = function(digits, suffix) {
-            digits[0] = digits[0].join("");
-            digits[2] = digits[2].join("");
-            return new node({
-              type: "float",
-              value_base10: parseFloat(digits.join("")),
-              value: digits.join("") + (suffix ? suffix : '')
-            });
-          },
+      peg$c288 = function peg$c288(digits, suffix) {
+    digits[0] = digits[0].join("");
+    digits[2] = digits[2].join("");
+    return new node({
+      type: "float",
+      value_base10: parseFloat(digits.join("")),
+      value: digits.join("") + (suffix ? suffix : '')
+    });
+  },
       peg$c289 = /^[f]/,
       peg$c290 = peg$classExpectation(["f"], false, false),
-      peg$c291 = function(digits, suffix) {
-            return new node({
-              type: "float",
-              value_base10: parseFloat(digits[0].join("") + digits[1]),
-              value: digits.join("") + (suffix ? suffix : '')
-            });
-        },
+      peg$c291 = function peg$c291(digits, suffix) {
+    return new node({
+      type: "float",
+      value_base10: parseFloat(digits[0].join("") + digits[1]),
+      value: digits.join("") + (suffix ? suffix : '')
+    });
+  },
       peg$c292 = /^[Ee]/,
       peg$c293 = peg$classExpectation(["E", "e"], false, false),
       peg$c294 = /^[+\-]/,
       peg$c295 = peg$classExpectation(["+", "-"], false, false),
-      peg$c296 = function(sign, exponent) {
-            return ["e", sign].concat(exponent).join("");
-         },
-      peg$c297 = function(expression) {
-            return expression;
-          },
-      peg$c298 = function(value) {
-          return new node({
-            type: "bool",
-            value: value == "true"
-          });
-        },
-      peg$c299 = function(index) {
-          return new node({
-            type: "accessor",
-            index: index
-          });
-        },
-      peg$c300 = function(id) {
-          return new node({
-            type: "field_selector",
-            selection: id.name
-          })
-        },
-      peg$c301 = function(head, tail) {
-            var result = head;
-            for (var i = 0; i < tail.length; i++) {
-              result = new node({
-                type: "postfix",
-                operator: tail[i],
-                expression: result
-              });
-            }
-            return result;
-          },
-      peg$c302 = function(head, tail, rest) {
-            var result = head;
-            if(tail) {
-              result = new node({
-                type: "postfix",
-                operator: new node({
-                  id: next_id++,
-                  type: "operator",
-                  operator: tail
-                }),
-                expression: result
-              });
-            }
-            for (var i = 0; i < rest.length; i++) {
-              result = new node({
-                type: "postfix",
-                operator: rest[i],
-                expression: result
-              });
-            }
-            return result;
-          },
-      peg$c303 = function() {return []; },
-      peg$c304 = function(head, tail) {
-            return [ head ].concat(tail.map(function(item) { return item[1] }));
-          },
-      peg$c305 = function(function_name, parameters) {
-            var result = new node({
-              type: "function_call",
-              function_name: function_name,
-              parameters: parameters
-            });
-            if (!parameters) {
-              result.parameters = [];
-            }
-            return result;
-          },
-      peg$c306 = function(id) {return id.name;},
-      peg$c307 = function(head, tail) {
-            var result = tail;
-            if (head) {
-              result = new node({
-                type: "unary",
-                expression: result,
-                operator: new node({
-                  type: "operator",
-                  operator: head
-                })
-              });
-            }
-            return result;
-          },
+      peg$c296 = function peg$c296(sign, exponent) {
+    return ["e", sign].concat(exponent).join("");
+  },
+      peg$c297 = function peg$c297(expression) {
+    return expression;
+  },
+      peg$c298 = function peg$c298(value) {
+    return new node({
+      type: "bool",
+      value: value == "true"
+    });
+  },
+      peg$c299 = function peg$c299(index) {
+    return new node({
+      type: "accessor",
+      index: index
+    });
+  },
+      peg$c300 = function peg$c300(id) {
+    return new node({
+      type: "field_selector",
+      selection: id.name
+    });
+  },
+      peg$c301 = function peg$c301(head, tail) {
+    var result = head;
+    for (var i = 0; i < tail.length; i++) {
+      result = new node({
+        type: "postfix",
+        operator: tail[i],
+        expression: result
+      });
+    }
+    return result;
+  },
+      peg$c302 = function peg$c302(head, tail, rest) {
+    var result = head;
+    if (tail) {
+      result = new node({
+        type: "postfix",
+        operator: new node({
+          id: next_id++,
+          type: "operator",
+          operator: tail
+        }),
+        expression: result
+      });
+    }
+    for (var i = 0; i < rest.length; i++) {
+      result = new node({
+        type: "postfix",
+        operator: rest[i],
+        expression: result
+      });
+    }
+    return result;
+  },
+      peg$c303 = function peg$c303() {
+    return [];
+  },
+      peg$c304 = function peg$c304(head, tail) {
+    return [head].concat(tail.map(function (item) {
+      return item[1];
+    }));
+  },
+      peg$c305 = function peg$c305(function_name, parameters) {
+    var result = new node({
+      type: "function_call",
+      function_name: function_name,
+      parameters: parameters
+    });
+    if (!parameters) {
+      result.parameters = [];
+    }
+    return result;
+  },
+      peg$c306 = function peg$c306(id) {
+    return id.name;
+  },
+      peg$c307 = function peg$c307(head, tail) {
+    var result = tail;
+    if (head) {
+      result = new node({
+        type: "unary",
+        expression: result,
+        operator: new node({
+          type: "operator",
+          operator: head
+        })
+      });
+    }
+    return result;
+  },
       peg$c308 = "*",
       peg$c309 = peg$literalExpectation("*", false),
       peg$c310 = "/",
       peg$c311 = peg$literalExpectation("/", false),
       peg$c312 = "%",
       peg$c313 = peg$literalExpectation("%", false),
-      peg$c314 = function(operator) {
-          return new node({
-            type: "operator",
-            operator: operator
-          });
-        },
-      peg$c315 = function(head, tail) {
-            return daisy_chain(head, tail);
-          },
-      peg$c316 = function() {
-          return new node({
-            type: "operator",
-            operator: "+"
-          });
-        },
-      peg$c317 = function() {
-          return new node({
-            type: "operator",
-            operator: "-"
-          });
-        },
+      peg$c314 = function peg$c314(operator) {
+    return new node({
+      type: "operator",
+      operator: operator
+    });
+  },
+      peg$c315 = function peg$c315(head, tail) {
+    return daisy_chain(head, tail);
+  },
+      peg$c316 = function peg$c316() {
+    return new node({
+      type: "operator",
+      operator: "+"
+    });
+  },
+      peg$c317 = function peg$c317() {
+    return new node({
+      type: "operator",
+      operator: "-"
+    });
+  },
       peg$c318 = "<<",
       peg$c319 = peg$literalExpectation("<<", false),
       peg$c320 = ">>",
       peg$c321 = peg$literalExpectation(">>", false),
       peg$c322 = "<",
       peg$c323 = peg$literalExpectation("<", false),
-      peg$c324 = function(equal) {
-          return new node({
-            type: "operator",
-            operator: "<" + (equal ? equal : '')
-          });
-        },
+      peg$c324 = function peg$c324(equal) {
+    return new node({
+      type: "operator",
+      operator: "<" + (equal ? equal : '')
+    });
+  },
       peg$c325 = ">",
       peg$c326 = peg$literalExpectation(">", false),
-      peg$c327 = function(equal) {
-          return new node({
-            type: "operator",
-            operator: ">" + (equal ? equal : '')
-          });
-        },
+      peg$c327 = function peg$c327(equal) {
+    return new node({
+      type: "operator",
+      operator: ">" + (equal ? equal : '')
+    });
+  },
       peg$c328 = "==",
       peg$c329 = peg$literalExpectation("==", false),
       peg$c330 = "!=",
       peg$c331 = peg$literalExpectation("!=", false),
-      peg$c332 = function(operator) {
-           return new node({
-             type: "operator",
-             operator: operator
-           });
-         },
+      peg$c332 = function peg$c332(operator) {
+    return new node({
+      type: "operator",
+      operator: operator
+    });
+  },
       peg$c333 = "&",
       peg$c334 = peg$literalExpectation("&", false),
-      peg$c335 = function() {
-           return new node({
-             type: "operator",
-             operator: "&"
-           });
-         },
+      peg$c335 = function peg$c335() {
+    return new node({
+      type: "operator",
+      operator: "&"
+    });
+  },
       peg$c336 = "^",
       peg$c337 = peg$literalExpectation("^", false),
-      peg$c338 = function() {
-           return new node({
-             type: "operator",
-             operator: "^"
-           });
-         },
+      peg$c338 = function peg$c338() {
+    return new node({
+      type: "operator",
+      operator: "^"
+    });
+  },
       peg$c339 = "|",
       peg$c340 = peg$literalExpectation("|", false),
-      peg$c341 = function() {
-           return new node({
-             type: "operator",
-             operator: "|"
-           });
-         },
+      peg$c341 = function peg$c341() {
+    return new node({
+      type: "operator",
+      operator: "|"
+    });
+  },
       peg$c342 = "&&",
       peg$c343 = peg$literalExpectation("&&", false),
-      peg$c344 = function() {
-           return new node({
-             type: "operator",
-             operator: "&&"
-           });
-         },
+      peg$c344 = function peg$c344() {
+    return new node({
+      type: "operator",
+      operator: "&&"
+    });
+  },
       peg$c345 = "^^",
       peg$c346 = peg$literalExpectation("^^", false),
-      peg$c347 = function() {
-           return new node({
-             type: "operator",
-             operator: "^^"
-           });
-         },
+      peg$c347 = function peg$c347() {
+    return new node({
+      type: "operator",
+      operator: "^^"
+    });
+  },
       peg$c348 = "||",
       peg$c349 = peg$literalExpectation("||", false),
-      peg$c350 = function() {
-           return new node({
-             type: "operator",
-             operator: "||"
-           });
-         },
+      peg$c350 = function peg$c350() {
+    return new node({
+      type: "operator",
+      operator: "||"
+    });
+  },
       peg$c351 = "?",
       peg$c352 = peg$literalExpectation("?", false),
       peg$c353 = ":",
       peg$c354 = peg$literalExpectation(":", false),
-      peg$c355 = function(head, tail) {
-            var result = head;
-            if (tail) {
-              result = new node({
-                type: "ternary",
-                condition: head,
-                is_true: tail[3],
-                is_false: tail[7]
-              });
-            }
-            return result;
-          },
+      peg$c355 = function peg$c355(head, tail) {
+    var result = head;
+    if (tail) {
+      result = new node({
+        type: "ternary",
+        condition: head,
+        is_true: tail[3],
+        is_false: tail[7]
+      });
+    }
+    return result;
+  },
       peg$c356 = "*=",
       peg$c357 = peg$literalExpectation("*=", false),
       peg$c358 = "/=",
@@ -3238,25 +3942,23 @@ function peg$parse(input, options) {
       peg$c373 = peg$literalExpectation("^=", false),
       peg$c374 = "|=",
       peg$c375 = peg$literalExpectation("|=", false),
-      peg$c376 = function(variable, operator, expression) {
-            return new node({
-              type: "binary",
-              operator: new node({
-                type: "operator",
-                operator: operator
-              }),
-              left: variable,
-              right: expression
-            });
-          },
-
-      peg$currPos          = 0,
-      peg$savedPos         = 0,
-      peg$posDetailsCache  = [{ line: 1, column: 1 }],
-      peg$maxFailPos       = 0,
-      peg$maxFailExpected  = [],
-      peg$silentFails      = 0,
-
+      peg$c376 = function peg$c376(variable, operator, expression) {
+    return new node({
+      type: "binary",
+      operator: new node({
+        type: "operator",
+        operator: operator
+      }),
+      left: variable,
+      right: expression
+    });
+  },
+      peg$currPos = 0,
+      peg$savedPos = 0,
+      peg$posDetailsCache = [{ line: 1, column: 1 }],
+      peg$maxFailPos = 0,
+      peg$maxFailExpected = [],
+      peg$silentFails = 0,
       peg$result;
 
   if ("startRule" in options) {
@@ -3288,7 +3990,8 @@ function peg$parse(input, options) {
   }
 
   function peg$computePosDetails(pos) {
-    var details = peg$posDetailsCache[pos], p;
+    var details = peg$posDetailsCache[pos],
+        p;
 
     if (details) {
       return details;
@@ -3300,7 +4003,7 @@ function peg$parse(input, options) {
 
       details = peg$posDetailsCache[p];
       details = {
-        line:   details.line,
+        line: details.line,
         column: details.column
       };
 
@@ -3322,24 +4025,26 @@ function peg$parse(input, options) {
 
   function peg$computeLocation(startPos, endPos) {
     var startPosDetails = peg$computePosDetails(startPos),
-        endPosDetails   = peg$computePosDetails(endPos);
+        endPosDetails = peg$computePosDetails(endPos);
 
     return {
       start: {
         offset: startPos,
-        line:   startPosDetails.line,
+        line: startPosDetails.line,
         column: startPosDetails.column
       },
       end: {
         offset: endPos,
-        line:   endPosDetails.line,
+        line: endPosDetails.line,
         column: endPosDetails.column
       }
     };
   }
 
   function peg$fail(expected) {
-    if (peg$currPos < peg$maxFailPos) { return; }
+    if (peg$currPos < peg$maxFailPos) {
+      return;
+    }
 
     if (peg$currPos > peg$maxFailPos) {
       peg$maxFailPos = peg$currPos;
@@ -3350,12 +4055,7 @@ function peg$parse(input, options) {
   }
 
   function peg$buildStructuredError(expected, found, location) {
-    return new peg$SyntaxError(
-      peg$SyntaxError.buildMessage(expected, found),
-      expected,
-      found,
-      location
-    );
+    return new peg$SyntaxError(peg$SyntaxError.buildMessage(expected, found), expected, found, location);
   }
 
   function peg$parsestart() {
@@ -3375,7 +4075,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c4); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c4);
+      }
     }
     if (s1 !== peg$FAILED) {
       s1 = peg$c5();
@@ -3395,7 +4097,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c6); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c6);
+      }
     }
     peg$silentFails--;
     if (s1 === peg$FAILED) {
@@ -3420,7 +4124,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c9); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c9);
+        }
       }
       if (s1 === peg$FAILED) {
         if (peg$c10.test(input.charAt(peg$currPos))) {
@@ -3428,7 +4134,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s1 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c11); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c11);
+          }
         }
         if (s1 === peg$FAILED) {
           s1 = peg$parsecomment();
@@ -3445,7 +4153,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s1 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c9); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c9);
+            }
           }
           if (s1 === peg$FAILED) {
             if (peg$c10.test(input.charAt(peg$currPos))) {
@@ -3453,7 +4163,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s1 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c11); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c11);
+              }
             }
             if (s1 === peg$FAILED) {
               s1 = peg$parsecomment();
@@ -3467,7 +4179,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c7); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c7);
+      }
     }
 
     return s0;
@@ -3482,7 +4196,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c13); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c13);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = [];
@@ -3494,7 +4210,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s5 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c15); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c15);
+        }
       }
       peg$silentFails--;
       if (s5 === peg$FAILED) {
@@ -3509,7 +4227,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s5 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c6); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c6);
+          }
         }
         if (s5 !== peg$FAILED) {
           s4 = [s4, s5];
@@ -3532,7 +4252,9 @@ function peg$parse(input, options) {
           peg$currPos += 2;
         } else {
           s5 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c15);
+          }
         }
         peg$silentFails--;
         if (s5 === peg$FAILED) {
@@ -3547,7 +4269,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s5 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c6); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c6);
+            }
           }
           if (s5 !== peg$FAILED) {
             s4 = [s4, s5];
@@ -3567,7 +4291,9 @@ function peg$parse(input, options) {
           peg$currPos += 2;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c15);
+          }
         }
         if (s3 !== peg$FAILED) {
           s1 = [s1, s2, s3];
@@ -3591,7 +4317,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c17); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c17);
+        }
       }
       if (s1 !== peg$FAILED) {
         s2 = [];
@@ -3600,7 +4328,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c19); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c19);
+          }
         }
         while (s3 !== peg$FAILED) {
           s2.push(s3);
@@ -3609,7 +4339,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c19); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c19);
+            }
           }
         }
         if (s2 !== peg$FAILED) {
@@ -3637,7 +4369,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c11); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c11);
+      }
     }
     if (s1 === peg$FAILED) {
       s1 = peg$parsenoNewlineComment();
@@ -3650,7 +4384,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s1 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c11); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c11);
+          }
         }
         if (s1 === peg$FAILED) {
           s1 = peg$parsenoNewlineComment();
@@ -3673,7 +4409,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c13); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c13);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = [];
@@ -3685,7 +4423,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s5 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c15); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c15);
+        }
       }
       peg$silentFails--;
       if (s5 === peg$FAILED) {
@@ -3700,7 +4440,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s5 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c6); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c6);
+          }
         }
         if (s5 !== peg$FAILED) {
           s4 = [s4, s5];
@@ -3723,7 +4465,9 @@ function peg$parse(input, options) {
           peg$currPos += 2;
         } else {
           s5 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c15);
+          }
         }
         peg$silentFails--;
         if (s5 === peg$FAILED) {
@@ -3738,7 +4482,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s5 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c6); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c6);
+            }
           }
           if (s5 !== peg$FAILED) {
             s4 = [s4, s5];
@@ -3758,7 +4504,9 @@ function peg$parse(input, options) {
           peg$currPos += 2;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c15); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c15);
+          }
         }
         if (s3 !== peg$FAILED) {
           s1 = [s1, s2, s3];
@@ -3782,7 +4530,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c17); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c17);
+        }
       }
       if (s1 !== peg$FAILED) {
         s2 = [];
@@ -3791,7 +4541,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c19); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c19);
+          }
         }
         while (s3 !== peg$FAILED) {
           s2.push(s3);
@@ -3800,7 +4552,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c19); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c19);
+            }
           }
         }
         if (s2 !== peg$FAILED) {
@@ -3827,7 +4581,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c20); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c20);
+      }
     }
 
     return s0;
@@ -3847,7 +4603,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c22); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c22);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -3887,7 +4645,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c24); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c24);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -3927,7 +4687,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c26); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c26);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -3967,7 +4729,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c28); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c28);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -4007,7 +4771,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c30);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -4047,7 +4813,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c32); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c32);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -4087,7 +4855,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c34); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c34);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -4127,7 +4897,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c36); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c36);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -4167,7 +4939,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c38); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c38);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parse_();
@@ -4267,7 +5041,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c43);
+      }
     }
     if (s1 !== peg$FAILED) {
       if (input.substr(peg$currPos, 5) === peg$c44) {
@@ -4275,7 +5051,9 @@ function peg$parse(input, options) {
         peg$currPos += 5;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c45); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c45);
+        }
       }
       if (s2 === peg$FAILED) {
         if (input.substr(peg$currPos, 6) === peg$c46) {
@@ -4283,7 +5061,9 @@ function peg$parse(input, options) {
           peg$currPos += 6;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c47); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c47);
+          }
         }
         if (s2 === peg$FAILED) {
           if (input.substr(peg$currPos, 7) === peg$c48) {
@@ -4291,7 +5071,9 @@ function peg$parse(input, options) {
             peg$currPos += 7;
           } else {
             s2 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c49); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c49);
+            }
           }
           if (s2 === peg$FAILED) {
             if (input.substr(peg$currPos, 5) === peg$c50) {
@@ -4299,7 +5081,9 @@ function peg$parse(input, options) {
               peg$currPos += 5;
             } else {
               s2 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c51); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c51);
+              }
             }
             if (s2 === peg$FAILED) {
               if (input.substr(peg$currPos, 9) === peg$c52) {
@@ -4307,7 +5091,9 @@ function peg$parse(input, options) {
                 peg$currPos += 9;
               } else {
                 s2 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c53); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c53);
+                }
               }
               if (s2 === peg$FAILED) {
                 if (input.substr(peg$currPos, 4) === peg$c54) {
@@ -4315,7 +5101,9 @@ function peg$parse(input, options) {
                   peg$currPos += 4;
                 } else {
                   s2 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c55); }
+                  if (peg$silentFails === 0) {
+                    peg$fail(peg$c55);
+                  }
                 }
                 if (s2 === peg$FAILED) {
                   if (input.substr(peg$currPos, 7) === peg$c56) {
@@ -4323,7 +5111,9 @@ function peg$parse(input, options) {
                     peg$currPos += 7;
                   } else {
                     s2 = peg$FAILED;
-                    if (peg$silentFails === 0) { peg$fail(peg$c57); }
+                    if (peg$silentFails === 0) {
+                      peg$fail(peg$c57);
+                    }
                   }
                 }
               }
@@ -4341,7 +5131,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s6 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c19); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c19);
+            }
           }
           while (s6 !== peg$FAILED) {
             s5.push(s6);
@@ -4350,7 +5142,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s6 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c19); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c19);
+              }
             }
           }
           if (s5 !== peg$FAILED) {
@@ -4398,7 +5192,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c61); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c61);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = [];
@@ -4407,7 +5203,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c63); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c63);
+        }
       }
       while (s3 !== peg$FAILED) {
         s2.push(s3);
@@ -4416,7 +5214,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c63); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c63);
+          }
         }
       }
       if (s2 !== peg$FAILED) {
@@ -4443,7 +5243,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c32); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c32);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parsemacro_identifier();
@@ -4533,7 +5335,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s5 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c34); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c34);
+              }
             }
             if (s5 !== peg$FAILED) {
               s1 = peg$c74(s1, s4);
@@ -4571,7 +5375,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c43);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parse_();
@@ -4584,7 +5390,9 @@ function peg$parse(input, options) {
           peg$currPos += 6;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c77); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c77);
+          }
         }
         if (s3 !== peg$FAILED) {
           s4 = peg$parse_();
@@ -4602,7 +5410,9 @@ function peg$parse(input, options) {
                   peg$currPos++;
                 } else {
                   s8 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c79); }
+                  if (peg$silentFails === 0) {
+                    peg$fail(peg$c79);
+                  }
                 }
                 while (s8 !== peg$FAILED) {
                   s7.push(s8);
@@ -4611,7 +5421,9 @@ function peg$parse(input, options) {
                     peg$currPos++;
                   } else {
                     s8 = peg$FAILED;
-                    if (peg$silentFails === 0) { peg$fail(peg$c79); }
+                    if (peg$silentFails === 0) {
+                      peg$fail(peg$c79);
+                    }
                   }
                 }
                 if (s7 !== peg$FAILED) {
@@ -4622,7 +5434,9 @@ function peg$parse(input, options) {
                     peg$currPos++;
                   } else {
                     s10 = peg$FAILED;
-                    if (peg$silentFails === 0) { peg$fail(peg$c19); }
+                    if (peg$silentFails === 0) {
+                      peg$fail(peg$c19);
+                    }
                   }
                   while (s10 !== peg$FAILED) {
                     s9.push(s10);
@@ -4631,7 +5445,9 @@ function peg$parse(input, options) {
                       peg$currPos++;
                     } else {
                       s10 = peg$FAILED;
-                      if (peg$silentFails === 0) { peg$fail(peg$c19); }
+                      if (peg$silentFails === 0) {
+                        peg$fail(peg$c19);
+                      }
                     }
                   }
                   if (s9 !== peg$FAILED) {
@@ -4695,7 +5511,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c43);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parse_();
@@ -4708,7 +5526,9 @@ function peg$parse(input, options) {
           peg$currPos += 5;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c83); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c83);
+          }
         }
         if (s3 === peg$FAILED) {
           if (input.substr(peg$currPos, 6) === peg$c84) {
@@ -4716,7 +5536,9 @@ function peg$parse(input, options) {
             peg$currPos += 6;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c85); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c85);
+            }
           }
           if (s3 === peg$FAILED) {
             if (input.substr(peg$currPos, 2) === peg$c86) {
@@ -4724,7 +5546,9 @@ function peg$parse(input, options) {
               peg$currPos += 2;
             } else {
               s3 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c87); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c87);
+              }
             }
           }
         }
@@ -4738,7 +5562,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s7 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c19); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c19);
+              }
             }
             while (s7 !== peg$FAILED) {
               s6.push(s7);
@@ -4747,7 +5573,9 @@ function peg$parse(input, options) {
                 peg$currPos++;
               } else {
                 s7 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c19); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c19);
+                }
               }
             }
             if (s6 !== peg$FAILED) {
@@ -4799,7 +5627,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c43);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parse_();
@@ -4812,7 +5642,9 @@ function peg$parse(input, options) {
           peg$currPos += 4;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c90); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c90);
+          }
         }
         if (s3 !== peg$FAILED) {
           s4 = peg$parse_();
@@ -4824,7 +5656,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s7 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c19); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c19);
+              }
             }
             while (s7 !== peg$FAILED) {
               s6.push(s7);
@@ -4833,7 +5667,9 @@ function peg$parse(input, options) {
                 peg$currPos++;
               } else {
                 s7 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c19); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c19);
+                }
               }
             }
             if (s6 !== peg$FAILED) {
@@ -4885,7 +5721,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c43);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parse_();
@@ -4898,7 +5736,9 @@ function peg$parse(input, options) {
           peg$currPos += 4;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c94); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c94);
+          }
         }
         if (s3 !== peg$FAILED) {
           s4 = peg$parsenoNewlineWhitespace();
@@ -4943,7 +5783,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c43); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c43);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parse_();
@@ -4956,7 +5798,9 @@ function peg$parse(input, options) {
           peg$currPos += 5;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c97); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c97);
+          }
         }
         if (s3 !== peg$FAILED) {
           s4 = peg$parsenoNewlineWhitespace();
@@ -5366,7 +6210,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c87); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c87);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parseleft_paren();
@@ -5383,7 +6229,9 @@ function peg$parse(input, options) {
                 peg$currPos += 4;
               } else {
                 s7 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c94); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c94);
+                }
               }
               if (s7 !== peg$FAILED) {
                 s8 = peg$parse_();
@@ -5450,7 +6298,9 @@ function peg$parse(input, options) {
       peg$currPos += 3;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c105); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c105);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parseleft_paren();
@@ -5523,7 +6373,9 @@ function peg$parse(input, options) {
       peg$currPos += 5;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c108); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c108);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parseleft_paren();
@@ -5585,7 +6437,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c112); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c112);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parsestatement_with_scope();
@@ -5633,7 +6487,9 @@ function peg$parse(input, options) {
       peg$currPos += 6;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c115); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c115);
+      }
     }
     if (s1 !== peg$FAILED) {
       if (input.substr(peg$currPos, 2) === peg$c116) {
@@ -5641,7 +6497,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c117); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c117);
+        }
       }
       if (s2 === peg$FAILED) {
         if (input.substr(peg$currPos, 2) === peg$c118) {
@@ -5649,7 +6507,9 @@ function peg$parse(input, options) {
           peg$currPos += 2;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c119); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c119);
+          }
         }
         if (s2 === peg$FAILED) {
           if (input.charCodeAt(peg$currPos) === 33) {
@@ -5657,7 +6517,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s2 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c121); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c121);
+            }
           }
           if (s2 === peg$FAILED) {
             if (input.charCodeAt(peg$currPos) === 126) {
@@ -5665,7 +6527,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s2 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c123); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c123);
+              }
             }
             if (s2 === peg$FAILED) {
               if (input.charCodeAt(peg$currPos) === 43) {
@@ -5673,7 +6537,9 @@ function peg$parse(input, options) {
                 peg$currPos++;
               } else {
                 s2 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c125); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c125);
+                }
               }
               if (s2 === peg$FAILED) {
                 if (input.charCodeAt(peg$currPos) === 45) {
@@ -5681,7 +6547,9 @@ function peg$parse(input, options) {
                   peg$currPos++;
                 } else {
                   s2 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c127); }
+                  if (peg$silentFails === 0) {
+                    peg$fail(peg$c127);
+                  }
                 }
               }
             }
@@ -5731,7 +6599,9 @@ function peg$parse(input, options) {
         peg$currPos += 8;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c130); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c130);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$parsesemicolon();
@@ -5753,7 +6623,9 @@ function peg$parse(input, options) {
           peg$currPos += 5;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c132); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c132);
+          }
         }
         if (s2 !== peg$FAILED) {
           s3 = peg$parsesemicolon();
@@ -5775,7 +6647,9 @@ function peg$parse(input, options) {
             peg$currPos += 6;
           } else {
             s2 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c115); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c115);
+            }
           }
           if (s2 !== peg$FAILED) {
             s3 = peg$parsesemicolon();
@@ -5797,7 +6671,9 @@ function peg$parse(input, options) {
               peg$currPos += 7;
             } else {
               s2 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c134); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c134);
+              }
             }
             if (s2 !== peg$FAILED) {
               s3 = peg$parsesemicolon();
@@ -5965,7 +6841,9 @@ function peg$parse(input, options) {
             peg$currPos += 9;
           } else {
             s2 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c143); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c143);
+            }
           }
           if (s2 !== peg$FAILED) {
             s3 = peg$parse_();
@@ -6042,7 +6920,9 @@ function peg$parse(input, options) {
             peg$currPos += 9;
           } else {
             s1 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c146); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c146);
+            }
           }
           if (s1 !== peg$FAILED) {
             s2 = peg$parse_();
@@ -6087,7 +6967,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c138); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c138);
+      }
     }
 
     return s0;
@@ -6167,7 +7049,9 @@ function peg$parse(input, options) {
       peg$currPos += 4;
     } else {
       s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c150); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c150);
+      }
     }
     if (s0 === peg$FAILED) {
       s0 = peg$currPos;
@@ -6283,7 +7167,9 @@ function peg$parse(input, options) {
       peg$currPos += 5;
     } else {
       s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c154); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c154);
+      }
     }
     if (s0 === peg$FAILED) {
       if (input.substr(peg$currPos, 2) === peg$c155) {
@@ -6291,7 +7177,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c156); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c156);
+        }
       }
       if (s0 === peg$FAILED) {
         if (input.substr(peg$currPos, 3) === peg$c157) {
@@ -6299,7 +7187,9 @@ function peg$parse(input, options) {
           peg$currPos += 3;
         } else {
           s0 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c158); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c158);
+          }
         }
       }
     }
@@ -6870,7 +7760,9 @@ function peg$parse(input, options) {
         peg$currPos += 6;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c167); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c167);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = peg$currPos;
@@ -7021,7 +7913,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c170); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c170);
+      }
     }
 
     return s0;
@@ -7043,7 +7937,9 @@ function peg$parse(input, options) {
         peg$currPos += 9;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c173); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c173);
+        }
       }
       if (s2 !== peg$FAILED) {
         s1 = peg$c174();
@@ -7088,7 +7984,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c170); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c170);
+      }
     }
 
     return s0;
@@ -7133,7 +8031,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c176); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c176);
+      }
     }
 
     return s0;
@@ -7148,7 +8048,9 @@ function peg$parse(input, options) {
       peg$currPos += 5;
     } else {
       s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c179); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c179);
+      }
     }
     if (s0 === peg$FAILED) {
       if (input.substr(peg$currPos, 7) === peg$c180) {
@@ -7156,7 +8058,9 @@ function peg$parse(input, options) {
         peg$currPos += 7;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c181); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c181);
+        }
       }
       if (s0 === peg$FAILED) {
         if (input.substr(peg$currPos, 4) === peg$c182) {
@@ -7164,13 +8068,17 @@ function peg$parse(input, options) {
           peg$currPos += 4;
         } else {
           s0 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c183); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c183);
+          }
         }
       }
     }
     peg$silentFails--;
     if (s0 === peg$FAILED) {
-      if (peg$silentFails === 0) { peg$fail(peg$c177); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c177);
+      }
     }
 
     return s0;
@@ -7184,7 +8092,9 @@ function peg$parse(input, options) {
       peg$currPos += 5;
     } else {
       s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c185); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c185);
+      }
     }
 
     return s0;
@@ -7201,7 +8111,9 @@ function peg$parse(input, options) {
         peg$currPos += 7;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c188); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c188);
+        }
       }
       if (s0 === peg$FAILED) {
         s0 = peg$currPos;
@@ -7210,7 +8122,9 @@ function peg$parse(input, options) {
           peg$currPos += 9;
         } else {
           s1 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c143); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c143);
+          }
         }
         if (s1 !== peg$FAILED) {
           s2 = peg$parse_();
@@ -7220,7 +8134,9 @@ function peg$parse(input, options) {
               peg$currPos += 7;
             } else {
               s3 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c188); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c188);
+              }
             }
             if (s3 !== peg$FAILED) {
               s1 = peg$c189();
@@ -7243,7 +8159,9 @@ function peg$parse(input, options) {
             peg$currPos += 7;
           } else {
             s0 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c191); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c191);
+            }
           }
         }
       }
@@ -7251,7 +8169,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c186); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c186);
+      }
     }
 
     return s0;
@@ -7267,7 +8187,9 @@ function peg$parse(input, options) {
       peg$currPos += 4;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c150); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c150);
+      }
     }
     if (s1 !== peg$FAILED) {
       s1 = peg$c193();
@@ -7276,7 +8198,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c192); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c192);
+      }
     }
 
     return s0;
@@ -7291,7 +8215,9 @@ function peg$parse(input, options) {
       peg$currPos += 5;
     } else {
       s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c196); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c196);
+      }
     }
     if (s0 === peg$FAILED) {
       if (input.substr(peg$currPos, 6) === peg$c197) {
@@ -7299,7 +8225,9 @@ function peg$parse(input, options) {
         peg$currPos += 6;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c198); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c198);
+        }
       }
       if (s0 === peg$FAILED) {
         if (input.substr(peg$currPos, 3) === peg$c199) {
@@ -7307,7 +8235,9 @@ function peg$parse(input, options) {
           peg$currPos += 3;
         } else {
           s0 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c200); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c200);
+          }
         }
         if (s0 === peg$FAILED) {
           if (input.substr(peg$currPos, 4) === peg$c201) {
@@ -7315,7 +8245,9 @@ function peg$parse(input, options) {
             peg$currPos += 4;
           } else {
             s0 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c202); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c202);
+            }
           }
           if (s0 === peg$FAILED) {
             if (input.substr(peg$currPos, 4) === peg$c203) {
@@ -7323,7 +8255,9 @@ function peg$parse(input, options) {
               peg$currPos += 4;
             } else {
               s0 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c204); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c204);
+              }
             }
             if (s0 === peg$FAILED) {
               s0 = peg$parsesampler_buffer();
@@ -7361,7 +8295,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c194); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c194);
+      }
     }
 
     return s0;
@@ -7382,7 +8318,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s4 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c208); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c208);
+        }
       }
       if (s4 !== peg$FAILED) {
         s3 = [s3, s4];
@@ -7408,7 +8346,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c210); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c210);
+        }
       }
       if (s2 !== peg$FAILED) {
         s3 = [];
@@ -7417,7 +8357,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c212); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c212);
+          }
         }
         while (s4 !== peg$FAILED) {
           s3.push(s4);
@@ -7426,7 +8368,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s4 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c212); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c212);
+            }
           }
         }
         if (s3 !== peg$FAILED) {
@@ -7447,7 +8391,9 @@ function peg$parse(input, options) {
     peg$silentFails--;
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c206); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c206);
+      }
     }
 
     return s0;
@@ -7462,7 +8408,9 @@ function peg$parse(input, options) {
       peg$currPos += 4;
     } else {
       s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c204); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c204);
+      }
     }
     if (s0 === peg$FAILED) {
       if (input.substr(peg$currPos, 5) === peg$c195) {
@@ -7470,7 +8418,9 @@ function peg$parse(input, options) {
         peg$currPos += 5;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c196); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c196);
+        }
       }
       if (s0 === peg$FAILED) {
         if (input.substr(peg$currPos, 6) === peg$c197) {
@@ -7478,7 +8428,9 @@ function peg$parse(input, options) {
           peg$currPos += 6;
         } else {
           s0 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c198); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c198);
+          }
         }
         if (s0 === peg$FAILED) {
           if (input.substr(peg$currPos, 3) === peg$c199) {
@@ -7486,7 +8438,9 @@ function peg$parse(input, options) {
             peg$currPos += 3;
           } else {
             s0 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c200); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c200);
+            }
           }
           if (s0 === peg$FAILED) {
             if (input.substr(peg$currPos, 4) === peg$c201) {
@@ -7494,7 +8448,9 @@ function peg$parse(input, options) {
               peg$currPos += 4;
             } else {
               s0 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c202); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c202);
+              }
             }
             if (s0 === peg$FAILED) {
               s0 = peg$parsesampler_buffer();
@@ -7516,7 +8472,9 @@ function peg$parse(input, options) {
                               peg$currPos += 5;
                             } else {
                               s0 = peg$FAILED;
-                              if (peg$silentFails === 0) { peg$fail(peg$c132); }
+                              if (peg$silentFails === 0) {
+                                peg$fail(peg$c132);
+                              }
                             }
                             if (s0 === peg$FAILED) {
                               if (input.substr(peg$currPos, 8) === peg$c129) {
@@ -7524,7 +8482,9 @@ function peg$parse(input, options) {
                                 peg$currPos += 8;
                               } else {
                                 s0 = peg$FAILED;
-                                if (peg$silentFails === 0) { peg$fail(peg$c130); }
+                                if (peg$silentFails === 0) {
+                                  peg$fail(peg$c130);
+                                }
                               }
                               if (s0 === peg$FAILED) {
                                 if (input.substr(peg$currPos, 2) === peg$c111) {
@@ -7532,7 +8492,9 @@ function peg$parse(input, options) {
                                   peg$currPos += 2;
                                 } else {
                                   s0 = peg$FAILED;
-                                  if (peg$silentFails === 0) { peg$fail(peg$c112); }
+                                  if (peg$silentFails === 0) {
+                                    peg$fail(peg$c112);
+                                  }
                                 }
                                 if (s0 === peg$FAILED) {
                                   if (input.substr(peg$currPos, 4) === peg$c93) {
@@ -7540,7 +8502,9 @@ function peg$parse(input, options) {
                                     peg$currPos += 4;
                                   } else {
                                     s0 = peg$FAILED;
-                                    if (peg$silentFails === 0) { peg$fail(peg$c94); }
+                                    if (peg$silentFails === 0) {
+                                      peg$fail(peg$c94);
+                                    }
                                   }
                                   if (s0 === peg$FAILED) {
                                     if (input.substr(peg$currPos, 3) === peg$c104) {
@@ -7548,7 +8512,9 @@ function peg$parse(input, options) {
                                       peg$currPos += 3;
                                     } else {
                                       s0 = peg$FAILED;
-                                      if (peg$silentFails === 0) { peg$fail(peg$c105); }
+                                      if (peg$silentFails === 0) {
+                                        peg$fail(peg$c105);
+                                      }
                                     }
                                     if (s0 === peg$FAILED) {
                                       if (input.substr(peg$currPos, 2) === peg$c86) {
@@ -7556,7 +8522,9 @@ function peg$parse(input, options) {
                                         peg$currPos += 2;
                                       } else {
                                         s0 = peg$FAILED;
-                                        if (peg$silentFails === 0) { peg$fail(peg$c87); }
+                                        if (peg$silentFails === 0) {
+                                          peg$fail(peg$c87);
+                                        }
                                       }
                                       if (s0 === peg$FAILED) {
                                         if (input.substr(peg$currPos, 7) === peg$c133) {
@@ -7564,7 +8532,9 @@ function peg$parse(input, options) {
                                           peg$currPos += 7;
                                         } else {
                                           s0 = peg$FAILED;
-                                          if (peg$silentFails === 0) { peg$fail(peg$c134); }
+                                          if (peg$silentFails === 0) {
+                                            peg$fail(peg$c134);
+                                          }
                                         }
                                         if (s0 === peg$FAILED) {
                                           if (input.substr(peg$currPos, 6) === peg$c114) {
@@ -7572,7 +8542,9 @@ function peg$parse(input, options) {
                                             peg$currPos += 6;
                                           } else {
                                             s0 = peg$FAILED;
-                                            if (peg$silentFails === 0) { peg$fail(peg$c115); }
+                                            if (peg$silentFails === 0) {
+                                              peg$fail(peg$c115);
+                                            }
                                           }
                                           if (s0 === peg$FAILED) {
                                             if (input.substr(peg$currPos, 9) === peg$c172) {
@@ -7580,7 +8552,9 @@ function peg$parse(input, options) {
                                               peg$currPos += 9;
                                             } else {
                                               s0 = peg$FAILED;
-                                              if (peg$silentFails === 0) { peg$fail(peg$c173); }
+                                              if (peg$silentFails === 0) {
+                                                peg$fail(peg$c173);
+                                              }
                                             }
                                             if (s0 === peg$FAILED) {
                                               if (input.substr(peg$currPos, 5) === peg$c184) {
@@ -7588,7 +8562,9 @@ function peg$parse(input, options) {
                                                 peg$currPos += 5;
                                               } else {
                                                 s0 = peg$FAILED;
-                                                if (peg$silentFails === 0) { peg$fail(peg$c185); }
+                                                if (peg$silentFails === 0) {
+                                                  peg$fail(peg$c185);
+                                                }
                                               }
                                               if (s0 === peg$FAILED) {
                                                 if (input.substr(peg$currPos, 2) === peg$c155) {
@@ -7596,7 +8572,9 @@ function peg$parse(input, options) {
                                                   peg$currPos += 2;
                                                 } else {
                                                   s0 = peg$FAILED;
-                                                  if (peg$silentFails === 0) { peg$fail(peg$c156); }
+                                                  if (peg$silentFails === 0) {
+                                                    peg$fail(peg$c156);
+                                                  }
                                                 }
                                                 if (s0 === peg$FAILED) {
                                                   if (input.substr(peg$currPos, 3) === peg$c157) {
@@ -7604,7 +8582,9 @@ function peg$parse(input, options) {
                                                     peg$currPos += 3;
                                                   } else {
                                                     s0 = peg$FAILED;
-                                                    if (peg$silentFails === 0) { peg$fail(peg$c158); }
+                                                    if (peg$silentFails === 0) {
+                                                      peg$fail(peg$c158);
+                                                    }
                                                   }
                                                   if (s0 === peg$FAILED) {
                                                     if (input.substr(peg$currPos, 5) === peg$c153) {
@@ -7612,7 +8592,9 @@ function peg$parse(input, options) {
                                                       peg$currPos += 5;
                                                     } else {
                                                       s0 = peg$FAILED;
-                                                      if (peg$silentFails === 0) { peg$fail(peg$c154); }
+                                                      if (peg$silentFails === 0) {
+                                                        peg$fail(peg$c154);
+                                                      }
                                                     }
                                                     if (s0 === peg$FAILED) {
                                                       if (input.substr(peg$currPos, 7) === peg$c190) {
@@ -7620,7 +8602,9 @@ function peg$parse(input, options) {
                                                         peg$currPos += 7;
                                                       } else {
                                                         s0 = peg$FAILED;
-                                                        if (peg$silentFails === 0) { peg$fail(peg$c191); }
+                                                        if (peg$silentFails === 0) {
+                                                          peg$fail(peg$c191);
+                                                        }
                                                       }
                                                       if (s0 === peg$FAILED) {
                                                         if (input.substr(peg$currPos, 7) === peg$c187) {
@@ -7628,7 +8612,9 @@ function peg$parse(input, options) {
                                                           peg$currPos += 7;
                                                         } else {
                                                           s0 = peg$FAILED;
-                                                          if (peg$silentFails === 0) { peg$fail(peg$c188); }
+                                                          if (peg$silentFails === 0) {
+                                                            peg$fail(peg$c188);
+                                                          }
                                                         }
                                                         if (s0 === peg$FAILED) {
                                                           if (input.substr(peg$currPos, 9) === peg$c214) {
@@ -7636,7 +8622,9 @@ function peg$parse(input, options) {
                                                             peg$currPos += 9;
                                                           } else {
                                                             s0 = peg$FAILED;
-                                                            if (peg$silentFails === 0) { peg$fail(peg$c215); }
+                                                            if (peg$silentFails === 0) {
+                                                              peg$fail(peg$c215);
+                                                            }
                                                           }
                                                           if (s0 === peg$FAILED) {
                                                             if (input.substr(peg$currPos, 11) === peg$c216) {
@@ -7644,7 +8632,9 @@ function peg$parse(input, options) {
                                                               peg$currPos += 11;
                                                             } else {
                                                               s0 = peg$FAILED;
-                                                              if (peg$silentFails === 0) { peg$fail(peg$c217); }
+                                                              if (peg$silentFails === 0) {
+                                                                peg$fail(peg$c217);
+                                                              }
                                                             }
                                                             if (s0 === peg$FAILED) {
                                                               if (input.substr(peg$currPos, 6) === peg$c166) {
@@ -7652,7 +8642,9 @@ function peg$parse(input, options) {
                                                                 peg$currPos += 6;
                                                               } else {
                                                                 s0 = peg$FAILED;
-                                                                if (peg$silentFails === 0) { peg$fail(peg$c167); }
+                                                                if (peg$silentFails === 0) {
+                                                                  peg$fail(peg$c167);
+                                                                }
                                                               }
                                                               if (s0 === peg$FAILED) {
                                                                 if (input.substr(peg$currPos, 4) === peg$c149) {
@@ -7660,7 +8652,9 @@ function peg$parse(input, options) {
                                                                   peg$currPos += 4;
                                                                 } else {
                                                                   s0 = peg$FAILED;
-                                                                  if (peg$silentFails === 0) { peg$fail(peg$c150); }
+                                                                  if (peg$silentFails === 0) {
+                                                                    peg$fail(peg$c150);
+                                                                  }
                                                                 }
                                                                 if (s0 === peg$FAILED) {
                                                                   if (input.substr(peg$currPos, 5) === peg$c107) {
@@ -7668,7 +8662,9 @@ function peg$parse(input, options) {
                                                                     peg$currPos += 5;
                                                                   } else {
                                                                     s0 = peg$FAILED;
-                                                                    if (peg$silentFails === 0) { peg$fail(peg$c108); }
+                                                                    if (peg$silentFails === 0) {
+                                                                      peg$fail(peg$c108);
+                                                                    }
                                                                   }
                                                                   if (s0 === peg$FAILED) {
                                                                     if (input.substr(peg$currPos, 5) === peg$c178) {
@@ -7676,7 +8672,9 @@ function peg$parse(input, options) {
                                                                       peg$currPos += 5;
                                                                     } else {
                                                                       s0 = peg$FAILED;
-                                                                      if (peg$silentFails === 0) { peg$fail(peg$c179); }
+                                                                      if (peg$silentFails === 0) {
+                                                                        peg$fail(peg$c179);
+                                                                      }
                                                                     }
                                                                     if (s0 === peg$FAILED) {
                                                                       if (input.substr(peg$currPos, 7) === peg$c180) {
@@ -7684,7 +8682,9 @@ function peg$parse(input, options) {
                                                                         peg$currPos += 7;
                                                                       } else {
                                                                         s0 = peg$FAILED;
-                                                                        if (peg$silentFails === 0) { peg$fail(peg$c181); }
+                                                                        if (peg$silentFails === 0) {
+                                                                          peg$fail(peg$c181);
+                                                                        }
                                                                       }
                                                                       if (s0 === peg$FAILED) {
                                                                         if (input.substr(peg$currPos, 4) === peg$c182) {
@@ -7692,7 +8692,9 @@ function peg$parse(input, options) {
                                                                           peg$currPos += 4;
                                                                         } else {
                                                                           s0 = peg$FAILED;
-                                                                          if (peg$silentFails === 0) { peg$fail(peg$c183); }
+                                                                          if (peg$silentFails === 0) {
+                                                                            peg$fail(peg$c183);
+                                                                          }
                                                                         }
                                                                         if (s0 === peg$FAILED) {
                                                                           if (input.substr(peg$currPos, 4) === peg$c218) {
@@ -7700,7 +8702,9 @@ function peg$parse(input, options) {
                                                                             peg$currPos += 4;
                                                                           } else {
                                                                             s0 = peg$FAILED;
-                                                                            if (peg$silentFails === 0) { peg$fail(peg$c219); }
+                                                                            if (peg$silentFails === 0) {
+                                                                              peg$fail(peg$c219);
+                                                                            }
                                                                           }
                                                                           if (s0 === peg$FAILED) {
                                                                             if (input.substr(peg$currPos, 5) === peg$c220) {
@@ -7708,7 +8712,9 @@ function peg$parse(input, options) {
                                                                               peg$currPos += 5;
                                                                             } else {
                                                                               s0 = peg$FAILED;
-                                                                              if (peg$silentFails === 0) { peg$fail(peg$c221); }
+                                                                              if (peg$silentFails === 0) {
+                                                                                peg$fail(peg$c221);
+                                                                              }
                                                                             }
                                                                           }
                                                                         }
@@ -7748,7 +8754,9 @@ function peg$parse(input, options) {
     }
     peg$silentFails--;
     if (s0 === peg$FAILED) {
-      if (peg$silentFails === 0) { peg$fail(peg$c213); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c213);
+      }
     }
 
     return s0;
@@ -7764,7 +8772,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c223); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c223);
+      }
     }
     if (s2 === peg$FAILED) {
       s2 = null;
@@ -7775,7 +8785,9 @@ function peg$parse(input, options) {
         peg$currPos += 3;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c225); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c225);
+        }
       }
       if (s3 !== peg$FAILED) {
         if (peg$c226.test(input.charAt(peg$currPos))) {
@@ -7783,7 +8795,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c227); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c227);
+          }
         }
         if (s4 !== peg$FAILED) {
           s2 = [s2, s3, s4];
@@ -7818,7 +8832,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c230); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c230);
+      }
     }
     if (s2 === peg$FAILED) {
       s2 = null;
@@ -7829,7 +8845,9 @@ function peg$parse(input, options) {
         peg$currPos += 3;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c232); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c232);
+        }
       }
       if (s3 !== peg$FAILED) {
         if (peg$c226.test(input.charAt(peg$currPos))) {
@@ -7837,7 +8855,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c227); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c227);
+          }
         }
         if (s4 !== peg$FAILED) {
           s5 = peg$currPos;
@@ -7847,7 +8867,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s7 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c234); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c234);
+            }
           }
           if (s7 !== peg$FAILED) {
             if (peg$c226.test(input.charAt(peg$currPos))) {
@@ -7855,7 +8877,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s8 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c227); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c227);
+              }
             }
             if (s8 !== peg$FAILED) {
               s7 = [s7, s8];
@@ -7913,7 +8937,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c236);
+      }
     }
     if (s2 === peg$FAILED) {
       s2 = null;
@@ -7924,7 +8950,9 @@ function peg$parse(input, options) {
         peg$currPos += 7;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c238); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c238);
+        }
       }
       if (s3 !== peg$FAILED) {
         if (peg$c239.test(input.charAt(peg$currPos))) {
@@ -7932,7 +8960,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c240); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c240);
+          }
         }
         if (s4 !== peg$FAILED) {
           if (input.charCodeAt(peg$currPos) === 68) {
@@ -7940,7 +8970,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s5 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c242); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c242);
+            }
           }
           if (s5 !== peg$FAILED) {
             if (input.substr(peg$currPos, 5) === peg$c243) {
@@ -7948,7 +8980,9 @@ function peg$parse(input, options) {
               peg$currPos += 5;
             } else {
               s6 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c244); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c244);
+              }
             }
             if (s6 === peg$FAILED) {
               s6 = null;
@@ -7959,7 +8993,9 @@ function peg$parse(input, options) {
                 peg$currPos += 6;
               } else {
                 s7 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c246); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c246);
+                }
               }
               if (s7 === peg$FAILED) {
                 s7 = null;
@@ -8009,7 +9045,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c236);
+      }
     }
     if (s2 === peg$FAILED) {
       s2 = null;
@@ -8020,7 +9058,9 @@ function peg$parse(input, options) {
         peg$currPos += 11;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c217); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c217);
+        }
       }
       if (s3 !== peg$FAILED) {
         if (input.substr(peg$currPos, 5) === peg$c243) {
@@ -8028,7 +9068,9 @@ function peg$parse(input, options) {
           peg$currPos += 5;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c244); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c244);
+          }
         }
         if (s4 === peg$FAILED) {
           s4 = null;
@@ -8039,7 +9081,9 @@ function peg$parse(input, options) {
             peg$currPos += 6;
           } else {
             s5 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c246); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c246);
+            }
           }
           if (s5 === peg$FAILED) {
             s5 = null;
@@ -8081,7 +9125,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c236);
+      }
     }
     if (s2 === peg$FAILED) {
       s2 = null;
@@ -8092,7 +9138,9 @@ function peg$parse(input, options) {
         peg$currPos += 13;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c248); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c248);
+        }
       }
       if (s3 !== peg$FAILED) {
         if (input.substr(peg$currPos, 6) === peg$c245) {
@@ -8100,7 +9148,9 @@ function peg$parse(input, options) {
           peg$currPos += 6;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c246); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c246);
+          }
         }
         if (s4 === peg$FAILED) {
           s4 = null;
@@ -8138,7 +9188,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c236);
+      }
     }
     if (s2 === peg$FAILED) {
       s2 = null;
@@ -8149,7 +9201,9 @@ function peg$parse(input, options) {
         peg$currPos += 11;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c250); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c250);
+        }
       }
       if (s3 !== peg$FAILED) {
         if (input.substr(peg$currPos, 5) === peg$c243) {
@@ -8157,7 +9211,9 @@ function peg$parse(input, options) {
           peg$currPos += 5;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c244); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c244);
+          }
         }
         if (s4 === peg$FAILED) {
           s4 = null;
@@ -8195,7 +9251,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c236); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c236);
+      }
     }
     if (s2 === peg$FAILED) {
       s2 = null;
@@ -8206,7 +9264,9 @@ function peg$parse(input, options) {
         peg$currPos += 13;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c252); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c252);
+        }
       }
       if (s3 !== peg$FAILED) {
         s2 = [s2, s3];
@@ -8236,7 +9296,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c261); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c261);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = [];
@@ -8245,7 +9307,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c263); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c263);
+        }
       }
       while (s3 !== peg$FAILED) {
         s2.push(s3);
@@ -8254,7 +9318,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c263); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c263);
+          }
         }
       }
       if (s2 !== peg$FAILED) {
@@ -8263,7 +9329,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c265); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c265);
+          }
         }
         if (s3 === peg$FAILED) {
           s3 = null;
@@ -8290,7 +9358,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c268); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c268);
+        }
       }
       if (s1 !== peg$FAILED) {
         if (peg$c269.test(input.charAt(peg$currPos))) {
@@ -8298,7 +9368,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c270); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c270);
+          }
         }
         if (s2 !== peg$FAILED) {
           s3 = [];
@@ -8307,7 +9379,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s4 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c272); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c272);
+            }
           }
           if (s4 !== peg$FAILED) {
             while (s4 !== peg$FAILED) {
@@ -8317,7 +9391,9 @@ function peg$parse(input, options) {
                 peg$currPos++;
               } else {
                 s4 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c272); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c272);
+                }
               }
             }
           } else {
@@ -8329,7 +9405,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s4 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c265); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c265);
+              }
             }
             if (s4 === peg$FAILED) {
               s4 = null;
@@ -8360,7 +9438,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s1 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c268); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c268);
+          }
         }
         if (s1 !== peg$FAILED) {
           s2 = [];
@@ -8369,7 +9449,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c275); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c275);
+            }
           }
           if (s3 !== peg$FAILED) {
             while (s3 !== peg$FAILED) {
@@ -8379,7 +9461,9 @@ function peg$parse(input, options) {
                 peg$currPos++;
               } else {
                 s3 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c275); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c275);
+                }
               }
             }
           } else {
@@ -8391,7 +9475,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s3 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c265); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c265);
+              }
             }
             if (s3 === peg$FAILED) {
               s3 = null;
@@ -8418,7 +9504,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s1 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c268); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c268);
+            }
           }
           if (s1 !== peg$FAILED) {
             if (peg$c264.test(input.charAt(peg$currPos))) {
@@ -8426,7 +9514,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s2 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c265); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c265);
+              }
             }
             if (s2 === peg$FAILED) {
               s2 = null;
@@ -8460,7 +9550,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s3 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c279); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c279);
+      }
     }
     while (s3 !== peg$FAILED) {
       s2.push(s3);
@@ -8469,7 +9561,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c279); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c279);
+        }
       }
     }
     if (s2 !== peg$FAILED) {
@@ -8478,7 +9572,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c281); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c281);
+        }
       }
       if (s3 !== peg$FAILED) {
         s4 = [];
@@ -8487,7 +9583,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s5 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c263); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c263);
+          }
         }
         if (s5 !== peg$FAILED) {
           while (s5 !== peg$FAILED) {
@@ -8497,7 +9595,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s5 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c263); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c263);
+              }
             }
           }
         } else {
@@ -8535,7 +9635,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c263); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c263);
+        }
       }
       if (s3 !== peg$FAILED) {
         while (s3 !== peg$FAILED) {
@@ -8545,7 +9647,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c263); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c263);
+            }
           }
         }
       } else {
@@ -8557,7 +9661,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c281); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c281);
+          }
         }
         if (s3 !== peg$FAILED) {
           s4 = [];
@@ -8566,7 +9672,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s5 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c263); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c263);
+            }
           }
           while (s5 !== peg$FAILED) {
             s4.push(s5);
@@ -8575,7 +9683,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s5 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c263); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c263);
+              }
             }
           }
           if (s4 !== peg$FAILED) {
@@ -8609,7 +9719,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c283); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c283);
+        }
       }
       if (s2 === peg$FAILED) {
         if (input.substr(peg$currPos, 2) === peg$c284) {
@@ -8617,7 +9729,9 @@ function peg$parse(input, options) {
           peg$currPos += 2;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c285); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c285);
+          }
         }
         if (s2 === peg$FAILED) {
           if (input.substr(peg$currPos, 2) === peg$c286) {
@@ -8625,7 +9739,9 @@ function peg$parse(input, options) {
             peg$currPos += 2;
           } else {
             s2 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c287); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c287);
+            }
           }
         }
       }
@@ -8652,7 +9768,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c279); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c279);
+        }
       }
       if (s3 !== peg$FAILED) {
         while (s3 !== peg$FAILED) {
@@ -8662,7 +9780,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c279); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c279);
+            }
           }
         }
       } else {
@@ -8687,7 +9807,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s2 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c290); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c290);
+          }
         }
         if (s2 === peg$FAILED) {
           s2 = null;
@@ -8717,7 +9839,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c293); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c293);
+      }
     }
     if (s1 !== peg$FAILED) {
       if (peg$c294.test(input.charAt(peg$currPos))) {
@@ -8725,7 +9849,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s2 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c295); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c295);
+        }
       }
       if (s2 === peg$FAILED) {
         s2 = null;
@@ -8737,7 +9863,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c263); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c263);
+          }
         }
         if (s4 !== peg$FAILED) {
           while (s4 !== peg$FAILED) {
@@ -8747,7 +9875,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s4 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c263); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c263);
+              }
             }
           }
         } else {
@@ -8809,7 +9939,9 @@ function peg$parse(input, options) {
       peg$currPos += 4;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c219); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c219);
+      }
     }
     if (s1 === peg$FAILED) {
       if (input.substr(peg$currPos, 5) === peg$c220) {
@@ -8817,7 +9949,9 @@ function peg$parse(input, options) {
         peg$currPos += 5;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c221); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c221);
+        }
       }
     }
     if (s1 !== peg$FAILED) {
@@ -8888,7 +10022,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c281); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c281);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$parseidentifier();
@@ -8956,7 +10092,9 @@ function peg$parse(input, options) {
           peg$currPos += 2;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c117); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c117);
+          }
         }
         if (s3 === peg$FAILED) {
           if (input.substr(peg$currPos, 2) === peg$c118) {
@@ -8964,7 +10102,9 @@ function peg$parse(input, options) {
             peg$currPos += 2;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c119); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c119);
+            }
           }
         }
         if (s3 === peg$FAILED) {
@@ -9015,7 +10155,9 @@ function peg$parse(input, options) {
       peg$currPos += 4;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c150); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c150);
+      }
     }
     if (s1 !== peg$FAILED) {
       s1 = peg$c303();
@@ -9137,7 +10279,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c117); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c117);
+      }
     }
     if (s1 === peg$FAILED) {
       if (input.substr(peg$currPos, 2) === peg$c118) {
@@ -9145,7 +10289,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c119); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c119);
+        }
       }
       if (s1 === peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 33) {
@@ -9153,7 +10299,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s1 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c121); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c121);
+          }
         }
         if (s1 === peg$FAILED) {
           if (input.charCodeAt(peg$currPos) === 126) {
@@ -9161,7 +10309,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s1 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c123); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c123);
+            }
           }
           if (s1 === peg$FAILED) {
             if (input.charCodeAt(peg$currPos) === 43) {
@@ -9169,7 +10319,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s1 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c125); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c125);
+              }
             }
             if (s1 === peg$FAILED) {
               if (input.charCodeAt(peg$currPos) === 45) {
@@ -9177,7 +10329,9 @@ function peg$parse(input, options) {
                 peg$currPos++;
               } else {
                 s1 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c127); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c127);
+                }
               }
             }
           }
@@ -9222,7 +10376,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c309); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c309);
+      }
     }
     if (s1 === peg$FAILED) {
       if (input.charCodeAt(peg$currPos) === 47) {
@@ -9230,7 +10386,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c311); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c311);
+        }
       }
       if (s1 === peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 37) {
@@ -9238,7 +10396,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s1 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c313); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c313);
+          }
         }
       }
     }
@@ -9250,7 +10410,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c30);
+        }
       }
       peg$silentFails--;
       if (s3 === peg$FAILED) {
@@ -9374,7 +10536,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c125); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c125);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$currPos;
@@ -9384,7 +10548,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c125); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c125);
+        }
       }
       if (s3 === peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 61) {
@@ -9392,7 +10558,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c30); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c30);
+          }
         }
       }
       peg$silentFails--;
@@ -9420,7 +10588,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c127); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c127);
+        }
       }
       if (s1 !== peg$FAILED) {
         s2 = peg$currPos;
@@ -9430,7 +10600,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c127); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c127);
+          }
         }
         if (s3 === peg$FAILED) {
           if (input.charCodeAt(peg$currPos) === 61) {
@@ -9438,7 +10610,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c30); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c30);
+            }
           }
         }
         peg$silentFails--;
@@ -9564,7 +10738,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c319); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c319);
+      }
     }
     if (s1 === peg$FAILED) {
       if (input.substr(peg$currPos, 2) === peg$c320) {
@@ -9572,7 +10748,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c321); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c321);
+        }
       }
     }
     if (s1 !== peg$FAILED) {
@@ -9583,7 +10761,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c30);
+        }
       }
       peg$silentFails--;
       if (s3 === peg$FAILED) {
@@ -9707,7 +10887,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c323); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c323);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$currPos;
@@ -9717,7 +10899,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c323); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c323);
+        }
       }
       peg$silentFails--;
       if (s3 === peg$FAILED) {
@@ -9732,7 +10916,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c30); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c30);
+          }
         }
         if (s3 === peg$FAILED) {
           s3 = null;
@@ -9759,7 +10945,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c326); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c326);
+        }
       }
       if (s1 !== peg$FAILED) {
         s2 = peg$currPos;
@@ -9769,7 +10957,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c326); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c326);
+          }
         }
         peg$silentFails--;
         if (s3 === peg$FAILED) {
@@ -9784,7 +10974,9 @@ function peg$parse(input, options) {
             peg$currPos++;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c30); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c30);
+            }
           }
           if (s3 === peg$FAILED) {
             s3 = null;
@@ -9909,7 +11101,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c329); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c329);
+      }
     }
     if (s1 === peg$FAILED) {
       if (input.substr(peg$currPos, 2) === peg$c330) {
@@ -9917,7 +11111,9 @@ function peg$parse(input, options) {
         peg$currPos += 2;
       } else {
         s1 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c331); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c331);
+        }
       }
     }
     if (s1 !== peg$FAILED) {
@@ -10028,7 +11224,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c334); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c334);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$currPos;
@@ -10038,7 +11236,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c30);
+        }
       }
       if (s3 === peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 38) {
@@ -10046,7 +11246,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c334); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c334);
+          }
         }
       }
       peg$silentFails--;
@@ -10171,7 +11373,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c337); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c337);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$currPos;
@@ -10181,7 +11385,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c30);
+        }
       }
       if (s3 === peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 94) {
@@ -10189,7 +11395,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c337); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c337);
+          }
         }
       }
       peg$silentFails--;
@@ -10314,7 +11522,9 @@ function peg$parse(input, options) {
       peg$currPos++;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c340); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c340);
+      }
     }
     if (s1 !== peg$FAILED) {
       s2 = peg$currPos;
@@ -10324,7 +11534,9 @@ function peg$parse(input, options) {
         peg$currPos++;
       } else {
         s3 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c30); }
+        if (peg$silentFails === 0) {
+          peg$fail(peg$c30);
+        }
       }
       if (s3 === peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 124) {
@@ -10332,7 +11544,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c340); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c340);
+          }
         }
       }
       peg$silentFails--;
@@ -10457,7 +11671,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c343); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c343);
+      }
     }
     if (s1 !== peg$FAILED) {
       s1 = peg$c344();
@@ -10567,7 +11783,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c346); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c346);
+      }
     }
     if (s1 !== peg$FAILED) {
       s1 = peg$c347();
@@ -10677,7 +11895,9 @@ function peg$parse(input, options) {
       peg$currPos += 2;
     } else {
       s1 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c349); }
+      if (peg$silentFails === 0) {
+        peg$fail(peg$c349);
+      }
     }
     if (s1 !== peg$FAILED) {
       s1 = peg$c350();
@@ -10795,7 +12015,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s4 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c352); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c352);
+          }
         }
         if (s4 !== peg$FAILED) {
           s5 = peg$parse_();
@@ -10815,7 +12037,9 @@ function peg$parse(input, options) {
                   peg$currPos++;
                 } else {
                   s8 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c354); }
+                  if (peg$silentFails === 0) {
+                    peg$fail(peg$c354);
+                  }
                 }
                 if (s8 !== peg$FAILED) {
                   s9 = peg$parse_();
@@ -10893,7 +12117,9 @@ function peg$parse(input, options) {
           peg$currPos++;
         } else {
           s3 = peg$FAILED;
-          if (peg$silentFails === 0) { peg$fail(peg$c30); }
+          if (peg$silentFails === 0) {
+            peg$fail(peg$c30);
+          }
         }
         if (s3 === peg$FAILED) {
           if (input.substr(peg$currPos, 2) === peg$c356) {
@@ -10901,7 +12127,9 @@ function peg$parse(input, options) {
             peg$currPos += 2;
           } else {
             s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c357); }
+            if (peg$silentFails === 0) {
+              peg$fail(peg$c357);
+            }
           }
           if (s3 === peg$FAILED) {
             if (input.substr(peg$currPos, 2) === peg$c358) {
@@ -10909,7 +12137,9 @@ function peg$parse(input, options) {
               peg$currPos += 2;
             } else {
               s3 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c359); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c359);
+              }
             }
             if (s3 === peg$FAILED) {
               if (input.substr(peg$currPos, 2) === peg$c360) {
@@ -10917,7 +12147,9 @@ function peg$parse(input, options) {
                 peg$currPos += 2;
               } else {
                 s3 = peg$FAILED;
-                if (peg$silentFails === 0) { peg$fail(peg$c361); }
+                if (peg$silentFails === 0) {
+                  peg$fail(peg$c361);
+                }
               }
               if (s3 === peg$FAILED) {
                 if (input.substr(peg$currPos, 2) === peg$c362) {
@@ -10925,7 +12157,9 @@ function peg$parse(input, options) {
                   peg$currPos += 2;
                 } else {
                   s3 = peg$FAILED;
-                  if (peg$silentFails === 0) { peg$fail(peg$c363); }
+                  if (peg$silentFails === 0) {
+                    peg$fail(peg$c363);
+                  }
                 }
                 if (s3 === peg$FAILED) {
                   if (input.substr(peg$currPos, 2) === peg$c364) {
@@ -10933,7 +12167,9 @@ function peg$parse(input, options) {
                     peg$currPos += 2;
                   } else {
                     s3 = peg$FAILED;
-                    if (peg$silentFails === 0) { peg$fail(peg$c365); }
+                    if (peg$silentFails === 0) {
+                      peg$fail(peg$c365);
+                    }
                   }
                   if (s3 === peg$FAILED) {
                     if (input.substr(peg$currPos, 3) === peg$c366) {
@@ -10941,7 +12177,9 @@ function peg$parse(input, options) {
                       peg$currPos += 3;
                     } else {
                       s3 = peg$FAILED;
-                      if (peg$silentFails === 0) { peg$fail(peg$c367); }
+                      if (peg$silentFails === 0) {
+                        peg$fail(peg$c367);
+                      }
                     }
                     if (s3 === peg$FAILED) {
                       if (input.substr(peg$currPos, 3) === peg$c368) {
@@ -10949,7 +12187,9 @@ function peg$parse(input, options) {
                         peg$currPos += 3;
                       } else {
                         s3 = peg$FAILED;
-                        if (peg$silentFails === 0) { peg$fail(peg$c369); }
+                        if (peg$silentFails === 0) {
+                          peg$fail(peg$c369);
+                        }
                       }
                       if (s3 === peg$FAILED) {
                         if (input.substr(peg$currPos, 2) === peg$c370) {
@@ -10957,7 +12197,9 @@ function peg$parse(input, options) {
                           peg$currPos += 2;
                         } else {
                           s3 = peg$FAILED;
-                          if (peg$silentFails === 0) { peg$fail(peg$c371); }
+                          if (peg$silentFails === 0) {
+                            peg$fail(peg$c371);
+                          }
                         }
                         if (s3 === peg$FAILED) {
                           if (input.substr(peg$currPos, 2) === peg$c372) {
@@ -10965,7 +12207,9 @@ function peg$parse(input, options) {
                             peg$currPos += 2;
                           } else {
                             s3 = peg$FAILED;
-                            if (peg$silentFails === 0) { peg$fail(peg$c373); }
+                            if (peg$silentFails === 0) {
+                              peg$fail(peg$c373);
+                            }
                           }
                           if (s3 === peg$FAILED) {
                             if (input.substr(peg$currPos, 2) === peg$c374) {
@@ -10973,7 +12217,9 @@ function peg$parse(input, options) {
                               peg$currPos += 2;
                             } else {
                               s3 = peg$FAILED;
-                              if (peg$silentFails === 0) { peg$fail(peg$c375); }
+                              if (peg$silentFails === 0) {
+                                peg$fail(peg$c375);
+                              }
                             }
                           }
                         }
@@ -11042,7 +12288,9 @@ function peg$parse(input, options) {
               peg$currPos++;
             } else {
               s5 = peg$FAILED;
-              if (peg$silentFails === 0) { peg$fail(peg$c30); }
+              if (peg$silentFails === 0) {
+                peg$fail(peg$c30);
+              }
             }
             if (s5 !== peg$FAILED) {
               s6 = peg$parse_();
@@ -11089,60 +12337,55 @@ function peg$parse(input, options) {
     return s0;
   }
 
+  // Map containing the names of structs defined in the shader mapped to "true".
+  var next_id = 0;
 
-    // Map containing the names of structs defined in the shader mapped to "true".
-    var next_id = 0;
+  // The type of shader being parsed.  This sould be set before parsing begins.
+  // This allows us to reject invalid constructs such as attribute declaration
+  // in a fragment shader or discard ina vertex shader.
+  var shaderType = "vs";
 
-    // The type of shader being parsed.  This sould be set before parsing begins.
-    // This allows us to reject invalid constructs such as attribute declaration
-    // in a fragment shader or discard ina vertex shader.
-    var shaderType = "vs";
-
-    /** @constructor */
-    function node(extraProperties) {
-      this._isNode = true;
-      this.id = next_id++;
-      for (var prop in extraProperties) {
-          if (extraProperties.hasOwnProperty(prop)) {
-            this[prop] = extraProperties[prop];
-          }
+  /** @constructor */
+  function node(extraProperties) {
+    this._isNode = true;
+    this.id = next_id++;
+    for (var prop in extraProperties) {
+      if (extraProperties.hasOwnProperty(prop)) {
+        this[prop] = extraProperties[prop];
       }
     }
+  }
 
-    // Helper function to daisy chain together a series of binary operations.
-    function daisy_chain(head, tail) {
-      var result = head;
-      for (var i = 0; i < tail.length; i++) {
-        result = new node({
-          type: "binary",
-          operator: tail[i][1],
-          left: result,
-          right: tail[i][3]
-        });
-      }
-      return result;
+  // Helper function to daisy chain together a series of binary operations.
+  function daisy_chain(head, tail) {
+    var result = head;
+    for (var i = 0; i < tail.length; i++) {
+      result = new node({
+        type: "binary",
+        operator: tail[i][1],
+        left: result,
+        right: tail[i][3]
+      });
     }
+    return result;
+  }
 
-    // Generates AST Nodes for a preprocessor branch.
-    function preprocessor_branch(if_directive,
-                                 elif_directives,
-                                 else_directive) {
-      var elseList = elif_directives;
-      if (else_directive) {
-        elseList = elseList.concat([else_directive]);
-      }
-      var result = if_directive[0];
-      result.guarded_statements = if_directive[1].statements;
-      var current_branch = result;
-      for (var i = 0; i < elseList.length; i++) {
-        current_branch.elseBody = elseList[i][0];
-        current_branch.elseBody.guarded_statements =
-          elseList[i][1].statements;
-        current_branch = current_branch.elseBody;
-      }
-      return result;
+  // Generates AST Nodes for a preprocessor branch.
+  function preprocessor_branch(if_directive, elif_directives, else_directive) {
+    var elseList = elif_directives;
+    if (else_directive) {
+      elseList = elseList.concat([else_directive]);
     }
-
+    var result = if_directive[0];
+    result.guarded_statements = if_directive[1].statements;
+    var current_branch = result;
+    for (var i = 0; i < elseList.length; i++) {
+      current_branch.elseBody = elseList[i][0];
+      current_branch.elseBody.guarded_statements = elseList[i][1].statements;
+      current_branch = current_branch.elseBody;
+    }
+    return result;
+  }
 
   peg$result = peg$startRuleFunction();
 
@@ -11153,30 +12396,24 @@ function peg$parse(input, options) {
       peg$fail(peg$endExpectation());
     }
 
-    throw peg$buildStructuredError(
-      peg$maxFailExpected,
-      peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
-      peg$maxFailPos < input.length
-        ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
-        : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)
-    );
+    throw peg$buildStructuredError(peg$maxFailExpected, peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null, peg$maxFailPos < input.length ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1) : peg$computeLocation(peg$maxFailPos, peg$maxFailPos));
   }
 }
 
 var parser = {
   SyntaxError: peg$SyntaxError,
-  parse:       peg$parse
+  parse: peg$parse
 };
 
 /**
  * 
  */
-const extend = function () {
-    for (var i = 1; i < arguments.length; i++)
-        for (var key in arguments[i])
-            if (arguments[i].hasOwnProperty(key))
-                arguments[0][key] = arguments[i][key];
-    return arguments[0];
+var extend = function extend() {
+    for (var i = 1; i < arguments.length; i++) {
+        for (var key in arguments[i]) {
+            if (arguments[i].hasOwnProperty(key)) arguments[0][key] = arguments[i][key];
+        }
+    }return arguments[0];
 };
 
 var extend_1 = extend;
@@ -11185,12 +12422,15 @@ var extend_1 = extend;
  * @author yellow
  */
 
-
-const traverseDepthFirstSync = function (rootNode, options) {
+var traverseDepthFirstSync = function traverseDepthFirstSync(rootNode, options) {
     options = extend_1({
-        subnodesAccessor: function (node) { return node.subnodes; },
-        userdataAccessor: function (node, userdata) { return userdata; },
-        onNode: function (node, userdata) { },
+        subnodesAccessor: function subnodesAccessor(node) {
+            return node.subnodes;
+        },
+        userdataAccessor: function userdataAccessor(node, userdata) {
+            return userdata;
+        },
+        onNode: function onNode(node, userdata) {},
         userdata: null
     }, options);
 
@@ -11203,8 +12443,9 @@ const traverseDepthFirstSync = function (rootNode, options) {
         options.onNode(node, data);
         var subnodeData = options.userdataAccessor(node, data);
         var subnodes = options.subnodesAccessor(node);
-        for (var i = 0; i < subnodes.length; i++)
+        for (var i = 0; i < subnodes.length; i++) {
             stack.push([subnodes[i], subnodeData]);
+        }
     }
     return rootNode;
 };
@@ -11215,17 +12456,14 @@ var tree = traverseDepthFirstSync;
  * @author yellow 
  * @param {*} node 
  */
-const subnodes = function (node) {
+var subnodes = function subnodes(node) {
     var subnodes = [];
     for (var param in node) {
-        if (!node.hasOwnProperty(param) || node[param] === null)
-            continue;
-        if (param == 'parent')
-            continue;
+        if (!node.hasOwnProperty(param) || node[param] === null) continue;
+        if (param == 'parent') continue;
         if (node[param] instanceof Array) {
             subnodes = subnodes.concat(node[param]);
-        }
-        else if (node[param]._isNode) {
+        } else if (node[param]._isNode) {
             subnodes.push(node[param]);
         }
     }
@@ -11237,19 +12475,16 @@ var subnodes_1 = subnodes;
 /**
  * @author yellow
  */
-const pegjsParse = parser.parse;
+var pegjsParse = parser.parse;
 
-
-
-const build = function (node) {
+var build = function build(node) {
 	tree(node, {
-		subnodesAccessor: function (node) {
+		subnodesAccessor: function subnodesAccessor(node) {
 			var list = subnodes_1(node);
-			if (!list)
-				return [];
-			for (var i = 0; i < list.length; i++)
+			if (!list) return [];
+			for (var i = 0; i < list.length; i++) {
 				list[i].parent = node;
-			return list;
+			}return list;
 		}
 	});
 	return node;
@@ -11257,36 +12492,40 @@ const build = function (node) {
 /**
  * parse nodes
  */
-const parse = function (str) {
-	const nodes = pegjsParse(str);
+var parse = function parse(str) {
+	var nodes = pegjsParse(str);
 	return build(nodes);
 };
 /**
  * search node by depth
  */
-const getUniformsAndAttributes = function (ast) {
-	const active = {};
-	const define = {};
-	const uniforms = [], attributes = [];
-	const _uniforms = [], _attributes = [];
+var getUniformsAndAttributes = function getUniformsAndAttributes(ast) {
+	var active = {};
+	var define = {};
+	var uniforms = [],
+	    attributes = [];
+	var _uniforms = [],
+	    _attributes = [];
 
-	const next = function (nodes, identify = 'none') {
+	var next = function next(nodes) {
+		var identify = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'none';
+
 		//顺序遍历
-		nodes.forEach(node => {
+		nodes.forEach(function (node) {
 			//处理宏定义
 			if (node.type === 'preprocessor') {
 				//1.首先寻找define
 				if (node.directive === '#define') {
 					define[node.identifier] = node.token_string;
 				}
-				if ((node.directive === '#ifdef' && define[node.value]) || (node.directive === '#ifndef' && !define[node.value])) {
+				if (node.directive === '#ifdef' && define[node.value] || node.directive === '#ifndef' && !define[node.value]) {
 					if (node.guarded_statements) {
 						next(node.guarded_statements, identify);
 					}
 				}
 				if (node.directive === '#if') {
-					for (const key in define) {
-						const reg = new RegExp(`\\b${key}\\b`, 'gi');
+					for (var key in define) {
+						var reg = new RegExp('\\b' + key + '\\b', 'gi');
 						if (node.value.match(reg)) {
 							next(node.guarded_statements, identify);
 						}
@@ -11295,25 +12534,21 @@ const getUniformsAndAttributes = function (ast) {
 				if (node.elseBody) {
 					next([node.elseBody], identify);
 				}
-			}
-			else if (node.type === 'function_declaration') {
+			} else if (node.type === 'function_declaration') {
 				if (node.name === 'main') {
 					next(node.body.statements, 'main');
 				}
-			}
-			else if(node.type === 'postfix'){
-				if(identify === 'main'){
-					next([node.expression],identify);
+			} else if (node.type === 'postfix') {
+				if (identify === 'main') {
+					next([node.expression], identify);
 				}
-			}
-			else if (node.type === 'expression') {
+			} else if (node.type === 'expression') {
 				next([node.expression], identify);
-			}
-			else if (node.type === 'binary') {
+			} else if (node.type === 'binary') {
 				//左边是等式
-				if(node.left.type === 'identifier'){
+				if (node.left.type === 'identifier') {
 					active[node.left.name] = 1;
-				}else{
+				} else {
 					next([node.left], identify);
 				}
 				if (node.right.type === 'identifier') {
@@ -11321,26 +12556,21 @@ const getUniformsAndAttributes = function (ast) {
 				} else {
 					next([node.right], identify);
 				}
-			}
-			else if (node.type === 'function_call') {
-				if(identify === 'main'){
-					node.parameters.forEach(parameter => {
+			} else if (node.type === 'function_call') {
+				if (identify === 'main') {
+					node.parameters.forEach(function (parameter) {
 						next([parameter], identify);
 					});
 				}
-			}
-			else if (node.type === 'identifier') {
-				if (identify === 'main')
-					active[node.name] = 1;
-			}
-			else if (node.type === 'declarator') {
+			} else if (node.type === 'identifier') {
+				if (identify === 'main') active[node.name] = 1;
+			} else if (node.type === 'declarator') {
 				if (node.typeAttribute) {
-					next(node.declarators, node.typeAttribute.qualifier||identify);
+					next(node.declarators, node.typeAttribute.qualifier || identify);
 				} else {
 					next(node.declarators, identify);
 				}
-			}
-			else if (node.type === 'declarator_item') {
+			} else if (node.type === 'declarator_item') {
 				if (identify === 'uniform') {
 					_uniforms.push({
 						name: node.name.name,
@@ -11353,24 +12583,19 @@ const getUniformsAndAttributes = function (ast) {
 					});
 				} else if (identify === 'varying') {
 					
-				} else if(identify === 'main') {
-					if(node.initializer)
-						next([node.initializer],identify);
-					else if(node.arraySize)
-						next([node.arraySize],identify);
+				} else if (identify === 'main') {
+					if (node.initializer) next([node.initializer], identify);else if (node.arraySize) next([node.arraySize], identify);
 				}
 			}
 		});
 	};
 	next(ast.statements);
 	//过滤non-actived的变量或者对象
-	_uniforms.forEach(uniform => {
-		if (active[uniform.name])
-			uniforms.push(uniform);
+	_uniforms.forEach(function (uniform) {
+		if (active[uniform.name]) uniforms.push(uniform);
 	});
-	_attributes.forEach(attribute => {
-		if (active[attribute.name])
-			attributes.push(attribute);
+	_attributes.forEach(function (attribute) {
+		if (active[attribute.name]) attributes.push(attribute);
 	});
 	return [uniforms, attributes];
 };
@@ -11397,85 +12622,76 @@ var init$4 = {
 /**
  * the prefix of Shader type
  */
-const prefix$2 = 'SHADER';
+var prefix$2 = 'SHADER';
 /**
  * convert DOMString to value
  */
-const GLSL_TYPE_ENUM={
-    'float':0x1406,
-    'vec2':0x8b50,
-    'vec3':0x8b51,
-    'vec4':0x8b52,
-    'mat2':0x8b5a,
-    'mat3':0x8b5b,
-    'mat4':0x8b5c,
-    'sampler2D':0x8b5e,
-    'sampler_external_oes':0x8d66,
-    'sampler_cube':'0x8b60',
-    'int':0x1404,
-    'bool':0x8b56,
+var GLSL_TYPE_ENUM = {
+  'float': 0x1406,
+  'vec2': 0x8b50,
+  'vec3': 0x8b51,
+  'vec4': 0x8b52,
+  'mat2': 0x8b5a,
+  'mat3': 0x8b5b,
+  'mat4': 0x8b5c,
+  'sampler2D': 0x8b5e,
+  'sampler_external_oes': 0x8d66,
+  'sampler_cube': '0x8b60',
+  'int': 0x1404,
+  'bool': 0x8b56
+  /**
+   * @class
+   */
 };
-/**
- * @class
- */
-class GLShader extends Dispose_1 {
+var GLShader = function (_Dispose) {
+  inherits(GLShader, _Dispose);
+
+  /**
+   * 
+   * @param {GLenum} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+   * @param {GLContext} glContext 
+   */
+  function GLShader(type, glContext) {
+    classCallCheck(this, GLShader);
+
     /**
-     * 
-     * @param {GLenum} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
-     * @param {GLContext} glContext 
+     * @type {GLenum}
      */
-    constructor(type, glContext) {
-        super(prefix$2);
-        /**
-         * @type {GLenum}
-         */
-        this._type = type;
-        /**
-         * @type {GLContext}
-         */
-        this._glContext = glContext;
-        /**
-         * @type {String} shaderSource 
-         */
-        this._source = null;
-        /**
-         * @type {boolean}
-         */
-        this._isDelete = false;
-        /**
-         * @type {boolean}
-         */
-        this._isComplied = false;
-    }
+    var _this = possibleConstructorReturn(this, (GLShader.__proto__ || Object.getPrototypeOf(GLShader)).call(this, prefix$2));
+
+    _this._type = type;
     /**
-     * @returns {GLenum}
+     * @type {GLContext}
      */
-    get type() {
-        return this._type;
-    }
+    _this._glContext = glContext;
     /**
-     * @type {String}
+     * @type {String} shaderSource 
      */
-    set source(v) {
-        this._source = v;
-    }
+    _this._source = null;
     /**
-     * @returns {String}
+     * @type {boolean}
      */
-    get source() {
-        return this._source;
-    }
+    _this._isDelete = false;
+    /**
+     * @type {boolean}
+     */
+    _this._isComplied = false;
+    return _this;
+  }
+  /**
+   * @returns {GLenum}
+   */
+
+
+  createClass(GLShader, [{
+    key: 'getParameters',
+
     /**
      * bridge to shader
      * @param {GLenum} pname 
      */
-    getParameters(pname) {
-        if (pname === GLConstants_1.DELETE_STATUS)
-            return this._isDelete;
-        else if (pname === GLConstants_1.COMPILE_STATUS)
-            return this._isComplied;
-        else if (pname === GLConstants_1.SHADER_TYPE)
-            return this._type;
+    value: function getParameters(pname) {
+      if (pname === GLConstants_1.DELETE_STATUS) return this._isDelete;else if (pname === GLConstants_1.COMPILE_STATUS) return this._isComplied;else if (pname === GLConstants_1.SHADER_TYPE) return this._type;
     }
     /**
      * reference:
@@ -11485,118 +12701,187 @@ class GLShader extends Dispose_1 {
      * }{yellow 寻找power vr sdk下 opengl es的实现
      * use regex pattern to analy active attri/uniforms
      */
-    complie() {
-        const source = this._source;
-        const [uniforms,attributes] = this._parseShaderStrings(source);
-        this._uniforms = uniforms;
-        this._attributes = attributes;
+
+  }, {
+    key: 'complie',
+    value: function complie() {
+      var source = this._source;
+
+      var _parseShaderStrings2 = this._parseShaderStrings(source),
+          _parseShaderStrings3 = slicedToArray(_parseShaderStrings2, 2),
+          uniforms = _parseShaderStrings3[0],
+          attributes = _parseShaderStrings3[1];
+
+      this._uniforms = uniforms;
+      this._attributes = attributes;
     }
     /**
      * @returns {Array}
      */
-    get uniforms() {
-        return this._uniforms;
-    }
-    /**
-     * @returns {Array}
-     */
-    get attributes() {
-        return this._attributes;
-    }
+
+  }, {
+    key: '_parseShaderStrings',
+
     /**
      * reference:
      * https://github.com/KhronosGroup/glslang/blob/eb2c0c72bf4c2f7a972883003b5f5fca3f8c94bd/glslang/MachineIndependent/ParseHelper.cpp#L186
      */
-    _parseShaderStrings(str) {
-        const ast = init$4.parse(str);
-        const [uniforms,attributes] = init$4.getUniformsAndAttributes(ast);
-        return [this._convert(uniforms),this._convert(attributes)];
+    value: function _parseShaderStrings(str) {
+      var ast = init$4.parse(str);
+
+      var _complier$getUniforms = init$4.getUniformsAndAttributes(ast),
+          _complier$getUniforms2 = slicedToArray(_complier$getUniforms, 2),
+          uniforms = _complier$getUniforms2[0],
+          attributes = _complier$getUniforms2[1];
+
+      return [this._convert(uniforms), this._convert(attributes)];
     }
     /**
      * @param {Array} nodes
      * @param {Array} attributeNodes
      */
-    _convert(nodes){
-        const collection = [];
-        //deal with no struct type only 
-        nodes.forEach(element => {
-            collection.push({
-                name:element.name,
-                type:GLSL_TYPE_ENUM[element.type]
-            });
-        });
-        return collection;
-    }
 
-}
+  }, {
+    key: '_convert',
+    value: function _convert(nodes) {
+      var collection = [];
+      //deal with no struct type only 
+      nodes.forEach(function (element) {
+        collection.push({
+          name: element.name,
+          type: GLSL_TYPE_ENUM[element.type]
+        });
+      });
+      return collection;
+    }
+  }, {
+    key: 'type',
+    get: function get$$1() {
+      return this._type;
+    }
+    /**
+     * @type {String}
+     */
+
+  }, {
+    key: 'source',
+    set: function set$$1(v) {
+      this._source = v;
+    }
+    /**
+     * @returns {String}
+     */
+    ,
+    get: function get$$1() {
+      return this._source;
+    }
+  }, {
+    key: 'uniforms',
+    get: function get$$1() {
+      return this._uniforms;
+    }
+    /**
+     * @returns {Array}
+     */
+
+  }, {
+    key: 'attributes',
+    get: function get$$1() {
+      return this._attributes;
+    }
+  }]);
+  return GLShader;
+}(Dispose_1);
 
 var GLShader_1 = GLShader;
 
-const prefix$3 = 'BUFFER';
+var prefix$3 = 'BUFFER';
 
 /**
  * @class
  */
-class GLBuffer extends Dispose_1{
-    /**
-     * 
-     * @param {GLContext} glContext 
-     */
-    constructor(glContext){
-        super(prefix$3);
-        /**
-         * @type {GLContext}
-         */
-        this._glContext = glContext;
-    }
 
-}
+var GLBuffer = function (_Dispose) {
+  inherits(GLBuffer, _Dispose);
+
+  /**
+   * 
+   * @param {GLContext} glContext 
+   */
+  function GLBuffer(glContext) {
+    classCallCheck(this, GLBuffer);
+
+    /**
+     * @type {GLContext}
+     */
+    var _this = possibleConstructorReturn(this, (GLBuffer.__proto__ || Object.getPrototypeOf(GLBuffer)).call(this, prefix$3));
+
+    _this._glContext = glContext;
+    return _this;
+  }
+
+  return GLBuffer;
+}(Dispose_1);
 
 var GLBuffer_1 = GLBuffer;
 
-const prefix$4 = 'FRAMEBUFFER';
+var prefix$4 = 'FRAMEBUFFER';
 
 /**
  * @class
  */
-class GLFramebuffer extends Dispose_1{
+
+var GLFramebuffer = function (_Dispose) {
+  inherits(GLFramebuffer, _Dispose);
+
+  /**
+   * 
+   * @param {GLContext} glContext 
+   */
+  function GLFramebuffer(glContext) {
+    classCallCheck(this, GLFramebuffer);
+
     /**
-     * 
-     * @param {GLContext} glContext 
+     * @type {GLContext}
      */
-    constructor(glContext){
-        super(prefix$4);
-        /**
-         * @type {GLContext}
-         */
-        this._glContext = glContext;
-    }
+    var _this = possibleConstructorReturn(this, (GLFramebuffer.__proto__ || Object.getPrototypeOf(GLFramebuffer)).call(this, prefix$4));
 
-}
+    _this._glContext = glContext;
+    return _this;
+  }
 
+  return GLFramebuffer;
+}(Dispose_1);
 
 var GLFramebuffer_1 = GLFramebuffer;
 
-const prefix$5 = 'RENDERBUFFER';
+var prefix$5 = 'RENDERBUFFER';
 
 /**
  * @class
  */
-class GLRenderbuffer extends Dispose_1{
+
+var GLRenderbuffer = function (_Dispose) {
+  inherits(GLRenderbuffer, _Dispose);
+
+  /**
+   * 
+   * @param {GLContext} glContext 
+   */
+  function GLRenderbuffer(glContext) {
+    classCallCheck(this, GLRenderbuffer);
+
     /**
-     * 
-     * @param {GLContext} glContext 
+     * @type {GLContext}
      */
-    constructor(glContext){
-        super(prefix$5);
-        /**
-         * @type {GLContext}
-         */
-        this._glContext = glContext;
-    }
+    var _this = possibleConstructorReturn(this, (GLRenderbuffer.__proto__ || Object.getPrototypeOf(GLRenderbuffer)).call(this, prefix$5));
 
-}
+    _this._glContext = glContext;
+    return _this;
+  }
 
+  return GLRenderbuffer;
+}(Dispose_1);
 
 var GLRenderbuffer_1 = GLRenderbuffer;
 
@@ -11604,21 +12889,29 @@ var GLRenderbuffer_1 = GLRenderbuffer;
  * @author yellow date 2018/2/27
  */
 
-
-const prefix$6 = 'VERTEXARRAYOBJRCT ';
+var prefix$6 = 'VERTEXARRAYOBJRCT ';
 /** 
  * @class
 */
-class GLVertexArray extends Dispose_1 {
-    /**
-     * 
-     * @param {GLContext} glContext 
-     */
-    constructor(glContext) {
-        super(prefix$6);
-        this._glContext = glContext;
-    }
-}
+
+var GLVertexArray = function (_Dispose) {
+  inherits(GLVertexArray, _Dispose);
+
+  /**
+   * 
+   * @param {GLContext} glContext 
+   */
+  function GLVertexArray(glContext) {
+    classCallCheck(this, GLVertexArray);
+
+    var _this = possibleConstructorReturn(this, (GLVertexArray.__proto__ || Object.getPrototypeOf(GLVertexArray)).call(this, prefix$6));
+
+    _this._glContext = glContext;
+    return _this;
+  }
+
+  return GLVertexArray;
+}(Dispose_1);
 
 var GLVertexArray_1 = GLVertexArray;
 
@@ -11629,20 +12922,28 @@ var GLVertexArray_1 = GLVertexArray;
 /**
  * the prefix of Texture type
  */
-const prefix$7 = 'TEXTURE';
+var prefix$7 = 'TEXTURE';
 
-class GLTexture extends Dispose_1{
+var GLTexture = function (_Dispose) {
+  inherits(GLTexture, _Dispose);
+
+  /**
+   * @param {GLContext} glContext 
+   */
+  function GLTexture(glContext) {
+    classCallCheck(this, GLTexture);
+
     /**
-     * @param {GLContext} glContext 
+     * @type {GLContext}
      */
-    constructor(glContext){
-        super(prefix$7);
-        /**
-         * @type {GLContext}
-         */
-        this._glContext = glContext;
-    }
-}
+    var _this = possibleConstructorReturn(this, (GLTexture.__proto__ || Object.getPrototypeOf(GLTexture)).call(this, prefix$7));
+
+    _this._glContext = glContext;
+    return _this;
+  }
+
+  return GLTexture;
+}(Dispose_1);
 
 var GLTexture_1 = GLTexture;
 
@@ -11653,125 +12954,153 @@ var GLTexture_1 = GLTexture;
 /**
  * prefix of Cache
  */
-const prefixProgram = 'PROGRAM';
-const prefixUniform = 'UNIFOMR';
+var prefixProgram = 'PROGRAM';
+var prefixUniform = 'UNIFOMR';
 /**
  * @class
  */
-class GLProgram extends Dispose_1 {
+
+var GLProgram = function (_Dispose) {
+  inherits(GLProgram, _Dispose);
+
+  /**
+   * 
+   * @param {GLContext} glContext 
+   */
+  function GLProgram(glContext) {
+    classCallCheck(this, GLProgram);
+
     /**
-     * 
-     * @param {GLContext} glContext 
+     * 索引glContext对象
      */
-    constructor(glContext) {
-        super(prefixProgram);
-        /**
-         * 索引glContext对象
-         */
-        this._glContext = glContext;
-        /**
-         * 映射attribute 和返回值
-         */
-        this._attributeCache = {};
-        /**
-         * 映射uniforms
-         */
-        this._uniformCache = {};
-        /**
-         * @type {GLShader}
-         */
-        this._vs=null;
-        /**
-         * @type {GLShader}
-         */
-        this._fs=null;
-    }
+    var _this = possibleConstructorReturn(this, (GLProgram.__proto__ || Object.getPrototypeOf(GLProgram)).call(this, prefixProgram));
+
+    _this._glContext = glContext;
     /**
-     * @returns {Number}
+     * 映射attribute 和返回值
      */
-    get attachNum(){
-        let num = 0;
-        if(this._vs)
-            num++;
-        if(this._fs)
-            num++;
-        return num;
-    }
+    _this._attributeCache = {};
     /**
-     * @returns {Array}
+     * 映射uniforms
      */
-    get uniforms(){
-        return this._uniforms;
-    }
+    _this._uniformCache = {};
     /**
-     * @returns {Array}
+     * @type {GLShader}
      */
-    get attributes(){
-        return this._attributes;
-    }
+    _this._vs = null;
+    /**
+     * @type {GLShader}
+     */
+    _this._fs = null;
+    return _this;
+  }
+  /**
+   * @returns {Number}
+   */
+
+
+  createClass(GLProgram, [{
+    key: 'attachShader',
+
     /**
      * attach shader
      * @param {GLShader} shader 
      */
-    attachShader(shader){
-        if(shader.type === GLConstants_1.FRAGMENT_SHADER)
-            this._fs = shader;
-        else if(shader.type === GLConstants_1.VERTEX_SHADER)
-            this._vs = shader;
+    value: function attachShader(shader) {
+      if (shader.type === GLConstants_1.FRAGMENT_SHADER) this._fs = shader;else if (shader.type === GLConstants_1.VERTEX_SHADER) this._vs = shader;
     }
     /**
      * initial shader and analysis uniform/attribute
      */
-    link(){
-        //complier vShader and fShader
-        this._vs.complie();
-        this._fs.complie();
-        //store uniforms and attributes
-        this._uniforms = [].concat(this._vs.uniforms).concat(this._fs.uniforms);
-        this._attributes = [].concat(this._vs.attributes).concat(this._fs.attributes);
-        //reverse value and key
-        this._updateKeyValue();
+
+  }, {
+    key: 'link',
+    value: function link() {
+      //complier vShader and fShader
+      this._vs.complie();
+      this._fs.complie();
+      //store uniforms and attributes
+      this._uniforms = [].concat(this._vs.uniforms).concat(this._fs.uniforms);
+      this._attributes = [].concat(this._vs.attributes).concat(this._fs.attributes);
+      //reverse value and key
+      this._updateKeyValue();
     }
     /**
      * 
      */
-    _updateKeyValue(){
-        const uniforms = this._uniforms,
-            attributes = this._attributes,
-            uniformCache = this._uniformCache,
-            attributeCache = this._attributeCache;
-        //attribute location index
-        let index = 0;
-        //unifrom map
-        uniforms.forEach(uniform => {
-            const uniformLocation = {};
-            stamp_1(uniformLocation,prefixUniform);
-            uniformCache[uniform.name] = uniformLocation;
-        });
-        //attribute map
-        attributes.forEach(attribute => {
-            attributeCache[attribute.name] = index++;
-        });
+
+  }, {
+    key: '_updateKeyValue',
+    value: function _updateKeyValue() {
+      var uniforms = this._uniforms,
+          attributes = this._attributes,
+          uniformCache = this._uniformCache,
+          attributeCache = this._attributeCache;
+      //attribute location index
+      var index = 0;
+      //unifrom map
+      uniforms.forEach(function (uniform) {
+        var uniformLocation = {};
+        stamp_1(uniformLocation, prefixUniform);
+        uniformCache[uniform.name] = uniformLocation;
+      });
+      //attribute map
+      attributes.forEach(function (attribute) {
+        attributeCache[attribute.name] = index++;
+      });
     }
     /**
      * no longer need to replace,return location directly
      * @param {GLenum} pname 
      */
-    getAttribLocation(pname) {
-        return this._attributeCache[pname];
+
+  }, {
+    key: 'getAttribLocation',
+    value: function getAttribLocation(pname) {
+      return this._attributeCache[pname];
     }
     /**
      * 
      * @param {DOMString} pname 
      */
-    getUnifromLocation(pname){
-        const uniformLocation = {};
-        stamp_1(uniformLocation,prefixUniform);
-        this._uniformCache[pname] = this._uniformCache[pname]|| uniformLocation;
-        return this._uniformCache[pname];
+
+  }, {
+    key: 'getUnifromLocation',
+    value: function getUnifromLocation(pname) {
+      var uniformLocation = {};
+      stamp_1(uniformLocation, prefixUniform);
+      this._uniformCache[pname] = this._uniformCache[pname] || uniformLocation;
+      return this._uniformCache[pname];
     }
-    
-}
+  }, {
+    key: 'attachNum',
+    get: function get$$1() {
+      var num = 0;
+      if (this._vs) num++;
+      if (this._fs) num++;
+      return num;
+    }
+    /**
+     * @returns {Array}
+     */
+
+  }, {
+    key: 'uniforms',
+    get: function get$$1() {
+      return this._uniforms;
+    }
+    /**
+     * @returns {Array}
+     */
+
+  }, {
+    key: 'attributes',
+    get: function get$$1() {
+      return this._attributes;
+    }
+  }]);
+  return GLProgram;
+}(Dispose_1);
 
 var GLProgram_1 = GLProgram;
 
@@ -11783,138 +13112,158 @@ var GLProgram_1 = GLProgram;
 /**
  * Cahce store
  */
-const CHACHE = {
-    /**
-     * store program
-     */
-    PROGRAM: {},
-    /**
-    * store shader
-    */
-    SHADER: {},
-    /**
-    * store texture
-    */
-    TEXTURE: {},
-    /**
-     * store BUFFER
-     */
-    BUFFER: {},
-    /**
-     * store FRAMEBUFFER
-     */
-    FRAMEBUFFER: {},
-    /**
-     * store RENDERBUFFER
-     */
-    RENDERBUFFER: {},
-    /**
-     * store uinform
-     */
-    UNIFOMR: {},
-    /**
-     * store vao
-     */
-    VERTEXARRAYOBJRCT:{},
+var CHACHE = {
+  /**
+   * store program
+   */
+  PROGRAM: {},
+  /**
+  * store shader
+  */
+  SHADER: {},
+  /**
+  * store texture
+  */
+  TEXTURE: {},
+  /**
+   * store BUFFER
+   */
+  BUFFER: {},
+  /**
+   * store FRAMEBUFFER
+   */
+  FRAMEBUFFER: {},
+  /**
+   * store RENDERBUFFER
+   */
+  RENDERBUFFER: {},
+  /**
+   * store uinform
+   */
+  UNIFOMR: {},
+  /**
+   * store vao
+   */
+  VERTEXARRAYOBJRCT: {}
+  /**
+   * @class
+   */
 };
-/**
- * @class
- */
-class Actuator {
+var Actuator = function () {
+  function Actuator() {
+    classCallCheck(this, Actuator);
 
-    constructor() {
-        /**
-         * @type {Array}
-         */
-        this._records = [];
-        /**
-         * @type {WebGLRenderingContext}
-         */
-        this._gl = null;
-        /**
-         * @type {Boolean}
-         */
-        this._debug = false;
-        /**
-         * debug logger
-         * @type {Array}
-         */
-        this._logger = [];
-    }
     /**
-     * 
-     * @param {WebGLRenderingContext} v
+     * @type {Array}
      */
-    apply(v) {
-        this._gl = v;
-        this.play();
+    this._records = [];
+    /**
+     * @type {WebGLRenderingContext}
+     */
+    this._gl = null;
+    /**
+     * @type {Boolean}
+     */
+    this._debug = false;
+    /**
+     * debug logger
+     * @type {Array}
+     */
+    this._logger = [];
+  }
+  /**
+   * 
+   * @param {WebGLRenderingContext} v
+   */
+
+
+  createClass(Actuator, [{
+    key: 'apply',
+    value: function apply(v) {
+      this._gl = v;
+      this.play();
     }
     /**
      * get the excuted commands
      */
-    get logger() {
-        return this._logger;
-    }
-    /**
-     * 
-     */
-    get debug() {
-        return this._debug;
-    }
-    /**
-     * @param {Boolean} v
-     */
-    set debug(v) {
-        this._debug = v;
-        !v ? this._logger = [] : null;
-    }
+
+  }, {
+    key: 'play',
+
     /**
      * 执行
      * @param {Array} records 
      */
-    play(records = []) {
-        this._records = this._records.concat(records);
-        const gl = this._gl;
-        if (gl) {
-            let record = this._records.shift();
-            while (record) {
-                const opName = record.opName,
-                    encrypt = Encrypt[opName] || {};
-                //replace the reference object
-                if (encrypt.replace > 0) {
-                    const refObjects = {};
-                    for (const key in record.ptMapIndex) {
-                        const target = record.ptMapIndex[key],
-                            ptIndex = target.index,
-                            ptName = target.id,
-                            cacheName = target.prefix,
-                            refObject = CHACHE[cacheName][ptName];
-                        refObjects[ptIndex] = refObject;
-                    }
-                    record.replace(refObjects);
-                }
-                //if need to return and cache,
-                if (encrypt.return) {
-                    // case of uniform returned is not string
-                    const returnId = isString_1(record.returnId) ? record.returnId : stamp_1(record.returnId),
-                        returanIdPrefix = record.returanIdPrefix;
-                    CHACHE[returanIdPrefix][returnId] = gl[opName].apply(gl, record.args);
-                }
-                else {
-                    gl[opName].apply(gl, record.args);
-                }
-                //debug logger
-                this._debug ? this._logger.push(opName) : null;
-                //next record
-                record = this._records.shift();
+    value: function play() {
+      var records = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+
+      this._records = this._records.concat(records);
+      var gl = this._gl;
+      if (gl) {
+        var record = this._records.shift();
+        while (record) {
+          var opName = record.opName,
+              encrypt = Encrypt[opName] || {};
+          //replace the reference object
+          if (encrypt.replace > 0) {
+            var refObjects = {};
+            for (var key in record.ptMapIndex) {
+              var target = record.ptMapIndex[key],
+                  ptIndex = target.index,
+                  ptName = target.id,
+                  cacheName = target.prefix,
+                  refObject = CHACHE[cacheName][ptName];
+              refObjects[ptIndex] = refObject;
             }
+            record.replace(refObjects);
+          }
+          //if need to return and cache,
+          if (encrypt.return) {
+            // case of uniform returned is not string
+            var returnId = isString_1(record.returnId) ? record.returnId : stamp_1(record.returnId),
+                returanIdPrefix = record.returanIdPrefix;
+            CHACHE[returanIdPrefix][returnId] = gl[opName].apply(gl, record.args);
+          } else {
+            gl[opName].apply(gl, record.args);
+          }
+          //debug logger
+          this._debug ? this._logger.push(opName) : null;
+          //next record
+          record = this._records.shift();
         }
+      }
     }
-}
+  }, {
+    key: 'logger',
+    get: function get$$1() {
+      return this._logger;
+    }
+    /**
+     * 
+     */
+
+  }, {
+    key: 'debug',
+    get: function get$$1() {
+      return this._debug;
+    }
+    /**
+     * @param {Boolean} v
+     */
+    ,
+    set: function set$$1(v) {
+      this._debug = v;
+      !v ? this._logger = [] : null;
+    }
+  }]);
+  return Actuator;
+}();
 /**
  * instance of Actuator
  */
-const actuator = new Actuator();
+
+
+var actuator = new Actuator();
 
 var Actuator_1 = actuator;
 
@@ -11933,408 +13282,523 @@ var Actuator_1 = actuator;
 /**
  * the prefix of GLContext
  */
-const prefix$1 = "WEBGLRENDERGINGCONTEXT";
+var prefix$1 = "WEBGLRENDERGINGCONTEXT";
 /**
  * @class
  */
-class GLContext extends Dispose_1 {
+
+var GLContext = function (_Dispose) {
+    inherits(GLContext, _Dispose);
+
     /**
      * 
      * @param {String} id parentId,just as the glCanvas'id
      * @param {String} renderType support 'webgl' or 'webgl2'
      * @param {Object} [options] 
      */
-    constructor(id, renderType, options = {}) {
-        super(prefix$1);
+    function GLContext(id, renderType) {
+        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+        classCallCheck(this, GLContext);
+
         /**
          * @type {String}
          */
-        this._renderType = renderType;
+        var _this = possibleConstructorReturn(this, (GLContext.__proto__ || Object.getPrototypeOf(GLContext)).call(this, prefix$1));
+
+        _this._renderType = renderType;
         /**
          * @type {Object}
          */
-        this._options = options;
+        _this._options = options;
         /**
          * @type {Recorder}
          */
-        this._recorder = new Recorder_1(this);
+        _this._recorder = new Recorder_1(_this);
         /**
          * @type {GLLimits}
          */
-        this._glLimits = new GLLimits_1(this);
+        _this._glLimits = new GLLimits_1(_this);
         /**
          * @type {GLExtension}
          */
-        this._glExtension = new GLExtension_1(this);
+        _this._glExtension = new GLExtension_1(_this);
         /**
          * @type {String}
          */
-        this._programId = null;
+        _this._programId = null;
         /**
          * real WebGLRenderingContext
          * @type {WebGLRenderingContext}
          */
-        this._gl = null;
+        _this._gl = null;
         /**
          * @type {Array}
          */
-        this._clear = [];
+        _this._clear = [];
         /**
          * map funciont
          */
-        this._map();
+        _this._map();
+        return _this;
     }
     /**
      * map function and constants to Class
      */
-    _map() {
-        const recorder = this._recorder;
-        //1.map constants
-        for (const key in GLConstants_1) {
-            if (!this.hasOwnProperty(key)) {
-                const target = GLConstants_1[key];
-                if (!this[key])
-                    this[key] = target;
+
+
+    createClass(GLContext, [{
+        key: '_map',
+        value: function _map() {
+            var _this2 = this;
+
+            var recorder = this._recorder;
+            //1.map constants
+            for (var key in GLConstants_1) {
+                if (!this.hasOwnProperty(key)) {
+                    var target = GLConstants_1[key];
+                    if (!this[key]) this[key] = target;
+                }
+            }
+            //2.map void function(include replace and no replace)
+
+            var _loop = function _loop(_key) {
+                if (!_this2.hasOwnProperty(_key)) {
+                    var _target = Encrypt[_key];
+                    //2.1 void and no replace
+                    if (!_target.return && _target.replace === 0) {
+                        if (!_this2[_key] && !!_target) {
+                            _this2[_key] = function () {
+                                for (var _len = arguments.length, rest = Array(_len), _key2 = 0; _key2 < _len; _key2++) {
+                                    rest[_key2] = arguments[_key2];
+                                }
+
+                                var record = new (Function.prototype.bind.apply(Record_1, [null].concat([_key], rest)))();
+                                recorder.increase(record);
+                            };
+                        }
+                    }
+                    //2.2 void and replace 
+                    else if (!_target.return && _target.replace > 0) {
+                            if (!_this2[_key] && !!_target) {
+                                _this2[_key] = function () {
+                                    for (var _len2 = arguments.length, rest = Array(_len2), _key3 = 0; _key3 < _len2; _key3++) {
+                                        rest[_key3] = arguments[_key3];
+                                    }
+
+                                    var record = new (Function.prototype.bind.apply(Record_1, [null].concat([_key], rest)))(),
+                                        index = _target.ptIndex;
+                                    record.exactIndexByObject(index);
+                                    recorder.increase(record);
+                                };
+                            }
+                        }
+                    //2.3 return(make birdge to origin,should not to be implemented)
+                }
+            };
+
+            for (var _key in Encrypt) {
+                _loop(_key);
             }
         }
-        //2.map void function(include replace and no replace)
-        for (const key in Encrypt) {
-            if (!this.hasOwnProperty(key)) {
-                const target = Encrypt[key];
-                //2.1 void and no replace
-                if (!target.return && target.replace === 0) {
-                    if (!this[key] && !!target) {
-                        this[key] = (...rest) => {
-                            const record = new Record_1(key, ...rest);
-                            recorder.increase(record);
-                        };
-                    }
-                }
-                //2.2 void and replace 
-                else if (!target.return && target.replace > 0) {
-                    if (!this[key] && !!target) {
-                        this[key] = (...rest) => {
-                            const record = new Record_1(key, ...rest),
-                                index = target.ptIndex;
-                            record.exactIndexByObject(index);
-                            recorder.increase(record);
-                        };
-                    }
-                }
-                //2.3 return(make birdge to origin,should not to be implemented)
-            }
+        /*
+         * private ,only used in GLCanvas.link[Cnavas/GL] funcitons
+         * @param {WebGLRenderingContext} gl 
+         */
+
+    }, {
+        key: '_setgl',
+        value: function _setgl(gl) {
+            this._gl = gl;
+            this._glLimits._include();
+            this._glExtension._include();
+            Actuator_1.apply(gl);
         }
-    }
-    /*
-     * private ,only used in GLCanvas.link[Cnavas/GL] funcitons
-     * @param {WebGLRenderingContext} gl 
-     */
-    _setgl(gl) {
-        this._gl = gl;
-        this._glLimits._include();
-        this._glExtension._include();
-        Actuator_1.apply(gl);
-    }
-    /**
-     * get the version of webgl
-     * @returns {String} 'webgl' or 'webgl2'
-     */
-    get renderType() {
-        return this._renderType;
-    }
-    /**
-     * get webglrendercontext
-     * @returns {WebGLRenderingContext}
-     */
-    get gl() {
-        return this._gl;
-    }
-    /**
-     * get glcontext's recorder
-     * @returns {Recorder}
-     */
-    get recorder(){
-        return this._recorder;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
-     * @param {String} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER 
-     */
-    createShader(type) {
-        const glShader = new GLShader_1(type, this),
-            record = new Record_1('createShader', type);
-        record.setReturnId(glShader.id);
-        this._recorder.increase(record);
-        return glShader;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
-     * @param {GLShader} shader 
-     * @param {String} source 
-     */
-    shaderSource(shader, source) {
-        shader.source = source;
-        const returnId = shader.id,
-            record = new Record_1('shaderSource', shader, source);
-        record.exactIndexByValue(0, returnId);
-        this._recorder.increase(record);
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
-     * @param {GLShader} shader 
-     */
-    compileShader(shader) {
-        const returnId = shader.id,
-            record = new Record_1('compileShader', shader);
-        record.exactIndexByValue(0, returnId);
-        shader._isComplied = true;
-        this._recorder.increase(record);
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
-     * @returns {GLProgram}
-     */
-    createProgram() {
-        const glProgram = new GLProgram_1(this),
-            record = new Record_1('createProgram');
-        record.setReturnId(glProgram.id);
-        this._recorder.increase(record);
-        return glProgram;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
-     * @returns {GLBuffer}
-     */
-    createBuffer() {
-        const glBuffer = new GLBuffer_1(this),
-            record = new Record_1('createBuffer');
-        record.setReturnId(glBuffer.id);
-        this._recorder.increase(record);
-        return glBuffer;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
-     * @returns {GLFramebuffer}
-     */
-    createFramebuffer() {
-        const glFramebuffer = new GLFramebuffer_1(this),
-            record = new Record_1('createFramebuffer');
-        record.setReturnId(glFramebuffer.id);
-        this._recorder.increase(record);
-        return glFramebuffer;
-    }
-    /** 
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createRenderbuffer
-     * @returns {GLRenderbuffer}
-     */
-    createRenderbuffer() {
-        const glRenderbuffer = new GLRenderbuffer_1(this),
-            record = new Record_1('createRenderbuffer');
-        record.setReturnId(glRenderbuffer.id);
-        this._recorder.increase(record);
-        return glRenderbuffer;
-    }
-    /** 
-     * needs ext 'OES_vertex_array_object' support
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLVertexArrayObject
-     * @returns {GL}
-    */
-    createVertexArray(){
-        const glVao = new GLVertexArray_1(this),
-            record = new Record_1('createVertexArray');
-        record.setReturnId(glVao.id);
-        this._recorder.increase(record);
-        return glVao;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
-     * @returns {GLTexture}
-     */
-    createTexture() {
-        const glTexture = new GLTexture_1(this),
-            record = new Record_1('createTexture');
-        record.setReturnId(glTexture.id);
-        this._recorder.increase(record);
-        return glTexture;
-    }
-    /**
-     * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/attachShader
-     * @param {GLProgram} program 
-     * @param {GLShader} shader 
-     */
-    attachShader(program, shader) {
-        const record = new Record_1('attachShader', program, shader);
-        record.exactIndexByValue(0, program.id);
-        record.exactIndexByValue(1, shader.id);
-        this._recorder.increase(record);
-        //
-        program.attachShader(shader);
-    }
-    /**
-     * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/linkProgram
-     * @param {GLProgram} program 
-     */
-    linkProgram(program) {
-        const record = new Record_1('linkProgram', program);
-        record.exactIndexByValue(0, program.id);
-        this._recorder.increase(record);
-        program.link();
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttribLocation
-     * @modify yellow date 2018/2/3 direction return 
-     * 
-     * @param {GLProgram} program 
-     * @param {String} name 
-     */
-    getAttribLocation(program, name) {
-        const returnId = program.getAttribLocation(name),
-            record = new Record_1('getAttribLocation', program, name);
-        record.exactIndexByValue(0, program.id);
-        record.setReturnId(returnId, false);
-        this._recorder.increase(record);
-        return returnId;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
-     * @param {GLProgram} program 
-     * @param {DOMString} name 
-     */
-    getUniformLocation(program, name) {
-        const returnId = program.getUnifromLocation(name),
-            record = new Record_1('getUniformLocation', program, name);
-        record.exactIndexByValue(0, program.id);
-        record.setReturnId(returnId);
-        this._recorder.increase(record);
-        return returnId;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
-     * @param {GLShader} shader 
-     * @param {GLenum} pname 
-     */
-    getShaderParameter(shader, pname) {
-        return shader.getParameters(pname);
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
-     * @param {GLShader} shader 
-     */
-    getShaderInfoLog(shader) {
-        return '';
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
-     * @param {GLProgram} program 
-     */
-    getProgramInfoLog(program) {
-        return '';
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveAttrib
-     * @param {GLProgram} program 
-     * @param {GLuint} index 
-     */
-    getActiveAttrib(program, index) {
-        return program.attributes[index];
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
-     * @param {GLProgram} program 
-     * @param {GLuint} index 
-     */
-    getActiveUniform(program, index) {
-        return program.uniforms[index];
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramParameter
-     * @type {GLProgram} program
-     * @type {GLenum} pname
-     */
-    getProgramParameter(program, pname) {
-        if (pname === GLConstants_1.ACTIVE_UNIFORMS) {
-            return program.uniforms.length;
-        } else if (pname === GLConstants_1.ACTIVE_ATTRIBUTES) {
-            return program.attributes.length;
-        } else if (pname === GLConstants_1.ATTACHED_SHADERS) {
-            return program.attachNum;
-        } else if (pname === GLConstants_1.LINK_STATUS) {
-            return true;
-        } else if (pname === GLConstants_1.DELETE_STATUS) {
-            return true;
+        /**
+         * get the version of webgl
+         * @returns {String} 'webgl' or 'webgl2'
+         */
+
+    }, {
+        key: 'createShader',
+
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
+         * @param {String} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER 
+         */
+        value: function createShader(type) {
+            var glShader = new GLShader_1(type, this),
+                record = new Record_1('createShader', type);
+            record.setReturnId(glShader.id);
+            this._recorder.increase(record);
+            return glShader;
         }
-    }
-    /**
-     * @param {GLProgram} program 
-     */
-    useProgram(program) {
-        const programId = program.id;
-        const record = new Record_1('useProgram', program);
-        record.exactIndexByValue(0, programId);
-        this._recorder.increase(record);
-        this._programId = programId;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getExtension
-     * @param {String} name 
-     */
-    getExtension(name) {
-        const glExtension = this._glExtension;
-        return glExtension[name];
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
-     * @param {String} pname 
-     */
-    getParameter(pname) {
-        //parameter search from limits
-        const glLimits = this._glLimits;
-        return glLimits[pname];
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
-     */
-    clear(mask) {
-        //}{hack igonre 'screen clearing operations'
-        //1.GLConstants.COLOR_BUFFER_BIT|GLConstants.DEPTH_BUFFER_BIT|GLConstants.STENCIL_BUFFER_BIT  = 17664
-        //2.mask alpah !== 0
-        if (mask !== 17664) {
-            const record = new Record_1('clear', mask);
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
+         * @param {GLShader} shader 
+         * @param {String} source 
+         */
+
+    }, {
+        key: 'shaderSource',
+        value: function shaderSource(shader, source) {
+            shader.source = source;
+            var returnId = shader.id,
+                record = new Record_1('shaderSource', shader, source);
+            record.exactIndexByValue(0, returnId);
             this._recorder.increase(record);
         }
-    }
-    /**
-     * turning function
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
-     */
-    drawArrays(mode, first, count) {
-        const record = new Record_1('drawArrays', mode, first, count),
-            programId = this._programId;
-        this._recorder.increase(record);
-        Actuator_1.play(this._recorder.toInstruction(programId));
-    }
-    /**
-     * turning function
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
-     */
-    drawElements(mode, count, type, offset) {
-        const record = new Record_1('drawElements', mode, count, type, offset),
-            programId = this._programId;
-        this._recorder.increase(record);
-        Actuator_1.play(this._recorder.toInstruction(programId));
-    }
-}
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
+         * @param {GLShader} shader 
+         */
+
+    }, {
+        key: 'compileShader',
+        value: function compileShader(shader) {
+            var returnId = shader.id,
+                record = new Record_1('compileShader', shader);
+            record.exactIndexByValue(0, returnId);
+            shader._isComplied = true;
+            this._recorder.increase(record);
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+         * @returns {GLProgram}
+         */
+
+    }, {
+        key: 'createProgram',
+        value: function createProgram() {
+            var glProgram = new GLProgram_1(this),
+                record = new Record_1('createProgram');
+            record.setReturnId(glProgram.id);
+            this._recorder.increase(record);
+            return glProgram;
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
+         * @returns {GLBuffer}
+         */
+
+    }, {
+        key: 'createBuffer',
+        value: function createBuffer() {
+            var glBuffer = new GLBuffer_1(this),
+                record = new Record_1('createBuffer');
+            record.setReturnId(glBuffer.id);
+            this._recorder.increase(record);
+            return glBuffer;
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createFramebuffer
+         * @returns {GLFramebuffer}
+         */
+
+    }, {
+        key: 'createFramebuffer',
+        value: function createFramebuffer() {
+            var glFramebuffer = new GLFramebuffer_1(this),
+                record = new Record_1('createFramebuffer');
+            record.setReturnId(glFramebuffer.id);
+            this._recorder.increase(record);
+            return glFramebuffer;
+        }
+        /** 
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createRenderbuffer
+         * @returns {GLRenderbuffer}
+         */
+
+    }, {
+        key: 'createRenderbuffer',
+        value: function createRenderbuffer() {
+            var glRenderbuffer = new GLRenderbuffer_1(this),
+                record = new Record_1('createRenderbuffer');
+            record.setReturnId(glRenderbuffer.id);
+            this._recorder.increase(record);
+            return glRenderbuffer;
+        }
+        /** 
+         * needs ext 'OES_vertex_array_object' support
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLVertexArrayObject
+         * @returns {GL}
+        */
+
+    }, {
+        key: 'createVertexArray',
+        value: function createVertexArray() {
+            var glVao = new GLVertexArray_1(this),
+                record = new Record_1('createVertexArray');
+            record.setReturnId(glVao.id);
+            this._recorder.increase(record);
+            return glVao;
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createTexture
+         * @returns {GLTexture}
+         */
+
+    }, {
+        key: 'createTexture',
+        value: function createTexture() {
+            var glTexture = new GLTexture_1(this),
+                record = new Record_1('createTexture');
+            record.setReturnId(glTexture.id);
+            this._recorder.increase(record);
+            return glTexture;
+        }
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/attachShader
+         * @param {GLProgram} program 
+         * @param {GLShader} shader 
+         */
+
+    }, {
+        key: 'attachShader',
+        value: function attachShader(program, shader) {
+            var record = new Record_1('attachShader', program, shader);
+            record.exactIndexByValue(0, program.id);
+            record.exactIndexByValue(1, shader.id);
+            this._recorder.increase(record);
+            //
+            program.attachShader(shader);
+        }
+        /**
+         * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/linkProgram
+         * @param {GLProgram} program 
+         */
+
+    }, {
+        key: 'linkProgram',
+        value: function linkProgram(program) {
+            var record = new Record_1('linkProgram', program);
+            record.exactIndexByValue(0, program.id);
+            this._recorder.increase(record);
+            program.link();
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getAttribLocation
+         * @modify yellow date 2018/2/3 direction return 
+         * 
+         * @param {GLProgram} program 
+         * @param {String} name 
+         */
+
+    }, {
+        key: 'getAttribLocation',
+        value: function getAttribLocation(program, name) {
+            var returnId = program.getAttribLocation(name),
+                record = new Record_1('getAttribLocation', program, name);
+            record.exactIndexByValue(0, program.id);
+            record.setReturnId(returnId, false);
+            this._recorder.increase(record);
+            return returnId;
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getUniformLocation
+         * @param {GLProgram} program 
+         * @param {DOMString} name 
+         */
+
+    }, {
+        key: 'getUniformLocation',
+        value: function getUniformLocation(program, name) {
+            var returnId = program.getUnifromLocation(name),
+                record = new Record_1('getUniformLocation', program, name);
+            record.exactIndexByValue(0, program.id);
+            record.setReturnId(returnId);
+            this._recorder.increase(record);
+            return returnId;
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
+         * @param {GLShader} shader 
+         * @param {GLenum} pname 
+         */
+
+    }, {
+        key: 'getShaderParameter',
+        value: function getShaderParameter(shader, pname) {
+            return shader.getParameters(pname);
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderInfoLog
+         * @param {GLShader} shader 
+         */
+
+    }, {
+        key: 'getShaderInfoLog',
+        value: function getShaderInfoLog(shader) {
+            return '';
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramInfoLog
+         * @param {GLProgram} program 
+         */
+
+    }, {
+        key: 'getProgramInfoLog',
+        value: function getProgramInfoLog(program) {
+            return '';
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveAttrib
+         * @param {GLProgram} program 
+         * @param {GLuint} index 
+         */
+
+    }, {
+        key: 'getActiveAttrib',
+        value: function getActiveAttrib(program, index) {
+            return program.attributes[index];
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getActiveUniform
+         * @param {GLProgram} program 
+         * @param {GLuint} index 
+         */
+
+    }, {
+        key: 'getActiveUniform',
+        value: function getActiveUniform(program, index) {
+            return program.uniforms[index];
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getProgramParameter
+         * @type {GLProgram} program
+         * @type {GLenum} pname
+         */
+
+    }, {
+        key: 'getProgramParameter',
+        value: function getProgramParameter(program, pname) {
+            if (pname === GLConstants_1.ACTIVE_UNIFORMS) {
+                return program.uniforms.length;
+            } else if (pname === GLConstants_1.ACTIVE_ATTRIBUTES) {
+                return program.attributes.length;
+            } else if (pname === GLConstants_1.ATTACHED_SHADERS) {
+                return program.attachNum;
+            } else if (pname === GLConstants_1.LINK_STATUS) {
+                return true;
+            } else if (pname === GLConstants_1.DELETE_STATUS) {
+                return true;
+            }
+        }
+        /**
+         * @param {GLProgram} program 
+         */
+
+    }, {
+        key: 'useProgram',
+        value: function useProgram(program) {
+            var programId = program.id;
+            var record = new Record_1('useProgram', program);
+            record.exactIndexByValue(0, programId);
+            this._recorder.increase(record);
+            this._programId = programId;
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getExtension
+         * @param {String} name 
+         */
+
+    }, {
+        key: 'getExtension',
+        value: function getExtension(name) {
+            var glExtension = this._glExtension;
+            return glExtension[name];
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
+         * @param {String} pname 
+         */
+
+    }, {
+        key: 'getParameter',
+        value: function getParameter(pname) {
+            //parameter search from limits
+            var glLimits = this._glLimits;
+            return glLimits[pname];
+        }
+        /**
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
+         */
+
+    }, {
+        key: 'clear',
+        value: function clear(mask) {
+            //}{hack igonre 'screen clearing operations'
+            //1.GLConstants.COLOR_BUFFER_BIT|GLConstants.DEPTH_BUFFER_BIT|GLConstants.STENCIL_BUFFER_BIT  = 17664
+            //2.mask alpah !== 0
+            if (mask !== 17664) {
+                var record = new Record_1('clear', mask);
+                this._recorder.increase(record);
+            }
+        }
+        /**
+         * turning function
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
+         */
+
+    }, {
+        key: 'drawArrays',
+        value: function drawArrays(mode, first, count) {
+            var record = new Record_1('drawArrays', mode, first, count),
+                programId = this._programId;
+            this._recorder.increase(record);
+            Actuator_1.play(this._recorder.toInstruction(programId));
+        }
+        /**
+         * turning function
+         * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+         */
+
+    }, {
+        key: 'drawElements',
+        value: function drawElements(mode, count, type, offset) {
+            var record = new Record_1('drawElements', mode, count, type, offset),
+                programId = this._programId;
+            this._recorder.increase(record);
+            Actuator_1.play(this._recorder.toInstruction(programId));
+        }
+    }, {
+        key: 'renderType',
+        get: function get$$1() {
+            return this._renderType;
+        }
+        /**
+         * get webglrendercontext
+         * @returns {WebGLRenderingContext}
+         */
+
+    }, {
+        key: 'gl',
+        get: function get$$1() {
+            return this._gl;
+        }
+        /**
+         * get glcontext's recorder
+         * @returns {Recorder}
+         */
+
+    }, {
+        key: 'recorder',
+        get: function get$$1() {
+            return this._recorder;
+        }
+    }]);
+    return GLContext;
+}(Dispose_1);
 
 var GLContext_1 = GLContext;
 
 /**
  * store WebGLRenderingContext
  */
-const CACHE_GL = {};
+var CACHE_GL = {};
 /**
  * the prefix of GLCanvas
  */
-const prefix = 'CANVASELEMENT';
+var prefix = 'CANVASELEMENT';
 /**
  * @class
  * @example
@@ -12342,73 +13806,87 @@ const prefix = 'CANVASELEMENT';
  *  mock:new Mock(canvanElement,['width','height']);
  * });
  */
-class GLCanvas extends Dispose_1 {
+
+var GLCanvas = function (_Dispose) {
+  inherits(GLCanvas, _Dispose);
+
+  /**
+   * 
+   * @param {String} id the real htmlCanvasElement id 
+   * @param {Object} [options]
+   * @param {HtmlMock} [options.mock]
+   */
+  function GLCanvas(id) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    classCallCheck(this, GLCanvas);
+
     /**
-     * 
-     * @param {String} id the real htmlCanvasElement id 
-     * @param {Object} [options]
-     * @param {HtmlMock} [options.mock]
+     * @type {String}
      */
-    constructor(id, options = {}) {
-        super(prefix);
-        /**
-         * @type {String}
-         */
-        this._canvasId = id;
-        /**
-         * @type {Object}
-         */
-        this._options = merge_1({}, options);
-        /**
-         * @type {String}
-         */
-        this._glType = 'webgl';
-        /**
-         * store the 'getContext' options
-         * @type {Object}
-         */
-        this._contextOptions = {};
-        /**
-         * real html canvas element
-         * https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
-         * @type {HtmlCanvasElement}
-         */
-        this._canvas = null;
-        /**
-         * @type {GLContext}
-         */
-        this._glContext = null;
-        /**
-         * @type {Object}
-         */
-        this._style = {};
-        /**
-         * store canvas operations
-         * @type {Recorder}
-         */
-        this._records = new Recorder_1(null, false);
-        /**
-         * mock function
-         */
-        this._mock();
-    }
+    var _this = possibleConstructorReturn(this, (GLCanvas.__proto__ || Object.getPrototypeOf(GLCanvas)).call(this, prefix));
+
+    _this._canvasId = id;
     /**
-     * 
+     * @type {Object}
      */
-    _mock() {
-        const mock = this._options.mock;
-        if (!mock) return;
-        const mockList = mock.mockList;
-        mockList.forEach(key => {
-            if (!this.hasOwnProperty(key) && !this[key])
-                if (!mock.isAttribute(key))
-                    this[key] = (...rest) => {
-                        const element = mock.element;
-                        return element[key].apply(element, rest);
-                    };
-                else
-                    this[key] = mock.element[key];
-        });
+    _this._options = merge_1({}, options);
+    /**
+     * @type {String}
+     */
+    _this._glType = 'webgl';
+    /**
+     * store the 'getContext' options
+     * @type {Object}
+     */
+    _this._contextOptions = {};
+    /**
+     * real html canvas element
+     * https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
+     * @type {HtmlCanvasElement}
+     */
+    _this._canvas = null;
+    /**
+     * @type {GLContext}
+     */
+    _this._glContext = null;
+    /**
+     * @type {Object}
+     */
+    _this._style = {};
+    /**
+     * store canvas operations
+     * @type {Recorder}
+     */
+    _this._records = new Recorder_1(null, false);
+    /**
+     * mock function
+     */
+    _this._mock();
+    return _this;
+  }
+  /**
+   * 
+   */
+
+
+  createClass(GLCanvas, [{
+    key: '_mock',
+    value: function _mock() {
+      var _this2 = this;
+
+      var mock = this._options.mock;
+      if (!mock) return;
+      var mockList = mock.mockList;
+      mockList.forEach(function (key) {
+        if (!_this2.hasOwnProperty(key) && !_this2[key]) if (!mock.isAttribute(key)) _this2[key] = function () {
+          for (var _len = arguments.length, rest = Array(_len), _key = 0; _key < _len; _key++) {
+            rest[_key] = arguments[_key];
+          }
+
+          var element = mock.element;
+          return element[key].apply(element, rest);
+        };else _this2[key] = mock.element[key];
+      });
     }
     /**
      * get context attributes
@@ -12416,37 +13894,46 @@ class GLCanvas extends Dispose_1 {
      * reference https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
      * @param {Object} [options] 
      */
-    _getContextAttributes(options = {}) {
-        return {
-            alpha: options.alpha || false,
-            depth: options.depth || true,
-            stencil: options.stencil || true,
-            antialias: options.antialias || false,
-            premultipliedAlpha: options.premultipliedAlpha || true,
-            preserveDrawingBuffer: options.preserveDrawingBuffer || false,
-            failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false,
-        }
+
+  }, {
+    key: '_getContextAttributes',
+    value: function _getContextAttributes() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      return {
+        alpha: options.alpha || false,
+        depth: options.depth || true,
+        stencil: options.stencil || true,
+        antialias: options.antialias || false,
+        premultipliedAlpha: options.premultipliedAlpha || true,
+        preserveDrawingBuffer: options.preserveDrawingBuffer || false,
+        failIfMajorPerformanceCaveat: options.failIfMajorPerformanceCaveat || false
+      };
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style
      * https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration
      * @type {CSSStyleDeclaration}
      */
-    get style() {
-        return this._style;
-    }
+
+  }, {
+    key: 'getContext',
+
     /**
      * get GLContext
      * @param {String} renderType 
      * @param {Object} [options]
      * @returns {GLContext}
      */
-    getContext(renderType = 'webgl', options = {}) {
-        const id = this.id;
-        this._glType = this._glType || renderType;
-        this._contextOptions = this._contextOptions || this._getContextAttributes(options);
-        this._glContext = this._glContext || new GLContext_1(id, this._glType, this._contextOptions);
-        return this._glContext;
+    value: function getContext() {
+      var renderType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'webgl';
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var id = this.id;
+      this._glType = this._glType || renderType;
+      this._contextOptions = this._contextOptions || this._getContextAttributes(options);
+      this._glContext = this._glContext || new GLContext_1(id, this._glType, this._contextOptions);
+      return this._glContext;
     }
     /**
      * https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/addEventListener
@@ -12454,56 +13941,71 @@ class GLCanvas extends Dispose_1 {
      * @param {Function} listener 
      * @param {Object} options 
      */
-    addEventListener(type, listener, options) {
-        const canvas = this._canvas;
-        if (canvas) {
-            canvas.addEventListener(type, listener, options);
-        } else {
-            const record = new Record_1('addEventListener', type, listener, options);
-            this._records.increase(record);
-        }
+
+  }, {
+    key: 'addEventListener',
+    value: function addEventListener(type, listener, options) {
+      var canvas = this._canvas;
+      if (canvas) {
+        canvas.addEventListener(type, listener, options);
+      } else {
+        var record = new Record_1('addEventListener', type, listener, options);
+        this._records.increase(record);
+      }
     }
     /**
      * link virtual rendering context to real htmlCanvas
      * @param {HtmlCanvasElement} canvas 
      */
-    linkToCanvas(canvas) {
-        const id = stamp_1(canvas);
-        this._canvas = canvas;
-        this._canvasId = id;
-        //1. set style
-        this._canvas.style.width = this.style.width || `${this._canvas.clientWidth}px`;
-        this._canvas.style.height = this.style.height || `${this._canvas.clientHeight}px`;
-        //2.
-        const records = this._records.toOperation();
-        let record = records.shift();
-        while (record) {
-            canvas[record.opName].apply(canvas, record.args);
-            record = records.shift();
-        }
-        //3. set gl
-        CACHE_GL[id] = CACHE_GL[id] || canvas.getContext(this._glType, this._contextOptions) || canvas.getContext(`experimental-${this._glType}`, this._contextOptions);
-        const glContext = this.getContext('webgl');
-        glContext._setgl(CACHE_GL[id]);
+
+  }, {
+    key: 'linkToCanvas',
+    value: function linkToCanvas(canvas) {
+      var id = stamp_1(canvas);
+      this._canvas = canvas;
+      this._canvasId = id;
+      //1. set style
+      this._canvas.style.width = this.style.width || this._canvas.clientWidth + 'px';
+      this._canvas.style.height = this.style.height || this._canvas.clientHeight + 'px';
+      //2.
+      var records = this._records.toOperation();
+      var record = records.shift();
+      while (record) {
+        canvas[record.opName].apply(canvas, record.args);
+        record = records.shift();
+      }
+      //3. set gl
+      CACHE_GL[id] = CACHE_GL[id] || canvas.getContext(this._glType, this._contextOptions) || canvas.getContext('experimental-' + this._glType, this._contextOptions);
+      var glContext = this.getContext('webgl');
+      glContext._setgl(CACHE_GL[id]);
     }
     /**
      * link virtual rendering context to real htmlCanvas
      * @param {WebGLRenderingContext} gl 
      */
-    linkToWebGLRenderingContext(gl) {
-        if (this._canvas) {
-            throw new Error('exist htmlcanvaselement');
-        }
-        const canvas = gl.canvas;
-        if (canvas) {
-            this.linkToCanvas(canvas);
-        } else {
-            const glContext = this.getContext('webgl');
-            glContext._setgl(gl);
-        }
-    }
 
-}
+  }, {
+    key: 'linkToWebGLRenderingContext',
+    value: function linkToWebGLRenderingContext(gl) {
+      if (this._canvas) {
+        throw new Error('exist htmlcanvaselement');
+      }
+      var canvas = gl.canvas;
+      if (canvas) {
+        this.linkToCanvas(canvas);
+      } else {
+        var glContext = this.getContext('webgl');
+        glContext._setgl(gl);
+      }
+    }
+  }, {
+    key: 'style',
+    get: function get$$1() {
+      return this._style;
+    }
+  }]);
+  return GLCanvas;
+}(Dispose_1);
 
 var GLCanvas_1 = GLCanvas;
 
@@ -12515,7 +14017,7 @@ var GLCanvas_1 = GLCanvas;
  * const mock = new Mock(canvasElement,['width','heigh']);
  */
 
-const attribute = {
+var attribute = {
     'style': 1,
     'nodeName': 1,
     'width': 1,
@@ -12525,12 +14027,15 @@ const attribute = {
 /**
  * @class
  */
-class HtmlMock {
+
+var HtmlMock = function () {
     /**
      * 
      * @param {HtmlCanvasElement} element 
      */
-    constructor(element, mockList) {
+    function HtmlMock(element, mockList) {
+        classCallCheck(this, HtmlMock);
+
         /**
          * @type {HtmlCanvasElement}
          */
@@ -12543,63 +14048,3955 @@ class HtmlMock {
     /**
      * @type {Array}
      */
-    set mockList(v) {
-        this._mockList = v;
-    }
-    /**
-     * @type {Array}
-     */
-    get mockList() {
-        return this._mockList;
-    }
 
-    get element() {
-        return this._element;
-    }
 
-    isAttribute(name) {
-        return attribute[name] === 1;
-    }
-
-}
+    createClass(HtmlMock, [{
+        key: 'isAttribute',
+        value: function isAttribute(name) {
+            return attribute[name] === 1;
+        }
+    }, {
+        key: 'mockList',
+        set: function set$$1(v) {
+            this._mockList = v;
+        }
+        /**
+         * @type {Array}
+         */
+        ,
+        get: function get$$1() {
+            return this._mockList;
+        }
+    }, {
+        key: 'element',
+        get: function get$$1() {
+            return this._element;
+        }
+    }]);
+    return HtmlMock;
+}();
 
 var HtmlMock_1 = HtmlMock;
 
 var init$2 = {
-    gl: {
-        /**
-         * mock html element functions and attributes
-         */
-        HtmlMock: HtmlMock_1,
-        /**
-         * virtual HtmlCanvasElement
-         */
-        GLCanvas: GLCanvas_1,
-        /**
-         * debug settings
-         */
-        Debug: {
-            /**
-             * enable debug logger
-             */
-            Enable: function () {
-                Actuator_1.debug = true;
-            },
-            /**
-             * disable debug logger
-             */
-            Disable: function () {
-                Actuator_1.debug = false;
-            },
-            /**
-             * executed commands
-             */
-            GetLogger: function(){
-                return Actuator_1.logger;
-            }
-        },
+  gl: {
+    /**
+     * mock html element functions and attributes
+     */
+    HtmlMock: HtmlMock_1,
+    /**
+     * virtual HtmlCanvasElement
+     */
+    GLCanvas: GLCanvas_1,
+    /**
+     * debug settings
+     */
+    Debug: {
+      /**
+       * enable debug logger
+       */
+      Enable: function Enable() {
+        Actuator_1.debug = true;
+      },
+      /**
+       * disable debug logger
+       */
+      Disable: function Disable() {
+        Actuator_1.debug = false;
+      },
+      /**
+       * executed commands
+       */
+      GetLogger: function GetLogger() {
+        return Actuator_1.logger;
+      }
     }
+  }
 };
+
+var GLMatrix_1 = createCommonjsModule(function (module) {
+  /**
+   * reference:
+   * https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/common.js
+   * 
+   * switch to es6 syntax
+   * @author yellow 2017/5/8
+   */
+  /**
+   * the degree to rad factor
+   * @type {number}
+   */
+  var degree = Math.PI / 180;
+  /**
+   * @class
+   */
+
+  var GLMatrix = function GLMatrix() {
+    classCallCheck(this, GLMatrix);
+  };
+  /**
+   * the precision to indicate two value is equal
+   * @type {number}
+   */
+
+
+  GLMatrix.EPSILON = 1e-6;
+  /**
+   * support ie9
+   * @type {Float32Array|Array}
+   */
+  GLMatrix.ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
+  /**
+   * the Math.random adapter
+   * @func
+   */
+  GLMatrix.RANDOM = Math.random;
+  /**
+   * the default setting to use SIMD
+   * @static
+   */
+  GLMatrix.ENABLE_SIMD = true;
+  /**
+   * indicate to use SIMD
+   * @static
+   */
+  GLMatrix.SIMD_AVAILABLE = GLMatrix.ARRAY_TYPE === Float32Array && typeof SIMD != 'undefined';
+  /**
+   * 使用simd
+   * @type {boolean}
+   */
+  GLMatrix.USE_SIMD = GLMatrix.ENABLE_SIMD && GLMatrix.SIMD_AVAILABLE;
+  /**
+   * Set ArrayType,such as Float32Array or Array ([])
+   * @param {Float32Array|Array} type Array type,such as Float32Array or Array
+   */
+  GLMatrix.setMatrixArrayType = function (type) {
+    GLMatrix.ARRAY_TYPE = type;
+  };
+  /**
+   * Convert degree to radian
+   * @param {number} deg Angle in Degrees
+   */
+  GLMatrix.toRadian = function (deg) {
+    return deg * degree;
+  };
+  /**
+   * Convert rad to degree
+   * @param {number} rad Angle in Radian
+   */
+  GLMatrix.toDegree = function (rad) {
+    return rad / degree;
+  };
+  /**
+   * #debug
+   * @param {Object} obj 
+   */
+  GLMatrix.formatDisplay = function (obj) {
+    var output = "\n";
+    if (obj.constructor.name === 'mat4') {
+      for (var i = 0; i < 4; i++) {
+        output += '[' + obj.value[i * 4] + ',' + obj.value[i * 4 + 1] + ',' + obj.value[i * 4 + 2] + ',' + obj.value[i * 4 + 3] + ']\n';
+      }
+    }
+  };
+  /**
+   * @param {number} a The first number to test.
+   * @param {number} b The first number to test.
+   * @return {boolean} True if the numbers are approximately equal, false otherwise.
+   */
+  GLMatrix.equals = function (a, b) {
+    return Math.abs(a - b) <= GLMatrix.EPSILON * Math.max(1.0, Math.abs(a), Math.abs(b));
+  };
+
+  module.exports = GLMatrix;
+});
+
+/**
+ * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/vec2.js
+ * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use vec2.clone().* instead of vec2.*
+ * @author yellow 2017/5/8
+ */
+
+/**
+ * @class
+ */
+
+var Vec2 = function () {
+    /**
+     * Creates a new, empty vec2
+     */
+    function Vec2() {
+        classCallCheck(this, Vec2);
+
+        /**
+         * array store for vec2
+         * @private
+         */
+        this._out = new GLMatrix_1.ARRAY_TYPE(2);
+        this._out[0] = 0;
+        this._out[1] = 0;
+        return this;
+    }
+
+    createClass(Vec2, [{
+        key: 'set',
+
+        /**
+         * set value of vec2,such as [x,y]
+         */
+        value: function set$$1(x, y) {
+            this._out[0] = x;
+            this._out[1] = y;
+            return this;
+        }
+    }, {
+        key: 'clone',
+
+        /**
+         * Creates a new vec2 initialized with values from an existing vector
+         */
+        value: function clone() {
+            var vec = new Vec2();
+            vec.set(this._out[0], this._out[1]);
+            return vec;
+        }
+    }, {
+        key: 'add',
+
+        /**
+         * Add two vec2's
+         * @param {Vec2} vec the vec2 which waiting for add
+         */
+        value: function add(vec) {
+            this._out[0] += vec._out[0];
+            this._out[1] += vec._out[1];
+            return this;
+        }
+    }, {
+        key: 'sub',
+
+        /**
+         * substract vector vec from this
+         * @param {Vec2} vec
+         */
+        value: function sub(vec) {
+            this._out[0] -= vec._out[0];
+            this._out[1] -= vec._out[1];
+            return this;
+        }
+    }, {
+        key: 'multiply',
+
+        /**
+         * multiplies two vec2's
+         * @param {Vec2} 
+         */
+        value: function multiply(vec) {
+            this._out[0] *= vec._out[0];
+            this._out[1] *= vec._out[1];
+            return this;
+        }
+    }, {
+        key: 'divide',
+
+        /**
+         * diveides two vec2's
+         * 
+         */
+        value: function divide(vec) {
+            this._out[0] /= vec._out[0];
+            this._out[1] /= vec._out[1];
+            return this;
+        }
+    }, {
+        key: 'ceil',
+
+        /**
+         * use math.ceil to adjust the value of v0 v1
+         * 
+         */
+        value: function ceil() {
+            this._out[0] = Math.ceil(this._out[0]);
+            this._out[1] = Math.ceil(this._out[1]);
+            return this;
+        }
+    }, {
+        key: 'floor',
+
+        /**
+         * use math.floor to adjust the value of v0 v1
+         */
+        value: function floor() {
+            this._out[0] = Math.floor(this._out[0]);
+            this._out[1] = Math.floor(this._out[1]);
+            return this;
+        }
+    }, {
+        key: 'round',
+
+        /**
+         * use math.round to adjust the value of v0 v1
+         */
+        value: function round() {
+            this._out[0] = Math.round(this._out[0]);
+            this._out[1] = Math.round(this._out[1]);
+            return this;
+        }
+    }, {
+        key: 'min',
+
+        /**
+         * merge two vector's min value
+         * 
+         */
+        value: function min(vec) {
+            this._out[0] = Math.min(this._out[0], vec._out[0]);
+            this._out[1] = Math.min(this._out[1], vec._out[1]);
+            return this;
+        }
+    }, {
+        key: 'max',
+
+        /**
+         *  merge two vector's max value
+         */
+        value: function max(vec) {
+            this._out[0] = Math.max(this._out[0], vec._out[0]);
+            this._out[1] = Math.max(this._out[1], vec._out[1]);
+            return this;
+        }
+    }, {
+        key: 'scale',
+
+        /**
+         * Scales a vec2 by a scalar number
+         * @param {Number} n
+         */
+        value: function scale(n) {
+            this._out[0] *= n;
+            this._out[1] *= n;
+            return this;
+        }
+    }, {
+        key: 'distance',
+
+        /**
+         * Calculates the euclidian distance between two vec2's
+         */
+        value: function distance(vec) {
+            var x = this._out[0] - vec._out[0],
+                y = this._out[1] - vec._out[2];
+            return Math.sqrt(x * x + y * y);
+        }
+    }, {
+        key: 'manhattanDistance',
+
+        /**
+         * Calculates the manhattan distance between two vec2's
+         */
+        value: function manhattanDistance(vec) {
+            var x = Math.abs(this._out[0] - vec._out[0]),
+                y = Math.abs(this._out[1] - vec._out[2]);
+            return x + y;
+        }
+    }, {
+        key: 'chebyshevDistance',
+
+        /**
+         * Calculates the chebyshev distance between two vec2's
+         */
+        value: function chebyshevDistance(vec) {
+            var x = Math.abs(this._out[0] - vec._out[0]),
+                y = Math.abs(this._out[1] - vec._out[2]);
+            return Math.max(x, y);
+        }
+    }, {
+        key: 'len',
+
+        /**
+         * Calculates the length of a vec2
+         */
+        value: function len() {
+            return this.distance(new Vec2());
+        }
+    }, {
+        key: 'negate',
+
+        /**
+         * Negates the components of a vec2
+         */
+        value: function negate() {
+            this._out[0] = -this._out[0];
+            this._out[1] = -this._out[1];
+            return this;
+        }
+    }, {
+        key: 'inverse',
+
+        /**
+         * Returns the inverse of the components of a vec2
+         */
+        value: function inverse() {
+            this._out[0] = 1.0 / this._out[0];
+            this._out[1] = 1.0 / this._out[1];
+            return this;
+        }
+    }, {
+        key: 'normalize',
+
+        /**
+         * Normalize a vec2
+         */
+        value: function normalize() {
+            var len = this.vec2Length();
+            if (len > 0) {
+                //for the reason * has a high performance than /
+                len = 1.0 / len;
+                this._out[0] *= len;
+                this._out[1] *= len;
+            }
+            return this;
+        }
+    }, {
+        key: 'dot',
+
+        /**
+         * Calculates the dot product of two vec2's
+         */
+        value: function dot(vec) {
+            return this._out[0] * vec._out[0] + this._out[1] * vec._out[1];
+        }
+    }, {
+        key: 'lerp',
+
+        /**
+         * performs a linear interpolation between two vec2's
+         * @param {Vec2} vec
+         * @param {number} t interpolation amount between the two inputs
+         */
+        value: function lerp(vec, t) {
+            var _out = slicedToArray(this._out, 2),
+                ax = _out[0],
+                ay = _out[1],
+                _vec$_out = slicedToArray(vec._out, 2),
+                bx = _vec$_out[0],
+                by = _vec$_out[1];
+
+            this._out[0] = ax + t * (bx - ax);
+            this._out[1] = ay + t * (by - ay);
+            return this;
+        }
+    }, {
+        key: 'toString',
+
+        /**
+         * Returns a string representation of a vector
+         */
+        value: function toString() {
+            return 'vec2(' + this._out[0] + ',' + this._out[1] + ')';
+        }
+    }, {
+        key: 'transformMat3',
+
+        /**
+         * Transforms the vec2 with a mat3
+         * @param {mat3} mat matrix to transform with
+         */
+        value: function transformMat3(mat) {
+            var _out2 = slicedToArray(this._out, 2),
+                x = _out2[0],
+                y = _out2[1];
+
+            this._out[0] = mat._out[0] * x + mat._out[3] * y + mat._out[6];
+            this._out[1] = mat._out[1] * x + mat._out[4] * y + mat._out[7];
+            return this;
+        }
+    }, {
+        key: 'transformMat4',
+
+        /**
+         * Transforms the vec2 with a mat4
+         */
+        value: function transformMat4(mat) {
+            var _out3 = slicedToArray(this._out, 2),
+                x = _out3[0],
+                y = _out3[1];
+
+            this._out[0] = mat._out[0] * x + mat._out[4] * y + mat._out[5];
+            this._out[1] = mat._out[1] * x + mat._out[5] * y + mat._out[13];
+            return this;
+        }
+    }, {
+        key: 'equals',
+
+        /**
+         * Returns whether or not the vectors have approximately the same elements in the same position.
+         * precision
+         */
+        value: function equals(vec) {
+            var _out4 = slicedToArray(this._out, 2),
+                a0 = _out4[0],
+                a1 = _out4[1],
+                _vec$_out2 = slicedToArray(vec._out, 2),
+                b0 = _vec$_out2[0],
+                b1 = _vec$_out2[1];
+
+            return Math.abs(a0 - b0) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1));
+        }
+    }, {
+        key: 'value',
+
+        /**
+         * adapter for webgl matrix
+         * get the array directly
+         * @memberof vec2
+         * @return {Array}
+         */
+        get: function get$$1() {
+            return this._out;
+        }
+    }], [{
+        key: 'random',
+
+        /**
+         * generate a random vector
+         */
+        value: function random() {
+            var scale = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1.0;
+
+            scale = scale || 1.0;
+            var vec = new Vec2(),
+                r = GLMatrix_1.RANDOM() * 2.0 * Math.PI;
+            ax = Math.cos(r) * scale;
+            ay = Math.sin(r) * scale;
+            return vec;
+        }
+    }]);
+    return Vec2;
+}();
+
+
+
+var Vec2_1 = Vec2;
+
+/**
+ * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/vec3.js
+ * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use vec3.clone().* instead of vec3.*
+ * @author yellow 2017/5/8
+ * 
+ */
+
+/**
+ * @class 3 Dimensional Vector
+ * @name vec3
+ */
+
+var Vec3$1 = function () {
+    /**
+     * Creates a new, empty vec3
+     */
+    function Vec3() {
+        classCallCheck(this, Vec3);
+
+        /**
+         * array store for vec3
+         * @private
+         */
+        this._out = new GLMatrix_1.ARRAY_TYPE(3);
+        this._out[0] = 0;
+        this._out[1] = 0;
+        this._out[2] = 0;
+        return this;
+    }
+
+    createClass(Vec3, [{
+        key: 'set',
+
+
+        /**
+         * set value of v0 v1 v2
+         */
+        value: function set$$1(x, y, z) {
+            this._out[0] = x;
+            this._out[1] = y;
+            this._out[2] = z;
+            return this;
+        }
+    }, {
+        key: 'clone',
+
+        /**
+         * Creates a new vec3 initialized with values from an existing vector
+         */
+        value: function clone() {
+            var vec = new Vec3();
+            vec.set(this._out[0], this._out[1], this._out[2]);
+            return vec;
+        }
+    }, {
+        key: 'add',
+
+        /**
+         * Adds two vec3's
+         * @param {vec3} vec 
+         */
+        value: function add(vec) {
+            this._out[0] += vec._out[0];
+            this._out[1] += vec._out[1];
+            this._out[2] += vec._out[2];
+            return this;
+        }
+    }, {
+        key: 'sub',
+
+        /**
+         * Subtracts vector vec from vector this
+         * @param {vec3} vec
+         */
+        value: function sub(vec) {
+            this._out[0] -= vec._out[0];
+            this._out[1] -= vec._out[1];
+            this._out[2] -= vec._out[2];
+            return this;
+        }
+    }, {
+        key: 'multiply',
+
+        /**
+         * Multiplies two vec3's
+         */
+        value: function multiply(vec) {
+            this._out[0] *= vec._out[0];
+            this._out[1] *= vec._out[1];
+            this._out[2] *= vec._out[2];
+            return this;
+        }
+    }, {
+        key: 'divide',
+
+        /**
+         * Divides two vec3's
+         */
+        value: function divide(vec) {
+            this._out[0] /= vec._out[0];
+            this._out[1] /= vec._out[1];
+            this._out[2] /= vec._out[2];
+            return this;
+        }
+    }, {
+        key: 'ceil',
+
+        /**
+         * Math.ceil the components of a vec3
+         */
+        value: function ceil() {
+            this._out[0] = Math.ceil(this._out[0]);
+            this._out[1] = Math.ceil(this._out[1]);
+            this._out[2] = Math.ceil(this._out[2]);
+            return this;
+        }
+    }, {
+        key: 'floor',
+
+        /**
+         * Math.floor the components of a vec3
+         */
+        value: function floor() {
+            this._out[0] = Math.floor(this._out[0]);
+            this._out[1] = Math.floor(this._out[1]);
+            this._out[2] = Math.floor(this._out[2]);
+            return this;
+        }
+    }, {
+        key: 'round',
+
+        /**
+         * Math.round the components of a vec3
+         */
+        value: function round() {
+            this._out[0] = Math.round(this._out[0]);
+            this._out[1] = Math.round(this._out[1]);
+            this._out[2] = Math.round(this._out[2]);
+            return this;
+        }
+    }, {
+        key: 'min',
+
+        /**
+         * Returns the minimum of two vec3's
+         */
+        value: function min(vec) {
+            this._out[0] = Math.min(this._out[0], vec._out[0]);
+            this._out[1] = Math.min(this._out[1], vec._out[1]);
+            this._out[2] = Math.min(this._out[2], vec._out[2]);
+            return this;
+        }
+    }, {
+        key: 'max',
+
+        /**
+         * Returns the maximum of two vec3's
+         */
+        value: function max(vec) {
+            this._out[0] = Math.max(this._out[0], vec._out[0]);
+            this._out[1] = Math.max(this._out[1], vec._out[1]);
+            this._out[2] = Math.max(this._out[2], vec._out[2]);
+            return this;
+        }
+    }, {
+        key: 'scale',
+
+        /**
+         * Scales a vec3 by a scalar number
+         * @param {number} v amount to scale the vector by
+         */
+        value: function scale(v) {
+            this._out[0] *= v;
+            this._out[1] *= v;
+            this._out[2] *= v;
+            return this;
+        }
+    }, {
+        key: 'distance',
+
+        /**
+         * Calculates the euclidian distance between two vec3's
+         * @param {vec3} vec
+         */
+        value: function distance(vec) {
+            var _out = slicedToArray(this._out, 3),
+                x0 = _out[0],
+                y0 = _out[1],
+                z0 = _out[2],
+                _vec$_out = slicedToArray(vec._out, 3),
+                x1 = _vec$_out[0],
+                y1 = _vec$_out[1],
+                z1 = _vec$_out[2],
+                x = x0 - x1,
+                y = y0 - y1,
+                z = z0 - z1;
+
+            return Math.sqrt(x * x + y * y + z * z);
+        }
+    }, {
+        key: 'len',
+
+        /**
+         * Calculates the length of a vec3
+         */
+        value: function len() {
+            return distance(new Vec3());
+        }
+    }, {
+        key: 'negate',
+
+        /**
+         * Negates the components of a vec3
+         */
+        value: function negate() {
+            this._out[0] = -this._out[0];
+            this._out[1] = -this._out[1];
+            this._out[2] = -this._out[2];
+            return this;
+        }
+    }, {
+        key: 'inverse',
+
+        /**
+         * Returns the inverse of the components of a vec3
+         */
+        value: function inverse() {
+            this._out[0] = 1.0 / this._out[0];
+            this._out[1] = 1.0 / this._out[1];
+            this._out[2] = 1.0 / this._out[2];
+            return this;
+        }
+    }, {
+        key: 'normalize',
+
+        /**
+         * Normalize a vec3
+         */
+        value: function normalize() {
+            var len = this.len();
+            if (len > 0) {
+                len = 1.0 / len;
+                this._out[0] *= len;
+                this._out[1] *= len;
+                this._out[2] *= len;
+            }
+            return this;
+        }
+    }, {
+        key: 'dot',
+
+        /**
+         * Calculates the dot product of two vec3's
+         * @param {vec3} vec
+         */
+        value: function dot(vec) {
+            var _out2 = slicedToArray(this._out, 3),
+                x0 = _out2[0],
+                y0 = _out2[1],
+                z0 = _out2[2],
+                _vec$_out2 = slicedToArray(vec._out, 3),
+                x1 = _vec$_out2[0],
+                y1 = _vec$_out2[1],
+                z1 = _vec$_out2[2];
+
+            return x0 * x1 + y0 * y1 + z0 * z1;
+        }
+    }, {
+        key: 'cross',
+
+        /**
+         * Computes the cross product of two vec3's
+         * https://webgl2fundamentals.org/webgl/lessons/webgl-3d-camera.html
+         * calcue the perpendicular vec3 
+         * @param {Vec3} v3
+         * @return {Vec3}
+         * @example
+         * let v3_out = v3_in1.clone().cross(v3_in2);
+         * the v3_out perpendicular to v3_in1 and v3_in2
+         */
+        value: function cross(v3) {
+            var _out3 = slicedToArray(this._out, 3),
+                ax = _out3[0],
+                ay = _out3[1],
+                az = _out3[2],
+                _v3$value = slicedToArray(v3.value, 3),
+                bx = _v3$value[0],
+                by = _v3$value[1],
+                bz = _v3$value[2];
+
+            this._out[0] = ay * bz - az * by;
+            this._out[1] = az * bx - ax * bz;
+            this._out[2] = ax * by - ay * bx;
+            return this;
+        }
+    }, {
+        key: 'lerp',
+
+        /**
+         * Performs a linear interpolation between two vec3's
+         * @param {Vec3} vec
+         * @param {number} t
+         */
+        value: function lerp(vec, t) {
+            var _out4 = slicedToArray(this._out, 3),
+                ax = _out4[0],
+                ay = _out4[1],
+                az = _out4[2],
+                _vec$_out3 = slicedToArray(vec._out, 3),
+                bx = _vec$_out3[0],
+                by = _vec$_out3[1],
+                bz = _vec$_out3[2];
+
+            this._out[0] = ax + t * (bx - ax);
+            this._out[1] = ay + t * (by - ay);
+            this._out[2] = az + t * (bz - az);
+            return this;
+        }
+    }, {
+        key: 'hermite',
+
+        /**
+         * Performs a hermite interpolation with two control points
+         * @param {Vec3} vecI
+         * @param {Vec3} vecI
+         * @param {Vec3} vecI
+         * @param {number} t interpolation amount between the two inputs
+         */
+        value: function hermite(vecI, vecII, vecIII, t) {
+            var factorTimes2 = t * t,
+                factor1 = factorTimes2 * (2 * t - 3) + 1,
+                factor2 = factorTimes2 * (t - 2) + t,
+                factor3 = factorTimes2 * (t - 1),
+                factor4 = factorTimes2 * (3 - 2 * t);
+            this._out[0] = this._out[0] * factor1 + vecI._out[0] * factor2 + vecII._out[0] * factor3 + vecIII._out[0] * factor4;
+            this._out[1] = this._out[1] * factor1 + vecI._out[1] * factor2 + vecII._out[1] * factor3 + vecIII._out[1] * factor4;
+            this._out[2] = this._out[2] * factor1 + vecI._out[2] * factor2 + vecII._out[2] * factor3 + vecIII._out[2] * factor4;
+            return this;
+        }
+    }, {
+        key: 'bezier',
+
+        /**
+         * Performs a bezier interpolation with two control points
+         * @param {Vec3} vecI
+         * @param {Vec3} vecII
+         * @param {Vec3} vecIII
+         * @param {Number} t interpolation amount between the two inputs
+         */
+        value: function bezier(vecI, vecII, vecIII, t) {
+            var inverseFactor = 1 - t,
+                inverseFactorTimesTwo = inverseFactor * inverseFactor,
+                factorTimes2 = t * t,
+                factor1 = inverseFactorTimesTwo * inverseFactor,
+                factor2 = 3 * t * inverseFactorTimesTwo,
+                factor3 = 3 * factorTimes2 * inverseFactor,
+                factor4 = factorTimes2 * t;
+            out[0] = this._out[0] * factor1 + vecI._out[0] * factor2 + vecII._out[0] * factor3 + vecIII._out[0] * factor4;
+            out[1] = this._out[1] * factor1 + vecI._out[1] * factor2 + vecII._out[1] * factor3 + vecIII._out[1] * factor4;
+            out[2] = this._out[2] * factor1 + vecI._out[2] * factor2 + vecII._out[2] * factor3 + vecIII._out[2] * factor4;
+            return this;
+        }
+    }, {
+        key: 'transformMat4',
+
+        /**
+         * Transforms the vec3 with a mat4.
+         * 4th vector component is implicitly '1'
+         * @param {mat4} mat the 4x4 matrix to transform with
+         */
+        value: function transformMat4(mat) {
+            var _out5 = slicedToArray(this._out, 3),
+                x = _out5[0],
+                y = _out5[1],
+                z = _out5[2],
+                w = mat._out[3] * x + mat._out[7] * y + mat._out[11] * z + mat._out[15] || 1.0;
+
+            this._out[0] = (mat._out[0] * x + mat._out[4] * y + mat._out[8] * z + mat._out[12]) / w;
+            this._out[1] = (mat._out[1] * x + mat._out[5] * y + mat._out[9] * z + mat._out[13]) / w;
+            this._out[2] = (mat._out[2] * x + mat._out[6] * y + mat._out[10] * z + mat._out[14]) / w;
+            return this;
+        }
+    }, {
+        key: 'transformMat3',
+
+        /**
+         * Transforms the vec3 with a mat3.
+         * @param {mat3} mat  the 3x3 matrix to transform with
+         */
+        value: function transformMat3(mat) {
+            var _out6 = slicedToArray(this._out, 3),
+                x = _out6[0],
+                y = _out6[1],
+                z = _out6[2];
+
+            this._out[0] = x * mat._out[0] + y * mat._out[3] + z * mat._out[6];
+            this._out[1] = x * mat._out[1] + y * mat._out[4] + z * mat._out[7];
+            this._out[2] = x * mat._out[2] + y * mat._out[5] + z * mat._out[8];
+            return this;
+        }
+    }, {
+        key: 'toString',
+
+        /**
+         * returns a string represent vec3
+         */
+        value: function toString() {
+            return 'vec3(' + this._out[0] + ', ' + this._out[1] + ', ' + this._out[2] + ')';
+        }
+    }, {
+        key: 'transformQuat',
+
+        /**
+         * ransforms the vec3 with a quat
+         * benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
+         * @param {quat} q quaternion to transform with
+         */
+        value: function transformQuat(q) {
+            var _out7 = slicedToArray(this._out, 3),
+                x = _out7[0],
+                y = _out7[1],
+                z = _out7[2],
+                _q$_out = slicedToArray(q._out, 4),
+                qx = _q$_out[0],
+                qy = _q$_out[1],
+                qz = _q$_out[2],
+                qw = _q$_out[3],
+                ix = qw * x + qy * z - qz * y,
+                iy = qw * y + qz * x - qx * z,
+                iz = qw * z + qx * y - qy * x,
+                iw = -qx * x - qy * y - qz * z;
+
+            this._out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            this._out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            this._out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+            return this;
+        }
+    }, {
+        key: 'rotateX',
+
+        /**
+         * Rotate a 3D vector around the x-axis
+         * @param {Vec3} vec the origin of the rotation
+         * @param {number} c the angle of rotation
+         */
+        value: function rotateX(vec, c) {
+            var p = [],
+                r = [];
+            //Translate point to the origin
+            p[0] = this._out[0] - vec._out[0];
+            p[1] = this._out[1] - vec._out[1];
+            p[2] = this._out[2] - vec._out[2];
+            //perform rotation
+            r[0] = p[0];
+            r[1] = p[1] * Math.cos(c) - p[2] * Math.sin(c);
+            r[2] = p[1] * Math.sin(c) + p[2] * Math.cos(c);
+            //translate to correct position
+            this._out[0] = r[0] + b[0];
+            this._out[1] = r[1] + b[1];
+            this._out[2] = r[2] + b[2];
+            return this;
+        }
+    }, {
+        key: 'rotateY',
+
+        /**
+         * Rotate a 3D vector around the y-axis
+         * @param {Vec3} vec The origin of the rotation
+         * @param {number} c The angle of rotation
+         */
+        value: function rotateY(vec, c) {
+            var p = [],
+                r = [];
+            //Translate point to the origin
+            p[0] = this._out[0] - vec._out[0];
+            p[1] = this._out[1] - vec._out[1];
+            p[2] = this._out[2] - vec._out[2];
+            //perform rotation
+            r[0] = p[2] * Math.sin(c) + p[0] * Math.cos(c);
+            r[1] = p[1];
+            r[2] = p[2] * Math.cos(c) - p[0] * Math.sin(c);
+            //translate to correct position
+            this._out[0] = r[0] + b[0];
+            this._out[1] = r[1] + b[1];
+            this._out[2] = r[2] + b[2];
+            return this;
+        }
+    }, {
+        key: 'rotateZ',
+
+        /**
+         * Rotate a 3D vector around the z-axis
+         * @param {Vec3} vec The origin of the rotation
+         * @param {number} c the angle of rotation
+         */
+        value: function rotateZ(vec, c) {
+            var p = [],
+                r = [];
+            //Translate point to the origin
+            p[0] = this._out[0] - vec._out[0];
+            p[1] = this._out[1] - vec._out[1];
+            p[2] = this._out[2] - vec._out[2];
+            //perform rotation
+            r[0] = p[0] * Math.cos(c) - p[1] * Math.sin(c);
+            r[1] = p[0] * Math.sin(c) + p[1] * Math.cos(c);
+            r[2] = p[2];
+            //translate to correct position
+            this._out[0] = r[0] + b[0];
+            this._out[1] = r[1] + b[1];
+            this._out[2] = r[2] + b[2];
+            return this;
+        }
+    }, {
+        key: 'angle',
+
+        /**
+         * calcute the angle between two 3D vectors
+         * @param {Vec3} vec the second vector
+         */
+        value: function angle(vec) {
+            var vecI = this.clone().normalize(),
+                vecII = vec.clone().normalize();
+            var cosine = Vec3.dot(vecI, vecII);
+            if (cosine > 1.0) return 0;else if (cosine < -1.0) return Math.PI;else return Math.acos(cosine);
+        }
+    }, {
+        key: 'equals',
+
+        /**
+         * Returns whether or not the vectors have approximately the same elements in the same position.
+         */
+        value: function equals(vec) {
+            var _out8 = slicedToArray(this._out, 3),
+                a0 = _out8[0],
+                a1 = _out8[1],
+                a2 = _out8[2],
+                _vec$_out4 = slicedToArray(vec._out, 3),
+                b0 = _vec$_out4[0],
+                b1 = _vec$_out4[1],
+                b2 = _vec$_out4[2];
+
+            return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2));
+        }
+    }, {
+        key: 'value',
+
+        /**
+         * adapter for webgl matrix
+         * get the array directly
+         * @memberof vec3
+         * @return {Array}
+         */
+        get: function get$$1() {
+            return this._out;
+        }
+    }], [{
+        key: 'random',
+
+        /**
+         * Generates a random vector with the given scale
+         * @param {number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
+         */
+        value: function random() {
+            var scale = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1.0;
+
+            var vec = new Vec3();
+            scale = scale || 1.0;
+            var r = GLMatrix_1.RANDOM() * 2.0 * Math.PI;
+            var z = GLMatrix_1.RANDOM() * 2.0 - 1.0;
+            var z = Math.sqrt(1.0 - z * z) * scale;
+            ax = Math.cos(r) * zScale;
+            ay = Math.sin(r) * zScale;
+            az = z * scale;
+            vec.set(ax, ay, az);
+            return vec;
+        }
+    }]);
+    return Vec3;
+}();
+
+var Vec3_1 = Vec3$1;
+
+/**
+ * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/vec4.js
+ * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use vec4.clone().* instead of vec4.*
+ * @author yellow 2017.5.9
+ */
+
+/**
+ * @class 4 Dimensional Vector
+ * @name vec4
+ */
+
+var Vec4$1 = function () {
+    /**
+     *  Creates a new, empty vec4
+     */
+    function Vec4() {
+        classCallCheck(this, Vec4);
+
+        /**
+         * vec4 array store
+         * @private
+         */
+        this._out = new GLMatrix_1.ARRAY_TYPE(4);
+        this._out[0] = 0;
+        this._out[1] = 0;
+        this._out[2] = 0;
+        this._out[3] = 0;
+        return this;
+    }
+    /**
+     * adapter for webgl matrix
+     * get the array directly
+     * @memberof vec4
+     * @return {Array}
+     */
+
+
+    createClass(Vec4, [{
+        key: 'set',
+
+        /**
+         * set the value of vec4
+         */
+        value: function set$$1(x, y, z, w) {
+            this._out[0] = x;
+            this._out[1] = y;
+            this._out[2] = z;
+            this._out[3] = w;
+            return this;
+        }
+        /**
+         * Creates a new vec4 initialized with values from an existing vector
+         */
+
+    }, {
+        key: 'clone',
+        value: function clone() {
+            var vec = new Vec4();
+            vec.set(this._out[0], this._out[1], this._out[2], this._out[3]);
+            return vec;
+        }
+        /**
+         * Adds two vec4's
+         * @param {Vec4} vec
+         */
+
+    }, {
+        key: 'add',
+        value: function add(vec) {
+            this._out[0] += vec.value[0];
+            this._out[1] += vec.value[1];
+            this._out[2] += vec.value[2];
+            this._out[3] += vec.value[3];
+            return this;
+        }
+        /**
+         * Subtracts vector vec from vector this
+         */
+
+    }, {
+        key: 'sub',
+        value: function sub(vec) {
+            this._out[0] -= vec.value[0];
+            this._out[1] -= vec.value[1];
+            this._out[2] -= vec.value[2];
+            this._out[3] -= vec.value[3];
+            return this;
+        }
+        /**
+         * Multiplies two vec4's
+         */
+
+    }, {
+        key: 'multiply',
+        value: function multiply(vec) {
+            this._out[0] *= vec.value[0];
+            this._out[1] *= vec.value[1];
+            this._out[2] *= vec.value[2];
+            this._out[3] *= vec.value[3];
+            return this;
+        }
+        /**
+        * Divides two vec4's
+        */
+
+    }, {
+        key: 'divide',
+        value: function divide(vec) {
+            this._out[0] /= vec.value[0];
+            this._out[1] /= vec.value[1];
+            this._out[2] /= vec.value[2];
+            this._out[3] /= vec.value[3];
+            return this;
+        }
+        /**
+         * Math.ceil the components of a vec4
+         */
+
+    }, {
+        key: 'ceil',
+        value: function ceil() {
+            this._out[0] = Math.ceil(this._out[0]);
+            this._out[1] = Math.ceil(this._out[1]);
+            this._out[2] = Math.ceil(this._out[2]);
+            this._out[3] = Math.ceil(this._out[3]);
+            return this;
+        }
+        /**
+         * Math.round the components of a vec4
+         */
+
+    }, {
+        key: 'round',
+        value: function round() {
+            this._out[0] = Math.round(this._out[0]);
+            this._out[1] = Math.round(this._out[1]);
+            this._out[2] = Math.round(this._out[2]);
+            this._out[3] = Math.round(this._out[3]);
+            return this;
+        }
+        /**
+        * Math.floor the components of a vec4
+        */
+
+    }, {
+        key: 'floor',
+        value: function floor() {
+            this._out[0] = Math.floor(this._out[0]);
+            this._out[1] = Math.floor(this._out[1]);
+            this._out[2] = Math.floor(this._out[2]);
+            this._out[3] = Math.floor(this._out[3]);
+            return this;
+        }
+        /**
+         * Returns the minimum of two vec4's
+         * @param {Vec4} vec
+         */
+
+    }, {
+        key: 'min',
+        value: function min(vec) {
+            this._out[0] = Math.min(this._out[0], vec.value[0]);
+            this._out[1] = Math.min(this._out[1], vec.value[1]);
+            this._out[2] = Math.min(this._out[2], vec.value[2]);
+            this._out[3] = Math.min(this._out[3], vec.value[3]);
+            return this;
+        }
+        /**
+         * Returns the maximum of two vec4's
+         * @param {Vec4} vec
+         */
+
+    }, {
+        key: 'max',
+        value: function max(vec) {
+            this._out[0] = Math.max(this._out[0], vec.value[0]);
+            this._out[1] = Math.max(this._out[1], vec.value[1]);
+            this._out[2] = Math.max(this._out[2], vec.value[2]);
+            this._out[3] = Math.max(this._out[3], vec._out[3]);
+            return this;
+        }
+        /**
+         * Scales a vec4 by a scalar number
+         * @param {number} s the scale
+         */
+
+    }, {
+        key: 'scale',
+        value: function scale(s) {
+            this._out[0] *= s;
+            this._out[1] *= s;
+            this._out[2] *= s;
+            this._out[3] *= s;
+            return this;
+        }
+        /**
+         * Calculates the euclidian distance between two vec4's
+         * @param {Vec4} vec the distance to vec
+         */
+
+    }, {
+        key: 'distance',
+        value: function distance(vec) {
+            var _out = slicedToArray(this._out, 4),
+                x0 = _out[0],
+                y0 = _out[1],
+                z0 = _out[2],
+                w0 = _out[3],
+                _vec$_out = slicedToArray(vec._out, 4),
+                x1 = _vec$_out[0],
+                y1 = _vec$_out[1],
+                z1 = _vec$_out[2],
+                w1 = _vec$_out[3],
+                x = x0 - x1,
+                y = y0 - y1,
+                z = z0 - z1,
+                w = w0 - w1;
+
+            return Math.sqrt(x * x + y * y + z * z + w * w);
+        }
+        /**
+         * Calculates the length of a vec4
+         */
+
+    }, {
+        key: 'len',
+        value: function len() {
+            return this.distance(new Vec4());
+        }
+        /**
+         * Negates the components of a vec4
+         */
+
+    }, {
+        key: 'negate',
+        value: function negate() {
+            this._out[0] = -this._out[0];
+            this._out[1] = -this._out[1];
+            this._out[2] = -this._out[2];
+            this._out[3] = -this._out[3];
+            return this;
+        }
+        /**
+         * Returns the inverse of the components of a vec4
+         */
+
+    }, {
+        key: 'inverse',
+        value: function inverse() {
+            this._out[0] = 1.0 / this._out[0];
+            this._out[1] = 1.0 / this._out[1];
+            this._out[2] = 1.0 / this._out[2];
+            this._out[3] = 1.0 / this._out[3];
+        }
+        /**
+         * Normalize a vec4
+         */
+
+    }, {
+        key: 'normalize',
+        value: function normalize() {
+            var len = this.len();
+            if (len > 0) {
+                len = 1.0 / len;
+                this._out[0] *= len;
+                this._out[1] *= len;
+                this._out[2] *= len;
+                this._out[3] *= len;
+            }
+            return this;
+        }
+        /**
+         * @param {Vec4} vec
+         */
+
+    }, {
+        key: 'dot',
+        value: function dot(vec) {
+            var _out2 = slicedToArray(this._out, 4),
+                x0 = _out2[0],
+                y0 = _out2[1],
+                z0 = _out2[2],
+                w0 = _out2[3],
+                _vec$_out2 = slicedToArray(vec._out, 4),
+                x1 = _vec$_out2[0],
+                y1 = _vec$_out2[1],
+                z1 = _vec$_out2[2],
+                w1 = _vec$_out2[3];
+
+            return x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1;
+        }
+        /**
+         *  Performs a linear interpolation between two vec4's
+         */
+
+    }, {
+        key: 'lerp',
+        value: function lerp(vec, t) {
+            var _out3 = slicedToArray(this._out, 4),
+                ax = _out3[0],
+                ay = _out3[1],
+                az = _out3[2],
+                aw = _out3[3];
+
+            this._out[0] = ax + t * (vec._out[0] - ax);
+            this._out[1] = ay + t * (vec._out[1] - ay);
+            this._out[2] = az + t * (vec._out[2] - az);
+            this._out[3] = aw + t * (vec._out[3] - aw);
+            return this;
+        }
+        /**
+         * Transforms the vec4 with a mat4.
+         * @param {mat4} mat matrix to transform with
+         */
+
+    }, {
+        key: 'transformMat4',
+        value: function transformMat4(mat) {
+            var _out4 = slicedToArray(this._out, 4),
+                x = _out4[0],
+                y = _out4[1],
+                z = _out4[2],
+                w = _out4[3];
+
+            this._out[0] = mat._out[0] * x + mat._out[4] * y + mat._out[8] * z + mat._out[12] * w;
+            this._out[1] = mat._out[1] * x + mat._out[5] * y + mat._out[9] * z + mat._out[13] * w;
+            this._out[2] = mat._out[2] * x + mat._out[6] * y + mat._out[10] * z + mat._out[14] * w;
+            this._out[3] = mat._out[3] * x + mat._out[7] * y + mat._out[11] * z + mat._out[15] * w;
+            return this;
+        }
+        /**
+         * Transforms the vec4 with a quat
+         * @param {quat} q quaternion to transform with
+         */
+
+    }, {
+        key: 'transformQuat',
+        value: function transformQuat(q) {
+            var _out5 = slicedToArray(this._out, 4),
+                x = _out5[0],
+                y = _out5[1],
+                z = _out5[2],
+                w = _out5[3],
+                _q$_out = slicedToArray(q._out, 4),
+                qx = _q$_out[0],
+                qy = _q$_out[1],
+                qz = _q$_out[2],
+                qw = _q$_out[3],
+                ix = qw * x + qy * z - qz * y,
+                iy = qw * y + qz * x - qx * z,
+                iz = qw * z + qx * y - qy * x,
+                iw = -qx * x - qy * y - qz * z;
+            // calculate result * inverse quat
+
+
+            this._out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            this._out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            this._out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+            this._out[3] = a[3];
+            return this;
+        }
+        /**
+         * Returns a string representation of a vector
+         */
+
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return 'vec4(' + this._out[0] + ', ' + this._out[1] + ', ' + this._out[2] + ', ' + this._out[3] + ')';
+        }
+        /**
+         * Returns whether or not the vectors have approximately the same elements in the same position.
+         * @param {Vec4} vec
+         */
+
+    }, {
+        key: 'equals',
+        value: function equals(vec) {
+            var _out6 = slicedToArray(this._out, 4),
+                a0 = _out6[0],
+                a1 = _out6[1],
+                a2 = _out6[2],
+                a3 = _out6[3],
+                _vec$_out3 = slicedToArray(vec._out, 4),
+                b0 = _vec$_out3[0],
+                b1 = _vec$_out3[1],
+                b2 = _vec$_out3[2],
+                b3 = _vec$_out3[3];
+
+            return Math.abs(a0 - b0) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3));
+        }
+    }, {
+        key: 'value',
+        get: function get$$1() {
+            return this._out;
+        }
+        /**
+         * Generates a random vector with the given scale
+         * @param {number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
+         */
+
+    }], [{
+        key: 'random',
+        value: function random() {
+            var vec = new Vec4();
+            //TODO: This is a pretty awful way of doing this. Find something better.
+            vec.set(GLMatrix_1.RANDOM(), GLMatrix_1.RANDOM(), GLMatrix_1.RANDOM(), GLMatrix_1.RANDOM()).normalize().scale();
+            return vec;
+        }
+    }]);
+    return Vec4;
+}();
+
+var Vec4_1 = Vec4$1;
+
+/**
+ * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/mat3.js
+ * switch to es6 syntax,and change to quote
+ * warning:if you don't want to change the source value,please use mat3.clone().* instead of mat3.*
+ * @author yellow 2017/5/8
+ */
+
+/**
+ * @class
+ */
+
+var Mat3 = function () {
+    /**
+     * Creates a new identity mat3
+     */
+    function Mat3() {
+        classCallCheck(this, Mat3);
+
+        /**
+         * an array to store the 3*3 matrix data
+         * [1,0,0]
+         * [0,1,0]
+         * [0,0,1]
+         * @private 
+        */
+        this._out = new GLMatrix_1.ARRAY_TYPE(9);
+        _out[0] = 1;
+        _out[1] = 0;
+        _out[2] = 0;
+        _out[3] = 0;
+        _out[4] = 1;
+        _out[5] = 0;
+        _out[6] = 0;
+        _out[7] = 0;
+        _out[8] = 1;
+        return this;
+    }
+    /**
+     * adapter for webgl matrix
+     * get the array directly
+     * @memberof mat3
+     * @return {Array}
+     */
+
+
+    createClass(Mat3, [{
+        key: 'set',
+
+        /**
+         * set matrix value
+         */
+        value: function set$$1(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
+            _out[0] = m00;
+            _out[1] = m01;
+            _out[2] = m02;
+            _out[3] = m10;
+            _out[4] = m11;
+            _out[5] = m12;
+            _out[6] = m20;
+            _out[7] = m21;
+            _out[8] = m22;
+            return this;
+        }
+        /**
+         * clone the mat3 matrix
+         * @return {Mat3}
+         */
+
+    }, {
+        key: 'clone',
+        value: function clone() {
+            var mat = new Mat3().set(this._out[0], this._out[1], this._out[2], this._out[3], this._out[4], this._out[5], this._out[6], this._out[7], this._out[8]);
+            return mat;
+        }
+        /**
+         *  Copies the upper-left 3x3 values into the given mat3.
+         *  construct from mat4
+         *  @method fromMat4
+         *  @param {mat3} m
+         *  @return {mat3}
+         */
+
+    }, {
+        key: 'identity',
+
+        /**
+        * Set a mat3 to the identity matrix
+        * @method identity
+        * @param {Mat3} out the receiving matrix
+        * @returns {mat3} out
+        */
+        value: function identity() {
+            _out[0] = 1;
+            _out[1] = 0;
+            _out[2] = 0;
+            _out[3] = 0;
+            _out[4] = 1;
+            _out[5] = 0;
+            _out[6] = 0;
+            _out[7] = 0;
+            _out[8] = 1;
+            return this;
+        }
+        /**
+         * Inverts a mat3
+         * @method invert
+         */
+
+    }, {
+        key: 'invert',
+        value: function invert() {
+            var _out2 = slicedToArray(this._out, 9),
+                a00 = _out2[0],
+                a01 = _out2[1],
+                a02 = _out2[2],
+                a10 = _out2[3],
+                a11 = _out2[4],
+                a12 = _out2[5],
+                a20 = _out2[6],
+                a21 = _out2[7],
+                a22 = _out2[8];
+
+            var b01 = a22 * a11 - a12 * a21,
+                b11 = -a22 * a10 + a12 * a20,
+                b21 = a21 * a10 - a11 * a20;
+            var det = a00 * b01 + a01 * b11 + a02 * b21;
+            if (!det) return null;
+            det = 1.0 / det;
+            this._out[0] = b01 * det;
+            this._out[1] = (-a22 * a01 + a02 * a21) * det;
+            this._out[2] = (a12 * a01 - a02 * a11) * det;
+            this._out[3] = b11 * det;
+            this._out[4] = (a22 * a00 - a02 * a20) * det;
+            this._out[5] = (-a12 * a00 + a02 * a10) * det;
+            this._out[6] = b21 * det;
+            this._out[7] = (-a21 * a00 + a01 * a20) * det;
+            this._out[8] = (a11 * a00 - a01 * a10) * det;
+            return this;
+        }
+        /**
+         * Calculates the adjugate of a mat3
+         * 
+         */
+
+    }, {
+        key: 'adjoint',
+        value: function adjoint() {
+            var _out3 = slicedToArray(this._out, 9),
+                a00 = _out3[0],
+                a01 = _out3[1],
+                a02 = _out3[2],
+                a10 = _out3[3],
+                a11 = _out3[4],
+                a12 = _out3[5],
+                a20 = _out3[6],
+                a21 = _out3[7],
+                a22 = _out3[8];
+
+            this._out[0] = a11 * a22 - a12 * a21;
+            this._out[1] = a02 * a21 - a01 * a22;
+            this._out[2] = a01 * a12 - a02 * a11;
+            this._out[3] = a12 * a20 - a10 * a22;
+            this._out[4] = a00 * a22 - a02 * a20;
+            this._out[5] = a02 * a10 - a00 * a12;
+            this._out[6] = a10 * a21 - a11 * a20;
+            this._out[7] = a01 * a20 - a00 * a21;
+            this._out[8] = a00 * a11 - a01 * a10;
+            return this;
+        }
+        /**
+         * Calculates the determinant of a mat3
+         */
+
+    }, {
+        key: 'determinant',
+        value: function determinant() {
+            var _out4 = slicedToArray(this._out, 9),
+                a00 = _out4[0],
+                a01 = _out4[1],
+                a02 = _out4[2],
+                a10 = _out4[3],
+                a11 = _out4[4],
+                a12 = _out4[5],
+                a20 = _out4[6],
+                a21 = _out4[7],
+                a22 = _out4[8];
+
+            return a00 * (a22 * a11 - a12 * a21) + a01 * (-a22 * a10 + a12 * a20) + a02 * (a21 * a10 - a11 * a20);
+        }
+        /**
+         * Multiplies other mat3
+         * @param {Mat3} mat a matrix 3*3 wait to multiply
+         */
+
+    }, {
+        key: 'multiply',
+        value: function multiply(mat) {
+            var _out5 = slicedToArray(this._out, 9),
+                a00 = _out5[0],
+                a01 = _out5[1],
+                a02 = _out5[2],
+                a10 = _out5[3],
+                a11 = _out5[4],
+                a12 = _out5[5],
+                a20 = _out5[6],
+                a21 = _out5[7],
+                a22 = _out5[8];
+
+            var _mat$value = slicedToArray(mat.value, 9),
+                b00 = _mat$value[0],
+                b01 = _mat$value[1],
+                b02 = _mat$value[2],
+                b10 = _mat$value[3],
+                b11 = _mat$value[4],
+                b12 = _mat$value[5],
+                b20 = _mat$value[6],
+                b21 = _mat$value[7],
+                b22 = _mat$value[8];
+
+            this._out[0] = b00 * a00 + b01 * a10 + b02 * a20;
+            this._out[1] = b00 * a01 + b01 * a11 + b02 * a21;
+            this._out[2] = b00 * a02 + b01 * a12 + b02 * a22;
+            this._out[3] = b10 * a00 + b11 * a10 + b12 * a20;
+            this._out[4] = b10 * a01 + b11 * a11 + b12 * a21;
+            this._out[5] = b10 * a02 + b11 * a12 + b12 * a22;
+            this._out[6] = b20 * a00 + b21 * a10 + b22 * a20;
+            this._out[7] = b20 * a01 + b21 * a11 + b22 * a21;
+            this._out[8] = b20 * a02 + b21 * a12 + b22 * a22;
+            return this;
+        }
+        /**
+         * Translate a mat3 by the given vector
+         * @param {vec2} vec vetor to translate by
+         * @return {mat3} 
+         */
+
+    }, {
+        key: 'translate',
+        value: function translate(vec) {
+            var _out6 = slicedToArray(this._out, 9),
+                a00 = _out6[0],
+                a01 = _out6[1],
+                a02 = _out6[2],
+                a10 = _out6[3],
+                a11 = _out6[4],
+                a12 = _out6[5],
+                a20 = _out6[6],
+                a21 = _out6[7],
+                a22 = _out6[8];
+
+            var _vec$value = slicedToArray(vec.value, 2),
+                x = _vec$value[0],
+                y = _vec$value[1];
+
+            this._out[0] = a00;
+            this._out[1] = a01;
+            this._out[2] = a02;
+            this._out[3] = a10;
+            this._out[4] = a11;
+            this._out[5] = a12;
+            this._out[6] = x * a00 + y * a10 + a20;
+            this._out[7] = x * a01 + y * a11 + a21;
+            this._out[8] = x * a02 + y * a12 + a22;
+            return this;
+        }
+        /**
+         * Rotates a mat3 by the given angle
+         * @param {Number} rad the angle to rotate the matrix by
+         */
+
+    }, {
+        key: 'rotate',
+        value: function rotate(rad) {
+            var _out7 = slicedToArray(this._out, 9),
+                a00 = _out7[0],
+                a01 = _out7[1],
+                a02 = _out7[2],
+                a10 = _out7[3],
+                a11 = _out7[4],
+                a12 = _out7[5],
+                a20 = _out7[6],
+                a21 = _out7[7],
+                a22 = _out7[8];
+
+            var s = Math.sin(rad),
+                c = Math.cos(rad);
+            this._out[0] = c * a00 + s * a10;
+            this._out[1] = c * a01 + s * a11;
+            this._out[2] = c * a02 + s * a12;
+            this._out[3] = c * a10 - s * a00;
+            this._out[4] = c * a11 - s * a01;
+            this._out[5] = c * a12 - s * a02;
+            this._out[6] = a20;
+            this._out[7] = a21;
+            this._out[8] = a22;
+            return this;
+        }
+        /**
+         * Scales the mat3 by the dimensions in the given vec2
+         * @param {vec2} v the vec2 to scale the matrix by
+         */
+
+    }, {
+        key: 'scale',
+        value: function scale(vec) {
+            var _vec$value2 = slicedToArray(vec.value, 2),
+                x = _vec$value2[0],
+                y = _vec$value2[1];
+
+            this._out[0] = x * this._out[0];
+            this._out[1] = x * this._out[1];
+            this._out[2] = x * this._out[2];
+            this._out[3] = y * this._out[3];
+            this._out[4] = y * this._out[4];
+            this._out[5] = y * this._out[5];
+            return this;
+        }
+        /**
+         * Calculates a 3x3 matrix from the given quaternion
+         * @param {quat} q Quaternion to create matrix from
+         */
+
+    }, {
+        key: 'fromQuat',
+        value: function fromQuat(q) {
+            var _q$value = slicedToArray(q.value, 4),
+                x = _q$value[0],
+                y = _q$value[1],
+                z = _q$value[2],
+                w = _q$value[3];
+
+            var x2 = x + x,
+                y2 = y + y,
+                z2 = z + z,
+                xx = x * x2,
+                yx = y * x2,
+                yy = y * y2,
+                zx = z * x2,
+                zy = z * y2,
+                zz = z * z2,
+                wx = w * x2,
+                wy = w * y2,
+                wz = w * z2;
+            var _mat = new Mat3().set(1 - yy - zz, yx + wz, zx - wy, yx - wz, 1 - xx - zz, zy + wx, zx + wy, zy - wx, 1 - xx - yy);
+            return _mat;
+        }
+        /**
+         * 
+         * Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
+         * @param {mat4} mat 
+         */
+
+    }, {
+        key: 'normalFromMat4',
+        value: function normalFromMat4(mat) {
+            var _mat$value2 = slicedToArray(mat.value, 16),
+                a00 = _mat$value2[0],
+                a01 = _mat$value2[1],
+                a02 = _mat$value2[2],
+                a03 = _mat$value2[3],
+                a10 = _mat$value2[4],
+                a11 = _mat$value2[5],
+                a12 = _mat$value2[6],
+                a13 = _mat$value2[7],
+                a20 = _mat$value2[8],
+                a21 = _mat$value2[9],
+                a22 = _mat$value2[10],
+                a23 = _mat$value2[11],
+                a30 = _mat$value2[12],
+                a31 = _mat$value2[13],
+                a32 = _mat$value2[14],
+                a33 = _mat$value2[15];
+
+            var b00 = a00 * a11 - a01 * a10,
+                b01 = a00 * a12 - a02 * a10,
+                b02 = a00 * a13 - a03 * a10,
+                b03 = a01 * a12 - a02 * a11,
+                b04 = a01 * a13 - a03 * a11,
+                b05 = a02 * a13 - a03 * a12,
+                b06 = a20 * a31 - a21 * a30,
+                b07 = a20 * a32 - a22 * a30,
+                b08 = a20 * a33 - a23 * a30,
+                b09 = a21 * a32 - a22 * a31,
+                b10 = a21 * a33 - a23 * a31,
+                b11 = a22 * a33 - a23 * a32;
+            var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+            if (!det) return null;
+            det = 1.0 / det;
+            var m00 = (a11 * b11 - a12 * b10 + a13 * b09) * det,
+                m01 = (a12 * b08 - a10 * b11 - a13 * b07) * det,
+                m02 = (a10 * b10 - a11 * b08 + a13 * b06) * det,
+                m10 = (a02 * b10 - a01 * b11 - a03 * b09) * det,
+                m11 = (a00 * b11 - a02 * b08 + a03 * b07) * det,
+                m12 = (a01 * b08 - a00 * b10 - a03 * b06) * det,
+                m20 = (a31 * b05 - a32 * b04 + a33 * b03) * det,
+                m21 = (a32 * b02 - a30 * b05 - a33 * b01) * det,
+                m22 = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+            var _mat = new Mat3().set(m00, m01, m02, m10, m11, m12, m20, m21, m22);
+            return _mat;
+        }
+        /**
+         * Returns a string representation of a mat3
+         */
+
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return 'mat3(' + this._out[0] + ', ' + this._out[1] + ', ' + this._out[2] + ', ' + this._out[3] + ', ' + this._out[4] + ', ' + this._out[5] + ', ' + this._out[6] + ', ' + this._out[7] + ', ' + this._out[8] + ')';
+        }
+        /**
+         * Returns Frobenius norm of a mat3 
+         * mat3 Frobenius norm
+         */
+
+    }, {
+        key: 'frob',
+        value: function frob() {
+            return Math.sqrt(Math.pow(this._out[0], 2) + Math.pow(this._out[1], 2) + Math.pow(this._out[2], 2) + Math.pow(this._out[3], 2) + Math.pow(this._out[4], 2) + Math.pow(this._out[5], 2) + Math.pow(this._out[6], 2) + Math.pow(this._out[7], 2) + Math.pow(this._out[8], 2));
+        }
+        /**
+         * Adds two mat3's
+         * @param {Mat3} mat 
+         * @return {Mat3}
+         */
+
+    }, {
+        key: 'add',
+        value: function add(mat) {
+            this._out[0] += mat.value[0];
+            this._out[1] += mat.value[1];
+            this._out[2] += mat.value[2];
+            this._out[3] += mat.value[3];
+            this._out[4] += mat.value[4];
+            this._out[5] += mat.value[5];
+            this._out[6] += mat.value[6];
+            this._out[7] += mat.value[7];
+            this._out[8] += mat.value[8];
+            return this;
+        }
+        /**
+         * Subtracts matrix b from matrix a
+         * @param {Mat3} mat 
+         * @return {Mat3}
+         */
+
+    }, {
+        key: 'sub',
+        value: function sub(mat) {
+            this._out[0] -= mat.value[0];
+            this._out[1] -= mat.value[1];
+            this._out[2] -= mat.value[2];
+            this._out[3] -= mat.value[3];
+            this._out[4] -= mat.value[4];
+            this._out[5] -= mat.value[5];
+            this._out[6] -= mat.value[6];
+            this._out[7] -= mat.value[7];
+            this._out[8] -= mat.value[8];
+            return this;
+        }
+        /**
+         * Multiply each element of the matrix by a vec3.
+         * @param {Vec3} vec 
+         */
+
+    }, {
+        key: 'scale',
+        value: function scale(vec) {
+            this._out[0] *= vec.value[0];
+            this._out[0] *= vec.value[0];
+            this._out[0] *= vec.value[0];
+            this._out[0] *= vec.value[1];
+            this._out[0] *= vec.value[1];
+            this._out[0] *= vec.value[1];
+            this._out[0] *= vec.value[2];
+            this._out[0] *= vec.value[2];
+            this._out[0] *= vec.value[2];
+            return this;
+        }
+        /**
+         * @param {any} mat 
+         * @memberof mat3
+         */
+
+    }, {
+        key: 'equals',
+        value: function equals(mat) {
+            var _out8 = slicedToArray(this._out, 9),
+                a0 = _out8[0],
+                a1 = _out8[1],
+                a2 = _out8[2],
+                a3 = _out8[3],
+                a4 = _out8[4],
+                a5 = _out8[5],
+                a6 = _out8[6],
+                a7 = _out8[7],
+                a8 = _out8[8];
+
+            var _mat$value3 = slicedToArray(mat.value, 9),
+                b0 = _mat$value3[0],
+                b1 = _mat$value3[1],
+                b2 = _mat$value3[2],
+                b3 = _mat$value3[3],
+                b4 = _mat$value3[4],
+                b5 = _mat$value3[5],
+                b6 = _mat$value3[6],
+                b7 = _mat$value3[7],
+                b8 = _mat$value3[8];
+
+            return Math.abs(a0 - b0) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) && Math.abs(a4 - b4) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) && Math.abs(a5 - b5) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) && Math.abs(a6 - b6) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) && Math.abs(a7 - b7) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)) && Math.abs(a8 - b8) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a8), Math.abs(b8));
+        }
+    }, {
+        key: 'value',
+        get: function get$$1() {
+            return this._out;
+        }
+    }], [{
+        key: 'fromMat4',
+        value: function fromMat4(m) {
+            var mat = new Mat3();
+            mat.set(m.value[0], m.value[1], m.value[2], m.value[4], m.value[5], m.value[6], m.value[8], m.value[9], m.value[10]);
+            return mat;
+        }
+    }]);
+    return Mat3;
+}();
+
+var Mat3_1 = Mat3;
+
+/**
+ * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/quat.js
+ * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use quat.clone().* instead of quat.*
+ * @author yellow 2017/5/10
+ */
+
+/**
+ * @class Quaternion
+ * @name quat
+ */
+
+var Quat = function () {
+    /**
+     * Creates a new identity quat
+     */
+    function Quat() {
+        classCallCheck(this, Quat);
+
+        /**
+         * quat array store
+         * @private
+         */
+        this._out = new GLMatrix_1.ARRAY_TYPE(4);
+        this._out[0] = 0;
+        this._out[1] = 0;
+        this._out[2] = 0;
+        this._out[3] = 1;
+    }
+    /**
+     * adapter for webgl matrix
+     * get the array directly
+     * @memberof quat
+     * @return {Array}
+     */
+
+
+    createClass(Quat, [{
+        key: 'set',
+
+        /**
+         * set the value of quat
+         */
+        value: function set$$1(x, y, z, w) {
+            this._out[0] = x;
+            this._out[1] = y;
+            this._out[2] = z;
+            this._out[3] = w;
+            return this;
+        }
+        /**
+         * Creates a new quat initialized with values from an existing quaternion
+         */
+
+    }, {
+        key: 'clone',
+        value: function clone() {
+            var qua = new Quat();
+            qua.set(qua._out[0], qua._out[1], qua._out[2], qua._out[3]);
+            return qua;
+        }
+        /**
+         * Set a quat to the identity quaternion
+         */
+
+    }, {
+        key: 'identity',
+        value: function identity() {
+            this._out[0] = 0;
+            this._out[1] = 0;
+            this._out[2] = 0;
+            this._out[3] = 1;
+            return this;
+        }
+        /**
+         * @param {Vec3} vI the initial vector
+         * @param {Vec3} vII the destination vector
+         * 
+         */
+
+    }, {
+        key: 'rotationTo',
+        value: function rotationTo(vI, vII) {
+            this.r1 = this.r1 || new Vec3_1();
+            this.r2 = this.r2 || new Vec3_1().set(1, 0, 0);
+            this.r3 = this.r3 || new Vec3_1().set(0, 1, 0);
+            //
+            var dot = vI.dot(vII);
+            if (dot < -0.999999) {
+                this.r1 = this.r3.clone().cross(vI);
+                if (this.r1.len() < 0.000001) {
+                    this.r1 = this.r3.clone().cross(vI);
+                }
+                this.r3.normalize();
+                this.setAxisAngle(this.r1, Math.PI);
+                return this;
+            } else if (dot > 0.999999) {
+                this._out[0] = 0;
+                this._out[1] = 0;
+                this._out[2] = 0;
+                this._out[3] = 1;
+                return this;
+            } else {
+                this.r1 = vI.clone().cross(vII);
+                this._out[0] = tmpvec3[0];
+                this._out[1] = tmpvec3[1];
+                this._out[2] = tmpvec3[2];
+                this._out[3] = 1 + dot;
+                return this.normalize();
+            }
+        }
+        /**
+         * Sets the specified quaternion with values corresponding to the given
+         * axes. Each axis is a vec3 and is expected to be unit length and
+         * perpendicular to all other specified axes.
+         * @param {Vec3} vecView  the vector representing the viewing direction
+         * @param {Vec3} vecRight the vector representing the local "right" direction
+         * @param {Vec3} vecUp    the vector representing the local "up" direction
+         */
+
+    }, {
+        key: 'setAxes',
+        value: function setAxes(vecView, vecRight, vecUp) {
+            var mat = new Mat3_1().set(vecRight._out[0], vecUp._out[0], -vecView._out[0], vecRight._out[1], vecUp._out[1], -vecView._out[1], vecRight._out[2], vecUp._out[2], -vecView._out[2]);
+            return Quat.fromMat3(mat);
+        }
+        /**
+         * Sets a quat from the given angle and rotation axis,
+         * then returns it.
+         * @param {Vec3} axis the axis around which to rotate
+         * @param {number} rad
+         */
+
+    }, {
+        key: 'setAxisAngle',
+        value: function setAxisAngle(axis, rad) {
+            rad = rad * 0.5;
+            var s = Math.sin(rad);
+            this._out[0] = s * axis._out[0];
+            this._out[1] = s * axis._out[1];
+            this._out[2] = s * axis._out[2];
+            this._out[3] = Math.cos(rad);
+            return this;
+        }
+        /**
+         * Gets the rotation axis and angle for a given quaternion. 
+         * If a quaternion is created with setAxisAngle, 
+         * this method will return the same values as providied in the original parameter list OR functionally equivalent values.
+         * @example The quaternion formed by axis [0, 0, 1] and angle -90 is the same as the quaternion formed by [0, 0, 1] and 270. 
+         *          This method favors the latter.
+         * @return [axis,angle]
+         */
+
+    }, {
+        key: 'getAxisAngle',
+        value: function getAxisAngle() {
+            var rad = Math.acos(this._out[3]) * 2.0,
+                s = Math.sin(rad / 2.0);
+            var axis = new Vec3_1();
+            s === 0.0 ? axis.set(1, 0, 0) : axis.set(q[0] / s, q[1] / s, q[2] / s);
+            return [axis, rad];
+        }
+        /**
+         * add two quat's
+         * @param {Quat} qua 
+         */
+
+    }, {
+        key: 'add',
+        value: function add(qua) {
+            this._out[0] += qua._out[0];
+            this._out[1] += qua._out[1];
+            this._out[2] += qua._out[2];
+            this._out[3] += qua._out[3];
+            return this;
+        }
+        /**
+         * Multiplies two quat's
+         */
+
+    }, {
+        key: 'multiply',
+        value: function multiply(qua) {
+            var _out = slicedToArray(this._out, 4),
+                ax = _out[0],
+                ay = _out[1],
+                az = _out[2],
+                aw = _out[3],
+                _qua$_out = slicedToArray(qua._out, 4),
+                bx = _qua$_out[0],
+                by = _qua$_out[1],
+                bz = _qua$_out[2],
+                bw = _qua$_out[3];
+
+            this._out[0] = ax * bw + aw * bx + ay * bz - az * by;
+            this._out[1] = ay * bw + aw * by + az * bx - ax * bz;
+            this._out[2] = az * bw + aw * bz + ax * by - ay * bx;
+            this._out[3] = aw * bw - ax * bx - ay * by - az * bz;
+            return this;
+        }
+        /**
+         * @param {number} s
+         */
+
+    }, {
+        key: 'scale',
+        value: function scale(s) {
+            this._out[0] *= s;
+            this._out[1] *= s;
+            this._out[2] *= s;
+            this._out[3] *= s;
+            return this;
+        }
+        /**
+         * Rotates a quaternion by the given angle about the X axis
+         * @param {number} rad angle (in radians) to rotate
+         */
+
+    }, {
+        key: 'rotateX',
+        value: function rotateX(rad) {
+            rad *= 0.5;
+
+            var _out2 = slicedToArray(this._out, 4),
+                ax = _out2[0],
+                ay = _out2[1],
+                az = _out2[2],
+                aw = _out2[3],
+                bx = Math.sin(rad),
+                bw = Math.cos(rad);
+
+            this._out[0] = ax * bw + aw * bx;
+            this._out[1] = ay * bw + az * bx;
+            this._out[2] = az * bw - ay * bx;
+            this._out[3] = aw * bw - ax * bx;
+            return this;
+        }
+        /**
+         * Rotates a quaternion by the given angle about the Y axis
+         * @param {number} rad angle (in radians) to rotate
+         */
+
+    }, {
+        key: 'rotateY',
+        value: function rotateY(rad) {
+            rad *= 0.5;
+
+            var _out3 = slicedToArray(this._out, 4),
+                ax = _out3[0],
+                ay = _out3[1],
+                az = _out3[2],
+                aw = _out3[3],
+                by = Math.sin(rad),
+                bw = Math.cos(rad);
+
+            this._out[0] = ax * bw - az * by;
+            this._out[1] = ay * bw + aw * by;
+            this._out[2] = az * bw + ax * by;
+            this._out[3] = aw * bw - ay * by;
+            return this;
+        }
+        /**
+         * Rotates a quaternion by the given angle about the Z axis
+         * @param {number} rad angle (in radians) to rotate
+         */
+
+    }, {
+        key: 'rotateZ',
+        value: function rotateZ(rad) {
+            rad *= 0.5;
+
+            var _out4 = slicedToArray(this._out, 4),
+                ax = _out4[0],
+                ay = _out4[1],
+                az = _out4[2],
+                aw = _out4[3],
+                bz = Math.sin(rad),
+                bw = Math.cos(rad);
+
+            out[0] = ax * bw + ay * bz;
+            this._out[1] = ay * bw - ax * bz;
+            this._out[2] = az * bw + aw * bz;
+            this._out[3] = aw * bw - az * bz;
+            return this;
+        }
+        /**
+         * Calculates the W component of a quat from the X, Y, and Z components.
+         * Assumes that quaternion is 1 unit in length
+         * Any existing W component will be ignored.
+         */
+
+    }, {
+        key: 'calculateW',
+        value: function calculateW() {
+            var _out5 = slicedToArray(this._out, 4),
+                x = _out5[0],
+                y = _out5[1],
+                z = _out5[2],
+                w = _out5[3];
+
+            this._out[3] = Math.sqrt(Math.abs(1.0 - x * x - y * y - z * z));
+            return this;
+        }
+        /**
+         * Calculates the dot product of two quat's
+         * @return {number} dot product of two quat's
+         */
+
+    }, {
+        key: 'dot',
+        value: function dot(qua) {
+            var _out6 = slicedToArray(this._out, 4),
+                x0 = _out6[0],
+                y0 = _out6[1],
+                z0 = _out6[2],
+                w0 = _out6[3],
+                _qua$_out2 = slicedToArray(qua._out, 4),
+                x1 = _qua$_out2[0],
+                y1 = _qua$_out2[1],
+                z1 = _qua$_out2[2],
+                w1 = _qua$_out2[3];
+
+            return x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1;
+        }
+        /**
+         * Performs a linear interpolation between two quat's
+         * @param {Quat} qua the second operand
+         * @param {Number} t interpolation amount between the two inputs
+         */
+
+    }, {
+        key: 'lerp',
+        value: function lerp(qua, t) {
+            var _out7 = slicedToArray(this._out, 4),
+                ax = _out7[0],
+                ay = _out7[1],
+                az = _out7[2],
+                aw = _out7[3];
+
+            this._out[0] = ax + t * (qua._out[0] - ax);
+            this._out[1] = ay + t * (qua._out[1] - ay);
+            this._out[2] = az + t * (qua._out[2] - az);
+            this._out[3] = aw + t * (qua._out[3] - aw);
+            return this;
+        }
+        /**
+         * Performs a spherical linear interpolation between two quat
+         * benchmarks: http://jsperf.com/quaternion-slerp-implementations
+         */
+
+    }, {
+        key: 'slerp',
+        value: function slerp(qua, t) {
+            var _out8 = slicedToArray(this._out, 4),
+                ax = _out8[0],
+                ay = _out8[1],
+                az = _out8[2],
+                aw = _out8[3],
+                _qua$_out3 = slicedToArray(qua._out, 4),
+                bx = _qua$_out3[0],
+                by = _qua$_out3[1],
+                bz = _qua$_out3[2],
+                bw = _qua$_out3[3];
+
+            var omega = void 0,
+                cosom = void 0,
+                sinom = void 0,
+                scale0 = void 0,
+                scale1 = void 0;
+            // calc cosine
+            cosom = ax * bx + ay * by + az * bz + aw * bw;
+            // adjust signs (if necessary)
+            if (cosom < 0.0) {
+                cosom = -cosom;
+                bx = -bx;
+                by = -by;
+                bz = -bz;
+                bw = -bw;
+            }
+            // calculate coefficients
+            if (1.0 - cosom > 0.000001) {
+                // standard case (slerp)
+                omega = Math.acos(cosom);
+                sinom = Math.sin(omega);
+                scale0 = Math.sin((1.0 - t) * omega) / sinom;
+                scale1 = Math.sin(t * omega) / sinom;
+            } else {
+                // "from" and "to" quaternions are very close 
+                //  ... so we can do a linear interpolation
+                scale0 = 1.0 - t;
+                scale1 = t;
+            }
+            // calculate final values
+            this._out[0] = scale0 * ax + scale1 * bx;
+            this._out[1] = scale0 * ay + scale1 * by;
+            this._out[2] = scale0 * az + scale1 * bz;
+            this._out[3] = scale0 * aw + scale1 * bw;
+            return this;
+        }
+        /**
+         * Performs a spherical linear interpolation with two control points
+         * @param {Quat} quaI
+         * @param {Quat} quaII
+         * @param {Quat} quaIII
+         * @return
+         */
+
+    }, {
+        key: 'sqlerp',
+        value: function sqlerp(quaI, quaII, quaIII, t) {
+            this.sqlery1 = this.sqlery1 || new Quat();
+            this.sqlery2 = this.sqlery1 || new Quat();
+            //a.slerp(d,t)  b.slerp(c,t)
+            this.sqlery1 = this.clone().slerp(quaIII, t);
+            this.sqlery2 = quaI.clone().slerp(quaII, t);
+            var qua = this.sqlery1.clone().slerp(this.sqlery2, 2 * t * (1 - t));
+            return qua;
+        }
+        /**
+         * Calculates the inverse of a quat
+         * @return {Quat} the inversed quat 
+         */
+
+    }, {
+        key: 'invert',
+        value: function invert() {
+            var _out9 = slicedToArray(this._out, 4),
+                a0 = _out9[0],
+                a1 = _out9[1],
+                a2 = _out9[2],
+                a3 = _out9[3],
+                dot = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3,
+                invDot = dot ? 1.0 / dot : 0;
+
+            this._out[0] = -a0 * invDot;
+            this._out[1] = -a1 * invDot;
+            this._out[2] = -a2 * invDot;
+            this._out[3] = a3 * invDot;
+            return this;
+        }
+        /**
+         * Calculates the conjugate of a quat
+         * If the quaternion is normalized, this function is faster than quat.inverse and produces the same result.
+         */
+
+    }, {
+        key: 'conjugate',
+        value: function conjugate() {
+            this._out[0] = -this._out[0];
+            this._out[1] = -this._out[1];
+            this._out[2] = -this._out[2];
+            //this._out[3] = this._out[3]; omit to reduce assignment operation
+            return this;
+        }
+        /**
+         * retrun the length of quat
+         * @return {number} 
+         */
+
+    }, {
+        key: 'len',
+        value: function len() {
+            var _out10 = slicedToArray(this._out, 4),
+                x = _out10[0],
+                y = _out10[1],
+                z = _out10[2],
+                w = _out10[3];
+
+            return Math.sqrt(x * x + y * y + z * z + w * w);
+        }
+        /**
+         * Normalize a quat
+         */
+
+    }, {
+        key: 'normalize',
+        value: function normalize() {
+            var len = this.len();
+            if (len > 0) {
+                len = 1.0 / len;
+                this._out[0] *= len;
+                this._out[0] *= len;
+                this._out[0] *= len;
+                this._out[0] *= len;
+            }
+            return this;
+        }
+        /**
+         * Returns a string representation of a quatenion
+         * @returns {String} string representation of the vector
+         */
+
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return 'quat(' + this._out[0] + ', ' + this._out[1] + ', ' + this._out[2] + ', ' + this._out[3] + ')';
+        }
+        /**
+         * Returns whether or not the quat have approximately the same elements in the same position.
+         * @param 
+         */
+
+    }, {
+        key: 'equals',
+        value: function equals(qua) {
+            var _out11 = slicedToArray(this._out, 4),
+                a0 = _out11[0],
+                a1 = _out11[1],
+                a2 = _out11[2],
+                a3 = _out11[3],
+                _qua$_out4 = slicedToArray(qua._out, 4),
+                b0 = _qua$_out4[0],
+                b1 = _qua$_out4[1],
+                b2 = _qua$_out4[2],
+                b3 = _qua$_out4[3];
+
+            return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3));
+        }
+    }, {
+        key: 'value',
+        get: function get$$1() {
+            return this._out;
+        }
+        /**
+         * generic a quat from mat3
+         * @param {mat3} mat the 3x3 matrix 
+         */
+
+    }], [{
+        key: 'fromMat3',
+        value: function fromMat3(mat) {
+            // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+            // article "Quaternion Calculus and Fast Animation".
+            var fTrace = mat._out[0] + mat._out[4] + mat._out[8],
+                qua = new Quat(),
+                fRoot = void 0;
+            if (fTrace > 0.0) {
+                // |w| > 1/2, may as well choose w > 1/2
+                fRoot = Math.sqrt(fTrace + 1.0); // 2w
+                out[3] = 0.5 * fRoot;
+                fRoot = 0.5 / fRoot; // 1/(4w)
+                qua._out[0] = (mat._out[5] - mat._out[7]) * fRoot;
+                qua._out[1] = (mat._out[6] - mat._out[2]) * fRoot;
+                qua._out[2] = (mat._out[1] - mat._out[3]) * fRoot;
+            } else {
+                // |w| <= 1/2
+                var i = 0;
+                if (m[4] > m[0]) i = 1;
+                if (m[8] > m[i * 3 + i]) i = 2;
+                var j = (i + 1) % 3;
+                var k = (i + 2) % 3;
+                fRoot = Math.sqrt(mat._out[i * 3 + i] - mat._out[j * 3 + j] - mat._out[k * 3 + k] + 1.0);
+                out[i] = 0.5 * fRoot;
+                fRoot = 0.5 / fRoot;
+                qua._out[3] = (mat._out[j * 3 + k] - mat._out[k * 3 + j]) * fRoot;
+                qua._out[j] = (mat._out[j * 3 + i] + mat._out[i * 3 + j]) * fRoot;
+                qua._out[k] = (mat._out[k * 3 + i] + mat._out[i * 3 + k]) * fRoot;
+            }
+            return this;
+        }
+    }]);
+    return Quat;
+}();
+
+var Quat_1 = Quat;
+
+/**
+ * reference https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/mat4.js
+ * switch to es6 syntax
+ * warning:if you don't want to change the source value,please use mat4.clone().* instead of mat4.* (* means matrix operations)
+ * @author yellow 2017/5/10
+ * translation:
+ * [1, 0, 0, 0,
+ *  0, 1, 0, 0,
+ *  0, 0, 1, 0,
+ *  tx,ty,tz,1]
+ * x-rotation:
+ * [1, 0, 0, 0,
+ *  0, c, s, 0,
+ *  0,-s, c, 0,
+ *  0, 0, 0, 1]
+ * y-rotation:
+ * [c, 0,-s, 0,
+ *  0, 1, 0, 0,
+ *  s, 0, c, 0,
+ *  0, 0, 0, 1]
+ * z-rotation:
+ * [c, s, 0, 0,
+ *  -s,c, s, 0,
+ *  0, 0, 1, 0,
+ *  0, 0, 0, 1]
+ * scale:
+ * [sx,0, 0, 0,
+ *  0, sy,0, 0,
+ *  0, 0, sz,0,
+ *  0, 0, 0, 1]
+ * notice that multlpy as translation*vec
+ */
+
+/**
+ * @class
+ */
+
+var Mat4$1 = function () {
+    /**
+     *  Creates a new identity mat4
+     */
+    function Mat4() {
+        classCallCheck(this, Mat4);
+
+        /**
+         * 4x4 matrix array store
+         * @private
+         */
+        this._out = new GLMatrix_1.ARRAY_TYPE(16);
+        this._out[0] = 1;
+        this._out[1] = 0;
+        this._out[2] = 0;
+        this._out[3] = 0;
+        this._out[4] = 0;
+        this._out[5] = 1;
+        this._out[6] = 0;
+        this._out[7] = 0;
+        this._out[8] = 0;
+        this._out[9] = 0;
+        this._out[10] = 1;
+        this._out[11] = 0;
+        this._out[12] = 0;
+        this._out[13] = 0;
+        this._out[14] = 0;
+        this._out[15] = 1;
+        return this;
+    }
+    /**
+     * adapter for webgl matrix
+     * get the array directly
+     * @memberof mat4
+     * @return {Array}
+     */
+
+
+    createClass(Mat4, [{
+        key: 'set',
+
+        /**
+         * set the value of 4x4 matrix
+         */
+        value: function set$$1(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
+            this._out[0] = m00;
+            this._out[1] = m01;
+            this._out[2] = m02;
+            this._out[3] = m03;
+            this._out[4] = m10;
+            this._out[5] = m11;
+            this._out[6] = m12;
+            this._out[7] = m13;
+            this._out[8] = m20;
+            this._out[9] = m21;
+            this._out[10] = m22;
+            this._out[11] = m23;
+            this._out[12] = m30;
+            this._out[13] = m31;
+            this._out[14] = m32;
+            this._out[15] = m33;
+            return this;
+        }
+        /**
+         * Creates a new mat4 initialized with values from an existing matrix
+         */
+
+    }, {
+        key: 'clone',
+        value: function clone() {
+            var mat = new Mat4();
+            mat.set(this._out[0], this._out[1], this._out[2], this._out[3], this._out[4], this._out[5], this._out[6], this._out[7], this._out[8], this._out[9], this._out[10], this._out[11], this._out[12], this._out[13], this._out[14], this._out[15]);
+            return mat;
+        }
+        /**
+         * Set a mat4 to the identity matrix
+         */
+
+    }, {
+        key: 'identity',
+        value: function identity() {
+            this.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            return this;
+        }
+        /**
+         * Inverts a mat4
+         */
+
+    }, {
+        key: 'invert',
+        value: function invert() {
+            //deconstruction assignment
+            var _out = slicedToArray(this._out, 16),
+                a00 = _out[0],
+                a01 = _out[1],
+                a02 = _out[2],
+                a03 = _out[3],
+                a10 = _out[4],
+                a11 = _out[5],
+                a12 = _out[6],
+                a13 = _out[7],
+                a20 = _out[8],
+                a21 = _out[9],
+                a22 = _out[10],
+                a23 = _out[11],
+                a30 = _out[12],
+                a31 = _out[13],
+                a32 = _out[14],
+                a33 = _out[15],
+                b00 = a00 * a11 - a01 * a10,
+                b01 = a00 * a12 - a02 * a10,
+                b02 = a00 * a13 - a03 * a10,
+                b03 = a01 * a12 - a02 * a11,
+                b04 = a01 * a13 - a03 * a11,
+                b05 = a02 * a13 - a03 * a12,
+                b06 = a20 * a31 - a21 * a30,
+                b07 = a20 * a32 - a22 * a30,
+                b08 = a20 * a33 - a23 * a30,
+                b09 = a21 * a32 - a22 * a31,
+                b10 = a21 * a33 - a23 * a31,
+                b11 = a22 * a33 - a23 * a32;
+            // Calculate the determinant
+
+
+            var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+            if (!det) return null;
+            det = 1.0 / det;
+            this._out = [(a11 * b11 - a12 * b10 + a13 * b09) * det, (a02 * b10 - a01 * b11 - a03 * b09) * det, (a31 * b05 - a32 * b04 + a33 * b03) * det, (a22 * b04 - a21 * b05 - a23 * b03) * det, (a12 * b08 - a10 * b11 - a13 * b07) * det, (a00 * b11 - a02 * b08 + a03 * b07) * det, (a32 * b02 - a30 * b05 - a33 * b01) * det, (a20 * b05 - a22 * b02 + a23 * b01) * det, (a10 * b10 - a11 * b08 + a13 * b06) * det, (a01 * b08 - a00 * b10 - a03 * b06) * det, (a30 * b04 - a31 * b02 + a33 * b00) * det, (a21 * b02 - a20 * b04 - a23 * b00) * det, (a11 * b07 - a10 * b09 - a12 * b06) * det, (a00 * b09 - a01 * b07 + a02 * b06) * det, (a31 * b01 - a30 * b03 - a32 * b00) * det, (a20 * b03 - a21 * b01 + a22 * b00) * det];
+            return this;
+        }
+        /**
+         * Calculates the adjugate of a mat4 not using SIMD
+         */
+
+    }, {
+        key: 'adjoint',
+        value: function adjoint() {
+            var _out2 = slicedToArray(this._out, 16),
+                a00 = _out2[0],
+                a01 = _out2[1],
+                a02 = _out2[2],
+                a03 = _out2[3],
+                a10 = _out2[4],
+                a11 = _out2[5],
+                a12 = _out2[6],
+                a13 = _out2[7],
+                a20 = _out2[8],
+                a21 = _out2[9],
+                a22 = _out2[10],
+                a23 = _out2[11],
+                a30 = _out2[12],
+                a31 = _out2[13],
+                a32 = _out2[14],
+                a33 = _out2[15];
+
+            this._out[0] = a11 * (a22 * a33 - a23 * a32) - a21 * (a12 * a33 - a13 * a32) + a31 * (a12 * a23 - a13 * a22);
+            this._out[1] = -(a01 * (a22 * a33 - a23 * a32) - a21 * (a02 * a33 - a03 * a32) + a31 * (a02 * a23 - a03 * a22));
+            this._out[2] = a01 * (a12 * a33 - a13 * a32) - a11 * (a02 * a33 - a03 * a32) + a31 * (a02 * a13 - a03 * a12);
+            this._out[3] = -(a01 * (a12 * a23 - a13 * a22) - a11 * (a02 * a23 - a03 * a22) + a21 * (a02 * a13 - a03 * a12));
+            this._out[4] = -(a10 * (a22 * a33 - a23 * a32) - a20 * (a12 * a33 - a13 * a32) + a30 * (a12 * a23 - a13 * a22));
+            this._out[5] = a00 * (a22 * a33 - a23 * a32) - a20 * (a02 * a33 - a03 * a32) + a30 * (a02 * a23 - a03 * a22);
+            this._out[6] = -(a00 * (a12 * a33 - a13 * a32) - a10 * (a02 * a33 - a03 * a32) + a30 * (a02 * a13 - a03 * a12));
+            this._out[7] = a00 * (a12 * a23 - a13 * a22) - a10 * (a02 * a23 - a03 * a22) + a20 * (a02 * a13 - a03 * a12);
+            this._out[8] = a10 * (a21 * a33 - a23 * a31) - a20 * (a11 * a33 - a13 * a31) + a30 * (a11 * a23 - a13 * a21);
+            this._out[9] = -(a00 * (a21 * a33 - a23 * a31) - a20 * (a01 * a33 - a03 * a31) + a30 * (a01 * a23 - a03 * a21));
+            this._out[10] = a00 * (a11 * a33 - a13 * a31) - a10 * (a01 * a33 - a03 * a31) + a30 * (a01 * a13 - a03 * a11);
+            this._out[11] = -(a00 * (a11 * a23 - a13 * a21) - a10 * (a01 * a23 - a03 * a21) + a20 * (a01 * a13 - a03 * a11));
+            this._out[12] = -(a10 * (a21 * a32 - a22 * a31) - a20 * (a11 * a32 - a12 * a31) + a30 * (a11 * a22 - a12 * a21));
+            this._out[13] = a00 * (a21 * a32 - a22 * a31) - a20 * (a01 * a32 - a02 * a31) + a30 * (a01 * a22 - a02 * a21);
+            this._out[14] = -(a00 * (a11 * a32 - a12 * a31) - a10 * (a01 * a32 - a02 * a31) + a30 * (a01 * a12 - a02 * a11));
+            this._out[15] = a00 * (a11 * a22 - a12 * a21) - a10 * (a01 * a22 - a02 * a21) + a20 * (a01 * a12 - a02 * a11);
+            return this;
+        }
+        /**
+         * Calculates the determinant of a mat4
+         * @return {number} determinant of this matrix
+         */
+
+    }, {
+        key: 'determinant',
+        value: function determinant() {
+            var _out3 = slicedToArray(this._out, 16),
+                a00 = _out3[0],
+                a01 = _out3[1],
+                a02 = _out3[2],
+                a03 = _out3[3],
+                a10 = _out3[4],
+                a11 = _out3[5],
+                a12 = _out3[6],
+                a13 = _out3[7],
+                a20 = _out3[8],
+                a21 = _out3[9],
+                a22 = _out3[10],
+                a23 = _out3[11],
+                a30 = _out3[12],
+                a31 = _out3[13],
+                a32 = _out3[14],
+                a33 = _out3[15];
+
+            var b00 = a00 * a11 - a01 * a10,
+                b01 = a00 * a12 - a02 * a10,
+                b02 = a00 * a13 - a03 * a10,
+                b03 = a01 * a12 - a02 * a11,
+                b04 = a01 * a13 - a03 * a11,
+                b05 = a02 * a13 - a03 * a12,
+                b06 = a20 * a31 - a21 * a30,
+                b07 = a20 * a32 - a22 * a30,
+                b08 = a20 * a33 - a23 * a30,
+                b09 = a21 * a32 - a22 * a31,
+                b10 = a21 * a33 - a23 * a31,
+                b11 = a22 * a33 - a23 * a32;
+            // Calculate the determinant
+            return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+        }
+        /**
+         * Multiplies two mat4's explicitly not using SIMD
+         * @param {Mat4} mat
+         */
+
+    }, {
+        key: 'multiply',
+        value: function multiply(mat) {
+            var _out4 = slicedToArray(this._out, 16),
+                a00 = _out4[0],
+                a01 = _out4[1],
+                a02 = _out4[2],
+                a03 = _out4[3],
+                a10 = _out4[4],
+                a11 = _out4[5],
+                a12 = _out4[6],
+                a13 = _out4[7],
+                a20 = _out4[8],
+                a21 = _out4[9],
+                a22 = _out4[10],
+                a23 = _out4[11],
+                a30 = _out4[12],
+                a31 = _out4[13],
+                a32 = _out4[14],
+                a33 = _out4[15];
+            // Cache only the current line of the second matrix
+
+
+            var b0 = mat.value[0],
+                b1 = mat.value[1],
+                b2 = mat.value[2],
+                b3 = mat.value[3];
+            this._out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+            this._out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+            this._out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+            this._out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+            b0 = mat.value[4];b1 = mat.value[5];b2 = mat.value[6];b3 = mat.value[7];
+            this._out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+            this._out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+            this._out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+            this._out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+            b0 = mat.value[8];b1 = mat.value[9];b2 = mat.value[10];b3 = mat.value[11];
+            this._out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+            this._out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+            this._out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+            this._out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+            b0 = mat.value[12];b1 = mat.value[13];b2 = mat.value[14];b3 = mat.value[15];
+            this._out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+            this._out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+            this._out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+            this._out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+            return this;
+        }
+        /**
+         * add two 4x4 matrixs 
+         */
+
+    }, {
+        key: 'add',
+        value: function add(mat) {
+            this._out[0] += mat.value[0];
+            this._out[1] += mat.value[1];
+            this._out[2] += mat.value[2];
+            this._out[3] += mat.value[3];
+            this._out[4] += mat.value[4];
+            this._out[5] += mat.value[5];
+            this._out[6] += mat.value[6];
+            this._out[7] += mat.value[7];
+            this._out[8] += mat.value[8];
+            this._out[9] += mat.value[9];
+            this._out[10] += mat.value[10];
+            this._out[11] += mat.value[11];
+            this._out[12] += mat.value[12];
+            this._out[13] += mat.value[13];
+            this._out[14] += mat.value[14];
+            this._out[15] += mat.value[15];
+            return this;
+        }
+        /**
+         * Translate a mat4 by the given vector not using SIMD
+         * @param {Vec3} v3 vector to translate by
+         * @return {Mat4}
+         * @example
+         *  let m4=new mat4();
+         *  m4.translate(new vec3(1,0,4));
+         *  m4.getTranslation(); 
+         */
+
+    }, {
+        key: 'translate',
+        value: function translate(v3) {
+            var _v3$value = slicedToArray(v3.value, 3),
+                x = _v3$value[0],
+                y = _v3$value[1],
+                z = _v3$value[2],
+                _out5 = slicedToArray(this._out, 16),
+                a00 = _out5[0],
+                a01 = _out5[1],
+                a02 = _out5[2],
+                a03 = _out5[3],
+                a10 = _out5[4],
+                a11 = _out5[5],
+                a12 = _out5[6],
+                a13 = _out5[7],
+                a20 = _out5[8],
+                a21 = _out5[9],
+                a22 = _out5[10],
+                a23 = _out5[11],
+                a30 = _out5[12],
+                a31 = _out5[13],
+                a32 = _out5[14],
+                a33 = _out5[15];
+
+            this._out[12] = a00 * x + a10 * y + a20 * z + a30;
+            this._out[13] = a01 * x + a11 * y + a21 * z + a31;
+            this._out[14] = a02 * x + a12 * y + a22 * z + a32;
+            this._out[15] = a03 * x + a13 * y + a23 * z + a33;
+            return this;
+        }
+        /**
+         * Scales the mat4 by the dimensions in the given vec3 not using vectorization
+         * @param {Vec3} vec the vec3 to scale the matrix by
+         */
+
+    }, {
+        key: 'scale',
+        value: function scale(vec) {
+            var _vec$_out = slicedToArray(vec._out, 3),
+                x = _vec$_out[0],
+                y = _vec$_out[1],
+                z = _vec$_out[2];
+
+            this._out[0] *= x;
+            this._out[1] *= x;
+            this._out[2] *= x;
+            this._out[3] *= x;
+            this._out[4] *= y;
+            this._out[5] *= y;
+            this._out[6] *= y;
+            this._out[7] *= y;
+            this._out[8] *= z;
+            this._out[9] *= z;
+            this._out[10] *= z;
+            this._out[11] *= z;
+            return this;
+        }
+        /**
+         * Rotates a mat4 by the given angle around the given axis
+         * @param {number} rad the angle to rotate the matrix by
+         * @param {Vec3} axis the axis to rotate around
+         */
+
+    }, {
+        key: 'rotate',
+        value: function rotate(rad, axis) {
+            var _axis$_out = slicedToArray(axis._out, 3),
+                x = _axis$_out[0],
+                y = _axis$_out[1],
+                z = _axis$_out[2],
+                len = axis.len(),
+                s,
+                c,
+                t,
+                a00,
+                a01,
+                a02,
+                a03,
+                a10,
+                a11,
+                a12,
+                a13,
+                a20,
+                a21,
+                a22,
+                a23,
+                b00,
+                b01,
+                b02,
+                b10,
+                b11,
+                b12,
+                b20,
+                b21,
+                b22;
+
+            if (Math.abs(len) < GLMatrix_1.EPSILON) {
+                return null;
+            }
+            len = 1.0 / len;
+            x *= len;
+            y *= len;
+            z *= len;
+            s = Math.sin(rad);
+            c = Math.cos(rad);
+            t = 1 - c;
+            a00 = a[0];a01 = a[1];a02 = a[2];a03 = a[3];
+            a10 = a[4];a11 = a[5];a12 = a[6];a13 = a[7];
+            a20 = a[8];a21 = a[9];a22 = a[10];a23 = a[11];
+            // Construct the elements of the rotation matrix
+            b00 = x * x * t + c;b01 = y * x * t + z * s;b02 = z * x * t - y * s;
+            b10 = x * y * t - z * s;b11 = y * y * t + c;b12 = z * y * t + x * s;
+            b20 = x * z * t + y * s;b21 = y * z * t - x * s;b22 = z * z * t + c;
+            // Perform rotation-specific matrix multiplication
+            this._out[0] = a00 * b00 + a10 * b01 + a20 * b02;
+            this._out[1] = a01 * b00 + a11 * b01 + a21 * b02;
+            this._out[2] = a02 * b00 + a12 * b01 + a22 * b02;
+            this._out[3] = a03 * b00 + a13 * b01 + a23 * b02;
+            this._out[4] = a00 * b10 + a10 * b11 + a20 * b12;
+            this._out[5] = a01 * b10 + a11 * b11 + a21 * b12;
+            this._out[6] = a02 * b10 + a12 * b11 + a22 * b12;
+            this._out[7] = a03 * b10 + a13 * b11 + a23 * b12;
+            this._out[8] = a00 * b20 + a10 * b21 + a20 * b22;
+            this._out[9] = a01 * b20 + a11 * b21 + a21 * b22;
+            this._out[10] = a02 * b20 + a12 * b21 + a22 * b22;
+            this._out[11] = a03 * b20 + a13 * b21 + a23 * b22;
+            return this;
+        }
+        /**
+         * Rotates a matrix by the given angle around the X axis not using SIMD
+         * @param {number} rad
+         */
+
+    }, {
+        key: 'rotateX',
+        value: function rotateX(rad) {
+            var s = Math.sin(rad),
+                c = Math.cos(rad),
+                a10 = this._out[4],
+                a11 = this._out[5],
+                a12 = this._out[6],
+                a13 = this._out[7],
+                a20 = this._out[8],
+                a21 = this._out[9],
+                a22 = this._out[10],
+                a23 = this._out[11];
+            // Perform axis-specific matrix multiplication
+            this._out[4] = a10 * c + a20 * s;
+            this._out[5] = a11 * c + a21 * s;
+            this._out[6] = a12 * c + a22 * s;
+            this._out[7] = a13 * c + a23 * s;
+            this._out[8] = a20 * c - a10 * s;
+            this._out[9] = a21 * c - a11 * s;
+            this._out[10] = a22 * c - a12 * s;
+            this._out[11] = a23 * c - a13 * s;
+            return this;
+        }
+        /**
+         * Rotates a matrix by the given angle around the Y axis not using SIMD
+         * @param {Number} rad the angle to rotate the matrix by
+         */
+
+    }, {
+        key: 'rotateY',
+        value: function rotateY(rad) {
+            var s = Math.sin(rad),
+                c = Math.cos(rad),
+                a00 = this._out[0],
+                a01 = this._out[1],
+                a02 = this._out[2],
+                a03 = this._out[3],
+                a20 = this._out[8],
+                a21 = this._out[9],
+                a22 = this._out[10],
+                a23 = this._out[11];
+            // Perform axis-specific matrix multiplication
+            this._out[0] = a00 * c - a20 * s;
+            this._out[1] = a01 * c - a21 * s;
+            this._out[2] = a02 * c - a22 * s;
+            this._out[3] = a03 * c - a23 * s;
+            this._out[8] = a00 * s + a20 * c;
+            this._out[9] = a01 * s + a21 * c;
+            this._out[10] = a02 * s + a22 * c;
+            this._out[11] = a03 * s + a23 * c;
+            return this;
+        }
+        /**
+         * Rotates a matrix by the given angle around the Z axis not using SIMD
+         * @param {Number} rad the angle to rotate the matrix by
+         */
+
+    }, {
+        key: 'rotateZ',
+        value: function rotateZ(rad) {
+            var s = Math.sin(rad),
+                c = Math.cos(rad),
+                a00 = this._out[0],
+                a01 = this._out[1],
+                a02 = this._out[2],
+                a03 = this._out[3],
+                a10 = this._out[4],
+                a11 = this._out[5],
+                a12 = this._out[6],
+                a13 = this._out[7];
+            // Perform axis-specific matrix multiplication
+            this._out[0] = a00 * c + a10 * s;
+            this._out[1] = a01 * c + a11 * s;
+            this._out[2] = a02 * c + a12 * s;
+            this._out[3] = a03 * c + a13 * s;
+            this._out[4] = a10 * c - a00 * s;
+            this._out[5] = a11 * c - a01 * s;
+            this._out[6] = a12 * c - a02 * s;
+            this._out[7] = a13 * c - a03 * s;
+            return this;
+        }
+        /**
+         * Creates a matrix from a vector translation
+         * This is equivalent to (but much faster than):
+         *      mat4.identity(dest);
+         *      mat4.translate(dest, dest, vec);
+         * @param {Vec3} v3 Translation vector
+         */
+
+    }, {
+        key: 'getTranslation',
+
+        /**
+         * Returns the translation vector component of a transformation
+         *  matrix. If a matrix is built with fromRotationTranslation,
+         *  the returned vector will be the same as the translation vector
+         *  originally supplied.
+         * @return {Vec3} out
+        */
+        value: function getTranslation() {
+            var v3 = new Vec3_1();
+            v3.set(this._out[12], this._out[13], this._out[14]);
+            return v3;
+        }
+        /**
+         * Creates a matrix from a quaternion rotation and vector translation
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.translate(dest, vec);
+         *  var quatMat = mat4.create();
+         *  quat4.toMat4(quat, quatMat);
+         *  mat4.multiply(dest, quatMat);
+         * 
+         * @param {quat} qua Rotation quaternion
+         * @param {Vec3} vec Translation vector
+         */
+
+    }, {
+        key: 'getScaling',
+
+        /**
+         * Returns the scaling factor component of a transformation
+         * matrix. If a matrix is built with fromRotationTranslationScale
+         * with a normalized Quaternion paramter, the returned vector will be 
+         * the same as the scaling vector
+         * originally supplied.
+         * @return {Vec3} 
+         */
+        value: function getScaling() {
+            var vec = new Vec3_1(),
+                m11 = mat[0],
+                m12 = mat[1],
+                m13 = mat[2],
+                m21 = mat[4],
+                m22 = mat[5],
+                m23 = mat[6],
+                m31 = mat[8],
+                m32 = mat[9],
+                m33 = mat[10];
+            x = Math.sqrt(m11 * m11 + m12 * m12 + m13 * m13);
+            y = Math.sqrt(m21 * m21 + m22 * m22 + m23 * m23);
+            z = Math.sqrt(m31 * m31 + m32 * m32 + m33 * m33);
+            vec.set(x, y, z);
+            return vec;
+        }
+        /**
+         * Returns a quaternion representing the rotational component
+         * of a transformation matrix. If a matrix is built with
+         * fromRotationTranslation, the returned quaternion will be the
+         * same as the quaternion originally supplied.
+         * Algorithm taken from http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
+         * @return {quat} 
+         */
+
+    }, {
+        key: 'getRotation',
+        value: function getRotation() {
+            var S = 0,
+                x = void 0,
+                y = void 0,
+                z = void 0,
+                w = void 0,
+                qua = new Quat_1(),
+                trace = this._out[0] + this._out[5] + this._out[10];
+
+            if (trace > 0) {
+                S = Math.sqrt(trace + 1.0) * 2;
+                w = 0.25 * S;
+                x = (this._out[6] - this._out[9]) / S;
+                y = (this._out[8] - this._out[2]) / S;
+                z = (this._out[1] - this._out[4]) / S;
+            } else if (this._out[0] > this._out[5] & this._out[0] > this._out[10]) {
+                S = Math.sqrt(1.0 + this._out[0] - this._out[5] - this._out[10]) * 2;
+                w = (this._out[6] - this._out[9]) / S;
+                x = 0.25 * S;
+                y = (this._out[1] + this._out[4]) / S;
+                z = (this._out[8] + this._out[2]) / S;
+            } else if (this._out[5] > this._out[10]) {
+                S = Math.sqrt(1.0 + this._out[5] - this._out[0] - this._out[10]) * 2;
+                w = (this._out[8] - this._out[2]) / S;
+                x = (this._out[1] + this._out[4]) / S;
+                y = 0.25 * S;
+                z = (this._out[6] + this._out[9]) / S;
+            } else {
+                S = Math.sqrt(1.0 + this._out[10] - this._out[0] - this._out[5]) * 2;
+                w = (this._out[1] - this._out[4]) / S;
+                x = (this._out[8] + this._out[2]) / S;
+                y = (this._out[6] + this._out[9]) / S;
+                z = 0.25 * S;
+            }
+            qua.set(x, y, z, w);
+            return qua;
+        }
+        /**
+         * Creates a matrix from a quaternion rotation, vector translation and vector scale
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.translate(dest, vec);
+         *  var quatMat = mat4.create();
+         *  quat4.toMat4(quat, quatMat);
+         *  mat4.multiply(dest, quatMat);
+         *  mat4.scale(dest, scale)
+         * @param {quat} q rotation quaternion
+         * @param {Vec3} v translation vector
+         * @param {Vec3} s scaling vectoer
+         * @return {Mat4} 
+         */
+
+    }, {
+        key: 'lookAt',
+
+        /**
+         * Generates a look-at matrix with the given eye position, focal point, and up axis
+         * @param {Vec3} eye the camera Position of the viewer
+         * @param {Vec3} center the target point the viewer is looking at
+         * @param {Vec3} up vec3 pointing up
+         * @return {Mat4}
+         */
+        value: function lookAt(eye, center, up) {
+            var x0 = void 0,
+                x1 = void 0,
+                x2 = void 0,
+                y0 = void 0,
+                y1 = void 0,
+                y2 = void 0,
+                z0 = void 0,
+                z1 = void 0,
+                z2 = void 0,
+                len = void 0,
+                _eye$value = slicedToArray(eye.value, 3),
+                eyex = _eye$value[0],
+                eyey = _eye$value[1],
+                eyez = _eye$value[2],
+                _up$value = slicedToArray(up.value, 3),
+                upx = _up$value[0],
+                upy = _up$value[1],
+                upz = _up$value[2],
+                _center$_out = slicedToArray(center._out, 3),
+                centerx = _center$_out[0],
+                centery = _center$_out[1],
+                centerz = _center$_out[2];
+
+            if (Math.abs(eyex - centerx) < GLMatrix_1.EPSILON && Math.abs(eyey - centery) < GLMatrix_1.EPSILON && Math.abs(eyez - centerz) < GLMatrix_1.EPSILON) {
+                return this.identity();
+            }
+            z0 = eyex - centerx;
+            z1 = eyey - centery;
+            z2 = eyez - centerz;
+            len = 1 / Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
+            z0 *= len;
+            z1 *= len;
+            z2 *= len;
+            x0 = upy * z2 - upz * z1;
+            x1 = upz * z0 - upx * z2;
+            x2 = upx * z1 - upy * z0;
+            len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+            if (!len) {
+                x0 = 0;
+                x1 = 0;
+                x2 = 0;
+            } else {
+                len = 1 / len;
+                x0 *= len;
+                x1 *= len;
+                x2 *= len;
+            }
+            y0 = z1 * x2 - z2 * x1;
+            y1 = z2 * x0 - z0 * x2;
+            y2 = z0 * x1 - z1 * x0;
+            len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+            if (!len) {
+                y0 = 0;
+                y1 = 0;
+                y2 = 0;
+            } else {
+                len = 1 / len;
+                y0 *= len;
+                y1 *= len;
+                y2 *= len;
+            }
+            this.set(x0, y0, z0, 0, x1, y1, z1, 0, x2, y2, z2, 0, -(x0 * eyex + x1 * eyey + x2 * eyez), -(y0 * eyex + y1 * eyey + y2 * eyez), -(z0 * eyex + z1 * eyey + z2 * eyez), 1);
+            return this;
+        }
+        /**
+         * Returns a string representation of a mat4
+         * @return {String}
+         */
+
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return 'mat4(' + this._out[0] + ', ' + this._out[1] + ', ' + this._out[2] + ', ' + this._out[3] + ', ' + this._out[4] + ', ' + this._out[5] + ', ' + this._out[6] + ', ' + this._out[7] + ', ' + this._out[8] + ', ' + this._out[9] + ', ' + this._out[10] + ', ' + this._out[11] + ', ' + this._out[12] + ', ' + this._out[13] + ', ' + this._out[14] + ', ' + this._out[15] + ')';
+        }
+        /**
+         * Returns Frobenius norm of a mat4
+         * @return {Number} Frobenius norm
+         */
+
+    }, {
+        key: 'forb',
+        value: function forb() {
+            return Math.sqrt(Math.pow(this._out[0], 2) + Math.pow(this._out[1], 2) + Math.pow(this._out[2], 2) + Math.pow(this._out[3], 2) + Math.pow(this._out[4], 2) + Math.pow(this._out[5], 2) + Math.pow(this._out[6], 2) + Math.pow(this._out[7], 2) + Math.pow(this._out[8], 2) + Math.pow(this._out[9], 2) + Math.pow(this._out[10], 2) + Math.pow(this._out[11], 2) + Math.pow(this._out[12], 2) + Math.pow(this._out[13], 2) + Math.pow(this._out[14], 2) + Math.pow(this._out[15], 2));
+        }
+        /**
+         * Adds two mat4's
+         * @param {Mat4} m4
+         */
+
+    }, {
+        key: 'add',
+        value: function add(m4) {
+            this._out[0] += m4.value[0];
+            this._out[1] += m4.value[1];
+            this._out[2] += m4.value[2];
+            this._out[3] += m4.value[3];
+            this._out[4] += m4.value[4];
+            this._out[5] += m4.value[5];
+            this._out[6] += m4.value[6];
+            this._out[7] += m4.value[7];
+            this._out[8] += m4.value[8];
+            this._out[9] += m4.value[9];
+            this._out[10] += m4.value[10];
+            this._out[11] += m4.value[11];
+            this._out[12] += m4.value[12];
+            this._out[13] += m4.value[13];
+            this._out[14] += m4.value[14];
+            this._out[15] += m4.value[15];
+            return this;
+        }
+        /**
+         * Subtracts matrix b from matrix a
+         * @param {Mat4} m4
+         * @return {Mat4}
+         */
+
+    }, {
+        key: 'sub',
+        value: function sub(m4) {
+            this._out[0] -= m4.value[0];
+            this._out[1] -= m4.value[1];
+            this._out[2] -= m4.value[2];
+            this._out[3] -= m4.value[3];
+            this._out[4] -= m4.value[4];
+            this._out[5] -= m4.value[5];
+            this._out[6] -= m4.value[6];
+            this._out[7] -= m4.value[7];
+            this._out[8] -= m4.value[8];
+            this._out[9] -= m4.value[9];
+            this._out[10] -= m4.value[10];
+            this._out[11] -= m4.value[11];
+            this._out[12] -= m4.value[12];
+            this._out[13] -= m4.value[13];
+            this._out[14] -= m4.value[14];
+            this._out[15] -= m4.value[15];
+            return this;
+        }
+        /**
+         * Returns whether or not the matrices have approximately the same elements in the same position.
+         * @param {Mat4} m4
+         * @param {boolean}
+         */
+
+    }, {
+        key: 'equals',
+        value: function equals(m4) {
+            var _out6 = slicedToArray(this._out, 16),
+                a0 = _out6[0],
+                a1 = _out6[1],
+                a2 = _out6[2],
+                a3 = _out6[3],
+                a4 = _out6[4],
+                a5 = _out6[5],
+                a6 = _out6[6],
+                a7 = _out6[7],
+                a8 = _out6[8],
+                a9 = _out6[9],
+                a10 = _out6[10],
+                a11 = _out6[11],
+                a12 = _out6[12],
+                a13 = _out6[13],
+                a14 = _out6[14],
+                a15 = _out6[15],
+                _m4$value = slicedToArray(m4.value, 16),
+                b0 = _m4$value[0],
+                b1 = _m4$value[1],
+                b2 = _m4$value[2],
+                b3 = _m4$value[3],
+                b4 = _m4$value[4],
+                b5 = _m4$value[5],
+                b6 = _m4$value[6],
+                b7 = _m4$value[7],
+                b8 = _m4$value[8],
+                b9 = _m4$value[9],
+                b10 = _m4$value[10],
+                b11 = _m4$value[11],
+                b12 = _m4$value[12],
+                b13 = _m4$value[13],
+                b14 = _m4$value[14],
+                b15 = _m4$value[15];
+
+            return Math.abs(a0 - b0) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) && Math.abs(a4 - b4) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) && Math.abs(a5 - b5) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) && Math.abs(a6 - b6) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) && Math.abs(a7 - b7) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7)) && Math.abs(a8 - b8) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a8), Math.abs(b8)) && Math.abs(a9 - b9) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a9), Math.abs(b9)) && Math.abs(a10 - b10) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a10), Math.abs(b10)) && Math.abs(a11 - b11) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a11), Math.abs(b11)) && Math.abs(a12 - b12) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a12), Math.abs(b12)) && Math.abs(a13 - b13) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a13), Math.abs(b13)) && Math.abs(a14 - b14) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a14), Math.abs(b14)) && Math.abs(a15 - b15) <= GLMatrix_1.EPSILON * Math.max(1.0, Math.abs(a15), Math.abs(b15));
+        }
+    }, {
+        key: 'value',
+        get: function get$$1() {
+            return this._out;
+        }
+    }], [{
+        key: 'fromVec3Translation',
+        value: function fromVec3Translation(v3) {
+            var m4 = new Mat4(),
+                _v3$value2 = slicedToArray(v3.value, 3),
+                x = _v3$value2[0],
+                y = _v3$value2[1],
+                z = _v3$value2[2];
+
+            m4.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1);
+            return m4;
+        }
+        /**
+         * Creates a matrix from a vector scaling
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.scale(dest, dest, vec);
+         * @param {Vec3} vec Scaling vector
+         * @returns {Mat4} 
+         */
+
+    }, {
+        key: 'fromScaling',
+        value: function fromScaling(vec) {
+            var mat = new Mat4(),
+                _vec$_out2 = slicedToArray(vec._out, 3),
+                x = _vec$_out2[0],
+                y = _vec$_out2[1],
+                z = _vec$_out2[2];
+
+            mat.set(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
+            return mat;
+        }
+        /**
+         * Creates a matrix from a given angle around a given axis
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.rotate(dest, dest, rad, axis);
+         * @param {Number} rad the angle to rotate the matrix by
+         * @param {Vec3} axis the axis to rotate around
+         */
+
+    }, {
+        key: 'fromRotation',
+        value: function fromRotation(rad, axis) {
+            var _axis$_out2 = slicedToArray(axis._out, 3),
+                x = _axis$_out2[0],
+                y = _axis$_out2[1],
+                z = _axis$_out2[2],
+                len = axis.len(),
+                mat = new Mat4(),
+                s,
+                c,
+                t;
+
+            if (len < GLMatrix_1.EPSILON) {
+                return null;
+            }
+            len = 1.0 / len;
+            x *= len;
+            y *= len;
+            z *= len;
+            s = Math.sin(rad);
+            c = Math.cos(rad);
+            t = 1 - c;
+            // Perform rotation-specific matrix multiplication
+            mat.set(x * x * t + c, y * x * t + z * s, z * x * t - y * s, 0, x * y * t - z * s, y * y * t + c, z * y * t + x * s, 0, x * z * t + y * s, y * z * t - x * s, z * z * t + c, 0, 0, 0, 0, 1);
+            return mat;
+        }
+        /**
+         * Creates a matrix from the given angle around the X axis
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.rotateX(dest, dest, rad);
+         * @param {Number} rad the angle to rotate the matrix by
+         */
+
+    }, {
+        key: 'fromXRotation',
+        value: function fromXRotation(rad) {
+            var mat = new Mat4(),
+                s = Math.sin(rad),
+                c = Math.cos(rad);
+            mat.set(1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1);
+            return mat;
+        }
+        /**
+         * Creates a matrix from the given angle around the Y axis
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.rotateY(dest, dest, rad);
+         * 
+         * @param {Number} rad the angle to rotate the matrix by
+         */
+
+    }, {
+        key: 'fromYRotation',
+        value: function fromYRotation(rad) {
+            var mat = new Mat4(),
+                s = Math.sin(rad),
+                c = Math.cos(rad);
+            // Perform axis-specific matrix multiplication
+            mat.set(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1);
+            return mat;
+        }
+        /**
+         * Creates a matrix from the given angle around the Z axis
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.rotateZ(dest, dest, rad);
+         * 
+         * @param {Number} rad the angle to rotate the matrix by
+         */
+
+    }, {
+        key: 'fromZRotation',
+        value: function fromZRotation(rad) {
+            var mat = new Mat4(),
+                s = Math.sin(rad),
+                c = Math.cos(rad);
+            // Perform axis-specific matrix multiplication
+            mat.set(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            return mat;
+        }
+    }, {
+        key: 'fromRotationTranslation',
+        value: function fromRotationTranslation(qua, vec) {
+            // Quaternion math
+            var mat = new Mat4(),
+                _qua$_out = slicedToArray(qua._out, 4),
+                x = _qua$_out[0],
+                y = _qua$_out[1],
+                z = _qua$_out[2],
+                w = _qua$_out[3],
+                _vec$_out3 = slicedToArray(vec._out, 3),
+                v0 = _vec$_out3[0],
+                v1 = _vec$_out3[1],
+                v2 = _vec$_out3[2],
+                x2 = x + x,
+                y2 = y + y,
+                z2 = z + z,
+                xx = x * x2,
+                xy = x * y2,
+                xz = x * z2,
+                yy = y * y2,
+                yz = y * z2,
+                zz = z * z2,
+                wx = w * x2,
+                wy = w * y2,
+                wz = w * z2;
+
+            mat.set(1 - (yy + zz), xy + wz, xz - wy, 0, xy - wz, 1 - (xx + zz), yz + wx, 0, xz + wy, yz - wx, 1 - (xx + yy), 0, v0, v1, v2, 1);
+            return mat;
+        }
+    }, {
+        key: 'fromRotationTranslationScale',
+        value: function fromRotationTranslationScale(q, v, s) {
+            var mat = new Mat4(),
+                _qua$_out2 = slicedToArray(qua._out, 4),
+                x = _qua$_out2[0],
+                y = _qua$_out2[1],
+                z = _qua$_out2[2],
+                w = _qua$_out2[3],
+                _v$_out = slicedToArray(v._out, 3),
+                v0 = _v$_out[0],
+                v1 = _v$_out[1],
+                v2 = _v$_out[2],
+                x2 = x + x,
+                y2 = y + y,
+                z2 = z + z,
+                xx = x * x2,
+                xy = x * y2,
+                xz = x * z2,
+                yy = y * y2,
+                yz = y * z2,
+                zz = z * z2,
+                wx = w * x2,
+                wy = w * y2,
+                wz = w * z2,
+                sx = s[0],
+                sy = s[1],
+                sz = s[2];
+
+            mat.set((1 - (yy + zz)) * sx, (xy + wz) * sx, (xz - wy) * sx, 0(xy - wz) * sy, (1 - (xx + zz)) * sy, (yz + wx) * sy, 0, (xz + wy) * sz, (yz - wx) * sz, (1 - (xx + yy)) * sz, 0, v0, v1, v2, 1);
+            return mat;
+        }
+        /**
+         * Creates a matrix from a quaternion rotation, vector translation and vector scale, rotating and scaling around the given origin
+         * This is equivalent to (but much faster than):
+         *  mat4.identity(dest);
+         *  mat4.translate(dest, vec);
+         *  mat4.translate(dest, origin);
+         *  var quatMat = mat4.create();
+         *  quat4.toMat4(quat, quatMat);
+         *  mat4.multiply(dest, quatMat);
+         *  mat4.scale(dest, scale);
+         *  mat4.translate(dest, negativeOrigin);
+         * 
+         * @param {quat} q Rotation quaternion
+         * @param {Vec3} v Translation vector
+         * @param {Vec3} s Scaling vector
+         * @param {Vec3} o The origin vector around which to scale and rotate
+         * @return {Mat4}
+         */
+
+    }, {
+        key: 'fromRotationTranslationScaleOrigin',
+        value: function fromRotationTranslationScaleOrigin(q, v, s, o) {
+            // Quaternion math
+            var mat = new Mat4(),
+                _q$_out = slicedToArray(q._out, 4),
+                x = _q$_out[0],
+                y = _q$_out[1],
+                z = _q$_out[2],
+                w = _q$_out[3],
+                _v$_out2 = slicedToArray(v._out, 3),
+                sx = _v$_out2[0],
+                sy = _v$_out2[1],
+                sz = _v$_out2[2],
+                _o$_out = slicedToArray(o._out, 3),
+                ox = _o$_out[0],
+                oy = _o$_out[1],
+                oz = _o$_out[2],
+                _v$_out3 = slicedToArray(v._out, 3),
+                vx = _v$_out3[0],
+                vy = _v$_out3[1],
+                vz = _v$_out3[2],
+                x2 = x + x,
+                y2 = y + y,
+                z2 = z + z,
+                xx = x * x2,
+                xy = x * y2,
+                xz = x * z2,
+                yy = y * y2,
+                yz = y * z2,
+                zz = z * z2,
+                wx = w * x2,
+                wy = w * y2,
+                wz = w * z2;
+
+            mat.set((1 - (yy + zz)) * sx, (xy + wz) * sx, (xz - wy) * sx, 0, (xy - wz) * sy, (1 - (xx + zz)) * sy, (yz + wx) * sy, 0, (xz + wy) * sz, (yz - wx) * sz, (1 - (xx + yy)) * sz, 0, vx + ox - (out[0] * ox + out[4] * oy + out[8] * oz), vy + oy - (out[1] * ox + out[5] * oy + out[9] * oz), vz + oz - (out[2] * ox + out[6] * oy + out[10] * oz), 1);
+            return mat;
+        }
+        /**
+         * Calculates a 4x4 matrix from the given quaternion
+         * @param {quat} q Quaternion to create matrix from
+         * @return {Mat4}
+         */
+
+    }, {
+        key: 'fromQuat',
+        value: function fromQuat(q) {
+            var mat = new Mat4(),
+                _q$_out2 = slicedToArray(q._out, 4),
+                x = _q$_out2[0],
+                y = _q$_out2[1],
+                z = _q$_out2[2],
+                w = _q$_out2[3],
+                x2 = x + x,
+                y2 = y + y,
+                z2 = z + z,
+                xx = x * x2,
+                yx = y * x2,
+                yy = y * y2,
+                zx = z * x2,
+                zy = z * y2,
+                zz = z * z2,
+                wx = w * x2,
+                wy = w * y2,
+                wz = w * z2;
+
+            mat.set(1 - yy - zz, yx + wz, zx - wy, 0, yx - wz, 1 - xx - zz, zy + wx, 0, zx + wy, zy - wx, 1 - xx - yy, 0, 0, 0, 0, 1);
+            return mat;
+        }
+        /**
+         * Generates a frustum matrix with the given bounds
+         * @param {Number} left Left bound of the frustum
+         * @param {Number} right Right bound of the frustum
+         * @param {Number} bottom Bottom bound of the frustum
+         * @param {Number} top Top bound of the frustum
+         * @param {Number} near Near bound of the frustum
+         * @param {Number} far Far bound of the frustum
+         * @return {Mat4}
+         */
+
+    }, {
+        key: 'frustum',
+        value: function frustum(left, right, bottom, top, near, far) {
+            var mat = new Mat4(),
+                rl = 1 / (right - left),
+                tb = 1 / (top - bottom),
+                nf = 1 / (near - far);
+            mat.set(near * 2 * rl, 0, 0, 0, 0, near * 2 * tb, 0, 0, (right + left) * rl, (top + bottom) * tb, (far + near) * nf, -1, 0, 0, far * near * 2 * nf, 0);
+            return mat;
+        }
+        /**
+         * Generates a perspective projection matrix with the given bounds
+         * @param {number} fovy Vertical field of view in radians
+         * @param {number} aspect Aspect ratio. typically viewport width/height
+         * @param {number} near Near bound of the frustum
+         * @param {number} far Far bound of the frustum
+         * @return {Mat4}
+         */
+
+    }, {
+        key: 'perspective',
+        value: function perspective(fovy, aspect, near, far) {
+            var m4 = new Mat4(),
+
+            //f = 1.0 / Math.tan(fovy / 2), discard
+            //tan（π/2-α）= cotα 
+            //cot(fovy/2) = tan(pi/2 - fovy/2);
+            f = Math.tan((Math.PI - fovy) * 0.5),
+                nf = 1.0 / (near - far);
+            m4.set(f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0);
+            return m4;
+        }
+        /**
+         * Generates a perspective projection matrix with the given field of view.
+         * This is primarily useful for generating projection matrices to be used
+         * with the still experiemental WebVR API.
+         * @param {Object} fov Object containing the following values: upDegrees, downDegrees, leftDegrees, rightDegrees
+         * @param {number} near Near bound of the frustum
+         * @param {number} far Far bound of the frustum
+         * @return {Mat4} out
+         */
+
+    }, {
+        key: 'perspectiveFromFieldOfView',
+        value: function perspectiveFromFieldOfView(fov, near, far) {
+            var m4 = new Mat4(),
+                upTan = Math.tan(fov.upDegrees * Math.PI / 180.0),
+                downTan = Math.tan(fov.downDegrees * Math.PI / 180.0),
+                leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0),
+                rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0),
+                xScale = 2.0 / (leftTan + rightTan),
+                yScale = 2.0 / (upTan + downTan);
+            m4.set(xScale, 0, 0, 0, 0, yScale, 0, 0, -((leftTan - rightTan) * xScale * 0.5), (upTan - downTan) * yScale * 0.5, far / (near - far), -1, 0, 0, far * near / (near - far), 0);
+            return m4;
+        }
+        /**
+         * Generates a orthogonal projection matrix with the given bounds
+         * reference https://webgl2fundamentals.org/webgl/lessons/webgl-3d-orthographic.html
+         * @param {number} left Left bound of the frustum
+         * @param {number} right Right bound of the frustum
+         * @param {number} bottom Bottom bound of the frustum
+         * @param {number} top Top bound of the frustum
+         * @param {number} near Near bound of the frustum
+         * @param {number} far Far bound of the frustum
+         * @return {Mat4} 
+         */
+
+    }, {
+        key: 'ortho',
+        value: function ortho(left, right, bottom, top, near, far) {
+            var mat = new Mat4(),
+                lr = 1.0 / (left - right),
+                bt = 1.0 / (bottom - top),
+                nf = 1.0 / (near - far);
+            mat.set(-2 * lr, 0, 0, 0, 0, -2 * bt, 0, 0, 0, 0, 2 * nf, 0, (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1);
+            return mat;
+        }
+    }]);
+    return Mat4;
+}();
+
+var Mat4_1 = Mat4$1;
+
+/**
+ * make a package of matrix
+ */
+
+var init$6 = {
+    Vec2: Vec2_1,
+    Vec3: Vec3_1,
+    Vec4: Vec4_1,
+    Mat3: Mat3_1,
+    Mat4: Mat4_1,
+    Quat: Quat_1,
+    GLMatrix: GLMatrix_1
+};
+
+/**
+ * 矩阵计算
+ */
+var Mat4 = init$6.Mat4;
+var Vec3 = init$6.Vec3;
+var GLMatrix = init$6.GLMatrix;
+/**
+ * 
+ * https://learnopengl-cn.github.io/01%20Getting%20started/09%20Camera/
+ * 透视相机
+ * 构建相机的本质：
+ * 1.构建一个以相机位置为原点，与真实原点贯穿的三个轴为方向的坐标系
+ * 2.
+ * @class
+ */
+
+var PerspectiveCamera =
+/**
+ * @example
+ * var camera = new PerspectiveCameraP(45,800/600,1,2000);
+ * 
+ * @param {number} vertical of view in angle
+ * @param {*} aspect 
+ * @param {*} zNear 
+ * @param {*} zFar 
+ */
+function PerspectiveCamera(fov, aspect, zNear, zFar) {
+  classCallCheck(this, PerspectiveCamera);
+
+  /**
+   * 默认相机位置
+   */
+  this.position = new Vec3().set(0, 0, 300);
+  /**
+   * 透视矩阵，用于将空间的物体投影在锥形的区域内
+   * http://www.cnblogs.com/yjmyzz/archive/2010/05/08/1730697.html
+   * 核心：scale = f1/(f1+z)
+   * 通过比例，将znear与zfar之间的元素投影在znear上，得到屏幕像素(x,y)
+   */
+  this.projectionMatrix = Mat4.perspective(GLMatrix.toRadian(fov), aspect, zNear, zFar);
+  /**
+   * 相机矩阵，这个矩阵代表的是相机在世界坐标中的位置和姿态。 
+   * https://webglfundamentals.org/webgl/lessons/zh_cn/webgl-3d-camera.html
+   */
+  this.cameraMatrix = new Mat4();
+  this.cameraMatrix.translate(this.position);
+  /**
+   * 视图矩阵是将所有物体以相反于相机的方向运动
+   */
+  this.viewMatrix = this.cameraMatrix.clone().invert();
+  /**
+   * 将视图矩阵和投影矩阵结合在一起
+   */
+  this.viewProjectionMatrix = this.projectionMatrix.clone().multiply(this.viewMatrix);
+};
+
+var PerspectiveCamera_1 = PerspectiveCamera;
 
 /**
  * @author yellow date 2018/2/11
@@ -12610,10 +18007,10 @@ var init = {
    * WebGL namespace
    */
   gl: {
+    PerspectiveCamera: PerspectiveCamera_1,
     HtmlMock: init$2.gl.HtmlMock,
     GLCanvas: init$2.gl.GLCanvas
   }
-
 };
 
 var init_1 = init.gl;
@@ -12621,6 +18018,6 @@ var init_1 = init.gl;
 exports['default'] = init;
 exports.gl = init_1;
 
-return exports;
+Object.defineProperty(exports, '__esModule', { value: true });
 
-}({}));
+})));

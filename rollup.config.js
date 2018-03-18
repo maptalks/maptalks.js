@@ -7,7 +7,7 @@ export default {
     output:{
         name:'fusion',
         exports: 'named',
-        format:'iife',
+        format:'umd',
         file:'./dist/bundle.js'
     },
     external: [
@@ -20,7 +20,7 @@ export default {
         resolve(),
         commonjs(),
         babel({
-            exclude: 'node_modules/**'
+            //exclude: 'node_modules/**'
         })
     ]
 };
