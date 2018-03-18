@@ -169,7 +169,6 @@ function calculateRhumbDestination(origin, distance, bearing, radius) {
 
     origin.x = ((lambda2 * 180 / Math.PI) + 540) % 360 - 180;
     origin.y = phi2 * 180 / Math.PI;
-    
     return origin; // normalise to −180..+180°
 }
 
