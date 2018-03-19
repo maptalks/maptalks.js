@@ -463,7 +463,7 @@ describe('Geometry.Marker', function () {
                 } else if (maptalks.Browser.gecko3d) {
                     expect(layer).to.be.painted(20, -1);
                 } else {
-                    expect(layer).to.be.painted(30, 0);
+                    expect(layer).to.be.painted(20, 0);
                 }
 
                 done();
