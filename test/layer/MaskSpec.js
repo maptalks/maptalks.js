@@ -86,7 +86,7 @@ describe('Spec of Masks', function () {
         }
     }));
 
-    // runTests(vlayer, context);
+    runTests(vlayer, context);
 
     function runTests(layerToTest, context) {
         describe('layer', function () {
@@ -106,25 +106,24 @@ describe('Spec of Masks', function () {
             });
 
             it('can remove mask,' + layerToTest.getJSONType(), function (done) {
-                layerToTest.once('layerload', function () {
-                    layerToTest.once('layerload', function () {
-                        layerToTest.once('layerload', function () {
-                            expect(layerToTest).to.be.painted(-20, 0);
-                            expect(layerToTest).to.be.painted();
-                            done();
-                        });
-                        layerToTest.removeMask();
-                    });
-                    layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
-                        'symbol' : {
-                            'markerType' : 'ellipse',
-                            'markerWidth' : 10,
-                            'markerHeight' : 10,
-                            'markerFill' : '#000',
-                            'markerFillOpacity' : 1
-                        }
-                    }));
-                });
+                layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
+                    'symbol' : {
+                        'markerType' : 'ellipse',
+                        'markerWidth' : 10,
+                        'markerHeight' : 10,
+                        'markerFill' : '#000',
+                        'markerFillOpacity' : 1
+                    }
+                }));
+                setTimeout(function () {
+                    layerToTest.removeMask();
+                    setTimeout(function () {
+                        expect(layerToTest).to.be.painted(-40, 0);
+                        expect(layerToTest).to.be.painted(-20, 0);
+                        expect(layerToTest).to.be.painted();
+                        done();
+                    }, 50);
+                }, 50);
             });
 
             it('zoom with mask,' + layerToTest.getJSONType(), function (done) {
