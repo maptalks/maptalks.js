@@ -19,7 +19,7 @@ import TileLayer from './TileLayer';
 const options = {
     crs: null,
     uppercase: false,
-    detectRetina : false
+    detectRetina: false
 };
 
 const defaultWmsParams = {
@@ -85,7 +85,7 @@ class WMSTileLayer extends TileLayer {
         const max = tileExtent.getMax(),
             min = tileExtent.getMin();
 
-        const bbox = (this._wmsVersion >= 1.3  && this.wmsParams.crs === 'EPSG:4326' ?
+        const bbox = (this._wmsVersion >= 1.3 && this.wmsParams.crs === 'EPSG:4326' ?
             [min.y, min.x, max.y, max.x] :
             [min.x, min.y, max.x, max.y]).join(',');
 
@@ -95,7 +95,39 @@ class WMSTileLayer extends TileLayer {
             getParamString(this.wmsParams, url, this.options.uppercase) +
             (this.options.uppercase ? '&BBOX=' : '&bbox=') + bbox;
     }
-
+    /**
+     * support wms getFeatureInfo
+     * @param {Point} point screen Point
+     */
+    getFeatureInfo(point, callback) {
+        const map = this.getMap(),
+            extent = map.getPrjExtent(),
+            max = extent.getMax(),
+            min = extent.getMin(),
+            size = map.getSize();
+        //
+        const wmsParams = extend({}, this.wmsParams);
+        wmsParams['request'] = 'GetFeatureInfo';
+        wmsParams['query_layers'] = wmsParams['layers'];
+        wmsParams['INFO_FORMAT'] = this.options['infoFormat'] || 'text/html';
+        wmsParams['width'] = size.width;
+        wmsParams['height'] = size.height;
+        //
+        if (this._wmsVersion >= 1.3) {
+            wmsParams['I'] = point.x;
+            wmsParams['J'] = point.y;
+            wmsParams['crs'] = wmsParams['crs'] = this.getMap().getProjection().code;
+        } else {
+            wmsParams['X'] = point.x;
+            wmsParams['Y'] = point.y;
+            wmsParams['srs'] = wmsParams['crs'] = this.getMap().getProjection().code;
+            delete wmsParams['crs'];
+        }
+        const bbox = (this._wmsVersion >= 1.3 && this.wmsParams.crs === 'EPSG:4326' ? [min.y, min.x, max.y, max.x] : [min.x, min.y, max.x, max.y]).join(',');
+        const url = this.options.urlTemplate,
+            requestAddress = url + getParamString(wmsParams, url, this.options.uppercase) + (this.options.uppercase ? '&BBOX=' : '&bbox=') + bbox;
+        callback(requestAddress);
+    }
     /**
      * Export the WMSTileLayer's json. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
