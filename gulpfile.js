@@ -84,6 +84,10 @@ gulp.task('test', function (done) {
     if (options.coverage) {
         karmaConfig.configFile = path.join(__dirname, 'build/karma.cover.config.js');
     }
+    if (configBrowsers === 'IE9') {
+        //override IE9's pattern
+        options.pattern = 'IE9.Specs';
+    }
     if (options.pattern) {
         if (!karmaConfig.client) {
             karmaConfig.client = {
