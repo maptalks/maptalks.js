@@ -71,6 +71,9 @@ gl.enableVertexAttribArray(a_texCoord);
 const camera = new fusion.gl.PerspectiveCamera(60, 398 / 298, 1, 2000);
 const u_matrix = gl.getUniformLocation(program, 'u_matrix');
 gl.uniformMatrix4fv(u_matrix, false, camera.viewProjectionMatrix.value);
+
+let i =0;
+
 //赋纹理
 const image = new Image();
 image.src = "./assets/wall.jpg";
@@ -108,6 +111,13 @@ image.onload = function () {
         gl.clear(gl.COLOR_BUFFER_BIT);
         //
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+        
+        setInterval(function(){
+                i++;
+                camera.position = [i,i,i];
+                gl.uniformMatrix4fv(u_matrix, false, camera.viewProjectionMatrix.value);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+        },1000/60);
 }
 //
 glCanvas.linkToCanvas(document.getElementById('mapCanvas'));

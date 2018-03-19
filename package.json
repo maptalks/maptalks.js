@@ -31,10 +31,10 @@
     "rollup-plugin-node-resolve": "^3.2.0"
   },
   "dependencies": {
-    "claygl": "^1.1.1",
     "kiwi.gl": "^0.1.6",
     "kiwi.glsl": "^0.1.6",
     "kiwi.matrix": "^0.2.5",
+    "claygl": "^1.1.1",
     "three": "^0.91.0"
   }
 }
