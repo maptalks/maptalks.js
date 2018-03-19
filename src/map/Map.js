@@ -648,7 +648,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
-        return 0;
+        return this._spatialReference.getMinZoom();
     }
 
     /**
