@@ -18,7 +18,13 @@ const DEFAULT_STROKE_COLOR = '#000';
 const DEFAULT_FILL_COLOR = 'rgba(255,255,255,0)';
 const DEFAULT_TEXT_COLOR = '#000';
 
+let hitTesting = false;
+
 const Canvas = {
+    setHitTesting(testing) {
+        hitTesting = testing;
+    },
+
     createCanvas(width, height, canvasClass) {
         let canvas;
         if (!IS_NODE) {
@@ -197,6 +203,9 @@ const Canvas = {
     },
 
     fillCanvas(ctx, fillOpacity, x, y) {
+        if (hitTesting) {
+            fillOpacity = 1;
+        }
         ctx.canvas._drawn = true;
         if (fillOpacity === 0) {
             return;
@@ -288,6 +297,9 @@ const Canvas = {
     },
 
     _textOnLine(ctx, text, pt, textHaloRadius, textHaloFill, textHaloOp) {
+        if (hitTesting) {
+            textHaloOp = 1;
+        }
         // pt = pt._round();
         ctx.textBaseline = 'top';
         let gco, fill;
@@ -336,6 +348,9 @@ const Canvas = {
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
+        if (hitTesting) {
+            strokeOpacity = 1;
+        }
         ctx.canvas._drawn = true;
         if (strokeOpacity === 0) {
             return;
