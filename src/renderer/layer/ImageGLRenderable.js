@@ -201,6 +201,20 @@ const ImageGLRenderable = Base => {
             }
         }
 
+        disposeImage(image) {
+            if (!image) {
+                return;
+            }
+            if (image.texture) {
+                this.saveTexture(image.texture);
+            }
+            if (image.glBuffer) {
+                this.saveImageBuffer(image.glBuffer);
+            }
+            delete image.texture;
+            delete image.glBuffer;
+        }
+
         _createTexture(image) {
             const gl = this.gl;
             const texture = this.getTexture() || gl.createTexture();   // Create a texture object

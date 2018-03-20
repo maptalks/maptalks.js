@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
@@ -804,6 +804,18 @@ export class ResourceCache {
         for (const p in res.resources) {
             const img = res.resources[p];
             this.addResource([p, img.width, img.height], img.image);
+        }
+        return this;
+    }
+
+    forEach(fn) {
+        if (!this.resources) {
+            return this;
+        }
+        for (const p in this.resources) {
+            if (hasOwn(this.resources, p)) {
+                fn(p, this.resources[p]);
+            }
         }
         return this;
     }

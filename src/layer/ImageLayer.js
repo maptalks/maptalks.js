@@ -1,140 +1,207 @@
+import { extend } from '../core/util';
 import Browser from '../core/Browser';
 import ImageGLRenderable from '../renderer/layer/ImageGLRenderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
+import { ResourceCache } from '../renderer/layer/CanvasRenderer';
 import Extent from '../geo/Extent';
-import Coordinate from '../geo/Coordinate';
 import Layer from './Layer';
 
 /**
- * @property {Object}              options                     - Layer's options
+ * @property {Object}              options                     - ImageLayer's options
+ * @property {String}              [options.crossOrigin=null]    - image's corssOrigin
+ * @property {String}              [options.renderer=gl]         - ImageLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
+ * @memberOf ImageLayer
+ * @instance
  */
-//import * as maptalks from 'maptalks';
-
 const options = {
     renderer: Browser.webgl ? 'gl' : 'canvas',
     crossOrigin: null
 };
 
+/**
+ * @classdesc
+ * A layer used to display images, you can specify each image's geographic extent and opacity
+ * @category layer
+ * @extends Layer
+ * @param {String|Number} id - tile layer's id
+ * @param {Object[]} [images=null] - images
+ * @param {Object} [options=null] - options defined in [ImageLayer]{@link ImageLayer#options}
+ * @example
+ * new ImageLayer("images", [{
+        url : 'http://example.com/foo.png',
+        extent: [xmin, ymin, xmax, ymax],
+        opacity : 1
+    }])
+ */
 class ImageLayer extends Layer {
 
-    constructor(id, options = {}) {
+    constructor(id, images, options) {
+        if (!Array.isArray(images) && !images.url) {
+            options = images;
+            images = null;
+        }
         super(id, options);
-        this._options = options;
-        this._images = options.images;
-        this._extent = options.extent;
+        this._prepareImages(images);
     }
 
-    onLoad() {
-        if (this.imgData && this.imgData.length > 0) {
-            return true;
-        }
-        this.imgData = [];
-        const len = this._images.length;
-        for (let i = 0; i < len; i++) {
-            const img = new Image();
-            img.src = this._images[i].url;
-            img.crossOrigin = this._options.crossOrigin;
-            img.onload = () => {
-                this.imgData.push({
-                    img:img,
-                    extent:this._images[i].extent
-                });
-                if (i === len - 1) {
-                    this.load();
-                }
-            };
-        }
-        return false;
+    /**
+     * Set images and redraw
+     * @param {Object[]} images - new images
+     * @return {ImageLayer} this
+     */
+    setImages(images) {
+        this._images = images;
+        this._prepareImages(images);
+        return this;
     }
 
-    //check whether image is in map's extent
-    _isInExtent(extent) {
-        const map = this.getMap();
-        const mapExtent = map.getExtent();
-        const intersection = mapExtent.intersection(new Extent(extent));
-        if (intersection) {
-            return true;
-        } else
-            return false;
+    /**
+     * Get images
+     * @return {Object[]}
+     */
+    getImages() {
+        return this._images;
+    }
+
+    _prepareImages(images) {
+        images = images || [];
+        if (!Array.isArray(images)) {
+            images = [images];
+        }
+        this._imageData = images.map(img => {
+            return extend({}, img, {
+                extent : new Extent(img.extent),
+            });
+        });
+        this._images = images;
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.refreshImages();
+        }
     }
 }
 
 ImageLayer.mergeOptions(options);
 
-class ImageCanvasRenderer extends CanvasRenderer {
+const EMPTY_ARRAY = [];
 
-    onAdd() {
+class ImageCanvasRenderer extends CanvasRenderer {
+    isDrawable() {
+        if (this.getMap().getPitch()) {
+            if (console) {
+                console.warn('ImageLayer with canvas renderer can\'t be pitched, use gl renderer (\'renderer\' : \'gl\') instead.');
+            }
+            return false;
+        }
+        return true;
+    }
+
+    checkResources() {
+        if (this._imageLoaded) {
+            return EMPTY_ARRAY;
+        }
+        const layer = this.layer;
+        let urls = layer._imageData.map(img => [img.url, null, null]);
+        if (this.resources) {
+            const unloaded = [];
+            const resources = new ResourceCache();
+            urls.forEach(url => {
+                if (this.resources.isResourceLoaded(url)) {
+                    const img = this.resources.getImage(url);
+                    resources.addResource(url, img);
+                } else {
+                    unloaded.push(url);
+                }
+            });
+            this.resources.forEach((url, res) => {
+                if (!resources.isResourceLoaded(url)) {
+                    this.retireImage(res.image);
+                }
+            });
+            this.resources = resources;
+            urls = unloaded;
+        }
+        this._imageLoaded = true;
+        return urls;
+    }
+
+    retireImage(/* image */) {
 
     }
 
+    refreshImages() {
+        this._imageLoaded = false;
+        this.setToRedraw();
+    }
+
     needToRedraw() {
-        const map = this.layer.getMap();
-        if (map.isZooming()) {
-            return false;
-        }
-        if (map.isMoving()) {
+        const map = this.getMap();
+        // don't redraw when map is zooming without pitch and layer doesn't have any point symbolizer.
+        if (map.isZooming() && !map.getPitch()) {
             return false;
         }
         return super.needToRedraw();
     }
 
     draw() {
+        if (!this.isDrawable()) {
+            return;
+        }
         this.prepareCanvas();
+        this._painted = false;
         this._drawImages();
+        this.completeRender();
     }
 
     _drawImages() {
-        if (this.layer.imgData && this.layer.imgData.length > 0) {
-            for (let i = 0; i < this.layer.imgData.length; i++) {
-                this._drawImage(this.layer.imgData[i]);
+        const imgData = this.layer._imageData;
+        const map = this.getMap();
+        const mapExtent = map.getExtent();
+        if (imgData && imgData.length) {
+            for (let i = 0; i < imgData.length; i++) {
+                const extent = imgData[i].extent;
+                const image = this.resources && this.resources.getImage(imgData[i].url);
+                if (image && mapExtent.intersects(extent)) {
+                    this._painted = true;
+                    this._drawImage(image, extent, imgData[i].opacity || 1);
+                }
             }
-            this.completeRender();
         }
     }
 
-    _drawImage(imgObject) {
-        const extent = new Extent(imgObject.extent);
-        if (this.layer._isInExtent(extent)) {
-            const imgExtent = this._buildDrawParams(extent);
-            this.context.drawImage(imgObject.img, imgExtent.x, imgExtent.y, imgExtent.width, imgExtent.height);
+    _drawImage(image, extent, opacity) {
+        let globalAlpha = 0;
+        const ctx = this.context;
+        if (opacity < 1) {
+            globalAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = opacity;
         }
-    }
-
-    _buildDrawParams(extent) {
-        const nw = new Coordinate(extent.xmin, extent.ymax);
-        const se = new Coordinate(extent.xmax, extent.ymin);
-        const lt = this.layer.getMap().coordinateToContainerPoint(nw);
-        const rb = this.layer.getMap().coordinateToContainerPoint(se);
-        const width = rb.x - lt.x;
-        const height = rb.y - lt.y;
-        return {
-            x:lt.x,
-            y:lt.y,
-            width:width,
-            height:height
-        };
+        const map = this.getMap();
+        const min = map.coordToPoint(extent.getMin()),
+            max = map.coordToPoint(extent.getMax());
+        const point = map._pointToContainerPoint(min);
+        let x = point.x, y = point.y;
+        const bearing = map.getBearing();
+        if (bearing) {
+            ctx.save();
+            ctx.translate(x, y);
+            if (bearing) {
+                ctx.rotate(-bearing * Math.PI / 180);
+            }
+            x = y = 0;
+        }
+        ctx.drawImage(image, x, y, max.x - min.x, max.y - min.y);
+        if (bearing) {
+            ctx.restore();
+        }
+        if (globalAlpha) {
+            ctx.globalAlpha = globalAlpha;
+        }
     }
 
     drawOnInteracting() {
         this.draw();
     }
-
-    hitDetect() {
-        return false;
-    }
-
-    onZoomEnd(e) {
-        super.onZoomEnd(e);
-    }
-
-    onMoveEnd(e) {
-        super.onMoveEnd(e);
-    }
-
-    onDragRotateEnd(e) {
-        super.onDragRotateEnd(e);
-    }
-
 }
 
 ImageLayer.registerRenderer('canvas', ImageCanvasRenderer);
@@ -146,59 +213,16 @@ ImageLayer.registerRenderer('gl', class extends ImageGLRenderable(ImageCanvasRen
         return true;
     }
 
-    needToRedraw() {
+    _drawImage(image, extent, opacity) {
         const map = this.getMap();
-        if (this._gl() && !map.getPitch() && map.isZooming() && !map.isMoving() && !map.isRotating()) {
-            return true;
+        let extent2d = extent.__imagelayerposition;
+        if (!extent2d) {
+            extent2d = extent.__imagelayerposition = extent.convertTo(c => map.coordToPoint(c, map.getGLZoom()));
         }
-        return super.needToRedraw();
-    }
-
-    /*draw() {
-        this.prepareCanvas();
-        this._drawImages();
-    }*/
-
-    _drawImages() {
-        if (this.layer.imgData && this.layer.imgData.length > 0) {
-            for (let i = 0; i < this.layer.imgData.length; i++) {
-                this._drawImage(this.layer.imgData[i]);
-            }
-            this.completeRender();
-        }
-    }
-
-    _drawImage(imgObject) {
-        const map = this.getMap(),
-            glZoom = map.getGLZoom();
-        const extent = new Extent(imgObject.extent);
-        if (this.layer._isInExtent(extent)) {
-            const nw = new Coordinate(extent.xmin, extent.ymax);
-            const se = new Coordinate(extent.xmax, extent.ymin);
-            const lt = map._prjToPoint(nw, glZoom);
-            const rb = map._prjToPoint(se, glZoom);
-            const width = rb.x - lt.x;
-            const height = rb.y - lt.y;
-            if (!this._gl()) {
-                // fall back to canvas 2D
-                super._drawImage(imgObject);
-                return;
-            }
-            this.drawGLImage(imgObject.img, lt.x, lt.y, width, height, 1.0);
-            this.setCanvasUpdated();
-        }
-    }
-
-    drawOnInteracting() {
-        this.draw();
-    }
-
-    onCanvasCreate() {
-        this.createCanvas2();
+        this.drawGLImage(image, extent2d.xmin, extent2d.ymin, extent2d.getWidth(), extent2d.getHeight(), opacity);
     }
 
     createContext() {
-        super.createContext();
         this.createGLContext();
     }
 
@@ -218,26 +242,8 @@ ImageLayer.registerRenderer('gl', class extends ImageGLRenderable(ImageCanvasRen
         this.clearGLCanvas();
     }
 
-    getCanvasImage() {
-        if (this.glCanvas && this.isCanvasUpdated()) {
-            const ctx = this.context;
-            if (Browser.retina) {
-                ctx.save();
-                ctx.scale(1 / 2, 1 / 2);
-            }
-            // draw gl canvas on layer canvas
-            ctx.drawImage(this.glCanvas, 0, 0);
-            if (Browser.retina) {
-                ctx.restore();
-            }
-        }
-        return super.getCanvasImage();
-    }
-
-    // decide whether the layer is renderer with gl.
-    // when map is pitching, or fragmentShader is set in options
-    _gl() {
-        return this.getMap() && !!this.getMap().getPitch() || this.layer && !!this.layer.options['fragmentShader'];
+    retireImage(image) {
+        this.disposeImage(image);
     }
 
     onRemove() {
