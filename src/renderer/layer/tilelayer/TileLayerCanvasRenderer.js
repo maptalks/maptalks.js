@@ -55,14 +55,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         const allTiles = tileGrid['tiles'];
 
-        this._tileZoom = tileGrid.zoom;
+        this._tileZoom = tileGrid['zoom'];
+        this._tileOffset = tileGrid['offset'];
 
         const loadingCount = this._markTiles(),
             tileLimit = this._getTileLimitOnInteracting();
 
         const placeholder = this._generatePlaceHolder(tileGrid.zoom);
-
-        const offset = this.layer._getTileOffset(tileGrid.zoom);
 
         this._tileCountToLoad = 0;
         let loading = false;
@@ -82,9 +81,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tileIsLoading = loading = true;
                 this.tilesLoading[tileId].current = true;
             } else if (cached) {
-                //update tile's point which may change from previous frame
-                cached.info.point = tile.point;
-                cached.info.extent2d = tile.extent2d;
                 if (this.getTileOpacity(cached.image) < 1) {
                     tileIsLoading = loading = true;
                 }
@@ -110,7 +106,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 placeholderKeys[tile.dupKey] = 1;
             }
 
-            const parentTile = this._findParentTile(tile, offset);
+            const parentTile = this._findParentTile(tile);
             if (parentTile) {
                 const dupKey = parentTile.info.dupKey;
                 if (parentKeys[dupKey] === undefined) {
@@ -121,7 +117,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     parentTiles[parentKeys[dupKey]] = parentTile;
                 }
             } else {
-                const children = this._findChildTiles(tile, offset);
+                const children = this._findChildTiles(tile);
                 if (children.length) {
                     children.forEach(c => {
                         if (!childKeys[c.info.dupKey]) {
@@ -154,7 +150,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders) {
-        const extent = this.getMap().getContainerExtent();
         if (parentTiles.length > 0) {
             this._parentTiles = [];
             //closer the latter (to draw on top)
@@ -169,22 +164,39 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this._childTiles.push(t);
             });
         }
-        this._parentTiles.forEach(t => {
-            if (this.layer._isTileInExtent(t.info, extent)) {
-                this._drawTileAndRecord(t);
-            }
-        });
-        this._childTiles.forEach(t => this.drawTile(t.info, t.image));
-        placeholders.forEach(t => this.drawTile(t.info, t.image));
-        tiles.forEach(t => this._drawTileAndRecord(t));
-        // console.log(Object.keys(this.tilesInView).length);
-        // console.log(tiles.length, parentTiles.length);
+
+        this._parentTiles.forEach(t => this._drawTileAndCache(t));
+        this._childTiles.forEach(t => this._drawTileOffset(t.info, t.image));
+
+        placeholders.forEach(t => this._drawTileOffset(t.info, t.image));
+        tiles.forEach(t => this._drawTileAndCache(t));
     }
 
-    _drawTileAndRecord(tile) {
+    _drawTileOffset(info, image) {
+        const offset = this._tileOffset;
+        if (!offset[0] && !offset[1]) {
+            this.drawTile(info, image);
+            return;
+        }
+        const map = this.getMap();
+        //tempararily add offset to tile info
+        const scale = map._getResolution(this._tileZoom) / map._getResolution(info.z);
+        offset[0] *= scale;
+        offset[1] *= scale;
+        info.point._sub(offset);
+        info.extent2d._sub(offset);
+        this.drawTile(info, image);
+        //restore
+        info.point._add(offset);
+        info.extent2d._add(offset);
+        offset[0] /= scale;
+        offset[1] /= scale;
+    }
+
+    _drawTileAndCache(tile) {
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
-        this.drawTile(tile.info, tile.image);
+        this._drawTileOffset(tile.info, tile.image);
         this.tileCache.add(tile.info.id, tile);
     }
 
@@ -428,27 +440,36 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.setCanvasUpdated();
     }
 
-    _findChildTiles(info, offset) {
+    _findChildTiles(info) {
         if (!this.layer.options['background']) {
             return [];
         }
-        const map = this.getMap(),
-            layer = this.layer,
-            childZoom = info.z + 1,
-            res = map.getResolution(childZoom);
+        const map = this.getMap();
+        const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            pmin = map._pointToPrj(min._sub(offset[0], offset[1]), info.z),
-            pmax = map._pointToPrj(max._sub(offset[0], offset[1]), info.z);
+            pmin = map._pointToPrj(min, info.z),
+            pmax = map._pointToPrj(max, info.z);
+        const zoomDiff = 3;
+        for (let i = 1; i < zoomDiff; i++) {
+            this._findChildTilesAt(children, pmin, pmax, info.layer, info.z + i);
+        }
+
+        return children;
+    }
+
+    _findChildTilesAt(children, pmin, pmax, layerId, childZoom) {
+        const map = this.getMap(),
+            layer = this.layer,
+            res = map.getResolution(childZoom);
         const dmin = layer._getTileConfig().getTileIndex(pmin, res),
             dmax = layer._getTileConfig().getTileIndex(pmax, res);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
         const sy = Math.min(dmin.idy, dmax.idy), ey = Math.max(dmin.idy, dmax.idy);
         let id, tile;
-        const children = [];
         for (let i = sx; i < ex; i++) {
             for (let ii = sy; ii < ey; ii++) {
-                id = layer._getTileId({ idx : i, idy : ii }, childZoom, info.layer);
+                id = layer._getTileId({ idx : i, idy : ii }, childZoom, layerId);
                 if (this.tileCache.has(id)) {
                     tile = this.tileCache.getAndRemove(id);
                     children.push(tile);
@@ -456,10 +477,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
         }
-        return children;
     }
 
-    _findParentTile(info, offset) {
+    _findParentTile(info) {
         const map = this.getMap();
         if (!this.layer.options['background']) {
             return null;
@@ -468,7 +488,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             layer = this.layer,
             zoomDiff = layer.options['backgroundZoomDiff'];
         const center = info.extent2d.getCenter(),
-            prj = map._pointToPrj(center._sub(offset[0], offset[1]), info.z);
+            prj = map._pointToPrj(center, info.z);
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
             const res = map.getResolution(z);

@@ -39,7 +39,7 @@ A light JavaScript library to create integrated 2D/3D maps.
 * Node >= 4.x (for [Server-Side Rendering](https://github.com/maptalks/maptalks.js/wiki/Server-Side-Rendering))
 * Electron
 
-**maptalks** is well tested against IE10, IE11, Firefox and Chrome by around 1.5K test cases running on CI services. IE9 is not covered by CI because testing continues to crash for some unknown reasons. Issues on IE9 will be taken care of case by case.
+**maptalks** is well tested against IE9, IE10, IE11, Firefox and Chrome by more than 1.6K test cases running on CI services. 
 
 ## Install
 

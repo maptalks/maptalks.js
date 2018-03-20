@@ -138,6 +138,37 @@ describe('Geometry.LineString', function () {
         expect(polyline.getExtent().toJSON()).to.eql(new maptalks.Extent(0, 0, 0, 80).toJSON());
     });
 
+    describe('rotate the geometry', function () {
+        it('without a pivot', function () {
+            var polyline = new maptalks.LineString([
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
+            ]);
+            polyline.rotate(20);
+    
+            var expected =  [[10.796595235860309, 1.8092213764076168], [7.350247889316506, 11.2061475842436], [-33.81727811167417, 76.98463103926437]];
+            var json = polyline.toGeoJSON().geometry.coordinates;
+            expect(json).to.eql(expected);
+        });
+        
+        it('with a pivot', function () {
+            var polyline = new maptalks.LineString([
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
+            ]);
+            polyline.rotate(20, [0, 0]);
+    
+            var expected =  [ [ 0, 0 ],
+            [ -3.435638342187758, 9.396926207835993 ],
+            [ -42.531359521766376, 75.17540966285675 ] ];
+            var json = polyline.toGeoJSON().geometry.coordinates;
+            console.log(json);
+            expect(json).to.eql(expected);
+        });
+    });
+
     describe('geometry fires events', function () {
         it('events', function () {
             var points = [
@@ -176,7 +207,7 @@ describe('Geometry.LineString', function () {
         expect(line.containsPoint(cp.add(-1, 0), 0)).not.to.be.ok();
         // expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
         expect(line.containsPoint(cp.add(0, lineWidth / 2 - 1), 0)).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2), 0)).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1), 0)).not.to.be.ok();
     });
 
     it('containsPoint with lineCap', function () {

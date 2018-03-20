@@ -36,23 +36,20 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return;
         }
 
-        const point = tileInfo.point,
-            tileZoom = tileInfo.z;
-        const scale = map.getGLScale(tileZoom),
-            pp = point.multi(scale);
-        const x = pp.x,
-            y = pp.y,
+        const scale = map.getGLScale(tileInfo.z),
             w = tileInfo.size[0] * scale,
             h = tileInfo.size[1] * scale;
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
-
         if (!this._gl()) {
             // fall back to canvas 2D
             super.drawTile(tileInfo, tileImage);
             return;
         }
+        const point = tileInfo.point;
+        const x = point.x * scale,
+            y = point.y * scale;
         const opacity = this.getTileOpacity(tileImage);
         this.drawGLImage(tileImage, x, y, w, h, opacity);
 

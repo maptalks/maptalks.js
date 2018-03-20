@@ -30,17 +30,17 @@ describe('GroupTileLayer', function () {
     it('add to map', function (done) {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
-                urlTemplate : TILE_IMAGE
+                urlTemplate : '#'
             }),
             new maptalks.TileLayer('tile2', {
-                urlTemplate : TILE_IMAGE
+                urlTemplate : '#'
             })
         ], {
             renderer : 'canvas'
         });
         var group2 = new maptalks.GroupTileLayer('group2', [
             new maptalks.TileLayer('tile1', {
-                urlTemplate : TILE_IMAGE
+                urlTemplate : '#'
             })
         ], {
             renderer : 'canvas'
@@ -87,10 +87,10 @@ describe('GroupTileLayer', function () {
 
     it('event bindings', function () {
         var tile1 = new maptalks.TileLayer('tile1', {
-            urlTemplate : TILE_IMAGE
+            urlTemplate : '#'
         });
         var tile2 = new maptalks.TileLayer('tile2', {
-            urlTemplate : TILE_IMAGE
+            urlTemplate : '#'
         });
         var group = new maptalks.GroupTileLayer('group', [
             tile1, tile2
@@ -164,7 +164,7 @@ describe('GroupTileLayer', function () {
     it('update child layer tile config if map\'s spatial reference changed', function () {
         var t1 = new maptalks.TileLayer('tile1', {
             maxZoom : 17,
-            urlTemplate : TILE_IMAGE
+            urlTemplate : '#'
         });
         var group = new maptalks.GroupTileLayer('group', [
             t1

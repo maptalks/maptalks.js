@@ -648,7 +648,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
-        return 0;
+        return this._spatialReference.getMinZoom();
     }
 
     /**
@@ -1424,7 +1424,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locate(coordinate, dx, dy) {
-        return this.getProjection().locate(new Coordinate(coordinate), dx, dy);
+        return this.getProjection()._locate(new Coordinate(coordinate), dx, dy);
     }
 
     /**

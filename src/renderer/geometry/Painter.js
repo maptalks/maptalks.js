@@ -20,7 +20,7 @@ const registerSymbolizers = [
 ];
 
 
-const testCanvas = Canvas.createCanvas(1, 1);
+let testCanvas;
 
 /**
  * @classdesc
@@ -197,7 +197,7 @@ class Painter extends Class {
         if (Array.isArray(points)) {
             const geometry = this.geometry;
             let clipped;
-            if (!noClip && geometry.options['enableClip'] && !geometry.options['smoothness']) {
+            if (!noClip && geometry.options['enableClip']) {
                 clipped = this._clip(points, altitude);
             } else {
                 clipped = {
@@ -244,6 +244,7 @@ class Painter extends Class {
 
     _clip(points, altitude) {
         const map = this.getMap(),
+            geometry = this.geometry,
             glZoom = map.getGLZoom();
         let lineWidth = this.getSymbol()['lineWidth'];
         if (!isNumber(lineWidth)) {
@@ -269,8 +270,9 @@ class Painter extends Class {
                 altitude : altitude
             };
         }
+        const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
-        if (this.geometry.getShell && this.geometry.getHoles) {
+        if (geometry.getShell && this.geometry.getHoles && !smoothness) {
             // clip the polygon to draw less and improve performance
             if (!Array.isArray(points[0])) {
                 clipPoints = clipPolygon(points, extent2D);
@@ -283,14 +285,14 @@ class Painter extends Class {
                     }
                 }
             }
-        } else if (this.geometry.getJSONType() === 'LineString') {
+        } else if (geometry.getJSONType() === 'LineString') {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipLine(points, extent2D);
+                clipPoints = clipLine(points, extent2D, false,  !!smoothness);
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    pushIn(clipPoints, clipLine(points[i], extent2D));
+                    pushIn(clipPoints, clipLine(points[i], extent2D, false, !!smoothness));
                 }
             }
             //interpolate line's segment's altitude if altitude is an array
@@ -439,11 +441,16 @@ class Painter extends Class {
     }
 
     hitTest(cp, tolerance) {
-        tolerance = tolerance || 0.5;
+        if (!tolerance || tolerance < 0.5) {
+            tolerance = 0.5;
+        }
+        if (!testCanvas) {
+            testCanvas = Canvas.createCanvas(1, 1);
+        }
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
-        this._hitPoint = cp;
-        this.paint(null, ctx, cp);
+        this._hitPoint = cp.sub(tolerance, tolerance);
+        this.paint(null, ctx, this._hitPoint);
         delete this._hitPoint;
         const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
         for (let i = 3, l = imgData.length; i < l; i += 4) {

@@ -19,7 +19,7 @@ describe('Control.Overview', function () {
         tile = new maptalks.TileLayer('tile', {
             renderer : 'canvas',
             fadeAnimation : false,
-            urlTemplate : TILE_IMAGE
+            urlTemplate : '#'
         });
 
     });
@@ -115,11 +115,11 @@ describe('Control.Overview', function () {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 visible : false,
-                urlTemplate : TILE_IMAGE
+                urlTemplate : '#'
             }),
             new maptalks.TileLayer('tile2', {
                 visible : false,
-                urlTemplate : TILE_IMAGE
+                urlTemplate : '#'
             })
         ], {
             renderer : 'canvas'

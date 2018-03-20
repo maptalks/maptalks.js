@@ -1,11 +1,11 @@
 import Point from '../../geo/Point';
 
 
-export function clipLine(points, bounds, round) {
+export function clipLine(points, bounds, round, noCut) {
     const parts = [];
     let k = 0, segment;
     for (let j = 0, l = points.length; j < l - 1; j++) {
-        segment = clipSegment(points[j], points[j + 1], bounds, j, round);
+        segment = clipSegment(points[j], points[j + 1], bounds, j, round, noCut);
 
         if (!segment) { continue; }
 
@@ -36,7 +36,7 @@ let _lastCode;
 // (modifying the segment points directly!). Used by Leaflet to only show polyline
 // points that are on the screen or near, increasing performance.
 // @copyright Leaflet
-export function clipSegment(a, b, bounds, useLastCode, round) {
+export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
     let codeA = useLastCode ? _lastCode : _getBitCode(a, bounds),
         codeB = _getBitCode(b, bounds),
 
@@ -56,6 +56,9 @@ export function clipSegment(a, b, bounds, useLastCode, round) {
             return false;
         }
 
+        if (noCut) {
+            return [a, b];
+        }
         // other cases
         codeOut = codeA || codeB;
         p = _getEdgeIntersection(a, b, codeOut, bounds, round);
