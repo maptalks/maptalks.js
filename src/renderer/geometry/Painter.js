@@ -447,10 +447,17 @@ class Painter extends Class {
         if (!testCanvas) {
             testCanvas = Canvas.createCanvas(1, 1);
         }
+        Canvas.setHitTesting(true);
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
         this._hitPoint = cp.sub(tolerance, tolerance);
-        this.paint(null, ctx, this._hitPoint);
+        try {
+            this.paint(null, ctx, this._hitPoint);
+        } catch (e) {
+            throw e;
+        } finally {
+            Canvas.setHitTesting(false);
+        }
         delete this._hitPoint;
         const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
         for (let i = 3, l = imgData.length; i < l; i += 4) {

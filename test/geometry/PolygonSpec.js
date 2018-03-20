@@ -246,7 +246,9 @@ describe('Geometry.Polygon', function () {
             new maptalks.Coordinate([center.x + 0.002, center.y])
         ]], {
             symbol: {
-                'lineWidth': 6
+                'lineWidth': 6,
+                'polygonOpacity' : 0,
+                'lineOpacity' : 0
             }
         });
         layer.addGeometry(geometry);
