@@ -74,6 +74,10 @@ class PerspectiveCamera{
          * 将视图矩阵和投影矩阵结合在一起
          */
         this.viewProjectionMatrix = this.projectionMatrix.clone().multiply(viewMatrix);
+        /**
+         * 暴露出viewMatrix
+         */
+        this.viewMatrix = viewMatrix;
     }
 
     set target(v){
@@ -89,10 +93,12 @@ class PerspectiveCamera{
         this._update();
     }
     /**
-     * 更新相机位置，重新计算viewPorjection
-     * @param {FORWARD, BACKWARD, LEFT, RIGHT} direction
-     * @param {*} deltaTime
+     * 返回一个默认的identityMatrix,用于代替modelMatrix
      */
+    get identityMatrix(){
+        return new Mat4();
+    }
+    
     move(direction, deltaTime = 1){
         let velocity = this.movementSpeed * deltaTime;
         switch(direction)
