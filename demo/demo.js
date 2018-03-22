@@ -2,24 +2,41 @@ const glCanvas = new fusion.gl.GLCanvas('mapCanvas');
 //
 const vertexText =
         'attribute vec3 a_position;' +
-        // 'attribute vec2 a_texCoord;' +
-        'uniform mat4 u_matrix;' +
-        // 'varying vec2 out_texCoord;' +
+        'attribute vec3 a_normal;' +
+        'uniform mat4 u_projectionMatrix;' +
+        'uniform mat4 u_viewMatrix;' +
+        'uniform mat4 u_modelMatrix;' +
+        'varying vec3 o_normal;' +
+        'varying vec3 o_fragpos;' +
         'void main(){' +
-        'gl_Position = u_matrix * vec4(a_position,1.0);' +
-        // 'out_texCoord = a_texCoord;' +
+        'gl_Position = u_projectionMatrix*u_viewMatrix*u_modelMatrix*vec4(a_position,1.0);' +
+        'o_fragpos = vec3(u_modelMatrix*vec4(a_position,1.0));' +
+        // 'o_fragpos = vec3(u_viewMatrix*vec4(a_position,1.0));'+
+        // 'o_fragpos = a_position;'+
+        'o_normal = a_normal;' +
         '}';
 
 //注：使用采样后必须申明浮点数精度，否则报错 No precision specified for (float)
 const fragText =
         'precision mediump float;' +
         'uniform sampler2D u_sample;' +
-        // 'varying vec2 out_texCoord;' +
+        'uniform vec3 u_light;' +
+        'uniform vec3 u_viewPos;' +
         'uniform vec3 objectColor;' +
         'uniform vec3 lightColor;' +
+        'varying vec3 o_normal;' +
+        'varying vec3 o_fragpos;' +
         'void main(){' +
-        // 'gl_FragColor = vec4(0.01 * lightColor * objectColor,1.0)*texture2D(u_sample,out_texCoord);' +
-        'gl_FragColor = vec4( 0.5 * lightColor * objectColor,1.0);' +
+        'vec3 norm = normalize(o_normal);'+
+        'vec3 viewDir = normalize(u_viewPos-o_fragpos);'+
+        'vec3 lightDir = normalize(u_light-o_fragpos);'+
+        'vec3 reflectDir = reflect(-1.0*lightDir, norm);'+
+        'float sepc = pow(max(dot(viewDir, reflectDir), 0.0),32.0);'+
+        'vec3 specular =0.5*sepc*lightColor;'+
+        'float diff = max(dot(norm,lightDir),0.0);'+
+        'vec3 diffuse =diff*lightColor;'+
+        'gl_FragColor = vec4((vec3(0.1)+specular+diffuse)*objectColor,1.0);' +
+        // 'gl_FragColor = vec4(o_fragpos,1.0);'+
         '}';
 
 /**
@@ -43,50 +60,50 @@ gl.linkProgram(program);
 gl.useProgram(program);
 gl.deleteShader(vs);
 gl.deleteShader(fs);
+//
+gl.enable(gl.DEPTH_TEST);
 //立方体顶点，顶点坐标遵循标准化设备坐标规则（NDC）
 const vertices =
         [
-                -50, -50, -50,
-                50, -50, -50,
-                50, 50, -50,
-                50, 50, -50,
-                -50, 50, -50,
-                -50, -50, -50,
-
-                -50, -50, 50,
-                50, -50, 50,
-                50, 50, 50,
-                50, 50, 50,
-                -50, 50, 50,
-                -50, -50, 50,
-
-                -50, 50, 50,
-                -50, 50, -50,
-                -50, -50, -50,
-                -50, -50, -50,
-                -50, -50, 50,
-                -50, 50, 50,
-
-                50, 50, 50,
-                50, 50, -50,
-                50, -50, -50,
-                50, -50, -50,
-                50, -50, 50,
-                50, 50, 50,
-
-                -50, -50, -50,
-                50, -50, -50,
-                50, -50, 50,
-                50, -50, 50,
-                -50, -50, 50,
-                -50, -50, -50,
-
-                -50, 50, -50,
-                50, 50, -50,
-                50, 50, 50,
-                50, 50, 50,
-                -50, 50, 50,
-                -50, 50, -50
+                // Z轴上的平面
+                -0.5, 0.5, 0.5,
+                -0.5, -0.5, 0.5,
+                0.5, -0.5, 0.5,
+                0.5, -0.5, 0.5,
+                0.5, 0.5, 0.5,
+                -0.5, 0.5, 0.5,
+                -0.5, 0.5, -0.5,
+                -0.5, -0.5, -0.5,
+                0.5, -0.5, -0.5,
+                0.5, -0.5, -0.5,
+                0.5, 0.5, -0.5,
+                -0.5, 0.5, -0.5,
+                // X轴上的平面
+                0.5, -0.5, 0.5,
+                0.5, -0.5, -0.5,
+                0.5, 0.5, -0.5,
+                0.5, 0.5, -0.5,
+                0.5, 0.5, 0.5,
+                0.5, -0.5, 0.5,
+                -0.5, -0.5, 0.5,
+                -0.5, -0.5, -0.5,
+                -0.5, 0.5, -0.5,
+                -0.5, 0.5, -0.5,
+                -0.5, 0.5, 0.5,
+                -0.5, -0.5, 0.5,
+                // Y轴上的平面
+                -0.5, 0.5, 0.5,
+                -0.5, 0.5, -0.5,
+                0.5, 0.5, -0.5,
+                0.5, 0.5, -0.5,
+                0.5, 0.5, 0.5,
+                -0.5, 0.5, 0.5,
+                -0.5, -0.5, 0.5,
+                -0.5, -0.5, -0.5,
+                0.5, -0.5, -0.5,
+                0.5, -0.5, -0.5,
+                0.5, -0.5, 0.5,
+                -0.5, -0.5, 0.5
         ];
 const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -97,15 +114,73 @@ const a_position = gl.getAttribLocation(program, "a_position");
 gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
 //启用顶点属性
 gl.enableVertexAttribArray(a_position);
+//法线数据
+const normals =
+        [
+                // Z轴上的平面
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, 1,
+                0, 0, -1,
+                0, 0, -1,
+                0, 0, -1,
+                0, 0, -1,
+                0, 0, -1,
+                0, 0, -1,
+                // X轴上的平面
+                1, 0, 0,
+                1, 0, 0,
+                1, 0, 0,
+                1, 0, 0,
+                1, 0, 0,
+                1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+                -1, 0, 0,
+                // Y轴上的平面
+                0, 1, 0,
+                0, 1, 0,
+                0, 1, 0,
+                0, 1, 0,
+                0, 1, 0,
+                0, 1, 0,
+                0, -1, 0,
+                0, -1, 0,
+                0, -1, 0,
+                0, -1, 0,
+                0, -1, 0,
+                0, -1, 0
+        ];
+//传递法线数据操作
+const normalBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+const a_normal = gl.getAttribLocation(program, 'a_normal');
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
+gl.enableVertexAttribArray(a_normal);
+//设置光源位置
+const u_light = gl.getUniformLocation(program, 'u_light');
+gl.uniform3fv(u_light, [0, 0, 1]);
+
+
+
+
+
 //绘制顶点
 //gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
 //设置纹理坐标
 // const texCoords = 
 //         [
-//         -50, -50,
-//         -50, 50,
-//         50, 50,
-//         50,-50
+//         -0.5, -0.5,
+//         -0.5, 0.5,
+//         0.5, 0.5,
+//         0.5,-0.5
 //         ];
 // const texCoordBuffer = gl.createBuffer();
 // gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
@@ -114,27 +189,38 @@ gl.enableVertexAttribArray(a_position);
 //将缓冲区对象分配给a_texCoord对象
 // gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
 // gl.enableVertexAttribArray(a_texCoord);
-//
-const camera = new fusion.gl.PerspectiveCamera(60, 800 / 600, 1, 2000);
-camera.position = [100, 100, 400];
-const u_matrix = gl.getUniformLocation(program, 'u_matrix');
-gl.uniformMatrix4fv(u_matrix, false, camera.viewProjectionMatrix.value);
+//设置相机相关矩阵
+const camera = new fusion.gl.PerspectiveCamera(60, 800 / 600, 0.1, 1000);
+gl.viewport(0, 0, 800, 600);
+camera.position = [1, 2, 5];
+
+const u_viewPos = gl.getUniformLocation(program, 'u_viewPos');
+gl.uniform3fv(u_viewPos, [0, 0, 1]);
+
+const u_projectionMatrix = gl.getUniformLocation(program, 'u_projectionMatrix');
+gl.uniformMatrix4fv(u_projectionMatrix, false, camera.projectionMatrix.value);
+const u_viewMatrix = gl.getUniformLocation(program, 'u_viewMatrix');
+gl.uniformMatrix4fv(u_viewMatrix, false, camera.viewMatrix.value);
+const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
+gl.uniformMatrix4fv(u_modelMatrix, false, camera.identityMatrix.value);
+
 //设置颜色
 const objectColor = gl.getUniformLocation(program, 'objectColor');
 gl.uniform3fv(objectColor, [1.0, 0.8, 0.31]);
 const lightColor = gl.getUniformLocation(program, 'lightColor');
-gl.uniform3fv(lightColor, [1.2, 1.0, 2.0]);
+gl.uniform3fv(lightColor, [1, 1, 1]);
 //
 gl.drawArrays(gl.TRIANGLES, 0, 36);
 
-// let i=0;
+let i = 0;
 
-// setInterval(function () {
-//         i++;
-//         camera.position = [i, 0, i];
-//         gl.uniformMatrix4fv(u_matrix, false, camera.viewProjectionMatrix.value);
-//         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
-// }, 1000 / 60);
+setInterval(function () {
+        i++;
+        gl.uniform3fv(u_light, [i*0.01, 1, 45]);
+        // camera.position = [i*0.1, 0, i*0.1];
+        // gl.uniformMatrix4fv(u_matrix, false, camera.viewProjectionMatrix.value);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
+}, 1000 / 60);
 
 //赋纹理
 // const image = new Image();

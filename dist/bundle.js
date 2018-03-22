@@ -18015,6 +18015,10 @@ var PerspectiveCamera = function () {
        * 将视图矩阵和投影矩阵结合在一起
        */
       this.viewProjectionMatrix = this.projectionMatrix.clone().multiply(viewMatrix);
+      /**
+       * 暴露出viewMatrix
+       */
+      this.viewMatrix = viewMatrix;
     }
   }, {
     key: 'target',
@@ -18032,6 +18036,15 @@ var PerspectiveCamera = function () {
     set: function set$$1(v) {
       this._position.set(v[0], v[1], v[2]);
       this._update();
+    }
+    /**
+     * 返回一个默认的identityMatrix,用于代替modelMatrix
+     */
+
+  }, {
+    key: 'identityMatrix',
+    get: function get$$1() {
+      return new Mat4();
     }
   }]);
   return PerspectiveCamera;

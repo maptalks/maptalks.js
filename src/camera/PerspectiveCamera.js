@@ -66,6 +66,10 @@ class PerspectiveCamera{
          * 将视图矩阵和投影矩阵结合在一起
          */
         this.viewProjectionMatrix = this.projectionMatrix.clone().multiply(viewMatrix);
+        /**
+         * 暴露出viewMatrix
+         */
+        this.viewMatrix = viewMatrix;
     }
 
     set target(v){
@@ -80,8 +84,12 @@ class PerspectiveCamera{
         this._position.set(v[0],v[1],v[2]);
         this._update();
     }
-
-
+    /**
+     * 返回一个默认的identityMatrix,用于代替modelMatrix
+     */
+    get identityMatrix(){
+        return new Mat4();
+    }
 
 }
 
