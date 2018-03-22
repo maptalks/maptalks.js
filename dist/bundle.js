@@ -17917,6 +17917,14 @@
 	     * 默认相机位置
 	     */
 	    this._position = new Vec3$1().set(0, 0, 0);
+	    this._front = new Vec3$1().set(0, 0, -1);
+	    this._up = new Vec3$1().set(0, 1, 0);
+	    this._right = new Vec3$1().set(1, 0, 0);
+	    this._worldUp = new Vec3$1().set(0, 1, 0);
+	    /**
+	     * 默认相机配置
+	     */
+	    this.movementSpeed = 2.5;
 	    /**
 	     * 透视矩阵，用于将空间的物体投影在锥形的区域内
 	     * http://www.cnblogs.com/yjmyzz/archive/2010/05/08/1730697.html
@@ -17956,6 +17964,34 @@
 	     * @type {Array} [0,0,400]
 	     */
 
+	  }, {
+	    key: 'move',
+
+	    /**
+	     * 更新相机位置，重新计算viewPorjection
+	     * @param {FORWARD, BACKWARD, LEFT, RIGHT} direction
+	     * @param {*} deltaTime
+	     */
+	    value: function move(direction) {
+	      var deltaTime = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
+	      var velocity = this.movementSpeed * deltaTime;
+	      switch (direction) {
+	        case "FORWARD":
+	          this._position.add(this._front.clone().scale(velocity));
+	          break;
+	        case "BACKWARD":
+	          this._position.sub(this._front.clone().scale(velocity));
+	          break;
+	        case "LEFT":
+	          this._position.sub(this._right.clone().scale(velocity));
+	          break;
+	        case "RIGHT":
+	          this._position.add(this._right.clone().scale(velocity));
+	          break;
+	      }
+	      this._update();
+	    }
 	  }, {
 	    key: 'position',
 	    set: function set$$1(v) {
