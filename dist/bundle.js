@@ -17891,6 +17891,10 @@
 	    Vec3$1 = init$2.Vec3,
 	    GLMatrix = init$2.GLMatrix;
 	/**
+	 * up direction
+	 */
+	var up = new Vec3$1().set(0, 1, 0);
+	/**
 	 * 
 	 * https://learnopengl-cn.github.io/01%20Getting%20started/09%20Camera/
 	 * 透视相机
@@ -17916,7 +17920,7 @@
 	    /**
 	     * 默认相机位置
 	     */
-	    this._position = new Vec3$1().set(0, 0, 0);
+	    this._position = new Vec3$1().set(0, 0, 100);
 	    this._front = new Vec3$1().set(0, 0, -1);
 	    this._up = new Vec3$1().set(0, 1, 0);
 	    this._right = new Vec3$1().set(1, 0, 0);
@@ -17925,6 +17929,10 @@
 	     * 默认相机配置
 	     */
 	    this.movementSpeed = 2.5;
+	    /**
+	     * 设置默认相机的direction中心
+	     */
+	    this._target = new Vec3$1().set(0, 0, 0);
 	    /**
 	     * 透视矩阵，用于将空间的物体投影在锥形的区域内
 	     * http://www.cnblogs.com/yjmyzz/archive/2010/05/08/1730697.html
@@ -17949,7 +17957,7 @@
 	       * 相机矩阵，这个矩阵代表的是相机在世界坐标中的位置和姿态。 
 	       * https://webglfundamentals.org/webgl/lessons/zh_cn/webgl-3d-camera.html
 	       */
-	      var cameraMatrix = new Mat4$1().translate(this._position);
+	      var cameraMatrix = new Mat4$1().lookAt(this._position, this._target, up);
 	      /**
 	       * 视图矩阵是将所有物体以相反于相机的方向运动
 	       */
@@ -17959,11 +17967,6 @@
 	       */
 	      this.viewProjectionMatrix = this.projectionMatrix.clone().multiply(viewMatrix);
 	    }
-	    /**
-	     * 更新相机位置，重新计算viewPorjection
-	     * @type {Array} [0,0,400]
-	     */
-
 	  }, {
 	    key: 'move',
 
@@ -17992,6 +17995,17 @@
 	      }
 	      this._update();
 	    }
+	  }, {
+	    key: 'target',
+	    set: function set$$1(v) {
+	      this._target.set(v[0], v[1], v[2]);
+	      this._update();
+	    }
+	    /**
+	     * 更新相机位置，重新计算viewPorjection
+	     * @type {Array} [0,0,400]
+	     */
+
 	  }, {
 	    key: 'position',
 	    set: function set$$1(v) {
