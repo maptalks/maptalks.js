@@ -48,6 +48,16 @@ describe('Control.Overview', function () {
         expect(overview._overview.getBaseLayer()).to.be.ok();
     });
 
+    it('baseLayer with customized getTileUrl method', function () {
+        var fn = function () { return '' };
+        tile.getTileUrl = fn;
+        var overview = new maptalks.control.Overview();
+        map.setBaseLayer(tile);
+        overview.addTo(map);
+        var overviewBaseLayer = overview._overview.getBaseLayer();
+        expect(overviewBaseLayer.getTileUrl === fn).to.be.ok();
+    });
+
     it('remove', function () {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);

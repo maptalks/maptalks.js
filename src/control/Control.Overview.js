@@ -1,4 +1,4 @@
-import { extend } from '../core/util';
+import { extend, isFunction } from '../core/util';
 import { on, off, createEl } from '../core/util/dom';
 import Polygon from '../geometry/Polygon';
 import Layer from '../layer/Layer';
@@ -260,6 +260,11 @@ class Overview extends Control {
         json.options.visible = true;
         json.options.renderer = 'canvas';
         const layer = Layer.fromJSON(json);
+        for (const p in baseLayer) {
+            if (isFunction(baseLayer[p]) && baseLayer.hasOwnProperty(p) && baseLayer[p] !== baseLayer.constructor.prototype[p]) {
+                layer[p] = baseLayer[p];
+            }
+        }
         this._overview.setBaseLayer(layer);
     }
 }
