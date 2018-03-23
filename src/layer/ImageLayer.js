@@ -85,7 +85,7 @@ ImageLayer.mergeOptions(options);
 
 const EMPTY_ARRAY = [];
 
-class ImageCanvasRenderer extends CanvasRenderer {
+export class ImageLayerCanvasRenderer extends CanvasRenderer {
     isDrawable() {
         if (this.getMap().getPitch()) {
             if (console) {
@@ -204,9 +204,7 @@ class ImageCanvasRenderer extends CanvasRenderer {
     }
 }
 
-ImageLayer.registerRenderer('canvas', ImageCanvasRenderer);
-
-ImageLayer.registerRenderer('gl', class extends ImageGLRenderable(ImageCanvasRenderer) {
+export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRenderer) {
 
     //override to set to always drawable
     isDrawable() {
@@ -249,6 +247,9 @@ ImageLayer.registerRenderer('gl', class extends ImageGLRenderable(ImageCanvasRen
     onRemove() {
         this.removeGLCanvas();
     }
-});
+}
+
+ImageLayer.registerRenderer('canvas', ImageLayerCanvasRenderer);
+ImageLayer.registerRenderer('gl', ImageLayerGLRenderer);
 
 export default ImageLayer;
