@@ -65,8 +65,8 @@ class PerspectiveCamera{
          * 相机矩阵，这个矩阵代表的是相机在世界坐标中的位置和姿态。 
          * https://webglfundamentals.org/webgl/lessons/zh_cn/webgl-3d-camera.html
          */
-        // const cameraMatrix = new Mat4().lookAt(this._position,this._target,up);
-        const cameraMatrix = new Mat4().lookAt(this._position, this._position.clone().add(this._front), this._up);
+        const cameraMatrix = new Mat4().lookAt(this._position,this._target,up);
+        // const cameraMatrix = new Mat4().lookAt(this._position, this._position.clone().add(this._front), this._up);
         /**
          * 视图矩阵是将所有物体以相反于相机的方向运动
          */
@@ -117,6 +117,7 @@ class PerspectiveCamera{
                 this._position.add(this._right.clone().scale(velocity));
                 break;
         }
+        this.target(this._position.clone().add(this._front));
         this._update();
     }
 
