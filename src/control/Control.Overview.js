@@ -159,7 +159,6 @@ class Overview extends Control {
             'cursor': 'move',
             'symbol': this.options['symbol']
         })
-            .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
         new VectorLayer('perspective_layer', this._perspective).addTo(this._overview);
         this.fire('load');
@@ -187,16 +186,11 @@ class Overview extends Control {
         return zoom;
     }
 
-    _onDragStart() {
-        this._origDraggable = this.getMap().options['draggable'];
-        this.getMap().config('draggable', false);
-    }
 
     _onDragEnd() {
         const center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
-        this.getMap().config('draggable', this._origDraggable);
     }
 
     _getPerspectiveCoords() {
