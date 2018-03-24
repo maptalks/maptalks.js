@@ -146,12 +146,12 @@ describe('Geometry.LineString', function () {
                 { x: 0, y: 80 }
             ]);
             polyline.rotate(20);
-    
+
             var expected =  [[10.796595235860309, 1.8092213764076168], [7.350247889316506, 11.2061475842436], [-33.81727811167417, 76.98463103926437]];
             var json = polyline.toGeoJSON().geometry.coordinates;
             expect(json).to.eql(expected);
         });
-        
+
         it('with a pivot', function () {
             var polyline = new maptalks.LineString([
                 { x: 0, y: 0 },
@@ -159,7 +159,7 @@ describe('Geometry.LineString', function () {
                 { x: 0, y: 80 }
             ]);
             polyline.rotate(20, [0, 0]);
-    
+
             var expected =  [ [ 0, 0 ],
             [ -3.435638342187758, 9.396926207835993 ],
             [ -42.531359521766376, 75.17540966285675 ] ];
@@ -401,6 +401,25 @@ describe('Geometry.LineString', function () {
 
             });
             layer.addGeometry(polyline).addTo(map);
+        });
+        it('#649 fix infinite loop if removed during animateShow', function (done) {
+            layer = new maptalks.VectorLayer('id2', { drawImmediate : true });
+            var polyline = new maptalks.LineString([
+                map.getCenter(),
+                map.getCenter().add(0.01, 0.01)
+            ]);
+            layer.addGeometry(polyline).addTo(map);
+            var geojson = polyline.toGeoJSON();
+            polyline.animateShow({
+                'duration' : 20000,
+                'easing' : 'out'
+            });
+            setTimeout(function () {
+                polyline.remove();
+                setTimeout(function () {
+                    done();
+                }, 60);
+            }, 10);
         });
         it('The current coordinate should be correct', function (done) {
             layer = new maptalks.VectorLayer('animateShow_layer');
