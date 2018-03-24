@@ -97,10 +97,12 @@ class Path extends Geometry {
             'easing': easing
         }, frame => {
             if (!this.getMap()) {
-                player.finish();
-                if (cb) {
-                    const coordinates = this.getCoordinates();
-                    cb(frame, coordinates[coordinates.length - 1]);
+                if (player.playState !== 'finished') {
+                    player.finish();
+                    if (cb) {
+                        const coordinates = this.getCoordinates();
+                        cb(frame, coordinates[coordinates.length - 1]);
+                    }
                 }
                 return;
             }
