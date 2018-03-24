@@ -20,6 +20,10 @@ let cameraPos   = new kiwiMatrix.Vec3().set(0.0, 0.0,  3.0);
 let cameraFront = new kiwiMatrix.Vec3().set(0.0, 0.0, -1.0);
 let cameraUp    = new kiwiMatrix.Vec3().set(0.0, 1.0,  0.0);
 
+let lastX = originalgl.canvas.clientWidth / 2.0;
+let lastY = originalgl.canvas.clientHeight / 2.0;
+let firstMouse = true;
+
 function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -63,7 +67,7 @@ function main() {
   function drawScene(currentFrame) {
     // Convert to seconds
     currentFrame = Date.now() * 0.01;
-    console.log(currentFrame);
+    // console.log(currentFrame);
     // Subtract the previous time from the current time
     deltaTime = currentFrame - lastFrame;
     // Remember the current time for the next frame.
@@ -129,7 +133,7 @@ function main() {
     // console.log(matrix);
     // gl.uniformMatrix4fv(matrixLocation, false, matrix.value);
 
-    console.log(camera.viewProjectionMatrix.value);
+    // console.log(camera.viewProjectionMatrix.value);
     gl.uniformMatrix4fv(matrixLocation, false, camera.viewProjectionMatrix.value);
     
     // Draw the geometry.
@@ -149,17 +153,17 @@ function setGeometry(gl) {
   const positions = new Float32Array([
     // Back
     -0.5, -0.5, -0.5, 
-    0.5, -0.5, -0.5, 
-    0.5,  0.5, -0.5, 
-    0.5,  0.5, -0.5, 
+     0.5,  0.5, -0.5, 
+     0.5, -0.5, -0.5, 
     -0.5,  0.5, -0.5, 
+     0.5,  0.5, -0.5, 
     -0.5, -0.5, -0.5, 
 
     // Front
     -0.5, -0.5,  0.5, 
-    0.5, -0.5,  0.5, 
-    0.5,  0.5,  0.5, 
-    0.5,  0.5,  0.5, 
+     0.5, -0.5,  0.5, 
+     0.5,  0.5,  0.5, 
+     0.5,  0.5,  0.5, 
     -0.5,  0.5,  0.5, 
     -0.5, -0.5,  0.5, 
 
@@ -188,11 +192,11 @@ function setGeometry(gl) {
     -0.5, -0.5, -0.5, 
 
     // Up
-    -0.5,  0.5, -0.5, 
     0.5,  0.5, -0.5, 
-    0.5,  0.5,  0.5, 
+    -0.5,  0.5, -0.5, 
     0.5,  0.5,  0.5, 
     -0.5,  0.5,  0.5, 
+    0.5,  0.5,  0.5, 
     -0.5,  0.5, -0.5]);
 
   gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
@@ -203,7 +207,7 @@ function setColors(gl) {
   gl.bufferData(
       gl.ARRAY_BUFFER,
       new Uint8Array([
-        // Back
+        // Back 橙色
         255.0, 165.0, 0.0,
         255.0, 165.0, 0.0,
         255.0, 165.0, 0.0,
@@ -211,7 +215,7 @@ function setColors(gl) {
         255.0, 165.0, 0.0,
         255.0, 165.0, 0.0,
 
-        // Front
+        // Front 红色
         255.0, 0.0,  0.0, 
         255.0, 0.0,  0.0, 
         255.0, 0.0,  0.0, 
@@ -219,7 +223,7 @@ function setColors(gl) {
         255.0, 0.0,  0.0, 
         255.0, 0.0,  0.0, 
 
-        // Left
+        // Left 蓝色
         0.0, 0.0,  255.0,
         0.0, 0.0,  255.0,
         0.0, 0.0,  255.0,
@@ -227,7 +231,7 @@ function setColors(gl) {
         0.0, 0.0,  255.0,
         0.0, 0.0,  255.0,
 
-        // Right
+        // Right 绿色
         0.0, 255.0,  0.0,
         0.0, 255.0,  0.0,
         0.0, 255.0,  0.0,
@@ -235,7 +239,7 @@ function setColors(gl) {
         0.0, 255.0,  0.0,
         0.0, 255.0,  0.0,
 
-        // Up
+        // Up 黄色
         255.0,  255.0, 0.0,
         255.0,  255.0, 0.0,
         255.0,  255.0, 0.0,
@@ -243,7 +247,7 @@ function setColors(gl) {
         255.0,  255.0, 0.0,
         255.0,  255.0, 0.0,
 
-        // Down
+        // Down 白色
         255.0,  255.0, 255.0,
         255.0,  255.0, 255.0,
         255.0,  255.0, 255.0,
@@ -257,8 +261,8 @@ function setColors(gl) {
 // ---------------------------------------------------------------------------------------------------------
 function processInput()
 {
-  document.onkeydown=function(e){    //对整个页面文档监听  
-    let keyNum = window.event? e.keyCode : e.which;       //获取被按下的键值  
+  document.onkeydown=function(event){    //对整个页面文档监听  
+    let keyNum = window.event? event.keyCode : event.which;       //获取被按下的键值  
     //判断如果用户按下了W键（keycody=87）  
     if(keyNum == 87){  
       camera.move("FORWARD", deltaTime);
@@ -276,5 +280,29 @@ function processInput()
       camera.move("RIGHT", deltaTime);  
     }
   }
+
+  document.onmousemove=function(event){
+    let xpos = event.x;
+    let ypos = event.y;
+    console.log(xpos);
+    console.log(ypos);
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    let xoffset = xpos - lastX;
+    let yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    console.log(xoffset);
+    console.log(yoffset);
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.rotate(xoffset, yoffset);
+ } 
 }
 main();

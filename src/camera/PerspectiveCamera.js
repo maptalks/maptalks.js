@@ -8,7 +8,7 @@ const Mat4 = require('kiwi.matrix').Mat4,
 /**
  * up direction
  */
-const up = new Vec3().set(0,1,0);
+// const up = new Vec3().set(0,1,0);
 /**
  * 
  * https://learnopengl-cn.github.io/01%20Getting%20started/09%20Camera/
@@ -40,7 +40,10 @@ class PerspectiveCamera{
         /**
          * 默认相机配置
          */
-        this.movementSpeed = 2.5;
+        this._yaw              = -90.0;
+        this._pitch            =   0.0;
+        this._movementSpeed    =  20.0;
+        this._mouseSensitivity =   0.1;
         /**
          * 设置默认相机的direction中心
          */
@@ -65,7 +68,7 @@ class PerspectiveCamera{
          * 相机矩阵，这个矩阵代表的是相机在世界坐标中的位置和姿态。 
          * https://webglfundamentals.org/webgl/lessons/zh_cn/webgl-3d-camera.html
          */
-        const cameraMatrix = new Mat4().lookAt(this._position,this._target,up);
+        const cameraMatrix = new Mat4().lookAt(this._position, this._target, this._up);
         // const cameraMatrix = new Mat4().lookAt(this._position, this._position.clone().add(this._front), this._up);
         /**
          * 视图矩阵是将所有物体以相反于相机的方向运动
@@ -103,7 +106,7 @@ class PerspectiveCamera{
     }
     
     move(direction, deltaTime = 1){
-        let velocity = this.movementSpeed * deltaTime;
+        let velocity = this._movementSpeed * deltaTime;
         switch(direction)
         {
             case "FORWARD":
@@ -119,7 +122,34 @@ class PerspectiveCamera{
                 this._position.add(this._right.clone().scale(velocity));
                 break;
         }
-        this.target(this._position.clone().add(this._front));
+        this._target = this._position.clone().add(this._front);
+        this._update();
+    }
+
+    rotate(offsetX, offsetY, constrainPitch = true){
+        offsetX *= this._mouseSensitivity;
+        offsetY *= this._mouseSensitivity;
+
+        this._yaw   += offsetX;
+        this._pitch += offsetY;
+
+        // Make sure that when pitch is out of bounds, screen doesn't get flipped
+        if (constrainPitch)
+        {
+            if (this._pitch > 89.0)
+                this._pitch = 89.0;
+            if (this._pitch < -89.0)
+                this._pitch = -89.0;
+        }
+
+        const frontX = Math.cos(GLMatrix.toRadian(this._yaw)) * Math.cos(GLMatrix.toRadian(this._pitch));
+        const frontY = Math.sin(GLMatrix.toRadian(this._pitch));
+        const frontZ = Math.sin(GLMatrix.toRadian(this._yaw)) * Math.cos(GLMatrix.toRadian(this._pitch));
+        this._front = new Vec3().set(frontX, frontY, frontZ).normalize();
+        this._right = this._front.clone().cross(this._worldUp).normalize();
+        this._up    = this._right.clone().cross(this._front).normalize();
+
+        this._target = this._position.clone().add(this._front);
         this._update();
     }
 
