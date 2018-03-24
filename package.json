@@ -24,18 +24,22 @@
     "babel-plugin-transform-es2015-template-literals": "^6.22.0",
     "babel-plugin-transform-es2015-typeof-symbol": "^6.23.0",
     "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-preset-env": "^1.6.1",
     "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
     "kiwi.matrix": "^0.2.8",
     "rollup": "^0.57.1",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^8.3.0",
     "rollup-plugin-node-resolve": "^3.3.0",
-    "webgl-obj-loader": "^1.1.3"
+    "webgl-obj-loader": "^1.1.3",
+    "whatwg-fetch": "^2.0.3"
   },
   "dependencies": {
+    "claygl": "^1.1.1",
     "kiwi.gl": "^0.1.7",
     "kiwi.glsl": "^0.1.6",
-    "claygl": "^1.1.1",
+    "node-fetch": "^2.1.1",
     "three": "^0.91.0"
   }
 }

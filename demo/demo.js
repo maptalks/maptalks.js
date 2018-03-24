@@ -330,5 +330,8 @@ image_diffuse.onload = function () {
                 requestAnimationFrame(animate);
         }
 }
+
+const model = new fusion.gl.Model('MK2Drone','./assets/MK2Drone/MK2DroneCore.obj');
+
 //
 glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
