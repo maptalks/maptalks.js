@@ -15,4 +15,21 @@
  */
 class Scene{
 
+    constructor(){
+        this._models = [];
+    }
+
+    /**
+     * 
+     * @param {Model} model 
+     */
+    add(obj){
+        //model
+        if(obj instanceof Model)
+            this._models.push(obj);
+        // else if(obj instanceof )
+    }
+    
 }
+
+module.exports = Scene;

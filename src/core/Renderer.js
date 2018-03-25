@@ -14,7 +14,7 @@ class Renderer{
     }
 
     render(camera,scene){
-
+        
     }
 
 }
