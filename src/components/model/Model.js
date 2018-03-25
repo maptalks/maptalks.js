@@ -9,22 +9,56 @@ const OBJ = require('webgl-obj-loader'),
  */
 class Model {
     /**
-     * 
-     * @param {string} src the .obj file path 
+     * @param {Object} opts
+     * @param {String} [opts.src]
+     * @param {String} [opts.vertices]
+     * @param {String} [opts.indices]
+     * @param {String} [opts.textureCoords]
+     * @param {String} [opts.normals]
+     * @param {String} [opts.modelMatrix]
+     * @example
+     * const model = new Model({
+     *  src:'./assets/people.obj'
+     * });
+     * or
+     * const model = new Model({
+     *  vertices:[],
+     *  indices:[],
+     *  textureCoords:[],
+     *  normals:[],
+     *  modelMatrix:new Mat4()//optional,default is identity matrix
+     * });
      */
-    constructor(filename) {
+    constructor(opts = {}) {
         /**
-         * @type {string} directory of model(.obj)
+         * 模型名
          */
-        this._directory = filename.substr(0, filename.lastIndexOf('/'));
-        /**
-         * @type {string}
-         */
-        this._fileName = filename.substr(filename.lastIndexOf('/'),filename.lastIndexOf('.'));
-        /**
-         * load model
-         */
-        this._loadModel(filename);
+        const filename = opts.src || opts.filename;
+        //模型加载
+        if (filename) {
+            /**
+             * @type {string} directory of model(.obj)
+             */
+            this._directory = filename.substr(0, filename.lastIndexOf('/'));
+            /**
+             * @type {string}
+             */
+            this._fileName = filename.substr(filename.lastIndexOf('/'), filename.lastIndexOf('.'));
+            /**
+             * load model
+             */
+            this._loadModel(filename);
+        } else {
+            this.vertices = opts.vertices;
+            //顶点索引
+            this.indices = opts.indices;
+            //纹理(一般有三张，或者是一张的RGB三通道)
+            this.textureCoords = opts.textureCoords;
+            //法线
+            this.normals = opts.normals;
+            //模型矩阵是单位矩阵
+            this.modelMatrix = opts.modelMatrix || new Mat4();
+        }
     }
     /**
      * 
@@ -37,9 +71,9 @@ class Model {
      * load model
      * @param {string} src 
      */
-    _loadModel(filename) {
+    _loadModel(src) {
         const that = this;
-        OBJ.downloadMeshes({ "single": filename }, function (meshs) {
+        OBJ.downloadMeshes({ "single": src }, function (meshs) {
             //顶点
             that.vertices = meshs.single.vertices;
             //顶点索引
@@ -57,10 +91,7 @@ class Model {
      * @param {Array} materialNames 
      */
     _loadTexture(materialNames) {
-        for(let i=0,len=materialNames.length;i<len;i++){
-            
-        }
-        //
+
     }
 
 }
