@@ -1,4 +1,6 @@
 const OBJ = require('webgl-obj-loader'),
+    GLMatrix = require('kiwi.matrix').GLMatrix,
+    Vec3 = require('kiwi.matrix').Vec3,
     Mat4 = require('kiwi.matrix').Mat4;
 /**
  * reference:
@@ -65,7 +67,7 @@ class Model {
      * @param {WebGLRenderingContext} gl 
      * @param {GLProgram} program 
      */
-    prepareDarw(gl,program) {
+    draw(gl,program) {
         const vertices = this.vertices,
             normals = this.normals,
             indeices = this.indices,
@@ -74,7 +76,6 @@ class Model {
         const pBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER,pBuffer);
         gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
-        gl.bindBuffer(null);
         const a_position = gl.getAttribLocation(program,'a_position');
         gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);//在此设置顶点数据的读取方式,Stride,步长设置为0，让程序自动决定步长
         gl.enableVertexAttribArray(a_position); 
@@ -82,12 +83,10 @@ class Model {
         const iBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,iBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Float32Array(indeices),gl.STATIC_DRAW);
-        gl.bindBuffer(null);
         //normals
         const nBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER,nBuffer);
         gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(normals),gl.STATIC_DRAW);
-        gl.bindBuffer(null);
         const a_normal = gl.getAttribLocation(program, 'a_normal');
         gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_normal);
@@ -95,10 +94,42 @@ class Model {
         const tBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER,tBuffer);
         gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(textureCoords),gl.STATIC_DRAW);
-        gl.bindBuffer(null);
         const a_texCoord = gl.getAttribLocation(program, 'a_texCoord');
         gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_texCoord);
+        //material
+        const material_ambient = gl.getUniformLocation(program, 'material.ambient');
+        const material_diffuse = gl.getUniformLocation(program, 'material.diffuse');
+        const material_specular = gl.getUniformLocation(program, 'material.specular');
+        const material_shininess = gl.getUniformLocation(program, 'material.shininess');
+        gl.uniform3fv(material_ambient, [1.0, 0.5, 0.31]);
+        gl.uniform1f(material_shininess, 32.0);
+        //texture_diffuse
+        gl.activeTexture(gl.TEXTURE0);
+        const texture1 = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture1);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,1,1,0,gl.RGB,gl.UNSIGNED_BYTE,new Uint8Array([5,5,5]));
+        gl.uniform1i(material_diffuse, 0);
+        //texture_specular
+        gl.activeTexture(gl.TEXTURE1);
+        const texture2 = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture2);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,1,1,0,gl.RGB,gl.UNSIGNED_BYTE,new Uint8Array([5,7,6]));
+        gl.uniform1i(material_diffuse, 1);
+        //
+        const u_modelMatrix = gl.getUniformLocation(program,'u_modelMatrix');
+        gl.uniformMatrix4fv(u_modelMatrix,false,this.modelMatrix.value);
+        //gl.drawElements(gl.TRIANGLES,vertices.length/3,gl.UNSIGNED_BYTE,0);
+        gl.drawArrays(gl.TRIANGLE_STRIP,0,36);
+        this.modelMatrix.rotateY(GLMatrix.toRadian(1));
     }
     /**
      * load model

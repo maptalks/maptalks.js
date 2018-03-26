@@ -70,13 +70,14 @@ class Renderer{
         gl.enable(gl.DEPTH_TEST);
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
         //3.写入lights数据
         light.prepareDraw(gl,program);
         //4.写入camera数据
         camera.prepareDraw(gl,program);
         //5.写入models数据,并绘制
         for(let i=0;i<models.length;i++)
-            models[i].draw(gl);
+            models[i].draw(gl,program);
     }
 
 }
