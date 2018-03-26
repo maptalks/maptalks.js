@@ -61,11 +61,44 @@ class Model {
         }
     }
     /**
-     * 
-     * @param {GLShader} shader 
+     * 提供draw方法，用来写入相关数据(bufferdata)
+     * @param {WebGLRenderingContext} gl 
+     * @param {GLProgram} program 
      */
-    draw(shader) {
-
+    prepareDarw(gl,program) {
+        const vertices = this.vertices,
+            normals = this.normals,
+            indeices = this.indices,
+            textureCoords = this.textureCoords;
+        //vertices
+        const pBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER,pBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
+        gl.bindBuffer(null);
+        const a_position = gl.getAttribLocation(program,'a_position');
+        gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);//在此设置顶点数据的读取方式,Stride,步长设置为0，让程序自动决定步长
+        gl.enableVertexAttribArray(a_position); 
+        //indeices
+        const iBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,iBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Float32Array(indeices),gl.STATIC_DRAW);
+        gl.bindBuffer(null);
+        //normals
+        const nBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER,nBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(normals),gl.STATIC_DRAW);
+        gl.bindBuffer(null);
+        const a_normal = gl.getAttribLocation(program, 'a_normal');
+        gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_normal);
+        //texture coords
+        const tBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER,tBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(textureCoords),gl.STATIC_DRAW);
+        gl.bindBuffer(null);
+        const a_texCoord = gl.getAttribLocation(program, 'a_texCoord');
+        gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_texCoord);
     }
     /**
      * load model

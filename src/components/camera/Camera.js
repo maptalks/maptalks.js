@@ -36,6 +36,12 @@ class Camera{
         this._position.set(v[0],v[1],v[2]);
         this._update();
     }
+    /**
+     * get array of position
+     */
+    get position(){
+        return this._position.value;
+    }
 
 }
 

@@ -2,9 +2,20 @@
  * renderer models and lights
  * @author yellow date 2018/3/25
  */
-const std_fs = require('./../components/shader/std_fs'),
-    std_vs = require('./../components/shader/std_vs');
-
+const std_fs = require('./../components/shader/stdfs'),
+    std_vs = require('./../components/shader/stdvs');
+/**
+ * vertex shader cache
+ */
+const VSCACHE = {};
+/**
+ * fragment shader cache
+ */
+const FSCACHE = {};
+/**
+ * program cache
+ */
+const PROGRAMCACHE = {};
 /**
  * refrenece:
  * https://github.com/xeolabs/xeogl/blob/master/src/renderer/renderer.js#L286
@@ -25,11 +36,49 @@ class Renderer{
          */
         this.gl = opts.gl;
     }
-
-    render(camera,models,lights){
-        //1.判断lights，组织shader
-        //2.判断models，组织shader
-        //3.rendering
+    /**
+     * 
+     * @param {Camera} camera 
+     * @param {Array[]|Model} models 
+     * @param {Light} lights 
+     */
+    render(camera,models,light){
+        /**
+         * @type {WebGLRenderingContext}
+         */
+        const gl = this.gl;
+        //1.判断lights，组织shader(这里采用直接构建的方式)
+        if(!VSCACHE['stdvs']){
+            VSCACHE['stdvs'] = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(VSCACHE['stdvs'],std_vs);
+            gl.compileShader(VSCACHE['stdvs']);
+        }
+        if(!VSCACHE['stdfs']){
+            VSCACHE['stdfs'] = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(VSCACHE['stdfs'],std_fs);
+            gl.compileShader(VSCACHE['stdfs']);
+        }
+        if(!PROGRAMCACHE['std']){
+            PROGRAMCACHE['std'] = gl.createProgram();
+            gl.attachShader(PROGRAMCACHE['std'],VSCACHE['stdvs']);
+            gl.attachShader(PROGRAMCACHE['std'],VSCACHE['stdfs']);
+            gl.linkProgram(PROGRAMCACHE['std']);
+            gl.useProgram(PROGRAMCACHE['std']);
+        }
+        const program = PROGRAMCACHE['std'];
+        //2.默认开启相关测试
+        gl.enable(gl.DEPTH_TEST);
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        //3.写入lights数据
+        light.prepareDraw(gl,program);
+        //4.写入camera数据
+        camera.prepareDraw(gl,program);
+        //5.写入models数据,并绘制
+        for(let i=0;i<models.length;i++)
+            models[i].draw(gl);
     }
 
 }
+
+module.exports = Renderer;
