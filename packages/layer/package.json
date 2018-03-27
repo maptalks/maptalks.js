@@ -1,0 +1,54 @@
+{
+  "name": "maptalks.vt",
+  "version": "0.1.0",
+  "description": "The vector-tile plugin for maptalks.js",
+  "main": "dist/maptalks.vt.js",
+  "module": "dist/maptalks.vt.es.js",
+  "jsnext:main": "dist/maptalks.vt.es.js",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "lint": "eslint src/**/*.js test/**/*.js",
+    "build": "rollup -c build/rollup.config.js",
+    "dev": "rollup -w -c build/rollup.config.js",
+    "debug": "gulp debug",
+    "test": "gulp test",
+    "pretest": "npm run lint"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-external-helpers": "^6.18.0",
+    "babel-plugin-unassert": "^2.1.2",
+    "babel-preset-es2015": "^6.18.0",
+    "eslint": "^4.7.1",
+    "eslint-config-maptalks": "^0.2.2",
+    "eslint-plugin-mocha": "^4.11.0",
+    "gulp": "^3.9.0",
+    "gulp-connect": "^5.0.0",
+    "karma": "^2.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-expect": "^1.1.3",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.5",
+    "mocha": "^4.0.1",
+    "rollup": "^0.57.1",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-node-resolve": "^3.0.0"
+  },
+  "dependencies": {
+    "@mapbox/gl-matrix": "^0.0.1",
+    "@mapbox/point-geometry": "^0.1.0",
+    "@mapbox/vector-tile": "^1.3.0",
+    "color": "^2.0.1",
+    "earcut": "^2.1.3",
+    "maptalks": "^0.37.0-alpha.0",
+    "maptalks-geojson-vt": "^2.4.0",
+    "pbf": "^3.0.5",
+    "quickselect": "^1.0.0",
+    "vt-pbf": "^3.1.0"
+  }
+}

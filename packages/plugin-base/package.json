@@ -1,0 +1,16 @@
+{
+    "name": "maptalks.vt.base-plugin",
+    "version": "0.1.0",
+    "description": "The base plugin for maptalks.vt",
+    "module": "index.js",
+    "jsnext:main": "index.js",
+    "scripts": {
+    },
+    "private" : true,
+    "keywords": [
+      "maptalks",
+      "vectortile"
+    ],
+    "author": "fuzhenn",
+    "license": "UNLICENSED"
+}
