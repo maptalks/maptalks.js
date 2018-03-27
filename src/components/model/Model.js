@@ -1,5 +1,4 @@
-const OBJ = require('webgl-obj-loader'),
-    GLMatrix = require('kiwi.matrix').GLMatrix,
+const GLMatrix = require('kiwi.matrix').GLMatrix,
     Vec3 = require('kiwi.matrix').Vec3,
     Mat4 = require('kiwi.matrix').Mat4;
 /**
@@ -89,7 +88,7 @@ class Model {
         //indeices
         const iBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(indeices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indeices), gl.STATIC_DRAW);
         //normals
         const nBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
@@ -167,15 +166,15 @@ class Model {
         gl.enableVertexAttribArray(a_texCoord);
         const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
         gl.uniformMatrix4fv(u_modelMatrix, false, this.modelMatrix.value);
-        //gl.drawElements(gl.TRIANGLES,vertices.length/3,gl.UNSIGNED_BYTE,0);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
+        //this.indices.length
+        gl.drawElements(gl.TRIANGLE_STRIP,this.indices.length,gl.UNSIGNED_SHORT,0);
     }
 
     clone(){
         const model = new Model({
             vertices:this.vertices,
             normals:this.normals,
-            indeices:this.indices,
+            indices:this.indices,
             textureCoords:this.textureCoords
         });
         return model;
