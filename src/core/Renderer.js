@@ -43,41 +43,22 @@ class Renderer{
      * @param {Light} lights 
      */
     render(camera,models,light){
-        /**
-         * @type {WebGLRenderingContext}
-         */
         const gl = this.gl;
-        //1.判断lights，组织shader(这里采用直接构建的方式)
-        if(!VSCACHE['stdvs']){
-            VSCACHE['stdvs'] = gl.createShader(gl.VERTEX_SHADER);
-            gl.shaderSource(VSCACHE['stdvs'],std_vs);
-            gl.compileShader(VSCACHE['stdvs']);
-        }
-        if(!VSCACHE['stdfs']){
-            VSCACHE['stdfs'] = gl.createShader(gl.FRAGMENT_SHADER);
-            gl.shaderSource(VSCACHE['stdfs'],std_fs);
-            gl.compileShader(VSCACHE['stdfs']);
-        }
-        if(!PROGRAMCACHE['std']){
-            PROGRAMCACHE['std'] = gl.createProgram();
-            gl.attachShader(PROGRAMCACHE['std'],VSCACHE['stdvs']);
-            gl.attachShader(PROGRAMCACHE['std'],VSCACHE['stdfs']);
-            gl.linkProgram(PROGRAMCACHE['std']);
-            gl.useProgram(PROGRAMCACHE['std']);
-        }
-        const program = PROGRAMCACHE['std'];
-        //2.默认开启相关测试
+        //默认开启相关测试
         gl.enable(gl.DEPTH_TEST);
         gl.clearColor(1,1,1,1);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+        // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+        for(let i=0;i<models.length;i++){
+            const model =models[i];
+            // camera.prepareDraw(gl,model.program);
+            model.draw(gl,camera);
+        }
         //3.写入lights数据
-        light.prepareDraw(gl,program);
+        // light.prepareDraw(gl,program);
         //4.写入camera数据
-        camera.prepareDraw(gl,program);
+        // camera.prepareDraw(gl,program);
         //5.写入models数据,并绘制
-        for(let i=0;i<models.length;i++)
-            models[i].draw(gl,program);
     }
 
 }

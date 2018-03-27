@@ -1,7 +1,9 @@
 const std_fs =`precision mediump float;
 
-
+//摄像机位置，模拟人眼计算光线
 uniform vec3 u_cameraPosition;
+//天空盒
+uniform samplerCube u_skybox;
 
 varying vec3 Normal;
 varying vec3 FragPosition;
@@ -50,6 +52,7 @@ void main(){
     vec3 normal = normalize(Normal);
     vec3 componentLight = pointlight_calcute(u_pointLight,normal,FragPosition,u_cameraPosition);
     gl_FragColor = vec4(componentLight,1.0);
+    // gl_FragColor = vec4(FragPosition,1.0);
 }`;
 
 module.exports = std_fs;

@@ -69,9 +69,15 @@ class Model {
             this.normals = opts.normals;
             //模型矩阵是单位矩阵
             this.modelMatrix = opts.modelMatrix || new Mat4();
+            //图像数据
+            this.image = opts.image;
         }
     }
-
+    /**
+     * 
+     * @param {WebGLRenderingContext} gl 
+     * @param {*} program 
+     */
     init(gl, program) {
         this._inited=true;
         const vertices = this.vertices,
@@ -118,7 +124,8 @@ class Model {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,this.image);
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
         gl.uniform1i(material_diffuse, 0);
         //texture_specular
         gl.activeTexture(gl.TEXTURE1);
@@ -128,7 +135,8 @@ class Model {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,this.image);
+        // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
         gl.uniform1i(material_diffuse, 1);
         //map buffer
         this._pBuffer = pBuffer;
@@ -166,8 +174,33 @@ class Model {
         gl.enableVertexAttribArray(a_texCoord);
         const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
         gl.uniformMatrix4fv(u_modelMatrix, false, this.modelMatrix.value);
-        //this.indices.length
-        gl.drawElements(gl.TRIANGLE_STRIP,this.indices.length,gl.UNSIGNED_SHORT,0);
+        //----------------------------------------debug----------------------------------------------
+        //1.创建帧缓冲
+        // const frameBuffer = gl.createFramebuffer();
+        // gl.bindFramebuffer(gl.FRAMEBUFFER,frameBuffer);
+        //2.创建渲染缓冲
+        // const renderBuffer = gl.createRenderbuffer();
+        // gl.bindRenderbuffer(gl.RENDERBUFFER,renderBuffer);
+        // gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_STENCIL,800,600);
+        //2.1附加缓冲对象
+        // gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_STENCIL_ATTACHMENT,gl.RENDERBUFFER,renderBuffer);
+        //3.创建纹理
+        // const texColorBuffer = gl.createTexture();
+        // gl.bindTexture(gl.TEXTURE_2D,texColorBuffer);
+        // gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,256,256,0,gl.RGB,gl.UNSIGNED_BYTE,null);
+        // gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+        // gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        // gl.bindTexture(gl.TEXTURE_2D,null);
+        //3.1纹理附加到当前的帧缓冲
+        // gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,texColorBuffer,0);
+        //5.在缓冲区中绘制图像
+        gl.drawElements(gl.TRIANGLES,this.indices.length,gl.UNSIGNED_SHORT,0);
+        //4.解绑帧缓冲
+        // gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+        //5.使用缓冲的buffer绘制
+        // gl.activeTexture(gl.TEXTURE0);
+        // gl.bindTexture(gl.TEXTURE_2D, texColorBuffer);
+        // gl.drawElements(gl.TRIANGLES,this.indices.length,gl.UNSIGNED_SHORT,0);
     }
 
     clone(){

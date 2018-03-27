@@ -105,8 +105,8 @@ class PerspectiveCamera {
 
     prepareDraw(gl, program) {
         //1.camera position
-        const u_cameraPosition = gl.getUniformLocation(program, 'u_cameraPosition');
-        gl.uniform3fv(u_cameraPosition, this._position.value);
+        // const u_cameraPosition = gl.getUniformLocation(program, 'u_cameraPosition');
+        // gl.uniform3fv(u_cameraPosition, this._position.value);
         //2.u_projectionMatrix
         const u_projectionMatrix = gl.getUniformLocation(program, 'u_projectionMatrix');
         gl.uniformMatrix4fv(u_projectionMatrix, false, this.projectionMatrix.value);
