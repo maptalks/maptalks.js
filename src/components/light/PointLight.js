@@ -49,7 +49,7 @@ class PointLight {
         const light_constant = gl.getUniformLocation(program, 'u_pointLight.constant');
         const light_linear = gl.getUniformLocation(program, 'u_pointLight.linear');
         const light_quadratic = gl.getUniformLocation(program, 'u_pointLight.quadratic');
-        gl.uniform3fv(light_position, [0, 0, 5]);
+        gl.uniform3fv(light_position, [0, 0, 1]);
         gl.uniform3fv(light_ambient, [0.2, 0.2, 0.2]);
         gl.uniform3fv(light_diffuse, [0.5, 0.5, 0.5]);
         gl.uniform3fv(light_specular, [1.0, 1.0, 1.0]);

@@ -43,13 +43,13 @@ vec3 pointlight_calcute(PointLight light,vec3 normal,vec3 fragPos,vec3 cameraPos
     diffuse  *= attenuation;
     specular *= attenuation;
     return (ambient + diffuse + specular);
+    // return ambient;
 }
 
 void main(){
     vec3 normal = normalize(Normal);
     vec3 componentLight = pointlight_calcute(u_pointLight,normal,FragPosition,u_cameraPosition);
-    // gl_FragColor = vec4(componentLight,1.0);
-    gl_FragColor = vec4(FragPosition,1.0);
+    gl_FragColor = vec4(componentLight,1.0);
 }`;
 
 module.exports = std_fs;

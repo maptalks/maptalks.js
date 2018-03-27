@@ -68,7 +68,7 @@ class Renderer{
         const program = PROGRAMCACHE['std'];
         //2.默认开启相关测试
         gl.enable(gl.DEPTH_TEST);
-        gl.clearColor(0, 0, 0, 1);
+        gl.clearColor(1,1,1,1);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
         //3.写入lights数据
