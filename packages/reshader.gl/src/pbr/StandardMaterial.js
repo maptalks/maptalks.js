@@ -5,6 +5,7 @@ const defaultUniforms = {
     albedoColor : [1, 1, 1],
     metallic : 1,
     roughness : 0,
+    occulusionRoughnessMetallicMap : null,
     normalMap : null,
     normalStrength : 1,
     heightMap : null,
@@ -45,14 +46,8 @@ class StandardMaterial extends Material {
             defines['USE_NORMAL_MAP'] = 1;
         }
         if (uniforms['occulusionRoughnessMetallicMap']) {
-            defines['USE_OcculusionRoughnessMetallic_MAP'] = 1;
+            defines['USE_OCCULUSIONROUGHNESSMETALLIC_MAP'] = 1;
         }
-        // if (uniforms['occlusionMap']) {
-        //     defines['OCCULUSION_MAP'] = 1;
-        // }
-        // if (this.isTexture(uniforms['metallic'])) {
-        //     defines['METALLIC_ROUGHNESS_MAP'] = 1;
-        // }
         return defines;
     }
 
