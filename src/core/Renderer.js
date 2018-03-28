@@ -2,20 +2,7 @@
  * renderer models and lights
  * @author yellow date 2018/3/25
  */
-const std_fs = require('./../components/shader/stdfs'),
-    std_vs = require('./../components/shader/stdvs');
-/**
- * vertex shader cache
- */
-const VSCACHE = {};
-/**
- * fragment shader cache
- */
-const FSCACHE = {};
-/**
- * program cache
- */
-const PROGRAMCACHE = {};
+
 /**
  * refrenece:
  * https://github.com/xeolabs/xeogl/blob/master/src/renderer/renderer.js#L286
@@ -48,6 +35,8 @@ class Renderer{
         gl.enable(gl.DEPTH_TEST);
         gl.clearColor(1,1,1,1);
         gl.clear(gl.COLOR_BUFFER_BIT);
+        //textures have a width that divide by 4
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
         for(let i=0;i<models.length;i++){
             const model =models[i];

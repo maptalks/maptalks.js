@@ -1,6 +1,12 @@
 const GLMatrix = require('kiwi.matrix').GLMatrix,
     Vec3 = require('kiwi.matrix').Vec3,
     Mat4 = require('kiwi.matrix').Mat4;
+
+const standard_fragment = require('./../shader/standard_fragment'),
+    standard_vertex = require('./../shader/standard_vertex');
+
+let program;
+    
 /**
  * reference:
  * https://learnopengl-cn.github.io/03%20Model%20Loading/03%20Model/
@@ -69,17 +75,26 @@ class Model {
             this.normals = opts.normals;
             //模型矩阵是单位矩阵
             this.modelMatrix = opts.modelMatrix || new Mat4();
-            //图像数据
-            this.image = opts.image;
         }
     }
-    /**
-     * 
-     * @param {WebGLRenderingContext} gl 
-     * @param {*} program 
-     */
-    init(gl, program) {
-        this._inited=true;
+
+    _init(gl) {
+        if(program) return;
+        //vertex shader
+        const vs = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vs, standard_vertex);
+        gl.compileShader(vs);
+        //fragment shader
+        const fs = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fs, standard_fragment);
+        gl.compileShader(fs);
+        //program
+        program = gl.createProgram();
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+        gl.linkProgram(program);
+        gl.useProgram(program);
+        //
         const vertices = this.vertices,
             normals = this.normals,
             indeices = this.indices,
@@ -94,7 +109,7 @@ class Model {
         //indeices
         const iBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indeices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Float32Array(indeices), gl.STATIC_DRAW);
         //normals
         const nBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
@@ -124,8 +139,7 @@ class Model {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,this.image);
-        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
         gl.uniform1i(material_diffuse, 0);
         //texture_specular
         gl.activeTexture(gl.TEXTURE1);
@@ -135,8 +149,7 @@ class Model {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,this.image);
-        // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
         gl.uniform1i(material_diffuse, 1);
         //map buffer
         this._pBuffer = pBuffer;
@@ -152,9 +165,15 @@ class Model {
      * @param {WebGLRenderingContext} gl 
      * @param {GLProgram} program 
      */
-    draw(gl, program) {
-        if(!this._inited) this.init(gl,program);
+    draw(gl, camera) {
+        this._init(gl);
+        gl.useProgram(program);
         if(this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
+        //
+        const u_projectionMatrix = gl.getUniformLocation(program, 'u_projectionMatrix');
+        gl.uniformMatrix4fv(u_projectionMatrix, false, camera.projectionMatrix.value);
+        const u_viewMatrix = gl.getUniformLocation(program, 'u_viewMatrix');
+        gl.uniformMatrix4fv(u_viewMatrix, false, camera.viewMatrix.value);
         //vertices
         gl.bindBuffer(gl.ARRAY_BUFFER, this._pBuffer);
         const a_position = this.a_position;
@@ -174,40 +193,14 @@ class Model {
         gl.enableVertexAttribArray(a_texCoord);
         const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
         gl.uniformMatrix4fv(u_modelMatrix, false, this.modelMatrix.value);
-        //----------------------------------------debug----------------------------------------------
-        //1.创建帧缓冲
-        // const frameBuffer = gl.createFramebuffer();
-        // gl.bindFramebuffer(gl.FRAMEBUFFER,frameBuffer);
-        //2.创建渲染缓冲
-        // const renderBuffer = gl.createRenderbuffer();
-        // gl.bindRenderbuffer(gl.RENDERBUFFER,renderBuffer);
-        // gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_STENCIL,800,600);
-        //2.1附加缓冲对象
-        // gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_STENCIL_ATTACHMENT,gl.RENDERBUFFER,renderBuffer);
-        //3.创建纹理
-        // const texColorBuffer = gl.createTexture();
-        // gl.bindTexture(gl.TEXTURE_2D,texColorBuffer);
-        // gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,256,256,0,gl.RGB,gl.UNSIGNED_BYTE,null);
-        // gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
-        // gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-        // gl.bindTexture(gl.TEXTURE_2D,null);
-        //3.1纹理附加到当前的帧缓冲
-        // gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,texColorBuffer,0);
-        //5.在缓冲区中绘制图像
-        gl.drawElements(gl.TRIANGLES,this.indices.length,gl.UNSIGNED_SHORT,0);
-        //4.解绑帧缓冲
-        // gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-        //5.使用缓冲的buffer绘制
-        // gl.activeTexture(gl.TEXTURE0);
-        // gl.bindTexture(gl.TEXTURE_2D, texColorBuffer);
-        // gl.drawElements(gl.TRIANGLES,this.indices.length,gl.UNSIGNED_SHORT,0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
     }
 
     clone(){
         const model = new Model({
             vertices:this.vertices,
             normals:this.normals,
-            indices:this.indices,
+            indeices:this.indices,
             textureCoords:this.textureCoords
         });
         return model;
@@ -250,5 +243,3 @@ class Model {
 }
 
 module.exports = Model;
-
-
