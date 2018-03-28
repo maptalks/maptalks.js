@@ -98,19 +98,26 @@ class CanvasRenderer extends Class {
      */
 
     /**
-     * Ask whether the layer renderer needs to redraw
-     * @return {Boolean}
+     * @private
      */
-    needToRedraw() {
-        if (this._loadingResource) {
+    testIfNeedRedraw() {
+        if (this._loadingResource || !this.drawOnInteracting) {
             return false;
         }
         if (this._toRedraw) {
             return true;
         }
-        if (!this.drawOnInteracting) {
-            return false;
+        if (this.needToRedraw()) {
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * Ask whether the layer renderer needs to redraw
+     * @return {Boolean}
+     */
+    needToRedraw() {
         const map = this.getMap();
         if (map.isInteracting()) {
             // don't redraw when map is moving without any pitch

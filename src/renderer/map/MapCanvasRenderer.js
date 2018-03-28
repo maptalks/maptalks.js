@@ -174,7 +174,7 @@ class MapCanvasRenderer extends MapRenderer {
         const map = this.map;
         const renderer = layer._getRenderer();
         if (layer.isCanvasRender()) {
-            return renderer.needToRedraw();
+            return renderer.testIfNeedRedraw();
         } else {
             if (renderer.needToRedraw && renderer.needToRedraw()) {
                 return true;
