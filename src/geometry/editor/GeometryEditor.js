@@ -326,9 +326,20 @@ class GeometryEditor extends Eventable(Class) {
             }
             return false;
         }
+
+        function onHandleRemove() {
+            handle.config('draggable', false);
+            handle.off('dragstart', onHandleDragstart, me);
+            handle.off('dragging', onHandleDragging, me);
+            handle.off('dragend', onHandleDragEnd, me);
+            handle.off('removestart', onHandleRemove, me);
+            delete handle['maptalks--editor-refresh-fn'];
+        }
+
         handle.on('dragstart', onHandleDragstart, this);
         handle.on('dragging', onHandleDragging, this);
         handle.on('dragend', onHandleDragEnd, this);
+        handle.on('removestart', onHandleRemove, this);
         //拖动移图
         if (opts.onRefresh) {
             handle['maptalks--editor-refresh-fn'] = opts.onRefresh;
