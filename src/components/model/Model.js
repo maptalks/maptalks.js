@@ -77,7 +77,10 @@ class Model {
             this.modelMatrix = opts.modelMatrix || new Mat4();
         }
     }
-
+    /**
+     * 
+     * @param {WebGLRenderingContext} gl 
+     */
     _init(gl) {
         if(program) return;
         //vertex shader
@@ -132,25 +135,25 @@ class Model {
         gl.uniform3fv(material_ambient, [1.0, 0.5, 0.31]);
         gl.uniform1f(material_shininess, 32.0);
         //texture_diffuse
-        gl.activeTexture(gl.TEXTURE0);
+        gl.activeTexture(gl.TEXTURE1);
         const texture1 = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture1);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
-        gl.uniform1i(material_diffuse, 0);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+        gl.uniform1i(material_diffuse, 1);
         //texture_specular
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE2);
         const texture2 = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture2);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
-        gl.uniform1i(material_diffuse, 1);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+        gl.uniform1i(material_specular, 2);
         //map buffer
         this._pBuffer = pBuffer;
         this._iBuffer = iBuffer;
@@ -168,6 +171,8 @@ class Model {
     draw(gl, camera) {
         this._init(gl);
         gl.useProgram(program);
+        gl.depthMask(true);
+        gl.enable(gl.DEPTH_TEST);
         if(this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
         //
         const u_projectionMatrix = gl.getUniformLocation(program, 'u_projectionMatrix');

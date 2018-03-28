@@ -146,14 +146,12 @@ class Skybox {
         this._init(gl);
         gl.useProgram(program);
         gl.depthMask(false);
-        gl.enable(gl.DEPTH_TEST);
-        // gl.frontFace(gl.CW);
-        //
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, this._cube_map_texture);
         const skybox = gl.getUniformLocation(program, 'skybox');
         gl.uniform1i(skybox, 0);
         //vertices
+        gl.bindBuffer(gl.ARRAY_BUFFER,this.pBuffer);
         gl.vertexAttribPointer(this.a_position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.a_position);
         //camera
