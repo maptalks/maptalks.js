@@ -96,6 +96,11 @@ class PerspectiveCamera {
         this._position.set(v[0], v[1], v[2]);
         this._update();
     }
+
+    get position(){
+        return this._position;
+    }
+
     /**
      * 返回一个默认的identityMatrix,用于代替modelMatrix
      */

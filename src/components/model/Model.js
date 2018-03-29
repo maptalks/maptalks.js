@@ -168,17 +168,26 @@ class Model {
      * @param {WebGLRenderingContext} gl 
      * @param {GLProgram} program 
      */
-    draw(gl, camera) {
+    draw(gl, camera,skybox) {
         this._init(gl);
         gl.useProgram(program);
         gl.depthMask(true);
         gl.enable(gl.DEPTH_TEST);
         if(this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
         //
+        gl.activeTexture(gl.TEXTURE3);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, skybox.cube_map_texture);
+        const u_skybox = gl.getUniformLocation(program, 'skybox');
+        gl.uniform1i(u_skybox, 3);
+        //
+        const u_cameraPosition = gl.getUniformLocation(program,'u_cameraPosition');
+        gl.uniform3fv(u_cameraPosition,camera.position.value);
         const u_projectionMatrix = gl.getUniformLocation(program, 'u_projectionMatrix');
         gl.uniformMatrix4fv(u_projectionMatrix, false, camera.projectionMatrix.value);
         const u_viewMatrix = gl.getUniformLocation(program, 'u_viewMatrix');
         gl.uniformMatrix4fv(u_viewMatrix, false, camera.viewMatrix.value);
+        const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
+        gl.uniformMatrix4fv(u_modelMatrix, false, this.modelMatrix.value);
         //vertices
         gl.bindBuffer(gl.ARRAY_BUFFER, this._pBuffer);
         const a_position = this.a_position;
@@ -196,8 +205,7 @@ class Model {
         const a_texCoord = this.a_texCoord;
         gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_texCoord);
-        const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
-        gl.uniformMatrix4fv(u_modelMatrix, false, this.modelMatrix.value);
+        //
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
     }
 

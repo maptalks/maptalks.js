@@ -6,6 +6,8 @@ varying vec3 Normal;
 varying vec3 FragPosition;
 varying vec2 TexCoord;
 
+uniform samplerCube skybox;
+
 struct PointLight{
     vec3 position;
     vec3 ambient;
@@ -48,8 +50,9 @@ vec3 pointlight_calcute(PointLight light,vec3 normal,vec3 fragPos,vec3 cameraPos
 void main(){
     vec3 normal = normalize(Normal);
     vec3 componentLight = pointlight_calcute(u_pointLight,normal,FragPosition,u_cameraPosition);
-    // gl_FragColor = vec4(componentLight,1.0);
-    gl_FragColor = vec4(FragPosition,1.0);
+    vec3 I = normalize(FragPosition - u_cameraPosition);
+    vec3 R = reflect(I,normal);
+    gl_FragColor = textureCube(skybox,R);
 }`;
 
 module.exports = std_fs;
