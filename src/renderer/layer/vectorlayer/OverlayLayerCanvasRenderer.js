@@ -1,8 +1,6 @@
 import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 
-const EMPTY_ARRAY = [];
-
 /**
  * @classdesc
  * A parent renderer class for OverlayLayer to inherit by OverlayLayer's subclasses.
@@ -23,7 +21,7 @@ class OverlayLayerRenderer extends CanvasRenderer {
             geometries = this.layer._geoList;
         }
         if (!isArrayHasData(geometries)) {
-            return EMPTY_ARRAY;
+            return [];
         }
         const resources = [];
         const cache = {};
