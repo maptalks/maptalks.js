@@ -112,10 +112,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 if (parentKeys[dupKey] === undefined) {
                     parentKeys[dupKey] = parentTiles.length;
                     parentTiles.push(parentTile);
-                } else {
+                }/* else {
                     //replace with parentTile of above tiles
                     parentTiles[parentKeys[dupKey]] = parentTile;
-                }
+                } */
             } else {
                 const children = this._findChildTiles(tile);
                 if (children.length) {
