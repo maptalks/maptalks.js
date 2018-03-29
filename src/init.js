@@ -3,6 +3,7 @@
  */
 const kiwi = require('kiwi.gl'),
   Model = require('./components/model/Model'),
+  Shadow = require('./components/model/Shadow'),
   Skybox = require('./components/model/Skybox'),
   PointLight = require('./components/light/PointLight'),
   Renderer = require('./core/Renderer'),
@@ -12,6 +13,7 @@ module.exports = {
   gl: {
     //webgl
     PerspectiveCamera: PerspectiveCamera,
+    Shadow:Shadow,
     Model: Model,
     PointLight: PointLight,
     Renderer: Renderer,

@@ -6,7 +6,7 @@ const standard_fragment = require('./../shader/standard_fragment'),
     standard_vertex = require('./../shader/standard_vertex');
 
 let program;
-    
+
 /**
  * reference:
  * https://learnopengl-cn.github.io/03%20Model%20Loading/03%20Model/
@@ -46,7 +46,7 @@ class Model {
         /**
          * @type {Boolean}
          */
-        this._rotate = opts.rotate||true;
+        this._rotate = opts.rotate || true;
         /**
          * 模型名
          */
@@ -82,7 +82,7 @@ class Model {
      * @param {WebGLRenderingContext} gl 
      */
     _init(gl) {
-        if(program) return;
+        if (program) return;
         //vertex shader
         const vs = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vs, standard_vertex);
@@ -168,20 +168,20 @@ class Model {
      * @param {WebGLRenderingContext} gl 
      * @param {GLProgram} program 
      */
-    draw(gl, camera,skybox) {
+    draw(gl, camera, skybox, light) {
         this._init(gl);
         gl.useProgram(program);
         gl.depthMask(true);
         gl.enable(gl.DEPTH_TEST);
-        if(this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
+        if (this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
         //
         gl.activeTexture(gl.TEXTURE3);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, skybox.cube_map_texture);
         const u_skybox = gl.getUniformLocation(program, 'skybox');
         gl.uniform1i(u_skybox, 3);
         //
-        const u_cameraPosition = gl.getUniformLocation(program,'u_cameraPosition');
-        gl.uniform3fv(u_cameraPosition,camera.position.value);
+        const u_cameraPosition = gl.getUniformLocation(program, 'u_cameraPosition');
+        gl.uniform3fv(u_cameraPosition, camera.position.value);
         const u_projectionMatrix = gl.getUniformLocation(program, 'u_projectionMatrix');
         gl.uniformMatrix4fv(u_projectionMatrix, false, camera.projectionMatrix.value);
         const u_viewMatrix = gl.getUniformLocation(program, 'u_viewMatrix');
@@ -209,18 +209,18 @@ class Model {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
     }
 
-    clone(){
+    clone() {
         const model = new Model({
-            vertices:this.vertices,
-            normals:this.normals,
-            indeices:this.indices,
-            textureCoords:this.textureCoords
+            vertices: this.vertices,
+            normals: this.normals,
+            indeices: this.indices,
+            textureCoords: this.textureCoords
         });
         return model;
     }
 
-    translate(v){
-        const v3 = new Vec3().set(v[0],v[1],v[2]);
+    translate(v) {
+        const v3 = new Vec3().set(v[0], v[1], v[2]);
         this.modelMatrix.translate(v3);
     }
 

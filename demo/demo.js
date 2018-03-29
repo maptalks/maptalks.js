@@ -14,12 +14,14 @@ const model = new fusion.gl.Model({
   normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0]
 });
 
-model.translate([0.1, -0.3, -0.8]);
+model.translate([0.2, 0.1, -1]);
 
 const skybox = new fusion.gl.Skybox('./assets/skybox/');
 
+const shadow = new fusion.gl.Shadow();
+
 const animate = function () {
-  renderer.render(camera, skybox, model, light);
+  renderer.render(camera, skybox, model, shadow, light);
   requestAnimationFrame(animate);
 }
 
