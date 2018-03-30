@@ -7,7 +7,8 @@ import {
     isString,
     isFunction,
     sign,
-    UID
+    UID,
+    b64toBlob
 } from '../core/util';
 import Class from '../core/Class';
 import Browser from '../core/Browser';
@@ -1172,12 +1173,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             const dataURL = renderer.toDataURL(mimeType);
             if (save && dataURL) {
-                const imgURL = dataURL;
-
+                let imgURL;
+                if (typeof Blob !== 'undefined' && typeof atob !== 'undefined') {
+                    const blob = b64toBlob(dataURL.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''), mimeType);
+                    imgURL = URL.createObjectURL(blob);
+                } else {
+                    imgURL = dataURL;
+                }
                 const dlLink = document.createElement('a');
                 dlLink.download = file;
                 dlLink.href = imgURL;
-                dlLink.dataset.downloadurl = [mimeType, dlLink.download, dlLink.href].join(':');
 
                 document.body.appendChild(dlLink);
                 dlLink.click();
