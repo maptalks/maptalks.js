@@ -8,6 +8,8 @@ varying vec2 TexCoord;
 
 uniform samplerCube skybox;
 
+uniform sampler2D u_shadow;
+
 struct PointLight{
     vec3 position;
     vec3 ambient;

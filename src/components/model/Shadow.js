@@ -3,6 +3,7 @@ const shadow_fragment = require('./../shader/shadow_fragment'),
     shadow_vertex = require('./../shader/shadow_vertex');
 
 const Mat4 = require('kiwi.matrix').Mat4;
+const generateFramebuffer = require('./../utils/generateFramebuffer');
 
 let program;
 
@@ -40,8 +41,7 @@ class Shadow {
         gl.vertexAttribPointer(this.a_position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.a_position);
         //framebuffer
-
-        
+        this.fbo = generateFramebuffer(gl);
     }
     /**
      * 
@@ -66,8 +66,14 @@ class Shadow {
         const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
         gl.uniformMatrix4fv(u_modelMatrix, false, model.modelMatrix.value);
         // gl.uniformMatrix4fv(u_modelMatrix, false, new Mat4().value);
+        //将场景绘制在fbo里
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D,this.fbo.texture);
+        gl.enable(gl.DEPTH_TEST);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,this.fbo);
         //绘制到实际画板
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,null);
     }
 
 }
