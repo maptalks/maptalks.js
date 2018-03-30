@@ -20,22 +20,38 @@ describe('StrokeAndFillSpec', function () {
         it('fill pattern', function (done) {
             var circle = new maptalks.Circle(center, 10, {
                 symbol:{
-                    'polygonPatternFile' : 'resources/pattern.png',
+                    'polygonPatternFile' : 'resources/pattern2.png',
                     'polygonOpacity' : 1
                 }
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function () {
-                expect(v).to.be.painted();
+                expect(v).to.be.painted(0, 0, [0, 0, 0]);
+                done();
+            });
+            v.addGeometry(circle);
+        });
+
+        it('fill pattern with polygonPatternDx', function (done) {
+            var circle = new maptalks.Circle(center, 10, {
+                symbol:{
+                    'polygonPatternFile' : 'resources/pattern2.png',
+                    'polygonPatternDx' : 5,
+                    'polygonOpacity' : 1
+                }
+            });
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).to.be.painted(0, 0, [255, 255, 255]);
                 done();
             });
             v.addGeometry(circle);
         });
 
         it('line pattern', function (done) {
-            var circle = new maptalks.Circle(center, 10, {
+            var line = new maptalks.LineString([center, center.add(0.0001, 0)], {
                 symbol:{
-                    'linePatternFile' : 'resources/pattern.png',
+                    'linePatternFile' : 'resources/pattern2.png',
                     'lineOpacity' : 1,
                     'lineWidth' : 5,
                     'polygonFill' : '#000',
@@ -44,10 +60,29 @@ describe('StrokeAndFillSpec', function () {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function () {
-                expect(v).to.be.painted(11);
+                expect(v).not.to.be.painted(0, 0, [0, 0, 0]);
                 done();
             });
-            v.addGeometry(circle);
+            v.addGeometry(line);
+        });
+
+        it('line pattern with linePatternDx', function (done) {
+            var line = new maptalks.LineString([center, center.add(0.0001, 0)], {
+                symbol:{
+                    'linePatternFile' : 'resources/pattern2.png',
+                    'linePatternDx' : 2,
+                    'lineOpacity' : 1,
+                    'lineWidth' : 5,
+                    'polygonFill' : '#000',
+                    'polygonOpacity' : 0
+                }
+            });
+            var v = new maptalks.VectorLayer('v').addTo(map);
+            v.once('layerload', function () {
+                expect(v).not.to.be.painted(0, 0, [255, 255, 255]);
+                done();
+            });
+            v.addGeometry(line);
         });
 
         it('fill pattern with base64', function (done) {

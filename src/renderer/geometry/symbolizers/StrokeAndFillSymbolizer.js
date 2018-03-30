@@ -137,7 +137,11 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             'lineDy' : getValueOrDefault(s['lineDy'], 0),
             'polygonFill': getValueOrDefault(s['polygonFill'], null),
             'polygonOpacity': getValueOrDefault(s['polygonOpacity'], 1),
-            'polygonPatternFile': getValueOrDefault(s['polygonPatternFile'], null)
+            'polygonPatternFile': getValueOrDefault(s['polygonPatternFile'], null),
+            'polygonPatternDx' : getValueOrDefault(s['polygonPatternDx'], 0),
+            'polygonPatternDy' : getValueOrDefault(s['polygonPatternDy'], 0),
+            'linePatternDx' : getValueOrDefault(s['linePatternDx'], 0),
+            'linePatternDy' : getValueOrDefault(s['linePatternDy'], 0)
         };
         if (result['lineWidth'] === 0) {
             result['lineOpacity'] = 0;

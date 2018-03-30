@@ -67,7 +67,11 @@ const Canvas = {
         if (testing) {
             ctx.strokeStyle = '#000';
         } else if (isImageUrl(strokeColor) && resources) {
-            Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, resources);
+            let patternOffset;
+            if (style['linePatternDx'] || style['linePatternDy']) {
+                patternOffset = [style['linePatternDx'], style['linePatternDy']];
+            }
+            Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, patternOffset, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
         } else if (isGradient(strokeColor)) {
@@ -112,6 +116,9 @@ const Canvas = {
                 }
             } else {
                 ctx.fillStyle = ctx.createPattern(fillTexture, 'repeat');
+                if (style['polygonPatternDx'] || style['polygonPatternDy']) {
+                    ctx.fillStyle['polygonPatternOffset'] = [style['polygonPatternDx'], style['polygonPatternDy']];
+                }
             }
 
         } else if (isGradient(fill)) {
@@ -166,7 +173,7 @@ const Canvas = {
         return gradient;
     },
 
-    _setStrokePattern(ctx, strokePattern, strokeWidth, resources) {
+    _setStrokePattern(ctx, strokePattern, strokeWidth, linePatternOffset, resources) {
         const imgUrl = extractImageUrl(strokePattern);
         let imageTexture;
         if (IS_NODE) {
@@ -192,6 +199,7 @@ const Canvas = {
         }
         if (imageTexture) {
             ctx.strokeStyle = ctx.createPattern(imageTexture, 'repeat');
+            ctx.strokeStyle['linePatternOffset'] = linePatternOffset;
         } else if (typeof console !== 'undefined') {
             console.warn('img not found for', imgUrl);
         }
@@ -211,6 +219,11 @@ const Canvas = {
             return;
         }
         const isPattern = Canvas._isPattern(ctx.fillStyle);
+
+        const offset = ctx.fillStyle && ctx.fillStyle['polygonPatternOffset'];
+        const dx = offset ? offset[0] : 0,
+            dy = offset ? offset[1] : 0;
+
         if (isNil(fillOpacity)) {
             fillOpacity = 1;
         }
@@ -220,13 +233,15 @@ const Canvas = {
             ctx.globalAlpha *= fillOpacity;
         }
         if (isPattern) {
+            x = x || 0;
+            y = y || 0;
             // x = round(x);
             // y = round(y);
-            ctx.translate(x, y);
+            ctx.translate(x + dx, y + dy);
         }
         ctx.fill();
         if (isPattern) {
-            ctx.translate(-x, -y);
+            ctx.translate(-x - dx, -y - dy);
         }
         if (fillOpacity < 1) {
             ctx.globalAlpha = alpha;
@@ -355,7 +370,12 @@ const Canvas = {
         if (strokeOpacity === 0) {
             return;
         }
-        const isPattern = Canvas._isPattern(ctx.strokeStyle) && !isNil(x) && !isNil(y);
+        const offset = ctx.strokeStyle && ctx.strokeStyle['linePatternOffset'];
+        const dx = offset ? offset[0] : 0,
+            dy = offset ? offset[1] : 0;
+
+        const isPattern = Canvas._isPattern(ctx.strokeStyle) && (!isNil(x) && !isNil(y) || !isNil(dx) && !isNil(dy));
+
         if (isNil(strokeOpacity)) {
             strokeOpacity = 1;
         }
@@ -365,13 +385,15 @@ const Canvas = {
             ctx.globalAlpha *= strokeOpacity;
         }
         if (isPattern) {
+            x = x || 0;
+            y = y || 0;
             // x = round(x);
             // y = round(y);
-            ctx.translate(x, y);
+            ctx.translate(x + dx, y + dy);
         }
         ctx.stroke();
         if (isPattern) {
-            ctx.translate(-x, -y);
+            ctx.translate(-x - dx, -y - dy);
         }
         if (strokeOpacity < 1) {
             ctx.globalAlpha = alpha;
