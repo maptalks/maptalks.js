@@ -56,6 +56,7 @@ class GroupTileLayer extends TileLayer {
         super(id, options);
         this.layers = layers || [];
         this.layerMap = {};
+        this._groupChildren = [];
     }
 
     /**
@@ -114,9 +115,13 @@ class GroupTileLayer extends TileLayer {
         const map = this.getMap();
         this.layers.forEach(layer => {
             this.layerMap[layer.getId()] = layer;
+            if (layer.getChildLayer) {
+                this._groupChildren.push(layer);
+            }
             layer._bindMap(map);
             layer.on('show hide', this._onLayerShowHide, this);
         });
+        super.onAdd();
     }
 
     onRemove() {
@@ -124,10 +129,23 @@ class GroupTileLayer extends TileLayer {
             layer._doRemove();
             layer.off('show hide', this._onLayerShowHide, this);
         });
+        delete this.layerMap;
+        delete this._groupChildren;
+        super.onRemove();
     }
 
     getChildLayer(id) {
-        return this.layerMap[id];
+        const layer = this.layerMap[id];
+        if (layer) {
+            return layer;
+        }
+        for (let i = 0; i < this._groupChildren.length; i++) {
+            const child = this._groupChildren[i].getChildLayer(id);
+            if (child) {
+                return child;
+            }
+        }
+        return null;
     }
 
     _onLayerShowHide() {
