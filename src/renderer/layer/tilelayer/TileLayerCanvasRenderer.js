@@ -65,6 +65,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         this._tileCountToLoad = 0;
         let loading = false;
+        const checkedTiles = {};
         const tiles = [],
             parentTiles = [], parentKeys = {},
             childTiles = [], childKeys = {},
@@ -94,7 +95,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
             if (!tileIsLoading) continue;
+            if (checkedTiles[tile.dupKey]) {
+                continue;
+            }
 
+            checkedTiles[tile.dupKey] = 1;
             if (placeholder && !placeholderKeys[tile.dupKey]) {
                 //tell gl renderer not to bind gl buffer with image
                 tile.cache = false;
@@ -225,7 +230,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     // limit tile number to load when map is interacting
     _getTileLimitOnInteracting() {
         if (this.getMap().isInteracting()) {
-            return 3;
+            return this.layer.options['loadingLimitOnInteracting'];
         }
         return 0;
     }
@@ -441,27 +446,27 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _findChildTiles(info) {
-        if (!this.layer.options['background']) {
+        const layer = this._getLayerOfTile(info.layer);
+        if (!layer.options['background']) {
             return [];
         }
         const map = this.getMap();
         const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            pmin = map._pointToPrj(min, info.z),
-            pmax = map._pointToPrj(max, info.z);
+            pmin = layer._project(map._pointToPrj(min, info.z)),
+            pmax = layer._project(map._pointToPrj(max, info.z));
         const zoomDiff = 3;
         for (let i = 1; i < zoomDiff; i++) {
-            this._findChildTilesAt(children, pmin, pmax, info.layer, info.z + i);
+            this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
         }
 
         return children;
     }
 
-    _findChildTilesAt(children, pmin, pmax, layerId, childZoom) {
-        const map = this.getMap(),
-            layer = this.layer,
-            res = map.getResolution(childZoom);
+    _findChildTilesAt(children, pmin, pmax, layer, childZoom) {
+        const layerId = layer.getId(),
+            res = layer.getSpatialReference().getResolution(childZoom);
         const dmin = layer._getTileConfig().getTileIndex(pmin, res),
             dmax = layer._getTileConfig().getTileIndex(pmax, res);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
@@ -480,18 +485,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _findParentTile(info) {
-        const map = this.getMap();
-        if (!this.layer.options['background']) {
+        const map = this.getMap(),
+            layer = this._getLayerOfTile(info.layer);
+        if (!layer.options['background']) {
             return null;
         }
-        const d = map.getSpatialReference().getZoomDirection(),
-            layer = this.layer,
+        const sr = layer.getSpatialReference();
+        const d = sr.getZoomDirection(),
             zoomDiff = layer.options['backgroundZoomDiff'];
         const center = info.extent2d.getCenter(),
-            prj = map._pointToPrj(center, info.z);
+            prj = layer._project(map._pointToPrj(center, info.z));
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
-            const res = map.getResolution(z);
+            const res = sr.getResolution(z);
             const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
             const id = layer._getTileId(tileIndex, z, info.layer);
             if (this.tileCache.has(id)) {
@@ -501,6 +507,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
         return null;
+    }
+
+    _getLayerOfTile(layerId) {
+        return this.layer.getChildLayer ? this.layer.getChildLayer(layerId) : this.layer;
     }
 
     _getCachedTile(tileId) {

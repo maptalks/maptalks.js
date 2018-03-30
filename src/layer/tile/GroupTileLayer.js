@@ -55,6 +55,7 @@ class GroupTileLayer extends TileLayer {
     constructor(id, layers, options) {
         super(id, options);
         this.layers = layers || [];
+        this.layerMap = {};
     }
 
     /**
@@ -112,6 +113,7 @@ class GroupTileLayer extends TileLayer {
     onAdd() {
         const map = this.getMap();
         this.layers.forEach(layer => {
+            this.layerMap[layer.getId()] = layer;
             layer._bindMap(map);
             layer.on('show hide', this._onLayerShowHide, this);
         });
@@ -122,6 +124,10 @@ class GroupTileLayer extends TileLayer {
             layer._doRemove();
             layer.off('show hide', this._onLayerShowHide, this);
         });
+    }
+
+    getChildLayer(id) {
+        return this.layerMap[id];
     }
 
     _onLayerShowHide() {

@@ -38,6 +38,8 @@ const options = {
     'background' : true,
     'backgroundZoomDiff' : 6,
 
+    'loadingLimitOnInteracting' : 3,
+
     'placeholder' : false,
 
     'crossOrigin': null,
@@ -193,6 +195,14 @@ class TileLayer extends Layer {
             'options': this.config()
         };
         return profile;
+    }
+
+    /**
+     * Get tilelayer's spatial reference.
+     * @returns {SpatialReference} spatial reference
+     */
+    getSpatialReference() {
+        return this._sr;
     }
 
     _getTileZoom() {
