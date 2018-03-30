@@ -2,7 +2,7 @@
 const glCanvas = new fusion.gl.GLCanvas('mapCanvas');
 const gl = glCanvas.getContext('webgl');
 const camera = new fusion.gl.PerspectiveCamera(60, 800 / 600, 1, 2000);
-camera.position = [0, 0, 1];
+camera.position = [0, 0, 0.9];
 const renderer = new fusion.gl.Renderer({ gl: gl });
 //
 const light = new fusion.gl.PointLight();

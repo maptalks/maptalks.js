@@ -39,6 +39,9 @@ class Shadow {
         this.a_position = gl.getAttribLocation(program, 'a_position');
         gl.vertexAttribPointer(this.a_position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.a_position);
+        //framebuffer
+
+        
     }
     /**
      * 
@@ -56,8 +59,10 @@ class Shadow {
         //更新待绘制物体的相关矩阵
         const u_projectionMatrix = gl.getUniformLocation(program, 'u_projectionMatrix');
         gl.uniformMatrix4fv(u_projectionMatrix, false, light.projectionMatrix.value);
+        // gl.uniformMatrix4fv(u_projectionMatrix, false, camera.projectionMatrix.value);
         const u_viewMatrix = gl.getUniformLocation(program, 'u_viewMatrix');
         gl.uniformMatrix4fv(u_viewMatrix, false, light.viewMatrix.value);
+        // gl.uniformMatrix4fv(u_viewMatrix, false, camera.viewMatrix.value);
         const u_modelMatrix = gl.getUniformLocation(program, 'u_modelMatrix');
         gl.uniformMatrix4fv(u_modelMatrix, false, model.modelMatrix.value);
         // gl.uniformMatrix4fv(u_modelMatrix, false, new Mat4().value);

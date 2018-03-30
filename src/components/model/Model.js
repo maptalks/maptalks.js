@@ -135,25 +135,25 @@ class Model {
         gl.uniform3fv(material_ambient, [1.0, 0.5, 0.31]);
         gl.uniform1f(material_shininess, 32.0);
         //texture_diffuse
-        gl.activeTexture(gl.TEXTURE1);
-        const texture1 = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture1);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0]));
-        gl.uniform1i(material_diffuse, 1);
+        // gl.activeTexture(gl.TEXTURE0);
+        // const texture1 = gl.createTexture();
+        // gl.bindTexture(gl.TEXTURE_2D, texture1);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        // gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+        // gl.uniform1i(material_diffuse, 0);
         //texture_specular
-        gl.activeTexture(gl.TEXTURE2);
-        const texture2 = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture2);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0]));
-        gl.uniform1i(material_specular, 2);
+        // gl.activeTexture(gl.TEXTURE1);
+        // const texture2 = gl.createTexture();
+        // gl.bindTexture(gl.TEXTURE_2D, texture2);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        // gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+        // gl.uniform1i(material_specular, 1);
         //map buffer
         this._pBuffer = pBuffer;
         this._iBuffer = iBuffer;
@@ -175,10 +175,10 @@ class Model {
         gl.enable(gl.DEPTH_TEST);
         if (this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
         //
-        gl.activeTexture(gl.TEXTURE3);
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, skybox.cube_map_texture);
         const u_skybox = gl.getUniformLocation(program, 'skybox');
-        gl.uniform1i(u_skybox, 3);
+        gl.uniform1i(u_skybox, 0);
         //
         const u_cameraPosition = gl.getUniformLocation(program, 'u_cameraPosition');
         gl.uniform3fv(u_cameraPosition, camera.position.value);

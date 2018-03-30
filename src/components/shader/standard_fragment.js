@@ -49,7 +49,7 @@ vec3 pointlight_calcute(PointLight light,vec3 normal,vec3 fragPos,vec3 cameraPos
 
 void main(){
     vec3 normal = normalize(Normal);
-    vec3 componentLight = pointlight_calcute(u_pointLight,normal,FragPosition,u_cameraPosition);
+    // vec3 componentLight = pointlight_calcute(u_pointLight,normal,FragPosition,u_cameraPosition);
     vec3 I = normalize(FragPosition - u_cameraPosition);
     vec3 R = reflect(I,normal);
     gl_FragColor = textureCube(skybox,R);
