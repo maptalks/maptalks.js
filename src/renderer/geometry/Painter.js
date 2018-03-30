@@ -174,7 +174,7 @@ class Painter extends Class {
         return tr;
     }
 
-    _pointContainerPoints(points, dx, dy, ignoreAltitude, noClip) {
+    _pointContainerPoints(points, dx, dy, ignoreAltitude, noClip, pointPlacement) {
         const cExtent = this.getContainerExtent();
         if (!cExtent) {
             return null;
@@ -211,25 +211,40 @@ class Painter extends Class {
                 altitude = 0;
             }
             let alt = altitude;
-            cPoints = clipPoints.map((c, idx) => {
+            cPoints = [];
+            for (let i = 0, l = clipPoints.length; i < l; i++) {
+                const c = clipPoints[i];
                 if (Array.isArray(c)) {
-                    return c.map((cc, cidx) => {
+                    const cring = [];
+                    //polygon rings or clipped line string
+                    for (let ii = 0, ll = c.length; ii < ll; ii++) {
+                        const cc = c[ii];
                         if (Array.isArray(altitude)) {
-                            if (altitude[idx]) {
-                                alt = altitude[idx][cidx];
+                            if (altitude[i]) {
+                                alt = altitude[i][ii];
                             } else {
                                 alt = 0;
                             }
                         }
-                        return pointContainerPoint(cc, alt);
-                    });
-                } else {
-                    if (Array.isArray(altitude)) {
-                        alt = altitude[idx];
+                        cring.push(pointContainerPoint(cc, alt));
                     }
-                    return pointContainerPoint(c, alt);
+                    cPoints.push(cring);
+                } else {
+                    //line string
+                    if (Array.isArray(altitude)) {
+                        // altitude of different placement for point symbolizers
+                        if (pointPlacement === 'vertex-last') {
+                            alt = altitude[altitude.length - 1 - i];
+                        } else if (pointPlacement === 'line') {
+                            alt = (altitude[i] + altitude[i + 1]) / 2;
+                        } else {
+                            //vertex, vertex-first
+                            alt = altitude[i];
+                        }
+                    }
+                    cPoints.push(pointContainerPoint(c, alt));
                 }
-            });
+            }
         } else if (points instanceof Point) {
             if (ignoreAltitude) {
                 altitude = 0;
