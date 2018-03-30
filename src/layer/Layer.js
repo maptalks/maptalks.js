@@ -416,6 +416,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
     }
 
+    onAdd() {}
+
+    onRemove() {}
+
     _bindMap(map, zIndex) {
         if (!map) {
             return;
@@ -426,9 +430,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         this._switchEvents('on', this);
 
-        if (this.onAdd) {
-            this.onAdd();
-        }
+        this.onAdd();
 
         this.fire('add');
     }
@@ -446,9 +448,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this._renderer.layer = this;
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
-        if (this._renderer.onAdd) {
-            this._renderer.onAdd();
-        }
+        this._renderer.onAdd();
+
         this.fire('renderercreate', {
             'renderer': this._renderer
         });
@@ -456,9 +457,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _doRemove() {
         this._loaded = false;
-        if (this.onRemove) {
-            this.onRemove();
-        }
+        this.onRemove();
+
         this._switchEvents('off', this);
         if (this._renderer) {
             this._switchEvents('off', this._renderer);

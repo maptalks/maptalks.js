@@ -246,6 +246,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
 
     onRemove() {
         this.removeGLCanvas();
+        super.onRemove();
     }
 }
 

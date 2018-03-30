@@ -183,9 +183,9 @@ class CanvasRenderer extends Class {
         delete this.layer;
     }
 
-    onRemove() {
+    onRemove() {}
 
-    }
+    onAdd() {}
 
     /**
      * Get map
