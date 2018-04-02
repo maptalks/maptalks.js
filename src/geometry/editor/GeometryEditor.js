@@ -745,6 +745,7 @@ class GeometryEditor extends Eventable(Class) {
             for (let i = newVertexHandles.length - 1; i >= 0; i--) {
                 newVertexHandles[i][propertyOfVertexIndex] = i;
             }
+            me._updateCoordFromShadow();
         }
 
         function removeVertex(param) {
