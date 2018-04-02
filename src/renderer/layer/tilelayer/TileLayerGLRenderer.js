@@ -27,6 +27,10 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return super.needToRedraw();
     }
 
+    prepareLevelMasks(/* masks */) {
+
+    }
+
     drawTile(tileInfo, tileImage) {
         const map = this.getMap();
         if (!tileInfo || !map) {

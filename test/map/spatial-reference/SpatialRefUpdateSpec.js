@@ -26,13 +26,13 @@ describe('SpatialReference.Update', function () {
             map.setSpatialReference({
                 projection : 'baidu'
             });
-            var tiles = tileLayer.getTiles().tiles;
+            var tiles = tileLayer.getTiles().tileGrids[0].tiles;
             var tile = tiles[tiles.length - 1];
             expect(tile.point.toArray()).to.be.eql([-256, -256]);
             done();
         });
         map.setBaseLayer(tileLayer);
-        var tiles = tileLayer.getTiles().tiles;
+        var tiles = tileLayer.getTiles().tileGrids[0].tiles;
         var tile = tiles[tiles.length - 1];
         expect(tile.point.toArray()).to.be.eql([-256.0000000001879, -256.0000000001879]);
     });

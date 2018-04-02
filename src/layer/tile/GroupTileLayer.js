@@ -91,24 +91,24 @@ class GroupTileLayer extends TileLayer {
     getTiles(z) {
         const layers = this.layers;
         const tiles = [];
-        let grid;
+        let count = 0;
         for (let i = 0, l = layers.length; i < l; i++) {
             const layer = layers[i];
             if (!layer.options['visible']) {
                 continue;
             }
             const childGrid = layer.getTiles(z);
-            if (!childGrid || childGrid.tiles.length === 0) {
+            if (!childGrid || childGrid.count === 0) {
                 continue;
             }
-            pushIn(tiles, childGrid.tiles);
-            grid = childGrid;
+            count += childGrid.count;
+            pushIn(tiles, childGrid.tileGrids);
         }
-        if (!grid) {
-            return null;
-        }
-        grid.tiles = tiles;
-        return grid;
+
+        return {
+            count : count,
+            tileGrids : tiles
+        };
     }
 
     onAdd() {

@@ -30,6 +30,9 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
+    'drawParentTilesOnTop' : true,
+    'maxDetailPitch' : 40,
+
     'urlTemplate': null,
     'subdomains': null,
 
@@ -116,7 +119,45 @@ class TileLayer extends Layer {
      * @return {Object[]} tile descriptors
      */
     getTiles(z) {
-        return this._getTiles(z);
+        const map = this.getMap();
+        const mapExtent = map.getContainerExtent();
+        const tileGrids = [];
+        let count = 0, levelMasks;
+        if (!isNil(z) || !this.options['drawParentTilesOnTop']) {
+            if (isNil(z)) {
+                z = this._getTileZoom(map.getZoom());
+            }
+            const currentTiles = this._getTiles(z, mapExtent);
+            count += currentTiles ? currentTiles.tiles.length : 0;
+            tileGrids.push(currentTiles);
+            return {
+                tileGrids : tileGrids,
+                count : count
+            };
+        }
+
+        z = this._getTileZoom(map.getZoom());
+        const maxDetailPitch = this.options['maxDetailPitch'];
+        if (map.getPitch() > maxDetailPitch) {
+            const visualHeight = Math.floor(map._getVisualHeight(maxDetailPitch));
+            const extent0 = new PointExtent(0, map.height - visualHeight, map.width, map.height);
+            const currentTiles = this._getTiles(z, extent0, 0);
+            count += currentTiles ? currentTiles.tiles.length : 0;
+
+            const extent1 = new PointExtent(0, mapExtent.ymin, map.width, extent0.ymin);
+            const parentTiles = this._getTiles(z - 1, extent1, 1);
+            count += parentTiles ? parentTiles.tiles.length : 0;
+
+            tileGrids.push(parentTiles, currentTiles);
+            levelMasks = [extent0, extent1];
+        } else {
+            const currentTiles = this._getTiles(z, mapExtent);
+            count += currentTiles ? currentTiles.tiles.length : 0;
+            tileGrids.push(currentTiles);
+        }
+        return {
+            tileGrids, count, levelMasks
+        };
     }
 
     /**
@@ -205,9 +246,8 @@ class TileLayer extends Layer {
         return this._sr;
     }
 
-    _getTileZoom() {
+    _getTileZoom(zoom) {
         const map = this.getMap();
-        let zoom = map.getZoom();
         if (!isInteger(zoom)) {
             if (map.isZooming()) {
                 zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
@@ -222,7 +262,7 @@ class TileLayer extends Layer {
         return zoom;
     }
 
-    _getTiles(z) {
+    _getTiles(z, containerExtent, maskID) {
         // rendWhenReady = false;
         const map = this.getMap();
         if (!map || !this.isVisible() || !map.width || !map.height) {
@@ -234,7 +274,7 @@ class TileLayer extends Layer {
             return null;
         }
 
-        const zoom = isNil(z) ? this._getTileZoom() : z,
+        const zoom = z,
             sr = this._sr,
             mapSR = map.getSpatialReference(),
             res = sr.getResolution(zoom);
@@ -247,8 +287,7 @@ class TileLayer extends Layer {
         const offset = this._getTileOffset(zoom),
             hasOffset = offset[0] || offset[1];
 
-        let containerExtent = map.getContainerExtent();
-        const extent2d = map._get2DExtent()._add(offset),
+        const extent2d = containerExtent.convertTo(c => map._containerPointToPoint(c))._add(offset),
             innerExtent2D = this._getInnerExtent(zoom, containerExtent, extent2d);
 
         const maskExtent = this._getMask2DExtent();
@@ -261,11 +300,12 @@ class TileLayer extends Layer {
         }
 
         //Get description of center tile including left and top offset
+        const prjCenter = map._containerPointToPrj(containerExtent.getCenter());
         let c;
         if (hasOffset) {
-            c = this._project(map._pointToPrj(map._prjToPoint(map._getPrjCenter())._add(offset)));
+            c = this._project(map._pointToPrj(map._prjToPoint(prjCenter)._add(offset)));
         } else {
-            c = this._project(map._getPrjCenter());
+            c = this._project(prjCenter);
         }
         const pmin = this._project(map._pointToPrj(extent2d.getMin())),
             pmax = this._project(map._pointToPrj(extent2d.getMax()));
@@ -317,7 +357,8 @@ class TileLayer extends Layer {
                         'z': zoom,
                         'x' : idx.x,
                         'y' : idx.y,
-                        'extent2d' : tileExtent
+                        'extent2d' : tileExtent,
+                        'mask' : maskID
                     };
                 if (innerExtent2D.intersects(tileExtent) || this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {

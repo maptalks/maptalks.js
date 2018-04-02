@@ -69,7 +69,7 @@ describe('TileLayer', function () {
             tile.once('layerload', function () {
                 map.removeLayer(tile);
                 tile.once('layerload', function () {
-                    expect(tile.getTiles().tiles[0].z === zoom - 1).to.be.ok();
+                    expect(tile.getTiles().tileGrids[0].tiles[0].z === zoom - 1).to.be.ok();
                     done();
                 });
                 map.addLayer(tile);
@@ -117,7 +117,7 @@ describe('TileLayer', function () {
                 renderer : 'canvas',
                 urlTemplate : '#'
             }).addTo(map);
-            expect(tile.getTiles().tiles.length).to.be.eql(1);
+            expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(1);
         });
     });
 

@@ -227,6 +227,7 @@ describe('Map.Profile', function () {
             expect(layers[0].toJSON()).to.be.eql(tile2.toJSON());
             expect(layers[1].toJSON()).to.be.eql(vectorLayer.toJSON());
             expect(layers[2].toJSON()).to.be.eql(vectorLayer2.toJSON());
+            profileMap.remove();
         });
 
 

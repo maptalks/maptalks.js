@@ -48,20 +48,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
         const layer = this.layer;
-        const tileGrid = layer.getTiles();
-        if (!tileGrid) {
+        const tileGrids = layer.getTiles().tileGrids;
+        if (!tileGrids) {
             this.completeRender();
             return;
         }
-        const allTiles = tileGrid['tiles'];
 
-        this._tileZoom = tileGrid['zoom'];
-        this._tileOffset = tileGrid['offset'];
-
-        const loadingCount = this._markTiles(),
-            tileLimit = this._getTileLimitOnInteracting();
-
-        const placeholder = this._generatePlaceHolder(tileGrid.zoom);
+        if (tileGrids.levelMasks) {
+            this.prepareLevelMasks(tileGrids.levelMasks);
+        }
 
         this._tileCountToLoad = 0;
         let loading = false;
@@ -72,67 +67,84 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             placeholders = [], placeholderKeys = {};
         //visit all the tiles
         const tileQueue = {};
-        for (let i = 0, l = allTiles.length; i < l; i++) {
-            const tile = allTiles[i],
-                tileId = tile['id'];
-            //load tile in cache at first if it has.
-            const cached = this._getCachedTile(tileId);
-            let tileIsLoading = false;
-            if (this._isLoadingTile(tileId)) {
-                tileIsLoading = loading = true;
-                this.tilesLoading[tileId].current = true;
-            } else if (cached) {
-                if (this.getTileOpacity(cached.image) < 1) {
+        const loadingCount = this._markTiles(),
+            tileLimit = this._getTileLimitOnInteracting();
+
+        const l = tileGrids.length;
+
+        // main tile grid is the last one (draws on top)
+        this._tileZoom = tileGrids[l - 1]['zoom'];
+        this._tileOffset = tileGrids[l - 1]['offset'];
+
+        for (let i = 0; i < l; i++) {
+            const tileGrid = tileGrids[i];
+            const allTiles = tileGrid['tiles'];
+
+            const placeholder = this._generatePlaceHolder(tileGrid.zoom);
+
+            for (let i = 0, l = allTiles.length; i < l; i++) {
+                const tile = allTiles[i],
+                    tileId = tile['id'];
+                //load tile in cache at first if it has.
+                const cached = this._getCachedTile(tileId);
+                let tileIsLoading = false;
+                if (this._isLoadingTile(tileId)) {
                     tileIsLoading = loading = true;
+                    this.tilesLoading[tileId].current = true;
+                } else if (cached) {
+                    if (this.getTileOpacity(cached.image) < 1) {
+                        tileIsLoading = loading = true;
+                    }
+                    tiles.push(cached);
+                } else {
+                    tileIsLoading = loading = true;
+                    const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
+                    if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
+                        this._tileCountToLoad++;
+                        tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                    }
                 }
-                tiles.push(cached);
-            } else {
-                tileIsLoading = loading = true;
-                const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
-                if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
-                    this._tileCountToLoad++;
-                    tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                if (!tileIsLoading) continue;
+                if (checkedTiles[tile.dupKey]) {
+                    continue;
                 }
-            }
-            if (!tileIsLoading) continue;
-            if (checkedTiles[tile.dupKey]) {
-                continue;
-            }
 
-            checkedTiles[tile.dupKey] = 1;
-            if (placeholder && !placeholderKeys[tile.dupKey]) {
-                //tell gl renderer not to bind gl buffer with image
-                tile.cache = false;
-                placeholders.push({
-                    image : placeholder,
-                    info : tile
-                });
-
-                placeholderKeys[tile.dupKey] = 1;
-            }
-
-            const parentTile = this._findParentTile(tile);
-            if (parentTile) {
-                const dupKey = parentTile.info.dupKey;
-                if (parentKeys[dupKey] === undefined) {
-                    parentKeys[dupKey] = parentTiles.length;
-                    parentTiles.push(parentTile);
-                }/* else {
-                    //replace with parentTile of above tiles
-                    parentTiles[parentKeys[dupKey]] = parentTile;
-                } */
-            } else {
-                const children = this._findChildTiles(tile);
-                if (children.length) {
-                    children.forEach(c => {
-                        if (!childKeys[c.info.dupKey]) {
-                            childTiles.push(c);
-                            childKeys[c.info.dupKey] = 1;
-                        }
+                checkedTiles[tile.dupKey] = 1;
+                if (placeholder && !placeholderKeys[tile.dupKey]) {
+                    //tell gl renderer not to bind gl buffer with image
+                    tile.cache = false;
+                    placeholders.push({
+                        image : placeholder,
+                        info : tile
                     });
+
+                    placeholderKeys[tile.dupKey] = 1;
+                }
+
+                const parentTile = this._findParentTile(tile);
+                if (parentTile) {
+                    const dupKey = parentTile.info.dupKey;
+                    if (parentKeys[dupKey] === undefined) {
+                        parentKeys[dupKey] = parentTiles.length;
+                        parentTiles.push(parentTile);
+                    }/* else {
+                        //replace with parentTile of above tiles
+                        parentTiles[parentKeys[dupKey]] = parentTile;
+                    } */
+                } else {
+                    const children = this._findChildTiles(tile);
+                    if (children.length) {
+                        children.forEach(c => {
+                            if (!childKeys[c.info.dupKey]) {
+                                childTiles.push(c);
+                                childKeys[c.info.dupKey] = 1;
+                            }
+                        });
+                    }
                 }
             }
         }
+
         this._drawTiles(tiles, parentTiles, childTiles, placeholders);
         if (this._tileCountToLoad === 0) {
             if (!loading) {
@@ -285,6 +297,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         ctx.clip();
         return true;
     }
+
+    /**
+     * Prepare masks for tiles
+     * nothing needs to do with canvas renderer
+     */
+    prepareLevelMasks(/* maskExtents */) {}
 
     loadTileQueue(tileQueue) {
         for (const p in tileQueue) {

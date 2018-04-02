@@ -48,8 +48,10 @@ describe('GroupTileLayer', function () {
         setTimeout(function () {
             var grid = group.getTiles();
             var grid2 = group2.getTiles();
-            expect(grid.tiles.length).to.be.eql(2);
-            expect(grid2.tiles.length).to.be.eql(1);
+            expect(grid.count).to.be.eql(2);
+            expect(grid2.count).to.be.eql(1);
+            expect(grid.tileGrids[0].tiles.length).to.be.eql(1);
+            expect(grid2.tileGrids[0].tiles.length).to.be.eql(1);
             map.removeLayer(group);
             done();
         }, 80);
@@ -134,8 +136,8 @@ describe('GroupTileLayer', function () {
 
         layer.once('layerload', function () {
             var grid = layer.getTiles();
-
-            expect(grid.tiles.length).to.be.eql(2);
+            expect(grid.tileGrids[0].tiles.length).to.be.eql(1);
+            expect(grid.tileGrids[1].tiles.length).to.be.eql(1);
             done();
         });
         map.addLayer(layer);
@@ -204,7 +206,7 @@ describe('GroupTileLayer', function () {
             renderer : 'canvas'
         });
         map.addLayer(group);
-        var allTiles = group.getTiles().tiles;
+        var allTiles = group.getTiles().tileGrids[0].tiles;
         var renderer = group.getRenderer();
         renderer._drawTiles = function (tiles, parentTiles, childTiles, placeholders) {
             expect(placeholders.length > 0);
