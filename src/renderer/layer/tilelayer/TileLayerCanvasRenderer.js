@@ -54,10 +54,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
 
-        if (tileGrids.levelMasks) {
-            this.prepareLevelMasks(tileGrids.levelMasks);
-        }
-
         this._tileCountToLoad = 0;
         let loading = false;
         const checkedTiles = {};
@@ -73,8 +69,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const l = tileGrids.length;
 
         // main tile grid is the last one (draws on top)
-        this._tileZoom = tileGrids[l - 1]['zoom'];
-        this._tileOffset = tileGrids[l - 1]['offset'];
+        this._tileZoom = tileGrids[0]['zoom'];
+        this._tileOffset = tileGrids[0]['offset'];
 
         for (let i = 0; i < l; i++) {
             const tileGrid = tileGrids[i];
@@ -186,8 +182,36 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._childTiles.forEach(t => this._drawTileOffset(t.info, t.image));
 
         placeholders.forEach(t => this._drawTileOffset(t.info, t.image));
-        tiles.forEach(t => this._drawTileAndCache(t));
+
+        const layer = this.layer,
+            map = this.getMap();
+        if (!layer.options['reduceTiles'] || map.getPitch() <= layer.options['minPitchToReduce']) {
+            tiles.forEach(t => this._drawTileAndCache(t));
+        } else {
+            this.writeZoomStencil();
+            let started = false;
+            for (let i = 0, l = tiles.length; i < l; i++) {
+                if (tiles[i].info.z !== this._tileZoom) {
+                    if (!started) {
+                        this.startZoomStencilTest();
+                        started = true;
+                    } else {
+                        this.resumeZoomStencilTest();
+                    }
+                } else if (started) {
+                    this.pauseZoomStencilTest();
+                }
+                this._drawTileAndCache(tiles[i]);
+            }
+            this.endZoomStencilTest();
+        }
     }
+
+    writeZoomStencil() {}
+    startZoomStencilTest() {}
+    endZoomStencilTest() {}
+    pauseZoomStencilTest() {}
+    resumeZoomStencilTest() {}
 
     _drawTileOffset(info, image) {
         const offset = this._tileOffset;
@@ -297,12 +321,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         ctx.clip();
         return true;
     }
-
-    /**
-     * Prepare masks for tiles
-     * nothing needs to do with canvas renderer
-     */
-    prepareLevelMasks(/* maskExtents */) {}
 
     loadTileQueue(tileQueue) {
         for (const p in tileQueue) {

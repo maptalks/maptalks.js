@@ -26,12 +26,12 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
  * @property {Number}              [options.maxCacheSize=256]    - maximum number of tiles to cache
+ * @property {Boolean}             [options.reduceTiles=true]      - reduce tiles by draw parent tiles instead on top area
+ * @property {Number}              [options.minPitchToReduce=35]   - minimum pitch degree to begin tile reducing
  * @memberOf TileLayer
  * @instance
  */
 const options = {
-    'drawParentTilesOnTop' : true,
-    'maxDetailPitch' : 40,
 
     'urlTemplate': null,
     'subdomains': null,
@@ -67,7 +67,10 @@ const options = {
 
     'clipByPitch' : true,
 
-    'maxAvailableZoom' : null
+    'maxAvailableZoom' : null,
+
+    'reduceTiles' : true,
+    'minPitchToReduce' : 35,
 };
 
 const urlPattern = /\{ *([\w_]+) *\}/g;
@@ -122,8 +125,9 @@ class TileLayer extends Layer {
         const map = this.getMap();
         const mapExtent = map.getContainerExtent();
         const tileGrids = [];
-        let count = 0, levelMasks;
-        if (!isNil(z) || !this.options['drawParentTilesOnTop']) {
+        let count = 0;
+        const minPitchToReduce = this.options['minPitchToReduce'];
+        if (!isNil(z) || !this.options['reduceTiles'] || map.getPitch() <= minPitchToReduce) {
             if (isNil(z)) {
                 z = this._getTileZoom(map.getZoom());
             }
@@ -131,32 +135,24 @@ class TileLayer extends Layer {
             count += currentTiles ? currentTiles.tiles.length : 0;
             tileGrids.push(currentTiles);
             return {
-                tileGrids : tileGrids,
-                count : count
+                tileGrids, count
             };
         }
 
         z = this._getTileZoom(map.getZoom());
-        const maxDetailPitch = this.options['maxDetailPitch'];
-        if (map.getPitch() > maxDetailPitch) {
-            const visualHeight = Math.floor(map._getVisualHeight(maxDetailPitch));
-            const extent0 = new PointExtent(0, map.height - visualHeight, map.width, map.height);
-            const currentTiles = this._getTiles(z, extent0, 0);
-            count += currentTiles ? currentTiles.tiles.length : 0;
+        const visualHeight = Math.floor(map._getVisualHeight(minPitchToReduce));
+        const extent0 = new PointExtent(0, map.height - visualHeight, map.width, map.height);
+        const currentTiles = this._getTiles(z, extent0, 0);
+        count += currentTiles ? currentTiles.tiles.length : 0;
 
-            const extent1 = new PointExtent(0, mapExtent.ymin, map.width, extent0.ymin);
-            const parentTiles = this._getTiles(z - 1, extent1, 1);
-            count += parentTiles ? parentTiles.tiles.length : 0;
+        const extent1 = new PointExtent(0, mapExtent.ymin, map.width, extent0.ymin);
+        const d = map.getSpatialReference().getZoomDirection();
+        const parentTiles = this._getTiles(z - d, extent1, 1);
+        count += parentTiles ? parentTiles.tiles.length : 0;
 
-            tileGrids.push(parentTiles, currentTiles);
-            levelMasks = [extent0, extent1];
-        } else {
-            const currentTiles = this._getTiles(z, mapExtent);
-            count += currentTiles ? currentTiles.tiles.length : 0;
-            tileGrids.push(currentTiles);
-        }
+        tileGrids.push(currentTiles, parentTiles);
         return {
-            tileGrids, count, levelMasks
+            tileGrids, count
         };
     }
 
@@ -366,7 +362,7 @@ class TileLayer extends Layer {
                         tileInfo.extent2d._add(offset);
                     }
                     tileInfo['size'] = [width, height];
-                    tileInfo['dupKey'] = p.round().toArray().join() + ',' + width + ',' + height; //duplicate key of the tile
+                    tileInfo['dupKey'] = p.round().toArray().join() + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
                     tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
                     tileInfo['layer'] = layerId;
                     if (!renderer || !renderer.isTileCachedOrLoading(tileInfo.id)) {

@@ -27,10 +27,6 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return super.needToRedraw();
     }
 
-    prepareLevelMasks(/* masks */) {
-
-    }
-
     drawTile(tileInfo, tileImage) {
         const map = this.getMap();
         if (!tileInfo || !map) {
@@ -62,6 +58,32 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         } else {
             this.setCanvasUpdated();
         }
+    }
+
+    writeZoomStencil() {
+        const gl = this.gl;
+        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+    }
+
+    startZoomStencilTest() {
+        const gl = this.gl;
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
+    }
+
+    endZoomStencilTest() {
+        this.pauseZoomStencilTest();
+    }
+
+    pauseZoomStencilTest() {
+        const gl = this.gl;
+        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+    }
+
+    resumeZoomStencilTest() {
+        const gl = this.gl;
+        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
     }
 
     _bindGLBuffer(image, w, h) {
