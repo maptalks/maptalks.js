@@ -1,4 +1,5 @@
 import {
+    isNil,
     loadImage,
     emptyImageUrl,
     now,
@@ -350,7 +351,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         tileImage.onerror = this.onTileError.bind(this, tileImage, tile);
 
         const crossOrigin = this.layer.options['crossOrigin'];
-        if (crossOrigin) {
+        if (!isNil(crossOrigin)) {
             tileImage.crossOrigin = crossOrigin;
         }
         this.loadTileImage(tileImage, tile['url']);

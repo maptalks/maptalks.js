@@ -705,7 +705,7 @@ class CanvasRenderer extends Class {
                 return;
             }
             const img = new Image();
-            if (crossOrigin) {
+            if (!isNil(crossOrigin)) {
                 img['crossOrigin'] = crossOrigin;
             }
             if (isSVG(url[0]) && !IS_NODE) {
