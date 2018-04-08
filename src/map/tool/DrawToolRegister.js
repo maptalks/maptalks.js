@@ -9,11 +9,10 @@ import CubicBezierCurve from '../../geometry/CubicBezierCurve';
 import Circle from '../../geometry/Circle';
 import Polygon from '../../geometry/Polygon';
 import Point from '../../geo/Point';
+import DrawTool from './DrawTool';
 
-const RegisterModes = {};
-
-RegisterModes['circle'] = {
-    'limitClickCount': 2,
+DrawTool.registerMode('circle', {
+    'clickLimit': 2,
     'action': ['click', 'mousemove', 'click'],
     'create': function (coordinate) {
         return new Circle(coordinate[0], 0);
@@ -26,10 +25,10 @@ RegisterModes['circle'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['ellipse'] = {
-    'limitClickCount': 2,
+DrawTool.registerMode('ellipse', {
+    'clickLimit': 2,
     'action': ['click', 'mousemove', 'click'],
     'create': function (coordinates) {
         return new Ellipse(coordinates[0], 0, 0);
@@ -51,10 +50,10 @@ RegisterModes['ellipse'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['rectangle'] = {
-    'limitClickCount': 2,
+DrawTool.registerMode('rectangle', {
+    'clickLimit': 2,
     'action': ['click', 'mousemove', 'click'],
     'create': function (coordinate, param) {
         const rect = new Polygon([]);
@@ -76,10 +75,10 @@ RegisterModes['rectangle'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['point'] = {
-    'limitClickCount': 1,
+DrawTool.registerMode('point', {
+    'clickLimit': 1,
     'action': ['click'],
     'create': function (coordinate) {
         return new Marker(coordinate[0]);
@@ -87,9 +86,9 @@ RegisterModes['point'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['polygon'] = {
+DrawTool.registerMode('polygon', {
     'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new LineString(path);
@@ -123,9 +122,9 @@ RegisterModes['polygon'] = {
             'symbol': geometry.getSymbol()
         });
     }
-};
+});
 
-RegisterModes['linestring'] = {
+DrawTool.registerMode('linestring', {
     'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new LineString(path);
@@ -136,9 +135,9 @@ RegisterModes['linestring'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['arccurve'] = {
+DrawTool.registerMode('arccurve', {
     'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new ArcCurve(path);
@@ -149,9 +148,9 @@ RegisterModes['arccurve'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['quadbeziercurve'] = {
+DrawTool.registerMode('quadbeziercurve', {
     'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new QuadBezierCurve(path);
@@ -162,9 +161,9 @@ RegisterModes['quadbeziercurve'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['cubicbeziercurve'] = {
+DrawTool.registerMode('cubicbeziercurve', {
     'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
         return new CubicBezierCurve(path);
@@ -175,10 +174,11 @@ RegisterModes['cubicbeziercurve'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
+});
 
-RegisterModes['boxZoom'] = {
-    'action': ['mousedown', 'drag', 'mouseup'],
+// TODO When action contains 'mousedown', It is in drag mode.
+DrawTool.registerMode('boxZoom', {
+    'action': ['mousedown', 'mousemove', 'mouseup'],
     'create': function (coordinates) {
         const marker = new Marker(coordinates[0]);
         marker._firstClick = coordinates[0];
@@ -198,6 +198,4 @@ RegisterModes['boxZoom'] = {
     'generate': function (geometry) {
         return geometry;
     }
-};
-
-export default RegisterModes;
+});

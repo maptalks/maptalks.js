@@ -329,36 +329,6 @@ describe('DrawTool', function () {
 
             expect(drawTool.getSymbol()).to.not.be(null);
         });
-
-        it('enableFreeHand', function (done) {
-            function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
-                expect(param.geometry.getWidth()).to.above(0);
-                expect(param.geometry.getHeight()).to.above(0);
-                done();
-            }
-            var drawTool = new maptalks.DrawTool({
-                mode: 'Ellipse'
-            }).addTo(map).disable();
-            drawTool.enableFreeHand().enable();
-            drawTool.on('drawend', drawEnd);
-            dragDraw(drawTool);
-        });
-
-        it('disableFreeHand', function (done) {
-            function drawEnd(param) {
-                expect(param.geometry instanceof maptalks.Circle).to.be.ok();
-                expect(param.geometry.getRadius()).to.above(0);
-                done();
-            }
-            var drawTool = new maptalks.DrawTool({
-                mode: 'LineString'
-            });
-            drawTool.addTo(map);
-            drawTool.enableFreeHand('Circle').disableFreeHand('Circle').setMode('Circle');
-            drawTool.on('drawend', drawEnd);
-            drawRegularShape();
-        });
     });
 
 
