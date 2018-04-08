@@ -163,6 +163,21 @@ describe('GroupTileLayer', function () {
         map.addLayer(group);
     });
 
+    it('duplicate child layer id should throw exception', function () {
+        expect(function () {
+            var group = new maptalks.GroupTileLayer('group', [
+                new maptalks.TileLayer('tile1', {
+                    maxZoom : 17,
+                    urlTemplate : TILE_IMAGE
+                }),
+                new maptalks.TileLayer('tile1', {
+                    maxZoom : 17,
+                    urlTemplate : TILE_IMAGE
+                })
+            ]);
+        }).to.throwException();
+    });
+
     it('update child layer tile config if map\'s spatial reference changed', function () {
         var t1 = new maptalks.TileLayer('tile1', {
             maxZoom : 17,

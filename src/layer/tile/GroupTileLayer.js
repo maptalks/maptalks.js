@@ -55,6 +55,7 @@ class GroupTileLayer extends TileLayer {
     constructor(id, layers, options) {
         super(id, options);
         this.layers = layers || [];
+        this._checkChildren();
         this.layerMap = {};
         this._groupChildren = [];
     }
@@ -166,6 +167,18 @@ class GroupTileLayer extends TileLayer {
             }
         }
         return false;
+    }
+
+    _checkChildren() {
+        const ids = {};
+        this.layers.forEach(layer => {
+            const layerId = layer.getId();
+            if (ids[layerId]) {
+                throw new Error(`Duplicate child layer id (${layerId}) in the GroupTileLayer (${this.getId()})`);
+            } else {
+                ids[layerId] = 1;
+            }
+        });
     }
 }
 
