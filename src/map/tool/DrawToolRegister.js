@@ -27,6 +27,21 @@ DrawTool.registerMode('circle', {
     }
 });
 
+DrawTool.registerMode('freeHandCircle', {
+    'action': ['mousedown', 'mousemove', 'mouseup'],
+    'create': function (coordinate) {
+        return new Circle(coordinate[0], 0);
+    },
+    'update': function (path, geometry) {
+        const map = geometry.getMap();
+        const radius = map.computeLength(geometry.getCenter(), path[path.length - 1]);
+        geometry.setRadius(radius);
+    },
+    'generate': function (geometry) {
+        return geometry;
+    }
+});
+
 DrawTool.registerMode('ellipse', {
     'clickLimit': 2,
     'action': ['click', 'mousemove', 'click'],
@@ -52,9 +67,57 @@ DrawTool.registerMode('ellipse', {
     }
 });
 
+DrawTool.registerMode('freeHandEllipse', {
+    'action': ['mousedown', 'mousemove', 'mouseup'],
+    'create': function (coordinates) {
+        return new Ellipse(coordinates[0], 0, 0);
+    },
+    'update': function (path, geometry) {
+        const map = geometry.getMap();
+        const center = geometry.getCenter();
+        const rx = map.computeLength(center, new Coordinate({
+            x: path[path.length - 1].x,
+            y: center.y
+        }));
+        const ry = map.computeLength(center, new Coordinate({
+            x: center.x,
+            y: path[path.length - 1].y
+        }));
+        geometry.setWidth(rx * 2);
+        geometry.setHeight(ry * 2);
+    },
+    'generate': function (geometry) {
+        return geometry;
+    }
+});
+
 DrawTool.registerMode('rectangle', {
     'clickLimit': 2,
     'action': ['click', 'mousemove', 'click'],
+    'create': function (coordinate, param) {
+        const rect = new Polygon([]);
+        rect._firstClick = param['containerPoint'];
+        return rect;
+    },
+    'update': function (coordinate, geometry, param) {
+        const map = geometry.getMap();
+        const containerPoint = param['containerPoint'];
+        const firstClick = geometry._firstClick;
+        const ring = [
+            [firstClick.x, firstClick.y],
+            [containerPoint.x, firstClick.y],
+            [containerPoint.x, containerPoint.y],
+            [firstClick.x, containerPoint.y],
+        ];
+        geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
+    },
+    'generate': function (geometry) {
+        return geometry;
+    }
+});
+
+DrawTool.registerMode('freeHandRectangle', {
+    'action': ['mousedown', 'mousemove', 'mouseup'],
     'create': function (coordinate, param) {
         const rect = new Polygon([]);
         rect._firstClick = param['containerPoint'];
@@ -124,6 +187,43 @@ DrawTool.registerMode('polygon', {
     }
 });
 
+DrawTool.registerMode('freeHandPolygon', {
+    'action': ['mousedown', 'mousemove', 'mouseup'],
+    'create': function (path) {
+        return new LineString(path);
+    },
+    'update': function (path, geometry) {
+        const coordinates = geometry.getCoordinates();
+        const symbol = geometry.getSymbol();
+        geometry.setCoordinates(coordinates.concat(path));
+
+        const layer = geometry.getLayer();
+        if (layer) {
+            let polygon = layer.getGeometryById('polygon');
+            if (!polygon && path.length >= 3) {
+                polygon = new Polygon([path], {
+                    'id': 'polygon'
+                });
+                if (symbol) {
+                    const pSymbol = extendSymbol(symbol, {
+                        'lineOpacity': 0
+                    });
+                    polygon.setSymbol(pSymbol);
+                }
+                polygon.addTo(layer);
+            }
+            if (polygon) {
+                polygon.setCoordinates(path);
+            }
+        }
+    },
+    'generate': function (geometry) {
+        return new Polygon(geometry.getCoordinates(), {
+            'symbol': geometry.getSymbol()
+        });
+    }
+});
+
 DrawTool.registerMode('linestring', {
     'action': ['click', 'mousemove', 'dblclick'],
     'create': function (path) {
@@ -131,6 +231,20 @@ DrawTool.registerMode('linestring', {
     },
     'update': function (path, geometry) {
         geometry.setCoordinates(path);
+    },
+    'generate': function (geometry) {
+        return geometry;
+    }
+});
+
+DrawTool.registerMode('freeHandLinestring', {
+    'action': ['mousedown', 'mousemove', 'mouseup'],
+    'create': function (path) {
+        return new LineString(path);
+    },
+    'update': function (path, geometry) {
+        const coordinates = geometry.getCoordinates();
+        geometry.setCoordinates(coordinates.concat(path));
     },
     'generate': function (geometry) {
         return geometry;

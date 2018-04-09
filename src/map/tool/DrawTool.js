@@ -81,21 +81,6 @@ class DrawTool extends MapTool {
     }
 
     /**
-     * check is clickDblclick action
-     * @param actions
-     * @returns {boolean}
-     */
-    static checkClickDblclickMode(actions) {
-        if (actions === 'clickDblclick') {
-            return true;
-        } else if (Array.isArray(actions)) {
-            return actions[0] === 'click' && actions[1] === 'mousemove' && actions[2] === 'dblclick';
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * In default, DrawTool supports the following modes: <br>
      * [Point, LineString, Polygon, Circle, Ellipse, Rectangle, ArcCurve, QuadBezierCurve, CubicBezierCurve] <br>
      * You can easily add new mode to DrawTool by calling [registerMode]{@link DrawTool.registerMode}
@@ -220,7 +205,7 @@ class DrawTool extends MapTool {
     undo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
-        if (!DrawTool.checkClickDblclickMode(action) || !this._historyPointer) {
+        if (!this._shouldRecordHistory(action) || !this._historyPointer) {
             return this;
         }
         const coords = this._clickCoords.slice(0, --this._historyPointer);
@@ -235,12 +220,28 @@ class DrawTool extends MapTool {
     redo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
-        if (!DrawTool.checkClickDblclickMode(action) || isNil(this._historyPointer) || this._historyPointer === this._clickCoords.length) {
+        if (!this._shouldRecordHistory(action) || isNil(this._historyPointer) || this._historyPointer === this._clickCoords.length) {
             return this;
         }
         const coords = this._clickCoords.slice(0, ++this._historyPointer);
         registerMode.update(coords, this._geometry);
         return this;
+    }
+
+    /**
+     * check should recor history
+     * @param actions
+     * @returns {boolean}
+     * @private
+     */
+    _shouldRecordHistory(actions) {
+        if (actions === 'clickDblclick') {
+            return true;
+        } else if (Array.isArray(actions)) {
+            return actions[0] === 'click' && actions[1] === 'mousemove' && actions[2] === 'dblclick';
+        } else {
+            return false;
+        }
     }
 
     _checkMode() {
@@ -420,11 +421,19 @@ class DrawTool extends MapTool {
             return;
         }
         const registerMode = this._getRegisterMode();
-        const path = this._clickCoords.slice(0, this._historyPointer);
-        if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
-            return;
+        if (this._shouldRecordHistory(registerMode.action)) {
+            const path = this._clickCoords.slice(0, this._historyPointer);
+            if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
+                return;
+            }
+            if (!(this._historyPointer === null)) {
+                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+            }
+            this._historyPointer = this._clickCoords.length;
+            registerMode['update'](path.concat([coordinate]), this._geometry, event);
+        } else {
+            registerMode['update']([coordinate], this._geometry, event);
         }
-        registerMode['update'](path.concat([coordinate]), this._geometry, event);
         /**
          * mousemove event.
          *

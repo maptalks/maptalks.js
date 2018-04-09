@@ -251,6 +251,83 @@ describe('DrawTool', function () {
             drawTool.on('drawend', drawEnd);
             drawRegularShape();
         });
+
+        it('can draw FreeHandLinestring', function (done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof maptalks.LineString).to.be.ok();
+                expect(param.geometry.getLength()).to.above(0);
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode : 'FreeHandLinestring'
+            });
+            drawTool.addTo(map);
+            drawTool.on('drawend', drawEnd);
+            dragDraw(drawTool);
+        });
+
+        it('can draw FreeHandPolygon', function (done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof maptalks.Polygon).to.be.ok();
+                expect(param.geometry.getArea()).to.above(0);
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode : 'FreeHandPolygon'
+            });
+            drawTool.addTo(map);
+            drawTool.on('drawend', drawEnd);
+            dragDraw(drawTool);
+        });
+
+        it('can draw FreeHandRectangle', function (done) {
+            var first;
+            function drawStart(param) {
+                first = param.coordinate;
+            }
+            function drawEnd(param) {
+                expect(param.geometry instanceof maptalks.Polygon).to.be.ok();
+                var coordinates = param.geometry.getCoordinates()[0];
+                expect(coordinates.length === 5).to.be.ok();
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode : 'FreeHandRectangle'
+            });
+            drawTool.addTo(map);
+            drawTool.on('drawend', drawEnd);
+            drawTool.on('drawstart', drawStart);
+            dragDraw(drawTool);
+        });
+
+        it('can draw FreeHandCircle', function (done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof maptalks.Circle).to.be.ok();
+                expect(param.geometry.getRadius()).to.above(0);
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode : 'FreeHandCircle'
+            });
+            drawTool.addTo(map);
+            drawTool.on('drawend', drawEnd);
+            dragDraw(drawTool);
+        });
+
+        it('can draw FreeHandEllipse', function (done) {
+            function drawEnd(param) {
+                expect(param.geometry instanceof maptalks.Ellipse).to.be.ok();
+                expect(param.geometry.getWidth()).to.above(0);
+                expect(param.geometry.getHeight()).to.above(0);
+                done();
+            }
+            var drawTool = new maptalks.DrawTool({
+                mode : 'FreeHandEllipse'
+            });
+            drawTool.addTo(map);
+            drawTool.on('drawend', drawEnd);
+            dragDraw(drawTool);
+        });
     });
 
     describe('common methods', function () {
