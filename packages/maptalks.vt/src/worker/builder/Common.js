@@ -29,33 +29,33 @@ export function countVertexes(features, isLine) {
 
 /**
  *
- * @param {TypedArray} position - position array to fill
+ * @param {TypedArray} vertices - vertices array to fill
  * @param {Number} offset - start offset
  * @param {Number[][]|Object[]} segment - segment, can be [[x, y], [x, y]...] or [{x, y}, {x, y}]
  * @param {Number} scale - scale
  * @param {Number|Number[]} altitude - altitude or altitude[]
  * @param {Boolean} isLine
  */
-export function fillPosArray(position, offset, segment, scale, altitude, isLine) {
+export function fillPosArray(vertices, offset, segment, scale, altitude, isLine) {
     const isCoordArr = segment && Array.isArray(segment[0]);
     for (let i = 0, l = segment.length; i < l; i++) {
-        position[offset] = Math.round((isCoordArr ? segment[i][0] : segment[i].x) * scale);
-        position[offset + 1] = Math.round((isCoordArr ? segment[i][1] : segment[i].y) * scale);
+        vertices[offset] = Math.round((isCoordArr ? segment[i][0] : segment[i].x) * scale);
+        vertices[offset + 1] = Math.round((isCoordArr ? segment[i][1] : segment[i].y) * scale);
 
         let alt = altitude || 0;
         if (Array.isArray(altitude)) {
             alt = altitude[i];
         }
         alt = alt ? Math.round(scale * alt) : 0;
-        position[offset + 2] = alt; // for altitude
+        vertices[offset + 2] = alt; // for altitude
 
         offset += 3;
 
         if (isLine && i !== 0 && i !== l - 1) {
             // start of the next line segment
-            position[offset] = position[offset - 3];
-            position[offset + 1] = position[offset - 2];
-            position[offset + 2] = position[offset - 1];
+            vertices[offset] = vertices[offset - 3];
+            vertices[offset + 1] = vertices[offset - 2];
+            vertices[offset + 2] = vertices[offset - 1];
             offset += 3;
         }
     }

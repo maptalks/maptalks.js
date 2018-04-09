@@ -70,6 +70,10 @@ class Shader {
         return regl(command);
     }
 
+    dispose() {
+        //TODO dispose the shader
+    }
+
     _insertDefines(source, defines) {
         const defineHeaders = [];
         for (const p in defines) {

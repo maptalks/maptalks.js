@@ -123,20 +123,23 @@ export default class BaseLayerWorker {
                 defaultAltitude,
                 heightProperty,
                 defaultHeight,
-                normal, tangent
+                normal, tangent, uv
             } = dataConfig;
 
             const faces = buildExtrudeFaces(features, extent,
                 altitudeScale, altitudeProperty, defaultAltitude || 0, heightProperty, defaultHeight || 0);
             if (normal) {
-                //caculate normal
+                //TODO generate normal
             }
             if (tangent) {
-                //caculate tangent
+                //TODO caculate tangent
+            }
+            if (uv) {
+                //TODO generate uv coordinates
             }
             return {
                 data : faces,
-                buffers : [faces.position.buffer, faces.indices.buffer, faces.indexes.buffer]
+                buffers : [faces.vertices.buffer, faces.indices.buffer, faces.indexes.buffer]
             };
         } else {
             return {

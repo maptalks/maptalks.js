@@ -9,6 +9,9 @@ export { default as Scene } from './Scene.js';
 export { default as Texture2D } from './Texture2D.js';
 export { default as TextureCube } from './TextureCube.js';
 
+import * as Util from './common/Util.js';
+export { Util };
+
 export { default as Shader } from './shader/Shader.js';
 export { default as MeshShader } from './shader/MeshShader.js';
 

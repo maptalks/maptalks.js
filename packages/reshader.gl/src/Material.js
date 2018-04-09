@@ -56,7 +56,7 @@ class Material {
                     realUniforms[p] = this._reglUniforms[p];
                 } else {
                     if (this._reglUniforms[p]) {
-                        this._reglUniforms[p].dispose();
+                        this._reglUniforms[p].destroy();
                     }
                     realUniforms[p] = v.getREGLTexture(regl);
                 }
@@ -78,9 +78,9 @@ class Material {
     }
 
     dispose() {
-        for (const p in this._reglUniforms) {
-            if (this._reglUniforms[p].dispose) {
-                this._reglUniforms[p].dispose();
+        for (const p in this.uniforms) {
+            if (this.uniforms[p].dispose) {
+                this.uniforms[p].dispose();
             }
         }
         delete this.uniforms;

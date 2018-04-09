@@ -10,7 +10,6 @@ const defaultUniforms = {
     normalStrength : 1,
     heightMap : null,
     heightStrength : 1,
-    occlusionMap : null,
     emissionMap : null
 };
 

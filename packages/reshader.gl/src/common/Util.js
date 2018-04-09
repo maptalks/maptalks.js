@@ -69,3 +69,14 @@ export function log2(x) {
         return v;
     }
 }
+
+export function normalize(out, arr) {
+    let sum = 0;
+    for (let i = 0, l = arr.length; i < l; i++) {
+        sum += arr[i];
+    }
+    for (let i = 0, l = arr.length; i < l; i++) {
+        out[i] = arr[i] / sum;
+    }
+    return out;
+}

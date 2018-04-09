@@ -8,16 +8,17 @@ export function buildExtrudeFaces(features, EXTENT,
     const scale = EXTENT / features[0].extent;
 
     const size = countVertexes(features) * 2;
+    //indexes : index of indices for each feature
     const indexes = new Uint32Array(features.length),
-        position = new Int16Array(size);
+        vertices = new Int16Array(size);
     const indices = [];
 
     function fillData(start, offset, holes, height) {
         const count = offset - start;
 
-        const top = position.subarray(start, offset);
+        const top = vertices.subarray(start, offset);
         //fill bottom vertexes
-        const bottom = position.subarray(offset, offset + count);
+        const bottom = vertices.subarray(offset, offset + count);
         bottom.set(top);
         for (let i = 2, l = bottom.length; i < l; i += 3) {
             bottom[i] = top[i] - height; //top[i] is altitude
@@ -81,7 +82,7 @@ export function buildExtrudeFaces(features, EXTENT,
             let ring = geometry[i];
             if (feature.type === 3) ring = ring.slice(0, ring.length - 1);
             // a seg or a ring in line or polygon
-            offset = fillPosArray(position, offset, ring, scale, altitude);
+            offset = fillPosArray(vertices, offset, ring, scale, altitude);
             if (isHole) {
                 holes.push(segStart / 3);
             }
@@ -99,7 +100,7 @@ export function buildExtrudeFaces(features, EXTENT,
         indexes[r] = indices.length;
     }
     return {
-        position : position,  // vertexes
+        vertices,  // vertexes
         indices : new Uint16Array(indices),    // indices for drawElements
         indexes : indexes     // vertex index of each feature
     };

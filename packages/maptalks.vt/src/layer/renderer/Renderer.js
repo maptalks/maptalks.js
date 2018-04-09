@@ -3,6 +3,7 @@ import { mat4, vec3 } from '@mapbox/gl-matrix';
 import WorkerConnection from './worker/WorkerConnection';
 import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
 import { sign } from '../core/Util';
+import regl from 'regl';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -45,6 +46,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.gl = this._createGLContext(this.canvas, attributes);
         this.prepareWorker();
         this.layer.on('renderstart', this.renderTileClippingMasks, this);
+        this.regl = regl({
+            gl : this.gl,
+            extensions : [
+                // 'ANGLE_instanced_arrays',
+                'OES_texture_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives'
+            ],
+            optionalExtensions : this.layer.options['glExtensions'] || ['WEBGL_draw_buffers']
+        });
     }
 
     prepareWorker() {
@@ -164,6 +175,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this.sceneCache[type] = {};
             }
             plugin.startFrame({
+                regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
                 sceneCache : this.sceneCache[type],
@@ -175,8 +187,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     endFrame() {
         this.plugins.forEach(plugin => {
             const type = plugin.getType();
-            // plugin.endFrame(this.layer, this.gl, this.sceneCache[type], this.tilesInView ? Object.keys(this.tilesInView) : []);
             plugin.endFrame({
+                regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
                 sceneCache : this.sceneCache[type],
@@ -198,6 +210,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 return;
             }
             const param = {
+                regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
                 sceneCache : this.sceneCache[type],
@@ -235,7 +248,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (tile.image && !tile.image._empty) {
             this.plugins.forEach(plugin => {
                 const type = plugin.getType();
-                plugin.deleteTileData(tile.image.cache ? tile.image.cache[type] : {}, this.sceneCache[type], tile.info, tile.image);
+                plugin.deleteTile({
+                    regl : this.regl,
+                    layer : this.layer,
+                    gl : this.gl,
+                    sceneCache : this.sceneCache[type],
+                    tileCache : tile.image.cache ? tile.image.cache[type] : {},
+                    tileInfo : tile.info,
+                    tileData : tile.image
+                });
             });
         }
         //ask plugin to clear caches
@@ -259,6 +280,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     onRemove() {
+        this.plugins.forEach(plugin => {
+            plugin.remove();
+        });
         // const map = this.getMap();
         if (this.workerConn) {
             this.workerConn.removeLayer(this.layer.getId(), err => {
@@ -269,16 +293,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
 
         this.layer.off('renderstart', this.renderTileClippingMasks, this);
-        if (super.onRemove) super.onRemove();
         delete this.sceneCache;
-    }
 
-    drawBackground() {
-        maptalks.renderer.TileLayerGLRenderer.prototype.drawBackground.call(this);
-    }
+        if (super.onRemove) super.onRemove();
 
-    saveBackground() {
-        maptalks.renderer.TileLayerGLRenderer.prototype.saveBackground.call(this);
     }
 
     hitDetect(point) {

@@ -15,7 +15,14 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
+    "color": "^3.0.0",
     "maptalks.vt.base": "^0.1.0",
     "reshader.gl": "^0.1.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.2.2",
+    "eslint": "^4.19.1",
+    "eslint-config-maptalks": "^0.3.0",
+    "eslint-plugin-mocha": "^5.0.0"
   }
 }
