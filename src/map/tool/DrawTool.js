@@ -235,13 +235,7 @@ class DrawTool extends MapTool {
      * @private
      */
     _shouldRecordHistory(actions) {
-        if (actions === 'clickDblclick') {
-            return true;
-        } else if (Array.isArray(actions)) {
-            return actions[0] === 'click' && actions[1] === 'mousemove' && actions[2] === 'dblclick';
-        } else {
-            return false;
-        }
+        return Array.isArray(actions) && actions[0] === 'click' && actions[1] === 'mousemove' && actions[2] === 'dblclick';
     }
 
     _checkMode() {
