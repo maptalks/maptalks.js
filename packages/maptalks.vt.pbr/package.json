@@ -1,0 +1,21 @@
+{
+  "name": "maptalks.vt.pbr",
+  "version": "0.1.0",
+  "description": "PBR plugin for maptalks vector tile layer",
+  "main": "dist/maptalks.vt.pbr.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true,
+  "keywords": [
+    "maptalks",
+    "pbr",
+    "vector-tile"
+  ],
+  "author": "fuzhenn",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "maptalks.vt.base": "^0.1.0",
+    "reshader.gl": "^0.1.0"
+  }
+}
