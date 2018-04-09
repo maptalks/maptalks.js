@@ -10,7 +10,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         super(layer);
         this._initPlugins();
         this.ready = false;
-        this.cache = {};
+        this.sceneCache = {};
     }
 
     updateStyle() {
@@ -89,10 +89,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     checkResources() {
         const result = [];
-        // this.layer.plugins.forEach(plugin => {
-        //     const resources = plugin.collectResources();
-        //     Array.prototype.push(result, resources);
-        // });
         return result;
     }
 
@@ -113,7 +109,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.completeRender();
             return;
         }
-        this._frameTime = Date.now();
+        this._frameTime = maptalks.Util.now();
         this.startFrame();
         super.draw();
         this.endFrame();
@@ -162,42 +158,38 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     startFrame() {
-        const map = this.getMap();
-        // const projMatrix = [1, -1, 1];
-
-        const cameraOptions =  {
-            projMatrix : map.projMatrix,
-            viewMatrix : map.viewMatrix,
-            worldMatrix : map.cameraWorldMatrix,
-            // position : map.cameraPosition,
-            lookAt : map.cameraLookAt,
-            // up : map.cameraUp,
-            // pitch : map.getPitch() * Math.PI / 180,
-            // bearing : map.getBearing() * Math.PI / 180
-        };
         this.plugins.forEach(plugin => {
             const type = plugin.getType();
-            if (!this.cache[type]) {
-                this.cache[type] = {};
+            if (!this.sceneCache[type]) {
+                this.sceneCache[type] = {};
             }
-            plugin.startFrame(map, this.canvas, this.cache[type], cameraOptions, plugin.config.light);
+            plugin.startFrame({
+                layer : this.layer,
+                gl : this.gl,
+                sceneCache : this.sceneCache[type],
+                sceneConfig : plugin.config.sceneConfig
+            });
         });
     }
 
     endFrame() {
-        const map = this.getMap();
         this.plugins.forEach(plugin => {
             const type = plugin.getType();
-            plugin.endFrame(map, this.canvas, this.cache[type], this.tilesInView ? Object.keys(this.tilesInView) : []);
+            // plugin.endFrame(this.layer, this.gl, this.sceneCache[type], this.tilesInView ? Object.keys(this.tilesInView) : []);
+            plugin.endFrame({
+                layer : this.layer,
+                gl : this.gl,
+                sceneCache : this.sceneCache[type],
+                sceneConfig : plugin.config.sceneConfig
+            });
         });
     }
 
     drawTile(tileInfo, tileData) {
         if (!tileData.loadTime || tileData._empty) return;
-        const map = this.getMap();
-        let cache = tileData.cache;
-        if (!cache) {
-            cache = tileData.cache = {};
+        let tileCache = tileData.cache;
+        if (!tileCache) {
+            tileCache = tileData.cache = {};
         }
         const tileTransform = this.calculateTileMatrix(tileInfo);
         this.plugins.forEach(plugin => {
@@ -205,12 +197,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!tileData[type]) {
                 return;
             }
-            if (!cache[type]) {
-                cache[type] = {};
-            }
-            const t = this._frameTime - tileData.loadTime;
-            const status = plugin.paintTile(map, this.canvas, cache[type], this.cache[type], t, tileInfo, tileData[type],  tileTransform);
-            cache[type] = status.cache;
+            const param = {
+                layer : this.layer,
+                gl : this.gl,
+                sceneCache : this.sceneCache[type],
+                sceneConfig : plugin.config.sceneConfig,
+                tileCache : tileCache[type],
+                tileData : tileData[type],
+                t : this._frameTime - tileData.loadTime,
+                tileInfo, tileTransform
+            };
+            const status = plugin.paintTile(param);
             if (status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
@@ -223,8 +220,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const hits = [];
         this.plugins.forEach(plugin => {
             const type = plugin.getType();
-            if (this.cache[type]) {
-                const feature = plugin.picking(this.cache[type], x, y);
+            if (this.sceneCache[type]) {
+                const feature = plugin.picking(this.sceneCache[type], x, y);
                 if (feature) hits.push(feature);
             }
         });
@@ -238,7 +235,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (tile.image && !tile.image._empty) {
             this.plugins.forEach(plugin => {
                 const type = plugin.getType();
-                plugin.deleteTileData(tile.image.cache ? tile.image.cache[type] : {}, this.cache[type], tile.info, tile.image);
+                plugin.deleteTileData(tile.image.cache ? tile.image.cache[type] : {}, this.sceneCache[type], tile.info, tile.image);
             });
         }
         //ask plugin to clear caches
@@ -247,9 +244,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
-        let cache = this.cache;
+        let cache = this.sceneCache;
         if (!cache) {
-            cache = this.cache = {};
+            cache = this.sceneCache = {};
         }
         const size = new maptalks.Size(this.canvas.width, this.canvas.height);
         this.plugins.forEach(plugin => {
@@ -273,7 +270,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
         this.layer.off('renderstart', this.renderTileClippingMasks, this);
         if (super.onRemove) super.onRemove();
-        delete this.cache;
+        delete this.sceneCache;
     }
 
     drawBackground() {
