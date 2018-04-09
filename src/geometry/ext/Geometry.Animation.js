@@ -10,9 +10,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *
      * @param  {Object}   styles          - styles to animate
      * @param  {Object}   [options=null]  - animation options
-     * @param  {Object}   [options.duration=1000]      - duration
-     * @param  {Object}   [options.startTime=null]  - time to start animation in ms
-     * @param  {Object}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
+     * @param  {NUmber}   [options.duration=1000]      - duration
+     * @param  {Number}   [options.startTime=null]  - time to start animation in ms
+     * @param  {String}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
+     * @param  {Boolean}  [options.repeat=false]      - repeat animation
      * @param  {Function} [step=null]  - step function during animation, animation frame as the parameter
      * @return {animation.Player} animation player
      * @example

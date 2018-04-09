@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
@@ -98,19 +98,26 @@ class CanvasRenderer extends Class {
      */
 
     /**
-     * Ask whether the layer renderer needs to redraw
-     * @return {Boolean}
+     * @private
      */
-    needToRedraw() {
-        if (this._loadingResource) {
+    testIfNeedRedraw() {
+        if (this._loadingResource || !this.drawOnInteracting) {
             return false;
         }
         if (this._toRedraw) {
             return true;
         }
-        if (!this.drawOnInteracting) {
-            return false;
+        if (this.needToRedraw()) {
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * Ask whether the layer renderer needs to redraw
+     * @return {Boolean}
+     */
+    needToRedraw() {
         const map = this.getMap();
         if (map.isInteracting()) {
             // don't redraw when map is moving without any pitch
@@ -176,9 +183,9 @@ class CanvasRenderer extends Class {
         delete this.layer;
     }
 
-    onRemove() {
+    onRemove() {}
 
-    }
+    onAdd() {}
 
     /**
      * Get map
@@ -496,7 +503,7 @@ class CanvasRenderer extends Class {
 
     clipCanvas(context) {
         const mask = this.layer.getMask();
-        if (!mask && !this._shouldClip) {
+        if (!mask || !this._shouldClip) {
             return false;
         }
         const old = this._southWest;
@@ -804,6 +811,18 @@ export class ResourceCache {
         for (const p in res.resources) {
             const img = res.resources[p];
             this.addResource([p, img.width, img.height], img.image);
+        }
+        return this;
+    }
+
+    forEach(fn) {
+        if (!this.resources) {
+            return this;
+        }
+        for (const p in this.resources) {
+            if (hasOwn(this.resources, p)) {
+                fn(p, this.resources[p]);
+            }
         }
         return this;
     }

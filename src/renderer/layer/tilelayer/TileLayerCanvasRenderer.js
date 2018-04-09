@@ -48,90 +48,99 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
         const layer = this.layer;
-        const tileGrid = layer.getTiles();
-        if (!tileGrid) {
+        const tileGrids = layer.getTiles().tileGrids;
+        if (!tileGrids) {
             this.completeRender();
             return;
         }
-        const allTiles = tileGrid['tiles'];
-
-        this._tileZoom = tileGrid.zoom;
-
-        const loadingCount = this._markTiles(),
-            tileLimit = this._getTileLimitOnInteracting();
-
-        const placeholder = this._generatePlaceHolder(tileGrid.zoom);
-
-        const offset = this.layer._getTileOffset(tileGrid.zoom);
 
         this._tileCountToLoad = 0;
         let loading = false;
+        const checkedTiles = {};
         const tiles = [],
             parentTiles = [], parentKeys = {},
             childTiles = [], childKeys = {},
             placeholders = [], placeholderKeys = {};
         //visit all the tiles
         const tileQueue = {};
-        for (let i = 0, l = allTiles.length; i < l; i++) {
-            const tile = allTiles[i],
-                tileId = tile['id'];
-            //load tile in cache at first if it has.
-            const cached = this._getCachedTile(tileId);
-            let tileIsLoading = false;
-            if (this._isLoadingTile(tileId)) {
-                tileIsLoading = loading = true;
-                this.tilesLoading[tileId].current = true;
-            } else if (cached) {
-                //update tile's point which may change from previous frame
-                cached.info.point = tile.point;
-                cached.info.extent2d = tile.extent2d;
-                if (this.getTileOpacity(cached.image) < 1) {
+        const loadingCount = this._markTiles(),
+            tileLimit = this._getTileLimitOnInteracting();
+
+        const l = tileGrids.length;
+
+        // main tile grid is the last one (draws on top)
+        this._tileZoom = tileGrids[0]['zoom'];
+        this._tileOffset = tileGrids[0]['offset'];
+
+        for (let i = 0; i < l; i++) {
+            const tileGrid = tileGrids[i];
+            const allTiles = tileGrid['tiles'];
+
+            const placeholder = this._generatePlaceHolder(tileGrid.zoom);
+
+            for (let i = 0, l = allTiles.length; i < l; i++) {
+                const tile = allTiles[i],
+                    tileId = tile['id'];
+                //load tile in cache at first if it has.
+                const cached = this._getCachedTile(tileId);
+                let tileIsLoading = false;
+                if (this._isLoadingTile(tileId)) {
                     tileIsLoading = loading = true;
-                }
-                tiles.push(cached);
-            } else {
-                tileIsLoading = loading = true;
-                const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
-                if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
-                    this._tileCountToLoad++;
-                    tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
-                }
-            }
-            if (!tileIsLoading) continue;
-
-            if (placeholder && !placeholderKeys[tile.dupKey]) {
-                //tell gl renderer not to bind gl buffer with image
-                tile.cache = false;
-                placeholders.push({
-                    image : placeholder,
-                    info : tile
-                });
-
-                placeholderKeys[tile.dupKey] = 1;
-            }
-
-            const parentTile = this._findParentTile(tile, offset);
-            if (parentTile) {
-                const dupKey = parentTile.info.dupKey;
-                if (parentKeys[dupKey] === undefined) {
-                    parentKeys[dupKey] = parentTiles.length;
-                    parentTiles.push(parentTile);
+                    this.tilesLoading[tileId].current = true;
+                } else if (cached) {
+                    if (this.getTileOpacity(cached.image) < 1) {
+                        tileIsLoading = loading = true;
+                    }
+                    tiles.push(cached);
                 } else {
-                    //replace with parentTile of above tiles
-                    parentTiles[parentKeys[dupKey]] = parentTile;
+                    tileIsLoading = loading = true;
+                    const hitLimit = tileLimit && (this._tileCountToLoad + loadingCount[0]) > tileLimit;
+                    if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
+                        this._tileCountToLoad++;
+                        tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                    }
                 }
-            } else {
-                const children = this._findChildTiles(tile, offset);
-                if (children.length) {
-                    children.forEach(c => {
-                        if (!childKeys[c.info.dupKey]) {
-                            childTiles.push(c);
-                            childKeys[c.info.dupKey] = 1;
-                        }
+                if (!tileIsLoading) continue;
+                if (checkedTiles[tile.dupKey]) {
+                    continue;
+                }
+
+                checkedTiles[tile.dupKey] = 1;
+                if (placeholder && !placeholderKeys[tile.dupKey]) {
+                    //tell gl renderer not to bind gl buffer with image
+                    tile.cache = false;
+                    placeholders.push({
+                        image : placeholder,
+                        info : tile
                     });
+
+                    placeholderKeys[tile.dupKey] = 1;
+                }
+
+                const parentTile = this._findParentTile(tile);
+                if (parentTile) {
+                    const dupKey = parentTile.info.dupKey;
+                    if (parentKeys[dupKey] === undefined) {
+                        parentKeys[dupKey] = parentTiles.length;
+                        parentTiles.push(parentTile);
+                    }/* else {
+                        //replace with parentTile of above tiles
+                        parentTiles[parentKeys[dupKey]] = parentTile;
+                    } */
+                } else {
+                    const children = this._findChildTiles(tile);
+                    if (children.length) {
+                        children.forEach(c => {
+                            if (!childKeys[c.info.dupKey]) {
+                                childTiles.push(c);
+                                childKeys[c.info.dupKey] = 1;
+                            }
+                        });
+                    }
                 }
             }
         }
+
         this._drawTiles(tiles, parentTiles, childTiles, placeholders);
         if (this._tileCountToLoad === 0) {
             if (!loading) {
@@ -150,11 +159,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     isTileCachedOrLoading(tileId) {
-        return this.tileCache.has(tileId) || this.tilesLoading[tileId];
+        return this.tilesLoading[tileId] || this.tilesInView[tileId] || this.tileCache.has(tileId);
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders) {
-        const extent = this.getMap().getContainerExtent();
         if (parentTiles.length > 0) {
             this._parentTiles = [];
             //closer the latter (to draw on top)
@@ -169,22 +177,67 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this._childTiles.push(t);
             });
         }
-        this._parentTiles.forEach(t => {
-            if (this.layer._isTileInExtent(t.info, extent)) {
-                this._drawTileAndRecord(t);
+
+        this._parentTiles.forEach(t => this._drawTileAndCache(t));
+        this._childTiles.forEach(t => this._drawTileOffset(t.info, t.image));
+
+        placeholders.forEach(t => this._drawTileOffset(t.info, t.image));
+
+        const layer = this.layer,
+            map = this.getMap();
+        if (!layer.options['reduceTiles'] || map.getPitch() <= layer.options['minPitchToReduce']) {
+            tiles.forEach(t => this._drawTileAndCache(t));
+        } else {
+            this.writeZoomStencil();
+            let started = false;
+            for (let i = 0, l = tiles.length; i < l; i++) {
+                if (tiles[i].info.z !== this._tileZoom) {
+                    if (!started) {
+                        this.startZoomStencilTest();
+                        started = true;
+                    } else {
+                        this.resumeZoomStencilTest();
+                    }
+                } else if (started) {
+                    this.pauseZoomStencilTest();
+                }
+                this._drawTileAndCache(tiles[i]);
             }
-        });
-        this._childTiles.forEach(t => this.drawTile(t.info, t.image));
-        placeholders.forEach(t => this.drawTile(t.info, t.image));
-        tiles.forEach(t => this._drawTileAndRecord(t));
-        // console.log(Object.keys(this.tilesInView).length);
-        // console.log(tiles.length, parentTiles.length);
+            this.endZoomStencilTest();
+        }
     }
 
-    _drawTileAndRecord(tile) {
+    writeZoomStencil() {}
+    startZoomStencilTest() {}
+    endZoomStencilTest() {}
+    pauseZoomStencilTest() {}
+    resumeZoomStencilTest() {}
+
+    _drawTileOffset(info, image) {
+        const offset = this._tileOffset;
+        if (!offset[0] && !offset[1]) {
+            this.drawTile(info, image);
+            return;
+        }
+        const map = this.getMap();
+        //tempararily add offset to tile info
+        const scale = map._getResolution(this._tileZoom) / map._getResolution(info.z);
+        offset[0] *= scale;
+        offset[1] *= scale;
+        info.point._sub(offset);
+        info.extent2d._sub(offset);
+        this.drawTile(info, image);
+        //restore
+        info.point._add(offset);
+        info.extent2d._add(offset);
+        offset[0] /= scale;
+        offset[1] /= scale;
+    }
+
+    _drawTileAndCache(tile) {
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
-        this.drawTile(tile.info, tile.image);
+        this._drawTileOffset(tile.info, tile.image);
         this.tileCache.add(tile.info.id, tile);
     }
 
@@ -213,7 +266,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     // limit tile number to load when map is interacting
     _getTileLimitOnInteracting() {
         if (this.getMap().isInteracting()) {
-            return 3;
+            return this.layer.options['loadingLimitOnInteracting'];
         }
         return 0;
     }
@@ -428,27 +481,36 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.setCanvasUpdated();
     }
 
-    _findChildTiles(info, offset) {
-        if (!this.layer.options['background']) {
+    _findChildTiles(info) {
+        const layer = this._getLayerOfTile(info.layer);
+        if (!layer.options['background']) {
             return [];
         }
-        const map = this.getMap(),
-            layer = this.layer,
-            childZoom = info.z + 1,
-            res = map.getResolution(childZoom);
+        const map = this.getMap();
+        const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            pmin = map._pointToPrj(min._sub(offset[0], offset[1]), info.z),
-            pmax = map._pointToPrj(max._sub(offset[0], offset[1]), info.z);
+            pmin = layer._project(map._pointToPrj(min, info.z)),
+            pmax = layer._project(map._pointToPrj(max, info.z));
+        const zoomDiff = 3;
+        for (let i = 1; i < zoomDiff; i++) {
+            this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
+        }
+
+        return children;
+    }
+
+    _findChildTilesAt(children, pmin, pmax, layer, childZoom) {
+        const layerId = layer.getId(),
+            res = layer.getSpatialReference().getResolution(childZoom);
         const dmin = layer._getTileConfig().getTileIndex(pmin, res),
             dmax = layer._getTileConfig().getTileIndex(pmax, res);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
         const sy = Math.min(dmin.idy, dmax.idy), ey = Math.max(dmin.idy, dmax.idy);
         let id, tile;
-        const children = [];
         for (let i = sx; i < ex; i++) {
             for (let ii = sy; ii < ey; ii++) {
-                id = layer._getTileId({ idx : i, idy : ii }, childZoom, info.layer);
+                id = layer._getTileId({ idx : i, idy : ii }, childZoom, layerId);
                 if (this.tileCache.has(id)) {
                     tile = this.tileCache.getAndRemove(id);
                     children.push(tile);
@@ -456,22 +518,22 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
         }
-        return children;
     }
 
-    _findParentTile(info, offset) {
-        const map = this.getMap();
-        if (!this.layer.options['background']) {
+    _findParentTile(info) {
+        const map = this.getMap(),
+            layer = this._getLayerOfTile(info.layer);
+        if (!layer.options['background']) {
             return null;
         }
-        const d = map.getSpatialReference().getZoomDirection(),
-            layer = this.layer,
+        const sr = layer.getSpatialReference();
+        const d = sr.getZoomDirection(),
             zoomDiff = layer.options['backgroundZoomDiff'];
         const center = info.extent2d.getCenter(),
-            prj = map._pointToPrj(center._sub(offset[0], offset[1]), info.z);
+            prj = layer._project(map._pointToPrj(center, info.z));
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
-            const res = map.getResolution(z);
+            const res = sr.getResolution(z);
             const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
             const id = layer._getTileId(tileIndex, z, info.layer);
             if (this.tileCache.has(id)) {
@@ -481,6 +543,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
         return null;
+    }
+
+    _getLayerOfTile(layerId) {
+        return this.layer.getChildLayer ? this.layer.getChildLayer(layerId) : this.layer;
     }
 
     _getCachedTile(tileId) {

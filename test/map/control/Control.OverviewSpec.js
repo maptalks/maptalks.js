@@ -19,7 +19,7 @@ describe('Control.Overview', function () {
         tile = new maptalks.TileLayer('tile', {
             renderer : 'canvas',
             fadeAnimation : false,
-            urlTemplate:'/resources/tile.png'
+            urlTemplate : '#'
         });
 
     });
@@ -46,6 +46,16 @@ describe('Control.Overview', function () {
         map.setBaseLayer(tile);
         overview.addTo(map);
         expect(overview._overview.getBaseLayer()).to.be.ok();
+    });
+
+    it('baseLayer with customized getTileUrl method', function () {
+        var fn = function () { return '' };
+        tile.getTileUrl = fn;
+        var overview = new maptalks.control.Overview();
+        map.setBaseLayer(tile);
+        overview.addTo(map);
+        var overviewBaseLayer = overview._overview.getBaseLayer();
+        expect(overviewBaseLayer.getTileUrl === fn).to.be.ok();
     });
 
     it('remove', function () {
@@ -110,16 +120,16 @@ describe('Control.Overview', function () {
         expect(overview._overview.getZoom()).to.be.eql(map.getZoom() - overview.options['level']);
         expect(overview._overview.getCenter().toArray()).to.be.eql(map.getCenter().toArray());
     });
-    
+
     it('overview base groupLayer visible', function () {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 visible : false,
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : '#'
             }),
             new maptalks.TileLayer('tile2', {
                 visible : false,
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : '#'
             })
         ], {
             renderer : 'canvas'

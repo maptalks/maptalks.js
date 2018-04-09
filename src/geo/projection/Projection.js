@@ -1,4 +1,4 @@
-import { mapArrayRecursively, sign, wrap } from '../../core/util';
+import { forEachCoord, sign, wrap } from '../../core/util';
 import Coordinate from '../Coordinate';
 import Extent from '../Extent';
 
@@ -41,7 +41,7 @@ export default /** @lends projection.Common */ {
             return [];
         }
         if (!this.isSphere()) {
-            return mapArrayRecursively(coordinates, this.project, this);
+            return forEachCoord(coordinates, this.project, this);
         }
         if (Array.isArray(coordinates[0])) {
             return coordinates.map(coords => this.projectCoords(coords));
@@ -96,7 +96,7 @@ export default /** @lends projection.Common */ {
         if (!Array.isArray(projCoords)) {
             return this.unproject(projCoords);
         }
-        return mapArrayRecursively(projCoords, this.unproject, this);
+        return forEachCoord(projCoords, this.unproject, this);
     },
 
     /**

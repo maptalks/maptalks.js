@@ -120,7 +120,7 @@ export function removeFromArray(obj, array) {
     }
 }
 
-export function mapArrayRecursively(arr, fn, context) {
+export function forEachCoord(arr, fn, context) {
     if (!Array.isArray(arr)) {
         return context ? fn.call(context, arr) : fn(arr);
     }
@@ -133,7 +133,7 @@ export function mapArrayRecursively(arr, fn, context) {
             continue;
         }
         if (Array.isArray(p)) {
-            result.push(mapArrayRecursively(p, fn, context));
+            result.push(forEachCoord(p, fn, context));
         } else {
             pp = context ? fn.call(context, p) : fn(p);
             result.push(pp);
@@ -328,6 +328,17 @@ export function btoa(input) {
         block = block << 8 | charCode;
     }
     return output;
+}
+
+export function b64toBlob(b64Data, contentType) {
+    const byteCharacters = atob(b64Data);
+    const arraybuffer = new ArrayBuffer(byteCharacters.length);
+    const view = new Uint8Array(arraybuffer);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        view[i] = byteCharacters.charCodeAt(i) & 0xff;
+    }
+    const blob = new Blob([arraybuffer], { type: contentType });
+    return blob;
 }
 
 /**

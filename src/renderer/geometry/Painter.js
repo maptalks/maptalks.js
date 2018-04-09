@@ -20,7 +20,7 @@ const registerSymbolizers = [
 ];
 
 
-const testCanvas = Canvas.createCanvas(1, 1);
+let testCanvas;
 
 /**
  * @classdesc
@@ -174,7 +174,7 @@ class Painter extends Class {
         return tr;
     }
 
-    _pointContainerPoints(points, dx, dy, ignoreAltitude, noClip) {
+    _pointContainerPoints(points, dx, dy, ignoreAltitude, noClip, pointPlacement) {
         const cExtent = this.getContainerExtent();
         if (!cExtent) {
             return null;
@@ -197,7 +197,7 @@ class Painter extends Class {
         if (Array.isArray(points)) {
             const geometry = this.geometry;
             let clipped;
-            if (!noClip && geometry.options['enableClip'] && !geometry.options['smoothness']) {
+            if (!noClip && geometry.options['enableClip']) {
                 clipped = this._clip(points, altitude);
             } else {
                 clipped = {
@@ -211,25 +211,40 @@ class Painter extends Class {
                 altitude = 0;
             }
             let alt = altitude;
-            cPoints = clipPoints.map((c, idx) => {
+            cPoints = [];
+            for (let i = 0, l = clipPoints.length; i < l; i++) {
+                const c = clipPoints[i];
                 if (Array.isArray(c)) {
-                    return c.map((cc, cidx) => {
+                    const cring = [];
+                    //polygon rings or clipped line string
+                    for (let ii = 0, ll = c.length; ii < ll; ii++) {
+                        const cc = c[ii];
                         if (Array.isArray(altitude)) {
-                            if (altitude[idx]) {
-                                alt = altitude[idx][cidx];
+                            if (altitude[i]) {
+                                alt = altitude[i][ii];
                             } else {
                                 alt = 0;
                             }
                         }
-                        return pointContainerPoint(cc, alt);
-                    });
-                } else {
-                    if (Array.isArray(altitude)) {
-                        alt = altitude[idx];
+                        cring.push(pointContainerPoint(cc, alt));
                     }
-                    return pointContainerPoint(c, alt);
+                    cPoints.push(cring);
+                } else {
+                    //line string
+                    if (Array.isArray(altitude)) {
+                        // altitude of different placement for point symbolizers
+                        if (pointPlacement === 'vertex-last') {
+                            alt = altitude[altitude.length - 1 - i];
+                        } else if (pointPlacement === 'line') {
+                            alt = (altitude[i] + altitude[i + 1]) / 2;
+                        } else {
+                            //vertex, vertex-first
+                            alt = altitude[i];
+                        }
+                    }
+                    cPoints.push(pointContainerPoint(c, alt));
                 }
-            });
+            }
         } else if (points instanceof Point) {
             if (ignoreAltitude) {
                 altitude = 0;
@@ -244,6 +259,7 @@ class Painter extends Class {
 
     _clip(points, altitude) {
         const map = this.getMap(),
+            geometry = this.geometry,
             glZoom = map.getGLZoom();
         let lineWidth = this.getSymbol()['lineWidth'];
         if (!isNumber(lineWidth)) {
@@ -269,8 +285,9 @@ class Painter extends Class {
                 altitude : altitude
             };
         }
+        const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
-        if (this.geometry.getShell && this.geometry.getHoles) {
+        if (geometry.getShell && this.geometry.getHoles && !smoothness) {
             // clip the polygon to draw less and improve performance
             if (!Array.isArray(points[0])) {
                 clipPoints = clipPolygon(points, extent2D);
@@ -283,14 +300,14 @@ class Painter extends Class {
                     }
                 }
             }
-        } else if (this.geometry.getJSONType() === 'LineString') {
+        } else if (geometry.getJSONType() === 'LineString') {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipLine(points, extent2D);
+                clipPoints = clipLine(points, extent2D, false,  !!smoothness);
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    pushIn(clipPoints, clipLine(points[i], extent2D));
+                    pushIn(clipPoints, clipLine(points[i], extent2D, false, !!smoothness));
                 }
             }
             //interpolate line's segment's altitude if altitude is an array
@@ -439,11 +456,23 @@ class Painter extends Class {
     }
 
     hitTest(cp, tolerance) {
-        tolerance = tolerance || 0.5;
+        if (!tolerance || tolerance < 0.5) {
+            tolerance = 0.5;
+        }
+        if (!testCanvas) {
+            testCanvas = Canvas.createCanvas(1, 1);
+        }
+        Canvas.setHitTesting(true);
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
-        this._hitPoint = cp;
-        this.paint(null, ctx, cp);
+        this._hitPoint = cp.sub(tolerance, tolerance);
+        try {
+            this.paint(null, ctx, this._hitPoint);
+        } catch (e) {
+            throw e;
+        } finally {
+            Canvas.setHitTesting(false);
+        }
         delete this._hitPoint;
         const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
         for (let i = 3, l = imgData.length; i < l; i += 4) {

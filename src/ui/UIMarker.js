@@ -193,7 +193,7 @@ const domEvents =
  * @example
  * var dom = document.createElement('div');
  * dom.innerHTML = 'hello ui marker';
- * var marker = new maptalks.UIMarker([0, 0], {
+ * var marker = new maptalks.ui.UIMarker([0, 0], {
  *      draggable : true,
  *      content : dom
  *  }).addTo(map);

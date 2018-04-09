@@ -25,7 +25,7 @@ describe('CanvasTileLayer', function () {
         it('add as canvas renderer', function (done) {
             var tile = new maptalks.CanvasTileLayer('tile', {
                 fadeAnimation : false,
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : TILE_IMAGE,
                 renderer: 'canvas'
             });
             tile.drawTile = function (canvas, tileContext, onComplete) {
@@ -48,7 +48,7 @@ describe('CanvasTileLayer', function () {
             }
             var tile = new maptalks.CanvasTileLayer('tile', {
                 fadeAnimation : false,
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : TILE_IMAGE,
                 renderer : 'gl'
             });
             tile.drawTile = function (canvas, tileContext, onComplete) {

@@ -436,7 +436,5 @@ Map.include(/** @lends Map.prototype */{
 });
 
 function createMat4() {
-    const out = new Float64Array(16);
-    out[0] = out[5] = out[10] = out[15] = 1;
-    return out;
+    return mat4.identity(new Array(16));
 }

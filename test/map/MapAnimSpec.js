@@ -14,7 +14,7 @@ describe('Map.Anim', function () {
             zoom: 17,
             center: center,
             baseLayer : new maptalks.TileLayer('tile', {
-                urlTemplate:'/resources/tile.png',
+                urlTemplate : TILE_IMAGE,
                 subdomains: [1, 2, 3],
                 renderer:'canvas'
             })

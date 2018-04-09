@@ -1,4 +1,4 @@
-import { isNil, isNumber, isArrayHasData, isFunction, mapArrayRecursively } from '../core/util';
+import { isNil, isNumber, isArrayHasData, isFunction, forEachCoord } from '../core/util';
 import { Animation } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
@@ -97,10 +97,12 @@ class Path extends Geometry {
             'easing': easing
         }, frame => {
             if (!this.getMap()) {
-                player.finish();
-                if (cb) {
-                    const coordinates = this.getCoordinates();
-                    cb(frame, coordinates[coordinates.length - 1]);
+                if (player.playState !== 'finished') {
+                    player.finish();
+                    if (cb) {
+                        const coordinates = this.getCoordinates();
+                        cb(frame, coordinates[coordinates.length - 1]);
+                    }
                 }
                 return;
             }
@@ -218,14 +220,14 @@ class Path extends Geometry {
         if (isNil(zoom)) {
             zoom = map.getZoom();
         }
-        return mapArrayRecursively(prjCoords, c => map._prjToPoint(c, zoom));
+        return forEachCoord(prjCoords, c => map._prjToPoint(c, zoom));
     }
 
     _shouldSimplify() {
         const layer = this.getLayer(),
             properties = this.getProperties();
         const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]);
-        return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this.options['smoothness'];
+        return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify']/* && !this.options['smoothness'] */;
     }
 
     _setPrjCoordinates(prjPoints) {

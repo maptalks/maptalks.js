@@ -527,13 +527,14 @@ class Extent {
             return null;
         }
         const e = new this.constructor();
-        const coords = this.toArray();
-        const len = coords.length;
-        coords.forEach((c, idx) => {
-            if (idx < len - 1) {
-                e._combine(fn(c));
-            }
-        });
+        const coord = new this._clazz(this.xmin, this.ymax);
+        e._combine(fn(coord));
+        coord.x = this.xmax;
+        e._combine(fn(coord));
+        coord.y = this.ymin;
+        e._combine(fn(coord));
+        coord.x = this.xmin;
+        e._combine(fn(coord));
         return e;
     }
 
