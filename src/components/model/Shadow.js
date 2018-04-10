@@ -74,6 +74,9 @@ class Shadow {
         //绘制到实际画板
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 36);
         gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+
+        
+
     }
 
 }

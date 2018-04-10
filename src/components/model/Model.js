@@ -168,17 +168,12 @@ class Model {
      * @param {WebGLRenderingContext} gl 
      * @param {GLProgram} program 
      */
-    draw(gl, camera, skybox, light) {
+    draw(gl, camera, light) {
         this._init(gl);
         gl.useProgram(program);
         gl.depthMask(true);
         gl.enable(gl.DEPTH_TEST);
         if (this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
-        //
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, skybox.cube_map_texture);
-        const u_skybox = gl.getUniformLocation(program, 'skybox');
-        gl.uniform1i(u_skybox, 0);
         //
         const u_cameraPosition = gl.getUniformLocation(program, 'u_cameraPosition');
         gl.uniform3fv(u_cameraPosition, camera.position.value);

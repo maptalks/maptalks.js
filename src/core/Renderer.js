@@ -29,7 +29,7 @@ class Renderer{
      * @param {Array[]|Model} models 
      * @param {Light} lights 
      */
-    render(camera,skybox,model,shadow,light){
+    render(camera,model,light){
         const gl = this.gl;
         //默认开启相关测试
         gl.enable(gl.DEPTH_TEST);
@@ -38,9 +38,7 @@ class Renderer{
         //textures have a width that divide by 4
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-        skybox.draw(gl,camera);
-        model.draw(gl,camera,skybox);
-        shadow.draw(gl,model,light,camera);
+        model.draw(gl,camera,light);
         //3.写入lights数据
         // light.prepareDraw(gl,program);
         //4.写入camera数据
