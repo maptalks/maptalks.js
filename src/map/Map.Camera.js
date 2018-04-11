@@ -302,6 +302,7 @@ Map.include(/** @lends Map.prototype */{
     /**
      * GL Matrices in maptalks (based on THREE):
      * //based on point at map's gl world zoom, by map.coordToPoint(coord, map.getGLZoom())
+     * map.cameraPosition
      * map.cameraLookAt
      * map.cameraUp       //camera's up vector
      * map.cameraForward  //camera's forward vector
