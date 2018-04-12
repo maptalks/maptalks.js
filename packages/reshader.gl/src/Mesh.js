@@ -58,6 +58,7 @@ class Mesh {
 
     getREGLProps() {
         const props = extend({}, this.geometry.data);
+        props.elements = this.geometry.indices;
         const uniforms = this.getUniforms();
         for (const p in uniforms) {
             if (uniforms.hasOwnProperty(p)) {

@@ -39,6 +39,7 @@ module.exports = [
             jsnext : true,
             main : true
         }),
+        commonjs(),
         babel({
             exclude: 'node_modules/**'
         })
@@ -85,6 +86,6 @@ if (!workerLoaded) {
     },
     plugins: [],
     watch: {
-        include: 'src/**'
+        include: 'build/**/*.js'
     }
 }];

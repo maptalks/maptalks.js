@@ -18,4 +18,12 @@ VectorTilePlugin.extend = function (type, props) {
     }
 }
 
+VectorTilePlugin.getType = function () {
+    return VectorTilePlugin.type;
+};
+
+if (typeof window !== 'undefined' &&  maptalks.VectorTileLayer) {
+    maptalks.VectorTileLayer.registerPlugin(VectorTilePlugin);
+}
+
 export default VectorTilePlugin;

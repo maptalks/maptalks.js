@@ -1,23 +1,35 @@
 class Scene {
     constructor(meshes) {
         this.meshes = meshes;
-        this.dirty = true;
+        this.dirty();
     }
 
     addMesh(mesh) {
         this.meshes.push(mesh);
-        this.dirty = true;
+        this.dirty();
         return this;
     }
 
     getMeshes() {
-        if (this.dirty) {
-            this._sortMeshes();
-        }
+        this._sortMeshes();
         return this.sortedMeshes;
     }
 
+    clear() {
+        this.meshes = [];
+        this.dirty();
+        return this;
+    }
+
+    dirty() {
+        this._dirty = true;
+        return this;
+    }
+
     _sortMeshes() {
+        if (!this._dirty) {
+            return;
+        }
         const meshes = this.meshes;
         //sort meshes by defines
         const opaques = [];
@@ -42,7 +54,7 @@ class Scene {
             opaques,
             transparents
         };
-        this.dirty = false;
+        this._dirty = false;
     }
 }
 

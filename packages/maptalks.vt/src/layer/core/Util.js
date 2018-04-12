@@ -87,7 +87,7 @@ export function asyncAll(array, fn, callback) {
 export function toJSON(params) {
     const r = {};
     for (const p in params) {
-        if (params[p].toJSON) {
+        if (params[p] && params[p].toJSON) {
             r[p] = params[p].toJSON();
         } else {
             r[p] = params[p];

@@ -30,17 +30,17 @@ export function buildExtrudeFaces(features, EXTENT,
         //TODO caculate earcut deviation
 
         //switch triangle's i + 1 and i + 2 to make it counter-clockwise (front face) from the top
-        // let tmp;
-        // for (let i = 2, l = triangles.length; i < l; i += 3) {
-        //     tmp = triangles[i - 1];
-        //     triangles[i - 1] = triangles[i] + start / 3;
-        //     triangles[i] = tmp + start / 3;
-        //     triangles[i - 2] += start / 3;
-        // }
-
-        for (let i = 0, l = triangles.length; i < l; i++) {
-            triangles[i] += start / 3;
+        let tmp;
+        for (let i = 2, l = triangles.length; i < l; i += 3) {
+            tmp = triangles[i - 1];
+            triangles[i - 1] = triangles[i] + start / 3;
+            triangles[i] = tmp + start / 3;
+            triangles[i - 2] += start / 3;
         }
+
+        // for (let i = 0, l = triangles.length; i < l; i++) {
+        //     triangles[i] += start / 3;
+        // }
 
         //top indices
         pushIn(indices, triangles);
@@ -51,14 +51,14 @@ export function buildExtrudeFaces(features, EXTENT,
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
             if (i < l - 1) {
                 //top[i], bottom[i], top[i + 1]
-                indices.push(i, i + vertexCount, i + 1);
+                indices.push(i + vertexCount, i, i + 1);
                 //bottom[i + 1], top[i + 1], bottom[i]
-                indices.push(i + vertexCount + 1, i + 1, i + vertexCount);
+                indices.push(i + 1, i + vertexCount + 1, i + vertexCount);
             } else {
                 //top[l - 1], bottom[l - 1], top[0]
-                indices.push(i, i + vertexCount, startIdx);
+                indices.push(i + vertexCount, i, startIdx);
                 //bottom[0], top[0], bottom[l - 1]
-                indices.push(startIdx + vertexCount, startIdx, i + vertexCount);
+                indices.push(startIdx, startIdx + vertexCount, i + vertexCount);
             }
         }
         return offset + count;
@@ -71,7 +71,7 @@ export function buildExtrudeFaces(features, EXTENT,
         const feature = features[r];
         const geometry = feature.geometry;
 
-        let altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
+        const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
         let start = offset;
         let holes = [];
 

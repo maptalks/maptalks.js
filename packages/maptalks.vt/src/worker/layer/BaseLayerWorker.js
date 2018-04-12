@@ -1,6 +1,7 @@
 import { compileStyle } from '../util/FeatureFilter';
 import { extend } from '../../layer/core/Util';
 import { buildExtrudeFaces } from '../builder/';
+import { buildUniqueVertex, buildFaceNormals } from '../builder/Build';
 //TODO 改为从maptalks中载入compileStyle方法
 
 export default class BaseLayerWorker {
@@ -128,8 +129,16 @@ export default class BaseLayerWorker {
 
             const faces = buildExtrudeFaces(features, extent,
                 altitudeScale, altitudeProperty, defaultAltitude || 0, heightProperty, defaultHeight || 0);
+
+            const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.indexes.buffer];
+
+            const uniFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
+            faces.vertices = uniFaces.vertices;
+            // debugger
             if (normal) {
-                //TODO generate normal
+                const normals = buildFaceNormals(faces.vertices, faces.indices);
+                faces.normals = normals;
+                buffers.push(normals.buffer);
             }
             if (tangent) {
                 //TODO caculate tangent
@@ -139,7 +148,7 @@ export default class BaseLayerWorker {
             }
             return {
                 data : faces,
-                buffers : [faces.vertices.buffer, faces.indices.buffer, faces.indexes.buffer]
+                buffers
             };
         } else {
             return {

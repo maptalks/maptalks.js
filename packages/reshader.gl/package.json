@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "A shader centric WebGL engine based on regl",
   "main": "dist/reshader.gl.js",
-  "module": "dist/reshader.gl.es.js",
-  "jsnext:main": "dist/reshader.gl.es.js",
+  "module": "src/index.js",
+  "jsnext:main": "src/index.js",
   "private": true,
   "scripts": {
     "build" : "rollup -c rollup.config.js",

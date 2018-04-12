@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import VectorTileLayerRenderer from '../renderer/renderer';
+import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { log2 } from '../../worker/util/Util';
 
 const defaultOptions = {

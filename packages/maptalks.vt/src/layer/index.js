@@ -1,6 +1,6 @@
 import VectorTileLayer from './layer/VectorTileLayer';
 import GeoJSONVectorTileLayer from './layer/GeojsonVectorTileLayer';
-import Renderer from './renderer/Renderer';
+import VectorTileLayerRenderer from './renderer/VectorTileLayerRenderer';
 import initialize from './initialize';
 
 initialize();
@@ -8,5 +8,5 @@ initialize();
 export {
     VectorTileLayer,
     GeoJSONVectorTileLayer,
-    Renderer as VectorTileLayerRenderer
+    VectorTileLayerRenderer
 };

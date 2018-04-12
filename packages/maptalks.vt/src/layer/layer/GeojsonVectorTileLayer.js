@@ -1,6 +1,6 @@
 // import * as maptalks from 'maptalks';
 import VectorTileLayer from './VectorTileLayer';
-import VectorTileLayerRenderer from '../renderer/Renderer';
+import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {

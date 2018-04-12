@@ -1,6 +1,6 @@
 import * as reshader from 'reshader.gl';
 
-export default class PBRScenePainter {
+class PBRScenePainter {
     constructor(regl, sceneConfig) {
         this.regl = regl;
         this.sceneConfig = sceneConfig;
@@ -8,15 +8,30 @@ export default class PBRScenePainter {
         this._init();
     }
 
-    addData(key, data) {
-        const mesh = new reshader.Mesh(data, this.material);
+    createMesh(key, data, indices) {
+        const geometry = new reshader.Geometry(data, indices);
+        const mesh = new reshader.Mesh(geometry, this.material);
+        this.addMesh(key, mesh);
+        return mesh;
+    }
+
+    addMesh(key, mesh) {
         this.meshCache[key] = mesh;
         this.scene.addMesh(mesh);
     }
 
-    paint() {
+    paint(layer) {
+        const map = layer.getMap();
+        if (!map) {
+            return {
+                redraw : false
+            };
+        }
         //TODO implement shadow pass
-        this.renderer.render(this.shader, this._getUniformValues(), this.scene);
+        this.renderer.render(this.shader, this._getUniformValues(map), this.scene);
+        return {
+            redraw : this.loader.isLoading()
+        };
     }
 
     getMesh(key) {
@@ -31,6 +46,11 @@ export default class PBRScenePainter {
             mesh.dispose();
             delete this.meshCache[key];
         }
+    }
+
+    clear() {
+        this.meshCache = {};
+        this.scene.clear();
     }
 
     remove() {
@@ -87,40 +107,55 @@ export default class PBRScenePainter {
     _getUniforms() {
         return [
             'view', 'projection', 'camPos',
-            'lightPositions[0]', 'lightPositions[1]', 'lightPositions[2]', 'lightPositions[3]',
-            'lightColors[0]', 'lightColors[1]', 'lightColors[2]', 'lightColors[3]',
             'ambientColor',
-            'irradianceMap', 'prefilterMap', 'brdfLUT'
+            'dirLightDirections[0]', 'dirLightColors[0]',
+            // 'lightPositions[0]', 'lightPositions[1]', 'lightPositions[2]', 'lightPositions[3]',
+            // 'lightColors[0]', 'lightColors[1]', 'lightColors[2]', 'lightColors[3]',
+            // 'irradianceMap', 'prefilterMap', 'brdfLUT'
         ];
     }
 
-    _getUniformValues() {
-        // return {
-        //     view, projection, camPos,
-        //     irradianceMap : iblMaps.irradianceCubeMap,
-        //     prefilterMap : iblMaps.prefilterCubeMap,
-        //     brdfLUT : iblMaps.brdfLUT,
-        //     ambientColor : [0.01, 0.01, 0.01],
-        //     lightPositions : {
-        //         '0' : lightPositions[0],
-        //         '1' : lightPositions[1],
-        //         '2' : lightPositions[2],
-        //         '3' : lightPositions[3],
-        //     },
-        //     lightColors : {
-        //         '0' : lightColors[0],
-        //         '1' : lightColors[1],
-        //         '2' : lightColors[2],
-        //         '3' : lightColors[3],
-        //     }
-        // };
+    _getUniformValues(map) {
+        const view = map.viewMatrix,
+            projection = map.projMatrix,
+            camPos = map.cameraPosition;
+        return {
+            view, projection, camPos,
+            ambientColor : [0.01, 0.01, 0.01],
+            dirLightDirections : {
+                '0' : reshader.Util.normalize([], [0, 0, 1])
+            },
+            dirLightColors : {
+                '0' : [1, 1, 1]
+            },
+            // lightPositions : {
+            //     '0' : lightPositions[0],
+            //     '1' : lightPositions[1],
+            //     '2' : lightPositions[2],
+            //     '3' : lightPositions[3],
+            // },
+            // lightColors : {
+            //     '0' : lightColors[0],
+            //     '1' : lightColors[1],
+            //     '2' : lightColors[2],
+            //     '3' : lightColors[3],
+            // }
+            // irradianceMap : iblMaps.irradianceCubeMap,
+            // prefilterMap : iblMaps.prefilterCubeMap,
+            // brdfLUT : iblMaps.brdfLUT,
+        };
     }
 
     _getDefines() {
         return {
-            'NUM_OF_LIGHTS' : '(4)',
-            'USE_SPOT_LIGHT' : 1,
-            'USE_AMBIENT_CUBEMAP' : 1
+            'USE_COLOR' : 1,
+            'USE_DIR_LIGHT' : 1,
+            'NUM_OF_DIR_LIGHTS' : '(1)',
+            // 'USE_SPOT_LIGHT' : 1,
+            // 'NUM_OF_LIGHTS' : '(4)',
+            // 'USE_AMBIENT_CUBEMAP' : 1
         };
     }
 }
+
+export default PBRScenePainter;

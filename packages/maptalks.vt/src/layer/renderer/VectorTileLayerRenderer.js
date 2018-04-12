@@ -3,7 +3,7 @@ import { mat4, vec3 } from '@mapbox/gl-matrix';
 import WorkerConnection from './worker/WorkerConnection';
 import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
 import { sign } from '../core/Util';
-import regl from 'regl';
+import createREGL from 'regl';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -46,7 +46,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.gl = this._createGLContext(this.canvas, attributes);
         this.prepareWorker();
         this.layer.on('renderstart', this.renderTileClippingMasks, this);
-        this.regl = regl({
+        this.regl = createREGL({
             gl : this.gl,
             extensions : [
                 // 'ANGLE_instanced_arrays',
@@ -187,13 +187,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     endFrame() {
         this.plugins.forEach(plugin => {
             const type = plugin.getType();
-            plugin.endFrame({
+            const status = plugin.endFrame({
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
                 sceneCache : this.sceneCache[type],
                 sceneConfig : plugin.config.sceneConfig
             });
+            if (status && status.redraw) {
+                //let plugin to determine when to redraw
+                this.setToRedraw();
+            }
         });
     }
 
@@ -209,6 +213,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!tileData[type]) {
                 return;
             }
+            if (!tileCache[type]) {
+                tileCache[type] = {};
+            }
             const param = {
                 regl : this.regl,
                 layer : this.layer,
@@ -221,7 +228,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileInfo, tileTransform
             };
             const status = plugin.paintTile(param);
-            if (status.redraw) {
+            if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
@@ -346,7 +353,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 }
 
 VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
-    const m0 = new Array(16);
     const v0 = new Array(3);
     const v1 = new Array(3);
     const v2 = new Array(3);
@@ -356,7 +362,7 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
         const tilePos = tileInfo.point;
         const tileSize = this.layer.getTileSize();
         const meterScale = this._getMeterScale(tileInfo.z); //scale to convert meter to gl point
-        const posMatrix = mat4.identity(m0);
+        const posMatrix = mat4.identity(new Array(3));
         mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, glScale * meterScale));
         mat4.translate(posMatrix, posMatrix, vec3.set(v1, tilePos.x, tilePos.y, 0));
         mat4.scale(posMatrix, posMatrix, vec3.set(v2, tileSize.width / EXTENT, tileSize.height / EXTENT, 1));

@@ -3,3 +3,4 @@ debug
 *.log
 .vscode
 yarn.lock
+dist

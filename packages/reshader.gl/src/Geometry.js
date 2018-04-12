@@ -1,17 +1,37 @@
-const REF_COUNT = '____pbr_ref_count';
+import { vec3 } from '@mapbox/gl-matrix';
+import BoundingBox from './BoundingBox';
+
+const defaultDesc = {
+    'aPosition' : {
+        size : 3
+    },
+    'aNormal' : {
+        size : 3
+    },
+    'aTexCoord' : {
+        size : 2
+    },
+    'aColor' : {
+        size : 3
+    },
+    'aTangent' : {
+        size : 3
+    }
+};
 
 export default class Geometry {
-    constructor(data, indices) {
-        // this.position = data.vertices;
-        // this.normal = data.normals;
-        // this.uv = data.uvs;
-        // this.color = data.colors;
+    constructor(data, indices, desc) {
+        // this.aPosition = data.vertices;
+        // this.aNormal = data.normals;
+        // this.aTexCoord = data.uvs;
+        // this.aColor = data.colors;
+        // this.aTangent = data.tangents;
         // this.indices = data.indices;
-        // this.tangent = data.tangents;
 
         this.data = data;
         this.indices = indices;
-        this.refCount = 0;
+        this.desc = desc || defaultDesc;
+        this.updateBoundingBox();
     }
 
     getAttributes() {
@@ -28,6 +48,35 @@ export default class Geometry {
         });
         delete this.indices;
         delete this.data;
+    }
+
+    /**
+     * Update boundingBox of Geometry
+     */
+    updateBoundingBox() {
+        let bbox = this.boundingBox;
+        if (!bbox) {
+            bbox = this.boundingBox = new BoundingBox();
+        }
+        const posArr = this.data.aPosition;
+        if (posArr && posArr.length) {
+            const min = bbox.min;
+            const max = bbox.max;
+            vec3.set(min, posArr[0], posArr[1], posArr[2]);
+            vec3.set(max, posArr[0], posArr[1], posArr[2]);
+            for (let i = 3; i < posArr.length;) {
+                const x = posArr[i++];
+                const y = posArr[i++];
+                const z = posArr[i++];
+                if (x < min[0]) { min[0] = x; }
+                if (y < min[1]) { min[1] = y; }
+                if (z < min[2]) { min[2] = z; }
+
+                if (x > max[0]) { max[0] = x; }
+                if (y > max[1]) { max[1] = y; }
+                if (z > max[2]) { max[2] = z; }
+            }
+        }
     }
 
     _forEachBuffer(fn) {

@@ -61,11 +61,15 @@ class Shader {
             vert, frag, uniforms, attributes
         };
         if (isNumber(elements)) {
-            command.count = elements;
+            command.count = regl.prop('elements');
         } else {
-            command.elements = elements;
+            command.elements = regl.prop('elements');
         }
         command.framebuffer = regl.prop('framebuffer');
+        command.cull = {
+            enable: true,
+            face: 'back'
+        };
         extend(command, this.extraCommandProps);
         return regl(command);
     }
