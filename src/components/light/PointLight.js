@@ -17,7 +17,7 @@ class PointLight {
          * 光源位置
          * @type {Vec3}
          */
-        this.position = new Vec3().set(0, 0.2, 0.7);
+        this.position = new Vec3().set(0.5, 0.5, 1);
         /**
          * 环境光遮罩
          * @type {Vec3}
@@ -58,6 +58,14 @@ class PointLight {
          * 光线的 uv
          */
         this.viewProjectMatrix = this.projectionMatrix.clone().multiply(this.viewMatrix);
+        /**
+         * color
+         */
+        this.color = new Vec3().set(300.0,300.0,300.0);
+    }
+
+    setPosition(v){
+        this.position = new Vec3().set(v[0],v[1],v[2]);
     }
 
 }

@@ -75,7 +75,7 @@ class PBR extends Model {
         gl.uniform1f(ao, 1.0);
         //set metallic
         const metallic = gl.getUniformLocation(program, 'metallic');
-        gl.uniform1f(metallic, 0.05);
+        gl.uniform1f(metallic, 0.15);
         //set roughness
         const roughness = gl.getUniformLocation(program, 'roughness');
         gl.uniform1f(roughness, 0.05);
@@ -95,6 +95,11 @@ class PBR extends Model {
         gl.depthMask(true);
         gl.enable(gl.DEPTH_TEST);
         if (this._rotate) this.modelMatrix.rotateY(GLMatrix.toRadian(1));
+        //light position
+        const u_pointLight_position = gl.getUniformLocation(program,'u_pointLight.position');
+        gl.uniform3fv(u_pointLight_position,light.position.value);
+        const u_pointLight_color = gl.getUniformLocation(program,'u_pointLight.color');
+        gl.uniform3fv(u_pointLight_color,light.color.value);
         //
         const u_cameraPosition = gl.getUniformLocation(program, 'u_cameraPosition');
         gl.uniform3fv(u_cameraPosition, camera.position.value);
