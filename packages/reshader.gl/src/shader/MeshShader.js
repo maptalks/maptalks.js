@@ -1,5 +1,4 @@
 import Shader from './Shader.js';
-
 import { extend } from '../common/Util.js';
 
 class MeshShader extends Shader {
@@ -9,20 +8,25 @@ class MeshShader extends Shader {
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
             const command = this._getREGLCommand(regl, meshes[i]);
-            const props = extend(meshes[i].getREGLProps(), this.context)
+
+            /*
+            //run command one by one, for debug
+            const props = extend({}, this.context, meshes[i].getREGLProps());
             command(props);
-            // if (i === l - 1) {
-            //     props.push(extend(meshes[i].getREGLProps(), this.context));
-            // }
-            // if (i > 0 && preCommand !== command || i === l - 1) {
-            //     //batch mode
-            //     command(props);
-            //     props.length = 0;
-            // }
-            // if (i < l - 1) {
-            //     props.push(extend(meshes[i].getREGLProps(), this.context));
-            //     preCommand = command;
-            // }
+            */
+
+            if (i === l - 1) {
+                props.push(extend({}, this.context, meshes[i].getREGLProps()));
+            }
+            if (i > 0 && preCommand !== command || i === l - 1) {
+                //batch mode
+                command(props);
+                props.length = 0;
+            }
+            if (i < l - 1) {
+                props.push(extend({}, this.context, meshes[i].getREGLProps()));
+                preCommand = command;
+            }
         }
         return this;
     }

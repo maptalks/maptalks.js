@@ -1,4 +1,4 @@
-export default `    
+export default `
     attribute vec3 aPosition;
     attribute vec3 aNormal;
 
@@ -16,22 +16,21 @@ export default `
     varying vec3 vColor;
 #endif
 
-    uniform mat4 projection;
-    uniform mat4 view;
     uniform mat4 model;
+    uniform mat4 projectionViewModel;
 
     void main()
     {
         #if defined(USE_NORMAL_MAP) || defined(USE_ALBEDO_MAP) || defined(USE_OCCULUSIONROUGHNESSMETALLIC_MAP)
             vTexCoord = aTexCoord;
         #endif 
-        vWorldPos = vec3(model * vec4(aPosition, 1.0));
+        vWorldPos = (model * vec4(aPosition, 1.0)).xyz;
         vNormal = mat3(model) * aNormal;
 
         #ifdef USE_COLOR
             vColor = aColor;
         #endif
 
-        gl_Position =  projection * view * vec4(vWorldPos, 1.0);
+        gl_Position =  projectionViewModel * vec4(aPosition, 1.0);
     }
 `;

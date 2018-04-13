@@ -1,4 +1,5 @@
 import * as reshader from 'reshader.gl';
+import { mat4 } from '@mapbox/gl-matrix';
 
 class PBRScenePainter {
     constructor(regl, sceneConfig) {
@@ -10,6 +11,7 @@ class PBRScenePainter {
 
     createMesh(key, data, indices) {
         const geometry = new reshader.Geometry(data, indices);
+        geometry.generateBuffers(this.regl);
         const mesh = new reshader.Mesh(geometry, this.material);
         this.addMesh(key, mesh);
         return mesh;
@@ -69,7 +71,14 @@ class PBRScenePainter {
         this.shader = new reshader.MeshShader(
             reshader.pbr.StandardVert, reshader.pbr.StandardFrag,
             this._getUniforms(),
-            this._getDefines()
+            this._getDefines(),
+            {
+                //enable cullFace
+                cull : {
+                    enable: true,
+                    face: 'back'
+                }
+            }
         );
         this.scene = new reshader.Scene();
         this.renderer = new reshader.Renderer(regl);
@@ -106,12 +115,22 @@ class PBRScenePainter {
 
     _getUniforms() {
         return [
-            'view', 'projection', 'camPos',
+            'model',
             'ambientColor',
             'dirLightDirections[0]', 'dirLightColors[0]',
             // 'lightPositions[0]', 'lightPositions[1]', 'lightPositions[2]', 'lightPositions[3]',
             // 'lightColors[0]', 'lightColors[1]', 'lightColors[2]', 'lightColors[3]',
             // 'irradianceMap', 'prefilterMap', 'brdfLUT'
+            {
+                name : 'projectionViewModel',
+                type : 'function',
+                fn : function (context, props) {
+                    const projectionViewModel = [];
+                    mat4.multiply(projectionViewModel, props['view'], props['model']);
+                    mat4.multiply(projectionViewModel, props['projection'], projectionViewModel);
+                    return projectionViewModel;
+                }
+            }
         ];
     }
 

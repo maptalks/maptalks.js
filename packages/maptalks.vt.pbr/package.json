@@ -17,6 +17,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
+    "@mapbox/gl-matrix": "^0.0.1",
     "color": "^3.0.0",
     "maptalks.vt.base": "^0.1.0",
     "reshader.gl": "^0.1.0"

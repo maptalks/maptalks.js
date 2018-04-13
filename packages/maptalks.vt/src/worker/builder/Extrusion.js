@@ -48,17 +48,18 @@ export function buildExtrudeFaces(features, EXTENT,
         //side indices
         const startIdx = start / 3;
         const vertexCount = count / 3;
+        // debugger
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
-            if (i < l - 1) {
-                //top[i], bottom[i], top[i + 1]
-                indices.push(i + vertexCount, i, i + 1);
-                //bottom[i + 1], top[i + 1], bottom[i]
-                indices.push(i + 1, i + vertexCount + 1, i + vertexCount);
-            } else {
+            if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
                 //top[l - 1], bottom[l - 1], top[0]
                 indices.push(i + vertexCount, i, startIdx);
                 //bottom[0], top[0], bottom[l - 1]
                 indices.push(startIdx, startIdx + vertexCount, i + vertexCount);
+            } else if (i < l - 1) {
+                //top[i], bottom[i], top[i + 1]
+                indices.push(i + vertexCount, i, i + 1);
+                //bottom[i + 1], top[i + 1], bottom[i]
+                indices.push(i + 1, i + vertexCount + 1, i + vertexCount);
             }
         }
         return offset + count;
@@ -99,9 +100,12 @@ export function buildExtrudeFaces(features, EXTENT,
         }
         indexes[r] = indices.length;
     }
+
+    const tIndices = indices.length > 65536 ? new Uint32Array(indices) : new Uint16Array(indices);
+
     return {
         vertices,  // vertexes
-        indices : new Uint16Array(indices),    // indices for drawElements
+        indices : tIndices,    // indices for drawElements
         indexes : indexes     // vertex index of each feature
     };
 }

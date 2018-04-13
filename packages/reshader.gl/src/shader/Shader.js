@@ -1,4 +1,7 @@
-import { extend, isNumber, isFunction } from '../common/Util.js';
+import { extend, isNumber, isString, isFunction } from '../common/Util.js';
+
+const TYPE_PROP = 'prop';
+const TYPE_FUNC = 'function';
 
 class Shader {
     constructor(vert, frag, context, shaderDefines, extraCommandProps) {
@@ -11,7 +14,16 @@ class Shader {
         this.context = {};
         for (let i = 0, l = context.length; i < l; i++) {
             const p = context[i];
-            this.context[p] = null;
+            if (isString(p)) {
+                this.context[p] = null;
+            } else {
+                // e.g.
+                // {
+                //     type : 'function',
+                //     fn : (context, props) => { ... }
+                // }
+                this.context[p.name] = p;
+            }
         }
 
         this.extraCommandProps = extraCommandProps || {};
@@ -54,7 +66,11 @@ class Shader {
 
         const context = this.context;
         for (const p in context) {
-            uniforms[p] = regl.prop(p);
+            if (context[p] && context[p].type === TYPE_FUNC) {
+                uniforms[p] = context[p]['fn'];
+            } else {
+                uniforms[p] = regl.prop(p);
+            }
         }
 
         const command = {
@@ -66,10 +82,6 @@ class Shader {
             command.elements = regl.prop('elements');
         }
         command.framebuffer = regl.prop('framebuffer');
-        command.cull = {
-            enable: true,
-            face: 'back'
-        };
         extend(command, this.extraCommandProps);
         return regl(command);
     }
