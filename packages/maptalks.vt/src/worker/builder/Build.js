@@ -1,5 +1,7 @@
 import { vec3 } from '@mapbox/gl-matrix';
 
+const normalOrigin = [1, 1, 1];
+
 /**
  * Generate normals per vertex.
  * from claygl's Geometry
@@ -38,6 +40,10 @@ export function buildFaceNormals(positions, indices) {
         vec3.cross(n, v21, v32);
 
         vec3.normalize(n, n);
+
+        if (vec3.dot(n, normalOrigin) < 0) {
+            vec3.negate(n, n);
+        }
 
         for (let i = 0; i < 3; i++) {
             normals[i1 * 3 + i] = n[i];
