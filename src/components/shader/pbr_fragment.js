@@ -1,5 +1,8 @@
 const text = `precision mediump float;
 
+//IBL
+uniform samplerCube irradianceMap;
+
 varying vec3 Normal;
 varying vec3 FragPosition;
 varying vec2 TexCoord;

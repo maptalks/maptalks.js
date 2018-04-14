@@ -56,6 +56,7 @@ requestAnimationFrame(animate);
 //   }
 // });
 //
+
 glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
 
 

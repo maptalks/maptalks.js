@@ -46,6 +46,8 @@ class Renderer{
         //5.写入models数据,并绘制
     }
 
+    render2(camera,skybox)
+
 }
 
 module.exports = Renderer;
