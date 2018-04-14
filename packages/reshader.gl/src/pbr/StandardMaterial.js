@@ -3,8 +3,8 @@ import Material from '../Material.js';
 const defaultUniforms = {
     albedoMap : null,
     albedoColor : [1, 1, 1],
-    metallic : 1,
-    roughness : 0,
+    metallic : 0,
+    roughness : 0.5,
     occulusionRoughnessMetallicMap : null,
     normalMap : null,
     normalStrength : 1,

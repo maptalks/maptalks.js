@@ -41,9 +41,9 @@ export function buildFaceNormals(positions, indices) {
 
         vec3.normalize(n, n);
 
-        if (vec3.dot(n, normalOrigin) < 0) {
-            vec3.negate(n, n);
-        }
+        // if (vec3.dot(n, normalOrigin) < 0) {
+        //     vec3.negate(n, n);
+        // }
 
         for (let i = 0; i < 3; i++) {
             normals[i1 * 3 + i] = n[i];

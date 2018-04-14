@@ -86,6 +86,13 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
 
     },
 
+    needToRedraw() {
+        if (!this.painter) {
+            return false;
+        }
+        return this.painter.needToRedraw();
+    },
+
     _generateColorArray(features, indexes, indices, vertices) {
         const colors = new Float32Array(vertices.length);
         let symbol, color, rgb;

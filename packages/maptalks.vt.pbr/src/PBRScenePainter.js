@@ -1,12 +1,21 @@
 import * as reshader from 'reshader.gl';
 import { mat4 } from '@mapbox/gl-matrix';
+import { extend } from './Util';
 
 class PBRScenePainter {
     constructor(regl, sceneConfig) {
         this.regl = regl;
-        this.sceneConfig = sceneConfig;
+        this.sceneConfig = sceneConfig || {};
+        if (!this.sceneConfig.lights) {
+            this.sceneConfig.lights = {};
+        }
+        this._redraw = false;
         this.meshCache = {};
         this._init();
+    }
+
+    needToRedraw() {
+        return this._redraw;
     }
 
     createMesh(key, data, indices) {
@@ -23,6 +32,7 @@ class PBRScenePainter {
     }
 
     paint(layer) {
+        this._redraw = false;
         const map = layer.getMap();
         if (!map) {
             return {
@@ -32,7 +42,7 @@ class PBRScenePainter {
         //TODO implement shadow pass
         this.renderer.render(this.shader, this._getUniformValues(map), this.scene);
         return {
-            redraw : this.loader.isLoading()
+            redraw : false
         };
     }
 
@@ -83,20 +93,18 @@ class PBRScenePainter {
         this.scene = new reshader.Scene();
         this.renderer = new reshader.Renderer(regl);
 
-        const mConfig = this.sceneConfig.material;
-        const m = {};
-        for (const p in mConfig) {
-            if (mConfig.hasOwnProperty(p)) {
+        const materialConfig = this.sceneConfig.material;
+        const material = {};
+        for (const p in materialConfig) {
+            if (materialConfig.hasOwnProperty(p)) {
                 if (p.indexOf('Map') > 0) {
                     //a texture image
-                    m[p] = new reshader.Texture2D({ url : mConfig[p] }, this.loader);
+                    material[p] = new reshader.Texture2D({ url : materialConfig[p] }, this.loader);
                 } else {
-                    m[p] = mConfig[p];
+                    material[p] = materialConfig[p];
                 }
             }
         }
-
-        this.material = new reshader.pbr.StandardMaterial(m);
         /* {
             metallic : 1,
             roughness : 0.2,
@@ -111,13 +119,48 @@ class PBRScenePainter {
                 url : './resources/rusted_iron/occulusionRoughnessMetallicMap-1024.png'
             }, loader)
         } */
+        this.material = new reshader.pbr.StandardMaterial(material);
+
+        if (this.sceneConfig.lights.ambientCubeLight) {
+            if (!this.sceneConfig.lights.ambientCubeLight.url) {
+                throw new Error('Must provide url for ambientCubeLight');
+            }
+            const hdr = new reshader.Texture2D(
+                {
+                    url : this.sceneConfig.lights.ambientCubeLight.url,
+                    arrayBuffer : true,
+                    hdr : true,
+                    type : 'float',
+                    format : 'rgba',
+                    flipY : true
+                },
+                this.loader
+            );
+            if (!hdr.isReady()) {
+                this.loader.on('complete', () => {
+                    if (hdr.isReady()) {
+                        //环境光纹理载入，重新生成ibl纹理
+                        this.iblMaps = createMaps(hdr);
+                        this._redraw = true;
+                    }
+                });
+            }
+
+            //生成ibl纹理
+            this.iblMaps = createMaps(hdr);
+        }
+        function createMaps(hdr) {
+            return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+                envTexture : hdr.getREGLTexture(regl)
+            });
+        }
     }
 
     _getUniforms() {
-        return [
+        const uniforms = [
             'model',
             'ambientColor',
-            'dirLightDirections[0]', 'dirLightColors[0]',
+
             // 'lightPositions[0]', 'lightPositions[1]', 'lightPositions[2]', 'lightPositions[3]',
             // 'lightColors[0]', 'lightColors[1]', 'lightColors[2]', 'lightColors[3]',
             // 'irradianceMap', 'prefilterMap', 'brdfLUT'
@@ -132,28 +175,41 @@ class PBRScenePainter {
                 }
             }
         ];
+
+        const lightConfig = this.sceneConfig.lights;
+
+        if (lightConfig.dirLights) {
+            lightConfig.dirLights.forEach((light, idx) => {
+                uniforms.push(`dirLightDirections[${idx}]`);
+                uniforms.push(`dirLightColors[${idx}]`);
+            });
+        }
+        if (lightConfig.spotLights) {
+            lightConfig.spotLights.forEach((light, idx) => {
+                uniforms.push(`spotLightPositions[${idx}]`);
+                uniforms.push(`spotLightColors[${idx}]`);
+            });
+        }
+        if (lightConfig.ambientCubeLight) {
+            uniforms.push('irradianceMap', 'prefilterMap', 'brdfLUT');
+        }
+        return uniforms;
     }
 
     _getUniformValues(map) {
         const view = map.viewMatrix,
             projection = map.projMatrix,
             camPos = map.cameraPosition;
-        return {
-            view, projection, camPos,
-            ambientColor : [0.01, 0.01, 0.01],
-            dirLightDirections : {
-                '0' : reshader.Util.normalize([], [0, 0, 1])
-            },
-            dirLightColors : {
-                '0' : [1, 1, 1]
-            },
-            // lightPositions : {
+        const lightUniforms = this._getLightUniforms();
+        return extend({
+            view, projection, camPos
+            // spotLightPositions : {
             //     '0' : lightPositions[0],
             //     '1' : lightPositions[1],
             //     '2' : lightPositions[2],
             //     '3' : lightPositions[3],
             // },
-            // lightColors : {
+            // spotLightColors : {
             //     '0' : lightColors[0],
             //     '1' : lightColors[1],
             //     '2' : lightColors[2],
@@ -162,18 +218,61 @@ class PBRScenePainter {
             // irradianceMap : iblMaps.irradianceCubeMap,
             // prefilterMap : iblMaps.prefilterCubeMap,
             // brdfLUT : iblMaps.brdfLUT,
+        }, lightUniforms);
+    }
+
+    _getLightUniforms() {
+        const lightConfig = this.sceneConfig.lights;
+
+        const ambientColor = lightConfig.ambientColor || [0.08, 0.08, 0.08];
+        const uniforms = {
+            ambientColor
         };
+
+        if (lightConfig.dirLights) {
+            uniforms['dirLightDirections'] = {};
+            uniforms['dirLightColors'] = {};
+            lightConfig.dirLights.forEach((light, idx) => {
+                uniforms['dirLightDirections'][idx + ''] = light.direction;
+                uniforms['dirLightColors'][idx + ''] = light.color;
+            });
+        }
+        if (lightConfig.spotLights) {
+            uniforms['spotLightPositions'] = {};
+            uniforms['spotLightColors'] = {};
+            lightConfig.spotLights.forEach((light, idx) => {
+                uniforms['spotLightPositions'][idx + ''] = light.position;
+                uniforms['spotLightColors'][idx + ''] = light.color;
+            });
+        }
+        if (lightConfig.ambientCubeLight) {
+            uniforms['irradianceMap'] = this.iblMaps.irradianceMap;
+            uniforms['prefilterCubeMap'] = this.iblMaps.prefilterCubeMap;
+            uniforms['brdfLUT'] = this.iblMaps.brdfLUT;
+        }
+
+        return uniforms;
     }
 
     _getDefines() {
-        return {
-            'USE_COLOR' : 1,
-            'USE_DIR_LIGHT' : 1,
-            'NUM_OF_DIR_LIGHTS' : '(1)',
-            // 'USE_SPOT_LIGHT' : 1,
-            // 'NUM_OF_LIGHTS' : '(4)',
-            // 'USE_AMBIENT_CUBEMAP' : 1
+        const defines =  {
+            'USE_COLOR' : 1
         };
+
+        const lightConfig = this.sceneConfig.lights;
+
+        if (lightConfig.dirLights) {
+            defines['USE_DIR_LIGHT'] = 1;
+            defines['NUM_OF_DIR_LIGHTS'] = `(${lightConfig.dirLights.length})`;
+        }
+        if (lightConfig.spotLights) {
+            defines['USE_SPOT_LIGHT'] = 1;
+            defines['NUM_OF_SPOT_LIGHTS'] = `(${lightConfig.spotLights.length})`;
+        }
+        if (lightConfig.ambientCubeLight) {
+            defines['USE_AMBIENT_CUBEMAP'] = 1;
+        }
+        return defines;
     }
 }
 

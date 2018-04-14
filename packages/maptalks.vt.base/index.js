@@ -9,6 +9,10 @@ VectorTilePlugin.prototype.getType = function () {
     return VectorTilePlugin.type;
 };
 
+VectorTilePlugin.prototype.needToRedraw = function () {
+    return false;
+};
+
 VectorTilePlugin.extend = function (type, props) {
     VectorTilePlugin.type = type;
     for (var p in props) {
