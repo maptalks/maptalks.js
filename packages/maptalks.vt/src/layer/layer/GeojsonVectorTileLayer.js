@@ -10,10 +10,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     getWorkerOptions() {
-        return {
-            data : this.options.data,
-            style : this.options.style
-        };
+        const options = super.getWorkerOptions();
+        options.data = this.options.data;
+        return options;
     }
 
     getData() {

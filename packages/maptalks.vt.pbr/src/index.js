@@ -40,7 +40,7 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
             const colors = this._generateColorArray(features, indexes, tileData.data.indices, tileData.data.vertices);
             tileCache.mesh = painter.createMesh(key, {
                 aPosition : tileData.data.vertices,
-                // aTexCoord : tileData.data.uvs,
+                aTexCoord : tileData.data.uvs,
                 aNormal : tileData.data.normals,
                 aColor : colors
             }, tileData.data.indices);

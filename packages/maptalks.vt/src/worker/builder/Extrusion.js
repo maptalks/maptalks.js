@@ -1,17 +1,27 @@
 import { countVertexes, calculateSignedArea, fillPosArray } from './Common';
+import { buildFaceUV, buildSideUV } from './UV.js';
 import { pushIn } from '../../layer/core/Util';
 import earcut from 'earcut';
 
-export function buildExtrudeFaces(features, EXTENT,
-    altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight
+export function buildExtrudeFaces(
+    features, EXTENT,
+    {
+        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight
+    },
+    {
+        uv,
+        uvSize
+    }
 ) {
     const scale = EXTENT / features[0].extent;
 
     const size = countVertexes(features) * 2;
     //indexes : index of indices for each feature
-    const indexes = new Uint32Array(features.length),
+    const indexes = new Array(features.length),
         vertices = new Int16Array(size);
     const indices = [];
+    const generateUV = uv;
+    const uvs = generateUV ? [] : null;
 
     function fillData(start, offset, holes, height) {
         const count = offset - start;
@@ -24,14 +34,15 @@ export function buildExtrudeFaces(features, EXTENT,
             bottom[i] = top[i] - height; //top[i] is altitude
         }
 
-        //just ignore bottom indices never in sight
+        //just ignore bottom faces never appear in sight
+
         const triangles = earcut(top, holes, 3); //vertices, holes, dimension(2|3)
         if (triangles.length === 0) {
             return offset + count;
         }
         //TODO caculate earcut deviation
 
-        //switch triangle's i + 1 and i + 2 to make it counter-clockwise (front face) from the top
+        //switch triangle's i + 1 and i + 2 to make it ccw winding
         let tmp;
         for (let i = 2, l = triangles.length; i < l; i += 3) {
             tmp = triangles[i - 1];
@@ -40,18 +51,22 @@ export function buildExtrudeFaces(features, EXTENT,
             triangles[i - 2] += start / 3;
         }
 
+        // //cw widing
         // for (let i = 0, l = triangles.length; i < l; i++) {
         //     triangles[i] += start / 3;
         // }
 
-        //top indices
+        //top face indices
         pushIn(indices, triangles);
-        // debugger
-        //side indices
+        if (generateUV) {
+            buildFaceUV(uvs, vertices, triangles, uvSize);
+        }
+
+        const s = indices.length;
+        //side face indices
         const startIdx = start / 3;
         const vertexCount = count / 3;
         let ringStartIdx = startIdx;
-        // debugger
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
             if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
                 //top[l - 1], bottom[l - 1], top[0]
@@ -69,8 +84,13 @@ export function buildExtrudeFaces(features, EXTENT,
                 indices.push(i + 1, i + vertexCount + 1, i + vertexCount);
             }
         }
+        if (generateUV) {
+            buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize);
+        }
         return offset + count;
     }
+
+
     let offset = 0;
 
     for (let r = 0, n = features.length; r < n; r++) {
@@ -93,6 +113,7 @@ export function buildExtrudeFaces(features, EXTENT,
             }
             const segStart = offset - start;
             let ring = geometry[i];
+            //earcut required the first and last position must be different
             if (feature.type === 3) ring = ring.slice(0, ring.length - 1);
             // a seg or a ring in line or polygon
             offset = fillPosArray(vertices, offset, ring, scale, altitude);
@@ -106,13 +127,18 @@ export function buildExtrudeFaces(features, EXTENT,
         indexes[r] = indices.length;
     }
 
-    const tIndices = indices.length > 65536 ? new Uint32Array(indices) : new Uint16Array(indices);
+    const tIndices = indices.length <= 256 ? new Uint8Array(indices)  : indices.length <= 65536 ? new Uint16Array(indices) : new Uint32Array(indices);
 
-    return {
+
+    const data = {
         vertices,  // vertexes
         indices : tIndices,    // indices for drawElements
-        indexes : indexes     // vertex index of each feature
+        indexes : new tIndices.constructor(indexes)     // vertex index of each feature
     };
+    if (uvs) {
+        data.uvs = new Float32Array(uvs);
+    }
+    return data;
 }
 
 // get height value from properties

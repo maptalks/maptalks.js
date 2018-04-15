@@ -99,7 +99,10 @@ class PBRScenePainter {
             if (materialConfig.hasOwnProperty(p)) {
                 if (p.indexOf('Map') > 0) {
                     //a texture image
-                    material[p] = new reshader.Texture2D({ url : materialConfig[p] }, this.loader);
+                    material[p] = new reshader.Texture2D({
+                        url : materialConfig[p],
+                        wrapS : 'repeat', wrapT : 'repeat'
+                    }, this.loader);
                 } else {
                     material[p] = materialConfig[p];
                 }
@@ -172,6 +175,15 @@ class PBRScenePainter {
                     mat4.multiply(projectionViewModel, props['view'], props['model']);
                     mat4.multiply(projectionViewModel, props['projection'], projectionViewModel);
                     return projectionViewModel;
+                }
+            },
+            {
+                name : 'viewModel',
+                type : 'function',
+                fn : function (context, props) {
+                    const viewModel = [];
+                    mat4.multiply(viewModel, props['view'], props['model']);
+                    return viewModel;
                 }
             }
         ];

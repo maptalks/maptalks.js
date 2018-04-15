@@ -31,13 +31,14 @@ export default class BaseLayerWorker {
                 cb();
                 return;
             }
-            const data = this.createTileData(features, this.options);
+            const data = this.createTileData(features, tileInfo);
             cb(null, data.data, data.buffers);
         });
     }
 
-    createTileData(features, options) {
+    createTileData(features, tileInfo) {
         const data = {},
+            options = this.options,
             buffers = [];
 
         const layerStyle = this.pluginConfig;
@@ -72,7 +73,7 @@ export default class BaseLayerWorker {
             }
 
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
-            const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, this.options.extent);
+            const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, res : tileInfo.res });
             data[pluginType] = {
                 data : tileData.data,
                 featureIndex : new Uint16Array(indexes)
@@ -115,8 +116,9 @@ export default class BaseLayerWorker {
         };
     }
 
-    createTileGeometry(features, dataConfig = {}, extent) {
+    createTileGeometry(features, dataConfig = {}, { extent, res }) {
         const type = dataConfig.type;
+        const uvScale = this.options['baseRes'] / res;
         if (type === '3d-extrusion') {
             const {
                 altitudeScale,
@@ -124,11 +126,24 @@ export default class BaseLayerWorker {
                 defaultAltitude,
                 heightProperty,
                 defaultHeight,
-                normal, tangent, uv
+                normal, tangent,
+                uv
             } = dataConfig;
 
-            const faces = buildExtrudeFaces(features, extent,
-                altitudeScale, altitudeProperty, defaultAltitude || 0, heightProperty, defaultHeight || 0);
+            const uSize = dataConfig.uvSize || [128, 128];
+
+            const faces = buildExtrudeFaces(
+                features, extent,
+                {
+                    altitudeScale, altitudeProperty,
+                    defaultAltitude : defaultAltitude || 0,
+                    heightProperty,
+                    defaultHeight : defaultHeight || 0
+                },
+                {
+                    uv,
+                    uvSize : [uSize[0] * uvScale, uSize[1] * uvScale]
+                });
 
             const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.indexes.buffer];
 
@@ -144,7 +159,7 @@ export default class BaseLayerWorker {
                 //TODO caculate tangent
             }
             if (uv) {
-                //TODO generate uv coordinates
+                buffers.push(faces.uvs.buffer);
             }
             return {
                 data : faces,

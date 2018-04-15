@@ -27,8 +27,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     //always redraw when map is interacting
     needToRedraw() {
         const redraw = super.needToRedraw();
-        if (!this._loadingResource && !redraw && this.getMap().isInteracting()) {
-            return true;
+        if (!redraw) {
+            for (let i = 0; i < this.plugins.length; i++) {
+                if (this.plugins[i].needToRedraw()) {
+                    return true;
+                }
+            }
         }
         return redraw;
     }
@@ -44,6 +48,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         attributes.stencil = true;
         this.glOptions = attributes;
         this.gl = this._createGLContext(this.canvas, attributes);
+        // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
         this.prepareWorker();
         this.layer.on('renderstart', this.renderTileClippingMasks, this);
         this.regl = createREGL({
@@ -70,10 +75,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 return;
             }
             const options = this.layer.getWorkerOptions() || {};
-            options.extent = EXTENT;
-            options.altitudeProperty = this.layer.options['altitudeProperty'];
-            // options.altitudeScale = altitudeScale;
-            options.tileSize = this.layer.options['tileSize'];
             const id = this.layer.getId(), type = this.layer.getJSONType();
             workerConn.addLayer(id, type, options, err => {
                 if (err) throw err;
@@ -307,6 +308,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     hitDetect(point) {
+        return false;
         if (!this.gl) {
             return false;
         }

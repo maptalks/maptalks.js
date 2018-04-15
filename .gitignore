@@ -4,3 +4,4 @@ debug
 .vscode
 yarn.lock
 dist
+web.config
