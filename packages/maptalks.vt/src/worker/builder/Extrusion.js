@@ -10,9 +10,12 @@ export function buildExtrudeFaces(
     },
     {
         uv,
-        uvSize
+        uvSize,
+        glScale,
+        vScale //用于将meter转化为矢量瓦片内的坐标值
     }
 ) {
+    // debugger
     const scale = EXTENT / features[0].extent;
 
     const size = countVertexes(features) * 2;
@@ -59,9 +62,9 @@ export function buildExtrudeFaces(
         //top face indices
         pushIn(indices, triangles);
         if (generateUV) {
-            buildFaceUV(uvs, vertices, triangles, uvSize);
+            buildFaceUV(uvs, vertices, triangles, [uvSize[0] / glScale, uvSize[1] / glScale]);
         }
-
+        // debugger
         const s = indices.length;
         //side face indices
         const startIdx = start / 3;
@@ -85,7 +88,8 @@ export function buildExtrudeFaces(
             }
         }
         if (generateUV) {
-            buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize);
+            // debugger
+            buildSideUV(uvs, vertices, indices.slice(s, indices.length), [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
         }
         return offset + count;
     }

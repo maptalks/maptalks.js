@@ -122,6 +122,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
         this._frameTime = maptalks.Util.now();
+        this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this.startFrame();
         super.draw();
         this.endFrame();
@@ -140,7 +141,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     loadTile(tileInfo) {
-        this.workerConn.loadTile(this.layer.getId(), tileInfo, (err, data) => {
+        const map = this.getMap();
+        const glScale = map.getGLScale(tileInfo.z);
+        this.workerConn.loadTile(this.layer.getId(), { tileInfo, glScale, zScale : this._zScale }, (err, data) => {
             if (err) this.onTileError(EMPTY_VECTOR_TILE, tileInfo);
             if (!data) {
                 this.onTileLoad({ _empty : true }, tileInfo);
@@ -363,9 +366,8 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
         const glScale = map.getGLScale(tileInfo.z);
         const tilePos = tileInfo.point;
         const tileSize = this.layer.getTileSize();
-        const meterScale = this._getMeterScale(tileInfo.z); //scale to convert meter to gl point
         const posMatrix = mat4.identity(new Array(3));
-        mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, glScale * meterScale));
+        mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
         mat4.translate(posMatrix, posMatrix, vec3.set(v1, tilePos.x, tilePos.y, 0));
         mat4.scale(posMatrix, posMatrix, vec3.set(v2, tileSize.width / EXTENT, tileSize.height / EXTENT, 1));
 

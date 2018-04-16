@@ -55,7 +55,7 @@ export default class Dispatcher {
     loadTile({ mapId, layerId, params }, callback) {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
-            layer.loadTile(params.tile, callback);
+            layer.loadTile(params, callback);
         }
     }
 

@@ -21,8 +21,8 @@ export default class BaseLayerWorker {
      * @param {Object} tileInfo  - tileInfo, xyz, res, extent, etc
      * @param {Function} cb - callback function when finished
      */
-    loadTile(tileInfo, cb) {
-        this.getTileFeatures(tileInfo, (err, features) => {
+    loadTile(context, cb) {
+        this.getTileFeatures(context.tileInfo, (err, features) => {
             if (err) {
                 cb(err);
                 return;
@@ -31,12 +31,12 @@ export default class BaseLayerWorker {
                 cb();
                 return;
             }
-            const data = this.createTileData(features, tileInfo);
+            const data = this.createTileData(features, context);
             cb(null, data.data, data.buffers);
         });
     }
 
-    createTileData(features, tileInfo) {
+    createTileData(features, { glScale, zScale }) {
         const data = {},
             options = this.options,
             buffers = [];
@@ -73,7 +73,7 @@ export default class BaseLayerWorker {
             }
 
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
-            const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, res : tileInfo.res });
+            const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, glScale, zScale });
             data[pluginType] = {
                 data : tileData.data,
                 featureIndex : new Uint16Array(indexes)
@@ -116,9 +116,8 @@ export default class BaseLayerWorker {
         };
     }
 
-    createTileGeometry(features, dataConfig = {}, { extent, res }) {
+    createTileGeometry(features, dataConfig = {}, { extent, glScale, zScale }) {
         const type = dataConfig.type;
-        const uvScale = this.options['baseRes'] / res;
         if (type === '3d-extrusion') {
             const {
                 altitudeScale,
@@ -127,10 +126,8 @@ export default class BaseLayerWorker {
                 heightProperty,
                 defaultHeight,
                 normal, tangent,
-                uv
+                uv, uvSize
             } = dataConfig;
-
-            const uSize = dataConfig.uvSize || [128, 128];
 
             const faces = buildExtrudeFaces(
                 features, extent,
@@ -142,7 +139,14 @@ export default class BaseLayerWorker {
                 },
                 {
                     uv,
-                    uvSize : [uSize[0] * uvScale, uSize[1] * uvScale]
+                    uvSize : uvSize || [128, 128],
+                    //>> needed by uv computation
+                    glScale,
+                    //用于白模侧面的uv坐标v的计算
+                    // zScale用于将meter转为gl point值
+                    // (extent / this.options['tileSize'][1])用于将gl point转为瓦片内坐标
+                    vScale : zScale * (extent / this.options['tileSize'][1])
+                    //<<
                 });
 
             const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.indexes.buffer];

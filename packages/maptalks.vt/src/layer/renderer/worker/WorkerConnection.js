@@ -77,13 +77,15 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     }
 
     //send(layerId, command, data, buffers, callback, workerId)
-    loadTile(layerId, tileInfo, cb) {
+    loadTile(layerId, context, cb) {
         const data = {
             mapId : this.mapId,
             layerId,
             command : 'loadTile',
             params : {
-                tile : toJSON(tileInfo)
+                tileInfo : toJSON(context.tileInfo),
+                glScale : context.glScale,
+                zScale : context.zScale
             }
         };
         this.send(data, null, cb, this.dedicatedWorkers[layerId]);
