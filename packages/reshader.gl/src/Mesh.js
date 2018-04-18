@@ -27,10 +27,18 @@ class Mesh {
         return this;
     }
 
+    setUniform(k, v) {
+        this.uniforms[k] = v;
+        return this;
+    }
+
     getUniforms(regl) {
         const uniforms = {
             'model' : this.localTransform
         };
+        for (const p in this.uniforms) {
+            uniforms[p] = this.uniforms[p];
+        }
         if (this.material) {
             const materialUniforms = this.material.getUniforms(regl);
             if (materialUniforms) {

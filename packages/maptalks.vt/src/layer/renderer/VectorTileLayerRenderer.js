@@ -38,10 +38,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     createContext() {
-        const attributes = this.layer.options.glOptions || {
+        const layer = this.layer;
+        const attributes = layer.options.glOptions || {
             alpha: true,
             depth: true,
-            stencil: true,
             antialias: true,
         };
         attributes.preserveDrawingBuffer = true;
@@ -50,7 +50,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.gl = this._createGLContext(this.canvas, attributes);
         // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
         this.prepareWorker();
-        this.layer.on('renderstart', this.renderTileClippingMasks, this);
+        layer.on('renderstart', this.renderTileClippingMasks, this);
+        //TODO 迁移到fusion后，不再需要初始化regl，而是将createREGL传给插件
         this.regl = createREGL({
             gl : this.gl,
             extensions : [
@@ -59,8 +60,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 'OES_element_index_uint',
                 'OES_standard_derivatives'
             ],
-            optionalExtensions : this.layer.options['glExtensions'] || ['WEBGL_draw_buffers']
+            optionalExtensions : layer.options['glExtensions'] || ['WEBGL_draw_buffers']
         });
+
+        const EXTENT = layer.options['extent'];
+        this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Float32Array([
+            // positions
+            0, EXTENT, 0,
+            0, 0, 0,
+            EXTENT, EXTENT, 0,
+            EXTENT, 0, 0
+        ]), layer.options['stencil'] === 'debug');
     }
 
     prepareWorker() {
@@ -102,6 +112,39 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     checkResources() {
         const result = [];
         return result;
+    }
+
+    onDrawTileStart(context) {
+        if (!this.layer.options['stencil']) {
+            return;
+        }
+        const map = this.getMap();
+        // this.regl._refresh();
+        const { tiles, parentTiles, childTiles } = context;
+        const gl = this.gl;
+        const quadStencil = this._quadStencil;
+
+        quadStencil.start();
+        // Tests will always pass, and ref value will be written to stencil buffer.
+        quadStencil.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+
+        let idNext = 1;
+        this._tileStencilRefs = {};
+        const stencilTiles = [];
+        maptalks.Util.pushIn(stencilTiles, parentTiles, childTiles, tiles);
+        for (const tile of stencilTiles) {
+            const id = this._tileStencilRefs[tile.info.dupKey] = idNext++;
+            quadStencil.stencilFunc(gl.ALWAYS, id, 0xFF);
+
+            const mat = this.calculateTileMatrix(tile.info);
+            mat4.multiply(mat, map.projViewMatrix, mat);
+            quadStencil.draw(mat);
+        }
+
+        quadStencil.end();
+        super.onDrawTileStart(context);
+        //TODO 迁移到fusion上后，应该不再需要refresh
+        this.regl._refresh();
     }
 
     renderTileClippingMasks() {
@@ -211,6 +254,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
+        const stencilRef = this._tileStencilRefs && this._tileStencilRefs[tileInfo.dupKey];
         const tileTransform = this.calculateTileMatrix(tileInfo);
         this.plugins.forEach(plugin => {
             const type = plugin.getType();
@@ -229,7 +273,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache : tileCache[type],
                 tileData : tileData[type],
                 t : this._frameTime - tileData.loadTime,
-                tileInfo, tileTransform
+                tileInfo, tileTransform, stencilRef
             };
             const status = plugin.paintTile(param);
             if (status && status.redraw) {
@@ -305,14 +349,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
         this.layer.off('renderstart', this.renderTileClippingMasks, this);
         delete this.sceneCache;
-
+        this._quadStencil.remove();
         if (super.onRemove) super.onRemove();
 
     }
 
     hitDetect(point) {
-        return false;
-        if (!this.gl) {
+        if (!this.gl || !this.layer.options['hitDetect']) {
             return false;
         }
         const gl = this.gl;

@@ -72,15 +72,20 @@ export function buildExtrudeFaces(
         let ringStartIdx = startIdx;
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
             if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
-                //top[l - 1], bottom[l - 1], top[0]
-                indices.push(i + vertexCount, i, ringStartIdx);
-                //bottom[0], top[0], bottom[l - 1]
-                indices.push(ringStartIdx, ringStartIdx + vertexCount, i + vertexCount);
+                if (!isBoundaryEdge(vertices, i, ringStartIdx, EXTENT)) {
+                    //top[l - 1], bottom[l - 1], top[0]
+                    indices.push(i + vertexCount, i, ringStartIdx);
+                    //bottom[0], top[0], bottom[l - 1]
+                    indices.push(ringStartIdx, ringStartIdx + vertexCount, i + vertexCount);
+                }
                 if (i < l - 1) {
                     //it's a hole, relocate ringStartIdx to hole's start
                     ringStartIdx = i + 1;
                 }
             } else if (i < l - 1) {
+                if (isBoundaryEdge(vertices, i, i + 1, EXTENT)) {
+                    continue;
+                }
                 //top[i], bottom[i], top[i + 1]
                 indices.push(i + vertexCount, i, i + 1);
                 //bottom[i + 1], top[i + 1], bottom[i]
@@ -156,4 +161,11 @@ function getHeightValue(properties, heightProp, defaultValue) {
         height = defaultValue;
     }
     return height;
+}
+
+function isBoundaryEdge(vertices, i0, i1, EXTENT) {
+    const x0 = vertices[i0 * 3], y0 = vertices[i0 * 3 + 1],
+        x1 = vertices[i1 * 3], y1 = vertices[i1 * 3 + 1];
+    return (x0 === x1 && (x0 < 0 || x0 > EXTENT)) ||
+        (y0 === y1 && (y0 < 0 || y0 > EXTENT));
 }

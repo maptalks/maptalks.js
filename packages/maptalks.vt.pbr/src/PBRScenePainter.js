@@ -87,7 +87,23 @@ class PBRScenePainter {
                 cull : {
                     enable: true,
                     face: 'back'
-                }
+                },
+                // stencil: {
+                //     enable: false,
+                //     mask: 0x0,
+                //     func: {
+                //         cmp: '=',
+                //         ref: regl.prop('stencilRef'),
+                //         mask: 0xff
+                //     }
+                // }
+                // polygonOffset: {
+                //     enable: true,
+                //     offset: {
+                //         factor: -100,
+                //         units: -100
+                //     }
+                // }
             }
         );
         this.scene = new reshader.Scene();

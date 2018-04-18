@@ -12,7 +12,8 @@ const defaultOptions = {
     clipByPitch : false,
     extent : 8192,
     zoomBackground : true,
-    tileSize : [512, 512]
+    tileSize : [512, 512],
+    stencil : false
 };
 
 /**
