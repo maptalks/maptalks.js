@@ -58,7 +58,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.touchRotate=true]                       - whether to allow map to rotate by touch pinch.
  * @property {Boolean} [options.touchPitch=true]                        - whether to allow map to pitch by touch pinch.
  * @property {Boolean} [options.touchZoomRotate=false]                  - if true, map is to zoom and rotate at the same time by touch pinch.
- * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
+ * @property {Boolean} [options.doubleClickZoom=true]                    - whether to allow map to zoom by double click events.
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  *
