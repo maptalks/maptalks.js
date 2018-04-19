@@ -368,7 +368,7 @@ const ImageGLRenderable = Base => {
          * ]);
          */
         enableVertexAttrib(attributes) {
-            enableVertexAttrib(this.gl, attributes);
+            enableVertexAttrib(this.gl, this.gl.program, attributes);
         }
 
         /**

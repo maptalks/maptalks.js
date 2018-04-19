@@ -80,7 +80,7 @@ export function createProgram(gl, vert, frag) {
  * ]);
  * @private
  */
-export function enableVertexAttrib(gl, attributes) {
+export function enableVertexAttrib(gl, program, attributes) {
     if (Array.isArray(attributes[0])) {
         const FSIZE = Float32Array.BYTES_PER_ELEMENT;
         let STRIDE = 0;
@@ -89,7 +89,7 @@ export function enableVertexAttrib(gl, attributes) {
         }
         let offset = 0;
         for (let i = 0; i < attributes.length; i++) {
-            const attr = gl.getAttribLocation(gl.program, attributes[i][0]);
+            const attr = gl.getAttribLocation(program, attributes[i][0]);
             if (attr < 0) {
                 throw new Error('Failed to get the storage location of ' + attributes[i][0]);
             }
@@ -98,7 +98,7 @@ export function enableVertexAttrib(gl, attributes) {
             gl.enableVertexAttribArray(attr);
         }
     } else {
-        const attr = gl.getAttribLocation(gl.program, attributes[0]);
+        const attr = gl.getAttribLocation(program, attributes[0]);
         gl.vertexAttribPointer(attr, attributes[1], gl[attributes[2] || 'FLOAT'], false, 0, 0);
         gl.enableVertexAttribArray(attr);
     }

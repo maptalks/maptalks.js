@@ -106,11 +106,16 @@ export function parseJSON(str) {
     return JSON.parse(str);
 }
 
-export function pushIn(arr1, arr2) {
-    for (let i = 0, l = arr2.length; i < l; i++) {
-        arr1.push(arr2[i]);
+export function pushIn(dest) {
+    for (let i = 1; i < arguments.length; i++) {
+        const src = arguments[i];
+        if (src) {
+            for (let ii = 0, ll = src.length; ii < ll; ii++) {
+                dest.push(src[ii]);
+            }
+        }
     }
-    return arr1.length;
+    return dest.length;
 }
 
 export function removeFromArray(obj, array) {
