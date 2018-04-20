@@ -4,16 +4,13 @@ const ocean_fragment = `
 
     varying vec2 v_coordinates;
     varying vec3 v_position;
-
+    
     uniform sampler2D u_displacementMap;
     uniform sampler2D u_normalMap;
-
     uniform vec3 u_cameraPosition;
-
     uniform vec3 u_oceanColor;',
     uniform vec3 u_skyColor;',
     uniform float u_exposure;',
-
     uniform vec3 u_sunDirection;',
 
     vec3 hdr (vec3 color, float exposure) {
@@ -34,8 +31,8 @@ const ocean_fragment = `
 
         gl_FragColor = vec4(hdr(color, u_exposure), 1.0);
     }`;
-//波浪微品面
-const transform_fragment = `
+//vertical transform
+const vertical_transform_fragment = `
     precision highp float;
 
     const float PI = 3.14159265359;
@@ -54,6 +51,33 @@ const transform_fragment = `
         float evenIndex = floor(index / u_subtransformSize) * (u_subtransformSize * 0.5) + mod(index, u_subtransformSize * 0.5);
         vec4 even = texture2D(u_input, vec2(gl_FragCoord.x, evenIndex + 0.5) / u_transformSize).rgba;
         vec4 odd = texture2D(u_input, vec2(gl_FragCoord.x, evenIndex + u_transformSize * 0.5 + 0.5) / u_transformSize).rgba;
+        float twiddleArgument = -2.0 * PI * (index / u_subtransformSize);
+        vec2 twiddle = vec2(cos(twiddleArgument), sin(twiddleArgument));
+        vec2 outputA = even.xy + multiplyComplex(twiddle, odd.xy);
+        vec2 outputB = even.zw + multiplyComplex(twiddle, odd.zw);
+        gl_FragColor = vec4(outputA, outputB);
+    }`;
+
+//horizontal transform
+const horizontal_transform_fragment = `
+    precision highp float;
+
+    const float PI = 3.14159265359;
+    uniform smapler2D u_input;
+    uniform float u_transformSize;
+    uniform float u_subtransformSize;
+
+    varying vec2 v_coordinates;
+
+    vec2 multiplyComplex (vec2 a,vec2 b){
+        return vec2(a[0] * b[0] - a[1] * b[1], a[1] * b[0] + a[0] * b[1]);
+    }
+
+    void main(){
+        float index = v_coordinates.x * u_transformSize - 0.5;
+        float evenIndex = floor(index / u_subtransformSize) * (u_subtransformSize * 0.5) + mod(index, u_subtransformSize * 0.5);
+        vec4 even = texture2D(u_input, vec2(evenIndex + 0.5, gl_FragCoord.y) / u_transformSize).rgba;
+        vec4 odd = texture2D(u_input, vec2(evenIndex + u_transformSize * 0.5 + 0.5, gl_FragCoord.y) / u_transformSize).rgba;
         float twiddleArgument = -2.0 * PI * (index / u_subtransformSize);
         vec2 twiddle = vec2(cos(twiddleArgument), sin(twiddleArgument));
         vec2 outputA = even.xy + multiplyComplex(twiddle, odd.xy);
@@ -92,8 +116,8 @@ const phase_fragment = `
         //
         gl_FragColor = vec4(phase, 0.0, 0.0, 0.0);
     }`;
-//
-const spectrum_fragment = `
+//initial spectrum
+const initial_spectrum_fragment = `
     precision highp float;
 
     const float PI = 3.14159265359;
@@ -155,7 +179,55 @@ const spectrum_fragment = `
         //
         gl_FragColor = vec4(h, 0.0, 0.0, 0.0);
     }`;
-//
+// spectrum
+const spectrum_fragment = `
+    precision highp float;
+
+    const float PI = 3.14159265359;
+    const float G = 9.81;
+    const float KM = 370.0;
+
+    varying vec2 v_coordinates;
+
+    uniform float u_size;
+    uniform float u_resolution;
+    uniform sampler2D u_phases;
+    uniform sampler2D u_initialSpectrum;
+    uniform float u_choppiness;
+
+    vec2 multiplyComplex (vec2 a, vec2 b) {
+        return vec2(a[0] * b[0] - a[1] * b[1], a[1] * b[0] + a[0] * b[1]);
+    }
+
+    vec2 multiplyByI (vec2 z) {
+        return vec2(-z[1], z[0]);
+    }
+
+    float omega (float k) {
+        return sqrt(G * k * (1.0 + k * k / KM * KM));
+    }
+
+    void main (void) {
+        vec2 coordinates = gl_FragCoord.xy - 0.5;
+        float n = (coordinates.x < u_resolution * 0.5) ? coordinates.x : coordinates.x - u_resolution;
+        float m = (coordinates.y < u_resolution * 0.5) ? coordinates.y : coordinates.y - u_resolution;
+        vec2 waveVector = (2.0 * PI * vec2(n, m)) / u_size;
+        float phase = texture2D(u_phases, v_coordinates).r;
+        vec2 phaseVector = vec2(cos(phase), sin(phase));',
+        vec2 h0 = texture2D(u_initialSpectrum, v_coordinates).rg;
+        vec2 h0Star = texture2D(u_initialSpectrum, vec2(1.0 - v_coordinates + 1.0 / u_resolution)).rg;
+        h0Star.y *= -1.0;
+        vec2 h = multiplyComplex(h0, phaseVector) + multiplyComplex(h0Star, vec2(phaseVector.x, -phaseVector.y));
+        vec2 hX = -multiplyByI(h * (waveVector.x / length(waveVector))) * u_choppiness;
+        vec2 hZ = -multiplyByI(h * (waveVector.y / length(waveVector))) * u_choppiness;
+        if (waveVector.x == 0.0 && waveVector.y == 0.0) {
+            h = vec2(0.0);
+            hX = vec2(0.0);
+            hZ = vec2(0.0);
+        }
+        gl_FragColor = vec4(hX + multiplyByI(h), hZ);
+    }`;
+// normal map
 const normal_fragment = `
     precision highp float;
 
@@ -182,8 +254,10 @@ const normal_fragment = `
 
 module.exports = {
     ocean_fragment,
-    transform_fragment,
+    vertical_transform_fragment,
+    horizontal_transform_fragment,
     phase_fragment,
+    initial_spectrum_fragment,
     spectrum_fragment,
     normal_fragment
 }
