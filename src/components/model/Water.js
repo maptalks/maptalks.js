@@ -74,6 +74,7 @@ class Water extends Model {
      */
     constructor(opts = {}) {
         super(opts);
+        this.pingPhase = true;
     }
     /**
      * generic ocean data
@@ -82,7 +83,7 @@ class Water extends Model {
         const oceanVetices = [], oceanIndices = [];
         const geometry_resolution = 256,
             geometry_size = 2000,
-            geometry_origin = [-1000.0, -1000.0],
+            geometry_origin = [-1000.0, -1000.0];
         // vertices
         for (var zIndex = 0; zIndex < geometry_resolution; zIndex += 1) {
             for (var xIndex = 0; xIndex < geometry_resolution; xIndex += 1) {
@@ -192,18 +193,40 @@ class Water extends Model {
             normalMapFramebuffer = createFramebuffer(gl, normalMap),
             pingTransformFramebuffer = createFramebuffer(gl, pingTransformTexture),
             pongTransformFramebuffer = createFramebuffer(gl, pongTransformTexture);
+        // export program
+        this.phase_program = phase_program;
+        this.ocean_program = ocean_program;
+        // export framebuffer
+        this.pingPhaseFramebuffer = pingPhaseFramebuffer;
+        this.pongPhaseFramebuffer = pongPhaseFramebuffer;
+        // index buffer
+        this.oceanBuffer = oceanBuffer;
+        this.oceanIndexBuffer = oceanIndexBuffer;
     }
     /**
      * 
      * @param {WebGLRenderingContext} gl 
-     * @param {*} camera 
+     * @param {*} camera ·
      * @param {*} light 
      */
-    draw(gl, camera, light) {
-        if(!this._inited) this._init(gl);
-        //
-        gl.viewport(0,0,)
-
+    draw(gl, camera, light, deltaTime) {
+        if (!this._inited) this._init(gl);
+        gl.viewport(0, 0, 800, 600);
+        gl.disable(gl.DEPTH_TEST);
+        //海洋数据
+        gl.useProgram(this.ocean_program)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.oceanBuffer);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 5 * 4, 0);
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_projectionMatrix'), false, camera.projectionMatrix.value);
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_viewMatrix'), false, camera.viewMatrix.value);
+        gl.uniform3fv(gl.getUniformLocation(this.ocean_program, 'u_cameraPosition'), camera.position.value);
+        //根据随机的 pingPhaseTexture 绘制相位图
+        gl.useProgram(this.phase_program);
+        gl.bindBuffer(gl.FRAMEBUFFER, this.pingPhase ? this.pongPhaseFramebuffer : this.pingPhaseFramebuffer);
+        gl.uniform1i(gl.getUniformLocation(this.phase_program, 'u_phases'), this.pingPhase ? 4 : 5);
+        gl.uniform1f(gl.getUniformLocation(this.phase_program, 'u_deltaTime'), deltaTime);
+        gl.uniform1f(gl.getUniformLocation(this.phase_program, 'u_size'), 512);
+        gl.drawElements(gl.TRIANGLES, this.oceanIndexBuffer.length, gl.UNSIGNED_SHORT, 0);
     }
 }
 

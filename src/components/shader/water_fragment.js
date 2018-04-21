@@ -95,7 +95,6 @@ const phase_fragment = `
     varying vec2 v_coordinates;
 
     uniform sampler2D u_phases;
-
     uniform float u_deltaTime;
     uniform float u_resolution;
     uniform float u_size;

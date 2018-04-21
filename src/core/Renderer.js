@@ -22,6 +22,10 @@ class Renderer{
          * @type {WebGLRenderingContext}
          */
         this.gl = opts.gl;
+        /**
+         * @type {Number}
+         */
+        this._delta = 0;
     }
     /**
      * 
@@ -38,16 +42,13 @@ class Renderer{
         //textures have a width that divide by 4
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-        model.draw(gl,camera,light);
+        model.draw(gl,camera,light,(this._delta%60)/60);
         //3.写入lights数据
         // light.prepareDraw(gl,program);
         //4.写入camera数据
         // camera.prepareDraw(gl,program);
         //5.写入models数据,并绘制
     }
-
-    render2(camera,skybox)
-
 }
 
 module.exports = Renderer;
