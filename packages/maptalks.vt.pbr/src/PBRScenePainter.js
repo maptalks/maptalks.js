@@ -185,11 +185,11 @@ class PBRScenePainter {
                 format : 'rgba',
                 flipY : true
             };
-            this._isIBLRecreated = true;
+            this._isIBLRecreated = !!cubeLightConfig.data;
             if (cubeLightConfig.data) {
-                this._isIBLRecreated = false;
                 let data = cubeLightConfig.data;
                 if (cubeLightConfig.data instanceof ArrayBuffer) {
+                    // HDR raw data
                     data = reshader.HDR.parseHDR(cubeLightConfig.data);
                     props.data = data.pixels;
                     props.width = data.width;
