@@ -1,6 +1,5 @@
 import { extend, isNumber, isString, isFunction } from '../common/Util.js';
 
-const TYPE_PROP = 'prop';
 const TYPE_FUNC = 'function';
 
 class Shader {

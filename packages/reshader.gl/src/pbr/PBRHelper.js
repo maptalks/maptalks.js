@@ -1,5 +1,4 @@
 import { renderToCube } from '../common/RenderHelper.js';
-import { log2 } from '../common/Util.js';
 
 import cubeData from './CubeData.js';
 
@@ -159,7 +158,6 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
             height: regl.prop('size')
         }
     });
-    
     let size = SIZE;
 
     const tmpFBO = regl.framebuffer(size);
