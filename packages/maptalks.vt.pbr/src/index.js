@@ -6,11 +6,12 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
 
     startFrame(context) {
         const { regl, sceneCache, sceneConfig } = context;
-        if (!sceneCache.painter) {
-            sceneCache.painter = new PBRScenePainter(regl, sceneConfig);
+        let painter = sceneCache.painter;
+        if (!painter) {
+            painter = sceneCache.painter = new PBRScenePainter(regl, sceneConfig);
         }
         //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
-        sceneCache.painter.clear();
+        painter.clear();
     },
 
     endFrame(context) {
@@ -86,11 +87,12 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
 
     },
 
-    needToRedraw() {
-        if (!this.painter) {
+    needToRedraw(sceneCache) {
+        const { painter } = sceneCache;
+        if (!painter) {
             return false;
         }
-        return this.painter.needToRedraw();
+        return painter.needToRedraw();
     },
 
     _generateColorArray(features, indexes, indices, vertices) {

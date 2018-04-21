@@ -41,18 +41,18 @@ export function createIBLMaps(regl, config = {}) {
     //----------------------------------------------------
     // generate ibl maps
 
-    const envCubeMap = createEquirectangularMapCube(regl, envTexture, envCubeSize);
+    const envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize);
 
-    const irradianceCubeMap = createIrradianceCube(regl, envCubeMap, irradianceCubeSize);
+    const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
 
-    const prefilterCubeMap = createPrefilterCube(regl, envCubeMap, prefilterCubeSize, sampleSize, roughnessLevels);
+    const prefilterMap = createPrefilterCube(regl, envMap, prefilterCubeSize, sampleSize, roughnessLevels);
 
     const brdfLUT = generateBRDFLUT(regl, brdfSize, sampleSize, roughnessLevels);
 
     return {
-        envCubeMap,
-        irradianceCubeMap,
-        prefilterCubeMap,
+        envMap,
+        irradianceMap,
+        prefilterMap,
         brdfLUT
     };
 }
@@ -126,14 +126,14 @@ function createIrradianceCube(regl, envCube, SIZE) {
 function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
     //1. 生成NormalDistribution采样的LUT
     sampleSize = sampleSize || 1024;
-    roughnessLevels = roughnessLevels || 16;
+    roughnessLevels = roughnessLevels || 256;
 
     const distro = generateNormalDistribution(sampleSize, roughnessLevels);
 
     const distributionMap = regl.texture({
         data : distro,
-        width : sampleSize,
-        height : roughnessLevels,
+        width : roughnessLevels,
+        height : sampleSize,
         min : 'nearest',
         mag : 'nearest'
     });
@@ -159,12 +159,12 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
             height: regl.prop('size')
         }
     });
-
+    
     let size = SIZE;
 
     const tmpFBO = regl.framebuffer(size);
 
-    const maxLevels = log2(SIZE);
+    const maxLevels = Math.log(size) / Math.log(2) + 1;//log2(SIZE); //fix to 4
 
     //手动构造prefilterMap各mipmap level的数据
     const mipmap = [];
@@ -187,15 +187,17 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
             //下一个面
             faceId++;
         });
-        //下一个mipmap level
-        size /= 2;
-        tmpFBO.resize(size);
+        if (i < maxLevels - 1) {
+            //下一个mipmap level
+            size /= 2;
+            tmpFBO.resize(size);
+        }
     }
 
     const prefilterMapFBO = regl.cube({
         radius : SIZE,
-        // min : 'linear mipmap linear',
-        // mag : 'linear',
+        min : 'linear mipmap linear',
+        mag : 'linear',
         // wrap : 'clamp',
         faces : mipmap
     });
@@ -222,7 +224,7 @@ function generateBRDFLUT(regl, size, sampleSize, roughnessLevels) {
     }
 
     sampleSize = sampleSize || 1024;
-    roughnessLevels = roughnessLevels || 16;
+    roughnessLevels = roughnessLevels || 256;
 
     const distro = generateNormalDistribution(sampleSize, roughnessLevels);
 

@@ -29,8 +29,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const redraw = super.needToRedraw();
         if (!redraw) {
             for (let i = 0; i < this.plugins.length; i++) {
-                if (this.plugins[i].needToRedraw()) {
-                    return true;
+                const cache = this.sceneCache[this.plugins[i].getType()];
+                if (cache) {
+                    if (this.plugins[i].needToRedraw(cache)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -45,20 +48,21 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             antialias: true,
         };
         attributes.preserveDrawingBuffer = true;
-        attributes.stencil = true;
+        attributes.stencil = !!layer.options['stencil'];
         this.glOptions = attributes;
         this.gl = this._createGLContext(this.canvas, attributes);
         // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
         this.prepareWorker();
-        layer.on('renderstart', this.renderTileClippingMasks, this);
         //TODO 迁移到fusion后，不再需要初始化regl，而是将createREGL传给插件
         this.regl = createREGL({
             gl : this.gl,
+            attributes,
             extensions : [
                 // 'ANGLE_instanced_arrays',
                 'OES_texture_float',
                 'OES_element_index_uint',
-                'OES_standard_derivatives'
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod',
             ],
             optionalExtensions : layer.options['glExtensions'] || ['WEBGL_draw_buffers']
         });
@@ -99,7 +103,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     clearCanvas() {
         super.clearCanvas();
         if (this.glOptions.depth) {
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
+            // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
+            //TODO 这里必须通过regl来clear，如果直接调用webgl context的clear，则brdf的texture会被设为0
+            this.regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
+                stencil: 0
+            });
         } else {
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
         }
@@ -145,17 +155,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         super.onDrawTileStart(context);
         //TODO 迁移到fusion上后，应该不再需要refresh
         this.regl._refresh();
-    }
-
-    renderTileClippingMasks() {
-        // const grid = this.layer.getTiles();
-        // if (!grid) return;
-
-        // for (const coord of grid.tiles) {
-        //     coord.posMatrix = this.calculateTileMatrix(coord);
-        // }
-
-        // this.painter.renderTileClippingMasks(grid.tiles);
     }
 
     draw() {
@@ -347,7 +346,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             delete this.workerConn;
         }
 
-        this.layer.off('renderstart', this.renderTileClippingMasks, this);
         delete this.sceneCache;
         this._quadStencil.remove();
         if (super.onRemove) super.onRemove();
@@ -421,7 +419,6 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
 export default VectorTileLayerRenderer;
 
 function meterToPoint(map, center, altitude, z) {
-    // const z = map.getGLZoom();
     const target = map.locate(center, altitude, 0);
     const p0 = map.coordToPoint(center, z),
         p1 = map.coordToPoint(target, z);

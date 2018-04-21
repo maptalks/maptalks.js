@@ -82,6 +82,7 @@ export default `
         prefilteredColor = prefilteredColor / totalWeight;
 
         gl_FragColor = vec4(prefilteredColor, 1.0);
+        // gl_FragColor = vec4(totalWeight, 0.0, 0.0, 1.0);
         // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
     }
 

@@ -39,12 +39,50 @@ class PBRScenePainter {
                 redraw : false
             };
         }
+
         //TODO implement shadow pass
         this.renderer.render(this.shader, this._getUniformValues(map), this.scene);
         return {
             redraw : false
         };
     }
+
+    // debugBRDF() {
+    //     const debug = document.getElementById('debugc').getContext('2d');
+    //     const pixels = this.regl.read({
+    //         // x: 0,
+    //         // y: 0,
+    //         // width: 1024,
+    //         // height: 512,
+    //         framebuffer : this.iblMaps.brdfLUT
+    //     });
+    //     const width = 256, height = 1024;
+    //     var halfHeight = height / 2 | 0;  // the | 0 keeps the result an int
+    //     var bytesPerRow = width * 4;
+
+    //     // make a temp buffer to hold one row
+    //     var temp = new Uint8Array(width * 4);
+    //     for (var y = 0; y < halfHeight; ++y) {
+    //         var topOffset = y * bytesPerRow;
+    //         var bottomOffset = (height - y - 1) * bytesPerRow;
+
+    //         // make copy of a row on the top half
+    //         temp.set(pixels.subarray(topOffset, topOffset + bytesPerRow));
+
+    //         // copy a row from the bottom half to the top
+    //         pixels.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
+
+    //         // copy the copy of the top half row to the bottom half
+    //         pixels.set(temp, bottomOffset);
+    //     }
+
+    //     // This part is not part of the answer. It's only here
+    //     // to show the code above worked
+    //     // copy the pixels in a 2d canvas to show it worked
+    //     var imgdata = new ImageData(width, height);
+    //     imgdata.data.set(pixels);
+    //     debug.putImageData(imgdata, 0, 0);
+    // }
 
     getMesh(key) {
         return this.meshCache[key];
@@ -78,6 +116,15 @@ class PBRScenePainter {
     _init() {
         const regl = this.regl;
         this.loader = new reshader.ResourceLoader(regl.texture(2));
+        let hdr;
+        this.loader.on('complete', () => {
+            if (hdr && hdr.isReady() && !this._isIBLRecreated) {
+                //环境光纹理载入，重新生成ibl纹理
+                this.iblMaps = createMaps(hdr);
+                this._isIBLRecreated = true;
+            }
+            this._redraw = true;
+        });
         this.shader = new reshader.MeshShader(
             reshader.pbr.StandardVert, reshader.pbr.StandardFrag,
             this._getUniforms(),
@@ -96,7 +143,7 @@ class PBRScenePainter {
                 //         ref: regl.prop('stencilRef'),
                 //         mask: 0xff
                 //     }
-                // }
+                // },
                 // polygonOffset: {
                 //     enable: true,
                 //     offset: {
@@ -144,7 +191,7 @@ class PBRScenePainter {
             if (!this.sceneConfig.lights.ambientCubeLight.url) {
                 throw new Error('Must provide url for ambientCubeLight');
             }
-            const hdr = new reshader.Texture2D(
+            hdr = new reshader.Texture2D(
                 {
                     url : this.sceneConfig.lights.ambientCubeLight.url,
                     arrayBuffer : true,
@@ -155,22 +202,14 @@ class PBRScenePainter {
                 },
                 this.loader
             );
-            if (!hdr.isReady()) {
-                this.loader.on('complete', () => {
-                    if (hdr.isReady()) {
-                        //环境光纹理载入，重新生成ibl纹理
-                        this.iblMaps = createMaps(hdr);
-                        this._redraw = true;
-                    }
-                });
-            }
 
             //生成ibl纹理
             this.iblMaps = createMaps(hdr);
         }
         function createMaps(hdr) {
             return reshader.pbr.PBRHelper.createIBLMaps(regl, {
-                envTexture : hdr.getREGLTexture(regl)
+                envTexture : hdr.getREGLTexture(regl),
+                // prefilterCubeSize : 256
             });
         }
     }
@@ -275,7 +314,7 @@ class PBRScenePainter {
         }
         if (lightConfig.ambientCubeLight) {
             uniforms['irradianceMap'] = this.iblMaps.irradianceMap;
-            uniforms['prefilterCubeMap'] = this.iblMaps.prefilterCubeMap;
+            uniforms['prefilterMap'] = this.iblMaps.prefilterMap;
             uniforms['brdfLUT'] = this.iblMaps.brdfLUT;
         }
 
@@ -284,7 +323,8 @@ class PBRScenePainter {
 
     _getDefines() {
         const defines =  {
-            'USE_COLOR' : 1
+            'USE_COLOR' : 1,
+            'SUPPORT_TEXTURE_LOD' : 1
         };
 
         const lightConfig = this.sceneConfig.lights;

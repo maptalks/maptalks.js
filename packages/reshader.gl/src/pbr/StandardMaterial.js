@@ -29,9 +29,6 @@ const defaultUniforms = {
  */
 class StandardMaterial extends Material {
     constructor(uniforms) {
-        if (uniforms['roughness'] <= 0) {
-            uniforms['roughness'] = 0.02;
-        }
         super(uniforms, defaultUniforms);
     }
 
