@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { log2 } from '../../worker/util/Util';
+import { extend } from '../../../../maptalks.vt.pbr/src/Util';
 
 const defaultOptions = {
     renderer: 'gl',
@@ -56,7 +57,16 @@ class VectorTileLayer extends maptalks.TileLayer {
         this.validateStyle();
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.updateStyle();
+            renderer.setStyle();
+        }
+        return this;
+    }
+
+    updateSceneConfig(plugin, sceneConfig) {
+        extend(this.options.style[plugin].sceneConfig, sceneConfig);
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.updateSceneConfig(plugin, sceneConfig);
         }
         return this;
     }

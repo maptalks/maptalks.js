@@ -142,7 +142,7 @@ function readColors(scan, buffer, offset, xmax) {
                 scanline[x][j] = 0;
             }
         }
-        var pixels = new Float32Array(width * height * 4);
+        var pixels = new Array(width * height * 4);
         var offset2 = 0;
         for (var y = 0; y < height; y++) {
             var offset = readColors(scanline, data, offset, width);

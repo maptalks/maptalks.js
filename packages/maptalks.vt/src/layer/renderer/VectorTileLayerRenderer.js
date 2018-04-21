@@ -14,13 +14,32 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.sceneCache = {};
     }
 
-    updateStyle() {
+    setStyle() {
         if (this.workerConn) {
             this.workerConn.updateStyle(this.layer.getId(), this.layer.getStyle(), err => {
                 if (err) throw new Error(err);
                 this.clear();
+                this._clearPlugin();
                 this.setToRedraw();
             });
+        }
+    }
+
+    updateSceneConfig(pluginType, sceneConfig) {
+        const plugins = this.plugins;
+        if (!plugins) {
+            return;
+        }
+        for (let i = 0; i < plugins.length; i++) {
+            if (plugins[i].getType() === pluginType) {
+                plugins[i].config = this.layer.getStyle()[pluginType];
+                plugins[i].updateSceneConfig({
+                    sceneCache : this.sceneCache[pluginType],
+                    sceneConfig : sceneConfig
+                });
+                this.setToRedraw();
+                break;
+            }
         }
     }
 
@@ -334,9 +353,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     onRemove() {
-        this.plugins.forEach(plugin => {
-            plugin.remove();
-        });
         // const map = this.getMap();
         if (this.workerConn) {
             this.workerConn.removeLayer(this.layer.getId(), err => {
@@ -345,11 +361,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.workerConn.remove();
             delete this.workerConn;
         }
-
-        delete this.sceneCache;
         this._quadStencil.remove();
         if (super.onRemove) super.onRemove();
+        this._clearPlugin();
+    }
 
+    _clearPlugin() {
+        this.plugins.forEach(plugin => {
+            plugin.remove({ sceneCache : this.sceneCache[plugin.getType()] });
+        });
+        delete this.sceneCache;
     }
 
     hitDetect(point) {

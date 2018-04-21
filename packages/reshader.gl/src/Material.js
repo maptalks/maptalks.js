@@ -79,7 +79,7 @@ class Material {
 
     dispose() {
         for (const p in this.uniforms) {
-            if (this.uniforms[p].dispose) {
+            if (this.uniforms[p] && this.uniforms[p].dispose) {
                 this.uniforms[p].dispose();
             }
         }

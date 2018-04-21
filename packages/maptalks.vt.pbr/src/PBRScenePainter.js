@@ -11,6 +11,16 @@ class PBRScenePainter {
         }
         this._redraw = false;
         this.meshCache = {};
+        this.loader = new reshader.ResourceLoader(regl.texture(2));
+        this.hdr = null;
+        this.loader.on('complete', () => {
+            if (this.hdr && this.hdr.isReady() && !this._isIBLRecreated) {
+                //环境光纹理载入，重新生成ibl纹理
+                this.iblMaps = this._createIBLMaps(this.hdr);
+                this._isIBLRecreated = true;
+            }
+            this._redraw = true;
+        });
         this._init();
     }
 
@@ -18,17 +28,17 @@ class PBRScenePainter {
         return this._redraw;
     }
 
-    createMesh(key, data, indices) {
+    createGeometry(data, indices) {
         const geometry = new reshader.Geometry(data, indices);
         geometry.generateBuffers(this.regl);
-        const mesh = new reshader.Mesh(geometry, this.material);
-        this.addMesh(key, mesh);
-        return mesh;
+        return geometry;
     }
 
-    addMesh(key, mesh) {
+    addMesh(key, geometry) {
+        const mesh = new reshader.Mesh(geometry, this.material);
         this.meshCache[key] = mesh;
         this.scene.addMesh(mesh);
+        return mesh;
     }
 
     paint(layer) {
@@ -45,6 +55,18 @@ class PBRScenePainter {
         return {
             redraw : false
         };
+    }
+
+    updateSceneConfig(config) {
+        const keys = Object.keys(config);
+        if (keys.length === 1 && keys[0] === 'material') {
+            this.sceneConfig.material = config.material;
+            this._updateMaterial();
+        } else {
+            extend(this.sceneConfig, config);
+            this._init();
+            this._redraw = true;
+        }
     }
 
     // debugBRDF() {
@@ -104,27 +126,18 @@ class PBRScenePainter {
     }
 
     remove() {
-        for (const p in this.meshCache) {
-            if (this.meshCache.hasOwnProperty(p)) {
-                this.delete(p);
-            }
-        }
+        // for (const p in this.meshCache) {
+        //     if (this.meshCache.hasOwnProperty(p)) {
+        //         this.delete(p);
+        //     }
+        // }
+        delete this.meshCache;
         this.material.dispose();
         this.shader.dispose();
     }
 
     _init() {
         const regl = this.regl;
-        this.loader = new reshader.ResourceLoader(regl.texture(2));
-        let hdr;
-        this.loader.on('complete', () => {
-            if (hdr && hdr.isReady() && !this._isIBLRecreated) {
-                //环境光纹理载入，重新生成ibl纹理
-                this.iblMaps = createMaps(hdr);
-                this._isIBLRecreated = true;
-            }
-            this._redraw = true;
-        });
         this.shader = new reshader.MeshShader(
             reshader.pbr.StandardVert, reshader.pbr.StandardFrag,
             this._getUniforms(),
@@ -156,6 +169,57 @@ class PBRScenePainter {
         this.scene = new reshader.Scene();
         this.renderer = new reshader.Renderer(regl);
 
+        this._updateMaterial();
+
+        const cubeLightConfig = this.sceneConfig.lights.ambientCubeLight;
+        if (cubeLightConfig) {
+
+            if (!cubeLightConfig.url && !cubeLightConfig.data) {
+                throw new Error('Must provide url or data(ArrayBuffer) for ambientCubeLight');
+            }
+            const props = {
+                url : cubeLightConfig.url,
+                arrayBuffer : true,
+                hdr : true,
+                type : 'float',
+                format : 'rgba',
+                flipY : true
+            };
+            this._isIBLRecreated = true;
+            if (cubeLightConfig.data) {
+                this._isIBLRecreated = false;
+                let data = cubeLightConfig.data;
+                if (cubeLightConfig.data instanceof ArrayBuffer) {
+                    data = reshader.HDR.parseHDR(cubeLightConfig.data);
+                    props.data = data.pixels;
+                    props.width = data.width;
+                    props.height = data.height;
+                } else {
+                    props.data = data;
+                }
+            }
+            this.hdr = new reshader.Texture2D(
+                props,
+                this.loader
+            );
+
+            //生成ibl纹理
+            this.iblMaps = this._createIBLMaps(this.hdr);
+        }
+    }
+
+    _createIBLMaps(hdr) {
+        const regl = this.regl;
+        return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+            envTexture : hdr.getREGLTexture(regl),
+            // prefilterCubeSize : 256
+        });
+    }
+
+    _updateMaterial() {
+        if (this.material) {
+            this.material.dispose();
+        }
         const materialConfig = this.sceneConfig.material;
         const material = {};
         for (const p in materialConfig) {
@@ -186,32 +250,6 @@ class PBRScenePainter {
             }, loader)
         } */
         this.material = new reshader.pbr.StandardMaterial(material);
-
-        if (this.sceneConfig.lights.ambientCubeLight) {
-            if (!this.sceneConfig.lights.ambientCubeLight.url) {
-                throw new Error('Must provide url for ambientCubeLight');
-            }
-            hdr = new reshader.Texture2D(
-                {
-                    url : this.sceneConfig.lights.ambientCubeLight.url,
-                    arrayBuffer : true,
-                    hdr : true,
-                    type : 'float',
-                    format : 'rgba',
-                    flipY : true
-                },
-                this.loader
-            );
-
-            //生成ibl纹理
-            this.iblMaps = createMaps(hdr);
-        }
-        function createMaps(hdr) {
-            return reshader.pbr.PBRHelper.createIBLMaps(regl, {
-                envTexture : hdr.getREGLTexture(regl),
-                // prefilterCubeSize : 256
-            });
-        }
     }
 
     _getUniforms() {

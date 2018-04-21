@@ -11,6 +11,9 @@ export { default as TextureCube } from './TextureCube.js';
 
 import * as Util from './common/Util.js';
 export { Util };
+import parseHDR from './common/HDR.js';
+const HDR = { parseHDR };
+export { HDR };
 
 export { default as Shader } from './shader/Shader.js';
 export { default as MeshShader } from './shader/MeshShader.js';

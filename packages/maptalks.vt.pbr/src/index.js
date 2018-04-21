@@ -35,11 +35,11 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
             };
         }
         const key = tileInfo.dupKey;
-        if (!tileCache.mesh) {
+        if (!tileCache.geometry) {
             const features = tileData.features,
                 indexes = tileData.data.indexes;
             const colors = this._generateColorArray(features, indexes, tileData.data.indices, tileData.data.vertices);
-            tileCache.mesh = painter.createMesh(key, {
+            tileCache.geometry = painter.createGeometry({
                 aPosition : tileData.data.vertices,
                 aTexCoord : tileData.data.uvs,
                 aNormal : tileData.data.normals,
@@ -48,13 +48,19 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         }
         let mesh = painter.getMesh(key);
         if (!mesh) {
-            mesh = tileCache.mesh;
-            painter.addMesh(key, mesh);
+            mesh = painter.addMesh(key, tileCache.geometry);
         }
         mesh.setLocalTransform(tileTransform);
         return {
             'redraw' : false
         };
+    },
+
+    updateSceneConfig({ sceneCache, sceneConfig }) {
+        let { painter } = sceneCache;
+        if (painter) {
+            painter.updateSceneConfig(sceneConfig);
+        }
     },
 
     raypicking(sceneCache, x, y) {
@@ -80,6 +86,7 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         const painter = sceneCache.painter;
         if (painter) {
             painter.remove();
+            delete sceneCache.painter;
         }
     },
 
