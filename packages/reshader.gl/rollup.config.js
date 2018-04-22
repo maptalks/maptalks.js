@@ -1,12 +1,13 @@
 const resolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
+const glslify = require('rollup-plugin-glslify');
 const pkg = require('./package.json');
 
 function glsl() {
     return {
         transform(code, id) {
-            if (/\.vert'$/.test(id) === false && /\.frag$/.test(id) === false) return null;
+            if (/\.vert'$/.test(id) === false && /\.frag$/.test(id) === false && /\.glsl$/.test(id) === false) return null;
 
             var transformedCode = code.replace(/[ \t]*\/\/.*\n/g, '') // remove //
                 .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
@@ -18,13 +19,13 @@ function glsl() {
         }
     };
 }
-
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 
 module.exports = {
     input: 'src/index.js',
     plugins: [
         glsl(),
+        glslify(),
         resolve({
             module : true,
             jsnext : true,
@@ -36,6 +37,12 @@ module.exports = {
         }),
     ],
     output: [
+        {
+            'sourcemap': false,
+            'format': 'es',
+            'banner': banner,
+            'file': 'dist/' + pkg.name + '.es.js'
+        },
         {
             'sourcemap': false,
             'format': 'umd',

@@ -1,4 +1,3 @@
-export default `
 attribute vec3 aPosition;
 
 varying vec3 vWorldPos;
@@ -11,4 +10,3 @@ void main()
     vWorldPos = aPosition;  
     gl_Position =  projection * view * vec4(vWorldPos, 1.0);
 }
-`

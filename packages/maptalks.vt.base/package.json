@@ -5,12 +5,11 @@
     "main": "index.js",
     "module": "index.js",
     "jsnext:main": "index.js",
-    "scripts": {
-    },
-    "private" : true,
+    "scripts": {},
+    "private": true,
     "keywords": [
-      "maptalks",
-      "vectortile"
+        "maptalks",
+        "vectortile"
     ],
     "author": "fuzhenn",
     "license": "UNLICENSED"

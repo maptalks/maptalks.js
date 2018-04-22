@@ -1,4 +1,3 @@
-export default `
     attribute vec3 aPosition;
     attribute vec3 aNormal;
 
@@ -23,7 +22,6 @@ export default `
     uniform mat4 model;
     uniform mat4 projectionViewModel;
 
-
     void main()
     {
         #if defined(USE_NORMAL_MAP) || defined(USE_ALBEDO_MAP) || defined(USE_OCCULUSIONROUGHNESSMETALLIC_MAP)
@@ -41,7 +39,6 @@ export default `
         #ifdef USE_COLOR
             vColor = aColor;
         #endif
-
         gl_Position =  projectionViewModel * vec4(aPosition, 1.0);
     }
-`;
+

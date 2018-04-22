@@ -1,4 +1,3 @@
-export default `
     attribute vec3 position;
 
     uniform mat4 projection;
@@ -15,4 +14,3 @@ export default `
 
         gl_Position = clipPos.xyww;
     }
-`;

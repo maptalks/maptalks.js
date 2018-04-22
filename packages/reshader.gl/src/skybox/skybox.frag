@@ -1,4 +1,3 @@
-export default `
 precision mediump float;
 
 varying vec3 worldPos;
@@ -16,4 +15,3 @@ void main()
 
     gl_FragColor = vec4(envColor, 1.0);
 }
-`;
