@@ -75,7 +75,7 @@ class AbstractTexture {
 
     dispose() {
         if (this.config.url) {
-            this.resLoader.dispose(this.config.url);
+            this.resLoader.disposeRes(this.config.url);
         }
         if (this._texture) {
             this._texture.destroy();

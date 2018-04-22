@@ -8,8 +8,6 @@ const defaultUniforms = {
     occulusionRoughnessMetallicMap : null,
     normalMap : null,
     normalStrength : 1,
-    heightMap : null,
-    heightStrength : 1,
     emissionMap : null
 };
 
