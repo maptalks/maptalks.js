@@ -1,17 +1,24 @@
-//
+// full fragment
+const full_fragment = `
+    precision mediump float;
+    
+    void main(){
+        gl_FragColor = vec4(1.0,0.2,0.5,1.0);
+    }`;
+// ocean fragment
 const ocean_fragment = `
-    precision highp float;
+    precision mediump float;
 
     varying vec2 v_coordinates;
     varying vec3 v_position;
-    
+
     uniform sampler2D u_displacementMap;
     uniform sampler2D u_normalMap;
     uniform vec3 u_cameraPosition;
-    uniform vec3 u_oceanColor;',
-    uniform vec3 u_skyColor;',
-    uniform float u_exposure;',
-    uniform vec3 u_sunDirection;',
+    uniform vec3 u_oceanColor;
+    uniform vec3 u_skyColor;
+    uniform float u_exposure;
+    uniform vec3 u_sunDirection;
 
     vec3 hdr (vec3 color, float exposure) {
         return 1.0 - exp(-color * exposure);
@@ -33,10 +40,11 @@ const ocean_fragment = `
     }`;
 //vertical transform
 const vertical_transform_fragment = `
-    precision highp float;
+    precision mediump float;
 
     const float PI = 3.14159265359;
-    uniform smapler2D u_input;
+
+    uniform sampler2D u_input;
     uniform float u_transformSize;
     uniform float u_subtransformSize;
 
@@ -60,10 +68,11 @@ const vertical_transform_fragment = `
 
 //horizontal transform
 const horizontal_transform_fragment = `
-    precision highp float;
+    precision mediump float;
 
     const float PI = 3.14159265359;
-    uniform smapler2D u_input;
+
+    uniform sampler2D u_input;
     uniform float u_transformSize;
     uniform float u_subtransformSize;
 
@@ -86,7 +95,7 @@ const horizontal_transform_fragment = `
     }`;
 //
 const phase_fragment = `
-    precision highp float;
+    precision mediump float;
     
     const float PI = 3.14159265359;
     const float G = 9.81;
@@ -113,11 +122,11 @@ const phase_fragment = `
         float deltaPhase = omega(length(waveVector)) * u_deltaTime;
         phase = mod(phase + deltaPhase, 2.0 * PI);
         //
-        gl_FragColor = vec4(phase, 0.0, 0.0, 0.0);
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 0.0);
     }`;
 //initial spectrum
 const initial_spectrum_fragment = `
-    precision highp float;
+    precision mediump float;
 
     const float PI = 3.14159265359;
 
@@ -180,7 +189,7 @@ const initial_spectrum_fragment = `
     }`;
 // spectrum
 const spectrum_fragment = `
-    precision highp float;
+    precision mediump float;
 
     const float PI = 3.14159265359;
     const float G = 9.81;
@@ -212,7 +221,7 @@ const spectrum_fragment = `
         float m = (coordinates.y < u_resolution * 0.5) ? coordinates.y : coordinates.y - u_resolution;
         vec2 waveVector = (2.0 * PI * vec2(n, m)) / u_size;
         float phase = texture2D(u_phases, v_coordinates).r;
-        vec2 phaseVector = vec2(cos(phase), sin(phase));',
+        vec2 phaseVector = vec2(cos(phase), sin(phase));
         vec2 h0 = texture2D(u_initialSpectrum, v_coordinates).rg;
         vec2 h0Star = texture2D(u_initialSpectrum, vec2(1.0 - v_coordinates + 1.0 / u_resolution)).rg;
         h0Star.y *= -1.0;
@@ -228,7 +237,7 @@ const spectrum_fragment = `
     }`;
 // normal map
 const normal_fragment = `
-    precision highp float;
+    precision mediump float;
 
     varying vec2 v_coordinates;
 
@@ -252,6 +261,7 @@ const normal_fragment = `
     }`;
 
 module.exports = {
+    full_fragment,
     ocean_fragment,
     vertical_transform_fragment,
     horizontal_transform_fragment,
