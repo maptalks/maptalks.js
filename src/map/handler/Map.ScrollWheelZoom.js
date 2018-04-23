@@ -43,7 +43,7 @@ class MapScrollWheelZoomHandler extends Handler {
             this._delta = levelValue;
             this._startZoom = map.getZoom();
         }
-        const duration = 120;
+        const duration = 90;
         map.animateTo({
             'zoom' : nextZoom - this._delta * 1 / 2,
             'around' : this._origin
@@ -56,7 +56,7 @@ class MapScrollWheelZoomHandler extends Handler {
             if (frame.state.playState !== 'finished') {
                 return;
             }
-            if (this._requesting < 2 || Math.abs(nextZoom - this._startZoom) > 2 ||
+            if (this._requesting < 1 || Math.abs(nextZoom - this._startZoom) > 2 ||
                 //finish zooming if target zoom hits min/max
                 nextZoom === map.getMaxZoom() || nextZoom === map.getMinZoom()) {
 
@@ -65,7 +65,7 @@ class MapScrollWheelZoomHandler extends Handler {
                     'around' : this._origin
                 }, {
                     'continueOnViewChanged' : true,
-                    'duration' : 1000 / 60 * 10
+                    'duration' : 100
                 }, frame => {
                     if (frame.state.playState === 'finished') {
                         setTimeout(() => {

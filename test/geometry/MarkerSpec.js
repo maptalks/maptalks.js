@@ -463,7 +463,7 @@ describe('Geometry.Marker', function () {
                 } else if (maptalks.Browser.gecko3d) {
                     expect(layer).to.be.painted(20, -1);
                 } else {
-                    expect(layer).to.be.painted(30, 0);
+                    expect(layer).to.be.painted(20, 0);
                 }
 
                 done();
@@ -693,9 +693,24 @@ describe('Geometry.Marker', function () {
             });
             var layer = new maptalks.VectorLayer('vector', marker, { 'drawImmediate' : true }).addTo(map);
             var outline = marker.getOutline().updateSymbol({ markerFill : '#0f0' }).addTo(layer);
-            expect(layer).to.not.be.painted();
+            // expect(layer).to.not.be.painted();
             expect(layer).to.be.painted(50, -10, [0, 255, 0]);
         });
     });
 
+
+    describe('rotate the geometry', function () {
+        it('without a pivot', function () {
+            var marker = new maptalks.Marker(map.getCenter());
+            marker.rotate(10);
+            expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().toArray());
+        });
+
+        it('with a pivot', function () {
+            var marker = new maptalks.Marker(map.getCenter());
+            marker.rotate(10, map.getCenter().sub(1, 1));
+            var newCoords = marker.getCoordinates().toArray();
+            expect(newCoords).to.be.eql([118.62842615843942, 32.17932019579005]);
+        });
+    });
 });

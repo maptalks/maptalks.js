@@ -75,6 +75,7 @@ class WMSTileLayer extends TileLayer {
         const crs = this.options.crs || this.getMap().getProjection().code;
         const projectionKey = this._wmsVersion >= 1.3 ? 'crs' : 'srs';
         this.wmsParams[projectionKey] = crs;
+        super.onAdd();
     }
 
     getTileUrl(x, y, z) {

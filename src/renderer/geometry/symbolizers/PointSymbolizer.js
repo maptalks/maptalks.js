@@ -53,7 +53,7 @@ class PointSymbolizer extends CanvasSymbolizer {
             return points;
         }
         const dxdy = this.getDxDy();
-        const cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true);
+        const cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true, this.getPlacement());
         if (!cpoints || !Array.isArray(cpoints[0])) {
             return cpoints;
         }

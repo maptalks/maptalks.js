@@ -341,6 +341,28 @@ describe('Geometry.Edit', function () {
             polygon.endEdit();
         });
 
+        it('click to remove a polygon vertex', function () {
+            var rect = new maptalks.Rectangle(map.getCenter(), 1000, 500).addTo(layer);
+            var polygon = new maptalks.Polygon(rect.getShell()).addTo(layer);
+            expect(polygon.getCoordinates()[0].length).to.be(5);
+
+            polygon.startEdit({
+                'removeVertexOn' : 'click'
+            });
+            var size = polygon.getSize();
+            var domPosition = GET_PAGE_POSITION(container);
+            var point = map.coordinateToContainerPoint(polygon.getCenter()).add(domPosition);
+            point._add(new maptalks.Point(size.width / 2, size.height / 2));
+
+            happen.click(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+
+            polygon.endEdit();
+            expect(polygon.getCoordinates()[0].length).to.be(4);
+        });
+
         it('update symbol when editing', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 1000, {
                 symbol : {

@@ -36,23 +36,20 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return;
         }
 
-        const point = tileInfo.point,
-            tileZoom = tileInfo.z;
-        const scale = map.getGLScale(tileZoom),
-            pp = point.multi(scale);
-        const x = pp.x,
-            y = pp.y,
+        const scale = map.getGLScale(tileInfo.z),
             w = tileInfo.size[0] * scale,
             h = tileInfo.size[1] * scale;
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
-
         if (!this._gl()) {
             // fall back to canvas 2D
             super.drawTile(tileInfo, tileImage);
             return;
         }
+        const point = tileInfo.point;
+        const x = point.x * scale,
+            y = point.y * scale;
         const opacity = this.getTileOpacity(tileImage);
         this.drawGLImage(tileImage, x, y, w, h, opacity);
 
@@ -61,6 +58,32 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         } else {
             this.setCanvasUpdated();
         }
+    }
+
+    writeZoomStencil() {
+        const gl = this.gl;
+        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+    }
+
+    startZoomStencilTest() {
+        const gl = this.gl;
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
+    }
+
+    endZoomStencilTest() {
+        this.pauseZoomStencilTest();
+    }
+
+    pauseZoomStencilTest() {
+        const gl = this.gl;
+        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+    }
+
+    resumeZoomStencilTest() {
+        const gl = this.gl;
+        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
     }
 
     _bindGLBuffer(image, w, h) {
@@ -121,11 +144,8 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     deleteTile(tile) {
         super.deleteTile(tile);
-        if (tile && tile.image && tile.image.texture) {
-            this.saveTexture(tile.image.texture);
-            this.saveImageBuffer(tile.image.glBuffer);
-            delete tile.image.texture;
-            delete tile.image.glBuffer;
+        if (tile && tile.image) {
+            this.disposeImage(tile.image);
         }
     }
 

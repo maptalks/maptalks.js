@@ -7,7 +7,8 @@ import {
     isString,
     isFunction,
     sign,
-    UID
+    UID,
+    b64toBlob
 } from '../core/util';
 import Class from '../core/Class';
 import Browser from '../core/Browser';
@@ -57,7 +58,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.touchRotate=true]                       - whether to allow map to rotate by touch pinch.
  * @property {Boolean} [options.touchPitch=true]                        - whether to allow map to pitch by touch pinch.
  * @property {Boolean} [options.touchZoomRotate=false]                  - if true, map is to zoom and rotate at the same time by touch pinch.
- * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
+ * @property {Boolean} [options.doubleClickZoom=true]                    - whether to allow map to zoom by double click events.
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  *
@@ -648,7 +649,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
-        return 0;
+        return this._spatialReference.getMinZoom();
     }
 
     /**
@@ -1172,12 +1173,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             const dataURL = renderer.toDataURL(mimeType);
             if (save && dataURL) {
-                const imgURL = dataURL;
-
+                let imgURL;
+                if (typeof Blob !== 'undefined' && typeof atob !== 'undefined') {
+                    const blob = b64toBlob(dataURL.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''), mimeType);
+                    imgURL = URL.createObjectURL(blob);
+                } else {
+                    imgURL = dataURL;
+                }
                 const dlLink = document.createElement('a');
                 dlLink.download = file;
                 dlLink.href = imgURL;
-                dlLink.dataset.downloadurl = [mimeType, dlLink.download, dlLink.href].join(':');
 
                 document.body.appendChild(dlLink);
                 dlLink.click();
@@ -1424,7 +1429,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locate(coordinate, dx, dy) {
-        return this.getProjection().locate(new Coordinate(coordinate), dx, dy);
+        return this.getProjection()._locate(new Coordinate(coordinate), dx, dy);
     }
 
     /**

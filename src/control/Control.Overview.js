@@ -1,4 +1,4 @@
-import { extend } from '../core/util';
+import { extend, isFunction } from '../core/util';
 import { on, off, createEl } from '../core/util/dom';
 import Polygon from '../geometry/Polygon';
 import Layer from '../layer/Layer';
@@ -159,7 +159,6 @@ class Overview extends Control {
             'cursor': 'move',
             'symbol': this.options['symbol']
         })
-            .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
         new VectorLayer('perspective_layer', this._perspective).addTo(this._overview);
         this.fire('load');
@@ -187,16 +186,11 @@ class Overview extends Control {
         return zoom;
     }
 
-    _onDragStart() {
-        this._origDraggable = this.getMap().options['draggable'];
-        this.getMap().config('draggable', false);
-    }
 
     _onDragEnd() {
         const center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
-        this.getMap().config('draggable', this._origDraggable);
     }
 
     _getPerspectiveCoords() {
@@ -260,6 +254,11 @@ class Overview extends Control {
         json.options.visible = true;
         json.options.renderer = 'canvas';
         const layer = Layer.fromJSON(json);
+        for (const p in baseLayer) {
+            if (isFunction(baseLayer[p]) && baseLayer.hasOwnProperty(p) && baseLayer[p] !== baseLayer.constructor.prototype[p]) {
+                layer[p] = baseLayer[p];
+            }
+        }
         this._overview.setBaseLayer(layer);
     }
 }

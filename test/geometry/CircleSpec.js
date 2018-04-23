@@ -171,20 +171,25 @@ describe('Geometry.Circle', function () {
 
     it('Circle.containsPoint', function () {
 
-        var geometry = new maptalks.Circle(center, 10, {
+        var geometry = new maptalks.Circle(center, 20, {
             symbol: {
-                'lineWidth': 6
+                'lineWidth': 6,
+                'lineOpacity' : 0,
+                'polygonOpacity' : 0
             }
         });
         layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
-        var p1 = new maptalks.Point(400 + 10 + 6, 300);
+        var p1 = new maptalks.Point(400 + 20 + 6, 300);
         expect(geometry.containsPoint(p1)).not.to.be.ok();
 
-        var p2 = new maptalks.Point(400 + 10 + 2, 300);
+        var p2 = new maptalks.Point(400 + 20 + 2, 300);
         expect(geometry.containsPoint(p2)).to.be.ok();
+
+        var p3 = new maptalks.Point(400, 300);
+        expect(geometry.containsPoint(p3)).to.be.ok();
     });
 
     it('redraw when map is pitched', function (done) {

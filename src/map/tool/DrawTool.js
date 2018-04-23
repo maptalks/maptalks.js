@@ -3,16 +3,7 @@ import { isNil } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
-import Coordinate from '../../geo/Coordinate';
-import Point from '../../geo/Point';
-import Marker from '../../geometry/Marker';
 import Polygon from '../../geometry/Polygon';
-import LineString from '../../geometry/LineString';
-import Circle from '../../geometry/Circle';
-import Ellipse from '../../geometry/Ellipse';
-import ArcCurve from '../../geometry/ArcCurve';
-import CubicBezierCurve from '../../geometry/CubicBezierCurve';
-import QuadBezierCurve from '../../geometry/QuadBezierCurve';
 import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
 
@@ -60,7 +51,7 @@ class DrawTool extends MapTool {
      * Register a new mode for DrawTool
      * @param  {String} name       mode name
      * @param  {Object} modeAction modeActions
-     * @param  {Object} modeAction.action the action of DrawTool: click, drag, clickDblclick
+     * @param  {Object} modeAction.action the action of DrawTool: click, mousedown, clickDblclick
      * @param  {Object} modeAction.create the create method of drawn geometry
      * @param  {Object} modeAction.update the update method of drawn geometry
      * @param  {Object} modeAction.generate the method to generate geometry at the end of drawing.
@@ -74,7 +65,7 @@ class DrawTool extends MapTool {
         },
         'generate': geometry => geometry
        }
-    });
+     });
      */
     static registerMode(name, modeAction) {
         registeredMode[name.toLowerCase()] = modeAction;
@@ -101,6 +92,18 @@ class DrawTool extends MapTool {
     constructor(options) {
         super(options);
         this._checkMode();
+        /**
+         * events
+         * @type {{click: DrawTool._firstClickHandler, mousemove: DrawTool._mouseMoveHandler, dblclick: DrawTool._doubleClickHandler, mousedown: DrawTool._mouseDownHandler, mouseup: DrawTool._mouseUpHandler}}
+         * @private
+         */
+        this._events = {
+            'click': this._firstClickHandler,
+            'mousemove': this._mouseMoveHandler,
+            'dblclick': this._doubleClickHandler,
+            'mousedown': this._mouseDownHandler,
+            'mouseup': this._mouseUpHandler
+        };
     }
 
     /**
@@ -202,7 +205,7 @@ class DrawTool extends MapTool {
     undo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
-        if (action !== 'clickDblclick' || !this._historyPointer) {
+        if (!this._shouldRecordHistory(action) || !this._historyPointer) {
             return this;
         }
         const coords = this._clickCoords.slice(0, --this._historyPointer);
@@ -217,12 +220,22 @@ class DrawTool extends MapTool {
     redo() {
         const registerMode = this._getRegisterMode();
         const action = registerMode.action;
-        if (action !== 'clickDblclick' || isNil(this._historyPointer) || this._historyPointer === this._clickCoords.length) {
+        if (!this._shouldRecordHistory(action) || isNil(this._historyPointer) || this._historyPointer === this._clickCoords.length) {
             return this;
         }
         const coords = this._clickCoords.slice(0, ++this._historyPointer);
         registerMode.update(coords, this._geometry);
         return this;
+    }
+
+    /**
+     * check should recor history
+     * @param actions
+     * @returns {boolean}
+     * @private
+     */
+    _shouldRecordHistory(actions) {
+        return Array.isArray(actions) && actions[0] === 'click' && actions[1] === 'mousemove' && actions[2] === 'dblclick';
     }
 
     _checkMode() {
@@ -235,12 +248,12 @@ class DrawTool extends MapTool {
         map.config({
             'doubleClickZoom': this.options['doubleClickZoom']
         });
-        const action = this._getRegisterMode()['action'];
-        if (action === 'drag') {
+        const actions = this._getRegisterMode()['action'];
+        if (actions.indexOf('mousedown') > -1) {
             const map = this.getMap();
             this._mapDraggable = map.options['draggable'];
             map.config({
-                'draggable' : false
+                'draggable': false
             });
         }
     }
@@ -281,47 +294,90 @@ class DrawTool extends MapTool {
 
     getEvents() {
         const action = this._getRegisterMode()['action'];
-        if (action === 'clickDblclick') {
-            return {
-                'click': this._clickForPath,
-                'mousemove': this._mousemoveForPath,
-                'dblclick': this._dblclickForPath
-            };
-        } else if (action === 'click') {
-            return {
-                'click': this._clickForPoint
-            };
-        } else if (action === 'drag') {
-            return {
-                'mousedown': this._mousedownToDraw
-            };
+        const _events = {};
+        if (Array.isArray(action)) {
+            for (let i = 0; i < action.length; i++) {
+                _events[action[i]] = this._events[action[i]];
+            }
+            return _events;
         }
         return null;
     }
 
-    _addGeometryToStage(geometry) {
-        const drawLayer = this._getDrawLayer();
-        drawLayer.addGeometry(geometry);
+    /**
+     * mouse down start draw
+     * @param event
+     * @private
+     */
+    _mouseDownHandler(event) {
+        this._createGeometry(event);
     }
 
-    _clickForPoint(param) {
+    /**
+     * handle mouse up event
+     * @param event
+     * @private
+     */
+    _mouseUpHandler(event) {
+        this.endDraw(event);
+    }
+
+    /**
+     * handle mouse first click handle
+     * @param event
+     * @private
+     */
+    _firstClickHandler(event) {
         const registerMode = this._getRegisterMode();
-        this._geometry = registerMode['create'](param['coordinate'], param);
-        if (this.options['symbol'] && this.options.hasOwnProperty('symbol')) {
-            this._geometry.setSymbol(this.options['symbol']);
+        const coordinate = event['coordinate'];
+        if (!this._geometry) {
+            this._createGeometry(event);
+        } else {
+            if (!isNil(this._historyPointer)) {
+                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+            }
+            this._clickCoords.push(coordinate);
+            this._historyPointer = this._clickCoords.length;
+            if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
+                registerMode['update'](this._clickCoords, this._geometry, event);
+                this.endDraw(event);
+            } else {
+                registerMode['update'](this._clickCoords, this._geometry, event);
+            }
+            /**
+             * drawvertex event.
+             *
+             * @event DrawTool#drawvertex
+             * @type {Object}
+             * @property {String} type - drawvertex
+             * @property {DrawTool} target - draw tool
+             * @property {Geometry} geometry - geometry drawn
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            this._fireEvent('drawvertex', event);
         }
-        this.endDraw();
     }
 
-    _clickForPath(param) {
+    /**
+     * 第一次事件创建相关geometry
+     * @param event
+     * @private
+     */
+    _createGeometry(event) {
+        const mode = this.getMode();
         const registerMode = this._getRegisterMode();
-        const coordinate = param['coordinate'];
+        const coordinate = event['coordinate'];
         const symbol = this.getSymbol();
         if (!this._geometry) {
             this._clickCoords = [coordinate];
-            this._geometry = registerMode['create'](this._clickCoords, param);
-            if (symbol) {
+            this._geometry = registerMode['create'](this._clickCoords, event);
+            if (symbol && mode !== 'point') {
                 this._geometry.setSymbol(symbol);
+            } else if (this.options.hasOwnProperty('symbol')) {
+                this._geometry.setSymbol(this.options['symbol']);
             }
             this._addGeometryToStage(this._geometry);
             /**
@@ -336,48 +392,42 @@ class DrawTool extends MapTool {
              * @property {Point} viewPoint       - view point of the event
              * @property {Event} domEvent                 - dom event
              */
-            this._fireEvent('drawstart', param);
-        } else {
-            if (!isNil(this._historyPointer)) {
-                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
-            }
-            this._clickCoords.push(coordinate);
-            this._historyPointer = this._clickCoords.length;
-            registerMode['update'](this._clickCoords, this._geometry, param);
-            /**
-             * drawvertex event.
-             *
-             * @event DrawTool#drawvertex
-             * @type {Object}
-             * @property {String} type - drawvertex
-             * @property {DrawTool} target - draw tool
-             * @property {Geometry} geometry - geometry drawn
-             * @property {Coordinate} coordinate - coordinate of the event
-             * @property {Point} containerPoint  - container point of the event
-             * @property {Point} viewPoint       - view point of the event
-             * @property {Event} domEvent                 - dom event
-             */
-            this._fireEvent('drawvertex', param);
-
+            this._fireEvent('drawstart', event);
+        }
+        if (mode === 'point') {
+            this.endDraw(event);
         }
     }
 
-    _mousemoveForPath(param) {
+    /**
+     * handle mouse move event
+     * @param event
+     * @private
+     */
+    _mouseMoveHandler(event) {
         const map = this.getMap();
+        const coordinate = event['coordinate'];
         if (!this._geometry || !map || map.isInteracting()) {
             return;
         }
-        const containerPoint = this._getMouseContainerPoint(param);
+        const containerPoint = this._getMouseContainerPoint(event);
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
         }
-        const coordinate = param['coordinate'];
         const registerMode = this._getRegisterMode();
-        const path = this._clickCoords.slice(0, this._historyPointer);
-        if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
-            return;
+        if (this._shouldRecordHistory(registerMode.action)) {
+            const path = this._clickCoords.slice(0, this._historyPointer);
+            if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
+                return;
+            }
+            if (!(this._historyPointer === null)) {
+                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+            }
+            this._historyPointer = this._clickCoords.length;
+            registerMode['update'](path.concat([coordinate]), this._geometry, event);
+        } else {
+            registerMode['update']([coordinate], this._geometry, event);
         }
-        registerMode['update'](path.concat([coordinate]), this._geometry, param);
         /**
          * mousemove event.
          *
@@ -391,14 +441,19 @@ class DrawTool extends MapTool {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('mousemove', param);
+        this._fireEvent('mousemove', event);
     }
 
-    _dblclickForPath(param) {
+    /**
+     * handle mouse double click event
+     * @param event
+     * @private
+     */
+    _doubleClickHandler(event) {
         if (!this._geometry) {
             return;
         }
-        const containerPoint = this._getMouseContainerPoint(param);
+        const containerPoint = this._getMouseContainerPoint(event);
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
         }
@@ -421,69 +476,13 @@ class DrawTool extends MapTool {
         if (path.length < 2 || (this._geometry && (this._geometry instanceof Polygon) && path.length < 3)) {
             return;
         }
-        registerMode['update'](path, this._geometry, param);
-        this.endDraw(param);
+        registerMode['update'](path, this._geometry, event);
+        this.endDraw(event);
     }
 
-    _mousedownToDraw(param) {
-        const map = this._map;
-        const registerMode = this._getRegisterMode();
-        const me = this,
-            firstPoint = this._getMouseContainerPoint(param);
-        if (!this._isValidContainerPoint(firstPoint)) {
-            return false;
-        }
-
-        function genGeometry(evt) {
-            const symbol = me.getSymbol();
-            let geometry = me._geometry;
-            if (!geometry) {
-                geometry = registerMode['create'](evt.coordinate, evt);
-                geometry.setSymbol(symbol);
-                me._addGeometryToStage(geometry);
-                me._geometry = geometry;
-            } else {
-                registerMode['update'](evt.coordinate, geometry, evt);
-            }
-        }
-
-        function onMouseMove(evt) {
-            if (!this._geometry) {
-                return false;
-            }
-            const current = this._getMouseContainerPoint(evt);
-            if (!this._isValidContainerPoint(current)) {
-                return false;
-            }
-            genGeometry(evt);
-            this._fireEvent('mousemove', param);
-            return false;
-        }
-        const onMouseUp = function (evt) {
-            map.off('mousemove', onMouseMove, this);
-            map.off('mouseup', onMouseUp, this);
-            if (!this.options['ignoreMouseleave']) {
-                map.off('mouseleave', onMouseUp, this);
-            }
-            if (!this._geometry) {
-                return false;
-            }
-            const current = this._getMouseContainerPoint(evt);
-            if (this._isValidContainerPoint(current)) {
-                genGeometry(evt);
-            }
-            this.endDraw(param);
-            return false;
-        };
-
-        this._fireEvent('drawstart', param);
-        genGeometry(param);
-        map.on('mousemove', onMouseMove, this);
-        map.on('mouseup', onMouseUp, this);
-        if (!this.options['ignoreMouseleave']) {
-            map.on('mouseleave', onMouseUp, this);
-        }
-        return false;
+    _addGeometryToStage(geometry) {
+        const drawLayer = this._getDrawLayer();
+        drawLayer.addGeometry(geometry);
     }
 
     /**
@@ -536,7 +535,7 @@ class DrawTool extends MapTool {
      */
     _getMouseContainerPoint(event) {
         const action = this._getRegisterMode()['action'];
-        if (action === 'drag') {
+        if (action === 'mousedown') {
             stopPropagation(event['domEvent']);
         }
         return event['containerPoint'];
@@ -579,189 +578,5 @@ class DrawTool extends MapTool {
 }
 
 DrawTool.mergeOptions(options);
-
-DrawTool.registerMode('circle', {
-    'action': 'drag',
-    'create': function (coordinate) {
-        return new Circle(coordinate, 0);
-    },
-    'update': function (coordinate, geometry) {
-        const map = geometry.getMap();
-        const radius = map.computeLength(geometry.getCenter(), coordinate);
-        geometry.setRadius(radius);
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('ellipse', {
-    'action': 'drag',
-    'create': function (coordinate) {
-        return new Ellipse(coordinate, 0, 0);
-    },
-    'update': function (coordinate, geometry) {
-        const map = geometry.getMap();
-        const center = geometry.getCenter();
-        const rx = map.computeLength(center, new Coordinate({
-            x: coordinate.x,
-            y: center.y
-        }));
-        const ry = map.computeLength(center, new Coordinate({
-            x: center.x,
-            y: coordinate.y
-        }));
-        geometry.setWidth(rx * 2);
-        geometry.setHeight(ry * 2);
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('rectangle', {
-    'action': 'drag',
-    'create': function (coordinate, param) {
-        const rect = new Polygon([]);
-        rect._firstClick = param['containerPoint'];
-        return rect;
-    },
-    'update': function (coordinate, geometry, param) {
-        const map = geometry.getMap();
-        const containerPoint = param['containerPoint'];
-        const firstClick = geometry._firstClick;
-        const ring = [
-            [firstClick.x, firstClick.y],
-            [containerPoint.x, firstClick.y],
-            [containerPoint.x, containerPoint.y],
-            [firstClick.x, containerPoint.y],
-        ];
-        geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('point', {
-    'action': 'click',
-    'create': function (coordinate) {
-        return new Marker(coordinate);
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('polygon', {
-    'action': 'clickDblclick',
-    'create': function (path) {
-        return new LineString(path);
-    },
-    'update': function (path, geometry) {
-        const symbol = geometry.getSymbol();
-        geometry.setCoordinates(path);
-
-        const layer = geometry.getLayer();
-        if (layer) {
-            let polygon = layer.getGeometryById('polygon');
-            if (!polygon && path.length >= 3) {
-                polygon = new Polygon([path], {
-                    'id': 'polygon'
-                });
-                if (symbol) {
-                    const pSymbol = extendSymbol(symbol, {
-                        'lineOpacity': 0
-                    });
-                    polygon.setSymbol(pSymbol);
-                }
-                polygon.addTo(layer);
-            }
-            if (polygon) {
-                polygon.setCoordinates(path);
-            }
-        }
-    },
-    'generate': function (geometry) {
-        return new Polygon(geometry.getCoordinates(), {
-            'symbol': geometry.getSymbol()
-        });
-    }
-});
-
-DrawTool.registerMode('linestring', {
-    'action': 'clickDblclick',
-    'create': function (path) {
-        return new LineString(path);
-    },
-    'update': function (path, geometry) {
-        geometry.setCoordinates(path);
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('arccurve', {
-    'action': 'clickDblclick',
-    'create': function (path) {
-        return new ArcCurve(path);
-    },
-    'update': function (path, geometry) {
-        geometry.setCoordinates(path);
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('quadbeziercurve', {
-    'action': 'clickDblclick',
-    'create': function (path) {
-        return new QuadBezierCurve(path);
-    },
-    'update': function (path, geometry) {
-        geometry.setCoordinates(path);
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('cubicbeziercurve', {
-    'action': 'clickDblclick',
-    'create': function (path) {
-        return new CubicBezierCurve(path);
-    },
-    'update': function (path, geometry) {
-        geometry.setCoordinates(path);
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
-
-DrawTool.registerMode('boxZoom', {
-    'action': 'drag',
-    'create': function (coordinate) {
-        const marker = new Marker(coordinate);
-        marker._firstClick = coordinate;
-        return marker;
-    },
-    'update': function (coordinate, geometry, param) {
-        const map = geometry.getMap();
-        const p1 = map.coordToContainerPoint(geometry._firstClick),
-            p2 = param['containerPoint'];
-        const coord = map.containerPointToCoordinate(new Coordinate(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)));
-        geometry.setCoordinates(coord)
-            .updateSymbol({
-                markerWidth  : Math.abs(p1.x - p2.x),
-                markerHeight : Math.abs(p1.y - p2.y)
-            });
-    },
-    'generate': function (geometry) {
-        return geometry;
-    }
-});
 
 export default DrawTool;

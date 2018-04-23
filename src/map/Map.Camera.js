@@ -302,6 +302,7 @@ Map.include(/** @lends Map.prototype */{
     /**
      * GL Matrices in maptalks (based on THREE):
      * //based on point at map's gl world zoom, by map.coordToPoint(coord, map.getGLZoom())
+     * map.cameraPosition
      * map.cameraLookAt
      * map.cameraUp       //camera's up vector
      * map.cameraForward  //camera's forward vector
@@ -436,7 +437,5 @@ Map.include(/** @lends Map.prototype */{
 });
 
 function createMat4() {
-    const out = new Float64Array(16);
-    out[0] = out[5] = out[10] = out[15] = 1;
-    return out;
+    return mat4.identity(new Array(16));
 }

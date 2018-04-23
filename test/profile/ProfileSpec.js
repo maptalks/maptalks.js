@@ -16,7 +16,7 @@ describe('Map.Profile', function () {
         };
         map = new maptalks.Map(container, option);
         tile = new maptalks.TileLayer('tile', {
-            urlTemplate:'/resources/tile.png',
+            urlTemplate:'#',
             subdomains: [1, 2, 3],
             visible:false,
             renderer : 'canvas'
@@ -149,7 +149,7 @@ describe('Map.Profile', function () {
         it('get profile with various layers', function () {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road', {
-                urlTemplate:'/resources/tile.png',
+                urlTemplate:'#',
                 subdomains:['1', '2', '3', '4', '5'],
                 opacity:0.6
             });
@@ -171,7 +171,7 @@ describe('Map.Profile', function () {
         it('get profile of selected layers', function () {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road', {
-                urlTemplate:'/resources/tile.png',
+                urlTemplate:'#',
                 subdomains:['1', '2', '3', '4', '5'],
                 opacity:0.6
             });
@@ -201,7 +201,7 @@ describe('Map.Profile', function () {
         it('get map from various profile', function () {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road', {
-                urlTemplate:'/resources/tile.png',
+                urlTemplate:'#',
                 subdomains:['1', '2', '3', '4', '5'],
                 opacity:0.6
             });
@@ -227,6 +227,7 @@ describe('Map.Profile', function () {
             expect(layers[0].toJSON()).to.be.eql(tile2.toJSON());
             expect(layers[1].toJSON()).to.be.eql(vectorLayer.toJSON());
             expect(layers[2].toJSON()).to.be.eql(vectorLayer2.toJSON());
+            profileMap.remove();
         });
 
 
