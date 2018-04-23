@@ -32,7 +32,6 @@ const ocean_vertex = `
         v_position = position;
         v_coordinates = a_coordinates;
         gl_Position = u_projectionMatrix * u_viewMatrix * vec4(position, 1.0);
-        gl_Position = u_projectionMatrix * u_viewMatrix * vec4(a_position, 1.0);
     }`;
 
 module.exports = {

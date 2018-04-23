@@ -252,6 +252,7 @@ class Water extends Model {
         gl.enableVertexAttribArray(0);
         //
         gl.useProgram(this.phase_program);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,null);
         // gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingPhase ? this.pongPhaseFramebuffer : this.pingPhaseFramebuffer);
         // this.pingPhase ? 4 : 5
         gl.uniform1i(gl.getUniformLocation(this.phase_program, 'u_phases'), 4);
