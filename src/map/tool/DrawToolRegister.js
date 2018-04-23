@@ -8,7 +8,6 @@ import Marker from '../../geometry/Marker';
 import CubicBezierCurve from '../../geometry/CubicBezierCurve';
 import Circle from '../../geometry/Circle';
 import Polygon from '../../geometry/Polygon';
-import Point from '../../geo/Point';
 import DrawTool from './DrawTool';
 
 DrawTool.registerMode('circle', {
@@ -94,22 +93,20 @@ DrawTool.registerMode('freeHandEllipse', {
 DrawTool.registerMode('rectangle', {
     'clickLimit': 2,
     'action': ['click', 'mousemove', 'click'],
-    'create': function (coordinate, param) {
+    'create': function (coordinates) {
         const rect = new Polygon([]);
-        rect._firstClick = param['containerPoint'];
+        rect._firstClick = coordinates[0];
         return rect;
     },
-    'update': function (coordinate, geometry, param) {
-        const map = geometry.getMap();
-        const containerPoint = param['containerPoint'];
+    'update': function (coordinates, geometry) {
         const firstClick = geometry._firstClick;
         const ring = [
             [firstClick.x, firstClick.y],
-            [containerPoint.x, firstClick.y],
-            [containerPoint.x, containerPoint.y],
-            [firstClick.x, containerPoint.y],
+            [coordinates[0].x, firstClick.y],
+            [coordinates[0].x, coordinates[0].y],
+            [firstClick.x, coordinates[0].y],
         ];
-        geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
+        geometry.setCoordinates(ring);
     },
     'generate': function (geometry) {
         return geometry;
@@ -118,22 +115,20 @@ DrawTool.registerMode('rectangle', {
 
 DrawTool.registerMode('freeHandRectangle', {
     'action': ['mousedown', 'mousemove', 'mouseup'],
-    'create': function (coordinate, param) {
+    'create': function (coordinates) {
         const rect = new Polygon([]);
-        rect._firstClick = param['containerPoint'];
+        rect._firstClick = coordinates[0];
         return rect;
     },
-    'update': function (coordinate, geometry, param) {
-        const map = geometry.getMap();
-        const containerPoint = param['containerPoint'];
+    'update': function (coordinates, geometry) {
         const firstClick = geometry._firstClick;
         const ring = [
             [firstClick.x, firstClick.y],
-            [containerPoint.x, firstClick.y],
-            [containerPoint.x, containerPoint.y],
-            [firstClick.x, containerPoint.y],
+            [coordinates[0].x, firstClick.y],
+            [coordinates[0].x, coordinates[0].y],
+            [firstClick.x, coordinates[0].y],
         ];
-        geometry.setCoordinates(ring.map(c => map.containerPointToCoord(new Point(c))));
+        geometry.setCoordinates(ring);
     },
     'generate': function (geometry) {
         return geometry;
