@@ -339,7 +339,7 @@ class DrawTool extends MapTool {
             this._clickCoords.push(coordinate);
             this._historyPointer = this._clickCoords.length;
             if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
-                registerMode['update'](this._clickCoords, this._geometry, event);
+                registerMode['update']([coordinate], this._geometry, event);
                 this.endDraw(event);
             } else {
                 registerMode['update'](this._clickCoords, this._geometry, event);
