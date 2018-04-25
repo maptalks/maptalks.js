@@ -206,12 +206,18 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
 
 const quadVertices = [
     // positions     // texture Coords
-    -1.0,  1.0, 0.0, 0.0, 1.0,
-    -1.0, -1.0, 0.0, 0.0, 0.0,
-    1.0,  1.0, 0.0, 1.0, 1.0,
-    1.0, -1.0, 0.0, 1.0, 0.0,
+    -1.0,  1.0, 0.0,
+    -1.0, -1.0, 0.0,
+    1.0,  1.0, 0.0,
+    1.0, -1.0, 0.0,
 ];
-let quadBuf;
+const quadTexcoords = [
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 1.0,
+    1.0, 0.0,
+];
+let quadBuf, quadTexBuf;
 
 const BRDF_CACHE = {};
 
@@ -236,27 +242,28 @@ function generateBRDFLUT(regl, size, sampleSize, roughnessLevels) {
     });
 
     quadBuf = quadBuf || regl.buffer(quadVertices);
+    quadTexBuf = quadTexBuf || regl.buffer(quadTexcoords);
     const fbo = regl.framebuffer({
         radius : size,
         type : 'float',
         min : 'nearest',
         mag : 'nearest'
     });
-    const FSIZE = Float32Array.BYTES_PER_ELEMENT;
+    // const FSIZE = Float32Array.BYTES_PER_ELEMENT;
     const drawLUT = regl({
         frag : brdfFS,
         vert : brdfVS,
         attributes : {
             'aPosition' : {
                 buffer : quadBuf,
-                stride : 5 * FSIZE,
-                size : 3
+                // stride : 5 * FSIZE,
+                // size : 3
             },
             'aTexCoord' : {
-                buffer : quadBuf,
-                offset : 3 * FSIZE,
-                stride : 5 * FSIZE,
-                size : 2,
+                buffer : quadTexBuf,
+                // offset : 3 * FSIZE,
+                // stride : 5 * FSIZE,
+                // size : 2,
             }
         },
         uniforms : {
@@ -269,7 +276,7 @@ function generateBRDFLUT(regl, size, sampleSize, roughnessLevels) {
             width : size,
             height : size
         },
-        count : quadVertices.length / 5,
+        count : quadVertices.length / 3,
         primitive: 'triangle strip'
     });
     drawLUT();
