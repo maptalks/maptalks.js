@@ -11,13 +11,13 @@
  * -3.render过程实际是在向shader内填对应值
  * @class
  */
-class Renderer{
+class Renderer {
     /**
      * 
      * @param {opts} opts 
      * @param {WebGLRenderingContext} [opts.gl] the context of canvas
      */
-    constructor(opts){
+    constructor(opts) {
         /**
          * @type {WebGLRenderingContext}
          */
@@ -33,16 +33,17 @@ class Renderer{
      * @param {Array[]|Model} models 
      * @param {Light} lights 
      */
-    render(camera,model,light){
+    render(camera, model, light) {
+        this._delta++;
         const gl = this.gl;
         //默认开启相关测试
         gl.enable(gl.DEPTH_TEST);
-        gl.clearColor(1,1,1,1);
+        gl.clearColor(1, 1, 1, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
         //textures have a width that divide by 4
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-        model.draw(gl,camera,light,(this._delta%60)/60);
+        model.draw(gl, camera, light, (this._delta % 60) / 60);
         //3.写入lights数据
         // light.prepareDraw(gl,program);
         //4.写入camera数据

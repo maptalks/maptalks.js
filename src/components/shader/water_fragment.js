@@ -121,8 +121,7 @@ const phase_fragment = `
         float phase = texture2D(u_phases, v_coordinates).r;
         float deltaPhase = omega(length(waveVector)) * u_deltaTime;
         phase = mod(phase + deltaPhase, 2.0 * PI);
-        //
-        gl_FragColor = vec4(1.0, 0.4, 0.0, 1.0);
+        gl_FragColor = vec4(phase, 0.4, 0.0, 1.0);
     }`;
 //initial spectrum
 const initial_spectrum_fragment = `
@@ -185,7 +184,7 @@ const initial_spectrum_fragment = `
             h = 0.0;
         }
         //
-        gl_FragColor = vec4(h, 0.0, 0.0, 0.0);
+        gl_FragColor = vec4(h, 0.0, 0.0, 1.0);
     }`;
 // spectrum
 const spectrum_fragment = `

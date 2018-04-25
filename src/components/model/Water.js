@@ -87,7 +87,7 @@ const createFramebuffer = function (gl, attachment) {
     const framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, attachment, 0);
-    gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return framebuffer;
 }
 /**
@@ -140,9 +140,9 @@ class Water extends Model {
         gl.getExtension('OES_texture_float');
         gl.getExtension('OES_texture_float_linear');
         const RESOLUTION = 512;
-        const full_vertex_shader = createShader(gl,gl.VERTEX_SHADER,full_vertex);
+        const full_vertex_shader = createShader(gl, gl.VERTEX_SHADER, full_vertex);
         // test program
-        const full_program = createProgram(gl,full_vertex_shader,full_fragment);
+        const full_program = createProgram(gl, full_vertex_shader, full_fragment);
         // horizontal program
         const horizontal_transform_program = createProgram(gl, full_vertex_shader, horizontal_transform_fragment);
         gl.useProgram(horizontal_transform_program);
@@ -169,6 +169,7 @@ class Water extends Model {
         gl.useProgram(normal_program);
         gl.uniform1i(gl.getUniformLocation(normal_program, 'u_displacementMap'), 2);
         gl.uniform1f(gl.getUniformLocation(normal_program, 'u_resolution'), RESOLUTION);
+        gl.uniform1f(gl.getUniformLocation(normal_program, 'u_size'), 250);
         // ocean program
         const ocean_program = createProgram(gl, ocean_vertex, ocean_fragment)
         gl.useProgram(ocean_program);
@@ -181,9 +182,8 @@ class Water extends Model {
         gl.uniform1f(gl.getUniformLocation(ocean_program, 'u_exposure'), 0.35);
         //buffer data
         const fullscreenbuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER,fullscreenbuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenbuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]), gl.STATIC_DRAW);
-
         const [oceanVertices, oceanIndices] = this._generic();
         const oceanBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, oceanBuffer);
@@ -219,10 +219,20 @@ class Water extends Model {
             normalMapFramebuffer = createFramebuffer(gl, normalMapTexture),
             pingTransformFramebuffer = createFramebuffer(gl, pingTransformTexture),
             pongTransformFramebuffer = createFramebuffer(gl, pongTransformTexture);
+        // 初始化 spetrumFramebuffer
+        gl.useProgram(initial_spectrum_program);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, initialSpectrumFramebuffer);
+        gl.uniform2f(gl.getUniformLocation(initial_spectrum_program, 'u_wind'), 10.0, 10.0);
+        gl.uniform1f(gl.getUniformLocation(initial_spectrum_program, 'u_size'), 250);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         // export program
         this.full_program = full_program;
+        this.normal_program = normal_program;
         this.phase_program = phase_program;
         this.ocean_program = ocean_program;
+        this.spectrum_program = spectrum_program;
+        this.horizontal_transform_program = horizontal_transform_program;
+        this.vertical_transform_program = vertical_transform_program;
         // export array
         this.phaseArray = phaseArray;
         // export texture
@@ -230,6 +240,11 @@ class Water extends Model {
         // export framebuffer
         this.pingPhaseFramebuffer = pingPhaseFramebuffer;
         this.pongPhaseFramebuffer = pongPhaseFramebuffer;
+        this.spectrumFramebuffer = spectrumFramebuffer;
+        this.pingTransformFramebuffer = pingTransformFramebuffer;
+        this.pongTransformFramebuffer = pongTransformFramebuffer;
+        this.displacementMapFramebuffer = displacementMapFramebuffer;
+        this.normalMapFramebuffer = normalMapFramebuffer;
         // index buffer
         this.fullscreenbuffer = fullscreenbuffer;
         this.oceanBuffer = oceanBuffer;
@@ -247,37 +262,71 @@ class Water extends Model {
         gl.disable(gl.DEPTH_TEST);
         //
         gl.useProgram(this.full_program);
-        gl.bindBuffer(gl.ARRAY_BUFFER,this.fullscreenbuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenbuffer);
         gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(0);
         //
         gl.useProgram(this.phase_program);
-        gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-        // gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingPhase ? this.pongPhaseFramebuffer : this.pingPhaseFramebuffer);
-        // this.pingPhase ? 4 : 5
-        gl.uniform1i(gl.getUniformLocation(this.phase_program, 'u_phases'), 4);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingPhase ? this.pongPhaseFramebuffer : this.pingPhaseFramebuffer);
+        gl.uniform1i(gl.getUniformLocation(this.phase_program, 'u_phases'), this.pingPhase ? 4 : 5);
         gl.uniform1f(gl.getUniformLocation(this.phase_program, 'u_deltaTime'), deltaTime);
-        gl.uniform1f(gl.getUniformLocation(this.phase_program, 'u_size'), 512);
+        gl.uniform1f(gl.getUniformLocation(this.phase_program, 'u_size'), 250);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        
-
-      
-        //海洋数据
-        // gl.useProgram(this.ocean_program)
-        // gl.bindBuffer(gl.ARRAY_BUFFER, this.oceanBuffer);
-        // gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-        // gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_projectionMatrix'), false, camera.projectionMatrix.value);
-        // gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_viewMatrix'), false, camera.viewMatrix.value);
-        // gl.uniform3fv(gl.getUniformLocation(this.ocean_program, 'u_cameraPosition'), camera.position.value);
-        // gl.drawArrays(gl.TRIANGLES, 0, 16);
-        //gl.drawElements(gl.TRIANGLES, this.oceanIndexBuffer.length, gl.UNSIGNED_SHORT, 0);
-        //根据随机的 pingPhaseTexture 绘制相位图
-        // gl.useProgram(this.phase_program);
-        // gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingPhase ? this.pongPhaseFramebuffer : this.pingPhaseFramebuffer);
-        // gl.uniform1i(gl.getUniformLocation(this.phase_program, 'u_phases'), this.pingPhase ? 4 : 5);
-        // gl.uniform1f(gl.getUniformLocation(this.phase_program, 'u_deltaTime'), deltaTime);
-        // gl.uniform1f(gl.getUniformLocation(this.phase_program, 'u_size'), 512);
-        // gl.drawElements(gl.TRIANGLES, this.oceanIndexBuffer.length, gl.UNSIGNED_SHORT, 0);
+        this.pingPhase = !this.pingPhase;
+        //
+        gl.useProgram(this.spectrum_program);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.spectrumFramebuffer);
+        gl.uniform1i(gl.getUniformLocation(this.spectrum_program, 'u_phases'), this.pingPhase ? 4 : 5);
+        gl.uniform1f(gl.getUniformLocation(this.spectrum_program, 'u_size'), 250);
+        gl.uniform1f(gl.getUniformLocation(this.spectrum_program, 'u_choppiness'), 1.5);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        let subtransformProgram = this.horizontal_transform_program;
+        gl.useProgram(subtransformProgram);
+        //
+        const iterations = Math.log(512) / Math.log(2) * 2;
+        for (var i = 0; i < iterations; i += 1) {
+            if (i === 0) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingTransformFramebuffer);
+                gl.uniform1i(gl.getUniformLocation(subtransformProgram, 'u_input'), 1);
+            }
+            else if (i === iterations - 1) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, this.displacementMapFramebuffer);
+                gl.uniform1i(gl.getUniformLocation(subtransformProgram, 'u_input'), (iterations % 2 === 0) ? 6 : 7);
+            }
+            else if (i % 2 === 1) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, this.pongTransformFramebuffer);
+                gl.uniform1i(gl.getUniformLocation(subtransformProgram, 'u_input'), 6);
+            }
+            else {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, this.pingTransformFramebuffer);
+                gl.uniform1i(gl.getUniformLocation(subtransformProgram,'u_input'), 7);
+            }
+            if (i === iterations / 2) {
+                subtransformProgram = this.vertical_transform_program;
+                gl.useProgram(subtransformProgram);
+            }
+            gl.uniform1f(gl.getUniformLocation(subtransformProgram,'u_subtransformSize'), Math.pow(2,(i % (iterations / 2)) + 1));
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+        //
+        gl.useProgram(this.normal_program);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.normalMapFramebuffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // 绘制海洋
+        gl.useProgram(this.ocean_program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.oceanBuffer);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 5 * 4, 0);
+        gl.enableVertexAttribArray(0);
+        gl.uniform1f(gl.getUniformLocation(this.ocean_program,'u_size'), 250);
+        //
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+        gl.enableVertexAttribArray(1);
+        //
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program,'u_projectionMatrix'), false, camera.projectionMatrix.value);
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program,'u_viewMatrix'), false, camera.viewMatrix.value);
+        gl.uniform3fv(gl.getUniformLocation(this.ocean_program,'u_cameraPosition'), camera.position.value);
+        gl.drawElements(gl.TRIANGLES, this.oceanIndexBuffer.length, gl.UNSIGNED_SHORT, 0);
     }
 }
 

@@ -1,7 +1,7 @@
 // const fusion = require('./../src/init');
-const glCanvas = new fusion.gl.GLCanvas('mapCanvas');
-const gl = glCanvas.getContext('webgl');
-// const gl = document.getElementById('mapCanvas').getContext('webgl');
+// const glCanvas = new fusion.gl.GLCanvas('mapCanvas');
+// const gl = glCanvas.getContext('webgl');
+const gl = document.getElementById('mapCanvas').getContext('webgl');
 //
 const camera = new fusion.gl.PerspectiveCamera(60, 800 / 600, 0.1, 100);
 camera.position = [0, 0, 3];
@@ -16,6 +16,6 @@ const animate = function (detla) {
 }
 setTimeout(animate,16);
 
-glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
+// glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
 
 
