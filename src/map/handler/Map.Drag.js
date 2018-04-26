@@ -184,7 +184,8 @@ class MapDragHandler extends Handler {
             }
 
             if (!this.db) {
-                this.db = sign(bearing - this.startBearing);
+                const d = bearing - this.startBearing;
+                this.db = Math.abs(d) > 5 ? sign(d) : 0;
             }
             map.setBearing(bearing);
         }
@@ -200,17 +201,17 @@ class MapDragHandler extends Handler {
 
     _rotateEnd(param) {
         const map = this.target;
+        const bearing = map.getBearing();
         this._clear();
-        let t = Date.now() - this.startDragTime;
+        const t = now() - this.startDragTime;
         map.onDragRotateEnd(param);
-        if (this._rotateMode === 'rotate' && !param.interupted && t < 280) {
+        if (Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
             const bearing = map.getBearing();
-            t = 2 * t * Math.abs(bearing) * 20 / 1000;
             map.animateTo({
                 'bearing' : bearing + this.db * 10
             }, {
                 'easing'  : 'out',
-                'duration' : t
+                'duration' : 160
             });
         }
     }

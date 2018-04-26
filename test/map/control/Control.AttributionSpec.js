@@ -54,7 +54,7 @@ describe('Control.Attribution', function () {
             'attribution': 'guzr'
         });
         map.addLayer(tileLayer);
-        var expectResult = 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a> - guzr';
+        var expectResult = '<a href="http://maptalks.org" target="_blank">maptalks</a> - guzr';
         var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
 
         expect(expectResult).to.eql(realResult);
@@ -74,7 +74,7 @@ describe('Control.Attribution', function () {
             })
         };
         map = new maptalks.Map(container, option);
-        var expectResult = 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a> - © <a href="https://carto.com/">CARTO</a>';
+        var expectResult = '<a href="http://maptalks.org" target="_blank">maptalks</a> - © <a href="https://carto.com/">CARTO</a>';
         var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
         expect(expectResult).to.eql(realResult);
     });
@@ -91,7 +91,7 @@ describe('Control.Attribution', function () {
             }
         };
         map = new maptalks.Map(container, option);
-        var expectResult = 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a>';
+        var expectResult = '<a href="http://maptalks.org" target="_blank">maptalks</a>';
         var realResult = document.getElementsByClassName('maptalks-attribution')[0].firstChild.innerHTML;
         expect(expectResult).to.eql(realResult);
     });
