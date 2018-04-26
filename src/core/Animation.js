@@ -429,6 +429,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      * @return {Player} this
      */
     pause() {
+        if (this.playState === 'paused') {
+            return this;
+        }
         this.playState = 'paused';
         this._run();
         //this.duration = this.duration - this.currentTime;
@@ -440,6 +443,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      * @return {Player} this
      */
     cancel() {
+        if (this.playState === 'idle') {
+            return this;
+        }
         this.playState = 'idle';
         this.finished = false;
         this._run();
@@ -451,6 +457,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      * @return {Player} this
      */
     finish() {
+        if (this.playState === 'finished') {
+            return this;
+        }
         this.playState = 'finished';
         this.finished = true;
         this._run();
