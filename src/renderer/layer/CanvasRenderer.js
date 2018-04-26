@@ -477,7 +477,6 @@ class CanvasRenderer extends Class {
             });
             return maskExtent2D;
         }
-        this._shouldClip = true;
         /**
          * renderstart event, fired when layer starts to render.
          *
@@ -496,7 +495,7 @@ class CanvasRenderer extends Class {
 
     clipCanvas(context) {
         const mask = this.layer.getMask();
-        if (!mask || !this._shouldClip) {
+        if (!mask) {
             return false;
         }
         const old = this._southWest;
@@ -514,9 +513,6 @@ class CanvasRenderer extends Class {
         }
         context.clip();
         this._southWest = old;
-        if (this.isRenderComplete()) {
-            this._shouldClip = false;
-        }
         return true;
     }
 
