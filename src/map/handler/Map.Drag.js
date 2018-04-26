@@ -227,7 +227,7 @@ class MapDragHandler extends Handler {
 Map.mergeOptions({
     'draggable': true,
     'dragPan' : true,
-    'dragRotatePitch' : false,
+    'dragRotatePitch' : true,
     'dragRotate' : true,
     'dragPitch' : true
 });
