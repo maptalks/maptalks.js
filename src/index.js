@@ -61,3 +61,16 @@ import * as symbolizer from './renderer/geometry/symbolizers';
 /** @namespace animation */
 import * as animation from './core/Animation';
 export { symbolizer, animation };
+
+export { registerWorkerAdapter } from './core/worker/Worker';
+
+import Actor from './core/worker/Actor';
+
+/**
+ * @namespace wprker
+ */
+const worker = {
+    Actor : Actor
+};
+
+export { worker };
