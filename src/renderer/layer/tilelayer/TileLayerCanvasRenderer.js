@@ -179,6 +179,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             });
         }
 
+        const context = { tiles, parentTiles, childTiles };
+        this.onDrawTileStart(context);
+
         this._parentTiles.forEach(t => this._drawTileAndCache(t));
         this._childTiles.forEach(t => this._drawTileOffset(t.info, t.image));
 
@@ -189,6 +192,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!layer.options['reduceTiles'] || map.getPitch() <= layer.options['minPitchToReduce']) {
             tiles.forEach(t => this._drawTileAndCache(t));
         } else {
+            //write current tiles and update stencil buffer to clip parent|child tiles with current tiles
             this.writeZoomStencil();
             let started = false;
             for (let i = 0, l = tiles.length; i < l; i++) {
@@ -206,6 +210,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
             this.endZoomStencilTest();
         }
+
+        this.onDrawTileEnd(context);
+
     }
 
     writeZoomStencil() {}
@@ -213,6 +220,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     endZoomStencilTest() {}
     pauseZoomStencilTest() {}
     resumeZoomStencilTest() {}
+
+    onDrawTileStart() {}
+    onDrawTileEnd() {}
 
     _drawTileOffset(info, image) {
         const offset = this._tileOffset;
@@ -284,10 +294,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     clear() {
-        this._clearCaches();
+        this._retireTiles(true);
+        this.tileCache.reset();
         this.tilesInView = {};
         this.tilesLoading = {};
-        this.tileCache.reset();
+        this._parentTiles = [];
+        this._childTiles = [];
         super.clear();
     }
 
@@ -583,18 +595,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onRemove() {
-        this._retireTiles(true);
-        this._clearCaches();
-        this.tileCache.reset();
+        this.clear();
         delete this.tileCache;
+        delete this._tilePlaceHolder;
+        super.onRemove();
     }
 
-    _clearCaches() {
-        delete this.tilesInView;
-        delete this._tileZoom;
-        delete this.tilesLoading;
-        delete this._tilePlaceHolder;
-    }
 
     _markTiles() {
         let a = 0, b = 0;
