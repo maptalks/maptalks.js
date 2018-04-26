@@ -31,7 +31,7 @@ class CanvasRenderer extends Class {
      * Render the layer.
      * Call checkResources
      */
-    render() {
+    render(framestamp) {
         this.prepareRender();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
@@ -61,10 +61,10 @@ class CanvasRenderer extends Class {
                     }
                 });
             } else {
-                this._tryToDraw(this);
+                this._tryToDraw(framestamp);
             }
         } else {
-            this._tryToDraw(this);
+            this._tryToDraw(framestamp);
         }
     }
 
@@ -670,29 +670,29 @@ class CanvasRenderer extends Class {
         return this._drawTime;
     }
 
-    _tryToDraw() {
+    _tryToDraw(framestamp) {
         this._toRedraw = false;
         if (!this.canvas && this.layer.isEmpty && this.layer.isEmpty()) {
             this._renderComplete = true;
             // not to create canvas when layer is empty
             return;
         }
-        this._drawAndRecord();
+        this._drawAndRecord(framestamp);
     }
 
-    _drawAndRecord() {
+    _drawAndRecord(framestamp) {
         if (!this.getMap()) {
             return;
         }
         const painted = this._painted;
         this._painted = true;
         let t = now();
-        this.draw();
+        this.draw(framestamp);
         t = now() - t;
         //reduce some time in the first draw
         this._drawTime = painted ? t  : t / 2;
         if (painted && this.layer.options['logDrawTime']) {
-            console.log('drawTime:', this.layer.getId(), this._drawTime);
+            console.log(this.layer.getId(), 'frameTimeStamp:', framestamp, 'drawTime:', this._drawTime);
         }
     }
 

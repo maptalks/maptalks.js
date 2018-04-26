@@ -34,7 +34,7 @@ class MapCanvasRenderer extends MapRenderer {
      * render layers in current frame
      * @return {Boolean} return false to cease frame loop
      */
-    renderFrame() {
+    renderFrame(framestamp) {
         if (!this.map) {
             return false;
         }
@@ -42,7 +42,7 @@ class MapCanvasRenderer extends MapRenderer {
         map._fireEvent('framestart');
         this.updateMapDOM();
         const layers = this._getAllLayerToRender();
-        this.drawLayers(layers);
+        this.drawLayers(layers, framestamp);
         this.drawLayerCanvas(layers);
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -72,7 +72,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    drawLayers(layers) {
+    drawLayers(layers, framestamp) {
         const map = this.map,
             isInteracting = map.isInteracting(),
             // all the visible canvas layers' ids.
@@ -129,16 +129,16 @@ class MapCanvasRenderer extends MapRenderer {
                     layer._getRenderer().clearCanvas();
                     continue;
                 }
-                t += this._drawCanvasLayerOnInteracting(layer, t, timeLimit);
+                t += this._drawCanvasLayerOnInteracting(layer, t, timeLimit, framestamp);
             } else if (isInteracting && renderer.drawOnInteracting) {
                 // dom layers
                 if (renderer.prepareRender) {
                     renderer.prepareRender();
                 }
-                renderer.drawOnInteracting(this._eventParam);
+                renderer.drawOnInteracting(this._eventParam, framestamp);
             } else {
                 // map is not interacting, call layer's render
-                renderer.render();
+                renderer.render(framestamp);
             }
 
             if (isCanvas) {
@@ -192,13 +192,13 @@ class MapCanvasRenderer extends MapRenderer {
      * @return {Number}       time to draw this layer
      * @private
      */
-    _drawCanvasLayerOnInteracting(layer, t, timeLimit) {
+    _drawCanvasLayerOnInteracting(layer, t, timeLimit, framestamp) {
         const map = this.map,
             renderer = layer._getRenderer(),
             drawTime = renderer.getDrawTime(),
             inTime = timeLimit === 0 || timeLimit > 0 && t + drawTime <= timeLimit;
         if (renderer.mustRenderOnInteracting && renderer.mustRenderOnInteracting()) {
-            renderer.render();
+            renderer.render(framestamp);
         } else if (renderer.drawOnInteracting &&
             (layer === map.getBaseLayer() || inTime ||
             map.isZooming() && layer.options['forceRenderOnZooming'] ||
@@ -208,7 +208,7 @@ class MapCanvasRenderer extends MapRenderer {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
             renderer.prepareCanvas();
-            renderer.drawOnInteracting(this._eventParam);
+            renderer.drawOnInteracting(this._eventParam, framestamp);
             return drawTime;
         } else if (map.isZooming() && !map.getPitch() && !map.isRotating()) {
             // when:
@@ -224,7 +224,7 @@ class MapCanvasRenderer extends MapRenderer {
             renderer.clearCanvas();
         }
         if (renderer.drawOnInteracting && !inTime) {
-            renderer.onSkipDrawOnInteracting(this._eventParam);
+            renderer.onSkipDrawOnInteracting(this._eventParam, framestamp);
         }
         return 0;
     }
@@ -544,14 +544,14 @@ class MapCanvasRenderer extends MapRenderer {
     /**
     * Main frame loop
     */
-    _frameLoop() {
+    _frameLoop(framestamp) {
         if (!this.map) {
             this._cancelFrameLoop();
             return;
         }
-        this.renderFrame();
+        this.renderFrame(framestamp);
         // Keep registering ourselves for the next animation frame
-        this._animationFrame = requestAnimFrame(() => { this._frameLoop(); });
+        this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
     }
 
     _cancelFrameLoop() {
