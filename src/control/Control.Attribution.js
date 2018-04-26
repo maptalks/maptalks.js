@@ -14,7 +14,7 @@ const options = {
         'bottom': 0,
         'left': 0
     },
-    'content': 'Powered by <a href="http://maptalks.org" target="_blank">maptalks</a>'
+    'content': '<a href="http://maptalks.org" target="_blank">maptalks</a>'
 };
 
 const layerEvents = 'addlayer removelayer setbaselayer baselayerremove';
