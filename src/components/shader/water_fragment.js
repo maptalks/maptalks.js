@@ -1,13 +1,13 @@
 // full fragment
 const full_fragment = `
-    precision mediump float;
+    precision highp float;
     
     void main(){
         gl_FragColor = vec4(1.0,0.2,0.5,1.0);
     }`;
 // ocean fragment
 const ocean_fragment = `
-    precision mediump float;
+    precision highp float;
 
     varying vec2 v_coordinates;
     varying vec3 v_position;
@@ -40,7 +40,7 @@ const ocean_fragment = `
     }`;
 //vertical transform
 const vertical_transform_fragment = `
-    precision mediump float;
+    precision highp float;
 
     const float PI = 3.14159265359;
 
@@ -68,7 +68,7 @@ const vertical_transform_fragment = `
 
 //horizontal transform
 const horizontal_transform_fragment = `
-    precision mediump float;
+    precision highp float;
 
     const float PI = 3.14159265359;
 
@@ -95,7 +95,7 @@ const horizontal_transform_fragment = `
     }`;
 //
 const phase_fragment = `
-    precision mediump float;
+    precision highp float;
     
     const float PI = 3.14159265359;
     const float G = 9.81;
@@ -121,11 +121,11 @@ const phase_fragment = `
         float phase = texture2D(u_phases, v_coordinates).r;
         float deltaPhase = omega(length(waveVector)) * u_deltaTime;
         phase = mod(phase + deltaPhase, 2.0 * PI);
-        gl_FragColor = vec4(phase, 0.4, 0.0, 1.0);
+        gl_FragColor = vec4(phase, 0.0, 0.0, 1.0);
     }`;
 //initial spectrum
 const initial_spectrum_fragment = `
-    precision mediump float;
+    precision highp float;
 
     const float PI = 3.14159265359;
 
@@ -188,32 +188,26 @@ const initial_spectrum_fragment = `
     }`;
 // spectrum
 const spectrum_fragment = `
-    precision mediump float;
+    precision highp float;
 
     const float PI = 3.14159265359;
     const float G = 9.81;
     const float KM = 370.0;
-
     varying vec2 v_coordinates;
-
     uniform float u_size;
     uniform float u_resolution;
     uniform sampler2D u_phases;
     uniform sampler2D u_initialSpectrum;
     uniform float u_choppiness;
-
     vec2 multiplyComplex (vec2 a, vec2 b) {
         return vec2(a[0] * b[0] - a[1] * b[1], a[1] * b[0] + a[0] * b[1]);
     }
-
     vec2 multiplyByI (vec2 z) {
         return vec2(-z[1], z[0]);
     }
-
     float omega (float k) {
         return sqrt(G * k * (1.0 + k * k / KM * KM));
     }
-
     void main (void) {
         vec2 coordinates = gl_FragCoord.xy - 0.5;
         float n = (coordinates.x < u_resolution * 0.5) ? coordinates.x : coordinates.x - u_resolution;
@@ -233,10 +227,11 @@ const spectrum_fragment = `
             hZ = vec2(0.0);
         }
         gl_FragColor = vec4(hX + multiplyByI(h), hZ);
+        // gl_FragColor = vec4(0.1,0.0,0.0,1.0);
     }`;
 // normal map
 const normal_fragment = `
-    precision mediump float;
+    precision highp float;
 
     varying vec2 v_coordinates;
 

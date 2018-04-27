@@ -2,7 +2,7 @@
  * default canvas area
  */
 const full_vertex = `
-    precision mediump float;
+    precision highp float;
 
     attribute vec2 a_position;
     varying vec2 v_coordinates;
@@ -15,7 +15,7 @@ const full_vertex = `
  * ocean vertex
  */
 const ocean_vertex = `
-    precision mediump float;
+    precision highp float;
     
     attribute vec3 a_position;
     attribute vec2 a_coordinates;

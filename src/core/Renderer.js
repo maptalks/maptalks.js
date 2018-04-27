@@ -37,11 +37,11 @@ class Renderer {
         this._delta++;
         const gl = this.gl;
         //默认开启相关测试
-        gl.enable(gl.DEPTH_TEST);
-        gl.clearColor(1, 1, 1, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        // gl.enable(gl.DEPTH_TEST);
+        // gl.clearColor(1, 1, 1, 1);
+        // gl.clear(gl.COLOR_BUFFER_BIT);
         //textures have a width that divide by 4
-        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        // gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
         model.draw(gl, camera, light, (this._delta % 60) / 60);
         //3.写入lights数据
