@@ -110,22 +110,27 @@ class Water extends Model {
      * generic ocean data
      */
     _generic() {
-        const oceanVetices = [], oceanIndices = [];
-        const geometry_resolution = 256,
-            geometry_size = 2000,
-            geometry_origin = [-100.0, -100.0];
-        for (var zIndex = 0; zIndex < geometry_resolution; zIndex++) {
-            for (var xIndex = 0; xIndex < geometry_resolution; xIndex++) {
-                // vertices
-                oceanVetices.push((xIndex * geometry_size) / (geometry_resolution - 1) + geometry_origin[0]);
-                oceanVetices.push((0.0));
-                oceanVetices.push((zIndex * geometry_size) / (geometry_resolution - 1) + geometry_origin[1]);
-                oceanVetices.push(xIndex / (geometry_resolution - 1));
-                oceanVetices.push(zIndex / (geometry_resolution - 1));
-                // indices
-                var topLeft = zIndex * geometry_resolution + xIndex,
+        const oceanData = [], oceanIndices = [], coordinates = [-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
+        const GEOMETRY_RESOLUTION = 256,
+            GEOMETRY_SIZE = 2,
+            GEOMETRY_ORIGIN = [-1.0, -1.0];
+        for (var zIndex = 0; zIndex < GEOMETRY_RESOLUTION; zIndex += 1) {
+            for (var xIndex = 0; xIndex < GEOMETRY_RESOLUTION; xIndex += 1) {
+                oceanData.push(GEOMETRY_ORIGIN[0] + GEOMETRY_SIZE * xIndex / (GEOMETRY_RESOLUTION - 1));
+                oceanData.push(GEOMETRY_ORIGIN[1] + GEOMETRY_SIZE * zIndex / (GEOMETRY_RESOLUTION - 1));
+                oceanData.push(0.0);
+                // oceanData.push((xIndex * GEOMETRY_SIZE) / (GEOMETRY_RESOLUTION - 1) + GEOMETRY_ORIGIN[0]);
+                // oceanData.push((0.0));
+                // oceanData.push((zIndex * GEOMETRY_SIZE) / (GEOMETRY_RESOLUTION - 1) + GEOMETRY_ORIGIN[1]);
+                // oceanData.push(xIndex / (GEOMETRY_RESOLUTION - 1));
+                // oceanData.push(zIndex / (GEOMETRY_RESOLUTION - 1));
+            }
+        }
+        for (var zIndex = 0; zIndex < GEOMETRY_RESOLUTION - 1; zIndex += 1) {
+            for (var xIndex = 0; xIndex < GEOMETRY_RESOLUTION - 1; xIndex += 1) {
+                var topLeft = zIndex * GEOMETRY_RESOLUTION + xIndex,
                     topRight = topLeft + 1,
-                    bottomLeft = topLeft + geometry_resolution,
+                    bottomLeft = topLeft + GEOMETRY_RESOLUTION,
                     bottomRight = bottomLeft + 1;
                 oceanIndices.push(topLeft);
                 oceanIndices.push(bottomLeft);
@@ -135,7 +140,7 @@ class Water extends Model {
                 oceanIndices.push(topLeft);
             }
         }
-        return [oceanVetices, oceanIndices];
+        return [oceanData, oceanIndices, coordinates];
     }
     /**
      * @param {WebGLRenderingContext} gl 
@@ -179,22 +184,26 @@ class Water extends Model {
         // ocean program
         const ocean_program = createProgram(gl, ocean_vertex, ocean_fragment)
         gl.useProgram(ocean_program);
-        gl.uniform1f(gl.getUniformLocation(ocean_program, 'u_geometrySize'), 2000);
-        gl.uniform1i(gl.getUniformLocation(ocean_program, 'u_displacementMap'), 2);
-        gl.uniform1i(gl.getUniformLocation(ocean_program, 'u_normalMap'), 3);
-        gl.uniform3f(gl.getUniformLocation(ocean_program, 'u_oceanColor'), 0.004, 0.016, 0.047);
-        gl.uniform3f(gl.getUniformLocation(ocean_program, 'u_skyColor'), 3.2, 9.6, 12.8);
-        gl.uniform3f(gl.getUniformLocation(ocean_program, 'u_sunDirection'), -1.0, 1.0, 1.0);
-        gl.uniform1f(gl.getUniformLocation(ocean_program, 'u_exposure'), 0.35);
+        // gl.uniform1f(gl.getUniformLocation(ocean_program, 'u_geometrySize'), 2000);
+        // gl.uniform1i(gl.getUniformLocation(ocean_program, 'u_displacementMap'), 2);
+        // gl.uniform1i(gl.getUniformLocation(ocean_program, 'u_normalMap'), 3);
+        // gl.uniform3f(gl.getUniformLocation(ocean_program, 'u_oceanColor'), 0.004, 0.016, 0.047);
+        // gl.uniform3f(gl.getUniformLocation(ocean_program, 'u_skyColor'), 3.2, 9.6, 12.8);
+        // gl.uniform3f(gl.getUniformLocation(ocean_program, 'u_sunDirection'), -1.0, 1.0, 1.0);
+        // gl.uniform1f(gl.getUniformLocation(ocean_program, 'u_exposure'), 0.35);
         //ocean data
-        const [oceanVertices, oceanIndices] = this._generic();
+        const [oceanVertices, oceanIndices, coordinates] = this._generic();
+        //ocean vertices data
         const oceanBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, oceanBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oceanVertices), gl.STATIC_DRAW);
-        gl.vertexAttribPointer(gl.getAttribLocation(ocean_program, 'a_coordinates'), 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+        //ocean indices data
         const oceanIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, oceanIndexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(oceanIndices), gl.STATIC_DRAW);
+        const coordinatesBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, coordinatesBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordinates), gl.STATIC_DRAW)
         // textures
         const initialSpectrumTexture = createTexture(gl, 0, gl.RGBA, gl.FLOAT, RESOLUTION, RESOLUTION, null, gl.REPEAT, gl.REPEAT, gl.NEAREST, gl.NEAREST),
             spectrumTexture = createTexture(gl, 1, gl.RGBA, gl.FLOAT, RESOLUTION, RESOLUTION, null, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.NEAREST, gl.NEAREST),
@@ -259,6 +268,10 @@ class Water extends Model {
         this.fullscreenbuffer = fullscreenbuffer;
         this.oceanBuffer = oceanBuffer;
         this.oceanIndexBuffer = oceanIndexBuffer;
+        this.coordinatesBuffer = coordinatesBuffer;
+        // export 
+        this.oceanIndices = oceanIndices;
+        this.oceanVertices = oceanVertices;
     }
     /**
      * 
@@ -324,21 +337,28 @@ class Water extends Model {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         // 绘制海洋
+        gl.viewport(0, 0, 800, 600);
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(this.ocean_program);
+        //vertex
         gl.bindBuffer(gl.ARRAY_BUFFER, this.oceanBuffer);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 5 * 4, 0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(0);
-        gl.uniform1f(gl.getUniformLocation(this.ocean_program, 'u_size'), SIZE);
-        //
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+        //coordinates
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.coordinatesBuffer);
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(1);
-        //
-        gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_projectionMatrix'), false, camera.projectionMatrix.value);
-        gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_viewMatrix'), false, camera.viewMatrix.value);
-        gl.uniform3fv(gl.getUniformLocation(this.ocean_program, 'u_cameraPosition'), camera.position.value);
-        gl.drawElements(gl.TRIANGLES, this.oceanIndexBuffer.length, gl.UNSIGNED_SHORT, 0);
+        //gl.uniform1f(gl.getUniformLocation(this.ocean_program, 'u_size'), SIZE);
+        //coord
+        // gl.enableVertexAttribArray(1);
+        // gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+        //index buffer
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.oceanIndexBuffer);
+        // gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_projectionMatrix'), false, camera.projectionMatrix.value);
+        // gl.uniformMatrix4fv(gl.getUniformLocation(this.ocean_program, 'u_viewMatrix'), false, camera.viewMatrix.value);
+        // gl.uniform3fv(gl.getUniformLocation(this.ocean_program, 'u_cameraPosition'), camera.position.value);
+        gl.drawElements(gl.TRIANGLES, this.oceanIndices.length, gl.UNSIGNED_SHORT, 0);
     }
 }
 

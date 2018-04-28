@@ -34,7 +34,7 @@ class Renderer {
      * @param {Light} lights 
      */
     render(camera, model, light) {
-        this._delta++;
+        this._delta = 2;
         const gl = this.gl;
         //默认开启相关测试
         // gl.enable(gl.DEPTH_TEST);
