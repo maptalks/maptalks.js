@@ -1,31 +1,34 @@
-/**
- * @author yellow date 2018/2/11
- */
-const kiwi = require('kiwi.gl'),
-  Model = require('./components/model/Model'),
-  Shadow = require('./components/model/Shadow'),
-  PBR = require('./components/model/PBR'),
-  Water = require('./components/model/Water'),
-  Skybox = require('./components/model/Skybox'),
-  PointLight = require('./components/light/PointLight'),
-  Renderer = require('./core/Renderer'),
-  PerspectiveCamera = require('./components/camera/PerspectiveCamera');
+const GLCanvas = require('./gl/GLCanvas');
+const actuator = require('./core/Actuator');
 
 module.exports = {
-  gl: {
-    //webgl
-    PerspectiveCamera: PerspectiveCamera,
-    Shadow: Shadow,
-    Model: Model,
-    PBR: PBR,
-    PointLight: PointLight,
-    Renderer: Renderer,
-    Skybox: Skybox,
-    Water: Water,
-    //container
-    HtmlMock: kiwi.gl.HtmlMock,
-    GLCanvas: kiwi.gl.GLCanvas
-  }
-};
-
-
+    gl: {
+        /**
+         * virtual HtmlCanvasElement
+         */
+        GLCanvas: GLCanvas,
+        /**
+         * debug settings
+         */
+        Debug: {
+            /**
+             * enable debug logger
+             */
+            Enable: function () {
+                actuator.debug = true;
+            },
+            /**
+             * disable debug logger
+             */
+            Disable: function () {
+                actuator.debug = false;
+            },
+            /**
+             * executed commands
+             */
+            GetLogger: function(){
+                return actuator.logger;
+            }
+        },
+    }
+}

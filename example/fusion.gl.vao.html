@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="../dist/bundle.js"></script>
+</head>
+
+<body>
+    <canvas width="800" height="600" id="mapCanvas"></canvas>
+    <script type="text/javascript">
+        const glCanvas = new kiwi.gl.GLCanvas('mapCanvas');
+        const gl = glCanvas.getContext('webgl');
+        //vertex shader text
+        var vertCode = 'attribute vec3 a_position;' +
+            'attribute vec3 a_color;' +
+            'void main(void) {' +
+            'gl_Position = vec4(a_position, 1.0);' +
+            '}';
+        var vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, vertCode);
+        gl.compileShader(vertShader);
+        //fragment shader text
+        var fragCode = 'void main(void) {' +
+            'gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);' +
+            '}';
+        var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, fragCode);
+        gl.compileShader(fragShader);
+        //program
+        var shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertShader);
+        gl.attachShader(shaderProgram, fragShader);
+        gl.linkProgram(shaderProgram);
+        gl.useProgram(shaderProgram);
+        //use vertex_array_object extension
+        const ext = gl.getExtension('OES_vertex_array_object');
+        const vao = ext.createVertexArrayOES();
+        ext.bindVertexArrayOES(vao);
+        //
+        var vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        var vertexArray = [-0.5, -0.5, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.0];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexArray), gl.STATIC_DRAW);
+        var a_position = gl.getAttribLocation(shaderProgram, "a_position");
+        gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_position);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.viewport(0, 0, 800, 600);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        //link to dom canvas
+        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
+    </script>
+</body>
+
+</html>
