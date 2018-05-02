@@ -10,7 +10,15 @@
     <script   type="text/javascript">
     
         const canvasElement = document.getElementById('mapCanvas');
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl',{
+            alpha:false,
+            depth:true,
+            stencil:true,
+            antialias:false,
+            premultipliedAlpha:true,
+            preserveDrawingBuffer:false,
+            failIfMajorPerformanceCaveat:false
+        }));
         const gl = glCanvas.getContext('webgl');
 
         var vertCode = 'attribute vec2 coordinates;' +

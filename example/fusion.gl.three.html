@@ -13,7 +13,7 @@
     <script type="text/javascript">
 
         const canvasElement = document.getElementById('mapCanvas');
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl', { antialias: true}));
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         //
         const camera = new THREE.PerspectiveCamera(70, 800 / 600, 0.01, 10);
         camera.position.z = 1;

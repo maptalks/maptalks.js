@@ -2,7 +2,6 @@
 const Dispose = require('./../utils/Dispose');
 
 const prefix = 'BUFFER';
-
 /**
  * @class
  */

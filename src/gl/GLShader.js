@@ -40,10 +40,6 @@ class GLShader extends Dispose {
          * @type {boolean}
          */
         this._isDelete = false;
-        /**
-         * @type {boolean}
-         */
-        this._isComplied = false;
     }
     /**
      * @returns {GLenum}

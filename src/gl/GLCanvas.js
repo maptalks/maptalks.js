@@ -144,6 +144,40 @@ class GLCanvas extends Dispose {
     /**
      * 
      */
+    get clientWidth(){
+        const canvas = this._canvas;
+        if (canvas)
+            return canvas.clientWidth;
+        else
+            return 0;
+    }
+    /**
+     * 
+     */
+    set clientWidth(v) {
+        const canvas = this._canvas;
+        if (canvas) canvas.clientWidth = v;
+    }
+    /**
+     * 
+     */
+    get clientHeight(){
+        const canvas = this._canvas;
+        if (canvas)
+            return canvas.clientHeight;
+        else
+            return 0;
+    }
+    /**
+     * 
+     */
+    set clientHeight(v) {
+        const canvas = this._canvas;
+        if (canvas) canvas.clientHeight = v;
+    }
+    /**
+     * 
+     */
     get height() {
         const canvas = this._canvas;
         if (canvas)
@@ -180,6 +214,21 @@ class GLCanvas extends Dispose {
             canvas.addEventListener(type, listener, options);
         } else {
             const record = new Record('addEventListener', type, listener, options);
+            this._records.increase(record);
+        }
+    }
+    /**
+     * 
+     * @param {*} type 
+     * @param {*} listener 
+     * @param {*} options 
+     */
+    removeEventListener(type, listener, options) {
+        const canvas = this._canvas;
+        if (canvas) {
+            canvas.removeEventListener(type, listener, options);
+        } else {
+            const record = new Record('removeEventListener', type, listener, options);
             this._records.increase(record);
         }
     }

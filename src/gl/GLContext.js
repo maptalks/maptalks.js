@@ -20,6 +20,10 @@ const GLShader = require('./GLShader'),
     GLTexture = require('./GLTexture'),
     GLProgram = require('./GLProgram');
 /**
+ * bridge extension
+ */
+const OES_vertex_array_object = require('./Extensions/OES_vertex_array_object');
+/**
  * the prefix of GLContext
  */
 const prefix = "WEBGLRENDERGINGCONTEXT";
@@ -66,6 +70,10 @@ class GLContext extends Dispose {
          * index of attribs
          */
         this._attribs = {};
+        /**
+         * @type {Object}
+         */
+        this._extensions = {};
         /**
          * map funciont
          */
@@ -158,14 +166,27 @@ class GLContext extends Dispose {
         this.gl.actuator.currentProgram = program;
     }
     /**
-     * 
-     * @param {GLenum} target 
-     * @param {GLBuffer} buffer 
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
+     * @param {GLShader} shader 
+     * @param {String} source 
      */
+    shaderSource(shader, source) {
+        shader.source = source;
+        const returnId = shader.id,
+            record = new Record('shaderSource', shader, source);
+        record.exactIndexByValue(0, returnId);
+        this._recorder.increase(record);
+    }
+    /**
+    * 
+    * @param {GLenum} target 
+    * @param {GLBuffer} buffer 
+    */
     bindBuffer(target, buffer) {
         //store currently bound buffer
-        if (target === GLConstants.ARRAY_BUFFER) 
+        if (target === GLConstants.ARRAY_BUFFER) {
             this._glBuffer = buffer;
+        }
         const record = new Record('bindBuffer', target, buffer);
         record.exactIndexByObject([1]);
         this._recorder.increase(record);
@@ -186,9 +207,9 @@ class GLContext extends Dispose {
         this._recorder.increase(record);
     }
     /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
-     * @param {GLuint} index 
-     */
+    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/enableVertexAttribArray
+    * @param {GLuint} index 
+    */
     enableVertexAttribArray(index) {
         //active bound
         this._bound_buffer[index] = this._attribs[index];
@@ -206,29 +227,6 @@ class GLContext extends Dispose {
         this._recorder.increase(record);
     }
     /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
-     * @param {String} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER 
-     */
-    createShader(type) {
-        const glShader = new GLShader(type, this),
-            record = new Record('createShader', type);
-        record.setReturnId(glShader.id);
-        this._recorder.increase(record);
-        return glShader;
-    }
-    /**
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/shaderSource
-     * @param {GLShader} shader 
-     * @param {String} source 
-     */
-    shaderSource(shader, source) {
-        shader.source = source;
-        const returnId = shader.id,
-            record = new Record('shaderSource', shader, source);
-        record.exactIndexByValue(0, returnId);
-        this._recorder.increase(record);
-    }
-    /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/compileShader
      * @param {GLShader} shader 
      */
@@ -238,6 +236,17 @@ class GLContext extends Dispose {
         record.exactIndexByValue(0, returnId);
         shader._isComplied = true;
         this._recorder.increase(record);
+    }
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createShader
+     * @param {String} type Either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER 
+     */
+    createShader(type) {
+        const glShader = new GLShader(type, this),
+            record = new Record('createShader', type);
+        record.setReturnId(glShader.id);
+        this._recorder.increase(record);
+        return glShader;
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/createProgram
@@ -427,14 +436,6 @@ class GLContext extends Dispose {
         }
     }
     /**
-     * }{debug
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/checkFramebufferStatus
-     * @param {GLenum} target 
-     */
-    checkFramebufferStatus(target) {
-        return GLConstants.FRAMEBUFFER_COMPLETE;
-    }
-    /**
      * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/getError
      */
     getError() {
@@ -452,8 +453,13 @@ class GLContext extends Dispose {
      * @param {String} name 
      */
     getExtension(name) {
-        const gl = this._gl;
-        return gl.getExtension(name);
+        if (name === 'OES_vertex_array_object') {
+            this._extensions['OES_vertex_array_object'] = this._extensions['OES_vertex_array_object'] || new OES_vertex_array_object('OES_vertex_array_object', this);
+            return this._extensions['OES_vertex_array_object'];
+        } else {
+            const gl = this._gl;
+            return gl.getExtension(name);
+        }
     }
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getParameter
@@ -477,6 +483,14 @@ class GLContext extends Dispose {
         }
     }
     /**
+     * }{debug
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/checkFramebufferStatus
+     * @param {GLenum} target 
+     */
+    checkFramebufferStatus(target) {
+        return GLConstants.FRAMEBUFFER_COMPLETE;
+    }
+    /**
      * turning function
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawArrays
      */
@@ -492,7 +506,7 @@ class GLContext extends Dispose {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
      */
     drawElements(mode, count, type, offset) {
-        const actuator = this.gl.actuator, 
+        const actuator = this.gl.actuator,
             record = new Record('drawElements', mode, count, type, offset),
             programId = this.gl.actuator.currentProgram.id;
         this._recorder.increase(record);
