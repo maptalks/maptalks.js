@@ -37,7 +37,8 @@ void main() {
    gl_FragColor = u_color;
 }`;
 
-        const glCanvas = new kiwi.gl.GLCanvas("mapCanvas");
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         const gl = glCanvas.getContext('webgl');
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -97,8 +98,8 @@ void main() {
 
         function animate() {
             requestAnimationFrame(animate);
-            translation[0]+= Math.random();
-            translation[1]+= Math.random();
+            translation[0] += Math.random();
+            translation[1] += Math.random();
             drawScene();
         }
 

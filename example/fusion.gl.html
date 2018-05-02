@@ -8,11 +8,9 @@
 <body>
     <canvas width="800" height="600" id="mapCanvas"></canvas>
     <script   type="text/javascript">
-        /// <reference path="../dist/kiwi.gl.js" />
-        /**
-         * 命名空间导入
-         */
-        const glCanvas = new kiwi.gl.GLCanvas('mapCanvas');
+    
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         const gl = glCanvas.getContext('webgl');
 
         var vertCode = 'attribute vec2 coordinates;' +
@@ -49,7 +47,7 @@
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.viewport(0, 0, 300, 300);
         gl.drawArrays(gl.POINTS, 0, 3);
-        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
+
     </script>
 </body>
 </html>

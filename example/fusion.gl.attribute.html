@@ -24,9 +24,10 @@ void main() {
   // is responsible for setting
   gl_FragColor = vec4(1, 0, 0.5, 1); // return redish-purple
 }`;
-
-        const glCanvas = new kiwi.gl.GLCanvas("mapCanvas");
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         const gl = glCanvas.getContext('webgl');
+
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vText);
@@ -61,7 +62,6 @@ void main() {
         gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
     </script>
 </body>
 

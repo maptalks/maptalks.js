@@ -1221,8 +1221,10 @@ uniform sampler2D u_texture;
 void main() {
    gl_FragColor = texture2D(u_texture, v_texcoord);
 }`;
-        const glCanvas = new kiwi.gl.GLCanvas("mapCanvas");
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         const gl = glCanvas.getContext('webgl');
+
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vText);
         gl.compileShader(vertexShader);

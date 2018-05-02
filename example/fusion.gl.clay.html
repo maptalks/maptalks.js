@@ -12,12 +12,8 @@
     <canvas width="800" height="600" id="mapCanvas" style="width:800px;height:600px;"></canvas>
     <script type="text/javascript">
 
-        const mapCanvas = document.getElementById('mapCanvas');
-        const mock = new kiwi.gl.HtmlMock(mapCanvas, ['getBoundingClientRect', 'nodeName', 'width', 'height']);
-
-        const glCanvas = new kiwi.gl.GLCanvas('mapCanvas',{
-            mock:mock
-        });
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
 
         var app = clay.application.create(glCanvas, {
             event: true,
@@ -62,8 +58,7 @@
                 this._control.update(app.frameTime);
             }
         });
-
-        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
+        
     </script>
 </body>
 

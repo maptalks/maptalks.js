@@ -1,5 +1,5 @@
 /**
- * 执行器，用于执行Record操作，全局自带一个Actuator
+ * 执行器，用于执行Record操作，每个glCanvas自带一个Actuator
  * @author yellow date 2018/1/3
  */
 const isString = require('./../utils/isString'),
@@ -40,14 +40,17 @@ const CACHE = {
     /**
      * store vao
      */
-    VERTEXARRAYOBJRCT:{},
+    VERTEXARRAYOBJRCT: {},
 }
 /**
  * @class
  */
 class Actuator {
-
-    constructor() {
+    /**
+     * initial Actuator by gl context
+     * @param {WebGLRenderingContext} gl 
+     */
+    constructor(gl) {
         /**
          * @type {Array}
          */
@@ -55,7 +58,7 @@ class Actuator {
         /**
          * @type {WebGLRenderingContext}
          */
-        this._gl = null;
+        this._gl = gl;
         /**
          * @type {Boolean}
          */
@@ -65,12 +68,25 @@ class Actuator {
          * @type {Array}
          */
         this._logger = [];
+        /**
+         * store program while in using
+         */
+        this._currentProgram = null;
+    }
+    /**
+     * 
+     */
+    set currentProgram(v) {
+        this._currentProgram = v;
+    }
+    get currentProgram() {
+        return this._currentProgram;
     }
     /**
      * 
      * @param {WebGLRenderingContext} v
      */
-    apply(v) {
+    set gl(v) {
         this._gl = v;
         this.play();
     }
@@ -136,9 +152,5 @@ class Actuator {
         }
     }
 }
-/**
- * instance of Actuator
- */
-const actuator = new Actuator();
 
-module.exports = actuator;
+module.exports = Actuator;

@@ -11,7 +11,8 @@
     <canvas width="800" height="600" id="mapCanvas"></canvas>
     <script type="text/javascript">
 
-        const glCanvas = new kiwi.gl.GLCanvas('mapCanvas');
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         const gl = glCanvas.getContext('webgl');
 
         var vertCode = 'attribute vec2 coordinates;' +
@@ -84,8 +85,6 @@
         }
         // requestAnimationFrame(animate);
         animate();
-        //
-        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
     </script>
 </body>
 

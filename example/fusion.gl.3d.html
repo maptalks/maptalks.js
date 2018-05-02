@@ -172,8 +172,10 @@ void main() {
 gl_FragColor = v_color;
 }`;
 
-        const glCanvas = new kiwi.gl.GLCanvas("mapCanvas");
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         const gl = glCanvas.getContext('webgl');
+
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vText);
@@ -227,21 +229,21 @@ gl_FragColor = v_color;
         //  webglLessonsUI.setupSlider("#scaleX", {value: scale[0], slide: updateScale(0), min: -5, max: 5, step: 0.01, precision: 2});
         //  webglLessonsUI.setupSlider("#scaleY", {value: scale[1], slide: updateScale(1), min: -5, max: 5, step: 0.01, precision: 2});
         //  webglLessonsUI.setupSlider("#scaleZ", {value: scale[2], slide: updateScale(2), min: -5, max: 5, step: 0.01, precision: 2});
-        
+
         function animate() {
             requestAnimationFrame(animate);
             //位置
-            translation[0]+= Math.random();
-            translation[1]+= Math.random();
+            translation[0] += Math.random();
+            translation[1] += Math.random();
             //旋转
-            var angleInRadians = Math.random()*0.1 * Math.PI / 180;
+            var angleInRadians = Math.random() * 0.1 * Math.PI / 180;
             rotation[0] += angleInRadians;
             rotation[1] += angleInRadians;
             rotation[2] += angleInRadians;
             //
-            scale[0]+= Math.random()/1000;
-            scale[1]+= Math.random()/1000;
-            scale[2]+= Math.random()/1000;
+            scale[0] += Math.random() / 1000;
+            scale[1] += Math.random() / 1000;
+            scale[2] += Math.random() / 1000;
             drawScene();
         }
 
@@ -321,7 +323,6 @@ gl_FragColor = v_color;
             gl.drawArrays(primitiveType, offset, count);
         }
 
-        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
     </script>
 </body>
 

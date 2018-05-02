@@ -13,13 +13,10 @@
     <canvas width="800" height="600" id="mapCanvas" style="width:800px;height:600px;"></canvas>
     
     <script type="text/javascript">
-        const mapCanvas = document.getElementById('mapCanvas');
-        const mock = new kiwi.gl.HtmlMock(mapCanvas, ['getBoundingClientRect', 'nodeName', 'width', 'height']);
-        /*---------------------------------- claygl -------------------------------------------------------*/
-        const glCanvas1 = new kiwi.gl.GLCanvas('mapCanvas', {
-            mock: mock
-        });
-
+        const canvas = document.getElementById('mapCanvas');
+        const original = canvas.getContext('webgl');
+        //
+        const glCanvas1 = new fusion.gl.GLCanvas(original);
         var app = clay.application.create(glCanvas1, {
             event: true,
             graphic: {
@@ -63,12 +60,8 @@
                 this._control.update(app.frameTime);
             }
         });
-
-        glCanvas1.linkToCanvas(mapCanvas);
-        /*------------------------------------------------------------------------------------------------*/
-
-        /*---------------------------------- three -------------------------------------------------------*/
-        const glCanvas2 = new kiwi.gl.GLCanvas('mapCanvas');
+        //
+        const glCanvas2 = new fusion.gl.GLCanvas(original);
         const camera = new THREE.PerspectiveCamera(70, 800 / 600, 0.01, 10);
         camera.position.z = 1;
         scene = new THREE.Scene();
@@ -92,10 +85,7 @@
             mesh.rotation.y += 0.02;
             renderer.render(scene, camera);
         }
-
         animate();
-
-        glCanvas2.linkToCanvas(mapCanvas);
         /*------------------------------------------------------------------------------------------------*/
     </script>
 

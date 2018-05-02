@@ -10,7 +10,9 @@
 <body>
     <canvas width="800" height="600" id="mapCanvas"></canvas>
     <script type="text/javascript">
-        const glCanvas = new kiwi.gl.GLCanvas('mapCanvas');
+        //
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
         const gl = glCanvas.getContext('webgl');
         //vertex shader text
         var vertCode = 'attribute vec3 a_position;' +

@@ -6,6 +6,8 @@ const Dispose = require('./../utils/Dispose'),
     mergre = require('./../utils/merge'),
     Record = require('./../core/Record'),
     Recorder = require('./../core/Recorder'),
+    Actuator = require('./../core/Actuator'),
+    GLConstants = require('./GLConstants'),
     GLContext = require('./GLContext');
 /**
  * get kiwi unique id
@@ -26,42 +28,38 @@ const prefix = 'CANVASELEMENT';
 /**
  * @class
  * @example
- * const glCavnas = new GLCanvas('mapCanvas',{
- *  mock:new Mock(canvanElement,['width','height']);
- * });
+ * const gl = doucment.getElementById('mapCanvas').getContext('webgl');
+ * const glCavnas = new GLCanvas(gl);
  */
 class GLCanvas extends Dispose {
     /**
      * 
-     * @param {String} id the real htmlCanvasElement id 
-     * @param {Object} [options]
-     * @param {HtmlMock} [options.mock]
+     * @param {WebGLRenderingContext} gl
+     * @param {Object} [options] depreciated at this version
      */
-    constructor(id, options = {}) {
-        super(prefix);
+    constructor(gl, options = {}) {
         /**
-         * @type {String}
+         * super call
          */
-        this._canvasId = id;
+        super(prefix);
         /**
          * @type {Object}
          */
         this._options = mergre({}, options);
         /**
-         * @type {String}
+         * @type {WebGLRenderingContext}
          */
-        this._glType = 'webgl';
+        this._gl = gl;
         /**
-         * store the 'getContext' options
-         * @type {Object}
+         * @type {String} 'webgl1' or 'webgl2'
          */
-        this._contextOptions = null;
+        this._glType = null;
         /**
          * real html canvas element
          * https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
          * @type {HtmlCanvasElement}
          */
-        this._canvas = null;
+        this._canvas = gl.canvas;
         /**
          * @type {GLContext}
          */
@@ -75,28 +73,27 @@ class GLCanvas extends Dispose {
          * @type {Recorder}
          */
         this._records = new Recorder(null, false);
-        /**
-         * mock function
+        /*
+         * initial glcanvas by WebGLRenderingContext
          */
-        this._mock();
+        this._initialize(gl);
     }
     /**
      * 
+     * @param {WebGLRenderingContext} gl 
      */
-    _mock() {
-        const mock = this._options.mock;
-        if (!mock) return;
-        const mockList = mock.mockList;
-        mockList.forEach(key => {
-            if (!this.hasOwnProperty(key) && !this[key])
-                if (!mock.isAttribute(key))
-                    this[key] = (...rest) => {
-                        const element = mock.element;
-                        return element[key].apply(element, rest);
-                    };
-                else
-                    this[key] = mock.element[key];
-        });
+    _initialize(gl) {
+        //get webgl version
+        const glVersion = gl.getParameter(GLConstants.VERSION);
+        if (glVersion.indexOf('WebGL 1.0') !== -1) {
+            this._glType = 'webgl1';
+        } else if (glVersion.indexOf('WebGL 2.0') !== -1) {
+            this._glType = 'webgl2';
+        } else {
+            this._glType = 'webgl1';
+        }
+        //initial Actuator
+        gl.actuator = gl.actuator || new Actuator(gl);
     }
     /**
      * get context attributes
@@ -121,19 +118,54 @@ class GLCanvas extends Dispose {
      * @type {CSSStyleDeclaration}
      */
     get style() {
-        return this._style;
+        const canvas = this._canvas;
+        if (canvas)
+            return canvas.style;
+        else
+            return this._style;
+    }
+    /**
+     * 
+     */
+    get width() {
+        const canvas = this._canvas;
+        if (canvas)
+            return canvas.width;
+        else
+            return 0;
+    }
+    /**
+     * 
+     */
+    set width(v) {
+        const canvas = this._canvas;
+        if (canvas) canvas.width = v;
+    }
+    /**
+     * 
+     */
+    get height() {
+        const canvas = this._canvas;
+        if (canvas)
+            return canvas.height;
+        else
+            return 0;
+    }
+    /**
+     * 
+     */
+    set height(v) {
+        const canvas = this._canvas;
+        if (canvas) canvas.height = v;
     }
     /**
      * get GLContext
-     * @param {String} renderType 
-     * @param {Object} [options]
-     * @returns {GLContext}
      */
-    getContext(renderType = 'webgl', options = {}) {
-        const id = this.id;
-        this._glType = this._glType || renderType;
-        this._contextOptions = this._contextOptions || this._getContextAttributes(options);
-        this._glContext = this._glContext || new GLContext(id, this._glType, this._contextOptions);
+    getContext() {
+        const gl = this._gl,
+            glType = this._glType,
+            contextOptions = this._getContextAttributes();
+        this._glContext = this._glContext || new GLContext(gl, glType, contextOptions);
         return this._glContext;
     }
     /**
@@ -152,45 +184,21 @@ class GLCanvas extends Dispose {
         }
     }
     /**
-     * link virtual rendering context to real htmlCanvas
-     * @param {HtmlCanvasElement} canvas 
+     * https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeName
      */
-    linkToCanvas(canvas) {
-        const id = stamp(canvas);
-        this._canvas = canvas;
-        this._canvasId = id;
-        //1. set style
-        this._canvas.style.width = this.style.width || `${this._canvas.clientWidth}px`;
-        this._canvas.style.height = this.style.height || `${this._canvas.clientHeight}px`;
-        //2.
-        const records = this._records.toOperation();
-        let record = records.shift();
-        while (record) {
-            canvas[record.opName].apply(canvas, record.args);
-            record = records.shift();
-        }
-        //3. set gl
-        CACHE_GL[id] = CACHE_GL[id] || canvas.getContext(this._glType, this._contextOptions) || canvas.getContext(`experimental-${this._glType}`, this._contextOptions);
-        const glContext = this.getContext('webgl');
-        glContext._setgl(CACHE_GL[id]);
+    get nodeName() {
+        return 'CANVAS';
     }
     /**
-     * link virtual rendering context to real htmlCanvas
-     * @param {WebGLRenderingContext} gl 
+     * https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect
      */
-    linkToWebGLRenderingContext(gl) {
-        if (this._canvas) {
-            throw new Error('exist htmlcanvaselement');
-        }
-        const canvas = gl.canvas;
+    getBoundingClientRect() {
+        const canvas = this._canvas;
         if (canvas) {
-            this.linkToCanvas(canvas);
-        } else {
-            const glContext = this.getContext('webgl');
-            glContext._setgl(gl);
-        }
+            return canvas.getBoundingClientRect();
+        } else
+            return [0, 0, 0, 0]
     }
-
 }
 
 module.exports = GLCanvas;

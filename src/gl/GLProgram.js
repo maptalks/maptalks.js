@@ -81,11 +81,48 @@ class GLProgram extends Dispose {
      */
     link() {
         //complier vShader and fShader
-        this._vs.complie();
-        this._fs.complie();
+        const gl = this._glContext._gl,
+            vs = this._vs,
+            fs = this._fs;
+        //vshader
+        const vShader = gl.createShader(vs.type);
+        gl.shaderSource(vShader, vs.source);
+        gl.compileShader(vShader);
+        //fshader
+        const fShader = gl.createShader(fs.type);
+        gl.shaderSource(fShader, fs.source);
+        gl.compileShader(fShader);
+        //program
+        const program = gl.createProgram();
+        gl.attachShader(program,vShader);
+        gl.attachShader(program,fShader);
+        gl.linkProgram(program);
         //store uniforms and attributes
-        this._uniforms = [].concat(this._vs.uniforms).concat(this._fs.uniforms);
-        this._attributes = [].concat(this._vs.attributes).concat(this._fs.attributes);
+        this._attributes = [];
+        this._uniforms = [];
+        //map attribute locations
+        const numAttribs = gl.getProgramParameter(program, GLConstants.ACTIVE_ATTRIBUTES);
+        for (let i = 0; i < numAttribs; ++i) {
+            const info = gl.getActiveAttrib(program, i);
+            this._attributes.push({
+                name:info.name,
+                type:info.type,
+                size:info.size
+            });
+        }
+        const numUnifroms = gl.getProgramParameter(program, GLConstants.ACTIVE_UNIFORMS);
+        for (let i = 0; i < numUnifroms; ++i) {
+            const info = gl.getActiveUniform(program, i);
+            this._uniforms.push({
+                name:info.name,
+                type:info.type,
+                size:info.size
+            });
+        }
+        //distory shader and program
+        gl.deleteShader(vShader);
+        gl.deleteShader(fShader);
+        gl.deleteProgram(program);
         //reverse value and key
         this._updateKeyValue();
     }

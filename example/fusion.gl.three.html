@@ -11,11 +11,9 @@
 <body>
     <canvas width="800" height="600" id="mapCanvas"></canvas>
     <script type="text/javascript">
-        /// <reference path="../node_modules/three/build/three.js" />
-        /**
-         * 命名空间导入
-         */
-        const glCanvas = new kiwi.gl.GLCanvas('mapCanvas');
+
+        const canvasElement = document.getElementById('mapCanvas');
+        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl', { antialias: true}));
         //
         const camera = new THREE.PerspectiveCamera(70, 800 / 600, 0.01, 10);
         camera.position.z = 1;
@@ -25,11 +23,8 @@
         mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
         renderer = new THREE.WebGLRenderer({
-            //canvas: document.getElementById('mapCanvas')
             canvas: glCanvas,
-            context: glCanvas.getContext('webgl', {
-               antialias: true
-            })
+            context: glCanvas.getContext()
         });
         renderer.setSize(800, 600);
         renderer.render(scene, camera);
@@ -43,8 +38,6 @@
 
         animate();
         
-        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
-
     </script>
 </body>
 
