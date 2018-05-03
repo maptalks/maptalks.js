@@ -55,8 +55,6 @@ function animate() {
     renderer.render(scene, camera);
 }
 animate();
-// link to real htmlcanvaselement
-glCanvas1.linkToCanvas(document.getElementById('mapCanvas'));
 ```
 ![1png](https://user-images.githubusercontent.com/5127112/39559112-6da252c6-4ec6-11e8-9c01-61c7a34d4f17.png)
 > use fusion.gl with claygl
