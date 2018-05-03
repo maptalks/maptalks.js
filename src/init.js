@@ -13,20 +13,26 @@ module.exports = {
         Debug: {
             /**
              * enable debug logger
+             * @param {WebGLRenderingContext} gl
              */
-            Enable: function () {
+            Enable: function (gl) {
+                const actuator = gl.actuator;
                 actuator.debug = true;
             },
             /**
              * disable debug logger
+             * @param {WebGLRenderingContext} gl
              */
-            Disable: function () {
+            Disable: function (gl) {
+                const actuator = gl.actuator;
                 actuator.debug = false;
             },
             /**
              * executed commands
+             * @param {WebGLRenderingContext} gl
              */
-            GetLogger: function(){
+            GetLogger: function(gl){
+                const actuator = gl.actuator;
                 return actuator.logger;
             }
         },

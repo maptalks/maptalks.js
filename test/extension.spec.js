@@ -2,35 +2,28 @@
  * https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically
 */
 const assert = require('assert'),
-    headless = require('gl'),
+    headless = require('gl')(800,600),
     common = require('./common/common'),
     GLConstants = require('./../src/gl/GLConstants'),
-    kiwi = require('./../src/init');
+    fusion = require('./../src/init');
 
 describe('vao test', () => {
     it('#vao draw triangle', () => {
-        /**
-         * @type {GLCanvas}
-         */
-        const glCavnas = new kiwi.gl.GLCanvas("mapCanvas");
-        /**
-         * @type {WebGLRenderingContext}
-         */
+        const glCavnas = new fusion.gl.GLCanvas(headless);
         const gl = glCavnas.getContext('webgl');
-
+        //enable debugger
+        fusion.gl.Debug.Enable(headless);
+        //
         const vs = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vs, common.base_vs);
         gl.compileShader(vs);
-
         const fs = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fs, common.base_fs);
         gl.compileShader(fs);
-
         const program = gl.createProgram();
         gl.attachShader(program, vs);
         gl.attachShader(program, fs);
         gl.linkProgram(program);
-
         gl.useProgram(program);
         /**
          * use vertex_array_object extension
@@ -66,6 +59,7 @@ describe('vao test', () => {
         ext.bindVertexArrayOES(vao);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         //
-        glCavnas.linkToWebGLRenderingContext(headless(400, 600));
+        const [...logger] = fusion.gl.Debug.GetLogger(headless);
+        assert.equal(logger.join(','), "createShader,shaderSource,compileShader,createShader,shaderSource,compileShader,createProgram,attachShader,attachShader,linkProgram,useProgram,bindBuffer,disableVertexAttribArray,createBuffer,bindBuffer,bufferData,vertexAttribPointer,enableVertexAttribArray,createBuffer,bindBuffer,bufferData,vertexAttribPointer,enableVertexAttribArray,disableVertexAttribArray,disableVertexAttribArray,clear,enableVertexAttribArray,bindBuffer,vertexAttribPointer,enableVertexAttribArray,bindBuffer,vertexAttribPointer,drawArrays");
     });
 });
