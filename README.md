@@ -98,6 +98,21 @@ var app = clay.application.create(glCanvas2, {
 ```
 ![2](https://user-images.githubusercontent.com/5127112/39559113-6dd81604-4ec6-11e8-9ae2-8cf514e3a06e.png)
 >integrated 
+```javascript
+//get htmlcanvaselement 
+const canvas = document.getElementById('mapCanvas');
+//get webgl context
+//create virtual glCanvas with same webgl context
+const gl = canvas.getContext('webgl',{
+    alpha:false,
+    depth:true,
+    stencil:true,
+    antialias:false,
+    premultipliedAlpha:true,
+    preserveDrawingBuffer:false,
+    failIfMajorPerformanceCaveat:false
+});
+```
 ![3](https://user-images.githubusercontent.com/5127112/39559114-6e0f5bdc-4ec6-11e8-81ef-6d636a8c945c.png)
 
 > The tests are not yet finished, and all comments are welcome
