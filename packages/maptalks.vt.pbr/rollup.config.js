@@ -1,19 +1,18 @@
 const resolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
-const glslify = require('rollup-plugin-glslify');
+// const glslify = require('rollup-plugin-glslify');
 const pkg = require('./package.json');
 
 function glsl() {
     return {
         transform(code, id) {
-            if (/\.vert'$/.test(id) === false && /\.frag$/.test(id) === false && /\.glsl$/.test(id) === false) return null;
-
+            if (/\.vert$/.test(id) === false && /\.frag$/.test(id) === false && /\.glsl$/.test(id) === false) return null;
             var transformedCode = code.replace(/[ \t]*\/\/.*\n/g, '') // remove //
                 .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
                 .replace(/\n{2,}/g, '\n'); // # \n+ to \n
             return {
-                code: transformedCode,
+                code: `export default \`${transformedCode}\`;`,
                 map: { mappings: '' }
             };
         }
@@ -32,9 +31,9 @@ module.exports = {
         }),
         commonjs(),
         glsl(),
-        glslify({
-            include : ['../reshader.gl/**/*.vert', '../reshader.gl/**/*.frag', '../reshader.gl/**/*.glsl']
-        }),
+        // glslify({
+        //     include : ['../reshader.gl/**/*.vert', '../reshader.gl/**/*.frag', '../reshader.gl/**/*.glsl']
+        // }),
         babel({
             exclude: 'node_modules/**'
         })
@@ -51,7 +50,7 @@ module.exports = {
             'sourcemap': false,
             'format': 'es',
             'banner': banner,
-            'file': 'dist/' + pkg.name + '.es.js'
+            'file': 'dist/' + pkg.name + '.mjs'
         }
     ]
 };

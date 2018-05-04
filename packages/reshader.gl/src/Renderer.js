@@ -16,9 +16,13 @@ class Renderer {
         if (framebuffer) {
             shader.setFramebuffer(framebuffer);
         }
-        const { opaques, transparents } = scene.getMeshes();
-        shader.draw(this.regl, opaques);
-        shader.draw(this.regl, transparents);
+        if (scene) {
+            const { opaques, transparents } = scene.getMeshes();
+            shader.draw(this.regl, opaques);
+            shader.draw(this.regl, transparents);
+        } else {
+            shader.draw(this.regl);
+        }
         return this;
     }
 
