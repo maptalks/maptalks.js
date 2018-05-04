@@ -138,11 +138,12 @@ class PBRScenePainter {
 
     _init() {
         const regl = this.regl;
-        this.shader = new reshader.MeshShader(
-            reshader.pbr.StandardVert, reshader.pbr.StandardFrag,
-            this._getUniforms(),
-            this._getDefines(),
-            {
+        this.shader = new reshader.MeshShader({
+            vert : reshader.pbr.StandardVert,
+            frag : reshader.pbr.StandardFrag,
+            uniforms : this._getUniforms(),
+            defines : this._getDefines(),
+            extraCommandProps : {
                 //enable cullFace
                 cull : {
                     enable: true,
@@ -165,7 +166,7 @@ class PBRScenePainter {
                 //     }
                 // }
             }
-        );
+        });
         this.scene = new reshader.Scene();
         this.renderer = new reshader.Renderer(regl);
 
