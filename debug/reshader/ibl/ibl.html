@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Cube</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <!-- <script src="../../../packages/maptalks.vt/node_modules/regl/dist/regl.js" type="text/javascript"></script> -->
+    <script src="../common/regl.js" type="text/javascript"></script>
+    <script type="module">
+        import * as mat4 from '../../../packages/reshader.gl/node_modules/@mapbox/gl-matrix/src/mat4.js';
+        import cubeData from '../common/cube.js';
+        import sphereData from '../common/sphere.js';
+        
+        import * as reshader from '../../../packages/reshader.gl/dist/reshader.gl.mjs';
+
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_texture_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod'
+            ]
+        });
+
+        const lightPositions = [
+            [0.7,  0.2,  2.0],
+            [2.3, -3.0, 2.0],
+            [0.0,  5.0, 2.0],
+            [0.0,  0.0, 2.0]
+        ];
+
+        const lightColors = [
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0]
+        ];
+
+        let iblMaps;
+        let shader, meshes, scene;
+
+        const loader = new reshader.ResourceLoader(regl.texture(2));
+        const renderer = new reshader.Renderer(regl);
+        const camPos = [1, 0, 3];
+
+        main();
+
+//----------------------------------------------------------------------------------------------------
+
+        function main() {
+
+            //载入环境光纹理
+            const hdr = new reshader.Texture2D(
+                {
+                    url : './resources/env.hdr',
+                    arrayBuffer : true,
+                    hdr : true,
+                    type : 'float',
+                    format : 'rgba',
+                    flipY : true
+                },
+                loader
+            );
+            if (!hdr.isReady()) {
+                loader.on('complete', function () {
+                    if (hdr.isReady()) {
+                        //环境光纹理载入，重新生成ibl纹理
+                        iblMaps = createMaps(hdr);
+                    }
+                    render();
+                });
+            }
+
+            //生成ibl纹理
+            iblMaps = createMaps(hdr);
+
+            render();
+        }
+
+
+        function render() {
+            //生成相机矩阵
+            const { view, projection } = getViewProjection(camPos, canvas.width / canvas.height);
+            //绘制球体
+            drawSpheres(view, projection);
+            //绘制天空盒
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, view, projection, true);
+        }
+
+
+
+        function drawSpheres(view, projection) {
+            if (!shader) {
+                //创建shader
+                shader = new reshader.MeshShader({
+                    vert : reshader.pbr.StandardVert,
+                    frag : reshader.pbr.StandardFrag,
+                    uniforms : [
+                        'camPos',
+                        // 'view', 'projection',
+                        // 'lightPositions[0]', 'lightPositions[1]', 'lightPositions[2]', 'lightPositions[3]',
+                        // 'lightColors[0]', 'lightColors[1]', 'lightColors[2]', 'lightColors[3]',
+                        'dirLightDirections[0]', 'dirLightColors[0]',
+                        'ambientColor',
+                        'irradianceMap', 'prefilterMap', 'brdfLUT',
+                        {
+                            name : 'projectionViewModel',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const projectionViewModel = [];
+                                mat4.multiply(projectionViewModel, props['view'], props['model']);
+                                mat4.multiply(projectionViewModel, props['projection'], projectionViewModel);
+                                return projectionViewModel;
+                            }
+                        },
+                        {
+                            name : 'viewModel',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const viewModel = [];
+                                mat4.multiply(viewModel, props['view'], props['model']);
+                                return viewModel;
+                            }
+                        }
+                    ],
+                    defines : {
+                        // 'NUM_OF_SPOT_LIGHTS' : '(4)',
+                        // 'USE_SPOT_LIGHT' : 1,
+                        'NUM_OF_DIR_LIGHTS' : '(1)',
+                        'USE_DIR_LIGHT' : 1,
+                        'USE_AMBIENT_CUBEMAP' : 1,
+                        'SUPPORT_TEXTURE_LOD' : 1
+                    },
+                    includes : {
+                        vert : `
+                            #if defined(USE_SHADOW)
+                                #include <esm_shadow_vert>
+                            #endif
+                        `
+                    }
+                });
+            }
+            if (!meshes) {
+                meshes = [];
+                //创建纹理
+                const material = new reshader.pbr.StandardMaterial({
+                    metallic : 1,
+                    roughness : 1,
+                    albedoColor : [1, 1, 1],
+                    albedoMap : new reshader.Texture2D({
+                        url : './resources/rusted_iron/albedo.png'
+                    }, loader),
+                    normalMap : new reshader.Texture2D({
+                        url : './resources/rusted_iron/normal.png'
+                    }, loader),
+                    occulusionRoughnessMetallicMap : new reshader.Texture2D({
+                        url : './resources/rusted_iron/occulusionRoughnessMetallicMap-1024.png'
+                    }, loader)
+                });
+
+
+                const { data, indices } = generateSphereData();
+
+                for (let i = 0; i <= 5; i++) {
+                    for (let j = 0; j <= 5; j++) {
+                        const model = mat4.identity([]);
+                        mat4.translate(model, model, [i - 2.5, j - 2.5, 0]);
+                        mat4.scale(model, model, [0.4, 0.4, 0.4]);
+                        const mesh = new reshader.Mesh(new reshader.Geometry(data, indices), material);
+                        mesh.setLocalTransform(model);
+                        meshes.push(mesh);
+                    }
+                }
+                scene = new reshader.Scene(meshes);
+            }
+            //shader的全局uniforms
+            renderer.render(
+                shader,
+                {
+                    view, projection, camPos,
+
+                    irradianceMap : iblMaps.irradianceMap,
+                    prefilterMap : iblMaps.prefilterMap,
+                    brdfLUT : iblMaps.brdfLUT,
+                    ambientColor : [0.01, 0.01, 0.01],
+                    // lightPositions : {
+                    //     '0' : lightPositions[0],
+                    //     '1' : lightPositions[1],
+                    //     '2' : lightPositions[2],
+                    //     '3' : lightPositions[3],
+                    // },
+                    // lightColors : {
+                    //     '0' : lightColors[0],
+                    //     '1' : lightColors[1],
+                    //     '2' : lightColors[2],
+                    //     '3' : lightColors[3],
+                    // },
+                    dirLightDirections : {
+                        '0' : reshader.Util.normalize([], [0, 1, 1])
+                    },
+                    dirLightColors : {
+                        '0' : [1, 1, 1]
+                    },
+                },
+                scene
+            );
+
+        }
+
+        function generateSphereData() {
+            // const data = {
+            //     aPosition : sphereData.vertices,
+            //     aNormal : sphereData.normals,
+            //     aTexCoord : sphereData.textures
+            // };
+            // const indices = sphereData.indices;
+            // return {
+            //     data, indices
+            // };
+
+            const verBuf = regl.buffer(sphereData.vertices);
+            const normalBuf = regl.buffer(sphereData.normals);
+            const texBuf = regl.buffer(sphereData.textures);
+            const data = {
+                'aPosition' : {
+                    buffer : verBuf,
+                    stride : 12
+                },
+                'aNormal' : {
+                    buffer : normalBuf,
+                    stride : 12
+                },
+                'aTexCoord' : {
+                    buffer : texBuf,
+                    stride : 8
+                }
+            };
+
+            const indices = regl.elements({
+                primitive : 'triangle',
+                data : sphereData.indices
+            });
+            return { data, indices };
+        }
+
+        function createMaps(hdr) {
+            return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+                envTexture : hdr.getREGLTexture(regl)
+            });
+        }
+
+        function getViewProjection(cameraPos, aspect) {
+            const projection = mat4.perspective([], 60 * Math.PI / 180, aspect, 1, 200);
+            const view = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            return {
+                view,
+                projection
+            };
+        }
+
+
+    </script>
+  </body>
+</html>
