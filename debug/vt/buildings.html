@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>pbr-buildings</title>
+
+  <link rel="stylesheet" href="http://localhost:20000/maptalks.css" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="screen.css" />
+  <!-- 需要用maptalks worker分支下的版本 -->
+  <script src="http://localhost:20000/maptalks.js"></script>
+  <script src="buildings.js"></script>
+  <script src="../../packages/maptalks.vt/dist/maptalks.vt.js"></script>
+  <script src="../../packages/maptalks.vt.pbr/dist/maptalks.vt.pbr.js"></script>
+  <script src="js/stats.min.js"></script>
+</head>
+
+<body>
+
+  <div id="main">
+    <div id="map" style="float:left;background-color:#bbb;width:1100px;"></div>
+    <div style="float:right;width:300px;">
+      金属度： <input id="metallic" type="range"> <br>
+      粗糙度： <input id="roughness" type="range"> <br>
+      albedo贴图：<br><img id="albedoMap" style="width:200px;height:200px;border:1px black solid;"/> <br>
+      法线贴图：<br><img id="normalMap" style="width:200px;height:200px;border:1px black solid;"/><br>
+      金属粗糙度和ao贴图：<br><img id="occulusionRoughnessMetallicMap" style="width:200px;height:200px;border:1px black solid;"/><br>
+      环境光贴图：<br><img id="hdr" style="width:200px;height:200px;border:1px black solid;"/>
+    </div>
+    <!-- <canvas id="debugc" width=256 height=1024 /> -->
+    
+  </div>
+  
+  <script>
+    var stats = new Stats();
+    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild( stats.dom );
+    window.MAPTALKS_VT_WORKER_COUNT = 1;
+    
+
+    var osm = new maptalks.TileLayer('osm', {
+        crossOrigin : 'anonymous',
+        // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        // urlTemplate : 'http://www.google.cn/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i342009817!3m9!2sen-US!3sCN!5e18!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!4e0&token=32965',
+        // subdomains: ['a', 'b', 'c'],
+        // attribution : '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        urlTemplate: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          subdomains: ['a','b','c','d'],
+          attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+      });
+
+    var map = new maptalks.Map('map', {
+      center: [13.416935229170008, 52.529564137540376],
+      zoom: 19,
+      pitch : 50,
+      dragRotatePitch : true,
+      // bearing : -42,
+      baseLayer: osm
+    });
+    var data = buildings.reduce(function (v, b) {
+      for (let i = 0, l = b.features.length; i < l; i++) {
+        v.features.push(b.features[i]);
+      }
+      return v;
+    }, {
+      "type" : "FeatureCollection",
+      "features" : []
+    })
+
+    
+    map.on('framestart', e => {
+      stats.begin();
+    });
+
+    map.on('frameend', e => {
+      stats.end();
+    });
+
+    console.log(data.features.length);
+    
+    const style = {
+      'pbr' : {
+        dataConfig : {
+          type : '3d-extrusion',
+          altitudeProperty : 'levels',
+          altitudeScale : 5,
+          defaultAltitude : 1,
+          normal : true,
+          uv : true,
+          uvSize : [128 / 50, 128 / 50]
+        },
+        sceneConfig : {
+          material : {
+            roughness : 0.2,
+            metallic : 0.8,
+            albedoColor : [1, 1, 1],
+            // occulusionRoughnessMetallicMap : 'resources/occulusionRoughnessMetallicMap.png',
+            // albedoMap : 'resources/brickwall.jpg',
+            // normalMap : 'resources/Rock_01_local.jpg'
+          },
+          
+          lights : {
+            ambientCubeLight : {
+              url : 'resources/venice_sunset_2k.hdr'
+            },
+            ambientColor : [0.00, 0.00, 0.00],
+            dirLights : [
+              {
+                color : [1, 1, 1],
+                direction : [0, 1, 1]
+              }
+            ]
+          }
+        },
+
+        style : [
+          {
+            filter : ['==', 'levels', 5],
+            symbol: {
+              polygonOpacity: 1,
+              polygonFill: '#f00'
+            }
+          },
+          {
+            filter : ['==', 'levels', 3],
+            symbol: {
+              polygonOpacity: 1,
+              // polygonFill: '#fff',
+              polygonFill: '#fff700'
+            }
+          },
+          {
+            symbol: {
+              polygonOpacity: 1,
+              polygonFill: '#fff',
+              // polygonFill: '#fff700'
+            }
+          }
+        ]
+      }
+    };
+
+    // test tile clipping mask
+    var layer1 = new maptalks.GeoJSONVectorTileLayer('polygon1', {
+      debug : true,
+      // canvas: debugCanvas,
+      data: data,
+      hitDetect : false,
+    });
+    layer1.setStyle(style);
+
+    // map.on('click', function (e) {
+    //   alert(JSON.stringify(layer1.identify(e.coordinate)));
+    // });
+
+    map.addLayer(layer1);
+    
+    function updateStyle(imageMaps) {
+      const sceneConfig = style.pbr.sceneConfig;
+      const config = {
+        material :  maptalks.Util.extend(sceneConfig.material, imageMaps)
+      };
+      if (imageMaps.hdr) {
+        config.lights = sceneConfig.lights;
+        delete config.lights.ambientCubeLight.url;
+        config.lights.ambientCubeLight.data = imageMaps.hdr;
+      }
+      layer1.updateSceneConfig('pbr', config);
+    }
+
+    function updateMetallicRoughness() {
+      const materialConfig = style.pbr.sceneConfig.material;
+      maptalks.Util.extend(materialConfig, {
+        metallic : +document.getElementById('metallic').value / 100,
+        roughness : +document.getElementById('roughness').value / 100,
+      });
+      layer1.updateSceneConfig('pbr', {
+        material : materialConfig
+      });
+    }
+
+  </script>
+  <script>
+    const metallicSlider = document.getElementById('metallic'),
+      roughnessSlider = document.getElementById('roughness');
+    metallicSlider.onchange = metallicSlider.oninput = roughnessSlider.onchange = roughnessSlider.oninput = updateMetallicRoughness;
+
+    const imageMaps = {};
+    register('albedoMap', document.getElementById('albedoMap'));
+    register('normalMap', document.getElementById('normalMap'));
+    register('occulusionRoughnessMetallicMap', document.getElementById('occulusionRoughnessMetallicMap'));
+    register('hdr', document.getElementById('hdr'));
+
+    function register(name, element) {
+      element.ondrop = function (e) {
+        readFile(name, this, e);
+        e.preventDefault();
+        return false;
+      };
+      element.ondragover = function () {
+        return false;
+      };
+      element.ondragend = function () {
+        return false;
+      };
+    }
+  
+    function humanFileSize(size) {
+        var i = Math.floor(Math.log(size) / Math.log(1024));
+        return Math.round(100 * (size / Math.pow(1024, i))) / 100 + ' ' + ['B', 'kB', 'MB', 'GB'][i];
+    }
+
+    function readFile(name, img, e) {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+          console.log(name + ' data size', humanFileSize(event.target.result.length));
+          if (name !== 'hdr') {
+            const url = event.target.result;
+            img.src = url;
+            imageMaps[name] = url;
+          } else {
+            imageMaps['hdr'] = event.target.result;
+          }
+          updateStyle(imageMaps);
+      };
+      if (name === 'hdr') {
+        reader.readAsArrayBuffer(e.dataTransfer.files[0]);
+      } else {
+        reader.readAsDataURL(e.dataTransfer.files[0]);
+      }
+    }
+    </script>
+</body>
+
+</html>
