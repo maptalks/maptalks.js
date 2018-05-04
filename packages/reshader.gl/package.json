@@ -30,7 +30,6 @@
     "rollup": "0.58.1",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.1.0",
-    "rollup-plugin-glslify": "^1.0.3",
     "rollup-plugin-node-resolve": "^3.3.0"
   }
 }
