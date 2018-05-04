@@ -1,5 +1,5 @@
 import { extend, isNumber, isString, isFunction } from '../common/Util.js';
-import ShaderLib from './ShaderLib.js';
+import ShaderLib from '../shaderlib/ShaderLib.js';
 
 const TYPE_FUNC = 'function';
 
