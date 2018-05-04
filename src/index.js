@@ -63,7 +63,7 @@ export { registerWorkerAdapter } from './core/worker/Worker';
 import Actor from './core/worker/Actor';
 
 /**
- * @namespace wprker
+ * @namespace worker
  */
 const worker = {
     Actor : Actor
