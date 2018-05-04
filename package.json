@@ -34,8 +34,8 @@
     "build": "gulp minify"
   },
   "main": "dist/maptalks.js",
-  "module": "dist/maptalks.es.js",
-  "jsnext:main": "dist/maptalks.es.js",
+  "module": "dist/maptalks.mjs",
+  "jsnext:main": "dist/maptalks.mjs",
   "style": "dist/maptalks.css",
   "dependencies": {
     "simplify-js": "^1.2.1",
@@ -73,8 +73,8 @@
     "karma-rollup-preprocessor": "^5.0.1",
     "karma-safari-launcher": "^1.0.0",
     "karma-sinon": "^1.0.5",
-    "maptalks-build-helpers": "^0.4.2",
-    "maptalks-jsdoc": "^0.2.0",
+    "maptalks-build-helpers": "^0.5.0",
+    "maptalks-jsdoc": "^0.2.2",
     "minimist": "^1.2.0",
     "mocha": "^3.5.0",
     "sinon": "^3.2.1"
