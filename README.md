@@ -1,7 +1,7 @@
 # fusion.gl
 [![Build Status](https://travis-ci.com/axmand/fusion.gl.svg?token=N2z4DqiFgBjde7FHSBe3&branch=master)](https://travis-ci.com/axmand/fusion.gl)
 [![npm version](https://badge.fury.io/js/fusion.gl.svg)](https://badge.fury.io/js/fusion.gl)
-[![codecov](https://codecov.io/gh/axmand/fusion.gl/branch/master/graph/badge.svg)](https://codecov.io/gh/axmand/fusion.gl)
+<!--[![codecov](https://codecov.io/gh/axmand/fusion.gl/branch/master/graph/badge.svg)](https://codecov.io/gh/axmand/fusion.gl)-->
 >a virtual webgl running context which can mix thirdly webgl library's gl commands togother,include [three.js](https://github.com/mrdoob/three.js),[claygl](https://github.com/pissang/claygl) and so on.
 ### example ###
 [3D](http://139.129.7.130/fusion.gl/example/fusion.gl.3d.html)  
