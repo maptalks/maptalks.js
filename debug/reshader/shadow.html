@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Cube</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <!-- <script src="../../../packages/maptalks.vt/node_modules/regl/dist/regl.js" type="text/javascript"></script> -->
+    <script src="./common/regl.js" type="text/javascript"></script>
+    <script type="module">
+        import * as mat4 from './../../packages/reshader.gl/node_modules/@mapbox/gl-matrix/src/mat4.js';
+        import * as vec3 from './../../packages/reshader.gl/node_modules/@mapbox/gl-matrix/src/vec3.js';
+        import cubeData from './common/cube.js';
+        import planeData from './common/plane.js';
+        
+        import * as reshader from './../../packages/reshader.gl/dist/reshader.gl.mjs';
+
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_texture_float',
+                'OES_texture_float_linear',
+                'OES_element_index_uint',
+                'OES_standard_derivatives'
+            ]
+        });
+        
+        const vert = `
+            attribute vec3 aPosition;
+            attribute vec3 aNormal;
+
+            varying vec3 FragPos;
+            varying vec3 Normal;
+            varying vec2 TexCoords;
+
+            uniform mat4 viewProjection;
+            uniform mat4 model;
+            uniform mat4 normalMatrix;
+
+            #if defined(USE_SHADOW)
+                #include <vsm_shadow_vert>
+            #endif
+
+            void main()
+            {
+                gl_Position = viewProjection * model * vec4(aPosition, 1.0);
+                vec4 worldPos = model * vec4(aPosition, 1.0);
+                Normal = mat3(normalMatrix) * aNormal;
+                FragPos = vec3(worldPos);
+
+                #ifdef USE_SHADOW
+                    vsm_shadow_computeShadowPars(worldPos);
+                #endif
+            }
+        `;
+
+        const frag = `
+            precision mediump float;
+
+            varying vec3 FragPos;
+            varying vec3 Normal;
+
+            uniform vec3 diffuseColor;
+
+            // needed by vsm
+            // uniform mat4 lightView;
+            // uniform mat4 lightProj;
+
+            uniform vec3 lightPos;
+            uniform vec3 viewPos;
+
+            #if defined(USE_SHADOW)
+                #include <vsm_shadow_frag>
+            #endif
+
+            void main()
+            {           
+                vec3 color = diffuseColor.rgb;
+                vec3 normal = normalize(Normal);
+                vec3 lightColor = vec3(1.0);
+                // Ambient
+                vec3 ambient = 0.15 * color;
+                // Diffuse
+                vec3 lightDir = normalize(lightPos - FragPos);
+                float diff = max(dot(lightDir, normal), 0.0);
+                vec3 diffuse = diff * lightColor;
+                // Specular
+                vec3 viewDir = normalize(viewPos - FragPos);
+                vec3 reflectDir = reflect(-lightDir, normal);
+                float spec = 0.0;
+                vec3 halfwayDir = normalize(lightDir + viewDir);  
+                spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+                vec3 specular = spec * lightColor;                    
+                
+                float shadow = 1.0;
+                #ifdef USE_SHADOW
+                    shadow = vsm_shadow_computeShadow(0);
+                #endif
+
+                vec3 lighting = (ambient + shadow * (diffuse + specular)) * color;    
+
+                gl_FragColor = vec4(lighting, 1.0);
+                // gl_FragColor = vec4(shadow, shadow, shadow, 1.0);
+                // gl_FragColor = vec4(moments, 0.0, 1.0);
+                // gl_FragColor = vec4(specular, 1.0);
+            }
+        `;
+        
+        const shader = new reshader.MeshShader({
+            vert, frag,
+            uniforms : [
+                'viewProjection',
+                'diffuseColor',
+                'lightPos', 'viewPos',
+                {
+                    name : 'normalMatrix',
+                    type : 'function',
+                    fn : function (context, props) {
+                        const normalMatrix = [];
+                        const model = props['model'];
+                        mat4.transpose(normalMatrix, mat4.invert(normalMatrix, model));
+                        return normalMatrix;
+                    }
+                },
+                //uniforms needed by vsm shadow map
+                'vsm_shadow_shadowMap[1]',
+                'vsm_shadow_lightProjView[1]',
+            ],
+            defines : {
+                'USE_SHADOW' : 1,
+                'NUM_OF_DIR_LIGHTS' : 1
+            }
+        });
+
+        const renderer = new reshader.Renderer(regl);
+        const SHADOW_RES = 512;
+        const shadowPass = new reshader.ShadowPass(renderer, { width : SHADOW_RES, height : SHADOW_RES});
+
+        render();
+
+        function render() {
+            const cameraPos = [0, 8, 8];
+            const lightDir = [-4.0, 3.0, -1.0];
+            const cameraProjView = getViewProjection(cameraPos);
+            const scene = getScene();
+            
+            const { lightProjView, shadowMap } = shadowPass.render(scene, { cameraProjView, lightDir });
+            renderer.render(shader, {
+                viewProjection : cameraProjView,
+                diffuseColor : [1, 1, 1],
+                lightPos : lightDir,
+                viewPos : cameraPos,
+                //uniforms needed by vsm shadow map
+                vsm_shadow_shadowMap : [shadowMap],
+                vsm_shadow_lightProjView : [lightProjView]
+            }, scene);
+        }
+
+        function getScene() {
+            const cube = new reshader.Geometry({
+                aPosition : cubeData.vertices,
+                aNormal : cubeData.normals,
+            }, cubeData.indices);
+            const plane = new reshader.Geometry({
+                aPosition : planeData.vertices,
+                aNormal : planeData.normals,
+            }, planeData.indices, {
+                primitive : 'triangle strip'
+            });
+
+            const cubeMesh = new reshader.Mesh(cube);
+            const planeMesh = new reshader.Mesh(plane);
+            const planeModel = mat4.identity([]);
+            mat4.scale(planeModel, planeModel, [20, 20, 20]);
+            planeMesh.setLocalTransform(planeModel);
+
+            const scene = new reshader.Scene([planeMesh, cubeMesh]);
+            return scene;
+        }
+        
+        function getViewProjection(cameraPos) {
+            const aspect = canvas.width / canvas.height;
+            const projection = mat4.perspective([], 60 * Math.PI / 180, aspect, 1, 20);
+            const view = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            const viewProjection = mat4.multiply([], projection, view);
+            return viewProjection;
+        }
+
+
+    </script>
+  </body>
+</html>
