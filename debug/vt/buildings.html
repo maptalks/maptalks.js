@@ -25,6 +25,7 @@
     <div style="float:right;width:300px;">
       金属度： <input id="metallic" type="range"> <br>
       粗糙度： <input id="roughness" type="range"> <br>
+      环境光强度： <input id="ambientIntensity" type="range" value=0> <br>
       albedo贴图：<br><img id="albedoMap" style="width:200px;height:200px;border:1px black solid;"/> <br>
       法线贴图：<br><img id="normalMap" style="width:200px;height:200px;border:1px black solid;"/><br>
       金属粗糙度和ao贴图：<br><img id="occulusionRoughnessMetallicMap" style="width:200px;height:200px;border:1px black solid;"/><br>
@@ -94,8 +95,8 @@
         },
         sceneConfig : {
           material : {
-            roughness : 0.2,
-            metallic : 0.8,
+            roughness : 0.5,
+            metallic : 0.5,
             albedoColor : [1, 1, 1],
             // occulusionRoughnessMetallicMap : 'resources/occulusionRoughnessMetallicMap.png',
             // albedoMap : 'resources/brickwall.jpg',
@@ -107,6 +108,7 @@
               url : 'resources/venice_sunset_2k.hdr'
             },
             ambientColor : [0.00, 0.00, 0.00],
+            ambientIntensity : 1,
             dirLights : [
               {
                 color : [1, 1, 1],
@@ -176,6 +178,7 @@
       maptalks.Util.extend(materialConfig, {
         metallic : +document.getElementById('metallic').value / 100,
         roughness : +document.getElementById('roughness').value / 100,
+        ambientIntensity : +document.getElementById('ambientIntensity').value / 50 + 1.0,
       });
       layer1.updateSceneConfig('pbr', {
         material : materialConfig
@@ -185,8 +188,9 @@
   </script>
   <script>
     const metallicSlider = document.getElementById('metallic'),
-      roughnessSlider = document.getElementById('roughness');
-    metallicSlider.onchange = metallicSlider.oninput = roughnessSlider.onchange = roughnessSlider.oninput = updateMetallicRoughness;
+      roughnessSlider = document.getElementById('roughness'),
+      ambientIntensitySlider = document.getElementById('ambientIntensity');
+    metallicSlider.onchange = metallicSlider.oninput = roughnessSlider.onchange = roughnessSlider.oninput = ambientIntensitySlider.onchange = ambientIntensitySlider.oninput = updateMetallicRoughness;
 
     const imageMaps = {};
     register('albedoMap', document.getElementById('albedoMap'));

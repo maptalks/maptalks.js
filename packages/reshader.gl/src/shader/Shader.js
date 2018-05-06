@@ -2,7 +2,8 @@ import { extend, isNumber, isString, isFunction } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
 const UNIFORM_TYPE = {
-    function : 'function'
+    function : 'function',
+    array : 'array'
 };
 
 class Shader {
@@ -17,7 +18,14 @@ class Shader {
         for (let i = 0, l = context.length; i < l; i++) {
             const p = context[i];
             if (isString(p)) {
-                this.contextDesc[p] = null;
+                if (p.indexOf('[') > 0) {
+                    // array
+                    const l = p.indexOf('['), r = p.indexOf(']');
+                    const name = p.substring(0, l), len = +p.substring(l + 1, r);
+                    this.contextDesc[name] = { name, type : 'array', length : len };
+                } else {
+                    this.contextDesc[p] = null;
+                }
             } else {
                 // e.g.
                 // {
@@ -55,11 +63,17 @@ class Shader {
         const extra = {};
         for (const p in uniforms) {
             if (desc[p] && desc[p].type === 'array') {
-                //array
+                //an array uniform's value
                 const name = p, len = desc[p].length;
                 if (uniforms[p].length !== len) {
                     throw new Error(`${name} uniform's length is not ${len}`);
                 }
+                // change uniform value to the following form as regl requires:
+                // foo : {
+                //     0 : 'value',
+                //     1 : 'value',
+                //     2 : 'value'
+                // }
                 extra[name] = {};
                 for (let i = 0; i < len; i++) {
                     extra[name][`${i}`] = uniforms[p][i];
@@ -90,15 +104,16 @@ class Shader {
         for (const p in desc) {
             if (desc[p] && desc[p].type === UNIFORM_TYPE['function']) {
                 uniforms[p] = desc[p]['fn'];
-            } else if (p.indexOf('[') > 0) {
-                // array
-                const l = p.indexOf('['), r = p.indexOf(']');
-                const name = p.substring(0, l), len = +p.substring(l + 1, r);
+            } else if (desc[p] && desc[p].type === UNIFORM_TYPE['array']) {
+                // an array uniform
+                // split to foo[0], foo[1], .... as regl requires
+                // https://github.com/regl-project/regl/issues/258
+                const name = desc[p].name,
+                    len = desc[p].length;
                 for (let i = 0; i < len; i++) {
                     const key = `${name}[${i}]`;
                     uniforms[key] = regl.prop(key);
                 }
-                desc[name] = { type : 'array', length : len };
             } else {
                 uniforms[p] = regl.prop(p);
             }

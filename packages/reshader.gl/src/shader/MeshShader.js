@@ -9,11 +9,10 @@ class MeshShader extends Shader {
         for (let i = 0, l = meshes.length; i < l; i++) {
             const command = this.getMeshCommand(regl, meshes[i]);
 
-            /*
             //run command one by one, for debug
-            const props = extend({}, this.context, meshes[i].getREGLProps());
-            command(props);
-            */
+            // const props = extend({}, this.context, meshes[i].getREGLProps());
+            // console.log(i);
+            // command(props);
 
             if (i === l - 1) {
                 props.push(extend({}, this.context, meshes[i].getREGLProps()));

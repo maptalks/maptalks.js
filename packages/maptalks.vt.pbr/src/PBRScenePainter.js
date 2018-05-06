@@ -256,11 +256,9 @@ class PBRScenePainter {
     _getUniforms() {
         const uniforms = [
             'model',
+            'camPos',
+            'ambientIntensity',
             'ambientColor',
-
-            // 'lightPositions[0]', 'lightPositions[1]', 'lightPositions[2]', 'lightPositions[3]',
-            // 'lightColors[0]', 'lightColors[1]', 'lightColors[2]', 'lightColors[3]',
-            // 'irradianceMap', 'prefilterMap', 'brdfLUT'
             {
                 name : 'projectionViewModel',
                 type : 'function',
@@ -285,16 +283,12 @@ class PBRScenePainter {
         const lightConfig = this.sceneConfig.lights;
 
         if (lightConfig.dirLights) {
-            lightConfig.dirLights.forEach((light, idx) => {
-                uniforms.push(`dirLightDirections[${idx}]`);
-                uniforms.push(`dirLightColors[${idx}]`);
-            });
+            uniforms.push(`dirLightDirections[${lightConfig.dirLights.length}]`);
+            uniforms.push(`dirLightColors[${lightConfig.dirLights.length}]`);
         }
         if (lightConfig.spotLights) {
-            lightConfig.spotLights.forEach((light, idx) => {
-                uniforms.push(`spotLightPositions[${idx}]`);
-                uniforms.push(`spotLightColors[${idx}]`);
-            });
+            uniforms.push(`spotLightPositions[${lightConfig.spotLights.length}]`);
+            uniforms.push(`spotLightColors[${lightConfig.spotLights.length}]`);
         }
         if (lightConfig.ambientCubeLight) {
             uniforms.push('irradianceMap', 'prefilterMap', 'brdfLUT');
@@ -309,21 +303,6 @@ class PBRScenePainter {
         const lightUniforms = this._getLightUniforms();
         return extend({
             view, projection, camPos
-            // spotLightPositions : {
-            //     '0' : lightPositions[0],
-            //     '1' : lightPositions[1],
-            //     '2' : lightPositions[2],
-            //     '3' : lightPositions[3],
-            // },
-            // spotLightColors : {
-            //     '0' : lightColors[0],
-            //     '1' : lightColors[1],
-            //     '2' : lightColors[2],
-            //     '3' : lightColors[3],
-            // }
-            // irradianceMap : iblMaps.irradianceCubeMap,
-            // prefilterMap : iblMaps.prefilterCubeMap,
-            // brdfLUT : iblMaps.brdfLUT,
         }, lightUniforms);
     }
 
@@ -331,25 +310,19 @@ class PBRScenePainter {
         const lightConfig = this.sceneConfig.lights;
 
         const ambientColor = lightConfig.ambientColor || [0.08, 0.08, 0.08];
+        const aoIntensity = lightConfig.ambientIntensity;
         const uniforms = {
-            ambientColor
+            ambientColor,
+            ambientIntensity : aoIntensity === 0 ? 0 : (aoIntensity || 1)
         };
 
         if (lightConfig.dirLights) {
-            uniforms['dirLightDirections'] = {};
-            uniforms['dirLightColors'] = {};
-            lightConfig.dirLights.forEach((light, idx) => {
-                uniforms['dirLightDirections'][idx + ''] = light.direction;
-                uniforms['dirLightColors'][idx + ''] = light.color;
-            });
+            uniforms['dirLightDirections'] = lightConfig.dirLights.map(light => light.direction);
+            uniforms['dirLightColors'] = lightConfig.dirLights.map(light => light.color);
         }
         if (lightConfig.spotLights) {
-            uniforms['spotLightPositions'] = {};
-            uniforms['spotLightColors'] = {};
-            lightConfig.spotLights.forEach((light, idx) => {
-                uniforms['spotLightPositions'][idx + ''] = light.position;
-                uniforms['spotLightColors'][idx + ''] = light.color;
-            });
+            uniforms['spotLightPositions'] = lightConfig.spotLights.map(light => light.position);
+            uniforms['spotLightColors'] = lightConfig.spotLights.map(light => light.color);
         }
         if (lightConfig.ambientCubeLight) {
             uniforms['irradianceMap'] = this.iblMaps.irradianceMap;

@@ -22,11 +22,15 @@
     uniform mat4 model;
     uniform mat4 projectionViewModel;
 
+#if defined(USE_SHADOW)
+    #include <vsm_shadow_vert>
+#endif
+
     void main()
     {
         #if defined(USE_NORMAL_MAP) || defined(USE_ALBEDO_MAP) || defined(USE_OCCULUSIONROUGHNESSMETALLIC_MAP)
             vTexCoord = aTexCoord;
-        #endif 
+        #endif
         vec4 pos = vec4(aPosition, 1.0);
         vWorldPos = (model * pos).xyz;
 
@@ -40,5 +44,9 @@
             vColor = aColor;
         #endif
         gl_Position =  projectionViewModel * vec4(aPosition, 1.0);
+
+        #ifdef USE_SHADOW
+            vsm_shadow_computeShadowPars(vWorldPos);
+        #endif
     }
 
