@@ -3070,9 +3070,9 @@ function createTextureSet (
       var minFilter = options.min;
       check$1.parameter(minFilter, minFilters);
       info.minFilter = minFilters[minFilter];
-      // if (MIPMAP_FILTERS.indexOf(info.minFilter) >= 0) {
-      //   info.genMipmaps = true;
-      // }
+      if (MIPMAP_FILTERS.indexOf(info.minFilter) >= 0 & !options['faces']) {
+        info.genMipmaps = true;
+      }
     }
 
     if ('mag' in options) {
@@ -3970,11 +3970,13 @@ var GL_HALF_FLOAT_OES$2 = 0x8D61;
 var GL_UNSIGNED_BYTE$5 = 0x1401;
 var GL_FLOAT$4 = 0x1406;
 
+var GL_RGB$1 = 0x1907;
 var GL_RGBA$1 = 0x1908;
 
 var GL_DEPTH_COMPONENT$1 = 0x1902;
 
 var colorTextureFormatEnums = [
+  GL_RGB$1,
   GL_RGBA$1
 ];
 
@@ -3982,6 +3984,7 @@ var colorTextureFormatEnums = [
 // the number of channels
 var textureFormatChannels = [];
 textureFormatChannels[GL_RGBA$1] = 4;
+textureFormatChannels[GL_RGB$1] = 3;
 
 // for every texture type, store
 // the size in bytes.

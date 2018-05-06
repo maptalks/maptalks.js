@@ -7,7 +7,7 @@ class MeshShader extends Shader {
         const props = [];
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
-            const command = this._getREGLCommand(regl, meshes[i]);
+            const command = this.getMeshCommand(regl, meshes[i]);
 
             /*
             //run command one by one, for debug
@@ -31,7 +31,7 @@ class MeshShader extends Shader {
         return this;
     }
 
-    _getREGLCommand(regl, mesh) {
+    getMeshCommand(regl, mesh) {
         const uniforms = Object.keys(mesh.getUniforms(regl));
         const material = mesh.getMaterial();
         let dKey = 'default', defines;

@@ -66,7 +66,9 @@ class Mesh {
 
     getREGLProps() {
         const props = extend({}, this.geometry.data);
-        props.elements = this.geometry.indices;
+        props.elements = this.geometry.getElements();
+        // command primitive : triangle, triangle strip, etc
+        props.primitive = this.geometry.getPrimitive();
         const uniforms = this.getUniforms();
         for (const p in uniforms) {
             if (uniforms.hasOwnProperty(p)) {

@@ -1,21 +1,23 @@
 import { extend, isNumber, isString, isFunction } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
-const TYPE_FUNC = 'function';
+const UNIFORM_TYPE = {
+    function : 'function'
+};
 
 class Shader {
-    constructor({ vert, frag, uniforms, defines, includes, extraCommandProps }) {
+    constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
         this.vert = vert;
         this.frag = frag;
         //defines besides meshes : lights, etc
         this.shaderDefines = defines || {};
 
         const context = uniforms || [];
-        this.context = {};
+        this.contextDesc = {};
         for (let i = 0, l = context.length; i < l; i++) {
             const p = context[i];
             if (isString(p)) {
-                this.context[p] = null;
+                this.contextDesc[p] = null;
             } else {
                 // e.g.
                 // {
@@ -23,11 +25,8 @@ class Shader {
                 //     type : 'function',
                 //     fn : (context, props) => { ... }
                 // }
-                this.context[p.name] = p;
+                this.contextDesc[p.name] = p;
             }
-        }
-        if (includes) {
-            this._insertIncludes(includes);
         }
         this.extraCommandProps = extraCommandProps || {};
         this.commands = {};
@@ -39,8 +38,8 @@ class Shader {
      * Set to null to render to default display
      * @param {REGLFramebuffer} frameBuffer
      */
-    setFrameBuffer(frameBuffer) {
-        this.context.frameBuffer = frameBuffer;
+    setFramebuffer(frameBuffer) {
+        this.context.framebuffer = frameBuffer;
         return this;
     }
 
@@ -50,29 +49,56 @@ class Shader {
      * @param {Any} v - value
      * @returns {Any}
      */
-    contextUniform(k, v) {
-        this.context[k] = v;
+    setUniforms(uniforms) {
+        this.context = uniforms;
+        const desc = this.contextDesc;
+        const extra = {};
+        for (const p in uniforms) {
+            if (desc[p] && desc[p].type === 'array') {
+                //array
+                const name = p, len = desc[p].length;
+                if (uniforms[p].length !== len) {
+                    throw new Error(`${name} uniform's length is not ${len}`);
+                }
+                extra[name] = {};
+                for (let i = 0; i < len; i++) {
+                    extra[name][`${i}`] = uniforms[p][i];
+                }
+            }
+        }
+        extend(this.context, extra);
         return this;
     }
 
     createREGLCommand(regl, materialDefines, attrProps, uniProps, elements) {
-        uniProps = uniProps || {};
+        uniProps = uniProps || [];
+        attrProps = attrProps || [];
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
         const vert = this._insertDefines(this.vert, defines);
         const frag = this._insertDefines(this.frag, defines);
         const attributes = {};
-        for (const p of attrProps) {
+        attrProps.forEach(p => {
             attributes[p] = regl.prop(p);
-        }
-        const uniforms = {};
-        for (const p of uniProps) {
-            uniforms[p] = regl.prop(p);
-        }
+        });
 
-        const context = this.context;
-        for (const p in context) {
-            if (context[p] && context[p].type === TYPE_FUNC) {
-                uniforms[p] = context[p]['fn'];
+        const uniforms = {};
+        uniProps.forEach(p => {
+            uniforms[p] = regl.prop(p);
+        });
+
+        const desc = this.contextDesc;
+        for (const p in desc) {
+            if (desc[p] && desc[p].type === UNIFORM_TYPE['function']) {
+                uniforms[p] = desc[p]['fn'];
+            } else if (p.indexOf('[') > 0) {
+                // array
+                const l = p.indexOf('['), r = p.indexOf(']');
+                const name = p.substring(0, l), len = +p.substring(l + 1, r);
+                for (let i = 0; i < len; i++) {
+                    const key = `${name}[${i}]`;
+                    uniforms[key] = regl.prop(key);
+                }
+                desc[name] = { type : 'array', length : len };
             } else {
                 uniforms[p] = regl.prop(p);
             }
@@ -86,13 +112,14 @@ class Shader {
         } else {
             command.elements = regl.prop('elements');
         }
+        command.primitive = regl.prop('primitive');
         command.framebuffer = regl.prop('framebuffer');
         extend(command, this.extraCommandProps);
         return regl(command);
     }
 
     dispose() {
-        //TODO dispose the shader
+        //TODO dispose the shader and regl commands
     }
 
     _insertDefines(source, defines) {
@@ -103,19 +130,6 @@ class Shader {
             }
         }
         return defineHeaders.join('') + source;
-    }
-
-    _insertIncludes(includes) {
-        const vertIncludes = includes['vert'],
-            fragIncludes = includes['frag'];
-        if (vertIncludes) {
-            // const includes = vertIncludes.map(inc => `#include <${inc}>\n`);
-            this.vert = vertIncludes + '\n' + this.vert;
-        }
-        if (fragIncludes) {
-            // const includes = fragIncludes.map(inc => `#include <${inc}>\n`);
-            this.frag = fragIncludes + '\n' + this.frag;
-        }
     }
 
     _compileSource() {

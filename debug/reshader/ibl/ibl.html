@@ -103,10 +103,7 @@
                     frag : reshader.pbr.StandardFrag,
                     uniforms : [
                         'camPos',
-                        // 'view', 'projection',
-                        // 'lightPositions[0]', 'lightPositions[1]', 'lightPositions[2]', 'lightPositions[3]',
-                        // 'lightColors[0]', 'lightColors[1]', 'lightColors[2]', 'lightColors[3]',
-                        'dirLightDirections[0]', 'dirLightColors[0]',
+                        'dirLightDirections[1]', 'dirLightColors[1]',
                         'ambientColor',
                         'irradianceMap', 'prefilterMap', 'brdfLUT',
                         {
@@ -136,13 +133,6 @@
                         'USE_DIR_LIGHT' : 1,
                         'USE_AMBIENT_CUBEMAP' : 1,
                         'SUPPORT_TEXTURE_LOD' : 1
-                    },
-                    includes : {
-                        vert : `
-                            #if defined(USE_SHADOW)
-                                #include <esm_shadow_vert>
-                            #endif
-                        `
                     }
                 });
             }
@@ -189,24 +179,12 @@
                     prefilterMap : iblMaps.prefilterMap,
                     brdfLUT : iblMaps.brdfLUT,
                     ambientColor : [0.01, 0.01, 0.01],
-                    // lightPositions : {
-                    //     '0' : lightPositions[0],
-                    //     '1' : lightPositions[1],
-                    //     '2' : lightPositions[2],
-                    //     '3' : lightPositions[3],
-                    // },
-                    // lightColors : {
-                    //     '0' : lightColors[0],
-                    //     '1' : lightColors[1],
-                    //     '2' : lightColors[2],
-                    //     '3' : lightColors[3],
-                    // },
-                    dirLightDirections : {
-                        '0' : reshader.Util.normalize([], [0, 1, 1])
-                    },
-                    dirLightColors : {
-                        '0' : [1, 1, 1]
-                    },
+                    dirLightDirections : [
+                        reshader.Util.normalize([], [0, 1, 1])
+                    ],
+                    dirLightColors : [
+                        [1, 1, 1]
+                    ],
                 },
                 scene
             );

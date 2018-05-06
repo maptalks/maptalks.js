@@ -40,42 +40,45 @@ export default class Geometry {
         //generate regl buffers beforehand to avoid repeated bufferData
         const data = this.data;
         const posBuf = regl.buffer(data.aPosition);
-        const normalBuf = regl.buffer(data.aNormal);
         const buffers = {
             'aPosition' : {
-                buffer : posBuf,
-                stride : 3 * data.aPosition.BYTES_PER_ELEMENT
-            },
-            'aNormal' : {
-                buffer : normalBuf,
-                stride : 3 * data.aNormal.BYTES_PER_ELEMENT
+                buffer : posBuf
             }
         };
+
+        if (data.aNormal) {
+            const normalBuf = regl.buffer(data.aNormal);
+            buffers.aNormal = {
+                buffer : normalBuf
+            };
+        }
 
         if (data.aTexCoord) {
             const texBuf = regl.buffer(data.aTexCoord);
             buffers.aTexCoord = {
-                buffer : texBuf,
-                stride : 2 * data.aTexCoord.BYTES_PER_ELEMENT
+                buffer : texBuf
             };
         }
 
         if (data.aColor) {
             const colorBuf = regl.buffer(data.aColor);
             buffers.aColor = {
-                buffer : colorBuf,
-                stride : 3 * data.aColor.BYTES_PER_ELEMENT
+                buffer : colorBuf
             };
         }
         this.data = buffers;
 
         if (!isNumber(this.indices)) {
             this.indices = regl.elements({
-                primitive: this.desc.primitive || 'triangles',
+                primitive: this.getPrimitive(),
                 data: this.indices,
                 //type : 'uint16' // type is inferred from data
             });
         }
+    }
+
+    getPrimitive() {
+        return this.desc.primitive;
     }
 
     getAttributes() {

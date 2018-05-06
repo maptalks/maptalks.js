@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
-import esm_shadow_vert from './glsl/esm_shadow_vert.glsl';
-import esm_shadow_frag from './glsl/esm_shadow_frag.glsl';
+import vsm_shadow_vert from './glsl/vsm_shadow.vert';
+import vsm_shadow_frag from './glsl/vsm_shadow.frag';
 
 //Shader Chunks for includes
 const ShaderChunk = {
-    esm_shadow_vert,
-    esm_shadow_frag
+    vsm_shadow_vert,
+    vsm_shadow_frag
 };
 /* eslint-enable camelcase */
 

@@ -34,3 +34,5 @@ const pbr = {
 };
 
 export { pbr };
+
+export { default as ShadowPass } from './shadow/ShadowPass.js';

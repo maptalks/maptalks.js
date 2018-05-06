@@ -4,6 +4,12 @@ class Scene {
         this.dirty();
     }
 
+    setMeshes(meshes) {
+        this.meshes = meshes;
+        this.dirty();
+        return this;
+    }
+
     addMesh(mesh) {
         this.meshes.push(mesh);
         this.dirty();
@@ -12,7 +18,7 @@ class Scene {
 
     getMeshes() {
         this._sortMeshes();
-        return this.sortedMeshes;
+        return this.sortedMeshes || [];
     }
 
     clear() {
@@ -42,7 +48,7 @@ class Scene {
             }
         }
         opaques.sort((a, b) => {
-            if (a.material.getDefinesKey() === b.material.getDefinesKey()) {
+            if (a.material && b.material && a.material.getDefinesKey() === b.material.getDefinesKey()) {
                 return 0;
             }
             return 1;

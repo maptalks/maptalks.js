@@ -1,3 +1,5 @@
+import { extend } from './common/Util.js';
+
 /**
  * A basic renderer to render meshes in fashion of forward rendering
  */
@@ -6,16 +8,12 @@ class Renderer {
         this.regl = regl;
     }
 
-    render(shader, contextUniforms, scene, framebuffer) {
+    render(shader, uniforms, scene, framebuffer) {
         //rendering of large number of lights can be accelarated by clip-space quadtree
         //https://stackoverflow.com/questions/30594511/webgl-fragment-shader-for-multiple-light-sources
 
-        for (const p in contextUniforms) {
-            shader.contextUniform(p, contextUniforms[p]);
-        }
-        if (framebuffer) {
-            shader.setFramebuffer(framebuffer);
-        }
+        shader.setUniforms(extend({}, uniforms || {}));
+        shader.setFramebuffer(framebuffer);
         if (scene) {
             const { opaques, transparents } = scene.getMeshes();
             shader.draw(this.regl, opaques);
@@ -26,8 +24,8 @@ class Renderer {
         return this;
     }
 
-    clear() {
-        this.regl.clear();
+    clear(options) {
+        this.regl.clear(options);
     }
 }
 
