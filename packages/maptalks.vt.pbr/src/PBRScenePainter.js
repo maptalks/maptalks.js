@@ -1,5 +1,5 @@
 import * as reshader from 'reshader.gl';
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4, vec3 } from '@mapbox/gl-matrix';
 import { extend } from './Util';
 
 class PBRScenePainter {
@@ -50,8 +50,27 @@ class PBRScenePainter {
             };
         }
 
+        const uniforms = this._getUniformValues(map);
+
+        if (this.shadowPass) {
+            const cameraProjView = mat4.multiply([], uniforms.projection, uniforms.view);
+            const lightDir = vec3.normalize([], uniforms['dirLightDirections'][0]);
+            const extent = map._get2DExtent(map.getGLZoom());
+            const arr = extent.toArray();
+            const { lightProjView, shadowMap, depthFBO, blurFBO } = this.shadowPass.render(
+                this.scene,
+                { cameraProjView, lightDir, farPlane : arr.map(c => [c.x, c.y, 0, 1]) }
+            );
+            if (this.sceneConfig.shadow.debug) {
+                // this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
+                this.debugFBO(this.sceneConfig.shadow.debug[1], blurFBO);
+            }
+            uniforms['vsm_shadow_lightProjView'] = [lightProjView];
+            uniforms['vsm_shadow_shadowMap'] = [shadowMap];
+        }
+
         //TODO implement shadow pass
-        this.renderer.render(this.shader, this._getUniformValues(map), this.scene);
+        this.renderer.render(this.shader, uniforms, this.scene);
         return {
             redraw : false
         };
@@ -68,43 +87,6 @@ class PBRScenePainter {
             this._redraw = true;
         }
     }
-
-    // debugBRDF() {
-    //     const debug = document.getElementById('debugc').getContext('2d');
-    //     const pixels = this.regl.read({
-    //         // x: 0,
-    //         // y: 0,
-    //         // width: 1024,
-    //         // height: 512,
-    //         framebuffer : this.iblMaps.brdfLUT
-    //     });
-    //     const width = 256, height = 1024;
-    //     var halfHeight = height / 2 | 0;  // the | 0 keeps the result an int
-    //     var bytesPerRow = width * 4;
-
-    //     // make a temp buffer to hold one row
-    //     var temp = new Uint8Array(width * 4);
-    //     for (var y = 0; y < halfHeight; ++y) {
-    //         var topOffset = y * bytesPerRow;
-    //         var bottomOffset = (height - y - 1) * bytesPerRow;
-
-    //         // make copy of a row on the top half
-    //         temp.set(pixels.subarray(topOffset, topOffset + bytesPerRow));
-
-    //         // copy a row from the bottom half to the top
-    //         pixels.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
-
-    //         // copy the copy of the top half row to the bottom half
-    //         pixels.set(temp, bottomOffset);
-    //     }
-
-    //     // This part is not part of the answer. It's only here
-    //     // to show the code above worked
-    //     // copy the pixels in a 2d canvas to show it worked
-    //     var imgdata = new ImageData(width, height);
-    //     imgdata.data.set(pixels);
-    //     debug.putImageData(imgdata, 0, 0);
-    // }
 
     getMesh(key) {
         return this.meshCache[key];
@@ -126,11 +108,6 @@ class PBRScenePainter {
     }
 
     remove() {
-        // for (const p in this.meshCache) {
-        //     if (this.meshCache.hasOwnProperty(p)) {
-        //         this.delete(p);
-        //     }
-        // }
         delete this.meshCache;
         this.material.dispose();
         this.shader.dispose();
@@ -169,6 +146,17 @@ class PBRScenePainter {
         });
         this.scene = new reshader.Scene();
         this.renderer = new reshader.Renderer(regl);
+
+        if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
+            let shadowRes = 512;
+            const quality = this.sceneConfig.shadow.quality;
+            if (quality === 'high') {
+                shadowRes = 2048;
+            } else if (quality === 'medium') {
+                shadowRes = 1024;
+            }
+            this.shadowPass = new reshader.ShadowPass(this.renderer, { width : shadowRes, height : shadowRes});
+        }
 
         this._updateMaterial();
 
@@ -236,20 +224,6 @@ class PBRScenePainter {
                 }
             }
         }
-        /* {
-            metallic : 1,
-            roughness : 0.2,
-            albedoColor : [1, 1, 1],
-            albedoMap : new reshader.Texture2D({
-                url : './resources/rusted_iron/albedo.png'
-            }, loader),
-            normalMap : new reshader.Texture2D({
-                url : './resources/rusted_iron/normal.png'
-            }, loader),
-            occulusionRoughnessMetallicMap : new reshader.Texture2D({
-                url : './resources/rusted_iron/occulusionRoughnessMetallicMap-1024.png'
-            }, loader)
-        } */
         this.material = new reshader.pbr.StandardMaterial(material);
     }
 
@@ -293,6 +267,11 @@ class PBRScenePainter {
         if (lightConfig.ambientCubeLight) {
             uniforms.push('irradianceMap', 'prefilterMap', 'brdfLUT');
         }
+
+        if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
+            uniforms.push('vsm_shadow_lightProjView[1]', 'vsm_shadow_shadowMap[1]');
+        }
+
         return uniforms;
     }
 
@@ -352,7 +331,51 @@ class PBRScenePainter {
         if (lightConfig.ambientCubeLight) {
             defines['USE_AMBIENT_CUBEMAP'] = 1;
         }
+        if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
+            defines['USE_SHADOW'] = 1;
+        }
         return defines;
+    }
+
+    debugFBO(id, fbo) {
+        const canvas = document.getElementById(id);
+        const width = fbo.width, height = fbo.height;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const pixels = this.regl.read({
+            framebuffer : fbo
+        });
+
+        const halfHeight = height / 2 | 0;  // the | 0 keeps the result an int
+        const bytesPerRow = width * 4;
+
+        for (let i = 0; i < pixels.length; i++) {
+            pixels[i] *= 255;
+        }
+
+        // make a temp buffer to hold one row
+        const temp = new Uint8Array(width * 4);
+        for (let y = 0; y < halfHeight; ++y) {
+            const topOffset = y * bytesPerRow;
+            const bottomOffset = (height - y - 1) * bytesPerRow;
+
+            // make copy of a row on the top half
+            temp.set(pixels.subarray(topOffset, topOffset + bytesPerRow));
+
+            // copy a row from the bottom half to the top
+            pixels.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
+
+            // copy the copy of the top half row to the bottom half
+            pixels.set(temp, bottomOffset);
+        }
+
+        // This part is not part of the answer. It's only here
+        // to show the code above worked
+        // copy the pixels in a 2d canvas to show it worked
+        const imgdata = new ImageData(width, height);
+        imgdata.data.set(pixels);
+        ctx.putImageData(imgdata, 0, 0);
     }
 }
 

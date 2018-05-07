@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="screen.css" />
-  <!-- 需要用maptalks worker分支下的版本 -->
+  <!-- 需要用 maptalks worker 分支下的版本 -->
   <script src="http://localhost:20000/maptalks.js"></script>
   <script src="buildings.js"></script>
   <script src="../../packages/maptalks.vt/dist/maptalks.vt.js"></script>
@@ -22,6 +22,8 @@
 
   <div id="main">
     <div id="map" style="float:left;background-color:#bbb;width:1100px;"></div>
+    <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
+    <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <div style="float:right;width:300px;">
       金属度： <input id="metallic" type="range"> <br>
       粗糙度： <input id="roughness" type="range"> <br>
@@ -45,21 +47,21 @@
     var osm = new maptalks.TileLayer('osm', {
         crossOrigin : 'anonymous',
         // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        // urlTemplate : 'http://www.google.cn/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i342009817!3m9!2sen-US!3sCN!5e18!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!4e0&token=32965',
-        // subdomains: ['a', 'b', 'c'],
+        urlTemplate : 'http://www.google.cn/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i342009817!3m9!2sen-US!3sCN!5e18!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!4e0&token=32965',
+        subdomains: ['a', 'b', 'c'],
         // attribution : '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        urlTemplate: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-          subdomains: ['a','b','c','d'],
-          attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+        // urlTemplate: 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        //   subdomains: ['a','b','c','d'],
+        //   attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
       });
 
     var map = new maptalks.Map('map', {
       center: [13.416935229170008, 52.529564137540376],
       zoom: 19,
-      pitch : 50,
+      // pitch : 50,
       dragRotatePitch : true,
       // bearing : -42,
-      baseLayer: osm
+      // baseLayer: osm
     });
     var data = buildings.reduce(function (v, b) {
       for (let i = 0, l = b.features.length; i < l; i++) {
@@ -102,7 +104,11 @@
             // albedoMap : 'resources/brickwall.jpg',
             // normalMap : 'resources/Rock_01_local.jpg'
           },
-          
+          shadow : {
+            enable : true,
+            quality : 'low',
+            debug : ['shadow', 'shadow2']
+          },
           lights : {
             ambientCubeLight : {
               url : 'resources/venice_sunset_2k.hdr'
@@ -112,7 +118,7 @@
             dirLights : [
               {
                 color : [1, 1, 1],
-                direction : [0, 1, 1]
+                direction : [0, 4, 4]
               }
             ]
           }

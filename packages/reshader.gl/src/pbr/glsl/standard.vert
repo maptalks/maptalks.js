@@ -16,7 +16,6 @@
 #endif
 #if defined(USE_NORMAL_MAP)
     varying vec3 vViewPos;
-
     uniform mat4 viewModel;
 #endif
     uniform mat4 model;
@@ -32,7 +31,8 @@
             vTexCoord = aTexCoord;
         #endif
         vec4 pos = vec4(aPosition, 1.0);
-        vWorldPos = (model * pos).xyz;
+        vec4 worldPos = model * pos;
+        vWorldPos = worldPos.xyz;
 
         #if defined(USE_NORMAL_MAP)
             vViewPos = (viewModel * pos).xyz;
@@ -46,7 +46,7 @@
         gl_Position =  projectionViewModel * vec4(aPosition, 1.0);
 
         #ifdef USE_SHADOW
-            vsm_shadow_computeShadowPars(vWorldPos);
+            vsm_shadow_computeShadowPars(worldPos);
         #endif
     }
 

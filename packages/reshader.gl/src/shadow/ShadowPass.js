@@ -12,11 +12,13 @@ class ShadowPass {
         this._init();
     }
 
-    render(scene, { cameraProjView, lightDir }) {
-        const lightProjView = this._renderShadow(scene, cameraProjView, lightDir);
+    render(scene, { cameraProjView, lightDir, farPlane }) {
+        const lightProjView = this._renderShadow(scene, cameraProjView, lightDir, farPlane);
         return {
             lightProjView,
-            shadowMap : this.blurTex
+            shadowMap : this.blurTex,
+            depthFBO : this.depthFBO,
+            blurFBO : this.blurFBO
         };
     }
 
@@ -32,15 +34,25 @@ class ShadowPass {
         return this;
     }
 
-    _renderShadow(scene, cameraProjView, lightDir) {
+    _renderShadow(scene, cameraProjView, lightDir, farPlane) {
         const renderer = this.renderer;
         if (!this.vsmShader) {
             this.vsmShader = new VSMShadowShader();
         }
+        const frustum = getFrustumWorldSpace(cameraProjView);
+        if (farPlane) {
+            for (let i = 4; i < 8; i++) {
+                frustum[i] = farPlane[i - 4];
+            }
+        }
         //TODO 计算Frustum和scene的相交部分，作为光源的frustum
         //TODO 遍历scene中的图形，如果aabb不和frustum相交，就不绘制
-        const frustum = getFrustumWorldSpace(cameraProjView);
         const lightProjView = getDirLightCameraProjView(frustum, lightDir);
+        renderer.clear({
+            color : [0, 0, 0, 1],
+            depth : 1,
+            framebuffer : this.depthFBO
+        });
         renderer.render(this.vsmShader, { lightProjView }, scene, this.depthFBO);
         if (this.blurFBO) {
             if (!this.boxBlurShader) {
@@ -48,6 +60,11 @@ class ShadowPass {
                     blurOffset : 2
                 });
             }
+            renderer.clear({
+                color : [0, 0, 0, 1],
+                depth : 1,
+                framebuffer : this.blurFBO
+            });
             renderer.render(
                 this.boxBlurShader,
                 {
@@ -128,18 +145,19 @@ getFrustumWorldSpace = function () {
         // far
         [-1, -1, 1, 1],	[1, -1, 1, 1],	[1,  1, 1, 1],  [-1,  1, 1, 1]
     ];
-    const inverseProjectionMatrix = [];
+    const inverseProjectionMatrix = new Array(16);
     return function (cameraProjView) {
         mat4.invert(inverseProjectionMatrix, cameraProjView);
-        const points = [];
+        const frustum = [];
 
         for (let i = 0; i < clipPlanes.length; i++) {
-            const projClipSpacePosition = clipPlanes[i];
-            const projWorldSpacePosition = vec4.transformMat4(projClipSpacePosition, projClipSpacePosition, inverseProjectionMatrix);
+            const projWorldSpacePosition = vec4.transformMat4([], clipPlanes[i], inverseProjectionMatrix);
             vec4.scale(projWorldSpacePosition,  projWorldSpacePosition, 1 / projWorldSpacePosition[3]);
-            points.push(projWorldSpacePosition);
+            frustum.push(projWorldSpacePosition);
         }
-        return points;
+        // const cameraPos = vec4.transformMat4([], [0, 0, -1, 1], inverseProjectionMatrix);
+        // vec4.scale(cameraPos, cameraPos, 1 / cameraPos[3]);
+        return frustum;
     };
 }();
 
@@ -152,24 +170,24 @@ getFrustumWorldSpace = function () {
  */
 getDirLightCameraProjView = function () {
     let transf = new Array(4);
-    const up = [0, 1, 0];
+    const cameraUp = [0, 1, 0];
     const v3 = new Array(3);
     let lvMatrix = new Array(16);
     let lpMatrix = new Array(16);
     let cropMatrix = new Array(16);
     const scaleV = [1, 1, 1];
     const offsetV = [0, 0, 0];
-    return function (points, lightDir) {
+    return function (frustum, lightDir) {
         let frustumCenter = [0, 0, 0, 0];
-        for (let i = 0; i < points.length; i++) {
-            vec4.add(frustumCenter, frustumCenter, points[i]);
+        for (let i = 4; i < frustum.length; i++) {
+            vec4.add(frustumCenter, frustumCenter, frustum[i]);
         }
-        vec4.scale(frustumCenter, frustumCenter, 1 / 8);
+        vec4.scale(frustumCenter, frustumCenter, 1 / 4);
         frustumCenter = frustumCenter.slice(0, 3);
 
-        lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDir)), frustumCenter, up);
+        lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDir)), frustumCenter, cameraUp);
 
-        vec4.transformMat4(transf, points[0], lvMatrix);
+        vec4.transformMat4(transf, frustum[0], lvMatrix);
         let minZ = transf[2],
             maxZ = transf[2],
             minX = transf[0],
@@ -178,7 +196,7 @@ getDirLightCameraProjView = function () {
             maxY = transf[1];
 
         for (let i = 1; i < 8; i++) {
-            transf = vec4.transformMat4(transf, points[i], lvMatrix);
+            transf = vec4.transformMat4(transf, frustum[i], lvMatrix);
 
             if (transf[2] > maxZ) maxZ = transf[2];
             if (transf[2] < minZ) minZ = transf[2];
@@ -191,13 +209,13 @@ getDirLightCameraProjView = function () {
         lpMatrix = mat4.ortho(lpMatrix, -1.0, 1.0, -1.0, 1.0, minZ, maxZ);
 
         const scaleX = scaleV[0] = 2.0 / (maxX - minX);
-        const scaleY = scaleV[1] = 2.0 / (maxY - minY);
+        const scaleY = scaleV[1] = -2.0 / (maxY - minY);
         offsetV[0] = -0.5 * (minX + maxX) * scaleX;
         offsetV[1] = -0.5 * (minY + maxY) * scaleY;
 
         cropMatrix = mat4.identity(cropMatrix);
-        mat4.scale(cropMatrix, cropMatrix, scaleV);
         mat4.translate(cropMatrix, cropMatrix, offsetV);
+        mat4.scale(cropMatrix, cropMatrix, scaleV);
         const projMatrix = mat4.multiply(lpMatrix, cropMatrix, lpMatrix);
         return mat4.multiply(new Array(16), projMatrix, lvMatrix);
     };
