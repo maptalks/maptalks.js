@@ -7,6 +7,7 @@ const assert = require('assert'),
     GLConstants = require('./../src/gl/GLConstants'),
     fusion = require('./../src/init');
 
+    
 describe('baseline test', () => {
     /**
      * reference:
