@@ -8,7 +8,7 @@ const assert = require('assert'),
     fusion = require('./../src/init');
 
 describe('vao test', () => {
-    it('#vao draw triangle', () => {
+    it('#1.vao draw triangle', () => {
         const glCavnas = new fusion.gl.GLCanvas(headless);
         const gl = glCavnas.getContext('webgl');
         //enable debugger
