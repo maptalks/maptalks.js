@@ -11,6 +11,13 @@
 [claygl](http://139.129.7.130/fusion.gl/example/fusion.gl.clay.html)  
 [three&claygl](http://139.129.7.130/fusion.gl/example/fusion.gl.three.claygl.html)
 ### install ###
+> headless-gl
+```
+npm install --global --production windows-build-tools
+
+npm install -global gl
+```
+> fusion.gl
 ```javascript
 npm install fusion.gl 
 ```
