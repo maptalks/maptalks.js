@@ -1,11 +1,9 @@
-import { extend } from './common/Util.js';
+import { extend, isNil } from './common/Util.js';
 import { mat4 } from '@mapbox/gl-matrix';
-
-const IDENTITY = mat4.identity(new Array(16));
 
 /**
  * Config:
- *  transparent
+ *  transparent, castShadow
  */
 class Mesh {
     constructor(geometry, material, config = {}) {
@@ -13,8 +11,9 @@ class Mesh {
         this.material = material;
         this.config = config;
         this.transparent = config.transparent;
+        this.castShadow = isNil(config.castShadow) || config.castShadow;
         this.uniforms = {};
-        this.localTransform = IDENTITY;
+        this.localTransform = mat4.identity(new Array(16));
     }
 
     setParent() {

@@ -1,6 +1,6 @@
 import * as reshader from 'reshader.gl';
 import { mat4, vec3 } from '@mapbox/gl-matrix';
-import { extend } from './Util';
+import { extend, isNil } from './Util';
 
 class PBRScenePainter {
     constructor(regl, sceneConfig) {
@@ -53,20 +53,32 @@ class PBRScenePainter {
         const uniforms = this._getUniformValues(map);
 
         if (this.shadowPass) {
+            this._transformGround(map);
             const cameraProjView = mat4.multiply([], uniforms.projection, uniforms.view);
             const lightDir = vec3.normalize([], uniforms['dirLightDirections'][0]);
             const extent = map._get2DExtent(map.getGLZoom());
             const arr = extent.toArray();
-            const { lightProjView, shadowMap, depthFBO, blurFBO } = this.shadowPass.render(
+            const { lightProjView, shadowMap/* , depthFBO, blurFBO */ } = this.shadowPass.render(
                 this.scene,
                 { cameraProjView, lightDir, farPlane : arr.map(c => [c.x, c.y, 0, 1]) }
             );
-            if (this.sceneConfig.shadow.debug) {
-                // this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
-                this.debugFBO(this.sceneConfig.shadow.debug[1], blurFBO);
-            }
+            // if (this.sceneConfig.shadow.debug) {
+            //     this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
+            //     this.debugFBO(this.sceneConfig.shadow.debug[1], blurFBO);
+            // }
             uniforms['vsm_shadow_lightProjView'] = [lightProjView];
             uniforms['vsm_shadow_shadowMap'] = [shadowMap];
+
+            //display ground shadows
+            this.renderer.render(this.shadowShader, {
+                'model' : this.ground.localTransform,
+                'projection' : uniforms.projection,
+                'view' : uniforms.view,
+                'vsm_shadow_lightProjView' : uniforms['vsm_shadow_lightProjView'],
+                'vsm_shadow_shadowMap' : uniforms['vsm_shadow_shadowMap'],
+                'color' : this.sceneConfig.shadow.color || [0, 0, 0],
+                'opacity' : isNil(this.sceneConfig.shadow.opacity) ? 1 : this.sceneConfig.shadow.opacity
+            }, this.groundScene);
         }
 
         //TODO implement shadow pass
@@ -105,12 +117,24 @@ class PBRScenePainter {
     clear() {
         this.meshCache = {};
         this.scene.clear();
+        this.scene.addMesh(this.ground);
     }
 
     remove() {
         delete this.meshCache;
         this.material.dispose();
         this.shader.dispose();
+        this.ground.geometry.dispose();
+        this.ground.dispose();
+    }
+
+    _transformGround(map) {
+        const extent = map._get2DExtent(map.getGLZoom());
+        const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
+        const localTransform = this.ground.localTransform;
+        mat4.identity(localTransform);
+        mat4.translate(localTransform, localTransform, map.cameraLookAt);
+        mat4.scale(localTransform, localTransform, [scaleX, scaleY, 1]);
     }
 
     _init() {
@@ -144,10 +168,22 @@ class PBRScenePainter {
                 // }
             }
         });
+
         this.scene = new reshader.Scene();
+
+        const planeGeo = new reshader.Plane();
+        planeGeo.generateBuffers(regl);
+        this.ground = new reshader.Mesh(planeGeo);
+        this.groundScene = new reshader.Scene([this.ground]);
+
+        this.scene.addMesh(this.ground);
+        this.shader.filter = mesh => mesh !== this.ground;
+
+        const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
+
         this.renderer = new reshader.Renderer(regl);
 
-        if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
+        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
             let shadowRes = 512;
             const quality = this.sceneConfig.shadow.quality;
             if (quality === 'high') {
@@ -155,14 +191,48 @@ class PBRScenePainter {
             } else if (quality === 'medium') {
                 shadowRes = 1024;
             }
-            this.shadowPass = new reshader.ShadowPass(this.renderer, { width : shadowRes, height : shadowRes});
+            this.shadowPass = new reshader.ShadowPass(this.renderer, { width : shadowRes, height : shadowRes, blurOffset : this.sceneConfig.shadow.blurOffset });
+            this.shadowShader = new reshader.ShadowDisplayShader(this.sceneConfig.lights.dirLights.length);
         }
 
         this._updateMaterial();
 
-        const cubeLightConfig = this.sceneConfig.lights.ambientCubeLight;
-        if (cubeLightConfig) {
+        this._initCubeLight();
+    }
 
+    _createIBLMaps(hdr) {
+        const regl = this.regl;
+        return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+            envTexture : hdr.getREGLTexture(regl),
+            // prefilterCubeSize : 256
+        });
+    }
+
+    _updateMaterial() {
+        if (this.material) {
+            this.material.dispose();
+        }
+        const materialConfig = this.sceneConfig.material;
+        const material = {};
+        for (const p in materialConfig) {
+            if (materialConfig.hasOwnProperty(p)) {
+                if (p.indexOf('Map') > 0) {
+                    //a texture image
+                    material[p] = new reshader.Texture2D({
+                        url : materialConfig[p],
+                        wrapS : 'repeat', wrapT : 'repeat'
+                    }, this.loader);
+                } else {
+                    material[p] = materialConfig[p];
+                }
+            }
+        }
+        this.material = new reshader.pbr.StandardMaterial(material);
+    }
+
+    _initCubeLight() {
+        const cubeLightConfig = this.sceneConfig.lights && this.sceneConfig.lights.ambientCubeLight;
+        if (cubeLightConfig) {
             if (!cubeLightConfig.url && !cubeLightConfig.data) {
                 throw new Error('Must provide url or data(ArrayBuffer) for ambientCubeLight');
             }
@@ -197,36 +267,6 @@ class PBRScenePainter {
         }
     }
 
-    _createIBLMaps(hdr) {
-        const regl = this.regl;
-        return reshader.pbr.PBRHelper.createIBLMaps(regl, {
-            envTexture : hdr.getREGLTexture(regl),
-            // prefilterCubeSize : 256
-        });
-    }
-
-    _updateMaterial() {
-        if (this.material) {
-            this.material.dispose();
-        }
-        const materialConfig = this.sceneConfig.material;
-        const material = {};
-        for (const p in materialConfig) {
-            if (materialConfig.hasOwnProperty(p)) {
-                if (p.indexOf('Map') > 0) {
-                    //a texture image
-                    material[p] = new reshader.Texture2D({
-                        url : materialConfig[p],
-                        wrapS : 'repeat', wrapT : 'repeat'
-                    }, this.loader);
-                } else {
-                    material[p] = materialConfig[p];
-                }
-            }
-        }
-        this.material = new reshader.pbr.StandardMaterial(material);
-    }
-
     _getUniforms() {
         const uniforms = [
             'model',
@@ -257,8 +297,12 @@ class PBRScenePainter {
         const lightConfig = this.sceneConfig.lights;
 
         if (lightConfig.dirLights) {
-            uniforms.push(`dirLightDirections[${lightConfig.dirLights.length}]`);
-            uniforms.push(`dirLightColors[${lightConfig.dirLights.length}]`);
+            const numOfDirLights = lightConfig.dirLights.length;
+            uniforms.push(`dirLightDirections[${numOfDirLights}]`);
+            uniforms.push(`dirLightColors[${numOfDirLights}]`);
+            if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
+                uniforms.push(`vsm_shadow_lightProjView[${numOfDirLights}]`, `vsm_shadow_shadowMap[${numOfDirLights}]`);
+            }
         }
         if (lightConfig.spotLights) {
             uniforms.push(`spotLightPositions[${lightConfig.spotLights.length}]`);
@@ -266,10 +310,6 @@ class PBRScenePainter {
         }
         if (lightConfig.ambientCubeLight) {
             uniforms.push('irradianceMap', 'prefilterMap', 'brdfLUT');
-        }
-
-        if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
-            uniforms.push('vsm_shadow_lightProjView[1]', 'vsm_shadow_shadowMap[1]');
         }
 
         return uniforms;

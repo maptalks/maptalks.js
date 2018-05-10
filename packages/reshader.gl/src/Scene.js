@@ -1,6 +1,6 @@
 class Scene {
     constructor(meshes) {
-        this.meshes = meshes;
+        this.meshes = meshes || [];
         this.dirty();
     }
 

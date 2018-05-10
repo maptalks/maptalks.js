@@ -7,6 +7,12 @@ class MeshShader extends Shader {
         const props = [];
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
+            if (!this.filter(meshes[i])) {
+                if (i === l - 1 && preCommand) {
+                    preCommand(props);
+                }
+                continue;
+            }
             const command = this.getMeshCommand(regl, meshes[i]);
 
             //run command one by one, for debug
@@ -28,6 +34,10 @@ class MeshShader extends Shader {
             }
         }
         return this;
+    }
+
+    filter() {
+        return true;
     }
 
     getMeshCommand(regl, mesh) {

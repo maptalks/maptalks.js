@@ -6,13 +6,13 @@
 // uniform sampler2D vsm_shadow_shadowMap[NUM_OF_DIR_LIGHTS] 深度纹理
 //
 //
-// void vsm_shadow_computeShadow(int dirLightIdx)
+// void shadow_computeShadow(int dirLightIdx)
 // 计算某个有向光源在当前片元的阴影值
 //   * int dirLightIdx : 有向光源的序号
 //
 // 示例：
 // // 计算第一个有向光源在当前片元的阴影值
-// float shadow = vsm_shadow_computeShadow(0);
+// float shadow = shadow_computeShadow(0);
 //--------------------------
 
 uniform sampler2D vsm_shadow_shadowMap[NUM_OF_DIR_LIGHTS];
@@ -38,7 +38,7 @@ float vsm_shadow_chebyshevUpperBound(sampler2D shadowMap, vec3 projCoords){
     return p_max;
 }
 
-float vsm_shadow_computeShadow(int dirLightIdx) {
+float shadow_computeShadow(int dirLightIdx) {
     for (int i = 0; i < NUM_OF_DIR_LIGHTS; i++) {
         if (i == dirLightIdx) {
             // 执行透视除法

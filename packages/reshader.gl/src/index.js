@@ -9,6 +9,8 @@ export { default as Scene } from './Scene.js';
 export { default as Texture2D } from './Texture2D.js';
 export { default as TextureCube } from './TextureCube.js';
 
+export { default as Plane } from './Plane.js';
+
 import * as Util from './common/Util.js';
 export { Util };
 import parseHDR from './common/HDR.js';
@@ -36,3 +38,4 @@ const pbr = {
 export { pbr };
 
 export { default as ShadowPass } from './shadow/ShadowPass.js';
+export { default as ShadowDisplayShader } from './shadow/ShadowDisplayShader.js';

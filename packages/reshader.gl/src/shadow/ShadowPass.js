@@ -1,3 +1,4 @@
+import { isNil } from '../common/Util';
 import { mat4, vec4, vec3 } from '@mapbox/gl-matrix';
 import VSMShadowShader from './VSMShadowShader';
 import BoxBlurShader from '../shader/BoxBlurShader';
@@ -5,10 +6,11 @@ import BoxBlurShader from '../shader/BoxBlurShader';
 let getFrustumWorldSpace, getDirLightCameraProjView;
 
 class ShadowPass {
-    constructor(renderer, { width, height }) {
+    constructor(renderer, { width, height, blurOffset }) {
         this.renderer = renderer;
         this.width = width || 512;
         this.height = height || 512;
+        this.blurOffset = isNil(blurOffset) ? 2 : blurOffset;
         this._init();
     }
 
@@ -16,7 +18,7 @@ class ShadowPass {
         const lightProjView = this._renderShadow(scene, cameraProjView, lightDir, farPlane);
         return {
             lightProjView,
-            shadowMap : this.blurTex,
+            shadowMap : this.blurTex || this.depthTex,
             depthFBO : this.depthFBO,
             blurFBO : this.blurFBO
         };
@@ -57,7 +59,7 @@ class ShadowPass {
         if (this.blurFBO) {
             if (!this.boxBlurShader) {
                 this.boxBlurShader = new BoxBlurShader({
-                    blurOffset : 2
+                    blurOffset : this.blurOffset
                 });
             }
             renderer.clear({
@@ -93,6 +95,10 @@ class ShadowPass {
         this.depthFBO = regl.framebuffer({
             color : this.depthTex
         });
+
+        if (this.blurOffset <= 0) {
+            return;
+        }
 
         this.blurTex = regl.texture({
             width, height,
@@ -188,12 +194,9 @@ getDirLightCameraProjView = function () {
         lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDir)), frustumCenter, cameraUp);
 
         vec4.transformMat4(transf, frustum[0], lvMatrix);
-        let minZ = transf[2],
-            maxZ = transf[2],
-            minX = transf[0],
-            maxX = transf[0],
-            minY = transf[1],
-            maxY = transf[1];
+        let minZ = transf[2], maxZ = transf[2],
+            minX = transf[0], maxX = transf[0],
+            minY = transf[1], maxY = transf[1];
 
         for (let i = 1; i < 8; i++) {
             transf = vec4.transformMat4(transf, frustum[i], lvMatrix);
@@ -209,7 +212,7 @@ getDirLightCameraProjView = function () {
         lpMatrix = mat4.ortho(lpMatrix, -1.0, 1.0, -1.0, 1.0, minZ, maxZ);
 
         const scaleX = scaleV[0] = 2.0 / (maxX - minX);
-        const scaleY = scaleV[1] = -2.0 / (maxY - minY);
+        const scaleY = scaleV[1] = 2.0 / (maxY - minY);
         offsetV[0] = -0.5 * (minX + maxX) * scaleX;
         offsetV[1] = -0.5 * (minY + maxY) * scaleY;
 

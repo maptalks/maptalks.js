@@ -22,6 +22,10 @@ class VSMShadowShader extends MeshShader {
         });
     }
 
+    filter(mesh) {
+        return mesh.castShadow;
+    }
+
     getMeshCommand(regl, mesh) {
         if (!this.commands['vsm']) {
             this.commands['vsm'] = this.createREGLCommand(

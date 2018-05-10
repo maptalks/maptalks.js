@@ -46,7 +46,7 @@
         gl_Position =  projectionViewModel * vec4(aPosition, 1.0);
 
         #ifdef USE_SHADOW
-            vsm_shadow_computeShadowPars(worldPos);
+            shadow_computeShadowPars(worldPos);
         #endif
     }
 

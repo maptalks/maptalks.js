@@ -13,6 +13,6 @@ void main()
 	{
         c += texture2D(textureSource, vTexCoord.st + vec2(float(x) / textureSize.x, float(y) / textureSize.y)).rg;
 	}
-    vec2 color = c / float((BOXBLUR_OFFSET * BOXBLUR_OFFSET + 1) * (BOXBLUR_OFFSET * BOXBLUR_OFFSET + 1));
+    vec2 color = c / float((2 * BOXBLUR_OFFSET + 1) * (2 * BOXBLUR_OFFSET + 1));
     gl_FragColor = vec4(color, 0.0, 1.0);
 }

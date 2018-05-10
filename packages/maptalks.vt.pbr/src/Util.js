@@ -13,3 +13,7 @@ export function extend(dest) { // (Object[, Object, ...]) ->
     }
     return dest;
 }
+
+export function isNil(obj) {
+    return obj === null || obj === undefined;
+}
