@@ -62,8 +62,9 @@ class PBRScenePainter {
                 this.scene,
                 { cameraProjView, lightDir, farPlane : arr.map(c => [c.x, c.y, 0, 1]) }
             );
+
             // if (this.sceneConfig.shadow.debug) {
-            //     this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
+            //     // this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
             //     this.debugFBO(this.sceneConfig.shadow.debug[1], blurFBO);
             // }
             uniforms['vsm_shadow_lightProjView'] = [lightProjView];

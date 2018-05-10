@@ -192,12 +192,10 @@ getDirLightCameraProjView = function () {
         frustumCenter = frustumCenter.slice(0, 3);
 
         lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDir)), frustumCenter, cameraUp);
-
         vec4.transformMat4(transf, frustum[0], lvMatrix);
         let minZ = transf[2], maxZ = transf[2],
             minX = transf[0], maxX = transf[0],
             minY = transf[1], maxY = transf[1];
-
         for (let i = 1; i < 8; i++) {
             transf = vec4.transformMat4(transf, frustum[i], lvMatrix);
 
@@ -209,16 +207,18 @@ getDirLightCameraProjView = function () {
             if (transf[1] < minY) minY = transf[1];
         }
 
-        lpMatrix = mat4.ortho(lpMatrix, -1.0, 1.0, -1.0, 1.0, minZ, maxZ);
+        // 可能因为地图空间中y轴是反向的，所以与原贴不同，需要交换minZ和maxZ，即以-maxZ作为近裁面，-minZ作为远裁面
+        lpMatrix = mat4.ortho(lpMatrix, -1, 1, -1, 1, -maxZ, -minZ);
 
-        const scaleX = scaleV[0] = 2.0 / (maxX - minX);
-        const scaleY = scaleV[1] = 2.0 / (maxY - minY);
+        const scaleX = scaleV[0] = 2 / (maxX - minX);
+        const scaleY = scaleV[1] = -2 / (maxY - minY);
         offsetV[0] = -0.5 * (minX + maxX) * scaleX;
         offsetV[1] = -0.5 * (minY + maxY) * scaleY;
 
-        cropMatrix = mat4.identity(cropMatrix);
+        mat4.identity(cropMatrix);
         mat4.translate(cropMatrix, cropMatrix, offsetV);
         mat4.scale(cropMatrix, cropMatrix, scaleV);
+
         const projMatrix = mat4.multiply(lpMatrix, cropMatrix, lpMatrix);
         return mat4.multiply(new Array(16), projMatrix, lvMatrix);
     };

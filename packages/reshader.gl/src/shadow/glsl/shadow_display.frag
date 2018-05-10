@@ -10,6 +10,6 @@ void main() {
     for (int i = 0; i < NUM_OF_DIR_LIGHTS; i++) {
         shadow += shadow_computeShadow(i);
     }
-    float alpha = (1.0 - shadow);
+    float alpha = 1.0 - shadow;
 	gl_FragColor = vec4(color * alpha, opacity * alpha);
 }
