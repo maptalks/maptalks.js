@@ -13,19 +13,22 @@ class Shader {
         //defines besides meshes : lights, etc
         this.shaderDefines = defines || {};
 
-        const context = uniforms || [];
+        uniforms = uniforms || [];
         this.contextDesc = {};
-        for (let i = 0, l = context.length; i < l; i++) {
-            const p = context[i];
+        for (let i = 0, l = uniforms.length; i < l; i++) {
+            const p = uniforms[i];
             if (isString(p)) {
                 if (p.indexOf('[') > 0) {
                     // array
-                    const l = p.indexOf('['), r = p.indexOf(']');
-                    const name = p.substring(0, l), len = +p.substring(l + 1, r);
+                    const { name, len } = parseArrayName(p);
                     this.contextDesc[name] = { name, type : 'array', length : len };
                 } else {
                     this.contextDesc[p] = null;
                 }
+            } else if (p.name.indexOf('[') > 0) {
+                // array function
+                const { name, len } = parseArrayName(p.name);
+                this.contextDesc[name] = { name, type : 'array', length : len, fn : p.fn };
             } else {
                 // e.g.
                 // {
@@ -44,11 +47,54 @@ class Shader {
     /**
      * The framebuffer object to render to
      * Set to null to render to default display
-     * @param {REGLFramebuffer} frameBuffer
+     * @param {REGLFramebuffer} framebuffer
      */
-    setFramebuffer(frameBuffer) {
-        this.context.framebuffer = frameBuffer;
+    setFramebuffer(framebuffer) {
+        this.context.framebuffer = framebuffer;
         return this;
+    }
+
+    /**
+     * Get shader's context uniforms values
+     * @param {Object} meshUniforms - mesh uniforms
+     */
+    getUniforms(meshUniforms) {
+        const context = this.context;
+        const props = extend({}, context, meshUniforms);
+        const uniforms = {};
+        const desc = this.contextDesc;
+        for (const p in desc) {
+            if (desc[p] && desc[p].type === 'array') {
+                //an array uniform's value
+                const name = p, len = desc[p].length;
+                // change uniform value to the following form as regl requires:
+                // foo : {
+                //     0 : 'value',
+                //     1 : 'value',
+                //     2 : 'value'
+                // }
+                let values = context[p];
+                if (desc[p].fn) {
+                    // an array function
+                    values = desc[p].fn(context, props);
+                }
+                if (values.length !== len) {
+                    throw new Error(`${name} uniform's length is not ${len}`);
+                }
+                uniforms[name] = {};
+                for (let i = 0; i < len; i++) {
+                    uniforms[name][`${i}`] = values[i];
+                }
+            } else {
+                uniforms[p] = context[p];
+            }
+        }
+        for (const p in context) {
+            if (!uniforms[p]) {
+                uniforms[p] = context[p];
+            }
+        }
+        return uniforms;
     }
 
     /**
@@ -59,28 +105,6 @@ class Shader {
      */
     setUniforms(uniforms) {
         this.context = uniforms;
-        const desc = this.contextDesc;
-        const extra = {};
-        for (const p in uniforms) {
-            if (desc[p] && desc[p].type === 'array') {
-                //an array uniform's value
-                const name = p, len = desc[p].length;
-                if (uniforms[p].length !== len) {
-                    throw new Error(`${name} uniform's length is not ${len}`);
-                }
-                // change uniform value to the following form as regl requires:
-                // foo : {
-                //     0 : 'value',
-                //     1 : 'value',
-                //     2 : 'value'
-                // }
-                extra[name] = {};
-                for (let i = 0; i < len; i++) {
-                    extra[name][`${i}`] = uniforms[p][i];
-                }
-            }
-        }
-        extend(this.context, extra);
         return this;
     }
 
@@ -151,6 +175,12 @@ class Shader {
         this.vert = ShaderLib.compile(this.vert);
         this.frag = ShaderLib.compile(this.frag);
     }
+}
+
+function parseArrayName(p) {
+    const l = p.indexOf('['), r = p.indexOf(']');
+    const name = p.substring(0, l), len = +p.substring(l + 1, r);
+    return { name, len };
 }
 
 export default Shader;

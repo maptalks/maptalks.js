@@ -15,6 +15,7 @@ void main()
     // Adjusting moments using partial derivative
     float dx = dFdx(depth);
     float dy = dFdy(depth);
+    // Resovle acne problem
     moment2 += 0.25 * (dx * dx + dy * dy);
 
     gl_FragColor = vec4(moment1, moment2, 0.0, 1.0);

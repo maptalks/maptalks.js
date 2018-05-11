@@ -31,8 +31,7 @@
             vTexCoord = aTexCoord;
         #endif
         vec4 pos = vec4(aPosition, 1.0);
-        vec4 worldPos = model * pos;
-        vWorldPos = worldPos.xyz;
+        vWorldPos = (model * pos).xyz;
 
         #if defined(USE_NORMAL_MAP)
             vViewPos = (viewModel * pos).xyz;
@@ -43,10 +42,10 @@
         #ifdef USE_COLOR
             vColor = aColor;
         #endif
-        gl_Position =  projectionViewModel * vec4(aPosition, 1.0);
+        gl_Position =  projectionViewModel * pos;
 
         #ifdef USE_SHADOW
-            shadow_computeShadowPars(worldPos);
+            shadow_computeShadowPars(pos);
         #endif
     }
 

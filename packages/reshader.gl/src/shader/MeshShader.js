@@ -20,8 +20,9 @@ class MeshShader extends Shader {
             // console.log(i);
             // command(props);
 
+            const meshProps = meshes[i].getREGLProps();
             if (i === l - 1) {
-                props.push(extend({}, this.context, meshes[i].getREGLProps()));
+                props.push(extend({}, this.getUniforms(meshProps), meshProps));
             }
             if (i > 0 && preCommand !== command || i === l - 1) {
                 //batch mode
@@ -29,7 +30,7 @@ class MeshShader extends Shader {
                 props.length = 0;
             }
             if (i < l - 1) {
-                props.push(extend({}, this.context, meshes[i].getREGLProps()));
+                props.push(extend({}, this.getUniforms(meshProps), meshProps));
                 preCommand = command;
             }
         }

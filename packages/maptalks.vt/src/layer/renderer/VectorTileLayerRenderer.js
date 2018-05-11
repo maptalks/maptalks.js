@@ -414,7 +414,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getMeterScale(z) {
         const map = this.getMap();
-        const p = meterToPoint(map, map.getCenter(), 1000, z);
+        const p = map.distanceToPoint(1000, 0, z).width;
         return p / 1000;
     }
 }
@@ -438,10 +438,3 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
 }();
 
 export default VectorTileLayerRenderer;
-
-function meterToPoint(map, center, altitude, z) {
-    const target = map.locate(center, altitude, 0);
-    const p0 = map.coordToPoint(center, z),
-        p1 = map.coordToPoint(target, z);
-    return Math.abs(p1.x - p0.x) * sign(altitude);
-}

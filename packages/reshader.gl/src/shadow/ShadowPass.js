@@ -176,6 +176,7 @@ getFrustumWorldSpace = function () {
  */
 getDirLightCameraProjView = function () {
     let transf = new Array(4);
+    const frustumCenter = [0, 0, 0, 0];
     const cameraUp = [0, 1, 0];
     const v3 = new Array(3);
     let lvMatrix = new Array(16);
@@ -184,12 +185,12 @@ getDirLightCameraProjView = function () {
     const scaleV = [1, 1, 1];
     const offsetV = [0, 0, 0];
     return function (frustum, lightDir) {
-        let frustumCenter = [0, 0, 0, 0];
+
+        vec4.scale(frustumCenter, frustumCenter, 0);
         for (let i = 4; i < frustum.length; i++) {
             vec4.add(frustumCenter, frustumCenter, frustum[i]);
         }
         vec4.scale(frustumCenter, frustumCenter, 1 / 4);
-        frustumCenter = frustumCenter.slice(0, 3);
 
         lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDir)), frustumCenter, cameraUp);
         vec4.transformMat4(transf, frustum[0], lvMatrix);
@@ -207,7 +208,6 @@ getDirLightCameraProjView = function () {
             if (transf[1] < minY) minY = transf[1];
         }
 
-        // 可能因为地图空间中y轴是反向的，所以与原贴不同，需要交换minZ和maxZ，即以-maxZ作为近裁面，-minZ作为远裁面
         lpMatrix = mat4.ortho(lpMatrix, -1, 1, -1, 1, -maxZ, -minZ);
 
         const scaleX = scaleV[0] = 2 / (maxX - minX);

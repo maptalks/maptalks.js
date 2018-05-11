@@ -3,7 +3,7 @@
 //
 // #define NUM_OF_DIR_LIGHTS 整型 有向光源数量
 //
-// uniform mat4 vsm_shadow_lightProjView[NUM_OF_DIR_LIGHTS] 有向光源的projView矩阵， ortho projection * view matrix
+// uniform mat4 vsm_shadow_lightProjViewModel[NUM_OF_DIR_LIGHTS] 有向光源的projView矩阵， ortho projection * view matrix * model matrix
 //
 //
 // void shadow_computeShadowPars(vec4 worldPos)
@@ -11,16 +11,16 @@
 //   * vec4 worldPos : 顶点世界坐标 model * aPosition
 //
 // 示例：
-// vec4 worldPos = model * aPosition;
+// vec4 position = vec4(aPosition, 1.0);
 // shadow_computeShadowPars(worldPos);
 //--------------------------
 
-uniform mat4 vsm_shadow_lightProjView[NUM_OF_DIR_LIGHTS];
+uniform mat4 vsm_shadow_lightProjViewModel[NUM_OF_DIR_LIGHTS];
 
 varying vec4 vsm_shadow_vLightSpacePos[NUM_OF_DIR_LIGHTS];
 
-void shadow_computeShadowPars(vec4 worldPos) {
+void shadow_computeShadowPars(vec4 position) {
     for (int i = 0; i < NUM_OF_DIR_LIGHTS; i++) {
-        vsm_shadow_vLightSpacePos[i] = vsm_shadow_lightProjView[i] * worldPos;
+        vsm_shadow_vLightSpacePos[i] = vsm_shadow_lightProjViewModel[i] * position;
     }
 }

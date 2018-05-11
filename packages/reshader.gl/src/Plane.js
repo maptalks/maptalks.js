@@ -1,15 +1,15 @@
 import Geometry from "./Geometry.js";
 
 class Plane extends Geometry {
-    constructor() {
+    constructor(z) {
         super(
             {
                 //width and height are both 1
                 aPosition : [
-                    -0.5, -0.5, 0,
-                    0.5, -0.5, 0,
-                    -0.5, 0.5, 0,
-                    0.5, 0.5, 0,
+                    -0.5, -0.5, z || 0,
+                    0.5, -0.5, z || 0,
+                    -0.5, 0.5, z || 0,
+                    0.5, 0.5, z || 0,
                 ],
 
                 // Normal

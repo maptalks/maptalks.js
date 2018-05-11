@@ -53,20 +53,20 @@ class PBRScenePainter {
         const uniforms = this._getUniformValues(map);
 
         if (this.shadowPass) {
-            this._transformGround(map);
+            this._transformGround(layer);
             const cameraProjView = mat4.multiply([], uniforms.projection, uniforms.view);
             const lightDir = vec3.normalize([], uniforms['dirLightDirections'][0]);
             const extent = map._get2DExtent(map.getGLZoom());
             const arr = extent.toArray();
-            const { lightProjView, shadowMap/* , depthFBO, blurFBO */ } = this.shadowPass.render(
+            const { lightProjView, shadowMap, depthFBO, blurFBO } = this.shadowPass.render(
                 this.scene,
                 { cameraProjView, lightDir, farPlane : arr.map(c => [c.x, c.y, 0, 1]) }
             );
 
-            // if (this.sceneConfig.shadow.debug) {
-            //     // this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
-            //     this.debugFBO(this.sceneConfig.shadow.debug[1], blurFBO);
-            // }
+            if (this.sceneConfig.shadow.debug) {
+                // this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
+                this.debugFBO(this.sceneConfig.shadow.debug[1], blurFBO);
+            }
             uniforms['vsm_shadow_lightProjView'] = [lightProjView];
             uniforms['vsm_shadow_shadowMap'] = [shadowMap];
 
@@ -75,7 +75,7 @@ class PBRScenePainter {
                 'model' : this.ground.localTransform,
                 'projection' : uniforms.projection,
                 'view' : uniforms.view,
-                'vsm_shadow_lightProjView' : uniforms['vsm_shadow_lightProjView'],
+                'vsm_shadow_lightProjViewModel' : [mat4.multiply([], lightProjView, this.ground.localTransform)],
                 'vsm_shadow_shadowMap' : uniforms['vsm_shadow_shadowMap'],
                 'color' : this.sceneConfig.shadow.color || [0, 0, 0],
                 'opacity' : isNil(this.sceneConfig.shadow.opacity) ? 1 : this.sceneConfig.shadow.opacity
@@ -129,7 +129,9 @@ class PBRScenePainter {
         this.ground.dispose();
     }
 
-    _transformGround(map) {
+    _transformGround(layer) {
+        const map = layer.getMap();
+        console.log(layer.getRenderer()._getMeterScale());
         const extent = map._get2DExtent(map.getGLZoom());
         const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
         const localTransform = this.ground.localTransform;
@@ -302,7 +304,16 @@ class PBRScenePainter {
             uniforms.push(`dirLightDirections[${numOfDirLights}]`);
             uniforms.push(`dirLightColors[${numOfDirLights}]`);
             if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
-                uniforms.push(`vsm_shadow_lightProjView[${numOfDirLights}]`, `vsm_shadow_shadowMap[${numOfDirLights}]`);
+                uniforms.push({
+                    name : `vsm_shadow_lightProjViewModel[${numOfDirLights}]`,
+                    type : 'function',
+                    fn : function (context, props) {
+                        const lightProjViews = props['vsm_shadow_lightProjView'];
+                        const model = props['model'];
+                        return lightProjViews.map(mat => mat4.multiply([], mat, model));
+                    }
+                });
+                uniforms.push(`vsm_shadow_shadowMap[${numOfDirLights}]`);
             }
         }
         if (lightConfig.spotLights) {
