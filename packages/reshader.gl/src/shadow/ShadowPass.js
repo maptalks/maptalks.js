@@ -208,6 +208,7 @@ getDirLightCameraProjView = function () {
             if (transf[1] < minY) minY = transf[1];
         }
 
+        // 可能因为地图空间中y轴是反向的，所以与原贴不同，需要交换minZ和maxZ，即以-maxZ作为近裁面，-minZ作为远裁面
         lpMatrix = mat4.ortho(lpMatrix, -1, 1, -1, 1, -maxZ, -minZ);
 
         const scaleX = scaleV[0] = 2 / (maxX - minX);
