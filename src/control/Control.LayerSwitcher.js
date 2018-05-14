@@ -151,7 +151,7 @@ class LayerSwitcher extends Control {
             input.setAttribute('disabled', 'disabled');
         }
 
-        input.onchange = function (e) {
+        input.onchange = e => {
             if (e.target.type === 'radio') {
                 const baseLayer = map.getBaseLayer(),
                     baseLayers = baseLayer.layers;
@@ -167,6 +167,7 @@ class LayerSwitcher extends Control {
             } else {
                 layer[e.target.checked ? 'show' : 'hide']();
             }
+            this.fire('layerchange', { target : layer });
         };
         li.appendChild(input);
         label.innerHTML = layer.getId();

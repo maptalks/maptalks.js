@@ -73,6 +73,10 @@ describe('Control.LayerSwitcher', function () {
     it('base layers switch', function () {
         var control = new maptalks.control.LayerSwitcher();
         map.addControl(control);
+        var fired = false;
+        control.on('layerchange', function(e) {
+            fired = e.target;
+        });
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
                 urlTemplate : '#'
@@ -97,6 +101,7 @@ describe('Control.LayerSwitcher', function () {
         expect(radios[1].checked).to.be.ok();
         expect(group.layers[0].isVisible()).not.to.be.ok();
         expect(group.layers[1].isVisible()).to.be.ok();
+        expect(fired).to.be.ok();
     });
 
     it('overlay layers switch', function () {
