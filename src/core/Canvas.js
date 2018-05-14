@@ -311,18 +311,22 @@ const Canvas = {
         }
     },
 
-    _textOnLine(ctx, text, pt, textHaloRadius, textHaloFill, textHaloOp) {
+    _textOnLine(ctx, text, pt, textHaloRadius, textHaloFill, textHaloAlpha) {
         if (hitTesting) {
-            textHaloOp = 1;
+            textHaloAlpha = 1;
         }
+        const drawHalo = textHaloAlpha !== 0 && textHaloRadius !== 0;
         // pt = pt._round();
         ctx.textBaseline = 'top';
         let gco, fill;
-        if (textHaloOp !== 0 && textHaloRadius !== 0) {
+        const shadowBlur = ctx.shadowBlur,
+            shadowOffsetX = ctx.shadowOffsetX,
+            shadowOffsetY = ctx.shadowOffsetY;
+        if (drawHalo) {
             const alpha = ctx.globalAlpha;
             //http://stackoverflow.com/questions/14126298/create-text-outline-on-canvas-in-javascript
             //根据text-horizontal-alignment和text-vertical-alignment计算绘制起始点偏移量
-            ctx.globalAlpha *= textHaloOp;
+            ctx.globalAlpha *= textHaloAlpha;
 
             ctx.miterLimit = 2;
             ctx.lineJoin = 'round';
@@ -330,7 +334,6 @@ const Canvas = {
             ctx.lineWidth = textHaloRadius * 2;
             ctx.strokeStyle = textHaloFill;
             ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
-            // ctx.lineWidth = 1;
             ctx.miterLimit = 10; //default
 
             ctx.globalAlpha = alpha;
@@ -340,16 +343,18 @@ const Canvas = {
             fill = ctx.fillStyle;
             ctx.fillStyle = '#000';
         }
+
+        if (shadowBlur && drawHalo) {
+            ctx.shadowBlur = ctx.shadowOffsetX = ctx.shadowOffsetY = 0;
+        }
         Canvas.fillText(ctx, text, pt);
         if (gco) {
-            const shadow = ctx.shadowBlur;
-            if (shadow) {
-                ctx.shadowBlur = 0;
-            }
             ctx.globalCompositeOperation = gco;
             Canvas.fillText(ctx, text, pt, fill);
-            if (shadow) {
-                ctx.shadowBlur = shadow;
+            if (shadowBlur) {
+                ctx.shadowBlur = shadowBlur;
+                ctx.shadowOffsetX = shadowOffsetX;
+                ctx.shadowOffsetY = shadowOffsetY;
             }
         }
     },

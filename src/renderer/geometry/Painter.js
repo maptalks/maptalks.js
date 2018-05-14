@@ -490,7 +490,7 @@ class Painter extends Class {
     _prepareShadow(ctx, symbol) {
         if (symbol['shadowBlur']) {
             ctx.shadowBlur = symbol['shadowBlur'];
-            ctx.shadowColor = symbol['shadowColor'] || 'black';
+            ctx.shadowColor = symbol['shadowColor'] || '#000';
             ctx.shadowOffsetX = symbol['shadowOffsetX'] || 0;
             ctx.shadowOffsetY = symbol['shadowOffsetY'] || 0;
         } else if (ctx.shadowBlur) {
