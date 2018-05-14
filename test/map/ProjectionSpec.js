@@ -99,7 +99,7 @@ describe('Map.Projection', function () {
         it('change to IDENTITY', function () {
             map.setSpatialReference({
                 projection:'IDENTITY',
-                resolutions : [0, 10, 20],
+                resolutions : [1, 10, 20],
                 fullExtent:{
                     'top':0,
                     'left':0,
