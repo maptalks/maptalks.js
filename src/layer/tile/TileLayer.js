@@ -15,7 +15,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Number[]}            [options.tileSize=[256, 256]] - size of the tile image, [width, height]
  * @property {Number[]|Function}   [options.offset=[0, 0]]       - overall tile offset, [dx, dy], useful for tile sources from difference coordinate systems, e.g. (wgs84 and gcj02)
  * @property {Number[]}            [options.tileSystem=null]     - tile system number arrays
- * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels.
+ * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxAvailableZoom are used when displaying the map at higher zoom levels.
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {Boolean}             [options.background=true]   - whether to draw a background during or after interacting, true by default
  * @property {Number}              [options.backgroundZoomDiff=6] - the zoom diff to find parent tile as background

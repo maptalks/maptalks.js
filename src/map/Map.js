@@ -1388,6 +1388,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} yDist - distance on Y axis.
      * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
+    distanceToSize(xDist, yDist, zoom) {
+        return this.distanceToPixel(xDist, yDist, zoom);
+    }
+
     distanceToPixel(xDist, yDist, zoom) {
         const projection = this.getProjection();
         if (!projection) {
@@ -1400,6 +1404,28 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             p1 = this.coordToContainerPoint(target);
         p1._sub(p0)._multi(scale)._abs();
         return new Size(p1.x, p1.y);
+    }
+
+    /**
+     * Converts geographical distances to the 2d point length.<br>
+     * The value varis with difference zoom level.
+     *
+     * @param  {Number} xDist - distance on X axis.
+     * @param  {Number} yDist - distance on Y axis.
+     * @param  {Number} zoom - point's zoom
+     * @return {Size} result.width: 2d point distance on X axis; result.height: pixel length on Y axis
+     */
+    distanceToPoint(xDist, yDist, zoom) {
+        const projection = this.getProjection();
+        if (!projection) {
+            return null;
+        }
+        const center = this.getCenter(),
+            target = projection.locate(center, xDist, yDist);
+        const p0 = this.coordToPoint(center, zoom),
+            p1 = this.coordToPoint(target, zoom);
+        p1._sub(p0)._abs();
+        return p1;
     }
 
     /**

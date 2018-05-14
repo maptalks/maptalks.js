@@ -747,6 +747,23 @@ describe('Map.Spec', function () {
         });
     });
 
+    describe('geographic distance conversion', function () {
+        it('#distanceToPoint', function () {
+            var p = map.distanceToPoint(100, 200, map.getZoom() - 1);
+            expect(Math.round(p.x)).to.be(49);
+            expect(Math.round(p.y)).to.be(99);
+        });
+
+        it('#distanceToSize', function () {
+            var size = map.distanceToSize(100, 200);
+            expect(Math.round(size.width)).to.be(99);
+            expect(Math.round(size.height)).to.be(198);
+
+            var dist = map.pixelToDistance(size.width, size.height);
+            expect(Math.round(dist)).to.be(224);
+        });
+    });
+
     it('toDataURL', function () {
         var expected = 'data:image/png;base64';
         var data = map.toDataURL();
