@@ -458,21 +458,17 @@ class DrawTool extends MapTool {
             return;
         }
         const registerMode = this._getRegisterMode();
-        const path = this._clickCoords;
-        if (path.length < 2) {
+        const clickCoords = this._clickCoords;
+        if (clickCoords.length < 2) {
             return;
         }
         //remove duplicate vertexes
-        const nIndexes = [];
-        for (let i = 1, len = path.length; i < len; i++) {
-            if (path[i].x === path[i - 1].x && path[i].y === path[i - 1].y) {
-                nIndexes.push(i);
+        const path = [clickCoords[0]];
+        for (let i = 1, len = clickCoords.length; i < len; i++) {
+            if (clickCoords[i].x !== clickCoords[i - 1].x || clickCoords[i].y !== clickCoords[i - 1].y) {
+                path.push(clickCoords[i]);
             }
         }
-        for (let i = nIndexes.length - 1; i >= 0; i--) {
-            path.splice(nIndexes[i], 1);
-        }
-
         if (path.length < 2 || (this._geometry && (this._geometry instanceof Polygon) && path.length < 3)) {
             return;
         }
