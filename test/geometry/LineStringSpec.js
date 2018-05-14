@@ -295,6 +295,14 @@ describe('Geometry.LineString', function () {
         expect(line._get2DLength()).to.be.above(0);
     });
 
+    //issue #666
+    it('arc curve identify', function () {
+        var line = new maptalks.ArcCurve([map.getCenter(), map.getCenter().add(0.001, 0)]);
+        layer.addGeometry(line);
+
+        expect(layer.identify({x: 118.84733998413094, y: 32.04636121481619}).length).to.be.above(0);
+    });
+
     //issue #522
     it('drawn with arrow of vertex-first', function () {
         map.setPitch(60);

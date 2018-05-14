@@ -1,7 +1,7 @@
 import { GEOJSON_TYPES } from '../core/Constants';
 import { isNil, UID, isObject } from '../core/util';
 import Extent from '../geo/Extent';
-import { Geometry, GeometryCollection, LineString } from '../geometry';
+import { Geometry, GeometryCollection, LineString, Curve } from '../geometry';
 import Layer from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
 
@@ -409,8 +409,8 @@ class OverlayLayer extends Layer {
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
                 continue;
             }
-            if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
-                // Except for LineString with arrows
+            if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
+                // Except for LineString with arrows or curves
                 let extent = geo.getContainerExtent();
                 if (tolerance) {
                     extent = extent.expand(tolerance);
