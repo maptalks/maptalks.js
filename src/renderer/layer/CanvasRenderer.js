@@ -275,12 +275,13 @@ class CanvasRenderer extends Class {
             return false;
         }
         const map = this.getMap();
+        const r = Browser.retina ? 2 : 1;
         const size = map.getSize();
-        if (point.x < 0 || point.x > size['width'] || point.y < 0 || point.y > size['height']) {
+        if (point.x < 0 || point.x > size['width'] * r || point.y < 0 || point.y > size['height'] * r) {
             return false;
         }
         try {
-            const imgData = this.context.getImageData(point.x, point.y, 1, 1).data;
+            const imgData = this.context.getImageData(r * point.x, r * point.y, 1, 1).data;
             if (imgData[3] > 0) {
                 return true;
             }
