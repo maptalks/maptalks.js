@@ -26,8 +26,8 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
  * @property {Number}              [options.maxCacheSize=256]    - maximum number of tiles to cache
- * @property {Boolean}             [options.reduceTiles=true]      - reduce tiles by draw parent tiles instead on top area
- * @property {Number}              [options.minPitchToReduce=35]   - minimum pitch degree to begin tile reducing
+ * @property {Boolean}             [options.cascadeTiles=true]      - draw cascaded tiles of different zooms to reduce tiles
+ * @property {Number}              [options.minPitchToCascade=35]   - minimum pitch degree to begin tile cascade
  * @memberOf TileLayer
  * @instance
  */
@@ -69,8 +69,8 @@ const options = {
 
     'maxAvailableZoom' : null,
 
-    'reduceTiles' : true,
-    'minPitchToReduce' : 35,
+    'cascadeTiles' : true,
+    'minPitchToCascade' : 35,
 };
 
 const urlPattern = /\{ *([\w_]+) *\}/g;
@@ -126,8 +126,8 @@ class TileLayer extends Layer {
         const mapExtent = map.getContainerExtent();
         const tileGrids = [];
         let count = 0;
-        const minPitchToReduce = this.options['minPitchToReduce'];
-        if (!isNil(z) || !this.options['reduceTiles'] || map.getPitch() <= minPitchToReduce) {
+        const minPitchToCascade = this.options['minPitchToCascade'];
+        if (!isNil(z) || !this.options['cascadeTiles'] || map.getPitch() <= minPitchToCascade) {
             if (isNil(z)) {
                 z = this._getTileZoom(map.getZoom());
             }
@@ -140,7 +140,7 @@ class TileLayer extends Layer {
         }
 
         z = this._getTileZoom(map.getZoom());
-        const visualHeight = Math.floor(map._getVisualHeight(minPitchToReduce));
+        const visualHeight = Math.floor(map._getVisualHeight(minPitchToCascade));
         const extent0 = new PointExtent(0, map.height - visualHeight, map.width, map.height);
         const currentTiles = this._getTiles(z, extent0, 0);
         count += currentTiles ? currentTiles.tiles.length : 0;
