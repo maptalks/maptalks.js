@@ -284,7 +284,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     setSpatialReference(ref) {
         const oldRef = this.options['spatialReference'];
-        if (oldRef && !ref) {
+        if (this._loaded && SpatialReference.equals(oldRef, ref)) {
             return this;
         }
         ref = extend({}, ref);
@@ -1890,6 +1890,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this._prjCenter;
         const projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
+        this._calcMatrices();
         const renderer = this._getRenderer();
         if (renderer) {
             renderer.resetContainer();

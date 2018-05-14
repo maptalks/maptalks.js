@@ -103,6 +103,35 @@ export default class SpatialReference {
         return null;
     }
 
+    static equals(sp1, sp2) {
+        if (!sp1 && !sp2) {
+            return true;
+        } else if (!sp1 || !sp2) {
+            return false;
+        }
+        if (sp1.projection !== sp2.projection) {
+            return false;
+        }
+        const f1 = sp1.fullExtent, f2 = sp2.fullExtent;
+        if (f1 && f2) {
+            if (f1.top !== f2.top || f1.bottom !== f2.bottom || f1.left !== f2.left || f1.right !== f2.right) {
+                return false;
+            }
+        }
+        const r1 = sp1.resolutions, r2 = sp2.resolutions;
+        if (r1 && r2) {
+            if (r1.length !== r2.length) {
+                return false;
+            }
+            for (let i = 0; i < r1.length; i++) {
+                if (r1[i] !== r2[i]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     _initSpatialRef() {
         let projection = this.options['projection'];
         if (projection) {

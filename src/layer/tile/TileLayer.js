@@ -239,6 +239,11 @@ class TileLayer extends Layer {
      * @returns {SpatialReference} spatial reference
      */
     getSpatialReference() {
+        const map = this.getMap();
+        if  (map && (!this.options['spatialReference'] || SpatialReference.equals(this.options['spatialReference'], map.options['spatialReference']))) {
+            return map.getSpatialReference();
+        }
+        this._sr = this._sr || new SpatialReference(this.options['spatialReference']);
         return this._sr;
     }
 
@@ -271,7 +276,7 @@ class TileLayer extends Layer {
         }
 
         const zoom = z,
-            sr = this._sr,
+            sr = this.getSpatialReference(),
             mapSR = map.getSpatialReference(),
             res = sr.getResolution(zoom);
         const emptyGrid = {
@@ -422,7 +427,7 @@ class TileLayer extends Layer {
 
     _project(pcoord) {
         const map = this.getMap();
-        const sr = this._sr;
+        const sr = this.getSpatialReference();
         if (sr !== map.getSpatialReference()) {
             return sr.getProjection().project(map.getProjection().unproject(pcoord));
         } else {
@@ -432,7 +437,7 @@ class TileLayer extends Layer {
 
     _unproject(pcoord) {
         const map = this.getMap();
-        const sr = this._sr;
+        const sr = this.getSpatialReference();
         if (sr !== map.getSpatialReference()) {
             return map.getProjection().project(sr.getProjection().unproject(pcoord));
         } else {
@@ -446,9 +451,8 @@ class TileLayer extends Layer {
      */
     _initTileConfig() {
         const map = this.getMap(),
-            sr = this.options['spatialReference'] ? new SpatialReference(this.options['spatialReference']) : map.getSpatialReference(),
             tileSize = this.getTileSize();
-        this._sr = sr;
+        const sr = this.getSpatialReference();
         const projection = sr.getProjection(),
             fullExtent = sr.getFullExtent();
         this._defaultTileConfig = new TileConfig(TileSystem.getDefault(projection), fullExtent, tileSize);
