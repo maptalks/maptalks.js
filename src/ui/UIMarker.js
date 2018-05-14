@@ -337,7 +337,7 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     getOffset() {
         const size = this.getSize();
-        return new Point(-size['width'] / 2, -size['height'] / 2);
+        return new Point(-size.width / 2, -size.height / 2);
     }
 
     /**
@@ -346,8 +346,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @return {Point} transform origin
      */
     getTransformOrigin() {
-        const size = this.getSize();
-        return new Point(size['width'] / 2, size['height'] / 2);
+        return 'center center';
     }
 
     onDomRemove() {

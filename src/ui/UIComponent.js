@@ -193,7 +193,7 @@ class UIComponent extends Eventable(Class) {
             if (anim.scale) {
                 if (this.getTransformOrigin) {
                     const origin = this.getTransformOrigin();
-                    dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+                    dom.style[TRANSFORMORIGIN] = origin;
                 }
                 dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
             }
@@ -424,13 +424,14 @@ class UIComponent extends Eventable(Class) {
         const container = this._getUIContainer();
         dom.style.position = 'absolute';
         dom.style.left = -99999 + 'px';
-        dom.style.top = -99999 + 'px';
+        const anchor = dom.style.bottom ? 'bottom' : 'top';
+        dom.style[anchor] = -99999 + 'px';
         dom.style.display = '';
         container.appendChild(dom);
         this._size = new Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
         dom.style.left = '0px';
-        dom.style.top = '0px';
+        dom.style[anchor] = '0px';
         return this._size;
     }
 

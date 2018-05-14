@@ -147,6 +147,7 @@ class InfoWindow extends UIComponent {
         const dom = createEl('div');
         dom.className = 'maptalks-msgBox';
         dom.style.width = this._getWindowWidth() + 'px';
+        dom.style.bottom = '0px'; // fix #657
         let content = '<em class="maptalks-ico"></em>';
         if (this.options['title']) {
             content += '<h2>' + this.options['title'] + '</h2>';
@@ -166,16 +167,12 @@ class InfoWindow extends UIComponent {
      */
     getTransformOrigin() {
         const size = this.getSize();
-        const o = new Point(size['width'] / 2, size['height']);
-        if (!this.options['custom']) {
-            o._add(4, 12);
-        }
-        return o;
+        return size.width / 2 + 'px bottom';
     }
 
     getOffset() {
         const size = this.getSize();
-        const o = new Point(-size['width'] / 2, -size['height']);
+        const o = new Point(-size['width'] / 2, 0);
         if (!this.options['custom']) {
             o._sub(4, 12);
         }

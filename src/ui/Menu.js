@@ -138,7 +138,8 @@ class Menu extends UIComponent {
     }
 
     getTransformOrigin() {
-        return this.getOffset()._multi(-1);
+        const p = this.getOffset()._multi(-1);
+        return p.x + 'px ' + p.y + 'px';
     }
 
     getEvents() {
