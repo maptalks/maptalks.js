@@ -29,9 +29,7 @@ let requestAnimFrame, cancelAnimFrame;
 
         requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
         cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
-            getPrefixed('CancelRequestAnimationFrame') || function (id) {
-                window.clearTimeout(id);
-            };
+            getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
     } else {
         requestFn = timeoutDefer;
         cancelFn = clearTimeout;
