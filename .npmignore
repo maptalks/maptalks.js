@@ -1,7 +1,7 @@
 /**/*
 !dist/maptalks.js
 !dist/maptalks.min.js
-!dist/maptalks.es.js
+!dist/maptalks.mjs
 !dist/maptalks.css
 !dist/images/**/*
 !ACKNOWLEDGEMENT
