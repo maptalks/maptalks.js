@@ -191,7 +191,7 @@ gulp.task('beforeZip', () => {
 });
 
 gulp.task('zip', ['beforeZip'], done => {
-    gulp.src(['dist/*.js', 'dist/images/**/*', 'dist/maptalks.css', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT', 'dist/api/**/*'], { base: 'dist/' })
+    gulp.src(['dist/*.js', 'dist/*.mjs', 'dist/images/**/*', 'dist/maptalks.css', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT', 'dist/api/**/*'], { base: 'dist/' })
         .pipe(zip('maptalks-' + package.version + '.zip'))
         .pipe(gulp.dest('dist'));
     setTimeout(function () {
