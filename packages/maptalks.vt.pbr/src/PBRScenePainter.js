@@ -118,6 +118,9 @@ class PBRScenePainter {
         this.shader.dispose();
         this.ground.geometry.dispose();
         this.ground.dispose();
+        if (this.shadowPass) {
+            this.shadowPass.remove();
+        }
     }
 
     _transformGround(layer) {
@@ -133,6 +136,28 @@ class PBRScenePainter {
 
     _init() {
         const regl = this.regl;
+
+        this.scene = new reshader.Scene();
+
+        const planeGeo = new reshader.Plane();
+        planeGeo.generateBuffers(regl);
+        this.ground = new reshader.Mesh(planeGeo);
+        this.groundScene = new reshader.Scene([this.ground]);
+
+        this.scene.addMesh(this.ground);
+
+        const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
+
+        this.renderer = new reshader.Renderer(regl);
+
+        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
+            if (this.sceneConfig.shadow.type === 'vsm') {
+                this.shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
+            } else {
+                this.shadowPass = new StencilShadowPass(this.sceneConfig, this.renderer);
+            }
+        }
+
         this.shader = new reshader.MeshShader({
             vert : reshader.pbr.StandardVert,
             frag : reshader.pbr.StandardFrag,
@@ -162,28 +187,7 @@ class PBRScenePainter {
                 // }
             }
         });
-
-        this.scene = new reshader.Scene();
-
-        const planeGeo = new reshader.Plane();
-        planeGeo.generateBuffers(regl);
-        this.ground = new reshader.Mesh(planeGeo);
-        this.groundScene = new reshader.Scene([this.ground]);
-
-        this.scene.addMesh(this.ground);
         this.shader.filter = mesh => mesh !== this.ground;
-
-        const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
-
-        this.renderer = new reshader.Renderer(regl);
-
-        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
-            if (this.sceneConfig.shadow.type === 'vsm') {
-                this.shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
-            } else {
-                this.shadowPass = new StencilShadowPass(this.sceneConfig, this.renderer);
-            }
-        }
 
         this._updateMaterial();
 
@@ -290,17 +294,9 @@ class PBRScenePainter {
             const numOfDirLights = lightConfig.dirLights.length;
             uniforms.push(`dirLightDirections[${numOfDirLights}]`);
             uniforms.push(`dirLightColors[${numOfDirLights}]`);
-            if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
-                uniforms.push({
-                    name : `vsm_shadow_lightProjViewModel[${numOfDirLights}]`,
-                    type : 'function',
-                    fn : function (context, props) {
-                        const lightProjViews = props['vsm_shadow_lightProjView'];
-                        const model = props['model'];
-                        return lightProjViews.map(mat => mat4.multiply([], mat, model));
-                    }
-                });
-                uniforms.push(`vsm_shadow_shadowMap[${numOfDirLights}]`);
+            if (this.shadowPass) {
+                const shadowUniforms = this.shadowPass.getUniforms(numOfDirLights);
+                shadowUniforms.forEach(u => uniforms.push(u));
             }
         }
         if (lightConfig.spotLights) {
@@ -369,7 +365,7 @@ class PBRScenePainter {
         if (lightConfig.ambientCubeLight) {
             defines['USE_AMBIENT_CUBEMAP'] = 1;
         }
-        if (this.sceneConfig.shadow && this.sceneConfig.shadow.enable) {
+        if (this.shadowPass) {
             defines['USE_SHADOW'] = 1;
         }
         return defines;

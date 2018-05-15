@@ -21,6 +21,21 @@ class VSMShadowPass {
         this.shadowShader = new reshader.ShadowDisplayShader(this.sceneConfig.lights.dirLights.length);
     }
 
+    getUniforms(numOfDirLights) {
+        const uniforms = [];
+        uniforms.push({
+            name : `vsm_shadow_lightProjViewModel[${numOfDirLights}]`,
+            type : 'function',
+            fn : function (context, props) {
+                const lightProjViews = props['vsm_shadow_lightProjView'];
+                const model = props['model'];
+                return lightProjViews.map(mat => mat4.multiply([], mat, model));
+            }
+        });
+        uniforms.push(`vsm_shadow_shadowMap[${numOfDirLights}]`);
+        return uniforms;
+    }
+
     pass1({
         layer, uniforms, scene, groundScene
     }) {
@@ -57,6 +72,12 @@ class VSMShadowPass {
 
     pass2() {
 
+    }
+
+    remove() {
+        this.shadowPass.dispose();
+        this.shadowShader.dispose();
+        delete this.renderer;
     }
 }
 
