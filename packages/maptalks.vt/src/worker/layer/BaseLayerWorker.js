@@ -1,7 +1,7 @@
 import { compileStyle } from '../util/FeatureFilter';
 import { extend } from '../../layer/core/Util';
 import { buildExtrudeFaces } from '../builder/';
-import { buildUniqueVertex, buildFaceNormals } from '../builder/Build';
+import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
 //TODO 改为从maptalks中载入compileStyle方法
 
 export default class BaseLayerWorker {
@@ -126,7 +126,8 @@ export default class BaseLayerWorker {
                 heightProperty,
                 defaultHeight,
                 normal, tangent,
-                uv, uvSize
+                uv, uvSize,
+                shadowVolume, shadowDir
             } = dataConfig;
 
             const faces = buildExtrudeFaces(
@@ -151,10 +152,15 @@ export default class BaseLayerWorker {
 
             const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.indexes.buffer];
 
-            const uniFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
-            faces.vertices = uniFaces.vertices;
+            let oldIndices;
+            if (shadowVolume) {
+                oldIndices = new faces.indices.constructor(faces.indices);
+            }
+
+            const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
+            faces.vertices = uniqueFaces.vertices;
             // debugger
-            if (normal) {
+            if (normal || shadowVolume) {
                 const normals = buildFaceNormals(faces.vertices, faces.indices);
                 faces.normals = normals;
                 buffers.push(normals.buffer);
@@ -164,6 +170,12 @@ export default class BaseLayerWorker {
             }
             if (uv) {
                 buffers.push(faces.uvs.buffer);
+            }
+            if (shadowVolume) {
+                // debugger
+                const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, shadowDir);
+                faces.shadowVolume = shadowVolume;
+                buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer);
             }
             return {
                 data : faces,

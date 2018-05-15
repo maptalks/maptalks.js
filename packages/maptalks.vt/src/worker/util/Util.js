@@ -10,3 +10,7 @@ export function log2(x) {
         return v;
     }
 }
+
+export function exportIndices(indices) {
+    return indices.length <= 256 ? new Uint8Array(indices)  : indices.length <= 65536 ? new Uint16Array(indices) : new Uint32Array(indices);
+}

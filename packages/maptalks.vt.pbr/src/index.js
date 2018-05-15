@@ -38,6 +38,7 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         if (!tileCache.geometry) {
             const features = tileData.features,
                 indexes = tileData.data.indexes;
+            console.log(tileData.data.shadowVolume);
             const colors = this._generateColorArray(features, indexes, tileData.data.indices, tileData.data.vertices);
             tileCache.geometry = painter.createGeometry({
                 aPosition : tileData.data.vertices,

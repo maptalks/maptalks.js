@@ -21,7 +21,7 @@
     uniform mat4 model;
     uniform mat4 projectionViewModel;
 
-#if defined(USE_SHADOW)
+#ifdef USE_SHADOW
     #include <vsm_shadow_vert>
 #endif
 

@@ -1,6 +1,8 @@
 import * as reshader from 'reshader.gl';
-import { mat4, vec3 } from '@mapbox/gl-matrix';
-import { extend, isNil } from './Util';
+import { mat4 } from '@mapbox/gl-matrix';
+import { extend } from './Util';
+import VSMShadowPass from './VSMShadowPass.js';
+import StencilShadowPass from './StencilShadowPass.js';
 
 class PBRScenePainter {
     constructor(regl, sceneConfig) {
@@ -54,36 +56,25 @@ class PBRScenePainter {
 
         if (this.shadowPass) {
             this._transformGround(layer);
-            const cameraProjView = mat4.multiply([], uniforms.projection, uniforms.view);
-            const lightDir = vec3.normalize([], uniforms['dirLightDirections'][0]);
-            const extent = map._get2DExtent(map.getGLZoom());
-            const arr = extent.toArray();
-            const { lightProjView, shadowMap, depthFBO, blurFBO } = this.shadowPass.render(
-                this.scene,
-                { cameraProjView, lightDir, farPlane : arr.map(c => [c.x, c.y, 0, 1]) }
-            );
-
+            const { fbo } = this.shadowPass.pass1({
+                layer,
+                renderer : this.renderer,
+                uniforms,
+                scene : this.scene,
+                groundScene : this.groundScene
+            });
             if (this.sceneConfig.shadow.debug) {
-                // this.debugFBO(this.sceneConfig.shadow.debug[0], depthFBO);
-                this.debugFBO(this.sceneConfig.shadow.debug[1], blurFBO);
+                // this.debugFBO(shadowConfig.debug[0], depthFBO);
+                this.debugFBO(this.sceneConfig.shadow.debug[1], fbo);
             }
-            uniforms['vsm_shadow_lightProjView'] = [lightProjView];
-            uniforms['vsm_shadow_shadowMap'] = [shadowMap];
-
-            //display ground shadows
-            this.renderer.render(this.shadowShader, {
-                'model' : this.ground.localTransform,
-                'projection' : uniforms.projection,
-                'view' : uniforms.view,
-                'vsm_shadow_lightProjViewModel' : [mat4.multiply([], lightProjView, this.ground.localTransform)],
-                'vsm_shadow_shadowMap' : uniforms['vsm_shadow_shadowMap'],
-                'color' : this.sceneConfig.shadow.color || [0, 0, 0],
-                'opacity' : isNil(this.sceneConfig.shadow.opacity) ? 1 : this.sceneConfig.shadow.opacity
-            }, this.groundScene);
         }
 
-        //TODO implement shadow pass
         this.renderer.render(this.shader, uniforms, this.scene);
+
+        if (this.shadowPass) {
+            this.shadowPass.pass2();
+        }
+
         return {
             redraw : false
         };
@@ -131,7 +122,7 @@ class PBRScenePainter {
 
     _transformGround(layer) {
         const map = layer.getMap();
-        console.log(layer.getRenderer()._getMeterScale());
+        // console.log(layer.getRenderer()._getMeterScale());
         const extent = map._get2DExtent(map.getGLZoom());
         const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
         const localTransform = this.ground.localTransform;
@@ -187,15 +178,11 @@ class PBRScenePainter {
         this.renderer = new reshader.Renderer(regl);
 
         if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
-            let shadowRes = 512;
-            const quality = this.sceneConfig.shadow.quality;
-            if (quality === 'high') {
-                shadowRes = 2048;
-            } else if (quality === 'medium') {
-                shadowRes = 1024;
+            if (this.sceneConfig.shadow.type === 'vsm') {
+                this.shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
+            } else {
+                this.shadowPass = new StencilShadowPass(this.sceneConfig, this.renderer);
             }
-            this.shadowPass = new reshader.ShadowPass(this.renderer, { width : shadowRes, height : shadowRes, blurOffset : this.sceneConfig.shadow.blurOffset });
-            this.shadowShader = new reshader.ShadowDisplayShader(this.sceneConfig.lights.dirLights.length);
         }
 
         this._updateMaterial();
@@ -366,8 +353,7 @@ class PBRScenePainter {
 
     _getDefines() {
         const defines =  {
-            'USE_COLOR' : 1,
-            'SUPPORT_TEXTURE_LOD' : 1
+            'USE_COLOR' : 1
         };
 
         const lightConfig = this.sceneConfig.lights;

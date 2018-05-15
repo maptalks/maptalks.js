@@ -414,7 +414,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getMeterScale(z) {
         const map = this.getMap();
-        const p = map.distanceToPoint(1000, 0, z).width;
+        const p = map.distanceToPoint(1000, 0, z).x;
         return p / 1000;
     }
 }
