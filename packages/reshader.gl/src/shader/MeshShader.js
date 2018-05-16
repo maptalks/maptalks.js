@@ -1,5 +1,5 @@
 import Shader from './Shader.js';
-import { extend } from '../common/Util.js';
+import { extend, isNumber } from '../common/Util.js';
 
 class MeshShader extends Shader {
 
@@ -8,7 +8,7 @@ class MeshShader extends Shader {
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
             if (!this.filter(meshes[i])) {
-                if (i === l - 1 && preCommand) {
+                if (i === l - 1 && preCommand && props.length) {
                     preCommand(props);
                 }
                 continue;
@@ -20,18 +20,17 @@ class MeshShader extends Shader {
             // console.log(i);
             // command(props);
 
-            const meshProps = meshes[i].getREGLProps();
-            if (i === l - 1) {
-                props.push(extend({}, this.getUniforms(meshProps), meshProps));
-            }
-            if (i > 0 && preCommand !== command || i === l - 1) {
+            if (props.length && preCommand !== command) {
                 //batch mode
-                command(props);
+                preCommand(props);
                 props.length = 0;
             }
+            const meshProps = meshes[i].getREGLProps();
+            props.push(extend({}, this.getUniforms(meshProps), meshProps));
             if (i < l - 1) {
-                props.push(extend({}, this.getUniforms(meshProps), meshProps));
                 preCommand = command;
+            } else if (i === l - 1) {
+                command(props);
             }
         }
         return this;
@@ -49,6 +48,8 @@ class MeshShader extends Shader {
             dKey = material.getDefinesKey();
             defines = material.getDefines();
         }
+        const elementType = isNumber(mesh.getElements()) ? 'count' : 'elements';
+        dKey += '_' + elementType;
         let command = this.commands[dKey];
         if (!command) {
             command = this.commands[dKey] =

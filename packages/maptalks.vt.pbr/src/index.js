@@ -45,9 +45,8 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         }
         let mesh = painter.getMesh(key);
         if (!mesh) {
-            mesh = painter.addMesh(key, tileCache.geometry);
+            mesh = painter.addMesh(key, tileCache.geometry, tileTransform);
         }
-        mesh.setLocalTransform(tileTransform);
         return {
             'redraw' : false
         };
