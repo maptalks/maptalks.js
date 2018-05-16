@@ -21,7 +21,7 @@
     uniform mat4 model;
     uniform mat4 projectionViewModel;
 
-#ifdef USE_SHADOW
+#ifdef USE_SHADOW_MAP
     #include <vsm_shadow_vert>
 #endif
 
@@ -44,7 +44,7 @@
         #endif
         gl_Position =  projectionViewModel * pos;
 
-        #ifdef USE_SHADOW
+        #ifdef USE_SHADOW_MAP
             shadow_computeShadowPars(pos);
         #endif
     }

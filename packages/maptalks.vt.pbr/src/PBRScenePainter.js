@@ -366,7 +366,7 @@ class PBRScenePainter {
             defines['USE_AMBIENT_CUBEMAP'] = 1;
         }
         if (this.shadowPass) {
-            defines['USE_SHADOW'] = 1;
+            defines['USE_SHADOW_MAP'] = 1;
         }
         return defines;
     }
