@@ -1,6 +1,7 @@
 import VectorTilePlugin from 'maptalks.vt.base';
 import PBRScenePainter from './PBRScenePainter';
 import Color from 'color';
+import { extend } from './Util.js';
 
 const PBRPlugin = VectorTilePlugin.extend('pbr', {
 
@@ -36,16 +37,11 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         }
         const key = tileInfo.dupKey;
         if (!tileCache.geometry) {
+            const glData = tileData.data;
             const features = tileData.features,
-                indexes = tileData.data.indexes;
-            console.log(tileData.data.shadowVolume);
-            const colors = this._generateColorArray(features, indexes, tileData.data.indices, tileData.data.vertices);
-            tileCache.geometry = painter.createGeometry({
-                aPosition : tileData.data.vertices,
-                aTexCoord : tileData.data.uvs,
-                aNormal : tileData.data.normals,
-                aColor : colors
-            }, tileData.data.indices);
+                indexes = glData.indexes;
+            const colors = this._generateColorArray(features, indexes, glData.indices, glData.vertices);
+            tileCache.geometry = painter.createGeometry(extend({}, glData, { colors }));
         }
         let mesh = painter.getMesh(key);
         if (!mesh) {

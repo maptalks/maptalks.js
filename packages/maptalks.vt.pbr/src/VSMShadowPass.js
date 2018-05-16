@@ -36,6 +36,12 @@ class VSMShadowPass {
         return uniforms;
     }
 
+    getDefines() {
+        return {
+            'USE_SHADOW_MAP' : 1
+        };
+    }
+
     pass1({
         layer, uniforms, scene, groundScene
     }) {

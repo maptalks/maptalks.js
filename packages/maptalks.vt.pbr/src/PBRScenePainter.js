@@ -30,9 +30,21 @@ class PBRScenePainter {
         return this._redraw;
     }
 
-    createGeometry(data, indices) {
-        const geometry = new reshader.Geometry(data, indices);
+    createGeometry(glData) {
+        const data = {
+            aPosition : glData.vertices,
+            aTexCoord : glData.uvs,
+            aNormal : glData.normals,
+            aColor : glData.colors
+        };
+        const geometry = new reshader.Geometry(data, glData.indices);
         geometry.generateBuffers(this.regl);
+
+        if (glData.shadowVolume && this.shadowPass && this.shadowPass.createShadowVolume) {
+            const shadowGeos = this.shadowPass.createShadowVolume(glData.shadowVolume);
+            geometry.shadow = shadowGeos;
+        }
+
         return geometry;
     }
 
@@ -40,6 +52,11 @@ class PBRScenePainter {
         const mesh = new reshader.Mesh(geometry, this.material);
         this.meshCache[key] = mesh;
         this.scene.addMesh(mesh);
+        if (this.shadowScene) {
+            // 如果shadow mesh已经存在， 则优先用它
+            const shadowMesh = geometry.shadow || mesh;
+            this.shadowScene.addMesh(shadowMesh);
+        }
         return mesh;
     }
 
@@ -60,7 +77,7 @@ class PBRScenePainter {
                 layer,
                 renderer : this.renderer,
                 uniforms,
-                scene : this.scene,
+                scene : this.shadowScene,
                 groundScene : this.groundScene
             });
             if (this.sceneConfig.shadow.debug) {
@@ -109,15 +126,20 @@ class PBRScenePainter {
     clear() {
         this.meshCache = {};
         this.scene.clear();
-        this.scene.addMesh(this.ground);
+        if (this.shadowScene) {
+            this.shadowScene.clear();
+            this.shadowScene.addMesh(this.ground);
+        }
     }
 
     remove() {
         delete this.meshCache;
         this.material.dispose();
         this.shader.dispose();
-        this.ground.geometry.dispose();
-        this.ground.dispose();
+        if (this.ground) {
+            this.ground.geometry.dispose();
+            this.ground.dispose();
+        }
         if (this.shadowPass) {
             this.shadowPass.remove();
         }
@@ -139,18 +161,18 @@ class PBRScenePainter {
 
         this.scene = new reshader.Scene();
 
-        const planeGeo = new reshader.Plane();
-        planeGeo.generateBuffers(regl);
-        this.ground = new reshader.Mesh(planeGeo);
-        this.groundScene = new reshader.Scene([this.ground]);
-
-        this.scene.addMesh(this.ground);
-
         const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
 
         this.renderer = new reshader.Renderer(regl);
 
         if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
+            const planeGeo = new reshader.Plane();
+            planeGeo.generateBuffers(regl);
+            this.ground = new reshader.Mesh(planeGeo);
+            this.groundScene = new reshader.Scene([this.ground]);
+
+            this.shadowScene = new reshader.Scene();
+            this.shadowScene.addMesh(this.ground);
             if (this.sceneConfig.shadow.type === 'vsm') {
                 this.shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
             } else {
@@ -187,7 +209,6 @@ class PBRScenePainter {
                 // }
             }
         });
-        this.shader.filter = mesh => mesh !== this.ground;
 
         this._updateMaterial();
 
@@ -366,7 +387,8 @@ class PBRScenePainter {
             defines['USE_AMBIENT_CUBEMAP'] = 1;
         }
         if (this.shadowPass) {
-            defines['USE_SHADOW_MAP'] = 1;
+            const shadowDefines = this.shadowPass.getDefines();
+            extend(defines, shadowDefines);
         }
         return defines;
     }

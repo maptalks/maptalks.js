@@ -1,17 +1,21 @@
 class Scene {
     constructor(meshes) {
-        this.meshes = meshes || [];
+        this.meshes = Array.isArray(meshes) ? meshes : [meshes] || [];
         this.dirty();
     }
 
     setMeshes(meshes) {
-        this.meshes = meshes;
+        this.meshes = Array.isArray(meshes) ? meshes : [meshes];
         this.dirty();
         return this;
     }
 
     addMesh(mesh) {
-        this.meshes.push(mesh);
+        if (Array.isArray(mesh)) {
+            mesh.forEach(m => this.meshes.push(m));
+        } else {
+            this.meshes.push(mesh);
+        }
         this.dirty();
         return this;
     }
