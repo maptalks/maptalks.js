@@ -69,7 +69,7 @@ Map.include(/** @lends Map.prototype */{
             }
         }
         if (empty) {
-            return this;
+            return null;
         }
         const zoomOrigin = view['around'] || new Point(this.width / 2, this.height / 2);
         let preView = this.getView();
@@ -132,7 +132,7 @@ Map.include(/** @lends Map.prototype */{
 
         this._startAnim(props, zoomOrigin);
 
-        return this;
+        return player;
     },
 
     /**
