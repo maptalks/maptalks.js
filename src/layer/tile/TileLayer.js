@@ -126,12 +126,16 @@ class TileLayer extends Layer {
         const mapExtent = map.getContainerExtent();
         const tileGrids = [];
         let count = 0;
+        const minZoom = this.getMinZoom();
         const minPitchToCascade = this.options['minPitchToCascade'];
-        if (!isNil(z) || !this.options['cascadeTiles'] || map.getPitch() <= minPitchToCascade) {
-            if (isNil(z)) {
-                z = this._getTileZoom(map.getZoom());
-            }
-            const currentTiles = this._getTiles(z, mapExtent);
+        const tileZoom = isNil(z) ? this._getTileZoom(map.getZoom()) : z;
+        if (
+            !isNil(z) ||
+            !this.options['cascadeTiles'] ||
+            map.getPitch() <= minPitchToCascade ||
+            !isNil(minZoom) && tileZoom <= minZoom
+        ) {
+            const currentTiles = this._getTiles(tileZoom, mapExtent);
             count += currentTiles ? currentTiles.tiles.length : 0;
             tileGrids.push(currentTiles);
             return {
@@ -139,15 +143,14 @@ class TileLayer extends Layer {
             };
         }
 
-        z = this._getTileZoom(map.getZoom());
         const visualHeight = Math.floor(map._getVisualHeight(minPitchToCascade));
         const extent0 = new PointExtent(0, map.height - visualHeight, map.width, map.height);
-        const currentTiles = this._getTiles(z, extent0, 0);
+        const currentTiles = this._getTiles(tileZoom, extent0, 0);
         count += currentTiles ? currentTiles.tiles.length : 0;
 
         const extent1 = new PointExtent(0, mapExtent.ymin, map.width, extent0.ymin);
         const d = map.getSpatialReference().getZoomDirection();
-        const parentTiles = this._getTiles(z - d, extent1, 1);
+        const parentTiles = this._getTiles(tileZoom - d, extent1, 1);
         count += parentTiles ? parentTiles.tiles.length : 0;
 
         tileGrids.push(currentTiles, parentTiles);
@@ -269,7 +272,12 @@ class TileLayer extends Layer {
         if (!map || !this.isVisible() || !map.width || !map.height) {
             return null;
         }
-
+        const minZoom = this.getMinZoom(),
+            maxZoom = this.getMaxZoom();
+        if (!isNil(minZoom) && z < minZoom ||
+            !isNil(maxZoom) && z > maxZoom) {
+            return null;
+        }
         const tileConfig = this._getTileConfig();
         if (!tileConfig) {
             return null;

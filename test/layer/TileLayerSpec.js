@@ -167,6 +167,32 @@ describe('TileLayer', function () {
             map.setBaseLayer(tile);
         });
 
+        it('#679, cascade tiles\'s bug on 4326', function (done) {
+            container = document.createElement('div');
+            container.style.width = '3px';
+            container.style.height = '3px';
+            document.body.appendChild(container);
+            map = new maptalks.Map(container, {
+                center: [241.7567321978039, 210.07750904461014],
+                zoom: 1,
+                bearing : 153.60000000000036,
+                pitch : 36,
+                minZoom:1,
+                maxZoom:18,
+                spatialReference:{
+                  projection:'EPSG:4326'
+                }
+            });
+            map.setBaseLayer(new maptalks.TileLayer('base', {
+                tileSystem : [1, -1, -180, 90],
+                crossOrigin:'Anonymous',
+                urlTemplate:'#'
+            }));
+            setTimeout(function () {
+                done();
+            }, 20);
+        });
+
         it('baidu', function (done) {
             createMap();
             map.config({
