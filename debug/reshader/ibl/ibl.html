@@ -104,7 +104,7 @@
                     uniforms : [
                         'camPos',
                         'dirLightDirections[1]', 'dirLightColors[1]',
-                        'ambientColor',
+                        'ambientColor', 'ambientIntensity',
                         'irradianceMap', 'prefilterMap', 'brdfLUT',
                         {
                             name : 'projectionViewModel',
@@ -179,6 +179,7 @@
                     prefilterMap : iblMaps.prefilterMap,
                     brdfLUT : iblMaps.brdfLUT,
                     ambientColor : [0.01, 0.01, 0.01],
+                    ambientIntensity : 1,
                     dirLightDirections : [
                         reshader.Util.normalize([], [0, 1, 1])
                     ],
