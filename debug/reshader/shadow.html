@@ -41,19 +41,20 @@
             uniform mat4 model;
             uniform mat4 normalMatrix;
 
-            #if defined(USE_SHADOW)
+            #if defined(USE_SHADOW_MAP)
                 #include <vsm_shadow_vert>
             #endif
 
             void main()
             {
-                gl_Position = viewProjection * model * vec4(aPosition, 1.0);
-                vec4 worldPos = model * vec4(aPosition, 1.0);
+                vec4 pos = vec4(aPosition, 1.0);
+                gl_Position = viewProjection * model * pos;
+                vec4 worldPos = model * pos;
                 Normal = mat3(normalMatrix) * aNormal;
                 FragPos = vec3(worldPos);
 
-                #ifdef USE_SHADOW
-                    vsm_shadow_computeShadowPars(worldPos);
+                #ifdef USE_SHADOW_MAP
+                    shadow_computeShadowPars(pos);
                 #endif
             }
         `;
@@ -73,7 +74,7 @@
             uniform vec3 lightPos;
             uniform vec3 viewPos;
 
-            #if defined(USE_SHADOW)
+            #if defined(USE_SHADOW_MAP)
                 #include <vsm_shadow_frag>
             #endif
 
@@ -97,8 +98,8 @@
                 vec3 specular = spec * lightColor;                    
                 
                 float shadow = 1.0;
-                #ifdef USE_SHADOW
-                    shadow = vsm_shadow_computeShadow(0);
+                #ifdef USE_SHADOW_MAP
+                    shadow = shadow_computeShadow(0);
                 #endif
 
                 vec3 lighting = (ambient + shadow * (diffuse + specular)) * color;    
@@ -126,12 +127,21 @@
                         return normalMatrix;
                     }
                 },
+                {
+                    name : 'vsm_shadow_lightProjViewModel[1]',
+                    type : 'function',
+                    fn : function (context, props) {
+                        const lightProView = props['lightProjView'];
+                        const lightProjViewModel = lightProView.map(mat => mat4.multiply([], mat, props['model']));
+
+                        return lightProjViewModel;
+                    }
+                },
                 //uniforms needed by vsm shadow map
                 'vsm_shadow_shadowMap[1]',
-                'vsm_shadow_lightProjView[1]',
             ],
             defines : {
-                'USE_SHADOW' : 1,
+                'USE_SHADOW_MAP' : 1,
                 'NUM_OF_DIR_LIGHTS' : 1
             }
         });
@@ -156,7 +166,7 @@
                 viewPos : cameraPos,
                 //uniforms needed by vsm shadow map
                 vsm_shadow_shadowMap : [shadowMap],
-                vsm_shadow_lightProjView : [lightProjView]
+                lightProjView : [lightProjView]
             }, scene);
         }
 
