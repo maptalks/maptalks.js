@@ -1,5 +1,6 @@
-import { exportIndices } from '../util/Util.js';
+import { pushIn, exportIndices } from '../util/Util.js';
 import { vec3 } from '@mapbox/gl-matrix';
+import earcut from 'earcut';
 
 /**
  * Generate normals per vertex.
@@ -86,10 +87,37 @@ export function buildUniqueVertex(data, indices, desc) {
 }
 
 //http://wiki.jikexueyuan.com/project/modern-opengl-tutorial/tutorial39.html
-export function buildShadowVolume(vertices, verticeIds, indices, normals, shadowDir) {
-    const edges = {};
-    const silhoutte = [];
+export function buildShadowVolume(allVerts, allVertIds, allIndices, allNormals, featureIndexes, shadowDir) {
+    const features = new featureIndexes.constructor(featureIndexes.length);
+    const shadowVerts = [];
+    const shadowIndices = [];
+    let preOffset = 0;
+    for (let i = 0, l = 1; i < l; i++) {
+        const offset = featureIndexes[i];
+        const { vertices, indices } = buildFeatureShadow(
+            allVerts,
+            allVertIds,
+            allIndices.subarray(preOffset, offset),
+            allNormals,
+            shadowDir
+        );
+        preOffset = offset;
+        pushIn(shadowVerts, vertices);
+        pushIn(shadowIndices, indices.map(p => p + shadowIndices.length));
+        features[i] = shadowIndices.length;
+    }
+    return {
+        vertices : new Int16Array(shadowVerts),
+        indices : exportIndices(shadowIndices),
+        indexes : features
+    };
+}
 
+function buildFeatureShadow(vertices, verticeIds, indices, normals, shadowDir) {
+    let front = [],
+        back = [];
+
+    const edges = {};
     // find silhoutte
     let v0, v1, v2;
     // variables to reuse
@@ -101,9 +129,6 @@ export function buildShadowVolume(vertices, verticeIds, indices, normals, shadow
         v1 = verticeIds[i + 1];
         v2 = verticeIds[i + 2];
 
-        // faceEdges[0] = v0; faceEdges[1] = v1;
-        // faceEdges[2] = v1; faceEdges[3] = v2;
-        // faceEdges[4] = v0; faceEdges[5] = v2;
         faceEdges[0] = {
             edgeId : v0 < v1 ? v0 + ':' + v1 : v1 + ':' + v0,
             v0 : indices[i],
@@ -136,8 +161,14 @@ export function buildShadowVolume(vertices, verticeIds, indices, normals, shadow
                     // found a silhoutte edge
                     v0 = faceEdges[ii].v0;
                     v1 = faceEdges[ii].v1;
-                    silhoutte.push(vertices[v0 * 3], vertices[v0 * 3 + 1], vertices[v0 * 3 + 2]);
-                    silhoutte.push(vertices[v1 * 3], vertices[v1 * 3 + 1], vertices[v1 * 3 + 2]);
+                    const silhoutte = dot0 >= 0 ? front : back;
+                    if (checkEdgeVertice(silhoutte, vertices, v0)) {
+                        silhoutte.push(vertices[v0 * 3], vertices[v0 * 3 + 1], vertices[v0 * 3 + 2]);
+                    }
+                    if (checkEdgeVertice(silhoutte, vertices, v1)) {
+                        silhoutte.push(vertices[v1 * 3], vertices[v1 * 3 + 1], vertices[v1 * 3 + 2]);
+                    }
+
                 }
             } else {
                 // record current face normal index to compare with the next one
@@ -145,13 +176,26 @@ export function buildShadowVolume(vertices, verticeIds, indices, normals, shadow
             }
         }
     }
-    const lightCap = silhoutte,
-        l = lightCap.length,
-        vertCount = l / 3,
-        totalCount = lightCap.length * 2 / 3 * 4,
-        shadowVerts = new Int16Array(totalCount);
+    debugger
+    if (!front.length) {
+        return {
+            vertices : [],
+            indices : []
+        };
+    }
 
-    const sideIndices = [];
+    const lightCap = front,
+        l = lightCap.length;
+
+    if (lightCap[0] === lightCap[l - 3] && lightCap[1] === lightCap[l - 2] && lightCap[2] === lightCap[l - 1]) {
+        front = front.slice(0, l - 3);
+    }
+    const shadowIndices = earcut(front, null, 3);
+
+
+    const vertCount = l / 3,
+        totalCount = l / 3 * 4, //l * 2 / 3 * 4
+        shadowVerts = new Array(totalCount);
     let vertIdx;
 
     for (let i = 0; i < l; i += 3) {
@@ -163,31 +207,43 @@ export function buildShadowVolume(vertices, verticeIds, indices, normals, shadow
         shadowVerts[vertIdx + 3] = 1; // w
 
         // shadow cap vertices - along shadowDir to infinity
-        shadowVerts[vertIdx + totalCount / 2] = lightCap[i] - shadowDir[0];
-        shadowVerts[vertIdx + 1 + totalCount / 2] = lightCap[i + 1] - shadowDir[1];
-        shadowVerts[vertIdx + 2 + totalCount / 2] = lightCap[i + 2] - shadowDir[2];
-        shadowVerts[vertIdx + 2 + totalCount / 2] = 0; // w = 0 (infinity)
+        // shadowVerts[vertIdx + totalCount / 2] = lightCap[i] - shadowDir[0];
+        // shadowVerts[vertIdx + 1 + totalCount / 2] = lightCap[i + 1] - shadowDir[1];
+        // shadowVerts[vertIdx + 2 + totalCount / 2] = lightCap[i + 2] - shadowDir[2];
+        // shadowVerts[vertIdx + 3 + totalCount / 2] = 0; // w = 0 (infinity)
 
-        // build side indices
-        if (i === 0) {
-            sideIndices.push(0, vertCount - 1, 2 * vertCount - 1);
-            sideIndices.push(0, 2 * vertCount - 1, vertCount);
-        } else {
-            const idx = i / 3;
-            // ccw order
-            //      1 --0
-            //      | /
-            //      2
-            sideIndices.push(idx, idx - 1, idx + vertCount);
-            //          0
-            //        / |
-            //       1--2
-            sideIndices.push(idx, idx - 1 + vertCount, idx + vertCount);
-        }
+        // // build side indices
+        // if (i === 0) {
+        //     shadowIndices.push(0, vertCount - 1, 2 * vertCount - 1);
+        //     shadowIndices.push(0, 2 * vertCount - 1, vertCount);
+        // } else {
+        //     const idx = i / 3;
+        //     // ccw order
+        //     //      1 --0
+        //     //      | /
+        //     //      2
+        //     shadowIndices.push(idx, idx - 1, idx + vertCount);
+        //     //          0
+        //     //        / |
+        //     //       1--2
+        //     shadowIndices.push(idx, idx - 1 + vertCount, idx + vertCount);
+        // }
     }
 
     return {
         vertices : shadowVerts,
-        indices : exportIndices(sideIndices)
+        indices : shadowIndices
     };
+}
+
+function checkEdgeVertice(silhoutte, vertices, v0) {
+    const x = vertices[v0 * 3], y = vertices[v0 * 3 + 1], z = vertices[v0 * 3 + 2];
+    const l = silhoutte.length;
+    if (l > 3 && silhoutte[l - 1] === z && silhoutte[l - 2] === y && silhoutte[l - 3] === x) {
+        return false;
+    }
+    if (l > 6 && silhoutte[l - 4] === z && silhoutte[l - 5] === y && silhoutte[l - 3] === x) {
+        return false;
+    }
+    return true;
 }

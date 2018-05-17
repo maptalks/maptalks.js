@@ -172,10 +172,9 @@ export default class BaseLayerWorker {
                 buffers.push(faces.uvs.buffer);
             }
             if (shadowVolume) {
-                // debugger
-                const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, shadowDir);
+                const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, faces.indexes, shadowDir);
                 faces.shadowVolume = shadowVolume;
-                buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer);
+                buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
             }
             return {
                 data : faces,
