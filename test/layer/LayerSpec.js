@@ -84,6 +84,16 @@ describe('Layer.Spec', function () {
         });
     });
 
+    it('#getMinZoom and #getMaxZoom', function () {
+        var layer = new maptalks.VectorLayer('1', {
+            minZoom : 10
+        });
+
+        map.addLayer(layer);
+        expect(layer.getMinZoom()).to.be.eql(10);
+        expect(layer.getMaxZoom()).to.be.eql(map.getMaxZoom());
+    });
+
     describe('zindex of layers', function () {
         it('default zindex is 0', function () {
             var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });

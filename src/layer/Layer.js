@@ -161,6 +161,26 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Get Layer's minZoom to display
+     * @return {Number}
+     */
+    getMinZoom() {
+        const map = this.getMap();
+        const minZoom = this.options['minZoom'];
+        return map ? Math.max(map.getMinZoom(), minZoom || 0) : minZoom;
+    }
+
+    /**
+     * Get Layer's maxZoom to display
+     * @return {Number}
+     */
+    getMaxZoom() {
+        const map = this.getMap();
+        const maxZoom = this.options['maxZoom'];
+        return map ? Math.min(map.getMaxZoom(), isNil(maxZoom) ? Infinity : maxZoom) : maxZoom;
+    }
+
+    /**
      * Get layer's opacity
      * @returns {Number}
      */
