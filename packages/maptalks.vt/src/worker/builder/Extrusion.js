@@ -124,7 +124,10 @@ export function buildExtrudeFaces(
             const segStart = offset - start;
             let ring = geometry[i];
             //earcut required the first and last position must be different
-            if (feature.type === 3) ring = ring.slice(0, ring.length - 1);
+            const ringLen = ring.length;
+            if (ring[0][0] === ring[ringLen - 1][0] && ring[0][1] === ring[ringLen - 1][1]) {
+                ring = ring.slice(0, ringLen - 1);
+            }
             // a seg or a ring in line or polygon
             offset = fillPosArray(vertices, offset, ring, scale, altitude);
             if (isHole) {
