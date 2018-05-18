@@ -468,7 +468,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this._renderer.layer = this;
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
-        this._renderer.onAdd();
+        // some plugin of dom renderer doesn't implement onAdd
+        if (this._renderer.onAdd) {
+            this._renderer.onAdd();
+        }
 
         this.fire('renderercreate', {
             'renderer': this._renderer
