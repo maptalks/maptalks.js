@@ -1,4 +1,4 @@
-import { now, sign } from '../../core/util';
+import { now } from '../../core/util';
 import { preventDefault, getEventContainerPoint } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import DragHandler from '../../handler/Drag';
@@ -92,7 +92,6 @@ class MapDragHandler extends Handler {
         }
         delete this.startDragTime;
         delete this.startBearing;
-        delete this.db;//bearing distance
     }
 
     _start(param) {
@@ -146,6 +145,7 @@ class MapDragHandler extends Handler {
         delete this._rotateMode;
         this.startBearing = this.target.getBearing();
         this.target.onDragRotateStart(param);
+        this._db = 0;
     }
 
     _rotating(param) {
@@ -174,19 +174,19 @@ class MapDragHandler extends Handler {
         }
 
         if (this._rotateMode.indexOf('rotate') >= 0 && map.options['dragRotate']) {
-            let bearing;
-            if (map.options['dragPitch'] || dx > dy) {
-                bearing = map.getBearing() - 0.6 * (this.preX - mx);
-            } else if (mx > map.width / 2) {
-                bearing = map.getBearing() + 0.6 * (this.preY - my);
-            } else {
-                bearing = map.getBearing() - 0.6 * (this.preY - my);
-            }
 
-            if (!this.db) {
-                const d = bearing - this.startBearing;
-                this.db = Math.abs(d) > 5 ? sign(d) : 0;
+            let db = 0;
+            if (map.options['dragPitch'] || dx > dy) {
+                db = -0.6 * (this.preX - mx);
+            } else if (mx > map.width / 2) {
+                db = 0.6 * (this.preY - my);
+            } else {
+                db = -0.6 * (this.preY - my);
             }
+            const bearing = map.getBearing() + db;
+            this._db = this._db || 0;
+            this._db += db;
+
             map.setBearing(bearing);
         }
         if (this._rotateMode.indexOf('pitch') >= 0 && map.options['dragPitch']) {
@@ -208,10 +208,10 @@ class MapDragHandler extends Handler {
         if (Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
             const bearing = map.getBearing();
             map.animateTo({
-                'bearing' : bearing + this.db * 10
+                'bearing' : bearing + this._db / 2
             }, {
                 'easing'  : 'out',
-                'duration' : 160
+                'duration' : 800
             });
         }
     }
