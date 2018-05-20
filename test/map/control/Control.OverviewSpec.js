@@ -90,9 +90,11 @@ describe('Control.Overview', function () {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);
         var zoom = overview._overview.getZoom();
-        overview._overview.on('zoomend', function () {
-            expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
-            done();
+        map.on('zoomend', function () {
+            setTimeout(function () {
+                expect(overview._overview.getZoom()).to.be.eql(zoom + 1);
+                done();
+            }, 20);
         });
         map.zoomIn();
     });

@@ -78,7 +78,7 @@ class Overview extends Control {
         if (this.options['maximize']) {
             this._createOverview();
         }
-        this.getMap().on('resize moving zooming dragrotating viewchange', this._update, this)
+        this.getMap().on('resize moving zooming rotate dragrotating viewchange', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this)
             .on('spatialreferencechange', this._updateSpatialReference, this);
         on(this.button, 'click', this._onButtonClick, this);
@@ -87,7 +87,7 @@ class Overview extends Control {
 
     onRemove() {
         this.getMap()
-            .off('resize moving zooming dragrotating viewchange', this._update, this)
+            .off('resize moving zooming rotate dragrotating viewchange', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this)
             .off('spatialreferencechange', this._updateSpatialReference, this);
         if (this._overview) {
