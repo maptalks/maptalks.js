@@ -4,7 +4,7 @@
  * with hash lookup made possible by keeping a list of keys in parallel to
  * an array of dictionary of values
  *
- * @private
+ * @public
  */
 class LRUCache {
     /**
@@ -21,7 +21,6 @@ class LRUCache {
      * Clear the cache
      *
      * @returns {LRUCache} this cache
-     * @private
      */
     reset() {
         for (const key in this.data) {
@@ -47,7 +46,6 @@ class LRUCache {
      * @param {*} data any value
      *
      * @returns {LRUCache} this cache
-     * @private
      */
     add(key, data) {
 
@@ -74,7 +72,6 @@ class LRUCache {
      *
      * @param {String} key the key to be looked-up
      * @returns {Boolean} whether the cache has this value
-     * @private
      */
     has(key) {
         return key in this.data;
@@ -84,7 +81,6 @@ class LRUCache {
      * List all keys in the cache
      *
      * @returns {Array<string>} an array of keys in this cache.
-     * @private
      */
     keys() {
         return this.order;
@@ -96,7 +92,6 @@ class LRUCache {
      *
      * @param {string} key the key to look up
      * @returns {*} the data, or null if it isn't found
-     * @private
      */
     getAndRemove(key) {
         if (!this.has(key)) { return null; }
@@ -115,7 +110,6 @@ class LRUCache {
      *
      * @param {string} key the key to look up
      * @returns {*} the data, or null if it isn't found
-     * @private
      */
     get(key) {
         if (!this.has(key)) { return null; }
@@ -129,7 +123,6 @@ class LRUCache {
      *
      * @param {string} key the key for the pair to delete
      * @returns {LRUCache} this cache
-     * @private
      */
     remove(key) {
         if (!this.has(key)) { return this; }
@@ -147,7 +140,6 @@ class LRUCache {
      *
      * @param {number} max the max size of the cache
      * @returns {LRUCache} this cache
-     * @private
      */
     setMaxSize(max) {
         this.max = max;

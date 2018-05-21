@@ -5,6 +5,7 @@ import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
 export { Util, DomUtil, StringUtil, MapboxUtil };
+export { default as LRUCache } from './core/util/LRUCache';
 export { default as Ajax } from './core/Ajax';
 export { default as Canvas } from './core/Canvas';
 
