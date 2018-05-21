@@ -83,13 +83,14 @@ class Circle extends CenterMixin(Polygon) {
             radius = this.getRadius();
         const shell = [];
         let rad, dx, dy;
-        for (let i = 0; i < numberOfPoints; i++) {
-            rad = (360 * i / numberOfPoints) * Math.PI / 180;
+        for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
+            rad = (360 * i / len) * Math.PI / 180;
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
             const vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
+        shell.push(shell[0]);
         return shell;
     }
 
