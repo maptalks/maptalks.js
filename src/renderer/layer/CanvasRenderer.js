@@ -101,11 +101,15 @@ class CanvasRenderer extends Class {
      * @private
      */
     testIfNeedRedraw() {
-        if (this._loadingResource || !this.drawOnInteracting) {
+        const map = this.getMap();
+        if (this._loadingResource) {
             return false;
         }
         if (this._toRedraw) {
             return true;
+        }
+        if (map.isInteracting() && !this.drawOnInteracting) {
+            return false;
         }
         if (this.needToRedraw()) {
             return true;
@@ -175,9 +179,10 @@ class CanvasRenderer extends Class {
     remove() {
         this.onRemove();
         delete this._loadingResource;
-        delete this._southWest;
+        delete this.southWest;
         delete this.canvas;
         delete this.context;
+        delete this.canvasExtent2D;
         delete this._extent2D;
         delete this.resources;
         delete this.layer;
@@ -215,7 +220,7 @@ class CanvasRenderer extends Class {
             return null;
         }
         // size = this._extent2D.getSize(),
-        const containerPoint = map._pointToContainerPoint(this._southWest)._add(0, -map.height);
+        const containerPoint = map._pointToContainerPoint(this.southWest)._add(0, -map.height);
         return {
             'image': this.canvas,
             'layer': this.layer,
@@ -334,16 +339,16 @@ class CanvasRenderer extends Class {
 
     /**
      * Prepare rendering
-     * Set necessary properties, like this._renderZoom/ this._extent2D, this._southWest
+     * Set necessary properties, like this._renderZoom/ this.canvasExtent2D, this.southWest
      * @private
      */
     prepareRender() {
         delete this._renderComplete;
         const map = this.getMap();
         this._renderZoom = map.getZoom();
-        this._extent2D = map._get2DExtent();
+        this.canvasExtent2D = this._extent2D = map._get2DExtent();
         //change from northWest to southWest, because northwest's point <=> containerPoint changes when pitch >= 72
-        this._southWest = map._containerPointToPoint(new Point(0, map.height));
+        this.southWest = map._containerPointToPoint(new Point(0, map.height));
     }
 
     /**
@@ -506,10 +511,10 @@ class CanvasRenderer extends Class {
         if (!mask) {
             return false;
         }
-        const old = this._southWest;
+        const old = this.southWest;
         const map = this.getMap();
         //when clipping, layer's southwest needs to be reset for mask's containerPoint conversion
-        this._southWest = map._containerPointToPoint(new Point(0, map.height));
+        this.southWest = map._containerPointToPoint(new Point(0, map.height));
         context.save();
         if (Browser.retina) {
             context.save();
@@ -520,7 +525,7 @@ class CanvasRenderer extends Class {
             context.restore();
         }
         context.clip();
-        this._southWest = old;
+        this.southWest = old;
         return true;
     }
 
@@ -533,7 +538,7 @@ class CanvasRenderer extends Class {
             'extent' : this._extent2D,
             'maskExtent' : this._maskExtent,
             'zoom' : this._renderZoom,
-            'southWest' : this._southWest
+            'southWest' : this.southWest
         };
     }
 
