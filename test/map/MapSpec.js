@@ -752,10 +752,13 @@ describe('Map.Spec', function () {
             var p = map.distanceToPoint(100, 200, map.getZoom() - 1);
             expect(Math.round(p.x)).to.be(49);
             expect(Math.round(p.y)).to.be(99);
+
+            var dist = map.pointToDistance(p.x, p.y, map.getZoom() - 1);
+            expect(Math.round(dist)).to.be(224);
         });
 
-        it('#distanceToSize', function () {
-            var size = map.distanceToSize(100, 200);
+        it('#distanceToPixel', function () {
+            var size = map.distanceToPixel(100, 200);
             expect(Math.round(size.width)).to.be(99);
             expect(Math.round(size.height)).to.be(198);
 

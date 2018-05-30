@@ -1388,10 +1388,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} yDist - distance on Y axis.
      * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
      */
-    distanceToSize(xDist, yDist, zoom) {
-        return this.distanceToPixel(xDist, yDist, zoom);
-    }
-
     distanceToPixel(xDist, yDist, zoom) {
         const projection = this.getProjection();
         if (!projection) {
@@ -1413,7 +1409,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} xDist - distance on X axis.
      * @param  {Number} yDist - distance on Y axis.
      * @param  {Number} zoom - point's zoom
-     * @return {Size} result.width: 2d point distance on X axis; result.height: pixel length on Y axis
+     * @return {Point}
      */
     distanceToPoint(xDist, yDist, zoom) {
         const projection = this.getProjection();
@@ -1445,6 +1441,25 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const target = new Point(this.width / 2 + width, this.height / 2 + d * height);
         const coord = this.containerPointToCoord(target);
         return projection.measureLength(this.getCenter(), coord);
+    }
+
+    /**
+     * Converts 2d point distances to geographic length.<br>
+     *
+     * @param  {Number} dx - distance on X axis.
+     * @param  {Number} dy - distance on Y axis.
+     * @param  {Number} zoom - point's zoom
+     * @return {Number} distance
+     */
+    pointToDistance(dx, dy, zoom) {
+        const projection = this.getProjection();
+        if (!projection) {
+            return null;
+        }
+        const c = this._prjToPoint(this._getPrjCenter(), zoom);
+        c._add(dx, dy);
+        const target = this.pointToCoord(c, zoom);
+        return projection.measureLength(this.getCenter(), target);
     }
 
     /**
