@@ -59,9 +59,6 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _panAnimation: function (target, t, cb) {
-        if (!this.options['panAnimation']) {
-            return this.setCenter(target);
-        }
         return this.animateTo({
             'center' : target
         }, {
