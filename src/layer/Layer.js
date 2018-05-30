@@ -77,7 +77,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             return this;
         }
         if (this.onLoad()) {
-            this._initRenderer();
             const zIndex = this.getZIndex();
             if (!isNil(zIndex)) {
                 this._renderer.setZIndex(zIndex);
@@ -449,6 +448,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this.setZIndex(zIndex);
         }
         this._switchEvents('on', this);
+        this._initRenderer();
 
         this.onAdd();
 
