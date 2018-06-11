@@ -640,8 +640,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!tile || !tile.image) {
             return;
         }
-        delete tile.image.onload;
-        delete tile.image.onerror;
+        tile.image.onload = null;
+        tile.image.onerror = null;
     }
 
     _generatePlaceHolder(z) {
