@@ -37,7 +37,7 @@ describe('Map.Spec', function () {
             expect(map.id !== 2).to.be.ok();
         });
 
-        it('getSize', function () {
+        it('#getSize', function () {
             var size = map.getSize();
 
             expect(size).to.have.property('width');
@@ -46,7 +46,7 @@ describe('Map.Spec', function () {
             expect(size.height).to.be.above(0);
         });
 
-        it('getExtent', function () {
+        it('#getExtent', function () {
             var extent = map.getExtent(),
                 projection = map.getProjection(),
                 res = map._getResolution(),
@@ -59,6 +59,22 @@ describe('Map.Spec', function () {
                 max = projection.project(extent.getMax());
             expect((max.x - min.x) / res).to.be.approx(size.width);
             expect((max.y - min.y) / res).to.be.approx(size.height);
+        });
+
+        it('#getSpatialReference', function () {
+            map.setSpatialReference({
+                projection : 'EPSG:3857'
+            });
+            var sp = map.getSpatialReference().toJSON();
+            expect(sp.fullExtent).to.be.eql({
+                'top': 6378137 * Math.PI,
+                'left': -6378137 * Math.PI,
+                'bottom': -6378137 * Math.PI,
+                'right': 6378137 * Math.PI
+            });
+            expect(sp.resolutions).to.be.eql(map._getResolutions());
+            expect(sp.projection).to.be.eql('EPSG:3857');
+            console.log(JSON.stringify(sp));
         });
 
         it('_get2DExtent', function () {

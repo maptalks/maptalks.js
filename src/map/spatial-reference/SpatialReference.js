@@ -251,4 +251,20 @@ export default class SpatialReference {
     getZoomDirection() {
         return sign(this._resolutions[this.getMinZoom()] - this._resolutions[this.getMaxZoom()]);
     }
+
+    toJSON() {
+        if (!this.json) {
+            this.json = {
+                'resolutions' : this._resolutions,
+                'fullExtent' : {
+                    'top': this._fullExtent.top,
+                    'left': this._fullExtent.left,
+                    'bottom': this._fullExtent.bottom,
+                    'right': this._fullExtent.right
+                },
+                'projection' : this._projection.code
+            };
+        }
+        return this.json;
+    }
 }
