@@ -566,6 +566,15 @@ class Painter extends Class {
         return extent;
     }
 
+    getFixedExtent() {
+        const map = this.getMap();
+        const zoom = map.getZoom();
+        if (!this._extent2D || this._extent2D._zoom !== zoom) {
+            this.get2DExtent();
+        }
+        return this._fixedExtent;
+    }
+
     setZIndex(change) {
         this._eachSymbolizer(function (symbolizer) {
             symbolizer.setZIndex(change);

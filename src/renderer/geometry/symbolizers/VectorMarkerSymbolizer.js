@@ -104,11 +104,14 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _calMarkerSize() {
-        const lineWidth = this.strokeAndFill['lineWidth'],
-            shadow = 2 * (this.symbol['shadowBlur'] || 0), // add some tolerance for shadowOffsetX/Y
-            w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding * 2),
-            h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding * 2);
-        return [w, h];
+        if (!this._size) {
+            const lineWidth = this.strokeAndFill['lineWidth'],
+                shadow = 2 * (this.symbol['shadowBlur'] || 0), // add some tolerance for shadowOffsetX/Y
+                w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding * 2),
+                h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding * 2);
+            this._size = [w, h];
+        }
+        return this._size;
     }
 
     _createMarkerImage(ctx, resources) {
@@ -174,6 +177,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _getGraidentExtent(points) {
         const e = new PointExtent(),
+            dxdy = this.getDxDy(),
             m = this.getFixedExtent();
         if (Array.isArray(points)) {
             for (let i = points.length - 1; i >= 0; i--) {
@@ -182,10 +186,10 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         } else {
             e._combine(points);
         }
-        e['xmin'] += m['xmin'];
-        e['ymin'] += m['ymin'];
-        e['xmax'] += m['xmax'];
-        e['ymax'] += m['ymax'];
+        e['xmin'] += m['xmin'] - dxdy.x;
+        e['ymin'] += m['ymin'] - dxdy.y;
+        e['xmax'] += m['xmax'] - dxdy.x;
+        e['ymax'] += m['ymax'] - dxdy.y;
         return e;
     }
 
@@ -273,23 +277,16 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     getFixedExtent() {
         const dxdy = this.getDxDy(),
-            style = this.style;
-        const markerType = style['markerType'].toLowerCase();
-        const width = style['markerWidth'],
-            height = style['markerHeight'];
-        let result;
-        if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
-            result = new PointExtent(dxdy.add(-width / 2, -height), dxdy.add(width / 2, 0));
-        } else {
-            result = new PointExtent(dxdy.add(-width / 2, -height / 2), dxdy.add(width / 2, height / 2));
-        }
-        if (this.style['markerLineWidth']) {
-            result._expand(this.style['markerLineWidth'] / 2);
-        }
+            padding = this.padding * 2;
+        const size = this._calMarkerSize().map(d => d - padding);
+        const alignPoint = this._getAnchor(size[0], size[1]);
+        let result = new PointExtent(dxdy.add(0, 0), dxdy.add(size[0], size[1]));
+        result._add(alignPoint);
         const rotation = this.getRotation();
         if (rotation) {
             result = this._rotateExtent(result, rotation);
         }
+
         return result;
     }
 

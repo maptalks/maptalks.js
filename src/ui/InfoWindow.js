@@ -176,10 +176,13 @@ class InfoWindow extends UIComponent {
         if (!this.options['custom']) {
             o._sub(4, 12);
         }
-        if (this.getOwner() instanceof Marker) {
-            const markerSize = this.getOwner().getSize();
-            if (markerSize) {
-                o._add(0, -markerSize['height']);
+        const owner = this.getOwner();
+        if (owner instanceof Marker) {
+            const painter = owner._getPainter();
+            if (painter) {
+                const markerSize = owner.getSize();
+                const fixExtent = painter.getFixedExtent();
+                o._add(fixExtent.xmax - markerSize.width / 2, fixExtent.ymin);
             }
         }
         return o;
