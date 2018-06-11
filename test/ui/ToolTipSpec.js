@@ -25,24 +25,36 @@ describe('UI.ToolTip', function () {
 
     it('can set to a geometry but it doesn\'t show', function () {
         var geo = new maptalks.Marker(center).addTo(layer);
-        var tooltip = new maptalks.ui.ToolTip('this is a geometry');
+        var tooltip = new maptalks.ui.ToolTip('this is a geometry', { showTimeout : 0 });
         tooltip.addTo(geo);
         expect(tooltip.isVisible()).not.to.be.ok();
     });
 
-    it('it can show when mouseover a geometry', function () {
+    it('it can show when mousemove a geometry', function () {
         var geo = new maptalks.Marker(center).addTo(layer);
-        var tooltip = new maptalks.ui.ToolTip('this is a geometry');
+        var tooltip = new maptalks.ui.ToolTip('this is a geometry', { showTimeout : 0 });
         tooltip.addTo(geo);
-        geo.fire('mouseover', { coordinate:geo.getCenter() });
+        geo.fire('mousemove', { coordinate:geo.getCenter() });
         expect(tooltip.isVisible()).to.be.ok();
+    });
+
+    it('it can show with a timout when mousemove a geometry', function (done) {
+        var geo = new maptalks.Marker(center).addTo(layer);
+        var tooltip = new maptalks.ui.ToolTip('this is a geometry', { showTimeout : 20 });
+        tooltip.addTo(geo);
+        setTimeout(function () {
+            expect(tooltip.isVisible()).to.be.ok();
+            done();
+        }, 31);
+        geo.fire('mousemove', { coordinate:geo.getCenter() });
+        expect(tooltip.isVisible()).not.to.be.ok();
     });
 
     it('it will hide when mouseout a geometry', function (done) {
         var geo = new maptalks.Marker(center).addTo(layer);
-        var tooltip = new maptalks.ui.ToolTip('this is a geometry');
+        var tooltip = new maptalks.ui.ToolTip('this is a geometry', { showTimeout : 0 });
         tooltip.addTo(geo);
-        geo.fire('mouseover', { coordinate: geo.getCenter() });
+        geo.fire('mousemove', { coordinate: geo.getCenter() });
         expect(tooltip.isVisible()).to.be.ok();
         geo.fire('mouseout');
         setTimeout(function () {
@@ -51,17 +63,17 @@ describe('UI.ToolTip', function () {
         }, 500);
     });
 
-    it('it will not show when mouseover and set a new tooltip again', function () {
+    it('it will not show when mousemove and set a new tooltip again', function () {
         var geo = new maptalks.Marker(center);
         geo = geo.addTo(layer);
-        var tooltip = new maptalks.ui.ToolTip('this is a geometry');
+        var tooltip = new maptalks.ui.ToolTip('this is a geometry', { showTimeout : 0 });
         tooltip.addTo(geo);
-        geo.fire('mouseover', { coordinate:geo.getCenter() });
+        geo.fire('mousemove', { coordinate:geo.getCenter() });
         expect(tooltip.isVisible()).to.be.ok();
         tooltip.remove();
-        var newtooltip = new maptalks.ui.ToolTip('set a new tooltip');
+        var newtooltip = new maptalks.ui.ToolTip('set a new tooltip', { showTimeout : 0 });
         newtooltip.addTo(geo);
-        geo.fire('mouseover', { coordinate: geo.getCenter() });
+        geo.fire('mousemove', { coordinate: geo.getCenter() });
         expect(newtooltip.isVisible()).to.be.ok();
     });
 
