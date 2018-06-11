@@ -90,7 +90,7 @@ describe('Control.Overview', function () {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);
         var zoom = overview._overview.getZoom();
-        map.on('zoomend', function () {
+        overview._overview.on('zoomend', function () {
             expect(overview._overview.getZoom()).not.to.be.eql(zoom);
             done();
         });
