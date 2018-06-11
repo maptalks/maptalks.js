@@ -369,7 +369,7 @@ class TileLayer extends Layer {
                         'extent2d' : tileExtent,
                         'mask' : maskID
                     };
-                if (innerExtent2D.intersects(tileExtent) || this._isTileInExtent(tileInfo, containerExtent)) {
+                if (innerExtent2D.intersects(tileExtent) || !innerExtent2D.equals(extent2d) && this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
                         tileInfo.point._add(offset);
                         tileInfo.extent2d._add(offset);
