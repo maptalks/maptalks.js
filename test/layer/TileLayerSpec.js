@@ -4,10 +4,10 @@ describe('TileLayer', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    function createMap() {
+    function createMap(w, h) {
         container = document.createElement('div');
-        container.style.width = '3px';
-        container.style.height = '3px';
+        container.style.width = w || '3px';
+        container.style.height = h || '3px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -54,6 +54,18 @@ describe('TileLayer', function () {
                     done();
                 });
                 map.addLayer(tile);
+            });
+            map.addLayer(tile);
+        });
+
+        it('invisible container, for #692', function (done) {
+            createMap('0px', '0px');
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '/resources/not-exists.png'
+            });
+            tile.once('layerload', function () {
+                done();
             });
             map.addLayer(tile);
         });

@@ -50,7 +50,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         const layer = this.layer;
         const tileGrids = layer.getTiles().tileGrids;
-        if (!tileGrids) {
+        if (!tileGrids || !tileGrids.length) {
             this.completeRender();
             return;
         }

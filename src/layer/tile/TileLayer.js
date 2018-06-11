@@ -136,8 +136,10 @@ class TileLayer extends Layer {
             !isNil(minZoom) && tileZoom <= minZoom
         ) {
             const currentTiles = this._getTiles(tileZoom, mapExtent);
-            count += currentTiles ? currentTiles.tiles.length : 0;
-            tileGrids.push(currentTiles);
+            if (currentTiles) {
+                count += currentTiles.tiles.length;
+                tileGrids.push(currentTiles);
+            }
             return {
                 tileGrids, count
             };
