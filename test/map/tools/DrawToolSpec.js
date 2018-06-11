@@ -218,6 +218,7 @@ describe('DrawTool', function () {
         });
 
         it('can draw Rectangle', function (done) {
+            map.setBearing(50);
             var first;
             function drawStart(param) {
                 first = param.coordinate;
@@ -226,6 +227,7 @@ describe('DrawTool', function () {
                 expect(param.geometry instanceof maptalks.Polygon).to.be.ok();
                 var coordinates = param.geometry.getCoordinates()[0];
                 expect(coordinates.length === 5).to.be.ok();
+                expect(coordinates[1].toArray()).to.be.eql([118.84675603637106, 32.046603663660306 ]);
                 done();
             }
             var drawTool = new maptalks.DrawTool({
