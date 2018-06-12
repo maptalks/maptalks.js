@@ -51,6 +51,13 @@ Download the [lastest release](https://github.com/maptalks/maptalks.js/releases)
 <script src="path/to/maptalks.min.js" type="text/javascript"></script>
 ```
 
+* CDN
+Just include this in your html:
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.css">
+<script src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+```
+
 * NPM
 
 ```shell
