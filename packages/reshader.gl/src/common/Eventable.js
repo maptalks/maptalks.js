@@ -21,13 +21,16 @@ const Eventable = Base =>
             this._events[type].splice(this._events[type].indexOf(handler), 1);
             return this;
         }
-        fire(type) {
+        fire(type, params = {}) {
             if (!this._events || !this._events[type]) {
                 return this;
             }
+            if (!params.target) {
+                params.target = this;
+            }
             const queue = this._events[type].slice(0);
             for (const p of queue) {
-                p();
+                p(params);
             }
             return this;
         }

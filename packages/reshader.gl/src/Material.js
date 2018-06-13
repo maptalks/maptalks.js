@@ -1,3 +1,4 @@
+import Eventable from './common/Eventable.js';
 import { extend } from './common/Util.js';
 import AbstractTexture from './AbstractTexture.js';
 
@@ -8,22 +9,20 @@ class Material {
         this.dirtyDefines = true;
         this._reglUniforms = {};
         this.refCount = 0;
+        this._bindedOnTextureComplete = this._onTextureComplete.bind(this);
+        this._checkTextures();
     }
 
     isReady() {
-        for (const p in this.uniforms) {
-            if (this.isTexture(p)) {
-                if (!this.uniforms[p].isReady()) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return this._loadingCount <= 0;
     }
 
     set(k, v) {
         this.uniforms[k] = v;
         this._dirtyUniforms = this.isTexture(k) ? 'texture' : 'primitive';
+        if (this._dirtyUniforms === 'texture') {
+            this._checkTextures();
+        }
         return this;
     }
 
@@ -94,6 +93,26 @@ class Material {
         delete this.uniforms;
         delete this._reglUniforms;
     }
+
+    _checkTextures() {
+        this._loadingCount = 0;
+        for (const p in this.uniforms) {
+            if (this.isTexture(p)) {
+                const texture = this.uniforms[p];
+                if (!texture.isReady()) {
+                    this._loadingCount++;
+                    texture.on('complete', this._bindedOnTextureComplete);
+                }
+            }
+        }
+    }
+
+    _onTextureComplete() {
+        this._loadingCount--;
+        if (this._loadingCount <= 0) {
+            this.fire('complete');
+        }
+    }
 }
 
-export default Material;
+export default Eventable(Material);

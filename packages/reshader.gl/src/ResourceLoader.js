@@ -6,6 +6,7 @@ class ResourceLoader {
         this.defaultTexture = DEFAULT_TEXTURE;
         this.defaultCubeTexture = new Array(6);
 
+        //TODO 把this.resources换成LRU队列，控制缓存的资源数量
         this.resources = {};
     }
 

@@ -1,4 +1,5 @@
 import { isFunction } from './common/Util.js';
+import Eventable from './common/Eventable.js';
 
 /**
  * Abstract Texture
@@ -35,7 +36,12 @@ class AbstractTexture {
                 }
                 config.data = loadFn.call(resLoader, config.url, function () {
                     self._loading = false;
+                    if (!self.config) {
+                        //disposed
+                        return;
+                    }
                     self.onLoad.apply(self, arguments);
+                    self.fire('complete');
                 });
             }
         }
@@ -85,4 +91,4 @@ class AbstractTexture {
     }
 }
 
-export default AbstractTexture;
+export default Eventable(AbstractTexture);
