@@ -31,9 +31,9 @@ class VSMShadowShader extends MeshShader {
             this.commands['vsm'] = this.createREGLCommand(
                 regl,
                 null,
-                mesh.getAttributes(regl),
+                mesh.getAttributes(),
                 null,
-                mesh.getElements(regl)
+                mesh.getElements()
             );
         }
         return this.commands['vsm'];

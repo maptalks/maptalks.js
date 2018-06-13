@@ -52,7 +52,7 @@ class Scene {
             }
         }
         opaques.sort((a, b) => {
-            if (a.material && b.material && a.material.getDefinesKey() === b.material.getDefinesKey()) {
+            if (a.getDefinesKey() === b.getDefinesKey()) {
                 return 0;
             }
             return 1;

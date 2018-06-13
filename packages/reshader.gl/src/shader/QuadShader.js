@@ -29,9 +29,9 @@ class QuadShader extends MeshShader {
             this.commands['quad'] = this.createREGLCommand(
                 regl,
                 null,
-                this._quadMesh[0].getAttributes(regl),
+                this._quadMesh[0].getAttributes(),
                 null,
-                this._quadMesh[0].getElements(regl)
+                this._quadMesh[0].getElements()
             );
         }
         return this.commands['quad'];

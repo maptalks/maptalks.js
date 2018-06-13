@@ -18,6 +18,9 @@ const defaultDesc = {
     },
     'aTangent' : {
         size : 3
+    },
+    'aBarycentric' : {
+        size : 3
     }
 };
 
@@ -39,37 +42,45 @@ export default class Geometry {
     generateBuffers(regl) {
         //generate regl buffers beforehand to avoid repeated bufferData
         const data = this.data;
-        const posBuf = regl.buffer(data.aPosition);
         const buffers = {
             'aPosition' : {
-                buffer : posBuf
+                buffer : data.aPosition.destroy ? data.aPosition : regl.buffer(data.aPosition)
             }
         };
 
         if (data.aNormal) {
-            const normalBuf = regl.buffer(data.aNormal);
-            buffers.aNormal = {
-                buffer : normalBuf
+            buffers.aNormal = data.aNormal.destroy ? data.aNormal : {
+                buffer : regl.buffer(data.aNormal)
+            };
+        }
+
+        if (data.aBarycentric) {
+            buffers.aBarycentric = data.aBarycentric.destroy ? data.aBarycentric : {
+                buffer : regl.buffer(data.aBarycentric)
+            };
+        }
+
+        if (data.aTangent) {
+            buffers.aTangent = data.aTangent.destroy ? data.aTangent : {
+                buffer : regl.buffer(data.aTangent)
             };
         }
 
         if (data.aTexCoord) {
-            const texBuf = regl.buffer(data.aTexCoord);
-            buffers.aTexCoord = {
-                buffer : texBuf
+            buffers.aTexCoord = data.aTexCoord.destroy ? data.aTexCoord : {
+                buffer : regl.buffer(data.aTexCoord)
             };
         }
 
         if (data.aColor) {
-            const colorBuf = regl.buffer(data.aColor);
-            buffers.aColor = {
-                buffer : colorBuf
+            buffers.aColor = data.aColor.destroy ? data.aColor : {
+                buffer : regl.buffer(data.aColor)
             };
         }
         this.data = buffers;
 
         if (!isNumber(this.indices)) {
-            this.indices = regl.elements({
+            this.indices = this.indices.destroy ? this.indices : regl.elements({
                 primitive: this.getPrimitive(),
                 data: this.indices,
                 //type : 'uint16' // type is inferred from data

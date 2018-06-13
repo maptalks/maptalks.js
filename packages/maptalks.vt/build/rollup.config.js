@@ -12,10 +12,7 @@ module.exports = [
             jsnext : true,
             main : true
         }),
-        commonjs(),
-        babel({
-            exclude: 'node_modules/**'
-        }),
+        commonjs()
     ],
     output: {
         format: 'amd',
@@ -39,10 +36,7 @@ module.exports = [
             jsnext : true,
             main : true
         }),
-        commonjs(),
-        babel({
-            exclude: 'node_modules/**'
-        })
+        commonjs()
     ],
     output: {
         format: 'amd',
@@ -58,9 +52,6 @@ module.exports = [
     }
 },
 {
-    // Next, bundle together the three "chunks" produced in the previous pass
-    // into a single, final bundle. See 'intro:' below and rollup/mapboxgl.js
-    // for details.
     input: './build/index.js',
     external: [ 'maptalks' ],
     output: {
@@ -73,18 +64,20 @@ module.exports = [
         format: 'umd',
         sourcemap: false,
         intro: `
-let workerLoaded;
+var workerLoaded;
 function define(_, chunk) {
 if (!workerLoaded) {
     maptalks.registerWorkerAdapter('${pkg.name}', chunk);
     workerLoaded = true;
 } else {
-    const exports = maptalks;
+    var exports = maptalks;
     chunk(exports, maptalks);
 }
 }`
     },
-    plugins: [],
+    plugins: [
+        babel()
+    ],
     watch: {
         include: 'build/**/*.js'
     }

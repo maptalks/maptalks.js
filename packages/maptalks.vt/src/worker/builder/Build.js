@@ -176,7 +176,6 @@ function buildFeatureShadow(vertices, verticeIds, indices, normals, shadowDir) {
             }
         }
     }
-    debugger
     if (!front.length) {
         return {
             vertices : [],
@@ -246,4 +245,15 @@ function checkEdgeVertice(silhoutte, vertices, v0) {
         return false;
     }
     return true;
+}
+
+export function createBarycentric(position, indices) {
+    const bary = new Uint8Array(position.length);
+    for (let i = 0, l = indices.length; i < l;) {
+        for (let j = 0; j < 3; j++) {
+            const ii = indices[i++];
+            bary[ii * 3 + j] = 1;
+        }
+    }
+    return bary;
 }

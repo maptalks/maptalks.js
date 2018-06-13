@@ -19,9 +19,9 @@ class BoxBlurShader extends QuadShader {
             this.commands['shadow'] = this.createREGLCommand(
                 regl,
                 null,
-                mesh.getAttributes(regl),
+                mesh.getAttributes(),
                 null,
-                mesh.getElements(regl)
+                mesh.getElements()
             );
         }
         return this.commands['shadow'];

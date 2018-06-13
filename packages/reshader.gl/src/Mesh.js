@@ -31,6 +31,36 @@ class Mesh {
         return this;
     }
 
+    getDefines() {
+        const defines = {};
+        if (this.defines) {
+            extend(defines, this.defines);
+        }
+        if (this.material) {
+            const mDefines = this.material.getDefines();
+            if (mDefines) {
+                extend(defines, mDefines);
+            }
+        }
+        return defines;
+    }
+
+    setDefines(defines) {
+        this.defines = defines;
+        this.dirtyDefines = true;
+        return this;
+    }
+
+    getDefinesKey() {
+        if (this._definesKey && !this.dirtyDefines && (!this.material || !this.material.dirtyDefines)) {
+            return this._definesKey;
+        }
+        //refresh defines
+        this._definesKey = this._createDefinesKey(this.getDefines());
+        this.dirtyDefines = false;
+        return this._definesKey;
+    }
+
     getUniforms(regl) {
         const uniforms = {
             'model' : this.localTransform
@@ -83,6 +113,14 @@ class Mesh {
         delete this.uniforms;
         delete this.localTransform;
         return this;
+    }
+
+    _createDefinesKey(defines) {
+        const v = [];
+        for (const p in defines) {
+            v.push(p, defines[p]);
+        }
+        return v.join(',');
     }
 }
 

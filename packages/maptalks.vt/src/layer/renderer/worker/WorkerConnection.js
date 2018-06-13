@@ -6,8 +6,9 @@ const dedicatedLayers = ['GeoJSONVectorTileLayer'];
 
 export default class WorkerConnection extends maptalks.worker.Actor {
 
-    constructor(map) {
-        super(map);
+    constructor(workerKey, mapId) {
+        super(workerKey);
+        this.mapId = mapId;
         this.dedicatedWorkers = {};
     }
 

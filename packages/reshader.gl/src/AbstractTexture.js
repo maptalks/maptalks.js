@@ -22,7 +22,7 @@ class AbstractTexture {
                 }
             }
         } else {
-            this.config = config;
+            this.config = config || {};
             this.resLoader = resLoader;
             if (config.url) {
                 this._loading = true;

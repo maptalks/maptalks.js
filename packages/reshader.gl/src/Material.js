@@ -5,9 +5,20 @@ class Material {
     constructor(uniforms = {}, defaultUniforms) {
         this.uniforms = extend({}, defaultUniforms || {}, uniforms);
         this._dirtyUniforms = 'texture';
-        this._dirtyDefines = true;
+        this.dirtyDefines = true;
         this._reglUniforms = {};
         this.refCount = 0;
+    }
+
+    isReady() {
+        for (const p in this.uniforms) {
+            if (this.isTexture(p)) {
+                if (!this.uniforms[p].isReady()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     set(k, v) {
@@ -21,7 +32,7 @@ class Material {
     }
 
     isDirty() {
-        return this._dirtyUniforms || this._dirtyDefines;
+        return this._dirtyUniforms || this.dirtyDefines;
     }
 
     /**
@@ -29,19 +40,16 @@ class Material {
      * @return {Object}
      */
     getDefines() {
-        if (!this._dirtyDefines) {
+        if (!this.dirtyDefines) {
             return this._defines;
         }
-        this._defines = this.createDefines();
-        this._definesKey = this._createDefinesKey(this._defines);
-        this._dirtyDefines = false;
+        if (this.createDefines) {
+            this._defines = this.createDefines();
+        } else {
+            this._defines = {};
+        }
+        this.dirtyDefines = false;
         return this._defines;
-    }
-
-    getDefinesKey() {
-        //refresh defines
-        this.getDefines();
-        return this._definesKey;
     }
 
     getUniforms(regl) {
@@ -85,14 +93,6 @@ class Material {
         }
         delete this.uniforms;
         delete this._reglUniforms;
-    }
-
-    _createDefinesKey(defines) {
-        const v = [];
-        for (const p in defines) {
-            v.push(p, defines[p]);
-        }
-        return v.join(',');
     }
 }
 

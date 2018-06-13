@@ -2,7 +2,6 @@ import * as maptalks from 'maptalks';
 import { mat4, vec3 } from '@mapbox/gl-matrix';
 import WorkerConnection from './worker/WorkerConnection';
 import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
-import { sign } from '../core/Util';
 import createREGL from 'regl';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
@@ -99,7 +98,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     prepareWorker() {
         const map = this.getMap();
         if (!this.workerConn) {
-            this.workerConn = new WorkerConnection('maptalks.vt', map);
+            this.workerConn = new WorkerConnection('maptalks.vt', map.id);
         }
         const workerConn = this.workerConn;
         //setTimeout in case layer's style is set to layer after layer's creating.
@@ -334,6 +333,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         //ask plugin to clear caches
         super.deleteTile(tile);
+    }
+
+    abortTileLoading() {
+        //TODO 实现矢量瓦片的中止请求: 在 worker 中 xhr.abort
+        super.abortTileLoading();
     }
 
     resizeCanvas(canvasSize) {
