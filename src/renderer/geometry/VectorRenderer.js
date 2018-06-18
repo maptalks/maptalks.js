@@ -155,12 +155,11 @@ LineString.include({
 
     _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
         if (this.options['smoothness']) {
-            Canvas.paintSmoothLine(ctx, points, lineOpacity, this.options['smoothness']);
-            this._paintArrow(ctx, points, lineOpacity);
+            Canvas.paintSmoothLine(ctx, points, lineOpacity, this.options['smoothness'], false, this._animIdx, this._animTailRatio);
         } else {
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
-            this._paintArrow(ctx, points, lineOpacity);
         }
+        this._paintArrow(ctx, points, lineOpacity);
     },
 
     _getArrowPlacement() {

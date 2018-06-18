@@ -383,7 +383,7 @@ describe('Geometry.LineString', function () {
     });
 
     describe('animateShow', function () {
-        it('animateShow', function (done) {
+        it('#animateShow', function (done) {
             layer = new maptalks.VectorLayer('id2');
             var polyline = new maptalks.LineString([
                 map.getCenter(),
@@ -401,6 +401,32 @@ describe('Geometry.LineString', function () {
                     if (frame.state.playState !== 'finished') {
                         expect(polyline.toGeoJSON()).not.to.be.eql(geojson);
                     } else {
+                        expect(layer).to.be.painted(0, 0);
+                        expect(polyline.toGeoJSON()).to.be.eql(geojson);
+                        done();
+                    }
+                });
+
+            });
+            layer.addGeometry(polyline).addTo(map);
+        });
+        it('#animateShow with smoothness', function (done) {
+            layer = new maptalks.VectorLayer('id2');
+            var polyline = new maptalks.LineString([
+                map.getCenter(),
+                map.getCenter().add(0.01, 0.01)
+            ], {
+                'smoothness' : 0.1,
+                'visible' : false
+            });
+            layer.once('layerload', function () {
+                var geojson = polyline.toGeoJSON();
+                expect(layer._getRenderer().isBlank()).to.be.ok();
+                polyline.animateShow({
+                    'duration' : 100,
+                    'easing' : 'out'
+                }, function (frame) {
+                    if (frame.state.playState === 'finished') {
                         expect(layer).to.be.painted(0, 0);
                         expect(polyline.toGeoJSON()).to.be.eql(geojson);
                         done();

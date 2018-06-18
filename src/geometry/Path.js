@@ -112,6 +112,7 @@ class Path extends Geometry {
                 delete this._aniShowCenter;
                 delete this._animIdx;
                 delete this._animLenSoFar;
+                delete this._animTailRatio;
                 this.setCoordinates(coordinates);
             }
             if (cb) {
@@ -147,18 +148,25 @@ class Path extends Geometry {
             p2 = coordinates[idx + 1],
             span = targetLength - this._animLenSoFar,
             r = span / segLen;
+        this._animTailRatio = r;
         const x = p1.x + (p2.x - p1.x) * r,
             y = p1.y + (p2.y - p1.y) * r,
             targetCoord = new Coordinate(x, y);
-        const animCoords = coordinates.slice(0, this._animIdx + 1);
-        animCoords.push(targetCoord);
         const isPolygon = !!this.getShell;
-        if (isPolygon) {
-            this.setCoordinates([this._aniShowCenter].concat(animCoords));
-        } else {
+        if (!isPolygon && this.options['smoothness'] > 0) {
+            //smooth line needs to set current coordinates plus 2 more to caculate correct control points
+            const animCoords = coordinates.slice(0, this._animIdx + 3);
             this.setCoordinates(animCoords);
+        } else {
+            const animCoords = coordinates.slice(0, this._animIdx + 1);
+            animCoords.push(targetCoord);
+            if (isPolygon) {
+                this.setCoordinates([this._aniShowCenter].concat(animCoords));
+            } else {
+                this.setCoordinates(animCoords);
+            }
         }
-        return animCoords[animCoords.length - 1];
+        return targetCoord;
     }
 
     _getCenterInExtent(extent, coordinates, clipFn) {

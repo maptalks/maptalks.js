@@ -12,6 +12,7 @@ import {
 import { isGradient } from './util/style';
 import { createEl } from './util/dom';
 import Browser from './Browser';
+import Point from '../geo/Point';
 import { getFont, getAlignPoint } from './util/strings';
 
 const DEFAULT_STROKE_COLOR = '#000';
@@ -534,56 +535,7 @@ const Canvas = {
         }
     },
 
-    // paintSmoothLine(ctx, points, lineOpacity, smoothValue, close) {
-    //     if (!points || points.length <= 2) {
-    //         return;
-    //     }
-    //     function getQuadControlPoint(x0, y0, x1, y1, smoothValue) {
-    //         const dist = Math.sqrt(Math.pow(x0 - x1, 2) + Math.pow(y0 - y1, 2));
-    //         const perpDist = dist * smoothValue;
-    //         const midx = (x0 + x1) / 2, midy = (y0 + y1) / 2;
-    //         const degree = Math.PI / 2 - computeDegree(x0, y0, x1, y1);
-    //         const dx = Math.cos(degree) * perpDist, dy = Math.sin(degree) * perpDist;
-    //         return [midx - dx, midy + dy];
-    //     }
-    //     ctx.beginPath();
-    //     ctx.moveTo(points[0].x, points[0].y);
-    //     if (points.length <= 2 || !smoothValue) {
-    //         Canvas._path(ctx, points);
-    //         return;
-    //     }
-    //     const l = close ? points.length + 1 : points.length;
-    //     let prevCtrlPoint;
-    //     for (let i = 1; i < l; i++) {
-    //         const prevPoint = points[i - 1];
-    //         const currentPoint = i === points.length ? points[0] : points[i];
-    //         let ctrlPoint;
-    //         if (i === 1) {
-    //             // the first control point
-    //             ctrlPoint = getQuadControlPoint(prevPoint.x, prevPoint.y, points[i].x, points[i].y, smoothValue);
-    //         } else {
-    //             // the following control point
-    //             const x = 2 * prevPoint.x - prevCtrlPoint[0], y = 2 * prevPoint.y - prevCtrlPoint[1];
-    //             ctrlPoint = [x, y];
-    //         }
-    //         if (i < points.length) {
-    //             ctx.quadraticCurveTo(ctrlPoint[0], ctrlPoint[1], currentPoint.x, currentPoint.y);
-    //             prevPoint.nextCtrlPoint = ctrlPoint;
-    //             currentPoint.prevCtrlPoint = ctrlPoint;
-    //             prevCtrlPoint = ctrlPoint;
-    //         } else {
-    //             //the closing curve, draw a bezierCurve
-    //             //the second control point, the opposite one of the first vertex's next control point
-    //             const x1 = 2 * currentPoint.x - currentPoint.nextCtrlPoint[0], y1 = 2 * currentPoint.y - currentPoint.nextCtrlPoint[1];
-    //             ctx.bezierCurveTo(ctrlPoint[0], ctrlPoint[1], x1, y1, currentPoint.x, currentPoint.y);
-    //         }
-
-    //     }
-    //     // points[points.length - 1].prevCtrlPoint = prevCtrlPoint;
-    //     Canvas._stroke(ctx, lineOpacity);
-    // },
-
-    paintSmoothLine(ctx, points, lineOpacity, smoothValue, close) {
+    paintSmoothLine(ctx, points, lineOpacity, smoothValue, close, tailIdx, tailRatio) {
         if (!points) {
             return;
         }
@@ -591,8 +543,43 @@ const Canvas = {
             Canvas.path(ctx, points, lineOpacity);
             return;
         }
+
+        //推算 cubic 贝塞尔曲线片段的起终点和控制点坐标
+        //t0: 片段起始比例 0-1
+        //t1: 片段结束比例 0-1
+        //x1, y1, 曲线起点
+        //bx1, by1, bx2, by2，曲线控制点
+        //x2, y2  曲线终点
+        //结果是曲线片段的起点，2个控制点坐标和终点坐标
+        function interpolate(t0, t1, x1, y1, bx1, by1, bx2, by2, x2, y2) {
+            const u0 = 1.0 - t0;
+            const u1 = 1.0 - t1;
+
+            const qxa =  x1 * u0 * u0 + bx1 * 2 * t0 * u0 + bx2 * t0 * t0;
+            const qxb =  x1 * u1 * u1 + bx1 * 2 * t1 * u1 + bx2 * t1 * t1;
+            const qxc = bx1 * u0 * u0 + bx2 * 2 * t0 * u0 +  x2 * t0 * t0;
+            const qxd = bx1 * u1 * u1 + bx2 * 2 * t1 * u1 +  x2 * t1 * t1;
+
+            const qya =  y1 * u0 * u0 + by1 * 2 * t0 * u0 + by2 * t0 * t0;
+            const qyb =  y1 * u1 * u1 + by1 * 2 * t1 * u1 + by2 * t1 * t1;
+            const qyc = by1 * u0 * u0 + by2 * 2 * t0 * u0 +  y2 * t0 * t0;
+            const qyd = by1 * u1 * u1 + by2 * 2 * t1 * u1 +  y2 * t1 * t1;
+
+            // const xa = qxa * u0 + qxc * t0;
+            const xb = qxa * u1 + qxc * t1;
+            const xc = qxb * u0 + qxd * t0;
+            const xd = qxb * u1 + qxd * t1;
+
+            // const ya = qya * u0 + qyc * t0;
+            const yb = qya * u1 + qyc * t1;
+            const yc = qyb * u0 + qyd * t0;
+            const yd = qyb * u1 + qyd * t1;
+
+            return [xb, yb, xc, yc, xd, yd];
+        }
+
         //from http://www.antigrain.com/research/bezier_interpolation/
-        function getCubicControlPoints(x0, y0, x1, y1, x2, y2, x3, y3, smoothValue) {
+        function getCubicControlPoints(x0, y0, x1, y1, x2, y2, x3, y3, smoothValue, t) {
             // Assume we need to calculate the control
             // points between (x1,y1) and (x2,y2).
             // Then x0,y0 - the previous vertex,
@@ -620,13 +607,19 @@ const Canvas = {
                 ctrl2X = xm2 + (xc2 - xm2) * smoothValue + x2 - xm2,
                 ctrl2Y = ym2 + (yc2 - ym2) * smoothValue + y2 - ym2;
 
-            return [ctrl1X, ctrl1Y, ctrl2X, ctrl2Y];
+            const ctrlPoints = [ctrl1X, ctrl1Y, ctrl2X, ctrl2Y];
+            if (t < 1) {
+                return interpolate(0, t, x1, y1, ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, x2, y2);
+            } else {
+                return ctrlPoints;
+            }
         }
-        const count = points.length;
-        const l = close ? count : count - 1;
+        let count = points.length;
+        let l = close ? count : count - 1;
 
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
+        if (tailRatio !== undefined) l -= Math.max(l - tailIdx - 1, 0);
         let preCtrlPoints;
         for (let i = 0; i < l; i++) {
             const x1 = points[i].x, y1 = points[i].y;
@@ -662,17 +655,28 @@ const Canvas = {
                 y3 = points[i + 2 - count].y;
             }
 
-            const ctrlPoints = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x3, y3, smoothValue);
-            ctx.bezierCurveTo(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2], ctrlPoints[3], x2, y2);
+            const ctrlPoints = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x3, y3, smoothValue, i === l - 1 ? tailRatio : 1);
+            if (i === l - 1 && tailRatio >= 0 && tailRatio < 1) {
+                ctx.bezierCurveTo(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2], ctrlPoints[3], ctrlPoints[4], ctrlPoints[5]);
+                points.splice(l - 1, count - (l - 1) - 1);
+                const lastPoint = new Point(ctrlPoints[4], ctrlPoints[5]);
+                lastPoint.prevCtrlPoint = new Point(ctrlPoints[2], ctrlPoints[3]);
+                points.push(lastPoint);
+                count = points.length;
+            } else {
+                ctx.bezierCurveTo(ctrlPoints[0], ctrlPoints[1], ctrlPoints[2], ctrlPoints[3], x2, y2);
+            }
             points[i].nextCtrlPoint = ctrlPoints.slice(0, 2);
             points[i].prevCtrlPoint = preCtrlPoints ? preCtrlPoints.slice(2) : null;
             preCtrlPoints = ctrlPoints;
         }
-        if (!close) {
+        if (!close && points[1].prevCtrlPoint) {
             points[0].nextCtrlPoint = points[1].prevCtrlPoint;
             delete points[0].prevCtrlPoint;
         }
-        points[count - 1].prevCtrlPoint = points[count - 2].nextCtrlPoint;
+        if (!points[count - 1].prevCtrlPoint) {
+            points[count - 1].prevCtrlPoint = points[count - 2].nextCtrlPoint;
+        }
         Canvas._stroke(ctx, lineOpacity);
     },
 
