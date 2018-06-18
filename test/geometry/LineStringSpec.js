@@ -414,7 +414,9 @@ describe('Geometry.LineString', function () {
             layer = new maptalks.VectorLayer('id2');
             var polyline = new maptalks.LineString([
                 map.getCenter(),
-                map.getCenter().add(0.01, 0.01)
+                map.getCenter().add(0.01, 0.01),
+                map.getCenter().add(0.01, 0),
+                map.getCenter().add(0, 0),
             ], {
                 'smoothness' : 0.1,
                 'visible' : false
