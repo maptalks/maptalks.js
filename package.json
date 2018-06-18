@@ -27,7 +27,7 @@
     "pretest": "npm run lint",
     "prepublish": "npm run build",
     "preversion": "npm run lint",
-    "version": "npm run doc && git add -A docs/api && npm run build",
+    "version": "gulp doc && git add -A docs/api && npm run build",
     "postversion": "gulp zip",
     "doc": "gulp doc",
     "dev": "gulp connect",
