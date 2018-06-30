@@ -73,7 +73,7 @@
     "karma-rollup-preprocessor": "^5.0.1",
     "karma-safari-launcher": "^1.0.0",
     "karma-sinon": "^1.0.5",
-    "maptalks-build-helpers": "^0.4.3",
+    "maptalks-build-helpers": "^0.4.4",
     "maptalks-jsdoc": "^0.2.3",
     "minimist": "^1.2.0",
     "mocha": "^3.5.0",
