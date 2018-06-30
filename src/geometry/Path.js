@@ -9,6 +9,9 @@ import simplify from 'simplify-js';
 /**
  * @property {Object} options - configuration options
  * @property {String} [options.smoothness=0]      - line smoothing by quad bezier interporating, 0 by default
+ * @property {Boolean} [options.enableSimplify=true] - whether to simplify path before rendering
+ * @property {Number}  [options.simplifyTolerance=2] - tolerance to simplify path, the higher the simplify is more intense
+ * @property {Boolean} [options.enableClip=true] - whether to clip path with map's current extent
  * @property {Object} options.symbol - Path's default symbol
  * @memberOf Path
  * @instance
@@ -17,6 +20,7 @@ const options = {
     'smoothness' : 0,
     'enableClip' : true,
     'enableSimplify' : true,
+    'simplifyTolerance' : 2,
     'symbol': {
         'lineColor': '#000',
         'lineWidth': 2,
@@ -217,7 +221,7 @@ class Path extends Geometry {
         }
         const map = this.getMap(),
             isSimplify = !disableSimplify && this._shouldSimplify(),
-            tolerance = 2 * map._getResolution(),
+            tolerance = this.options['simplifyTolerance'] * map._getResolution(),
             isMulti = Array.isArray(prjCoords[0]);
         delete this._simplified;
         if (isSimplify && !isMulti) {
@@ -235,7 +239,7 @@ class Path extends Geometry {
         const layer = this.getLayer(),
             properties = this.getProperties();
         const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]);
-        return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify']/* && !this.options['smoothness'] */;
+        return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }
 
     _setPrjCoordinates(prjPoints) {

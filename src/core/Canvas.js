@@ -551,6 +551,7 @@ const Canvas = {
         //bx1, by1, bx2, by2，曲线控制点
         //x2, y2  曲线终点
         //结果是曲线片段的起点，2个控制点坐标和终点坐标
+        //https://stackoverflow.com/questions/878862/drawing-part-of-a-b%C3%A9zier-curve-by-reusing-a-basic-b%C3%A9zier-curve-function/879213#879213
         function interpolate(t0, t1, x1, y1, bx1, by1, bx2, by2, x2, y2) {
             const u0 = 1.0 - t0;
             const u1 = 1.0 - t1;

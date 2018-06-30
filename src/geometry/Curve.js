@@ -13,6 +13,8 @@ const options = {
  * @extends LineString
  * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
  * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
+ * @property {Boolean} [options.enableSimplify=false] - whether to simplify path before rendering
+ * @property {Boolean} [options.enableClip=false] - whether to clip curve with map's current extent
  */
 class Curve extends LineString {
 

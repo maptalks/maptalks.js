@@ -477,6 +477,15 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this._renderer.onAdd();
         }
 
+        /**
+         * renderercreate event, fired when renderer is created.
+         *
+         * @event Layer#renderercreate
+         * @type {Object}
+         * @property {String} type - renderercreate
+         * @property {Layer} target    - the layer fires the event
+         * @property {Any} renderer    - renderer of the layer
+         */
         this.fire('renderercreate', {
             'renderer': this._renderer
         });
