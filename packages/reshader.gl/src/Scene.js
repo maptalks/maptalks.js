@@ -51,12 +51,13 @@ class Scene {
                 opaques.push(meshes[i]);
             }
         }
-        opaques.sort((a, b) => {
-            if (a.getDefinesKey() === b.getDefinesKey()) {
-                return 0;
-            }
-            return 1;
-        });
+        // 即使是opaques，渲染顺序也不能随便改变，因为可能有stencil测试，或者depthMask等会因渲染顺序影响渲染效果的设置
+        // opaques.sort((a, b) => {
+        //     if (a.getDefinesKey() === b.getDefinesKey()) {
+        //         return 0;
+        //     }
+        //     return 1;
+        // });
         // transparents.sort((a, b) => {
         //     //TODO 根据距离camera的距离来排序
         // });
