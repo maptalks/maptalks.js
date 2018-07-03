@@ -24,22 +24,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
-    updateSceneConfig(pluginType, sceneConfig) {
+    updateSceneConfig(idx, sceneConfig) {
         const plugins = this.plugins;
         if (!plugins) {
             return;
         }
-        for (let i = 0; i < plugins.length; i++) {
-            if (plugins[i].getType() === pluginType) {
-                plugins[i].config = this.layer.getStyle()[pluginType];
-                plugins[i].updateSceneConfig({
-                    sceneCache : this.sceneCache[pluginType],
-                    sceneConfig : sceneConfig
-                });
-                this.setToRedraw();
-                break;
-            }
-        }
+
+        plugins[idx].config = this.layer.getStyle()[idx];
+        plugins[idx].updateSceneConfig({
+            sceneCache : this.sceneCache[idx],
+            sceneConfig : sceneConfig
+        });
+        this.setToRedraw();
     }
 
     //always redraw when map is interacting
@@ -47,7 +43,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const redraw = super.needToRedraw();
         if (!redraw) {
             for (let i = 0; i < this.plugins.length; i++) {
-                const cache = this.sceneCache[this.plugins[i].getType()];
+                const cache = this.sceneCache[i];
                 if (cache) {
                     if (this.plugins[i].needToRedraw(cache)) {
                         return true;
@@ -212,9 +208,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             //restore features for plugin data
             const features = data.features;
             //iterate plugins
-            for (const p in data.data) {
-                const pluginData = data.data[p]; // { data, featureIndex }
-                const symbols = this.layer.getStyle()[p].style;//TODO 读取所有的symbol
+            for (let i = 0; i < data.data.length; i++) {
+                const pluginData = data.data[i]; // { data, featureIndex }
+                const symbols = this.layer.getStyle()[i].style;//TODO 读取所有的symbol
                 const feaIndex = pluginData.featureIndex;
                 const pFeatures = new Array(feaIndex.length / 2);
                 //[feature index, style index]
@@ -233,29 +229,27 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     startFrame() {
-        this.plugins.forEach(plugin => {
-            const type = plugin.getType();
-            if (!this.sceneCache[type]) {
-                this.sceneCache[type] = {};
+        this.plugins.forEach((plugin, idx) => {
+            if (!this.sceneCache[idx]) {
+                this.sceneCache[idx] = {};
             }
             plugin.startFrame({
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
-                sceneCache : this.sceneCache[type],
+                sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig
             });
         });
     }
 
     endFrame() {
-        this.plugins.forEach(plugin => {
-            const type = plugin.getType();
+        this.plugins.forEach((plugin, idx) => {
             const status = plugin.endFrame({
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
-                sceneCache : this.sceneCache[type],
+                sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig
             });
             if (status && status.redraw) {
@@ -273,22 +267,21 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const stencilRef = this._tileStencilRefs && this._tileStencilRefs[tileInfo.dupKey];
         const tileTransform = this.calculateTileMatrix(tileInfo);
-        this.plugins.forEach(plugin => {
-            const type = plugin.getType();
-            if (!tileData[type]) {
+        this.plugins.forEach((plugin, idx) => {
+            if (!tileData[idx]) {
                 return;
             }
-            if (!tileCache[type]) {
-                tileCache[type] = {};
+            if (!tileCache[idx]) {
+                tileCache[idx] = {};
             }
             const param = {
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
-                sceneCache : this.sceneCache[type],
+                sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
-                tileCache : tileCache[type],
-                tileData : tileData[type],
+                tileCache : tileCache[idx],
+                tileData : tileData[idx],
                 t : this._frameTime - tileData.loadTime,
                 tileInfo, tileTransform, stencilRef
             };
@@ -303,10 +296,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     picking(x, y) {
         const hits = [];
-        this.plugins.forEach(plugin => {
-            const type = plugin.getType();
-            if (this.sceneCache[type]) {
-                const feature = plugin.picking(this.sceneCache[type], x, y);
+        this.plugins.forEach((plugin, idx) => {
+            if (this.sceneCache[idx]) {
+                const feature = plugin.picking(this.sceneCache[idx], x, y);
                 if (feature) hits.push(feature);
             }
         });
@@ -318,14 +310,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
         if (tile.image && !tile.image._empty) {
-            this.plugins.forEach(plugin => {
-                const type = plugin.getType();
+            this.plugins.forEach((plugin, idx) => {
                 plugin.deleteTile({
                     regl : this.regl,
                     layer : this.layer,
                     gl : this.gl,
-                    sceneCache : this.sceneCache[type],
-                    tileCache : tile.image.cache ? tile.image.cache[type] : {},
+                    sceneCache : this.sceneCache[idx],
+                    tileCache : tile.image.cache ? tile.image.cache[idx] : {},
                     tileInfo : tile.info,
                     tileData : tile.image
                 });
@@ -347,12 +338,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             cache = this.sceneCache = {};
         }
         const size = new maptalks.Size(this.canvas.width, this.canvas.height);
-        this.plugins.forEach(plugin => {
-            const type = plugin.getType();
-            if (!cache[type]) {
-                cache[type] = {};
+        this.plugins.forEach((plugin, idx) => {
+            if (!cache[idx]) {
+                cache[idx] = {};
             }
-            plugin.resize(cache[type], size);
+            plugin.resize(cache[idx], size);
         });
     }
 
@@ -371,8 +361,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _clearPlugin() {
-        this.plugins.forEach(plugin => {
-            plugin.remove({ sceneCache : this.sceneCache[plugin.getType()] });
+        this.plugins.forEach((plugin, idx) => {
+            plugin.remove({ sceneCache : this.sceneCache[idx] });
         });
         delete this.sceneCache;
     }
@@ -389,11 +379,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _initPlugins() {
-        const plugins = this.layer.constructor.getPlugins();
+        const pluginClazz = this.layer.constructor.getPlugins();
         const style = this.layer.getStyle();
-        this.plugins = plugins.map(P => {
-            const type = P.getType();
-            const config = style[type];
+        this.plugins = style.map((config, idx) => {
+            if (!config.type) {
+                throw new Error('invalid plugin type for style at ' + idx);
+            }
+            const P = pluginClazz[config.type];
             const p = new P();
             p.config = config;
             return p;

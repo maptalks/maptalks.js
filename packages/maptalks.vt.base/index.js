@@ -1,6 +1,7 @@
-function VectorTilePlugin() {
+const registedClazz = {};
 
-}
+function VectorTilePlugin() {}
+
 VectorTilePlugin.prototype.paint = function (glData) {
     throw new Error('to be implemented.')
 };
@@ -14,20 +15,24 @@ VectorTilePlugin.prototype.needToRedraw = function () {
 };
 
 VectorTilePlugin.extend = function (type, props) {
-    VectorTilePlugin.type = type;
+    var clazz = function () {};
+    var proto = Object.create(VectorTilePlugin.prototype);
+    proto.constructor = clazz;
+    clazz.prototype = proto;
+
+    clazz.type = type;
     for (var p in props) {
         if (props.hasOwnProperty(p)) {
-            VectorTilePlugin.prototype[p] = props[p];
+            clazz.prototype[p] = props[p];
         }
     }
+    clazz.registerAt = registerAt.bind(clazz);
+    registedClazz[type] = clazz;
+    return clazz;
 }
 
-VectorTilePlugin.getType = function () {
-    return VectorTilePlugin.type;
-};
-
-if (typeof window !== 'undefined' &&  maptalks.VectorTileLayer) {
-    maptalks.VectorTileLayer.registerPlugin(VectorTilePlugin);
+function registerAt(VectorTileLayer) {
+    VectorTileLayer.registerPlugin(this);
 }
 
 export default VectorTilePlugin;

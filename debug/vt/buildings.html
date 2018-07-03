@@ -21,12 +21,12 @@
 <body>
 
   <div id="main">
-    <div id="map" style="float:left;background-color:#bbb;width:1100px;"></div>
+    <div id="map2" style="width:100%;height:1000px;float:left;background-color:#fff;"></div>
     <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <div style="float:right;width:300px;">
-      金属度： <input id="metallic" type="range"> <br>
-      粗糙度： <input id="roughness" type="range"> <br>
+      金属度： <input id="metallic" type="range" value=100> <br>
+      粗糙度： <input id="roughness" type="range" value=0> <br>
       环境光强度： <input id="ambientIntensity" type="range" value=0> <br>
       albedo贴图：<br><img id="albedoMap" style="width:200px;height:200px;border:1px black solid;"/> <br>
       法线贴图：<br><img id="normalMap" style="width:200px;height:200px;border:1px black solid;"/><br>
@@ -47,17 +47,17 @@
     var osm = new maptalks.TileLayer('osm', {
         crossOrigin : 'anonymous',
         // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        // urlTemplate : 'http://www.google.cn/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i342009817!3m9!2sen-US!3sCN!5e18!12m1!1e47!12m3!1e37!2m1!1ssmartmaps!4e0&token=32965',
-        // subdomains: ['a', 'b', 'c'],
-        // attribution : '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-          subdomains: ['a','b','c','d'],
-          attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+        subdomains: ['a','b','c','d'],
+        attribution : '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        //   subdomains: ['a','b','c','d'],
+        //   attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
       });
 
-    var map = new maptalks.Map('map', {
+    var map = new maptalks.Map('map2', {
       center: [13.416935229170008, 52.529564137540376],
-      zoom: 18,
+      zoom: 15,
       pitch : 45,
 
       dragRotatePitch : true,
@@ -85,8 +85,9 @@
 
     console.log(data.features.length);
     
-    const style = {
-      'pbr' : {
+    const style = [
+      {
+        type : 'pbr',
         dataConfig : {
           type : '3d-extrusion',
           altitudeProperty : 'levels',
@@ -94,24 +95,28 @@
           defaultAltitude : 1,
           normal : true,
           uv : true,
-          uvSize : [128 / 50, 128 / 50]
+          uvSize : [128 / 50, 128 / 50],
+          // shadowVolume : true,
+          // shadowDir : [-1, -1, 0]
         },
         sceneConfig : {
           material : {
-            roughness : 0.5,
-            metallic : 0.5,
+            roughness : 0,
+            metallic :1,
             albedoColor : [1, 1, 1],
             // occulusionRoughnessMetallicMap : 'resources/occulusionRoughnessMetallicMap.png',
             // albedoMap : 'resources/brickwall.jpg',
             // normalMap : 'resources/Rock_01_local.jpg'
           },
           shadow : {
+            type : 'vsm',
+            // type : 'stencil',
             enable : true,
             quality : 'medium',
-            opacity : 0.6,
+            opacity : 0.5,
             color : [0, 0, 0],
-            blurOffset : 2,
-            // debug : ['shadow', 'shadow2'] 
+            blurOffset : 1,
+            // debug : ['shadow', 'shadow2']
           },
           lights : {
             ambientCubeLight : {
@@ -119,12 +124,12 @@
             },
             ambientColor : [0.00, 0.00, 0.00],
             ambientIntensity : 1,
-            dirLights : [
-              {
-                color : [1, 1, 1],
-                direction : [0, 1, 1]
-              }
-            ]
+            // dirLights : [
+            //   {
+            //     color : [1, 1, 1],
+            //     direction : [0, 1, 1]
+            //   }
+            // ]
           }
         },
 
@@ -153,7 +158,7 @@
           }
         ]
       }
-    };
+    ];
 
     // test tile clipping mask
     var layer1 = new maptalks.GeoJSONVectorTileLayer('polygon1', {
@@ -171,7 +176,7 @@
     map.addLayer(layer1);
     
     function updateStyle(imageMaps) {
-      const sceneConfig = style.pbr.sceneConfig;
+      const sceneConfig = style[0].sceneConfig;
       const config = {
         material :  maptalks.Util.extend(sceneConfig.material, imageMaps)
       };
@@ -180,17 +185,17 @@
         delete config.lights.ambientCubeLight.url;
         config.lights.ambientCubeLight.data = imageMaps.hdr;
       }
-      layer1.updateSceneConfig('pbr', config);
+      layer1.updateSceneConfig(0, config);
     }
 
     function updateMetallicRoughness() {
-      const materialConfig = style.pbr.sceneConfig.material;
+      const materialConfig = style[0].sceneConfig.material;
       maptalks.Util.extend(materialConfig, {
         metallic : +document.getElementById('metallic').value / 100,
         roughness : +document.getElementById('roughness').value / 100,
         ambientIntensity : +document.getElementById('ambientIntensity').value / 50 + 1.0,
       });
-      layer1.updateSceneConfig('pbr', {
+      layer1.updateSceneConfig(0, {
         material : materialConfig
       });
     }

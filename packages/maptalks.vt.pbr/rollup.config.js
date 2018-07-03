@@ -38,19 +38,23 @@ module.exports = {
             exclude: 'node_modules/**'
         })
     ],
+    external : ['maptalks.vt'],
     output: [
         {
             'sourcemap': false,
             'format': 'umd',
             'name': pkg.name,
             'banner': banner,
+            'globals' : {
+                'maptalks.vt' : 'maptalks'
+            },
             'file': 'dist/' + pkg.name + '.js'
         },
         {
             'sourcemap': false,
             'format': 'es',
             'banner': banner,
-            'file': 'dist/' + pkg.name + '.mjs'
+            'file': 'dist/' + pkg.name + '.es.js'
         }
     ]
 };

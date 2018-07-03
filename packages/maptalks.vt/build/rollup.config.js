@@ -12,7 +12,8 @@ module.exports = [
             jsnext : true,
             main : true
         }),
-        commonjs()
+        commonjs(),
+        babel()
     ],
     output: {
         format: 'amd',
@@ -75,7 +76,7 @@ if (!workerLoaded) {
 }
 }`
     },
-    plugins: [
+    plugins : [
         babel()
     ],
     watch: {

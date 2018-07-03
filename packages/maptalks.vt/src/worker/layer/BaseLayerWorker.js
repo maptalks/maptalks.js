@@ -37,18 +37,16 @@ export default class BaseLayerWorker {
     }
 
     createTileData(features, { glScale, zScale }) {
-        const data = {},
+        const data = [],
             options = this.options,
             buffers = [];
-
-        const layerStyle = this.pluginConfig;
-        for (const pluginType in layerStyle) {
-            const pluginConfig = layerStyle[pluginType];
+        for (let i = 0; i < this.pluginConfig.length; i++) {
+            const pluginConfig = this.pluginConfig[i];
             const styles = pluginConfig.style;
             let all = true;
             //iterate plugin's styles and mark feature's style index
-            for (let i = 0, l = styles.length; i < l; i++) {
-                all = this._filterFeatures(styles[i].filter, features, pluginType, i);
+            for (let ii = 0, ll = styles.length; ii < ll; ii++) {
+                all = this._filterFeatures(styles[ii].filter, features, i, ii);
                 if (all) {
                     //all features are filtered
                     break;
@@ -60,11 +58,11 @@ export default class BaseLayerWorker {
             //[feature index, style index, feature index, style index, ....]
             const indexes = [];
             let feature;
-            for (let i = 0, l = features.length; i < l; i++) {
-                feature = features[i];
-                if (feature.styleMark && feature.styleMark[pluginType] !== undefined) {
+            for (let ii = 0, ll = features.length; ii < ll; ii++) {
+                feature = features[ii];
+                if (feature.styleMark && feature.styleMark[i] !== undefined) {
                     filteredFeas.push(feature);
-                    indexes.push(i, feature.styleMark[pluginType]);
+                    indexes.push(ii, feature.styleMark[i]);
                 }
             }
 
@@ -74,12 +72,12 @@ export default class BaseLayerWorker {
 
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
             const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, glScale, zScale });
-            data[pluginType] = {
+            data[i] = {
                 data : tileData.data,
                 featureIndex : new Uint16Array(indexes)
             };
 
-            buffers.push(data[pluginType].featureIndex.buffer);
+            buffers.push(data[i].featureIndex.buffer);
             if (tileData.buffers && tileData.buffers.length > 0) {
                 for (let i = 0, l = tileData.buffers.length; i < l; i++) {
                     buffers.push(tileData.buffers[i]);
@@ -109,10 +107,10 @@ export default class BaseLayerWorker {
 
         return {
             data : {
-                data : data,
+                data,
                 features : styledFeas
             },
-            buffers : buffers
+            buffers
         };
     }
 
@@ -214,14 +212,9 @@ export default class BaseLayerWorker {
     }
 
     _compileStyle(layerStyle) {
-        this.pluginConfig = {};
-        for (const p in layerStyle) {
-            if (layerStyle.hasOwnProperty(p)) {
-                this.pluginConfig[p] = extend({}, layerStyle[p], {
-                    style : compileStyle(layerStyle[p].style)
-                });
-            }
-        }
+        this.pluginConfig = layerStyle.map(s => extend({}, s, {
+            style : compileStyle(s.style)
+        }));
     }
 }
 

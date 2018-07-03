@@ -31,7 +31,6 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     constructor(id, options) {
         super(id, options);
-        this.zoomOffset = 0;
         const tileSize = this.getTileSize();
         this.zoomOffset = -log2(tileSize.width / 256);
         this.validateStyle();
@@ -62,25 +61,26 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    updateSceneConfig(plugin, sceneConfig) {
-        extend(this.options.style[plugin].sceneConfig, sceneConfig);
+    updateSceneConfig(idx, sceneConfig) {
+        extend(this.options.style[idx].sceneConfig, sceneConfig);
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.updateSceneConfig(plugin, sceneConfig);
+            renderer.updateSceneConfig(idx, sceneConfig);
         }
         return this;
     }
 
     validateStyle() {
-        const style = this.options.style;
-        if (!style) {
+        const styles = this.options.style;
+        if (!styles) {
             return;
         }
-        for (const p in style) {
-            if (!Array.isArray(style[p].style)) {
-                style[p].style = [style[p].style];
+        //convert to array is style is an object
+        styles.forEach(s => {
+            if (!Array.isArray(s.style)) {
+                s.style = [s.style];
             }
-        }
+        });
     }
 
     getStyle() {
@@ -99,13 +99,13 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     static registerPlugin(Plugin) {
         if (!VectorTileLayer.plugins) {
-            VectorTileLayer.plugins = [];
+            VectorTileLayer.plugins = {};
         }
-        VectorTileLayer.plugins.push(Plugin);
+        VectorTileLayer.plugins[Plugin.type] = Plugin;
     }
 
     static getPlugins() {
-        return VectorTileLayer.plugins || [];
+        return VectorTileLayer.plugins || {};
     }
 }
 
