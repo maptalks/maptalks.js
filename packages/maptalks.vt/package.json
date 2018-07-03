@@ -20,10 +20,10 @@
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.2.2",
-    "babel-plugin-external-helpers": "^6.18.0",
+    "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-unassert": "^2.1.2",
-    "babel-preset-es2015": "^6.18.0",
-    "eslint": "^4.7.1",
+    "babel-preset-env": "^1.7.0",
+    "eslint": "^4.19.1",
     "eslint-config-maptalks": "^0.3.0",
     "eslint-plugin-mocha": "^5.0.0",
     "gulp": "^3.9.0",
@@ -37,13 +37,13 @@
     "rollup": "0.58.1",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.1.0",
-    "rollup-plugin-node-resolve": "^3.0.0"
+    "rollup-plugin-node-resolve": "^3.3.0"
   },
   "dependencies": {
     "@mapbox/gl-matrix": "^0.0.1",
     "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/vector-tile": "^1.3.0",
-    "color": "^2.0.1",
+    "color": "^3.0.0",
     "earcut": "^2.1.3",
     "maptalks": ">=0.37.0",
     "maptalks-geojson-vt": "^2.4.0",

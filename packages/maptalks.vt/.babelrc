@@ -1,16 +1,5 @@
 {
-  "presets": [
-    ["env", {
-      "loose": true,
-      "modules": false
-    }]
-  ],
   "plugins": [
-    "unassert",
-    "external-helpers"
-  ],
-  "ignore": [
-    "dist/*.js"
-  ],
-  "comments": false
+    "unassert"
+  ]
 }
