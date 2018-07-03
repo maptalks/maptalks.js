@@ -75,6 +75,7 @@
     "karma-sinon": "^1.0.5",
     "maptalks-build-helpers": "^0.4.4",
     "maptalks-jsdoc": "^0.2.3",
+    "maptalks-rollup-plugin-babel": "^3.0.2",
     "minimist": "^1.2.0",
     "mocha": "^3.5.0",
     "sinon": "^3.2.1"
