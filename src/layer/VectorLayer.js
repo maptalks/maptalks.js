@@ -1,6 +1,6 @@
 import Browser from '../core/Browser';
 import { isNil } from '../core/util';
-import { getFilterFeature, compileStyle } from '../core/mapbox';
+import { getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
