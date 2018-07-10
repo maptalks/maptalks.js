@@ -20,7 +20,7 @@ module.exports = function (config) {
         return plugin.name === 'babel';
     });
     if (idx >= 0) {
-        const babel = require('maptalks-rollup-plugin-babel');
+        const babel = require('rollup-plugin-babel');
         plugins.splice(idx, 1, babel({
             plugins: [['istanbul', {
                 // TileLayerGLRenderer is not testable on CI
