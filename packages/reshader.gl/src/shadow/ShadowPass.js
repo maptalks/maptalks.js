@@ -1,5 +1,5 @@
 import { isNil } from '../common/Util';
-import { mat4, vec4, vec3 } from '@mapbox/gl-matrix';
+import { mat4, vec4, vec3 } from 'gl-matrix';
 import VSMShadowShader from './VSMShadowShader';
 import BoxBlurShader from '../shader/BoxBlurShader';
 

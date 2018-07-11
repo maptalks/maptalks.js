@@ -43,18 +43,18 @@ module.exports = {
         {
             'sourcemap': false,
             'format': 'umd',
-            'name': pkg.name,
+            'name': 'maptalks.vt.pbr',
             'banner': banner,
             'globals' : {
                 'maptalks.vt' : 'maptalks'
             },
-            'file': 'dist/' + pkg.name + '.js'
+            'file': pkg.main
         },
         {
             'sourcemap': false,
             'format': 'es',
             'banner': banner,
-            'file': 'dist/' + pkg.name + '.es.js'
+            'file': pkg.module
         }
     ]
 };

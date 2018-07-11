@@ -1,4 +1,4 @@
-import { vec3 } from '@mapbox/gl-matrix';
+import { vec3 } from 'gl-matrix';
 import { isNumber } from './common/Util';
 import BoundingBox from './BoundingBox';
 

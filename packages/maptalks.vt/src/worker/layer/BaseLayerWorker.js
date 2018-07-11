@@ -1,4 +1,4 @@
-import { compileStyle } from '../util/FeatureFilter';
+import { compileStyle } from '@maptalks/feature-filter';
 import { extend } from '../../layer/core/Util';
 import { buildExtrudeFaces } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';

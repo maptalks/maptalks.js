@@ -1,4 +1,4 @@
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 import shadowDisplayFrag from './glsl/shadow_display.frag';
 import shadowDisplayVert from './glsl/shadow_display.vert';
 import MeshShader from '../shader/MeshShader.js';

@@ -1,4 +1,4 @@
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 import * as reshader from 'reshader.gl';
 
 export default class StencilShadowPass {
@@ -61,11 +61,11 @@ export default class StencilShadowPass {
         uniforms
     }) {
         if (!scene.meshes.length) {
-            return { fbo : null};
+            return { fbo : null };
         }
         // console.log(scene.getMeshes());
         this.renderer.render(this.debugShader, uniforms, scene);
-        return { fbo : null};
+        return { fbo : null };
     }
 
     pass2() {}

@@ -1,8 +1,9 @@
 {
-  "name": "maptalks.vt.pbr",
+  "name": "@maptalks/vt.pbr",
   "version": "0.1.0",
   "description": "PBR plugin for maptalks vector tile layer",
   "main": "dist/maptalks.vt.pbr.js",
+  "module": "dist/maptalks.vt.pbr.es.js",
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
@@ -17,7 +18,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@mapbox/gl-matrix": "^0.0.1",
+    "gl-matrix": "^2.6.1",
     "color": "^3.0.0",
     "maptalks.vt.base": "^0.1.0",
     "reshader.gl": "^0.1.0"
@@ -29,7 +30,7 @@
     "eslint": "^4.19.1",
     "eslint-config-maptalks": "^0.3.0",
     "eslint-plugin-mocha": "^5.0.0",
-    "rollup": "0.58.1",
+    "rollup": "^0.62.0",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.1.0",
     "rollup-plugin-node-resolve": "^3.3.0"

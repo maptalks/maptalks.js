@@ -36,16 +36,10 @@ module.exports = {
     output: [
         {
             'sourcemap': false,
-            'format': 'es',
-            'banner': banner,
-            'file': 'dist/' + pkg.name + '.mjs'
-        },
-        {
-            'sourcemap': false,
             'format': 'umd',
             'name': 'reshader',
             'banner': banner,
-            'file': 'dist/' + pkg.name + '.js'
+            'file': pkg.main
         }
     ]
 };

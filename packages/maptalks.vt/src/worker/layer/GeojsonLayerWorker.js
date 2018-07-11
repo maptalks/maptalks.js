@@ -70,6 +70,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             cb(null, features);
             return;
         }
+        // debugger
         let feature;
         for (let i = 0, l = tile.features.length; i < l; i++) {
             feature = tile.features[i];

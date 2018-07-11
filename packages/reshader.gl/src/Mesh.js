@@ -1,5 +1,5 @@
 import { extend, isNil } from './common/Util.js';
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 /**
  * Config:

@@ -1,5 +1,5 @@
 import * as reshader from 'reshader.gl';
-import { mat4, vec3 } from '@mapbox/gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { isNil } from './Util';
 
 class VSMShadowPass {

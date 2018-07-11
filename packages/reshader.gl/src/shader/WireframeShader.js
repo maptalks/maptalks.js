@@ -1,4 +1,4 @@
-import { mat4 } from '@mapbox/gl-matrix';
+import { mat4 } from 'gl-matrix';
 import wireframeFrag from './glsl/wireframe.frag';
 import wireframeVert from './glsl/wireframe.vert';
 import MeshShader from '../shader/MeshShader.js';

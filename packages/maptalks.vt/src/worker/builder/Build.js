@@ -1,5 +1,5 @@
 import { pushIn, exportIndices } from '../util/Util.js';
-import { vec3 } from '@mapbox/gl-matrix';
+import { vec3 } from 'gl-matrix';
 import earcut from 'earcut';
 
 /**
@@ -114,8 +114,8 @@ export function buildShadowVolume(allVerts, allVertIds, allIndices, allNormals, 
 }
 
 function buildFeatureShadow(vertices, verticeIds, indices, normals, shadowDir) {
-    let front = [],
-        back = [];
+    let front = [];
+    const back = [];
 
     const edges = {};
     // find silhoutte
@@ -192,8 +192,8 @@ function buildFeatureShadow(vertices, verticeIds, indices, normals, shadowDir) {
     const shadowIndices = earcut(front, null, 3);
 
 
-    const vertCount = l / 3,
-        totalCount = l / 3 * 4, //l * 2 / 3 * 4
+    // const vertCount = l / 3,
+    const totalCount = l / 3 * 4, //l * 2 / 3 * 4
         shadowVerts = new Array(totalCount);
     let vertIdx;
 

@@ -3,8 +3,7 @@ const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const pkg = require('../package.json');
 
-module.exports = [
-{
+module.exports = [{
     input: 'src/worker/index.js',
     plugins: [
         resolve({
@@ -54,7 +53,7 @@ module.exports = [
 },
 {
     input: './build/index.js',
-    external: [ 'maptalks' ],
+    external: ['maptalks'],
     output: {
         globals : {
             'maptalks' : 'maptalks'

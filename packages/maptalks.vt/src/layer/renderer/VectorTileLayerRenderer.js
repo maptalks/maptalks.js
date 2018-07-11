@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec3 } from '@mapbox/gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import WorkerConnection from './worker/WorkerConnection';
 import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
 import createREGL from 'regl';
