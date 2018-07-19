@@ -155,7 +155,7 @@ class Painter extends Class {
             points = params[0];
 
         const mapExtent = map.getContainerExtent();
-        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, !mapExtent.contains(this._hitPoint));
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, this._hitPoint && !mapExtent.contains(this._hitPoint));
         if (!cPoints) {
             return null;
         }
@@ -174,7 +174,7 @@ class Painter extends Class {
         return tr;
     }
 
-    _pointContainerPoints(points, dx, dy, ignoreAltitude, noClip, pointPlacement) {
+    _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement) {
         const cExtent = this.getContainerExtent();
         if (!cExtent) {
             return null;
@@ -197,7 +197,7 @@ class Painter extends Class {
         if (Array.isArray(points)) {
             const geometry = this.geometry;
             let clipped;
-            if (!noClip && geometry.options['enableClip']) {
+            if (!disableClip && geometry.options['enableClip']) {
                 clipped = this._clip(points, altitude);
             } else {
                 clipped = {
@@ -303,7 +303,7 @@ class Painter extends Class {
         } else if (geometry.getJSONType() === 'LineString') {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipLine(points, extent2D, false,  !!smoothness);
+                clipPoints = clipLine(points, extent2D, false, !!smoothness);
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
