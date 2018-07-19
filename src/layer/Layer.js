@@ -501,7 +501,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this._renderer.remove();
             delete this._renderer;
         }
-        delete this._mask;
         delete this.map;
     }
 

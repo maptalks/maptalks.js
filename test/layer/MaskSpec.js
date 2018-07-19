@@ -145,4 +145,28 @@ describe('Spec of Masks', function () {
         });
     }
 
+    it('#713', function (done) {
+        vlayer.setMask(new maptalks.Marker(map.getCenter(), {
+            'symbol' : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#000',
+                'markerFillOpacity' : 1
+            }
+        }));
+        map.addLayer(vlayer);
+        var canvas = vlayer.getMap().getRenderer().canvas;
+        var c = new maptalks.Point(canvas.width / 2, canvas.height / 2);
+        vlayer.once('layerload', function () {
+            map.removeLayer(vlayer);
+            vlayer.once('layerload', function () {
+                expect(isDrawn(canvas, c.add(-11, 0))).not.to.be.ok();
+                expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
+                done();
+            });
+            map.addLayer(vlayer);
+        });
+    });
+
 });
