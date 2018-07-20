@@ -1,4 +1,4 @@
-import { IS_NODE, isNil, isArrayHasData, isFunction, isInteger } from '../../core/util';
+import { IS_NODE, isNil, isNumber, isArrayHasData, isFunction, isInteger } from '../../core/util';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
 import PointExtent from '../../geo/PointExtent';
@@ -113,7 +113,11 @@ class TileLayer extends Layer {
      * @return {Size}
      */
     getTileSize() {
-        return new Size(this.options['tileSize']);
+        let size = this.options['tileSize'];
+        if (isNumber(size)) {
+            size = [size, size];
+        }
+        return new Size(size);
     }
 
     /**
