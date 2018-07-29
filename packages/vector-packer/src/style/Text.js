@@ -14,7 +14,7 @@ export function getFont(style) {
         return (style['textStyle'] && style['textStyle'] !== 'normal' ? style['textStyle'] + ' ' : '') +
             (style['textWeight'] && style['textWeight'] !== 'normal' ? style['textWeight'] + ' ' : '') +
             style['textSize'] + 'px ' +
-            !style['textFaceName'] ? DEFAULT_FONT : (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
+            (!style['textFaceName'] ? DEFAULT_FONT : (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"'));
     }
 }
 
