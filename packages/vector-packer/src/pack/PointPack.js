@@ -1,15 +1,12 @@
 import Color from 'color';
 import VectorPack from './VectorPack';
 import StyledPoint from './StyledPoint';
-import IconAtlas from './atlas/IconAtlas';
-import GlyphAtlas from './atlas/GlyphAtlas';
 import clipLine from './util/clip_line';
 import  { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 import { evaluate } from '../style/Util';
-import { fillTypedArray } from './util/array';
-import Promise from './util/Promise';
+import { getIndexArrayType, fillTypedArray, getFormatWidth } from './util/array';
 import { getGlyphQuads, getIconQuads } from './util/quads';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
@@ -23,86 +20,90 @@ const PACK_LEN = 17;
 //uint8 [r, g, b, a]
 //float [rotation]
 
-const PACK_SDF_FORMAT = [
-    {
-        type : Uint32Array,
-        width : 3,
-        name : 'a_anchor'
-    },
-    {
-        type : Int16Array,
-        width : 2,
-        name : 'a_shape'
-    },
-    {
-        type : Uint16Array,
-        width : 2,
-        name : 'a_texcoord'
-    },
-    {
-        type : Uint8Array,
-        width : 4,
-        name : 'a_size'
-    },
-    {
-        type : Int8Array,
-        width : 2,
-        name : 'a_offset'
-    },
-    {
-        type : Uint8Array,
-        width : 1,
-        name : 'a_opacity'
-    },
-    {
-        type : Float32Array,
-        width : 1,
-        name : 'a_rotation'
-    },
-    {
-        type : Uint8Array,
-        width : 3,
-        name : 'a_color'
-    },
-];
+function getPackSDFFormat() {
+    return [
+        {
+            type : Int32Array,
+            width : 3,
+            name : 'a_anchor'
+        },
+        {
+            type : Int16Array,
+            width : 2,
+            name : 'a_shape'
+        },
+        {
+            type : Uint16Array,
+            width : 2,
+            name : 'a_texcoord'
+        },
+        {
+            type : Uint8Array,
+            width : 4,
+            name : 'a_size'
+        },
+        {
+            type : Int8Array,
+            width : 2,
+            name : 'a_offset'
+        },
+        {
+            type : Uint8Array,
+            width : 1,
+            name : 'a_opacity'
+        },
+        {
+            type : Float32Array,
+            width : 1,
+            name : 'a_rotation'
+        },
+        {
+            type : Uint8Array,
+            width : 3,
+            name : 'a_color'
+        },
+    ];
+}
 
-const PACK_MARKER_FORMAT = [
-    {
-        type : Uint32Array,
-        width : 3,
-        name : 'a_anchor'
-    },
-    {
-        type : Int16Array,
-        width : 2,
-        name : 'a_shape'
-    },
-    {
-        type : Uint16Array,
-        width : 2,
-        name : 'a_texcoord'
-    },
-    {
-        type : Uint8Array,
-        width : 4,
-        name : 'a_size'
-    },
-    {
-        type : Int8Array,
-        width : 2,
-        name : 'a_offset'
-    },
-    {
-        type : Uint8Array,
-        width : 1,
-        name : 'a_opacity'
-    },
-    {
-        type : Float32Array,
-        width : 1,
-        name : 'a_rotation'
-    }
-];
+function getPackMarkerFormat() {
+    return [
+        {
+            type : Int32Array,
+            width : 3,
+            name : 'a_anchor'
+        },
+        {
+            type : Int16Array,
+            width : 2,
+            name : 'a_shape'
+        },
+        {
+            type : Uint16Array,
+            width : 2,
+            name : 'a_texcoord'
+        },
+        {
+            type : Uint8Array,
+            width : 4,
+            name : 'a_size'
+        },
+        {
+            type : Int8Array,
+            width : 2,
+            name : 'a_offset'
+        },
+        {
+            type : Uint8Array,
+            width : 1,
+            name : 'a_opacity'
+        },
+        {
+            type : Float32Array,
+            width : 1,
+            name : 'a_rotation'
+        }
+    ];
+}
 
 
 /**
@@ -117,121 +118,75 @@ const PACK_MARKER_FORMAT = [
  */
 export default class PointPack extends VectorPack {
     constructor(features, styles, options) {
-        super(features, styles);
-        //是否开启碰撞检测
-        this.options = options;
-        this.points = [];
-        this.featureGroup = [];
+        super(features, styles, options);
+        this.markerFormat = getPackMarkerFormat();
+        this.sdfFormat = getPackSDFFormat();
+        const extent = options['extent'];
+        if (extent && extent < 65536) {
+            this.markerFormat[0].type = Int16Array;
+            this.sdfFormat[0].type = Int16Array;
+        }
     }
 
-    load() {
-        const minZoom = this.options.minZoom,
-            maxZoom = this.options.maxZoom;
-        this.points = [];
-        this.count = 0;
-        const features = this.features;
-        if (!features || !features.length) return Promise.resolve();
-        const styles = this.styles;
-        const iconReqs = {}, glyphReqs = {};
-        const pointOptions = { minZoom, maxZoom };
-        for (let i = 0, l = features.length; i < l; i++) {
-            const feature = features[i];
-            let points, feas;
-            for (let ii = 0; ii < styles.length; ii++) {
-                points = this.points[ii] = this.points[ii] || [];
-                feas = this.featureGroup[ii] = this.featureGroup[ii] || [];
-                if (styles[ii].filter(feature)) {
-                    feas.push(feature);
-                    const symbol = styles[ii].symbol;
-                    if (Array.isArray(symbol)) {
-                        for (let iii = 0; iii < symbol.length; iii++) {
-                            this.count++;
-                            points[iii] = points[iii] || [];
-                            points[iii].push(this._createPoint(feature, symbol[iii], pointOptions, iconReqs, glyphReqs));
-                        }
-                    } else {
-                        this.count++;
-                        points.push(this._createPoint(feature, symbol, pointOptions, iconReqs, glyphReqs));
-                    }
-                    break;
-                }
+    createStyledVector(feature, symbol, options, iconReqs, glyphReqs) {
+        //每个point的icon和text
+        const point = new StyledPoint(feature, symbol, options);
+        const iconGlyph = point.getIconAndGlyph();
+        if (iconGlyph.icon) {
+            if (!iconReqs[iconGlyph.icon]) {
+                iconReqs[iconGlyph.icon] = 1;
             }
         }
-
-        return new Promise((resolve, reject) => {
-            this.fetchAtlas(iconReqs, glyphReqs, (err, icons, glyphs) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                this.iconAtlas = new IconAtlas(icons);
-                this.glyphAtlas = new GlyphAtlas(glyphs);
-                resolve(this.iconAtlas, this.glyphAtlas);
-            });
-        });
-    }
-
-    fetchAtlas(iconReqs, glyphReqs, cb) {
-        //TODO 从主线程获取 IconAtlas 和 GlyphAtlas
-        return this.options.requestor({ iconReqs, glyphReqs }, cb);
-    }
-
-    /**
-     * 生成绘制数据
-     */
-    performLayout(scale) {
-        if (!this.count) {
-            return null;
-        }
-        if (scale === undefined || scale === null) {
-            throw new Error('layout scale is undefined');
-        }
-        const styles = this.styles;
-        const packs = [], buffers = [];
-        for (let i = 0; i < this.styles.length; i++) {
-            const symbol = styles[i].symbol;
-            if (Array.isArray(symbol)) {
-                for (let ii = 0; ii < symbol.length; ii++) {
-                    const pack = this._createDataPack(this.points[i][ii], scale);
-                    if (!pack) continue;
-                    packs.push(pack.data);
-                    buffers.push(pack.buffers);
-                }
-            } else {
-                const pack = this._createDataPack(this.points[i], scale);
-                if (!pack) continue;
-                packs.push(pack.data);
-                buffers.push(pack.buffers);
+        if (iconGlyph.glyph) {
+            const { font, text } = iconGlyph.glyph;
+            const fontGlphy = glyphReqs[font] = glyphReqs[font] || {};
+            for (let i = 0; i < text.length; i++) {
+                fontGlphy[text.charCodeAt(i)] = 1;
+                //TODO mapbox-gl 这里对 vertical 字符做了特殊处理
             }
         }
-        return {
-            features : this.featureGroup,
-            packs, buffers,
-        };
+        return point;
     }
 
-    _createDataPack(points, scale) {
+    createDataPack(points, scale) {
         if (!points.length) {
             return null;
         }
         //uniforms: opacity, u_size_t
+        this.maxIndex = 0;
+        const data = [];
+        let elements = [];
 
-        const data = [],
-            elements = [];
+        const isText = points[0].symbol['textName'] !== undefined;
+        const format = isText ? this.sdfFormat : this.markerFormat,
+            formatWidth = getFormatWidth(format);
+
+
+        const count = points.length;
+        const ArrType = getIndexArrayType(count);
+        const featureIndex = new ArrType(count);
         for (let i = 0, l = points.length; i < l; i++) {
             this._placePoint(data, elements, points[i], scale);
+            featureIndex[i] = data.length / formatWidth;
         }
-        const isText = points[0].symbol['textName'] !== undefined;
-        const arrays = fillTypedArray(isText ? PACK_SDF_FORMAT : PACK_MARKER_FORMAT, data);
+
+        const arrays = fillTypedArray(format, data);
         const buffers = [];
         for (const p in arrays) {
             buffers.push(arrays[p].buffer);
         }
+        buffers.push(featureIndex.buffer);
+
+        const ElementType = getIndexArrayType(this.maxIndex);
+        elements = new ElementType(elements);
+        buffers.push(elements.buffer);
         return {
             data : arrays,
+            format,
+            elements,
+            featureIndex,
             buffers
         };
-        /*eslint-enable camelcase*/
     }
 
     _placePoint(data, elements, point, scale) {
@@ -339,6 +294,9 @@ export default class PointPack extends VectorPack {
 
                 elements.push(currentIdx, currentIdx + 1, currentIdx + 2);
                 elements.push(currentIdx + 1, currentIdx + 2, currentIdx + 3);
+                if (currentIdx + 3 > this.maxIndex) {
+                    this.maxIndex = currentIdx + 3;
+                }
             }
         }
     }
@@ -396,26 +354,6 @@ export default class PointPack extends VectorPack {
         }
         //TODO 还需要mergeLines
         return anchors;
-    }
-
-    _createPoint(feature, symbol, options, iconReqs, glyphReqs) {
-        //每个point的icon和text
-        const point = new StyledPoint(feature, symbol, options);
-        const iconGlyph = point.getIconAndGlyph();
-        if (iconGlyph.icon) {
-            if (!iconReqs[iconGlyph.icon]) {
-                iconReqs[iconGlyph.icon] = 1;
-            }
-        }
-        if (iconGlyph.glyph) {
-            const { font, text } = iconGlyph.glyph;
-            const fontGlphy = glyphReqs[font] = glyphReqs[font] || {};
-            for (let i = 0; i < text.length; i++) {
-                fontGlphy[text.charCodeAt(i)] = 1;
-                //TODO mapbox-gl 这里对 vertical 字符做了特殊处理
-            }
-        }
-        return point;
     }
 
     _getPlacement(symbol) {

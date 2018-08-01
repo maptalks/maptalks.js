@@ -18,8 +18,8 @@ describe('Polygon Pack specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
-            const anchors = result.packs[0].a_anchor;
+            const result = pack.pack(1);
+            const anchors = result.packs[0].data.a_anchor;
             expect(anchors.length).to.be(12);
             expect(anchors[0]).to.be(450);
             expect(anchors[1]).to.be(50);

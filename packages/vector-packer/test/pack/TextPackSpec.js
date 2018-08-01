@@ -1,4 +1,4 @@
-describe('PointPack of text specs', function () {
+describe('Point Pack of texts specs', function () {
     let features;
     beforeEach(() => {
         features = [{ type : 'Feature', geometry : { type : 'Point', coordinates : [0, 0] }, properties : {}}];
@@ -45,17 +45,17 @@ describe('PointPack of text specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
+            const result = pack.pack(1);
+            const data = result.packs[0].data;
+            expect(data.a_offset.length).to.be(32);
+            expect(data.a_offset[0]).to.be(10);
+            expect(data.a_offset[1]).to.be(5);
 
-            expect(result.packs[0].a_offset.length).to.be(32);
-            expect(result.packs[0].a_offset[0]).to.be(10);
-            expect(result.packs[0].a_offset[1]).to.be(5);
-
-            expect(result.packs[0].a_size.length).to.be(64);
-            expect(result.packs[0].a_size[0]).to.be(30);
-            expect(result.packs[0].a_size[1]).to.be(30);
-            expect(result.packs[0].a_size[2]).to.be(30);
-            expect(result.packs[0].a_size[3]).to.be(30);
+            expect(data.a_size.length).to.be(64);
+            expect(data.a_size[0]).to.be(30);
+            expect(data.a_size[1]).to.be(30);
+            expect(data.a_size[2]).to.be(30);
+            expect(data.a_size[3]).to.be(30);
             done();
         }).catch(err => {
             console.error(err);
@@ -77,13 +77,13 @@ describe('PointPack of text specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
-
-            expect(result.packs[0].a_size.length).to.be(64);
-            expect(result.packs[0].a_size[0]).to.be(5);
-            expect(result.packs[0].a_size[1]).to.be(5);
-            expect(result.packs[0].a_size[2]).to.be(200);
-            expect(result.packs[0].a_size[3]).to.be(200);
+            const result = pack.pack(1);
+            const data = result.packs[0].data;
+            expect(data.a_size.length).to.be(64);
+            expect(data.a_size[0]).to.be(5);
+            expect(data.a_size[1]).to.be(5);
+            expect(data.a_size[2]).to.be(200);
+            expect(data.a_size[3]).to.be(200);
 
             done();
         }).catch(err => {
@@ -106,16 +106,17 @@ describe('PointPack of text specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
-            expect(result.packs[0].a_shape.length).to.be(16);
-            expect(result.packs[0].a_shape[0]).to.be(-4);
-            expect(result.packs[0].a_shape[1]).to.be(-33);
-            expect(result.packs[0].a_shape[2]).to.be(-4);
-            expect(result.packs[0].a_shape[3]).to.be(-1);
-            expect(result.packs[0].a_shape[4]).to.be(28);
-            expect(result.packs[0].a_shape[5]).to.be(-33);
-            expect(result.packs[0].a_shape[6]).to.be(28);
-            expect(result.packs[0].a_shape[7]).to.be(-1);
+            const result = pack.pack(1);
+            const data = result.packs[0].data;
+            expect(data.a_shape.length).to.be(16);
+            expect(data.a_shape[0]).to.be(-4);
+            expect(data.a_shape[1]).to.be(-33);
+            expect(data.a_shape[2]).to.be(-4);
+            expect(data.a_shape[3]).to.be(-1);
+            expect(data.a_shape[4]).to.be(28);
+            expect(data.a_shape[5]).to.be(-33);
+            expect(data.a_shape[6]).to.be(28);
+            expect(data.a_shape[7]).to.be(-1);
             done();
         }).catch(err => {
             console.error(err);
@@ -136,12 +137,13 @@ describe('PointPack of text specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
-            expect(result.packs[0].a_color.length).to.be(24);
-            expect(result.packs[0].a_color[0]).to.be(17);
-            expect(result.packs[0].a_color[1]).to.be(34);
-            expect(result.packs[0].a_color[2]).to.be(51);
-            expect(result.packs[0].a_color[3]).to.be(17);
+            const result = pack.pack(1);
+            const data = result.packs[0].data;
+            expect(data.a_color.length).to.be(24);
+            expect(data.a_color[0]).to.be(17);
+            expect(data.a_color[1]).to.be(34);
+            expect(data.a_color[2]).to.be(51);
+            expect(data.a_color[3]).to.be(17);
             done();
         }).catch(err => {
             console.error(err);
@@ -164,9 +166,10 @@ describe('PointPack of text specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
-            expect(result.packs[0].a_rotation.length).to.be(8);
-            expect(result.packs[0].a_rotation[0]).to.be(new Float32Array([60 * Math.PI / 180])[0]);
+            const result = pack.pack(1);
+            const data = result.packs[0].data;
+            expect(data.a_rotation.length).to.be(8);
+            expect(data.a_rotation[0]).to.be(new Float32Array([60 * Math.PI / 180])[0]);
             done();
         }).catch(err => {
             console.error(err);
@@ -189,9 +192,10 @@ describe('PointPack of text specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
-            expect(result.packs[0].a_opacity.length).to.be(8);
-            expect(result.packs[0].a_opacity[0]).to.be(128);
+            const result = pack.pack(1);
+            const data = result.packs[0].data;
+            expect(data.a_opacity.length).to.be(8);
+            expect(data.a_opacity[0]).to.be(128);
             done();
         }).catch(err => {
             console.error(err);
@@ -213,18 +217,19 @@ describe('PointPack of text specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const result = pack.performLayout(1);
+            const result = pack.pack(1);
 
-            expect(result.packs[0].a_shape.length).to.be(48);
-            expect(result.packs[0].a_shape[0]).to.be(-4);
-            expect(result.packs[0].a_shape[1]).to.be(-28);
-            expect(result.packs[0].a_shape[2]).to.be(-4);
+            const data = result.packs[0].data;
+            expect(data.a_shape.length).to.be(48);
+            expect(data.a_shape[0]).to.be(-4);
+            expect(data.a_shape[1]).to.be(-28);
+            expect(data.a_shape[2]).to.be(-4);
 
-            expect(result.packs[0].a_texcoord.length).to.be(48);
-            expect(result.packs[0].a_texcoord[0]).to.be(32);
-            expect(result.packs[0].a_texcoord[1]).to.be(32);
-            expect(result.packs[0].a_texcoord[2]).to.be(32);
-            expect(result.packs[0].a_texcoord[3]).to.be(64);
+            expect(data.a_texcoord.length).to.be(48);
+            expect(data.a_texcoord[0]).to.be(32);
+            expect(data.a_texcoord[1]).to.be(32);
+            expect(data.a_texcoord[2]).to.be(32);
+            expect(data.a_texcoord[3]).to.be(64);
 
             done();
         }).catch(err => {

@@ -1,17 +1,14 @@
 /**
  * Create and copy from data to typed arrays as definitions
- * @param {Object} defs type array definitions
+ * @param {Object} format type array definitions
  * @param {Number[]} data data copied from
  * @returns {Object} typed arrays
  */
-export function fillTypedArray(defs, data) {
+export function fillTypedArray(format, data) {
     const arrays = {};
-    let dataWidth = 0;
-    for (const d of defs) {
-        dataWidth += d.width;
-    }
+    const dataWidth = getFormatWidth(format);
     const count = data.length / dataWidth;
-    for (const d of defs) {
+    for (const d of format) {
         const type = d.type;
         const width = d.width;
         const name = d.name;
@@ -20,7 +17,7 @@ export function fillTypedArray(defs, data) {
 
     for (let i = 0; i < count; i++) {
         let p = 0;
-        for (const d of defs) {
+        for (const d of format) {
             const width = d.width;
             const name  = d.name;
             const arr = arrays[name];
@@ -31,4 +28,18 @@ export function fillTypedArray(defs, data) {
         }
     }
     return arrays;
+}
+
+export function getFormatWidth(format) {
+    let width = 0;
+    for (const d of format) {
+        width += d.width;
+    }
+    return width;
+}
+
+export function getIndexArrayType(max) {
+    if (max < 256) return Uint8Array.prototype.constructor;
+    if (max < 65536) return Uint16Array.prototype.constructor;
+    return Uint32Array.prototype.constructor;
 }
