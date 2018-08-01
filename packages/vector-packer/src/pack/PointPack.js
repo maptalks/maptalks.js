@@ -6,7 +6,7 @@ import  { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 import { evaluate } from '../style/Util';
-import { getIndexArrayType, fillTypedArray, getFormatWidth } from './util/array';
+import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
 import { getGlyphQuads, getIconQuads } from './util/quads';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
@@ -117,16 +117,6 @@ function getPackMarkerFormat() {
  *   4.1 symbol 变化时，则重新生成3中的绘制数据，并重新生成 arraybuffer
  */
 export default class PointPack extends VectorPack {
-    constructor(features, styles, options) {
-        super(features, styles, options);
-        this.markerFormat = getPackMarkerFormat();
-        this.sdfFormat = getPackSDFFormat();
-        const extent = options['extent'];
-        if (extent && extent < 65536) {
-            this.markerFormat[0].type = Int16Array;
-            this.sdfFormat[0].type = Int16Array;
-        }
-    }
 
     createStyledVector(feature, symbol, options, iconReqs, glyphReqs) {
         //每个point的icon和text
@@ -154,21 +144,23 @@ export default class PointPack extends VectorPack {
         }
         //uniforms: opacity, u_size_t
         this.maxIndex = 0;
+        this.maxPos = 0;
         const data = [];
         let elements = [];
 
         const isText = points[0].symbol['textName'] !== undefined;
-        const format = isText ? this.sdfFormat : this.markerFormat,
+        const format = isText ? getPackSDFFormat() : getPackMarkerFormat(),
             formatWidth = getFormatWidth(format);
 
-
-        const count = points.length;
-        const ArrType = getIndexArrayType(count);
-        const featureIndex = new ArrType(count);
+        let featureIndex = [];
         for (let i = 0, l = points.length; i < l; i++) {
             this._placePoint(data, elements, points[i], scale);
-            featureIndex[i] = data.length / formatWidth;
+            featureIndex.push(data.length / formatWidth);
         }
+        const ArrType = getIndexArrayType(data.length / formatWidth);
+        featureIndex = new ArrType(featureIndex);
+
+        format[0].type = getPosArrayType(this.maxPos);
 
         const arrays = fillTypedArray(format, data);
         const buffers = [];
@@ -296,6 +288,11 @@ export default class PointPack extends VectorPack {
                 elements.push(currentIdx + 1, currentIdx + 2, currentIdx + 3);
                 if (currentIdx + 3 > this.maxIndex) {
                     this.maxIndex = currentIdx + 3;
+                }
+
+                const max = Math.max(Math.abs(anchors[i].x), Math.abs(anchors[i].y));
+                if (max > this.maxPos) {
+                    this.maxPos = max;
                 }
             }
         }

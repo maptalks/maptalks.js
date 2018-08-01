@@ -49,6 +49,9 @@ describe('Point Pack of markers specs', function () {
         pack.load().then(() => {
             const result = pack.pack(1);
             const data = result.packs[0].data;
+
+            expect(data.a_anchor).to.be.a(Int8Array);
+
             expect(data.a_offset.length).to.be(8);
             expect(data.a_offset[0]).to.be(10);
             expect(data.a_offset[1]).to.be(5);

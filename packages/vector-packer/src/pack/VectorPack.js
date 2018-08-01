@@ -8,6 +8,7 @@ import Promise from './util/Promise';
  */
 export default class VectorPack {
     constructor(features, styles, options) {
+        this._checkStyles(styles);
         this.features = this._check(features);
         this.styles = styles;
         //是否开启碰撞检测
@@ -36,6 +37,13 @@ export default class VectorPack {
             }
         }
         return checked;
+    }
+
+    _checkStyles(styles) {
+        for (let i = 0; i < styles.length; i++) {
+            const s = styles[i];
+            if (!s['symbol']) throw new Error(`Invalid symbol at ${i}.`);
+        }
     }
 
     load() {

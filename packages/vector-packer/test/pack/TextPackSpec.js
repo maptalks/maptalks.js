@@ -47,6 +47,7 @@ describe('Point Pack of texts specs', function () {
         pack.load().then(() => {
             const result = pack.pack(1);
             const data = result.packs[0].data;
+
             expect(data.a_offset.length).to.be(32);
             expect(data.a_offset[0]).to.be(10);
             expect(data.a_offset[1]).to.be(5);

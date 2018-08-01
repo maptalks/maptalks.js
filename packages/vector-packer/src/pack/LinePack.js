@@ -1,6 +1,6 @@
 import VectorPack from './VectorPack';
 import StyledLine from './StyledLine';
-import { fillTypedArray, getFormatWidth, getIndexArrayType } from './util/array';
+import { fillTypedArray, getFormatWidth, getPosArrayType, getIndexArrayType } from './util/array';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -58,8 +58,8 @@ function getPackFormat() {
             name : 'a_pos'
         },
         {
-            type : Uint8Array,
-            width : 1,
+            type : Int8Array,
+            width : 2,
             name : 'a_normal'
         },
         {
@@ -68,10 +68,11 @@ function getPackFormat() {
             name : 'a_extrude'
         },
         {
-            type : Uint16Array,
-            width : 1,
+            type : Uint8Array,
+            width : 2,
             name : 'a_linesofar'
         }
+        //TODO 动态color和width
     ];
 }
 
@@ -84,16 +85,6 @@ function getPackFormat() {
  * 3. 遍历 StyledLine, 生成
  */
 export default class LinePack extends VectorPack {
-    constructor(features, styles, options) {
-        super(features, styles, options);
-        this.format = getPackFormat();
-        this.formatWidth = getFormatWidth(this.format);
-
-        const extent = options['extent'];
-        if (extent && extent < 65536) {
-            this.format[0].type = Int16Array;
-        }
-    }
 
     createStyledVector(feature, symbol, options, iconReqs) {
         if (symbol['linePatternFile']) {
@@ -111,13 +102,22 @@ export default class LinePack extends VectorPack {
         const data = this.data = [];
         this.elements = [];
         const count = lines.length;
-        const ArrType = getIndexArrayType(count);
-        const featureIndex = new ArrType(count);
+
+        const format = getPackFormat();
+        const formatWidth = getFormatWidth(format);
+
+        let featureIndex = [];
         for (let i = 0; i < count; i++) {
             this._placeLine(lines[i], scale);
-            featureIndex[i] = data.length / this.formatWidth;
+            featureIndex.push(data.length / formatWidth);
         }
-        const arrays = fillTypedArray(this.format, data);
+
+        format[0].type = getPosArrayType(this.maxPos);
+
+        const ArrType = getIndexArrayType(data.length / formatWidth);
+        featureIndex = new ArrType(featureIndex);
+
+        const arrays = fillTypedArray(format, data);
         const buffers = [];
         for (const p in arrays) {
             buffers.push(arrays[p].buffer);
@@ -132,7 +132,7 @@ export default class LinePack extends VectorPack {
             elements,
             featureIndex,
             buffers,
-            format : this.format
+            format
         };
     }
 
@@ -152,6 +152,7 @@ export default class LinePack extends VectorPack {
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit, scale) {
         let lineDistances = null;
+        //TODO lineDistances 和 gradient 的处理
         // if (!!feature.properties &&
         //     feature.properties.hasOwnProperty('mapbox_clip_start') &&
         //     feature.properties.hasOwnProperty('mapbox_clip_end')) {
@@ -191,6 +192,7 @@ export default class LinePack extends VectorPack {
 
         this.distance = 0;
         this.maxIndex = 0;
+        this.maxPos = 0;
         this.vertexLength = 0;
         this.primitiveLength = 0;
 
@@ -461,7 +463,7 @@ export default class LinePack extends VectorPack {
 
         extrude = normal.clone();
         if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, distance);
+        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, distance);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -471,7 +473,7 @@ export default class LinePack extends VectorPack {
 
         extrude = normal.mult(-1);
         if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, distance);
+        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, distance);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -510,7 +512,7 @@ export default class LinePack extends VectorPack {
 
         if (distancesForScaling) distance = scaleDistance(distance, distancesForScaling);
 
-        addLineVertex(this.data, currentVertex, extrude, false, lineTurnsLeft, distance);
+        this.addLineVertex(this.data, currentVertex, extrude, false, lineTurnsLeft, distance);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -523,6 +525,29 @@ export default class LinePack extends VectorPack {
         }
     }
 
+    addLineVertex(data, point, extrude, round, up, linesofar) {
+        linesofar *= LINE_DISTANCE_SCALE;
+        data.push(
+            // a_pos_normal
+            point.x,
+            point.y,
+            0,
+            round ? 1 : 0,
+            up ? 1 : -1,
+            // a_data
+            // add 128 to store a byte in an unsigned byte
+            Math.round(EXTRUDE_SCALE * extrude.x) + 128,
+            Math.round(EXTRUDE_SCALE * extrude.y) + 128,
+            // lower 8-bit + higher 8 bit
+            ((linesofar & 0xFF)),
+            linesofar >> 8
+        );
+        const max = Math.max(Math.abs(point.x), Math.abs(point.y));
+        if (max > this.maxPos) {
+            this.maxPos = max;
+        }
+    }
+
     addElements(e1, e2, e3) {
         const max = Math.max(e1, e2, e3);
         if (max > this.maxIndex) {
@@ -531,24 +556,6 @@ export default class LinePack extends VectorPack {
         this.elements.push(e1, e2, e3);
         this.primitiveLength++;
     }
-}
-
-function addLineVertex(data, point, extrude, round, up, linesofar) {
-    linesofar *= LINE_DISTANCE_SCALE;
-    data.push(
-        // a_pos_normal
-        point.x,
-        point.y,
-        round ? 1 : 0,
-        up ? 1 : -1,
-        // a_data
-        // add 128 to store a byte in an unsigned byte
-        Math.round(EXTRUDE_SCALE * extrude.x) + 128,
-        Math.round(EXTRUDE_SCALE * extrude.y) + 128,
-        // lower 8-bit + higher 8 bit
-        ((linesofar & 0xFF)),
-        linesofar >> 8
-    );
 }
 
 
