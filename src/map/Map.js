@@ -845,18 +845,21 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} zoomOffset - zoom offset
      * @return {Map} - this
      */
-    fitExtent(extent, zoomOffset, options, step) {
+    fitExtent(extent, zoomOffset, options = {}, step) {
         if (!extent) {
             return this;
         }
         extent = new Extent(extent, this.getProjection());
         const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
         const center = extent.getCenter();
-        if (options)
+         if (typeof (options['animation']) === 'undefined' || options['animation'])
             return this.animateTo({
-                'center' : center,
-                'zoom' : zoom
-            }, options, step);
+                center,
+                zoom
+            }, {
+                'duration' : options['duration'] || this.options['zoomAnimationDuration'],
+                'easing' : options['easing'] || 'out',
+            }, step);
         else
             return this.setCenterAndZoom(center, zoom);
     }
