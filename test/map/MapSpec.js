@@ -330,6 +330,13 @@ describe('Map.Spec', function () {
             expect(fitZoom).to.eql(zoom + 3);
         });
 
+        it('fit to extent without animation', function () {
+            var extent = new maptalks.Marker(map.getCenter()).getExtent();
+            var maxZoom = map.getMaxZoom();
+            map.fitExtent(extent.toJSON(), { 'animation' : false });
+            expect(maxZoom).to.be.eql(map.getZoom());
+        });
+
         it('fit to extent', function (done) {
             var extent = new maptalks.Marker(map.getCenter()).getExtent();
             var maxZoom = map.getMaxZoom();
