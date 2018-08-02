@@ -852,7 +852,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         extent = new Extent(extent, this.getProjection());
         const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
         const center = extent.getCenter();
-        if(options)
+        if (options)
             return this.animateTo({
                 'center' : center,
                 'zoom' : zoom
