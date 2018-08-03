@@ -98,14 +98,23 @@ class Overview extends Control {
         off(this.button, 'click', this._onButtonClick, this);
     }
 
+    /**
+     * Maximize overview control
+     * @returns {control.Overview}
+     */
     maxmize() {
         const size = this.options['size'];
         const dom = this.mapContainer;
         dom.style.width = size[0] + 'px';
         dom.style.height = size[1] + 'px';
         this._createOverview();
+        return this;
     }
 
+    /**
+     * Minimize overview control
+     * @returns {control.Overview}
+     */
     minimize() {
         if (this._overview) {
             this._overview.remove();
@@ -115,6 +124,15 @@ class Overview extends Control {
         const dom = this.mapContainer;
         dom.style.width = 0 + 'px';
         dom.style.height = 0 + 'px';
+        return this;
+    }
+
+    /**
+     * Return overview's map object
+     * @returns {Map}
+     */
+    getOverviewMap() {
+        return this._overview;
     }
 
     _onButtonClick() {
