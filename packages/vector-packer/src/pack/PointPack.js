@@ -6,7 +6,6 @@ import  { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 import { evaluate } from '../style/Util';
-import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
 import { getGlyphQuads, getIconQuads } from './util/quads';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
@@ -117,6 +116,7 @@ function getPackMarkerFormat() {
  *   4.1 symbol 变化时，则重新生成3中的绘制数据，并重新生成 arraybuffer
  */
 export default class PointPack extends VectorPack {
+    //TODO 点的碰撞检测， 但带高度的碰撞检测无法在worker中计算
 
     createStyledVector(feature, symbol, options, iconReqs, glyphReqs) {
         //每个point的icon和text
@@ -138,50 +138,14 @@ export default class PointPack extends VectorPack {
         return point;
     }
 
-    createDataPack(points, scale) {
-        if (!points.length) {
-            return null;
-        }
-        //uniforms: opacity, u_size_t
-        this.maxIndex = 0;
-        this.maxPos = 0;
-        const data = [];
-        let elements = [];
-
-        const isText = points[0].symbol['textName'] !== undefined;
-        const format = isText ? getPackSDFFormat() : getPackMarkerFormat(),
-            formatWidth = getFormatWidth(format);
-
-        let featureIndex = [];
-        for (let i = 0, l = points.length; i < l; i++) {
-            this._placePoint(data, elements, points[i], scale);
-            featureIndex.push(data.length / formatWidth);
-        }
-        const ArrType = getIndexArrayType(data.length / formatWidth);
-        featureIndex = new ArrType(featureIndex);
-
-        format[0].type = getPosArrayType(this.maxPos);
-
-        const arrays = fillTypedArray(format, data);
-        const buffers = [];
-        for (const p in arrays) {
-            buffers.push(arrays[p].buffer);
-        }
-        buffers.push(featureIndex.buffer);
-
-        const ElementType = getIndexArrayType(this.maxIndex);
-        elements = new ElementType(elements);
-        buffers.push(elements.buffer);
-        return {
-            data : arrays,
-            format,
-            elements,
-            featureIndex,
-            buffers
-        };
+    getFormat(symbol) {
+        const isText = symbol['textName'] !== undefined;
+        return isText ? getPackSDFFormat() : getPackMarkerFormat();
     }
 
-    _placePoint(data, elements, point, scale) {
+    placeVector(point, scale) {
+        const data = this.data,
+            elements = this.elements;
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
         const anchors = this._getAnchors(point, shape, scale);
         const count = anchors.length;
@@ -284,11 +248,13 @@ export default class PointPack extends VectorPack {
                     data.push(color[0], color[1], color[2]);
                 }
 
-                elements.push(currentIdx, currentIdx + 1, currentIdx + 2);
-                elements.push(currentIdx + 1, currentIdx + 2, currentIdx + 3);
-                if (currentIdx + 3 > this.maxIndex) {
-                    this.maxIndex = currentIdx + 3;
-                }
+                this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
+                this.addElements(currentIdx + 1, currentIdx + 2, currentIdx + 3);
+                // elements.push(currentIdx, currentIdx + 1, currentIdx + 2);
+                // elements.push(currentIdx + 1, currentIdx + 2, currentIdx + 3);
+                // if (currentIdx + 3 > this.maxIndex) {
+                //     this.maxIndex = currentIdx + 3;
+                // }
 
                 const max = Math.max(Math.abs(anchors[i].x), Math.abs(anchors[i].y));
                 if (max > this.maxPos) {

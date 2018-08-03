@@ -48,7 +48,8 @@ describe('Point Pack of markers specs', function () {
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
             const result = pack.pack(1);
-            const data = result.packs[0].data;
+            const p = result.packs[0];
+            const data = p.data;
 
             expect(data.a_anchor).to.be.a(Int8Array);
 
@@ -61,6 +62,10 @@ describe('Point Pack of markers specs', function () {
             expect(data.a_size[1]).to.be(30);
             expect(data.a_size[2]).to.be(40);
             expect(data.a_size[3]).to.be(30);
+
+            expect(p.elements.length).to.be(6);
+            expect(p.segments).to.be.eql([{ offset : 0, count : 6 }]);
+
             done();
         }).catch(err => {
             console.error(err);

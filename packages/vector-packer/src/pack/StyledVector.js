@@ -1,4 +1,4 @@
-export default class StyledLine {
+export default class StyledVector {
     constructor(feature, symbol, options) {
         //a_vertex, a_texcoord, a_opacity
         this.feature = feature;

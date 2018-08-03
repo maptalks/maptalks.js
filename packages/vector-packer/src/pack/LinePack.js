@@ -1,6 +1,6 @@
+// import VectorPack from './VectorPack';
+import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
-import StyledLine from './StyledLine';
-import { fillTypedArray, getFormatWidth, getPosArrayType, getIndexArrayType } from './util/array';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -50,32 +50,6 @@ const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DIST
 // ((linesofar & 0xFF)),
 // linesofar >> 8
 
-function getPackFormat() {
-    return [
-        {
-            type : Int32Array,
-            width : 3,
-            name : 'a_pos'
-        },
-        {
-            type : Int8Array,
-            width : 2,
-            name : 'a_normal'
-        },
-        {
-            type : Uint8Array,
-            width : 2,
-            name : 'a_extrude'
-        },
-        {
-            type : Uint8Array,
-            width : 2,
-            name : 'a_linesofar'
-        }
-        //TODO 动态color和width
-    ];
-}
-
 /**
  * 点类型数据，负责输入feature和symbol后，生成能直接赋给shader的arraybuffer
  * 设计上能直接在worker中执行
@@ -90,53 +64,36 @@ export default class LinePack extends VectorPack {
         if (symbol['linePatternFile']) {
             iconReqs[symbol['linePatternFile']] = 1;
         }
-        return new StyledLine(feature, symbol, options);
+        return new StyledVector(feature, symbol, options);
     }
 
-    createDataPack(lines, scale) {
-        if (!lines.length) {
-            return null;
-        }
-        //uniforms: opacity, u_size_t
-
-        const data = this.data = [];
-        this.elements = [];
-        const count = lines.length;
-
-        const format = getPackFormat();
-        const formatWidth = getFormatWidth(format);
-
-        let featureIndex = [];
-        for (let i = 0; i < count; i++) {
-            this._placeLine(lines[i], scale);
-            featureIndex.push(data.length / formatWidth);
-        }
-
-        format[0].type = getPosArrayType(this.maxPos);
-
-        const ArrType = getIndexArrayType(data.length / formatWidth);
-        featureIndex = new ArrType(featureIndex);
-
-        const arrays = fillTypedArray(format, data);
-        const buffers = [];
-        for (const p in arrays) {
-            buffers.push(arrays[p].buffer);
-        }
-        buffers.push(featureIndex.buffer);
-
-        const ElementType = getIndexArrayType(this.maxIndex);
-        const elements = new ElementType(this.elements);
-        buffers.push(elements.buffer);
-        return {
-            data : arrays,
-            elements,
-            featureIndex,
-            buffers,
-            format
-        };
+    getFormat() {
+        return [
+            {
+                type : Int32Array,
+                width : 3,
+                name : 'a_pos'
+            },
+            {
+                type : Int8Array,
+                width : 2,
+                name : 'a_normal'
+            },
+            {
+                type : Uint8Array,
+                width : 2,
+                name : 'a_extrude'
+            },
+            {
+                type : Uint8Array,
+                width : 2,
+                name : 'a_linesofar'
+            }
+            //TODO 动态color和width
+        ];
     }
 
-    _placeLine(line, scale) {
+    placeVector(line, scale) {
         const symbol = line.symbol,
             join = symbol['lineJoin'] || 'miter',
             cap = symbol['lineCap'] || 'butt',
@@ -189,6 +146,7 @@ export default class LinePack extends VectorPack {
         const firstVertex = vertices[first];
 
         // we could be more precise, but it would only save a negligible amount of space
+        // const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
 
         this.distance = 0;
         this.maxIndex = 0;
@@ -548,14 +506,15 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    addElements(e1, e2, e3) {
-        const max = Math.max(e1, e2, e3);
-        if (max > this.maxIndex) {
-            this.maxIndex = max;
-        }
-        this.elements.push(e1, e2, e3);
-        this.primitiveLength++;
-    }
+    // addElements(e1, e2, e3) {
+    //     const max = Math.max(e1, e2, e3);
+    //     if (max > this.maxIndex) {
+    //         this.maxIndex = max;
+    //     }
+
+    //     this.elements.push(e1, e2, e3);
+    //     this.primitiveLength++;
+    // }
 }
 
 

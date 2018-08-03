@@ -2,19 +2,25 @@ import convert from './util/convert';
 import IconAtlas from './atlas/IconAtlas';
 import GlyphAtlas from './atlas/GlyphAtlas';
 import Promise from './util/Promise';
+import SegmentVector from './SegmentVector';
+import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
+
+// 16bit unsigned int (short) in default
+export const MAX_SEGMENTS_LENGTH = Math.pow(2, 16) - 1;
 
 /**
  * abstract class for all vector packs
  */
 export default class VectorPack {
     constructor(features, styles, options) {
+        //TODO 预先把altitude传到pack里来？
         this._checkStyles(styles);
         this.features = this._check(features);
         this.styles = styles;
-        //是否开启碰撞检测
         this.options = options;
         this.styledVectors = [];
         this.featureGroup = [];
+        this.segments = new SegmentVector();
     }
 
     _check(features) {
@@ -130,6 +136,68 @@ export default class VectorPack {
             features : this.featureGroup,
             packs, buffers,
         };
+    }
+
+    createDataPack(vectors, scale) {
+        this.maxIndex = 0;
+        this.maxPos = 0;
+        const data = this.data = [];
+        let elements = this.elements = [];
+        const segments = this.segments = [{
+            offset : 0,
+            count : 0
+        }];
+
+        if (!vectors.length) {
+            return null;
+        }
+        //uniforms: opacity, u_size_t
+
+        const format = this.getFormat(vectors[0].symbol),
+            formatWidth = getFormatWidth(format);
+
+        let featureIndex = [];
+        for (let i = 0, l = vectors.length; i < l; i++) {
+            this.placeVector(vectors[i], scale);
+            featureIndex.push(data.length / formatWidth);
+        }
+        const ArrType = getIndexArrayType(data.length / formatWidth);
+        featureIndex = new ArrType(featureIndex);
+
+        format[0].type = getPosArrayType(this.maxPos);
+
+        const arrays = fillTypedArray(format, data);
+        const buffers = [];
+        for (const p in arrays) {
+            buffers.push(arrays[p].buffer);
+        }
+        buffers.push(featureIndex.buffer);
+
+        const ElementType = getIndexArrayType(this.maxIndex);
+        elements = new ElementType(elements);
+        buffers.push(elements.buffer);
+        return {
+            data : arrays,
+            format,
+            elements,
+            segments,
+            featureIndex,
+            buffers
+        };
+    }
+
+    addElements(...e) {
+        let segment = this.segments[this.segments.length - 1];
+        if (!segment || this.elements.length + e.length > MAX_SEGMENTS_LENGTH) {
+            segment = {
+                offset: segment ? segment.offset + segment.count : 0,
+                count: 0
+            };
+            this.segments.push(segment);
+        }
+        this.maxIndex = Math.max(this.maxIndex, ...e);
+        Array.prototype.push.apply(this.elements, e);
+        segment.count += e.length;
     }
 
 }
