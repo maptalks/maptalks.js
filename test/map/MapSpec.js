@@ -333,7 +333,7 @@ describe('Map.Spec', function () {
         it('fit to extent without animation', function () {
             var extent = new maptalks.Marker(map.getCenter()).getExtent();
             var maxZoom = map.getMaxZoom();
-            map.fitExtent(extent.toJSON(), { 'animation' : false });
+            map.fitExtent(extent.toJSON(), 0, { 'animation' : false });
             expect(maxZoom).to.be.eql(map.getZoom());
         });
 
