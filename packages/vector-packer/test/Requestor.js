@@ -1,5 +1,5 @@
 const REQUESTOR = function ({ iconReqs, glyphReqs }, cb) {
-    let icons, glyphs;
+    let icons, glyphs, iconReady, glyphReady;
     const iconRequestor = new packer.IconRequestor();
     const glyphRequestor = new packer.GlyphRequestor();
 
@@ -8,8 +8,9 @@ const REQUESTOR = function ({ iconReqs, glyphReqs }, cb) {
             cb(err);
             return;
         }
+        iconReady = true;
         icons = response.icons;
-        if (icons && glyphs) {
+        if (iconReady && glyphReady) {
             cb(null, icons, glyphs);
         }
     });
@@ -19,8 +20,9 @@ const REQUESTOR = function ({ iconReqs, glyphReqs }, cb) {
             cb(err);
             return;
         }
+        glyphReady = true;
         glyphs = response.glyphs;
-        if (icons && glyphs) {
+        if (iconReady && glyphReady) {
             cb(null, icons, glyphs);
         }
     });

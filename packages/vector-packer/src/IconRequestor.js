@@ -1,5 +1,3 @@
-import { RGBAImage } from './Image';
-
 export default class IconRequestor {
     //options.errorUrl : alt image when failing loading the icon
     constructor(options) {
@@ -10,7 +8,7 @@ export default class IconRequestor {
 
     getIcons(icons, cb) {
         if (!icons || !Object.keys(icons).length) {
-            cb(null, { icons : [] });
+            cb(null, { icons : null });
             return;
         }
         const urls = Object.keys(icons);
@@ -27,8 +25,8 @@ export default class IconRequestor {
             try {
                 ctx.drawImage(this, 0, 0);
                 const data = ctx.getImageData(0, 0, width, height).data;
-                buffers.push(data);
-                images[this.url] = { data : new RGBAImage({ width, height }, data), url : this.src };
+                buffers.push(data.buffer);
+                images[this.url] = { data : { data, width, height }, url : this.src };
             } catch (err) {
                 //tainted canvas
                 console.warn(err);

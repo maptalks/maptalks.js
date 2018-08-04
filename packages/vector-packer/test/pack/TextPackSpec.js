@@ -16,11 +16,8 @@ describe('Point Pack of texts specs', function () {
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
-            const iconImage = pack.iconAtlas.image,
-                glyphImage = pack.glyphAtlas.image;
-            expect(iconImage.width).to.be.above(0);
-            expect(iconImage.height).to.be.above(0);
-            expect(iconImage.data.length).to.be.above(0);
+            const glyphImage = pack.glyphAtlas.image;
+            expect(pack.iconAltlas).not.to.be.ok();
             expect(glyphImage.width).to.be.above(0);
             expect(glyphImage.height).to.be.above(0);
             expect(glyphImage.data.length).to.be.above(0);
@@ -57,6 +54,12 @@ describe('Point Pack of texts specs', function () {
             expect(data.a_size[1]).to.be(30);
             expect(data.a_size[2]).to.be(30);
             expect(data.a_size[3]).to.be(30);
+
+            expect(result.glyphAtlas.image.data.length).to.be.above(0);
+            expect(result.glyphAtlas.image.width).to.be(64);
+            expect(result.glyphAtlas.image.height).to.be(32);
+            expect(result.glyphAtlas.positions['30px monospace']).to.be.eql({ '104':{ 'rect':{ 'id':1, 'x':0, 'y':0, 'w':32, 'h':32, 'maxw':32, 'maxh':32, 'refcount':1}, 'metrics':{ 'width':24, 'height':24, 'left':0, 'top':-8, 'advance':24}}, '105':{ 'rect':{ 'id':2, 'x':32, 'y':0, 'w':32, 'h':32, 'maxw':32, 'maxh':32, 'refcount':1 }, 'metrics':{ 'width':24, 'height':24, 'left':0, 'top':-8, 'advance':24 }}});
+
             done();
         }).catch(err => {
             console.error(err);

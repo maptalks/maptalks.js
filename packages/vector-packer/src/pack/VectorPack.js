@@ -4,6 +4,7 @@ import GlyphAtlas from './atlas/GlyphAtlas';
 import Promise from './util/Promise';
 import SegmentVector from './SegmentVector';
 import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
+import { RGBAImage, AlphaImage } from '../Image';
 
 // 16bit unsigned int (short) in default
 export const MAX_SEGMENTS_LENGTH = Math.pow(2, 16) - 1;
@@ -91,8 +92,27 @@ export default class VectorPack {
                     reject(err);
                     return;
                 }
-                this.iconAtlas = new IconAtlas(icons);
-                this.glyphAtlas = new GlyphAtlas(glyphs);
+                if (icons && Object.keys(icons).length) {
+                    for (const url in icons) {
+                        const icon = icons[url];
+                        const { width, height, data } = icon.data;
+                        icon.data = new RGBAImage({ width, height }, data);
+                    }
+                    this.iconAtlas = new IconAtlas(icons);
+                }
+                if (glyphs && Object.keys(glyphs).length) {
+                    for (const font in glyphs) {
+                        const glyph = glyphs[font];
+                        for (const code in glyph) {
+                            const sdf = glyph[code];
+                            const { width, height, data } = sdf.bitmap;
+                            sdf.bitmap = new AlphaImage({ width, height }, data);
+                        }
+
+                    }
+
+                    this.glyphAtlas = new GlyphAtlas(glyphs);
+                }
                 resolve(this.iconAtlas, this.glyphAtlas);
             });
         });
@@ -132,10 +152,23 @@ export default class VectorPack {
                 Array.prototype.push.apply(buffers, packBufs);
             }
         }
-        return {
+
+        const vectorPack = {
             features : this.featureGroup,
             packs, buffers,
         };
+
+        if (this.iconAtlas) {
+            vectorPack.iconAtlas = serializeAtlas(this.iconAtlas);
+            buffers.push(vectorPack.iconAtlas.image.data.buffer);
+        }
+
+        if (this.glyphAtlas) {
+            vectorPack.glyphAtlas = serializeAtlas(this.glyphAtlas);
+            buffers.push(vectorPack.glyphAtlas.image.data.buffer);
+        }
+
+        return vectorPack;
     }
 
     createDataPack(vectors, scale) {
@@ -200,4 +233,28 @@ export default class VectorPack {
         segment.count += e.length;
     }
 
+}
+
+function serializeAtlas(atlas) {
+    let positions = atlas.positions;
+    if (atlas instanceof IconAtlas) {
+        positions = {};
+        for (const p in atlas.positions) {
+            const pos = atlas.positions[p];
+            positions[p] = {
+                tl : pos.tl,
+                br : pos.br,
+                displaySize : pos.displaySize
+            };
+        }
+    }
+    const image = atlas.image;
+    return {
+        image : {
+            width : image.width,
+            height : image.height,
+            data : image.data
+        },
+        positions : positions
+    };
 }

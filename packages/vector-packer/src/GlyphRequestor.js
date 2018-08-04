@@ -1,5 +1,4 @@
 import TinySDF from '@mapbox/tiny-sdf';
-import { AlphaImage } from './Image';
 
 export default class GlyphRequestor {
     constructor() {
@@ -21,7 +20,7 @@ export default class GlyphRequestor {
             for (const charCode in glyphs[font]) {
                 const sdf = this._tinySDF(entries[font], font, charCode);
                 glyphSdfs[font][charCode] = sdf;
-                buffers.push(sdf.bitmap.data);
+                buffers.push(sdf.bitmap.data.buffer);
             }
         }
 
@@ -49,7 +48,11 @@ export default class GlyphRequestor {
 
         return {
             charCode,
-            bitmap: new AlphaImage({ width: 30, height: 30 }, tinySDF.draw(String.fromCharCode(charCode))),
+            bitmap: {
+                width : 30,
+                height : 30,
+                data : tinySDF.draw(String.fromCharCode(charCode))
+            },
             metrics: {
                 width: 24,
                 height: 24,
