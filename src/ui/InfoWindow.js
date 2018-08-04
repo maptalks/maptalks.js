@@ -152,11 +152,21 @@ class InfoWindow extends UIComponent {
         if (this.options['title']) {
             content += '<h2>' + this.options['title'] + '</h2>';
         }
-        const onClose = '"this.parentNode.style.display=\'none\';return false;"';
-        content += '<a href="javascript:void(0);" onclick=' + onClose +
-            ' ontouchend=' + onClose +
-            ' class="maptalks-close"></a><div class="maptalks-msgContent">' + this.options['content'] + '</div>';
+        content += '<a href="javascript:void(0);" class="maptalks-close"></a><div class="maptalks-msgContent"></div>';
         dom.innerHTML = content;
+        const closeBtn = dom.querySelector('.maptalks-close');
+        closeBtn.addEventListener('click', ()=>{
+            super.hide();
+        })
+        closeBtn.addEventListener('touchend', ()=>{
+            super.hide();
+        })
+        const msgContent = dom.querySelector('.maptalks-msgContent');
+        if (isString(this.options['content'])) {
+            msgContent.innerHTML = this.options['content'];
+        } else {
+            msgContent.appendChild(this.options['content']);
+        }
         return dom;
     }
 
