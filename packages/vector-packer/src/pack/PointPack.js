@@ -24,7 +24,7 @@ function getPackSDFFormat() {
         {
             type : Int32Array,
             width : 3,
-            name : 'a_anchor'
+            name : 'a_pos'
         },
         {
             type : Int16Array,
@@ -69,7 +69,7 @@ function getPackMarkerFormat() {
         {
             type : Int32Array,
             width : 3,
-            name : 'a_anchor'
+            name : 'a_pos'
         },
         {
             type : Int16Array,
@@ -144,8 +144,7 @@ export default class PointPack extends VectorPack {
     }
 
     placeVector(point, scale) {
-        const data = this.data,
-            elements = this.elements;
+        const data = this.data;
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
         const anchors = this._getAnchors(point, shape, scale);
         const count = anchors.length;

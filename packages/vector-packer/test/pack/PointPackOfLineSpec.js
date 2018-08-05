@@ -20,7 +20,7 @@ describe('Point Pack of Line specs', function () {
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load().then(() => {
             const result = pack.pack(1);
-            const anchors = result.packs[0].data.a_anchor;
+            const anchors = result.packs[0].data.a_pos;
             expect(anchors.length).to.be(72);
             expect(anchors[0]).to.be(40);
             expect(anchors[1]).to.be(0);
@@ -50,7 +50,7 @@ describe('Point Pack of Line specs', function () {
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 100 });
         pack.load().then(() => {
             const result = pack.pack(1);
-            const anchors = result.packs[0].data.a_anchor;
+            const anchors = result.packs[0].data.a_pos;
             expect(anchors.length).to.be(12);
             expect(anchors[0]).to.be(40);
             expect(anchors[1]).to.be(0);
@@ -76,7 +76,7 @@ describe('Point Pack of Line specs', function () {
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 100 });
         pack.load().then(() => {
             const result = pack.pack(0.5);
-            const anchors = result.packs[0].data.a_anchor;
+            const anchors = result.packs[0].data.a_pos;
             expect(anchors.length).to.be(24);
             expect(anchors[0]).to.be(20);
             expect(anchors[1]).to.be(0);
@@ -103,7 +103,7 @@ describe('Point Pack of Line specs', function () {
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 200 });
         pack.load().then(() => {
             const result = pack.pack(1);
-            const anchors = result.packs[0].data.a_anchor;
+            const anchors = result.packs[0].data.a_pos;
             expect(anchors).to.be.a(Int8Array);
             expect(anchors.length).to.be(12);
             expect(anchors[0]).to.be(40);
