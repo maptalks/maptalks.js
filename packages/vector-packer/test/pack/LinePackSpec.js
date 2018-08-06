@@ -21,21 +21,21 @@ describe('Line Pack specs', function () {
             const result = pack.pack(1);
             const data = result.packs[0].data;
 
-            expect(data.a_pos.length).to.be.eql(18);
-            expect(data.a_pos).to.be.a(Int16Array);
-            expect(data.a_pos).to.be.eql(new Int16Array([0, 0, 0, 0, 0, 0, 500, 0, 0, 500, 0, 0, 550, 50, 0, 550, 50, 0]));
+            expect(data.aPos.length).to.be.eql(18);
+            expect(data.aPos).to.be.a(Int16Array);
+            expect(data.aPos).to.be.eql(new Int16Array([0, 0, 0, 0, 0, 0, 500, 0, 0, 500, 0, 0, 550, 50, 0, 550, 50, 0]));
 
-            expect(data.a_linesofar.length).to.be.eql(12);
-            expect(data.a_linesofar).to.a(Uint8Array);
-            expect(data.a_linesofar).to.be.eql(new Uint8Array([0, 0, 0, 0, 250, 0, 250, 0, 29, 1, 29, 1]));
+            expect(data.aLinesofar.length).to.be.eql(6);
+            expect(data.aLinesofar).to.a(Uint16Array);
+            expect(data.aLinesofar).to.be.eql(new Uint16Array([0, 0, 250, 250, 285, 285]));
 
-            expect(data.a_normal.length).to.be.eql(12);
-            expect(data.a_normal).to.a(Int8Array);
-            expect(data.a_normal).to.be.eql(new Int8Array([0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0, 1]));
+            expect(data.aNormal.length).to.be.eql(12);
+            expect(data.aNormal).to.a(Int8Array);
+            expect(data.aNormal).to.be.eql(new Int8Array([0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0, 1]));
 
-            expect(data.a_extrude.length).to.be.eql(12);
-            expect(data.a_extrude).to.a(Uint8Array);
-            expect(data.a_extrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 154, 65, 83, 173, 173, 83]));
+            expect(data.aExtrude.length).to.be.eql(12);
+            expect(data.aExtrude).to.a(Uint8Array);
+            expect(data.aExtrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 154, 65, 83, 173, 173, 83]));
 
             done();
         }).catch(err => {
@@ -61,18 +61,18 @@ describe('Line Pack specs', function () {
             const result = pack.pack(1);
             const data = result.packs[0].data;
 
-            expect(data.a_pos.length).to.be.eql(27);
-            expect(data.a_pos).to.be.a(Int16Array);
+            expect(data.aPos.length).to.be.eql(27);
+            expect(data.aPos).to.be.a(Int16Array);
 
-            expect(data.a_linesofar.length).to.be.eql(18);
-            expect(data.a_linesofar).to.a(Uint8Array);
+            expect(data.aLinesofar.length).to.be.eql(9);
+            expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.a_normal.length).to.be.eql(18);
-            expect(data.a_normal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(18);
+            expect(data.aNormal).to.a(Int8Array);
 
-            expect(data.a_extrude.length).to.be.eql(18);
-            expect(data.a_extrude).to.a(Uint8Array);
-            expect(data.a_extrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 128, 65, 152, 70, 102, 191, 173, 83, 83, 173, 173, 83]));
+            expect(data.aExtrude.length).to.be.eql(18);
+            expect(data.aExtrude).to.a(Uint8Array);
+            expect(data.aExtrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 128, 65, 152, 70, 102, 191, 173, 83, 83, 173, 173, 83]));
 
             done();
         }).catch(err => {
@@ -98,18 +98,18 @@ describe('Line Pack specs', function () {
             const result = pack.pack(1);
             const data = result.packs[0].data;
 
-            expect(data.a_pos.length).to.be.eql(24);
-            expect(data.a_pos).to.be.a(Int16Array);
+            expect(data.aPos.length).to.be.eql(24);
+            expect(data.aPos).to.be.a(Int16Array);
 
-            expect(data.a_linesofar.length).to.be.eql(16);
-            expect(data.a_linesofar).to.a(Uint8Array);
+            expect(data.aLinesofar.length).to.be.eql(8);
+            expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.a_normal.length).to.be.eql(16);
-            expect(data.a_normal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(16);
+            expect(data.aNormal).to.a(Int8Array);
 
-            expect(data.a_extrude.length).to.be.eql(16);
-            expect(data.a_extrude).to.a(Uint8Array);
-            expect(data.a_extrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 128, 65, 102, 191, 173, 83, 83, 173, 173, 83]));
+            expect(data.aExtrude.length).to.be.eql(16);
+            expect(data.aExtrude).to.a(Uint8Array);
+            expect(data.aExtrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 128, 65, 102, 191, 173, 83, 83, 173, 173, 83]));
 
             done();
         }).catch(err => {
@@ -135,17 +135,17 @@ describe('Line Pack specs', function () {
             const result = pack.pack(1);
             const data = result.packs[0].data;
 
-            expect(data.a_pos.length).to.be.eql(30);
-            expect(data.a_pos).to.be.a(Int16Array);
+            expect(data.aPos.length).to.be.eql(30);
+            expect(data.aPos).to.be.a(Int16Array);
 
-            expect(data.a_linesofar.length).to.be.eql(20);
-            expect(data.a_linesofar).to.a(Uint8Array);
+            expect(data.aLinesofar.length).to.be.eql(10);
+            expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.a_normal.length).to.be.eql(20);
-            expect(data.a_normal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(20);
+            expect(data.aNormal).to.a(Int8Array);
 
-            expect(data.a_extrude.length).to.be.eql(20);
-            expect(data.a_extrude).to.a(Uint8Array);
+            expect(data.aExtrude.length).to.be.eql(20);
+            expect(data.aExtrude).to.a(Uint8Array);
 
             done();
         }).catch(err => {
@@ -171,17 +171,17 @@ describe('Line Pack specs', function () {
             const result = pack.pack(1);
             const data = result.packs[0].data;
 
-            expect(data.a_pos.length).to.be.eql(18);
-            expect(data.a_pos).to.be.a(Int16Array);
+            expect(data.aPos.length).to.be.eql(18);
+            expect(data.aPos).to.be.a(Int16Array);
 
-            expect(data.a_linesofar.length).to.be.eql(12);
-            expect(data.a_linesofar).to.a(Uint8Array);
+            expect(data.aLinesofar.length).to.be.eql(6);
+            expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.a_normal.length).to.be.eql(12);
-            expect(data.a_normal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(12);
+            expect(data.aNormal).to.a(Int8Array);
 
-            expect(data.a_extrude.length).to.be.eql(12);
-            expect(data.a_extrude).to.a(Uint8Array);
+            expect(data.aExtrude.length).to.be.eql(12);
+            expect(data.aExtrude).to.a(Uint8Array);
 
             done();
         }).catch(err => {

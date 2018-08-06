@@ -181,7 +181,7 @@ export default class VectorPack {
             count : 0
         }];
 
-        if (!vectors.length) {
+        if (!vectors || !vectors.length) {
             return null;
         }
         //uniforms: opacity, u_size_t

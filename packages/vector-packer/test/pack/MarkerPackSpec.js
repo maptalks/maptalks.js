@@ -48,17 +48,17 @@ describe('Point Pack of markers specs', function () {
             const p = result.packs[0];
             const data = p.data;
 
-            expect(data.a_pos).to.be.a(Int8Array);
+            expect(data.aPos).to.be.a(Int8Array);
 
-            expect(data.a_offset.length).to.be(8);
-            expect(data.a_offset[0]).to.be(10);
-            expect(data.a_offset[1]).to.be(5);
+            expect(data.aOffset.length).to.be(8);
+            expect(data.aOffset[0]).to.be(10);
+            expect(data.aOffset[1]).to.be(5);
 
-            expect(data.a_size.length).to.be(16);
-            expect(data.a_size[0]).to.be(40);
-            expect(data.a_size[1]).to.be(30);
-            expect(data.a_size[2]).to.be(40);
-            expect(data.a_size[3]).to.be(30);
+            expect(data.aSize.length).to.be(16);
+            expect(data.aSize[0]).to.be(40);
+            expect(data.aSize[1]).to.be(30);
+            expect(data.aSize[2]).to.be(40);
+            expect(data.aSize[3]).to.be(30);
 
             expect(p.elements.length).to.be(6);
             expect(p.segments).to.be.eql([{ offset : 0, count : 6 }]);
@@ -94,25 +94,25 @@ describe('Point Pack of markers specs', function () {
         pack.load().then(() => {
             const result = pack.pack(1);
             const data = result.packs[0].data;
-            expect(data.a_offset.length).to.be(8);
-            expect(data.a_offset[0]).to.be(0);
-            expect(data.a_offset[1]).to.be(0);
+            expect(data.aOffset.length).to.be(8);
+            expect(data.aOffset[0]).to.be(0);
+            expect(data.aOffset[1]).to.be(0);
 
-            expect(data.a_size.length).to.be(16);
-            expect(data.a_size[0]).to.be(5);
-            expect(data.a_size[1]).to.be(5);
-            expect(data.a_size[2]).to.be(200);
-            expect(data.a_size[3]).to.be(200);
+            expect(data.aSize.length).to.be(16);
+            expect(data.aSize[0]).to.be(5);
+            expect(data.aSize[1]).to.be(5);
+            expect(data.aSize[2]).to.be(200);
+            expect(data.aSize[3]).to.be(200);
 
-            expect(data.a_shape.length).to.be(8);
-            expect(data.a_shape[0]).to.be(-16);
-            expect(data.a_shape[1]).to.be(-16);
-            expect(data.a_shape[2]).to.be(-16);
-            expect(data.a_shape[3]).to.be(16);
-            expect(data.a_shape[4]).to.be(16);
-            expect(data.a_shape[5]).to.be(-16);
-            expect(data.a_shape[6]).to.be(16);
-            expect(data.a_shape[7]).to.be(16);
+            expect(data.aShape.length).to.be(8);
+            expect(data.aShape[0]).to.be(-16);
+            expect(data.aShape[1]).to.be(-16);
+            expect(data.aShape[2]).to.be(-16);
+            expect(data.aShape[3]).to.be(16);
+            expect(data.aShape[4]).to.be(16);
+            expect(data.aShape[5]).to.be(-16);
+            expect(data.aShape[6]).to.be(16);
+            expect(data.aShape[7]).to.be(16);
 
             done();
         }).catch(err => {
@@ -138,15 +138,15 @@ describe('Point Pack of markers specs', function () {
         pack.load().then(() => {
             const result = pack.pack(1);
             const data = result.packs[0].data;
-            expect(data.a_shape.length).to.be(8);
-            expect(data.a_shape[0]).to.be(-1);
-            expect(data.a_shape[1]).to.be(-31);
-            expect(data.a_shape[2]).to.be(-1);
-            expect(data.a_shape[3]).to.be(1);
-            expect(data.a_shape[4]).to.be(31);
-            expect(data.a_shape[5]).to.be(-31);
-            expect(data.a_shape[6]).to.be(31);
-            expect(data.a_shape[7]).to.be(1);
+            expect(data.aShape.length).to.be(8);
+            expect(data.aShape[0]).to.be(-1);
+            expect(data.aShape[1]).to.be(-31);
+            expect(data.aShape[2]).to.be(-1);
+            expect(data.aShape[3]).to.be(1);
+            expect(data.aShape[4]).to.be(31);
+            expect(data.aShape[5]).to.be(-31);
+            expect(data.aShape[6]).to.be(31);
+            expect(data.aShape[7]).to.be(1);
             done();
         }).catch(err => {
             console.error(err);
@@ -172,8 +172,8 @@ describe('Point Pack of markers specs', function () {
         pack.load().then(() => {
             const result = pack.pack(1);
             const data = result.packs[0].data;
-            expect(data.a_rotation.length).to.be(4);
-            expect(data.a_rotation[0]).to.be(new Float32Array([60 * Math.PI / 180])[0]);
+            expect(data.aRotation.length).to.be(4);
+            expect(data.aRotation[0]).to.be(new Float32Array([60 * Math.PI / 180])[0]);
             done();
         }).catch(err => {
             console.error(err);
@@ -199,8 +199,8 @@ describe('Point Pack of markers specs', function () {
         pack.load().then(() => {
             const result = pack.pack(1);
             const data = result.packs[0].data;
-            expect(data.a_opacity.length).to.be(4);
-            expect(data.a_opacity[0]).to.be(128);
+            expect(data.aOpacity.length).to.be(4);
+            expect(data.aOpacity[0]).to.be(128);
             done();
         }).catch(err => {
             console.error(err);

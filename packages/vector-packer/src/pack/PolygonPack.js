@@ -29,7 +29,7 @@ export default class PolygonPack extends VectorPack {
             {
                 type : Int32Array,
                 width : 3,
-                name : 'a_pos'
+                name : 'aPos'
             }
             //TODO 动态color
         ];

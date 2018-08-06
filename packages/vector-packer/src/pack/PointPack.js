@@ -24,42 +24,42 @@ function getPackSDFFormat() {
         {
             type : Int32Array,
             width : 3,
-            name : 'a_pos'
+            name : 'aPos'
         },
         {
             type : Int16Array,
             width : 2,
-            name : 'a_shape'
+            name : 'aShape'
         },
         {
             type : Uint16Array,
             width : 2,
-            name : 'a_texcoord'
+            name : 'aTexCoord'
         },
         {
             type : Uint8Array,
             width : 4,
-            name : 'a_size'
+            name : 'aSize'
         },
         {
             type : Int8Array,
             width : 2,
-            name : 'a_offset'
+            name : 'aOffset'
         },
         {
             type : Uint8Array,
             width : 1,
-            name : 'a_opacity'
+            name : 'aOpacity'
         },
         {
             type : Float32Array,
             width : 1,
-            name : 'a_rotation'
+            name : 'aRotation'
         },
         {
             type : Uint8Array,
             width : 3,
-            name : 'a_color'
+            name : 'aColor'
         },
     ];
 }
@@ -69,37 +69,37 @@ function getPackMarkerFormat() {
         {
             type : Int32Array,
             width : 3,
-            name : 'a_pos'
+            name : 'aPos'
         },
         {
             type : Int16Array,
             width : 2,
-            name : 'a_shape'
+            name : 'aShape'
         },
         {
             type : Uint16Array,
             width : 2,
-            name : 'a_texcoord'
+            name : 'aTexCoord'
         },
         {
             type : Uint8Array,
             width : 4,
-            name : 'a_size'
+            name : 'aSize'
         },
         {
             type : Int8Array,
             width : 2,
-            name : 'a_offset'
+            name : 'aOffset'
         },
         {
             type : Uint8Array,
             width : 1,
-            name : 'a_opacity'
+            name : 'aOpacity'
         },
         {
             type : Float32Array,
             width : 1,
-            name : 'a_rotation'
+            name : 'aRotation'
         }
     ];
 }

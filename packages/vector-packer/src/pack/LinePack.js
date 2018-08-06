@@ -37,7 +37,7 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
-// a_pos_normal
+// aPos_normal
 // point.x,
 // point.y,
 // round ? 1 : 0,
@@ -72,22 +72,25 @@ export default class LinePack extends VectorPack {
             {
                 type : Int32Array,
                 width : 3,
-                name : 'a_pos'
+                name : 'aPos'
             },
+            //round? + up?
             {
                 type : Int8Array,
                 width : 2,
-                name : 'a_normal'
+                name : 'aNormal'
             },
+            //当前点距离aPos的凸起方向
             {
                 type : Uint8Array,
                 width : 2,
-                name : 'a_extrude'
+                name : 'aExtrude'
             },
+            //当前点距离起点的距离
             {
-                type : Uint8Array,
-                width : 2,
-                name : 'a_linesofar'
+                type : Uint16Array,
+                width : 1,
+                name : 'aLinesofar'
             }
             //TODO 动态color和width
         ];
@@ -486,7 +489,7 @@ export default class LinePack extends VectorPack {
     addLineVertex(data, point, extrude, round, up, linesofar) {
         linesofar *= LINE_DISTANCE_SCALE;
         data.push(
-            // a_pos_normal
+            // aPos_normal
             point.x,
             point.y,
             0,
@@ -497,8 +500,9 @@ export default class LinePack extends VectorPack {
             Math.round(EXTRUDE_SCALE * extrude.x) + 128,
             Math.round(EXTRUDE_SCALE * extrude.y) + 128,
             // lower 8-bit + higher 8 bit
-            ((linesofar & 0xFF)),
-            linesofar >> 8
+            linesofar
+            // ((linesofar & 0xFF)),
+            // linesofar >> 8
         );
         const max = Math.max(Math.abs(point.x), Math.abs(point.y));
         if (max > this.maxPos) {
