@@ -20,7 +20,7 @@ describe('Point Pack of texts specs', function () {
             expect(pack.iconAltlas).not.to.be.ok();
             expect(glyphImage.width).to.be.above(0);
             expect(glyphImage.height).to.be.above(0);
-            expect(glyphImage.data.length).to.be.above(0);
+            expect(glyphImage.data.length).to.be.eql(glyphImage.width * glyphImage.height); //alpha map
             done();
         }).catch(err => {
             console.error(err);

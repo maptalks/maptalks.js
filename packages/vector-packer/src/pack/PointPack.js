@@ -10,7 +10,6 @@ import { getGlyphQuads, getIconQuads } from './util/quads';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 80;
-const PACK_LEN = 17;
 //uint32 [anchor.x, anchor.y]
 //uint16 [shape.x, shape.y]
 //uint16 [tex.x, tex.y]
@@ -37,11 +36,6 @@ function getPackSDFFormat() {
             name : 'aTexCoord'
         },
         {
-            type : Uint8Array,
-            width : 4,
-            name : 'aSize'
-        },
-        {
             type : Int8Array,
             width : 2,
             name : 'aOffset'
@@ -55,6 +49,11 @@ function getPackSDFFormat() {
             type : Float32Array,
             width : 1,
             name : 'aRotation'
+        },
+        {
+            type : Uint8Array,
+            width : 2,
+            name : 'aSize'
         },
         {
             type : Uint8Array,
@@ -82,11 +81,6 @@ function getPackMarkerFormat() {
             name : 'aTexCoord'
         },
         {
-            type : Uint8Array,
-            width : 4,
-            name : 'aSize'
-        },
-        {
             type : Int8Array,
             width : 2,
             name : 'aOffset'
@@ -100,6 +94,11 @@ function getPackMarkerFormat() {
             type : Float32Array,
             width : 1,
             name : 'aRotation'
+        },
+        {
+            type : Uint8Array,
+            width : 4,
+            name : 'aSize'
         }
     ];
 }
@@ -143,7 +142,7 @@ export default class PointPack extends VectorPack {
         return isText ? getPackSDFFormat() : getPackMarkerFormat();
     }
 
-    placeVector(point, scale) {
+    placeVector(point, scale, formatWidth) {
         const data = this.data;
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
         const anchors = this._getAnchors(point, shape, scale);
@@ -151,7 +150,7 @@ export default class PointPack extends VectorPack {
         if (count === 0) {
             return;
         }
-        const currentIdx = data.length / PACK_LEN;
+        let currentIdx = data.length / formatWidth;
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol,
@@ -199,61 +198,67 @@ export default class PointPack extends VectorPack {
                     anchors[i].x, anchors[i].y, 0,
                     tl.x, y + tl.y,
                     tex.x, tex.y,
-                    size.min[0], size.min[1], size.max[0], size.max[1],
                     dx, dy,
                     opacity,
                     rotation * Math.PI / 180
                 );
                 if (isText) {
+                    data.push(size.min[0], size.max[0]);
                     data.push(color[0], color[1], color[2]);
+                } else {
+                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
+                }
+
+
+                data.push(
+                    anchors[i].x, anchors[i].y, 0,
+                    tr.x, y + tr.y,
+                    tex.x + tex.w, tex.y,
+                    dx, dy,
+                    opacity,
+                    rotation * Math.PI / 180
+                );
+                if (isText) {
+                    data.push(size.min[0], size.max[0]);
+                    data.push(color[0], color[1], color[2]);
+                } else {
+                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
                 }
 
                 data.push(
                     anchors[i].x, anchors[i].y, 0,
                     bl.x, y + bl.y,
                     tex.x, tex.y + tex.h,
-                    size.min[0], size.min[1], size.max[0], size.max[1],
                     dx, dy,
                     opacity,
                     rotation * Math.PI / 180
                 );
                 if (isText) {
+                    data.push(size.min[0], size.max[0]);
                     data.push(color[0], color[1], color[2]);
+                } else {
+                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
                 }
 
-                data.push(
-                    anchors[i].x, anchors[i].y, 0,
-                    tr.x, y + tr.y,
-                    tex.x + tex.w, tex.y,
-                    size.min[0], size.min[1], size.max[0], size.max[1],
-                    dx, dy,
-                    opacity,
-                    rotation * Math.PI / 180
-                );
-                if (isText) {
-                    data.push(color[0], color[1], color[2]);
-                }
 
                 data.push(
                     anchors[i].x, anchors[i].y, 0,
                     br.x, y + br.y,
                     tex.x + tex.w, tex.y + tex.h,
-                    size.min[0], size.min[1], size.max[0], size.max[1],
                     dx, dy,
                     opacity,
                     rotation * Math.PI / 180
                 );
                 if (isText) {
+                    data.push(size.min[0], size.max[0]);
                     data.push(color[0], color[1], color[2]);
+                } else {
+                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
                 }
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
                 this.addElements(currentIdx + 1, currentIdx + 2, currentIdx + 3);
-                // elements.push(currentIdx, currentIdx + 1, currentIdx + 2);
-                // elements.push(currentIdx + 1, currentIdx + 2, currentIdx + 3);
-                // if (currentIdx + 3 > this.maxIndex) {
-                //     this.maxIndex = currentIdx + 3;
-                // }
+                currentIdx += 4;
 
                 const max = Math.max(Math.abs(anchors[i].x), Math.abs(anchors[i].y));
                 if (max > this.maxPos) {

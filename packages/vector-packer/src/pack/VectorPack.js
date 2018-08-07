@@ -191,7 +191,7 @@ export default class VectorPack {
 
         let featureIndex = [];
         for (let i = 0, l = vectors.length; i < l; i++) {
-            this.placeVector(vectors[i], scale);
+            this.placeVector(vectors[i], scale, formatWidth);
             featureIndex.push(data.length / formatWidth);
         }
         const ArrType = getIndexArrayType(data.length / formatWidth);
@@ -237,6 +237,7 @@ export default class VectorPack {
 
 function serializeAtlas(atlas) {
     let positions = atlas.positions;
+    let format = 'alpha';
     if (atlas instanceof IconAtlas) {
         positions = {};
         for (const p in atlas.positions) {
@@ -247,13 +248,15 @@ function serializeAtlas(atlas) {
                 displaySize : pos.displaySize
             };
         }
+        format = 'rgba';
     }
     const image = atlas.image;
     return {
         image : {
             width : image.width,
             height : image.height,
-            data : image.data
+            data : image.data,
+            format
         },
         positions : positions
     };

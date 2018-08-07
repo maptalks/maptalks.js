@@ -20,7 +20,7 @@ describe('Point Pack of markers specs', function () {
             const iconImage = pack.iconAtlas.image;
             expect(iconImage.width).to.be.above(0);
             expect(iconImage.height).to.be.above(0);
-            expect(iconImage.data.length).to.be.above(0);
+            expect(iconImage.data.length).to.be.eql(iconImage.width * iconImage.height * 4);
             expect(pack.glyphAtlas).not.to.be.ok();
             done();
         }).catch(err => {

@@ -3,6 +3,7 @@ import TinySDF from '@mapbox/tiny-sdf';
 export default class GlyphRequestor {
     constructor() {
         this.entries = {};
+        this._cachedFont = {};
     }
 
     getGlyphs(glyphs, cb) {
@@ -32,7 +33,7 @@ export default class GlyphRequestor {
         // if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
         //     return;
         // }
-
+        const fontFamily = this._getFontFamliy(font);
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
             let fontWeight = '400';
@@ -43,7 +44,7 @@ export default class GlyphRequestor {
             } else if (/light/i.test(font)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new TinySDF(24, 3, 8, .25, font, fontWeight);
+            tinySDF = entry.tinySDF = new TinySDF(24, 3, 8, .25, fontFamily, fontWeight);
         }
 
         return {
@@ -62,4 +63,21 @@ export default class GlyphRequestor {
             }
         };
     }
+
+    _getFontFamliy(font) {
+        if (!this._cachedFont[font]) {
+            this._cachedFont[font] = extractFontFamily(font);
+        }
+        return this._cachedFont[font];
+    }
+}
+
+function extractFontFamily(font) {
+    const span = document.createElement('span');
+    document.body.appendChild(span);
+    span.style.font = font;
+    const computedStyle = window.getComputedStyle(span);
+    const family = computedStyle.getPropertyValue('font-family');
+    document.body.removeChild(span);
+    return family;
 }
