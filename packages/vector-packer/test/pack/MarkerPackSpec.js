@@ -99,20 +99,9 @@ describe('Point Pack of markers specs', function () {
             expect(data.aOffset[1]).to.be(0);
 
             expect(data.aSize.length).to.be(16);
-            expect(data.aSize[0]).to.be(5);
-            expect(data.aSize[1]).to.be(5);
-            expect(data.aSize[2]).to.be(200);
-            expect(data.aSize[3]).to.be(200);
+            expect(data.aSize.slice(0, 4)).to.be.eql([5, 5, 200, 200]);
 
-            expect(data.aShape.length).to.be(8);
-            expect(data.aShape[0]).to.be(-16);
-            expect(data.aShape[1]).to.be(-16);
-            expect(data.aShape[2]).to.be(-16);
-            expect(data.aShape[3]).to.be(16);
-            expect(data.aShape[4]).to.be(16);
-            expect(data.aShape[5]).to.be(-16);
-            expect(data.aShape[6]).to.be(16);
-            expect(data.aShape[7]).to.be(16);
+            expect(data.aShape).to.be.eql([-16, -16, 16, -16, -16, 16, 16, 16]);
 
             done();
         }).catch(err => {
@@ -139,14 +128,7 @@ describe('Point Pack of markers specs', function () {
             const result = pack.pack(1);
             const data = result.packs[0].data;
             expect(data.aShape.length).to.be(8);
-            expect(data.aShape[0]).to.be(-1);
-            expect(data.aShape[1]).to.be(-31);
-            expect(data.aShape[2]).to.be(-1);
-            expect(data.aShape[3]).to.be(1);
-            expect(data.aShape[4]).to.be(31);
-            expect(data.aShape[5]).to.be(-31);
-            expect(data.aShape[6]).to.be(31);
-            expect(data.aShape[7]).to.be(1);
+            expect(data.aShape).to.be.eql([-1, -31, 31, -31, -1, 1, 31, 1]);
             done();
         }).catch(err => {
             console.error(err);

@@ -49,16 +49,17 @@ describe('Point Pack of texts specs', function () {
             expect(data.aOffset[0]).to.be(10);
             expect(data.aOffset[1]).to.be(5);
 
-            expect(data.aSize.length).to.be(64);
-            expect(data.aSize[0]).to.be(30);
-            expect(data.aSize[1]).to.be(30);
-            expect(data.aSize[2]).to.be(30);
-            expect(data.aSize[3]).to.be(30);
+            expect(data.aSize.length).to.be(32);
+            expect(data.aSize.slice(0, 4)).to.be.eql([30, 30, 30, 30]);
 
             expect(result.glyphAtlas.image.data.length).to.be.above(0);
             expect(result.glyphAtlas.image.width).to.be(64);
             expect(result.glyphAtlas.image.height).to.be(32);
-            expect(result.glyphAtlas.positions['30px monospace']).to.be.eql({ '104':{ 'rect':{ 'id':1, 'x':0, 'y':0, 'w':32, 'h':32, 'maxw':32, 'maxh':32, 'refcount':1}, 'metrics':{ 'width':24, 'height':24, 'left':0, 'top':-8, 'advance':24}}, '105':{ 'rect':{ 'id':2, 'x':32, 'y':0, 'w':32, 'h':32, 'maxw':32, 'maxh':32, 'refcount':1 }, 'metrics':{ 'width':24, 'height':24, 'left':0, 'top':-8, 'advance':24 }}});
+            expect(result.glyphAtlas.positions['30px monospace']).to.be.eql({
+                '104': { rect: { x: 0, y: 0, w: 32, h: 32, id: 1 },
+                    metrics: { width: 24, height: 24, left: 0, top: -8, advance: 24 }},
+                '105': { rect: { x: 32, y: 0, w: 32, h: 32, id: 2 },
+                    metrics: { width: 24, height: 24, left: 0, top: -8, advance: 24 }}});
 
             done();
         }).catch(err => {
@@ -83,10 +84,10 @@ describe('Point Pack of texts specs', function () {
         pack.load().then(() => {
             const result = pack.pack(1);
             const data = result.packs[0].data;
-            expect(data.aSize.length).to.be(64);
+            expect(data.aSize.length).to.be(32);
             expect(data.aSize[0]).to.be(5);
-            expect(data.aSize[1]).to.be(5);
-            expect(data.aSize[2]).to.be(200);
+            expect(data.aSize[1]).to.be(200);
+            expect(data.aSize[2]).to.be(5);
             expect(data.aSize[3]).to.be(200);
 
             done();
@@ -113,13 +114,13 @@ describe('Point Pack of texts specs', function () {
             const result = pack.pack(1);
             const data = result.packs[0].data;
             expect(data.aShape.length).to.be(16);
-            expect(data.aShape[0]).to.be(-4);
+            expect(data.aShape[0]).to.be(-1);
             expect(data.aShape[1]).to.be(-33);
-            expect(data.aShape[2]).to.be(-4);
-            expect(data.aShape[3]).to.be(-1);
-            expect(data.aShape[4]).to.be(28);
-            expect(data.aShape[5]).to.be(-33);
-            expect(data.aShape[6]).to.be(28);
+            expect(data.aShape[2]).to.be(31);
+            expect(data.aShape[3]).to.be(-33);
+            expect(data.aShape[4]).to.be(-1);
+            expect(data.aShape[5]).to.be(-1);
+            expect(data.aShape[6]).to.be(31);
             expect(data.aShape[7]).to.be(-1);
             done();
         }).catch(err => {
@@ -225,14 +226,14 @@ describe('Point Pack of texts specs', function () {
 
             const data = result.packs[0].data;
             expect(data.aShape.length).to.be(48);
-            expect(data.aShape[0]).to.be(-4);
+            expect(data.aShape[0]).to.be(-1);
             expect(data.aShape[1]).to.be(-28);
-            expect(data.aShape[2]).to.be(-4);
+            expect(data.aShape[2]).to.be(31);
 
             expect(data.aTexCoord.length).to.be(48);
             expect(data.aTexCoord[0]).to.be(32);
-            expect(data.aTexCoord[1]).to.be(32);
-            expect(data.aTexCoord[2]).to.be(32);
+            expect(data.aTexCoord[1]).to.be(64);
+            expect(data.aTexCoord[2]).to.be(64);
             expect(data.aTexCoord[3]).to.be(64);
 
             done();
