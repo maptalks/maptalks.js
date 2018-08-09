@@ -197,37 +197,6 @@ export default class PointPack extends VectorPack {
                 data.push(
                     anchors[i].x, anchors[i].y, 0,
                     tl.x, y + tl.y,
-                    tex.x, tex.y,
-                    dx, dy,
-                    opacity,
-                    rotation * Math.PI / 180
-                );
-                if (isText) {
-                    data.push(size.min[0], size.max[0]);
-                    data.push(color[0], color[1], color[2]);
-                } else {
-                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
-                }
-
-
-                data.push(
-                    anchors[i].x, anchors[i].y, 0,
-                    tr.x, y + tr.y,
-                    tex.x + tex.w, tex.y,
-                    dx, dy,
-                    opacity,
-                    rotation * Math.PI / 180
-                );
-                if (isText) {
-                    data.push(size.min[0], size.max[0]);
-                    data.push(color[0], color[1], color[2]);
-                } else {
-                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
-                }
-
-                data.push(
-                    anchors[i].x, anchors[i].y, 0,
-                    bl.x, y + bl.y,
                     tex.x, tex.y + tex.h,
                     dx, dy,
                     opacity,
@@ -243,8 +212,39 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchors[i].x, anchors[i].y, 0,
-                    br.x, y + br.y,
+                    tr.x, y + tr.y,
                     tex.x + tex.w, tex.y + tex.h,
+                    dx, dy,
+                    opacity,
+                    rotation * Math.PI / 180
+                );
+                if (isText) {
+                    data.push(size.min[0], size.max[0]);
+                    data.push(color[0], color[1], color[2]);
+                } else {
+                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
+                }
+
+                data.push(
+                    anchors[i].x, anchors[i].y, 0,
+                    bl.x, y + bl.y,
+                    tex.x, tex.y,
+                    dx, dy,
+                    opacity,
+                    rotation * Math.PI / 180
+                );
+                if (isText) {
+                    data.push(size.min[0], size.max[0]);
+                    data.push(color[0], color[1], color[2]);
+                } else {
+                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
+                }
+
+
+                data.push(
+                    anchors[i].x, anchors[i].y, 0,
+                    br.x, y + br.y,
+                    tex.x + tex.w, tex.y,
                     dx, dy,
                     opacity,
                     rotation * Math.PI / 180

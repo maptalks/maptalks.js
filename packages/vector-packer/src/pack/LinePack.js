@@ -98,8 +98,8 @@ export default class LinePack extends VectorPack {
 
     placeVector(line, scale) {
         const symbol = line.symbol,
-            join = symbol['lineJoin'] || 'miter',
-            cap = symbol['lineCap'] || 'butt',
+            join = symbol['lineJoin'] || 'miter', //bevel, miter, round
+            cap = symbol['lineCap'] || 'butt', //butt, round, square
             miterLimit = 2,
             roundLimit = 1.05;
 

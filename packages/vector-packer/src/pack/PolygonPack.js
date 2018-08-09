@@ -40,6 +40,9 @@ export default class PolygonPack extends VectorPack {
         this.lineElements = [];
         this.lineSegments = [];
         const pack = super.createDataPack(...args);
+        if (!pack) {
+            return pack;
+        }
         let lineElements = this.lineElements;
         const ElementType = getIndexArrayType(this.maxLineIndex);
         lineElements = new ElementType(this.lineElements);

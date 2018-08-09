@@ -134,9 +134,12 @@ export default class VectorPack {
         const packs = [], buffers = [];
         for (let i = 0; i < this.styles.length; i++) {
             const symbol = styles[i].symbol;
+            const vectors = this.styledVectors[i];
+            if (!vectors || !vectors.length) continue;
             if (Array.isArray(symbol)) {
                 for (let ii = 0; ii < symbol.length; ii++) {
-                    const pack = this.createDataPack(this.styledVectors[i][ii], scale);
+                    if (!vectors[ii] || !vectors[ii].length) continue;
+                    const pack = this.createDataPack(vectors[ii], scale);
                     if (!pack) continue;
                     const packBufs = pack.buffers;
                     delete pack.buffers;

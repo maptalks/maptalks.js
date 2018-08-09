@@ -7,7 +7,7 @@
 import ShelfPack from '@mapbox/shelf-pack';
 import { AlphaImage } from '../../Image';
 
-const padding = 1;
+const padding = 0;
 
 export default class GlyphAtlas {
     constructor(glyphMap) {
