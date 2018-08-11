@@ -19,6 +19,7 @@ function glsl() {
     };
 }
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
+const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 
 module.exports = {
     input: 'index.js',
@@ -31,7 +32,7 @@ module.exports = {
         }),
         commonjs(),
         babel({
-            exclude: ['../../node_modules/regl/**/*']
+            exclude: ['../../node_modules/regl/**/*', 'node_modules/regl/**/*']
         }),
         uglify()
     ],
@@ -40,7 +41,8 @@ module.exports = {
             'sourcemap': false,
             'format': 'umd',
             'name': 'maptalksgl',
-            'banner': banner,
+            banner,
+            outro,
             'file': pkg.main
         }
     ]
