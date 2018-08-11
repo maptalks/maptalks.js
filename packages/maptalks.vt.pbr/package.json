@@ -20,7 +20,7 @@
   "dependencies": {
     "color": "^3.0.0",
     "@maptalks/vt.base": "^0.1.0",
-    "@maptalks/gl": "file:../gl/packages/gl"
+    "@maptalks/gl": "file:../maptalksgl/packages/gl"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
