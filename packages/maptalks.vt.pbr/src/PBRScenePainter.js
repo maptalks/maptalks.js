@@ -1,5 +1,5 @@
-import * as reshader from 'reshader.gl';
-import { mat4 } from 'gl-matrix';
+import { reshader } from '@maptalks/gl';
+import { mat4 } from '@maptalks/gl';
 import { extend } from './Util';
 import VSMShadowPass from './VSMShadowPass.js';
 import StencilShadowPass from './StencilShadowPass.js';

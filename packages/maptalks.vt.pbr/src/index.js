@@ -1,8 +1,8 @@
-import VectorTilePlugin from 'maptalks.vt.base';
+import VectorTilePlugin from '@maptalks/vt.base';
 import PBRScenePainter from './PBRScenePainter';
 import Color from 'color';
 import { extend } from './Util.js';
-import * as maptalks from 'maptalks.vt';
+import * as maptalks from '@maptalks/vt';
 
 const PBRPlugin = VectorTilePlugin.extend('pbr', {
 

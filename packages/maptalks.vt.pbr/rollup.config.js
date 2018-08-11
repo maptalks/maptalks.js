@@ -38,7 +38,7 @@ module.exports = {
             exclude: 'node_modules/**'
         })
     ],
-    external : ['maptalks.vt'],
+    external : ['@maptalks/vt', '@maptalks/gl'],
     output: [
         {
             'sourcemap': false,
@@ -46,7 +46,8 @@ module.exports = {
             'name': 'maptalks.vt.pbr',
             'banner': banner,
             'globals' : {
-                'maptalks.vt' : 'maptalks'
+                '@maptalks/vt' : 'maptalks',
+                '@maptalks/gl' : 'maptalksgl'
             },
             'file': pkg.main
         },

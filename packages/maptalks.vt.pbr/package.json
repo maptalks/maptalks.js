@@ -18,10 +18,9 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "gl-matrix": "^2.6.1",
     "color": "^3.0.0",
-    "maptalks.vt.base": "^0.1.0",
-    "reshader.gl": "^0.1.0"
+    "@maptalks/vt.base": "^0.1.0",
+    "@maptalks/gl" : "^0.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

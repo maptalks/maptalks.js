@@ -1,5 +1,4 @@
-import { mat4 } from 'gl-matrix';
-import * as reshader from 'reshader.gl';
+import { reshader, mat4 } from '@maptalks/gl';
 
 export default class StencilShadowPass {
     constructor(sceneConfig, renderer) {

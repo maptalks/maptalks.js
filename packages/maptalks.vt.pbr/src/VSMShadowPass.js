@@ -1,5 +1,4 @@
-import * as reshader from 'reshader.gl';
-import { mat4, vec3 } from 'gl-matrix';
+import { reshader, mat4, vec3 } from '@maptalks/gl';
 import { isNil } from './Util';
 
 class VSMShadowPass {
