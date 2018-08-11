@@ -1,0 +1,37 @@
+{
+  "name": "@maptalks/gl",
+  "version": "0.1.0",
+  "description": "Webgl dependencies for maptalks",
+  "main": "dist/maptalksgl.js",
+  "module": "index.js",
+  "jsnext:main": "index.js",
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "dev": "rollup -w -c rollup.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "webgl", "maptalks"
+  ],
+  "author": "fuzhenn",
+  "license": "MIT",
+  "dependencies": {
+    "@maptalks/reshader.gl": "^0.1.0",
+    "gl-matrix": "^2.6.1",
+    "regl": "^1.3.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.2",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
+    "eslint": "^4.19.1",
+    "eslint-config-maptalks": "^0.3.0",
+    "eslint-plugin-mocha": "^5.0.0",
+    "rollup": "^0.62.0",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-uglify": "^4.0.0"
+  }
+}

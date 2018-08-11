@@ -1,0 +1,7 @@
+node_modules
+*.log
+.vscode
+yarn.lock
+dist
+web.config
+debug
