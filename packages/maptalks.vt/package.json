@@ -41,7 +41,7 @@
     "rollup-plugin-node-resolve": "^3.3.0"
   },
   "peerDependencies": {
-    "@maptalks/gl" : "^0.1.0"
+    "@maptalks/gl": "file:../gl/packages/gl"
   },
   "dependencies": {
     "gl-matrix": "^2.6.1",
