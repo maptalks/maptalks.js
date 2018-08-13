@@ -4,6 +4,10 @@ const commonjs = require('rollup-plugin-commonjs');
 const uglify = require('rollup-plugin-uglify').uglify;
 const pkg = require('./package.json');
 
+const production = process.env.BUILD === 'production';
+const outputFile = production ? pkg.main : 'dist/maptalksgl-dev.js';
+const plugins = production ? [uglify()] : [];
+
 function glsl() {
     return {
         transform(code, id) {
@@ -22,7 +26,7 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 
 module.exports = {
-    input: 'index.js',
+    input: 'src/index.js',
     plugins: [
         glsl(),
         resolve({
@@ -33,17 +37,20 @@ module.exports = {
         commonjs(),
         babel({
             exclude: ['../../node_modules/regl/**/*', 'node_modules/regl/**/*']
-        }),
-        uglify()
-    ],
+        })
+    ].concat(plugins),
+    external : ['maptalks'],
     output: [
         {
             'sourcemap': false,
             'format': 'umd',
             'name': 'maptalksgl',
+            'globals' : {
+                'maptalks' : 'maptalks'
+            },
             banner,
             outro,
-            'file': pkg.main
+            'file': outputFile
         }
     ]
 };

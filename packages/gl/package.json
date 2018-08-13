@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "description": "Webgl dependencies for maptalks",
   "main": "dist/maptalksgl.js",
-  "module": "index.js",
-  "jsnext:main": "index.js",
+  "module": "src/index.js",
+  "jsnext:main": "src/index.js",
   "scripts": {
-    "build": "rollup -c rollup.config.js",
+    "build": "rollup --environment BUILD:production -c rollup.config.js",
+    "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
