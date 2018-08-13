@@ -1,5 +1,5 @@
-import Class from 'core/Class';
-import PointExtent from 'geo/PointExtent';
+import Class from '../../core/Class';
+import PointExtent from '../../geo/PointExtent';
 
 /**
  * @classdesc
@@ -107,6 +107,30 @@ export default class CollectionPainter extends Class {
                 return false;
             }
             return true;
+        });
+        return result;
+    }
+
+    getMinAltitude() {
+        let first = true;
+        let result = 0;
+        this._eachPainter(painter => {
+            const alt = painter.getMinAltitude();
+            if (first || alt < result) {
+                first = false;
+                result = alt;
+            }
+        });
+        return result;
+    }
+
+    getMaxAltitude() {
+        let result = 0;
+        this._eachPainter(painter => {
+            const alt = painter.getMaxAltitude();
+            if (alt > result) {
+                result = alt;
+            }
         });
         return result;
     }

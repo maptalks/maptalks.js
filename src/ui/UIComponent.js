@@ -1,5 +1,5 @@
-import { extend } from 'core/util';
-import { trim } from 'core/util/strings';
+import { extend } from '../core/util';
+import { trim } from '../core/util/strings';
 import {
     on,
     off,
@@ -8,17 +8,18 @@ import {
     TRANSFORM,
     TRANSFORMORIGIN,
     TRANSITION
-} from 'core/util/dom';
-import Browser from 'core/Browser';
-import Class from 'core/Class';
-import Eventable from 'core/Eventable';
-import Point from 'geo/Point';
-import Size from 'geo/Size';
-import Geometry from 'geometry/Geometry';
+} from '../core/util/dom';
+import Browser from '../core/Browser';
+import Class from '../core/Class';
+import Eventable from '../core/Eventable';
+import Point from '../geo/Point';
+import Size from '../geo/Size';
+import Geometry from '../geometry/Geometry';
 
 /**
  * @property {Object} options
- * @property {Boolean} [options.eventsToStop='mousedown dblclick']  - UI's dom events to stop propagation.
+ * @property {Boolean} [options.eventsPropagation=false]  - whether stop ALL events' propagation.
+ * @property {Boolean} [options.eventsToStop=null]  - UI's dom events to stop propagation if eventsPropagation is true.
  * @property {Number}  [options.dx=0]     - pixel offset on x axis
  * @property {Number}  [options.dy=0]     - pixel offset on y axis
  * @property {Boolean} [options.autoPan=false]  - set it to false if you don't want the map to do panning animation to fit the opened UI.
@@ -30,7 +31,8 @@ import Geometry from 'geometry/Geometry';
  * @instance
  */
 const options = {
-    'eventsToStop': 'mousedown dblclick',
+    'eventsPropagation' : false,
+    'eventsToStop': null,
     'dx': 0,
     'dy': 0,
     'autoPan': false,
@@ -128,6 +130,11 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return this;
         }
+
+        if (!this._mapEventsOn) {
+            this._switchMapEvents('on');
+        }
+
         coordinate = coordinate || this._coordinate || this._owner.getCenter();
 
         const visible = this.isVisible();
@@ -145,6 +152,7 @@ class UIComponent extends Eventable(Class) {
         this._coordinate = coordinate;
         this._removePrevDOM();
         const dom = this.__uiDOM = this.buildOn(map);
+        dom['eventsPropagation'] = this.options['eventsPropagation'];
 
         if (!dom) {
             /**
@@ -185,7 +193,7 @@ class UIComponent extends Eventable(Class) {
             if (anim.scale) {
                 if (this.getTransformOrigin) {
                     const origin = this.getTransformOrigin();
-                    dom.style[TRANSFORMORIGIN] = origin.x + 'px ' + origin.y + 'px';
+                    dom.style[TRANSFORMORIGIN] = origin;
                 }
                 dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
             }
@@ -273,7 +281,8 @@ class UIComponent extends Eventable(Class) {
      * @returns {Boolean} true|false
      */
     isVisible() {
-        return this.getMap() && this.getDOM() && this.getDOM().style.display !== 'none';
+        const dom = this.getDOM();
+        return this.getMap() && dom && dom.parentNode && dom.style.display !== 'none';
     }
 
     /**
@@ -283,6 +292,7 @@ class UIComponent extends Eventable(Class) {
      * @fires ui.UIComponent#remove
      */
     remove() {
+        delete this._mapEventsOn;
         if (!this._owner) {
             return this;
         }
@@ -369,7 +379,7 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getViewPoint() {
-        return this.getMap().coordinateToViewPoint(this._coordinate)
+        return this.getMap().coordToViewPoint(this._coordinate)
             ._add(this.options['dx'], this.options['dy']);
     }
 
@@ -414,13 +424,14 @@ class UIComponent extends Eventable(Class) {
         const container = this._getUIContainer();
         dom.style.position = 'absolute';
         dom.style.left = -99999 + 'px';
-        dom.style.top = -99999 + 'px';
+        const anchor = dom.style.bottom ? 'bottom' : 'top';
+        dom.style[anchor] = -99999 + 'px';
         dom.style.display = '';
         container.appendChild(dom);
         this._size = new Size(dom.clientWidth, dom.clientHeight);
         dom.style.display = 'none';
         dom.style.left = '0px';
-        dom.style.top = '0px';
+        dom.style[anchor] = '0px';
         return this._size;
     }
 
@@ -475,21 +486,27 @@ class UIComponent extends Eventable(Class) {
         return 'UIComponent';
     }
 
-    _switchEvents(to) {
+    _switchMapEvents(to) {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        this._mapEventsOn = (to === 'on');
         const events = this._getDefaultEvents();
         if (this.getEvents) {
             extend(events, this.getEvents());
         }
         if (events) {
-            const map = this.getMap();
-            if (map) {
-                for (const p in events) {
-                    if (events.hasOwnProperty(p)) {
-                        map[to](p, events[p], this);
-                    }
+            for (const p in events) {
+                if (events.hasOwnProperty(p)) {
+                    map[to](p, events[p], this);
                 }
             }
         }
+    }
+
+    _switchEvents(to) {
+        this._switchMapEvents(to);
         const ownerEvents = this._getOwnerEvents();
         if (this._owner) {
             for (const p in ownerEvents) {

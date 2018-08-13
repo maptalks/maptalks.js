@@ -1,7 +1,7 @@
-import { on, off, createEl, stopPropagation } from 'core/util/dom';
-import { isNil } from 'core/util';
-import TextMarker from 'geometry/TextMarker';
-import { UIMarker } from 'ui';
+import { on, off, createEl, stopPropagation } from '../../core/util/dom';
+import { isNil } from '../../core/util';
+import TextMarker from '../../geometry/TextMarker';
+import UIMarker from '../../ui/UIMarker';
 
 /**
  * Mixin methods for text editing.

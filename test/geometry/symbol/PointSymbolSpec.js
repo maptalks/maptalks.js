@@ -96,7 +96,7 @@ describe('PointSymbolSpec', function () {
             expect(v).to.be.painted();
         });
 
-        it('point placement', function () {
+        it('center placement', function () {
             var p = map.coordinateToContainerPoint(map.getCenter()),
                 c1 = map.containerPointToCoordinate(p.add(-10, -10)),
                 c2 = map.containerPointToCoordinate(p.add(10, -10)),
@@ -105,7 +105,7 @@ describe('PointSymbolSpec', function () {
             var circle = new maptalks.Polygon([c1, c2, c3, c4], {
                 'symbol' : {
                     'lineOpacity' : 0,
-                    'markerPlacement' : 'point',
+                    'markerPlacement' : 'center',
                     'markerType' : 'ellipse',
                     'markerWidth': 3,
                     'markerHeight': 3
@@ -114,6 +114,26 @@ describe('PointSymbolSpec', function () {
             var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
             v.addGeometry(circle);
             expect(v).to.be.painted();
+        });
+
+        it('point placement', function () {
+            var p = map.coordinateToContainerPoint(map.getCenter()),
+                c2 = map.containerPointToCoordinate(p.add(10, 0)),
+                c3 = map.containerPointToCoordinate(p.add(20, 0));
+            var line = new maptalks.LineString([map.getCenter(), c2, c3], {
+                'symbol' : {
+                    'lineOpacity' : 0,
+                    'markerPlacement' : 'vertex',
+                    'markerType' : 'ellipse',
+                    'markerWidth': 3,
+                    'markerHeight': 3
+                }
+            });
+            var v = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableSimplify':false }).addTo(map);
+            v.addGeometry(line);
+            expect(v).to.be.painted();
+            expect(v).to.be.painted(10, 0);
+            expect(v).to.be.painted(20, 0);
         });
 
         it('vertex placement', function () {

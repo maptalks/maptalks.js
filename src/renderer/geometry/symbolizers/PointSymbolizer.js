@@ -1,5 +1,5 @@
-import { computeDegree } from 'core/util';
-import PointExtent from 'geo/PointExtent';
+import { computeDegree } from '../../../core/util';
+import PointExtent from '../../../geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
 /**
@@ -23,13 +23,19 @@ class PointSymbolizer extends CanvasSymbolizer {
 
     get2DExtent() {
         const map = this.getMap();
-        const maxZoom = map.getMaxNativeZoom();
+        const glZoom = map.getGLZoom();
         const extent = new PointExtent();
         const renderPoints = this._getRenderPoints()[0];
         for (let i = renderPoints.length - 1; i >= 0; i--) {
-            extent._combine(map._pointToPoint(renderPoints[i], maxZoom));
+            if (renderPoints[i]) {
+                extent._combine(map._pointToPoint(renderPoints[i], glZoom));
+            }
         }
         return extent;
+    }
+
+    _rotateExtent(fixedExtent, angle) {
+        return fixedExtent.convertTo(p => p._rotate(angle));
     }
 
     _getRenderPoints() {
@@ -47,7 +53,7 @@ class PointSymbolizer extends CanvasSymbolizer {
             return points;
         }
         const dxdy = this.getDxDy();
-        const cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true);
+        const cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true, this.getPlacement());
         if (!cpoints || !Array.isArray(cpoints[0])) {
             return cpoints;
         }
@@ -73,11 +79,11 @@ class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         let p0 = rotations[i][0], p1 = rotations[i][1];
         if (map.isTransforming()) {
-            const maxZoom = map.getMaxNativeZoom();
+            const maxZoom = map.getGLZoom();
             p0 = map._pointToContainerPoint(rotations[i][0], maxZoom);
             p1 = map._pointToContainerPoint(rotations[i][1], maxZoom);
         }
-        return r + computeDegree(p0, p1);
+        return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
     }
 
     _rotate(ctx, origin, rotation) {

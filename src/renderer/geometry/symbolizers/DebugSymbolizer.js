@@ -1,8 +1,8 @@
 import {
     isNil
-} from 'core/util';
-import Point from 'geo/Point';
-import Canvas from 'core/Canvas';
+} from '../../../core/util';
+import Point from '../../../geo/Point';
+import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 import VectorMarkerSymbolizer from './VectorMarkerSymbolizer';
 

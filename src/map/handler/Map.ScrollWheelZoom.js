@@ -1,6 +1,6 @@
-import { isNil } from 'core/util';
-import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
-import Handler from 'handler/Handler';
+import { isNil } from '../../core/util';
+import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, stopPropagation } from '../../core/util/dom';
+import Handler from '../../handler/Handler';
 import Map from '../Map';
 
 class MapScrollWheelZoomHandler extends Handler {
@@ -13,6 +13,10 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     _onWheelScroll(evt) {
+        const map = this.target;
+        if (map._ignoreEvent(evt) || !map.options['zoomable']) {
+            return false;
+        }
         preventDefault(evt);
         stopPropagation(evt);
         if (this._zooming) {
@@ -20,7 +24,6 @@ class MapScrollWheelZoomHandler extends Handler {
             return false;
         }
         this._requesting = 0;
-        const map = this.target;
         const container = map._containerDOM;
         let levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
@@ -34,17 +37,18 @@ class MapScrollWheelZoomHandler extends Handler {
         }
         this._zooming = true;
         const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
-        if (!map.isZooming()) {
+        if (!this._delta) {
             map.onZoomStart(null, origin);
             this._origin = origin;
             this._delta = levelValue;
             this._startZoom = map.getZoom();
         }
-        const duration = 120;
+        const duration = 90;
         map.animateTo({
             'zoom' : nextZoom - this._delta * 1 / 2,
             'around' : this._origin
         }, {
+            'continueOnViewChanged' : true,
             'easing' : 'linear',
             'duration' : duration,
             'wheelZoom' : true
@@ -52,7 +56,7 @@ class MapScrollWheelZoomHandler extends Handler {
             if (frame.state.playState !== 'finished') {
                 return;
             }
-            if (this._requesting < 2 || Math.abs(nextZoom - this._startZoom) > 3 ||
+            if (this._requesting < 1 || Math.abs(nextZoom - this._startZoom) > 2 ||
                 //finish zooming if target zoom hits min/max
                 nextZoom === map.getMaxZoom() || nextZoom === map.getMinZoom()) {
 
@@ -60,7 +64,8 @@ class MapScrollWheelZoomHandler extends Handler {
                     'zoom' : nextZoom,
                     'around' : this._origin
                 }, {
-                    'duration' : 1000 / 60 * 10
+                    'continueOnViewChanged' : true,
+                    'duration' : 100
                 }, frame => {
                     if (frame.state.playState === 'finished') {
                         setTimeout(() => {

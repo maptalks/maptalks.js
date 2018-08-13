@@ -1,4 +1,4 @@
-describe('#Layer', function () {
+describe('Layer.Spec', function () {
 
     var container;
     var map;
@@ -81,6 +81,134 @@ describe('#Layer', function () {
             };
             map.addLayer(layer);
 
+        });
+    });
+
+    it('#getMinZoom and #getMaxZoom', function () {
+        var layer = new maptalks.VectorLayer('1', {
+            minZoom : 10
+        });
+
+        map.addLayer(layer);
+        expect(layer.getMinZoom()).to.be.eql(10);
+        expect(layer.getMaxZoom()).to.be.eql(map.getMaxZoom());
+    });
+
+    describe('zindex of layers', function () {
+        it('default zindex is 0', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            expect(layer1.getZIndex()).to.be(0);
+            expect(layer2.getZIndex()).to.be(0);
+            expect(layer3.getZIndex()).to.be(0);
+        });
+
+        it('setZIndex to bring a layer to front', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            layer1.setZIndex(1);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(2);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
+
+            layer3.setZIndex(3);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+        });
+
+        it('setZIndex with 1 and to null later, layer should stay at the same index', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            layer1.setZIndex(1);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(null);
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+        });
+
+        it('setZIndex to null, layer index should not change', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+
+            layer1.setZIndex(null);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+        });
+
+        it('remove a layer with z index', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            layer1.setZIndex(3);
+            layer2.setZIndex(2);
+            layer3.setZIndex(1);
+
+            expect(map.getLayers()).to.be.eql([layer3, layer2, layer1]);
+
+            layer2.remove();
+            expect(map.getLayers()).to.be.eql([layer3, layer1]);
+
+            expect(layer1.getZIndex()).to.be(3);
+            expect(layer3.getZIndex()).to.be(1);
+        });
+
+        it('setZIndex before adding to map to bring a layer to front', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            layer1.setZIndex(1);
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(2);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
+
+            layer3.setZIndex(3);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
+        });
+
+        it('setZIndex in options before adding to map to bring a layer to front', function () {
+            var layer1 = new maptalks.TileLayer('1', { renderer:'canvas', zIndex : 1 });
+            var layer2 = new maptalks.VectorLayer('2');
+            var layer3 = new maptalks.VectorLayer('3');
+
+            map.addLayer([layer1, layer2, layer3]);
+
+            expect(map.getLayers()).to.be.eql([layer2, layer3, layer1]);
+
+            layer2.setZIndex(2);
+            expect(map.getLayers()).to.be.eql([layer3, layer1, layer2]);
+
+            layer3.setZIndex(3);
+            expect(map.getLayers()).to.be.eql([layer1, layer2, layer3]);
         });
     });
 
@@ -202,6 +330,51 @@ describe('#Layer', function () {
             vectorlayer.removeMask();
             expect(vectorlayer.getMask()).not.to.be.ok();
         });
+    });
+
+    it('change opacity', function (done) {
+        var layer1 = new maptalks.TileLayer('1', { renderer:'canvas' });
+        var layer2 = new maptalks.VectorLayer('2', new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                markerType : 'ellipse',
+                markerWidth : 10,
+                markerHeight : 10,
+                markerFill : '#f00'
+            }
+        }));
+        map.addLayer([layer2]);
+
+        expect(layer1.getOpacity()).to.be.eql(1);
+        expect(layer2.getOpacity()).to.be.eql(1);
+
+        layer1.setOpacity(0.5);
+        expect(layer1.getOpacity()).to.be.eql(0.5);
+
+        layer2.once('layerload', function () {
+            layer2.once('layerload', function () {
+                expect(layer2.getOpacity()).to.be.eql(0.1);
+                var canvas = map.getRenderer().canvas;
+                var size = map.getSize().toPoint();
+                var context = canvas.getContext('2d');
+                var imgData = context.getImageData(Math.round(size.x / 2), Math.round(size.y / 2), 1, 1).data;
+                expect(imgData[3]).to.be.below(40);
+                done();
+            });
+            layer2.setOpacity(0.1);
+        });
+
+        layer2.setOpacity(0.6);
+        expect(layer2.getOpacity()).to.be.eql(0.6);
+
+        // setTimeout(function () {
+        //     var canvas = map.getRenderer().canvas;
+        //     var size = map.getSize().toPoint();
+        //     var context = canvas.getContext('2d');
+        //     var imgData = context.getImageData(Math.round(size.x / 2), Math.round(size.y / 2), 1, 1).data;
+        //     console.log(imgData[3]);
+        //     expect(imgData[3]).to.be.below(40);
+        //     done();
+        // }, 60);
     });
 
 });

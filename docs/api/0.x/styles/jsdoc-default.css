@@ -232,6 +232,10 @@ h6
     margin-top: 1em;
 }
 
+.description pre {
+    font-family: 'microsoft yahei','Open Sans', sans-serif;
+}
+
 .code-caption
 {
     font-style: italic;

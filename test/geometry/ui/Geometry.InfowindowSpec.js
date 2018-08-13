@@ -68,7 +68,7 @@ describe('Geometry.InfoWindow', function () {
         expect(position.round().toArray()).to.be.eql([633, 25]);
     });
 
-    it('autoOpen on click', function () {
+    it('autoOpen on click', function (done) {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);
         var options = {
@@ -79,9 +79,12 @@ describe('Geometry.InfoWindow', function () {
         };
         marker.setInfoWindow(options);
         marker._fireEvent('click');
-        var w = marker.getInfoWindow();
-        var position = w._getViewPoint();
-        expect(position.round().toArray()).to.be.eql([400, 300]);
+        setTimeout(function () {
+            var w = marker.getInfoWindow();
+            var position = w._getViewPoint();
+            expect(position.round().toArray()).to.be.eql([400, 300]);
+            done();
+        }, 2);
     });
 
     it('close when layer is removed', function () {
@@ -122,6 +125,31 @@ describe('Geometry.InfoWindow', function () {
             clientY: 10
         });
         expect(w.isVisible()).not.to.be.ok();
+    });
+
+    it('reopen infowindow at right position', function (done) {
+        var marker = new maptalks.Marker(center);
+        marker.addTo(layer);
+        var options = {
+            autoCloseOn : 'click',
+            title: 'title',
+            content: 'content',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        marker.openInfoWindow();
+        var w = marker.getInfoWindow();
+        var pos = w.getPosition().toArray();
+        marker.closeInfoWindow();
+
+        marker.setCoordinates(map.containerPointToCoord(new maptalks.Point(20, 20)));
+        marker.fire('click');
+        setTimeout(function () {
+            var pos2 = w.getPosition().toArray();
+            expect(pos2[0] < pos[0] - 100).to.be.ok();
+            expect(pos2[1] < pos[1] - 100).to.be.ok();
+            done();
+        }, 2);
     });
 
     it('auto close infowindow on touchstart', function () {
@@ -451,6 +479,32 @@ describe('Geometry.InfoWindow', function () {
             infoWindow2.addTo(geo2).show();
 
             expect(map._panels['ui'].children.length).to.be.eql(2);
+        });
+
+        it('isVisible', function (done) {
+            var options = {
+                title: 'title',
+                content: 'content',
+                animation : false,
+                autoPan : false,
+                autoPanDuration : 100
+            };
+            var infoWindow1 = new maptalks.ui.InfoWindow(options);
+            var geo = new maptalks.Marker(map.getExtent().getMin());
+
+            var infoWindow2 = new maptalks.ui.InfoWindow(options);
+            var geo2 = new maptalks.Marker(map.getExtent().getMin());
+            layer.addGeometry(geo, geo2);
+
+            infoWindow1.addTo(geo).show();
+            infoWindow2.addTo(geo2);
+
+            setTimeout(function () {
+               infoWindow2.show();
+               expect(infoWindow1.isVisible()).not.to.be.ok();
+               done();
+            }, 80);
+            infoWindow2.addTo(geo2).show();
         });
     });
 

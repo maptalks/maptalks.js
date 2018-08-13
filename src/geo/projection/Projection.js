@@ -1,6 +1,6 @@
-import { mapArrayRecursively, sign, wrap } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
+import { forEachCoord, sign, wrap } from '../../core/util';
+import Coordinate from '../Coordinate';
+import Extent from '../Extent';
 
 /**
  * Common Methods of Projections.
@@ -41,7 +41,7 @@ export default /** @lends projection.Common */ {
             return [];
         }
         if (!this.isSphere()) {
-            return mapArrayRecursively(coordinates, this.project, this);
+            return forEachCoord(coordinates, this.project, this);
         }
         if (Array.isArray(coordinates[0])) {
             return coordinates.map(coords => this.projectCoords(coords));
@@ -96,7 +96,7 @@ export default /** @lends projection.Common */ {
         if (!Array.isArray(projCoords)) {
             return this.unproject(projCoords);
         }
-        return mapArrayRecursively(projCoords, this.unproject, this);
+        return forEachCoord(projCoords, this.unproject, this);
     },
 
     /**
@@ -153,7 +153,7 @@ export default /** @lends projection.Common */ {
         if (!this.extent && this.isSphere()) {
             const max = this.project(new Coordinate(180, 90)),
                 min = this.project(new Coordinate(-180, -90));
-            this.extent = new Extent(min, max);
+            this.extent = new Extent(min, max, this);
             this.extent.sx = max.x > min.x ? 1 : -1;
             this.extent.sy = max.y > min.y ? 1 : -1;
         }

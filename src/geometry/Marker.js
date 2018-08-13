@@ -1,9 +1,14 @@
-import Extent from 'geo/Extent';
+import Extent from '../geo/Extent';
 import CenterMixin from './CenterMixin';
 import Geometry from './Geometry';
-import Painter from 'renderer/geometry/Painter';
-import * as Symbolizers from 'renderer/geometry/symbolizers';
+import Painter from '../renderer/geometry/Painter';
+import * as Symbolizers from '../renderer/geometry/symbolizers';
 
+/**
+ * @property {String} [options.hitTestForEvent=false] - use hit testing for events, be careful, it may fail due to tainted canvas.
+ * @memberOf Marker
+ * @instance
+ */
 const options = {
     'symbol': {
         'markerType': 'path',
@@ -15,7 +20,8 @@ const options = {
         'markerPathHeight': 23,
         'markerWidth': 24,
         'markerHeight': 34
-    }
+    },
+    'hitTestForEvent' : false
 };
 
 /**
@@ -51,6 +57,28 @@ class Marker extends CenterMixin(Geometry) {
         }
     }
 
+    getOutline() {
+        const painter = this._getPainter();
+        if (!painter) {
+            return null;
+        }
+        const coord = this.getCoordinates();
+        const extent = painter.getContainerExtent();
+        const anchor = this.getMap().coordToContainerPoint(coord);
+        return new Marker(coord, {
+            'symbol': {
+                'markerType' : 'square',
+                'markerWidth' : extent.getWidth(),
+                'markerHeight' : extent.getHeight(),
+                'markerLineWidth': 1,
+                'markerLineColor': '6b707b',
+                'markerFill' : 'rgba(0, 0, 0, 0)',
+                'markerDx' : extent.xmin - (anchor.x - extent.getWidth() / 2),
+                'markerDy' : extent.ymin - (anchor.y - extent.getHeight() / 2)
+            }
+        });
+    }
+
     _isVectorMarker() {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
@@ -74,11 +102,19 @@ class Marker extends CenterMixin(Geometry) {
     }
 
     _containsPoint(point, t) {
-        let extent = this._getPainter().getContainerExtent();
+        let extent = this.getContainerExtent();
         if (t) {
             extent = extent.expand(t);
         }
-        return extent.contains(this.getMap()._pointToContainerPoint(point));
+        if (extent.contains(point)) {
+            if (this.options['hitTestForEvent']) {
+                return super._containsPoint(point, t);
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     _computeExtent() {
@@ -116,5 +152,5 @@ function computeExtent(fn) {
     if (!coordinates) {
         return null;
     }
-    return new Extent(coordinates, coordinates);
+    return new Extent(coordinates, coordinates, this._getProjection());
 }

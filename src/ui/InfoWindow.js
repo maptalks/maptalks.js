@@ -1,7 +1,7 @@
-import { isString } from 'core/util';
-import { createEl } from 'core/util/dom';
-import Point from 'geo/Point';
-import { Geometry, Marker } from 'geometry';
+import { isString } from '../core/util';
+import { createEl } from '../core/util/dom';
+import Point from '../geo/Point';
+import { Geometry, Marker } from '../geometry';
 import UIComponent from './UIComponent';
 
 
@@ -147,6 +147,7 @@ class InfoWindow extends UIComponent {
         const dom = createEl('div');
         dom.className = 'maptalks-msgBox';
         dom.style.width = this._getWindowWidth() + 'px';
+        dom.style.bottom = '0px'; // fix #657
         let content = '<em class="maptalks-ico"></em>';
         if (this.options['title']) {
             content += '<h2>' + this.options['title'] + '</h2>';
@@ -166,23 +167,22 @@ class InfoWindow extends UIComponent {
      */
     getTransformOrigin() {
         const size = this.getSize();
-        const o = new Point(size['width'] / 2, size['height']);
-        if (!this.options['custom']) {
-            o._add(4, 12);
-        }
-        return o;
+        return size.width / 2 + 'px bottom';
     }
 
     getOffset() {
         const size = this.getSize();
-        const o = new Point(-size['width'] / 2, -size['height']);
+        const o = new Point(-size['width'] / 2, 0);
         if (!this.options['custom']) {
             o._sub(4, 12);
         }
-        if (this.getOwner() instanceof Marker) {
-            const markerSize = this.getOwner().getSize();
-            if (markerSize) {
-                o._add(0, -markerSize['height']);
+        const owner = this.getOwner();
+        if (owner instanceof Marker) {
+            const painter = owner._getPainter();
+            if (painter) {
+                const markerSize = owner.getSize();
+                const fixExtent = painter.getFixedExtent();
+                o._add(fixExtent.xmax - markerSize.width / 2, fixExtent.ymin);
             }
         }
         return o;
@@ -219,11 +219,13 @@ class InfoWindow extends UIComponent {
 
     _onAutoOpen(e) {
         const owner = this.getOwner();
-        if (owner instanceof Marker) {
-            this.show();
-        } else {
-            this.show(e.coordinate);
-        }
+        setTimeout(() => {
+            if (owner instanceof Marker) {
+                this.show(owner.getCoordinates());
+            } else {
+                this.show(e.coordinate);
+            }
+        }, 1);
     }
 
     _getWindowWidth() {

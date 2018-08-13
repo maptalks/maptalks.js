@@ -1,5 +1,5 @@
-import { preventDefault, stopPropagation, getEventContainerPoint } from 'core/util/dom';
-import Geometry from 'geometry/Geometry';
+import { preventDefault, stopPropagation, getEventContainerPoint } from '../../core/util/dom';
+import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
@@ -21,14 +21,14 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     _getEventTypeToFire: function (domEvent) {
-        let eventType = domEvent.type;
-        //change event type to contextmenu
-        if (eventType === 'click' || eventType === 'mousedown') {
-            if (domEvent.button === 2) {
-                eventType = 'contextmenu';
-            }
-        }
-        return eventType;
+        // let eventType = domEvent.type;
+        // //change event type to contextmenu
+        // if (eventType === 'click' || eventType === 'mousedown') {
+        //     if (domEvent.button === 2) {
+        //         eventType = 'contextmenu';
+        //     }
+        // }
+        return domEvent.type;
     },
 
     /**
@@ -42,7 +42,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         const eventParam = {
             'domEvent': e
         };
-        const actual = e.touches ? e.touches[0] : e;
+        const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches  && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
         if (actual) {
             const containerPoint = getEventContainerPoint(actual, map._containerDOM);
             eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);

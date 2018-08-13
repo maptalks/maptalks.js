@@ -1,13 +1,15 @@
-import { pushIn, isNumber } from 'core/util';
-import Size from 'geo/Size';
-import Canvas from 'core/Canvas';
-import Geometry from 'geometry/Geometry';
-import Ellipse from 'geometry/Ellipse';
-import Circle from 'geometry/Circle';
-import Sector from 'geometry/Sector';
-import Rectangle from 'geometry/Rectangle';
-import LineString from 'geometry/LineString';
-import Polygon from 'geometry/Polygon';
+import { pushIn, isNumber } from '../../core/util';
+import Size from '../../geo/Size';
+import Point from '../../geo/Point';
+import Canvas from '../../core/Canvas';
+import Geometry from '../../geometry/Geometry';
+import Ellipse from '../../geometry/Ellipse';
+import Circle from '../../geometry/Circle';
+import Sector from '../../geometry/Sector';
+import Rectangle from '../../geometry/Rectangle';
+import Path from '../../geometry/Path';
+import LineString from '../../geometry/LineString';
+import Polygon from '../../geometry/Polygon';
 
 Geometry.include({
     _redrawWhenPitch : () => false,
@@ -22,7 +24,7 @@ const el = {
         return (this instanceof Ellipse) || (this instanceof Sector);
     },
 
-    _paintAsPolygon: function () {
+    _paintAsPath: function () {
         const map = this.getMap();
         const altitude = this._getPainter().getAltitude();
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
@@ -31,17 +33,17 @@ const el = {
 
     _getPaintParams() {
         const map = this.getMap();
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
-        const pt = map._prjToPoint(pcenter, map.getMaxNativeZoom());
+        const pt = map._prjToPoint(pcenter, map.getGLZoom());
         const size = this._getRenderSize();
         return [pt, size['width'], size['height']];
     },
 
     _paintOn: function () {
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Canvas.polygon.apply(Canvas, arguments);
         } else {
             return Canvas.ellipse.apply(Canvas, arguments);
@@ -50,7 +52,7 @@ const el = {
 
     _getRenderSize() {
         const map = this.getMap(),
-            z = map.getMaxNativeZoom();
+            z = map.getGLZoom();
         const prjExtent = this._getPrjExtent();
         const pmin = map._prjToPoint(prjExtent.getMin(), z),
             pmax = map._prjToPoint(prjExtent.getMax(), z);
@@ -65,9 +67,9 @@ Circle.include(el);
 Rectangle.include({
     _getPaintParams() {
         const map = this.getMap();
-        const maxZoom = map.getMaxNativeZoom();
+        const pointZoom = map.getGLZoom();
         const shell = this._getPrjShell();
-        const points = this._getPath2DPoints(shell, false, maxZoom);
+        const points = this._getPath2DPoints(shell, false, pointZoom);
         return [points];
     },
 
@@ -78,11 +80,11 @@ Sector.include(el, {
     _redrawWhenPitch : () => true,
 
     _getPaintParams() {
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const map = this.getMap();
-        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getMaxNativeZoom());
+        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getGLZoom());
         const size = this._getRenderSize();
         return [pt, size['width'],
             [this.getStartAngle(), this.getEndAngle()]
@@ -90,7 +92,7 @@ Sector.include(el, {
     },
 
     _paintOn: function () {
-        if (this._paintAsPolygon()) {
+        if (this._paintAsPath()) {
             return Canvas.polygon.apply(Canvas, arguments);
         } else {
             const r = this.getMap().getBearing();
@@ -106,13 +108,18 @@ Sector.include(el, {
 
 });
 //----------------------------------------------------
+Path.include({
+    _paintAsPath: () => true
+});
+
 
 LineString.include({
+
     arrowStyles: {
         'classic': [3, 4]
     },
 
-    _getArrowPoints(prePoint, point, lineWidth, arrowStyle, tolerance) {
+    _getArrowShape(prePoint, point, lineWidth, arrowStyle, tolerance) {
         if (!tolerance) {
             tolerance = 0;
         }
@@ -120,7 +127,18 @@ LineString.include({
             height = lineWidth * arrowStyle[1] + tolerance,
             hw = width / 2 + tolerance;
 
-        const normal = point.sub(prePoint)._unit();
+        let normal;
+        if (point.nextCtrlPoint || point.prevCtrlPoint) {
+            // use control points to caculate normal if it's a bezier curve
+            if (point.prevCtrlPoint) {
+                normal = point.sub(new Point(point.prevCtrlPoint));
+            } else {
+                normal = point.sub(new Point(point.nextCtrlPoint));
+            }
+        } else {
+            normal = point.sub(prePoint);
+        }
+        normal._unit();
         const p1 = point.sub(normal.multi(height));
         normal._perp();
         const p0 = p1.add(normal.multi(hw));
@@ -131,12 +149,16 @@ LineString.include({
 
     _getPaintParams() {
         const prjVertexes = this._getPrjCoordinates();
-        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getMaxNativeZoom());
+        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getGLZoom());
         return [points];
     },
 
     _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
-        Canvas.path(ctx, points, lineOpacity, null, dasharray);
+        if (this.options['smoothness']) {
+            Canvas.paintSmoothLine(ctx, points, lineOpacity, this.options['smoothness'], false, this._animIdx, this._animTailRatio);
+        } else {
+            Canvas.path(ctx, points, lineOpacity, null, dasharray);
+        }
         this._paintArrow(ctx, points, lineOpacity);
     },
 
@@ -162,21 +184,25 @@ LineString.include({
         const placement = this._getArrowPlacement();
         const arrows = [];
         const map = this.getMap(),
-            first = map.coordinateToContainerPoint(this.getFirstCoordinate()),
-            last = map.coordinateToContainerPoint(this.getLastCoordinate());
+            first = map.coordToContainerPoint(this.getFirstCoordinate()),
+            last = map.coordToContainerPoint(this.getLastCoordinate());
         for (let i = segments.length - 1; i >= 0; i--) {
             if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
-                arrows.push(this._getArrowPoints(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));
+                arrows.push(this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));
             }
             if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
-                arrows.push(this._getArrowPoints(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance));
+                arrows.push(this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance));
             } else if (placement === 'point') {
-                for (let ii = 0, ll = segments[i].length - 1; ii < ll; ii++) {
-                    arrows.push(this._getArrowPoints(segments[i][ii], segments[i][ii + 1], lineWidth, arrowStyle, tolerance));
-                }
+                this._getArrowPoints(arrows, segments[i], lineWidth, arrowStyle, tolerance);
             }
         }
         return arrows;
+    },
+
+    _getArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance) {
+        for (let ii = 0, ll = segments.length - 1; ii < ll; ii++) {
+            arrows.push(this._getArrowShape(segments[ii], segments[ii + 1], lineWidth, arrowStyle, tolerance));
+        }
     },
 
     _paintArrow(ctx, points, lineOpacity) {
@@ -201,7 +227,7 @@ LineString.include({
 
 Polygon.include({
     _getPaintParams(disableSimplify) {
-        const maxZoom = this.getMap().getMaxNativeZoom();
+        const maxZoom = this.getMap().getGLZoom();
         const prjVertexes = this._getPrjShell();
         let points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
         //splitted by anti-meridian
@@ -236,6 +262,9 @@ Polygon.include({
         }
         return [points];
     },
-    _paintOn: Canvas.polygon
+
+    _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
+        Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
+    }
 });
 

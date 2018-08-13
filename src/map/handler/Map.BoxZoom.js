@@ -1,7 +1,7 @@
-import Handler from 'handler/Handler';
+import Handler from '../../handler/Handler';
 import Map from '../Map';
 import DrawTool from '../tool/DrawTool';
-import Extent from 'geo/Extent';
+import Extent from '../../geo/Extent';
 
 class MapBoxZoomHander extends Handler {
     constructor(target) {
@@ -43,7 +43,7 @@ class MapBoxZoomHander extends Handler {
             w = symbol.markerWidth,
             h = symbol.markerHeight;
 
-        const extent = new Extent(center, map.locateByPoint(center, w, h));
+        const extent = new Extent(center, map.locateByPoint(center, w, h), map.getProjection());
         const zoom = map.getFitZoom(extent);
         map.animateTo({
             center : extent.getCenter(),

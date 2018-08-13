@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend } from '../../../core/util';
 
 /**
  * @classdesc
@@ -59,6 +59,8 @@ class TileSystem {
     }
 }
 
+const semiCircum = 6378137 * Math.PI;
+
 extend(TileSystem, /** @lends TileSystem */ {
     /**
      * The most common used tile system, used by google maps, bing maps and amap, soso maps in China.
@@ -66,7 +68,7 @@ extend(TileSystem, /** @lends TileSystem */ {
      * @constant
      * @static
      */
-    'web-mercator': new TileSystem([1, -1, -20037508.34, 20037508.34]),
+    'web-mercator': new TileSystem([1, -1, -semiCircum, semiCircum]),
 
     /**
      * Predefined tile system for TMS tile system, A tile system published by [OSGEO]{@link http://www.osgeo.org/}. <br>
@@ -75,7 +77,7 @@ extend(TileSystem, /** @lends TileSystem */ {
      * @constant
      * @static
      */
-    'tms-global-mercator': new TileSystem([1, 1, -20037508.34, -20037508.34]),
+    'tms-global-mercator': new TileSystem([1, 1, -semiCircum, -semiCircum]),
 
     /**
      * Another tile system published by [OSGEO]{@link http://www.osgeo.org/}, based on EPSG:4326 SRS.

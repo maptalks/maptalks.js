@@ -6,10 +6,10 @@ describe('#CanvasMap', function () {
 
     beforeEach(function () {
         container = document.createElement('canvas');
-        container.width = 400;
-        container.height = 300;
-        container.style.width = '400px';
-        container.style.height = '300px';
+        container.width = 10;
+        container.height = 10;
+        container.style.width = '10px';
+        container.style.height = '10px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation:true,
@@ -26,25 +26,10 @@ describe('#CanvasMap', function () {
         REMOVE_CONTAINER(container);
     });
 
-    it('map creation on canvas', function (done) {
-        var tile = new maptalks.TileLayer('tile', {
-            urlTemplate:'/resources/tile.png',
-            subdomains: [1, 2, 3],
-            renderer : 'canvas'
-        });
-        tile.on('layerload', function () {
-            map.once('renderend', function () {
-                expect(map).to.be.painted();
-                done();
-            });
-        });
-        map.setBaseLayer(tile);
-    });
-
     it('map rendering when zooming', function (done) {
+        this.timeout(9600);
         var tile = new maptalks.TileLayer('tile', {
-            urlTemplate:'/resources/tile.png',
-            subdomains: [1, 2, 3],
+            urlTemplate : TILE_IMAGE,
             renderer : 'canvas'
         });
         tile.on('layerload', function () {

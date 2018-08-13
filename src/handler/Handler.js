@@ -1,4 +1,4 @@
-import Eventable from 'core/Eventable';
+import Eventable from '../core/Eventable';
 
 /**
  * Base class for all the interaction handlers

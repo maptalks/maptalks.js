@@ -7,7 +7,10 @@ describe('UI.ContextMenu', function () {
     };
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
         context.map = map;
@@ -230,12 +233,11 @@ function runTests(target, _context) {
         var domPosition = GET_PAGE_POSITION(eventContainer);
         var point = _context.map.coordinateToContainerPoint(target.getFirstCoordinate()).add(domPosition);
 
-        happen.click(eventContainer, {
+        happen.once(eventContainer, {
+            'type' : 'contextmenu',
             'clientX':point.x,
-            'clientY':point.y,
-            'button' : 2
+            'clientY':point.y
         });
-
     }
 
     context('Type of ' + type, function () {

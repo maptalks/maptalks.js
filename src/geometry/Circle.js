@@ -1,7 +1,7 @@
-import { extend, isNil } from 'core/util';
-import { withInEllipse } from 'core/util/path';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
+import { extend, isNil } from '../core/util';
+import { withInEllipse } from '../core/util/path';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
 import CenterMixin from './CenterMixin';
 import Polygon from './Polygon';
 
@@ -83,13 +83,14 @@ class Circle extends CenterMixin(Polygon) {
             radius = this.getRadius();
         const shell = [];
         let rad, dx, dy;
-        for (let i = 0; i < numberOfPoints; i++) {
-            rad = (360 * i / numberOfPoints) * Math.PI / 180;
+        for (let i = 0, len = numberOfPoints - 1; i < len; i++) {
+            rad = (360 * i / len) * Math.PI / 180;
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
             const vertex = measurer.locate(center, dx, dy);
             shell.push(vertex);
         }
+        shell.push(shell[0]);
         return shell;
     }
 
@@ -110,7 +111,7 @@ class Circle extends CenterMixin(Polygon) {
         if (map.getPitch()) {
             return super._containsPoint(point, tolerance);
         }
-        const center = this._getCenter2DPoint(),
+        const center = map._pointToContainerPoint(this._getCenter2DPoint()),
             size = this.getSize(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             se = center.add(size.width / 2, size.height / 2);
@@ -126,7 +127,7 @@ class Circle extends CenterMixin(Polygon) {
         const pminmax = minmax.map(c => projection.project(c));
         const dx = Math.min(Math.abs(pminmax[0].x - pcenter.x), Math.abs(pminmax[1].x - pcenter.x)),
             dy = Math.min(Math.abs(pminmax[2].y - pcenter.y), Math.abs(pminmax[3].y - pcenter.y));
-        return new Extent(pcenter.add(dx, dy), pcenter.sub(dx, dy));
+        return new Extent(pcenter.sub(dx, dy), pcenter.add(dx, dy));
     }
 
     _computeExtent(measurer) {
@@ -134,7 +135,7 @@ class Circle extends CenterMixin(Polygon) {
         if (!minmax) {
             return null;
         }
-        return new Extent(minmax[0].x, minmax[2].y, minmax[1].x, minmax[3].y);
+        return new Extent(minmax[0].x, minmax[2].y, minmax[1].x, minmax[3].y, this._getProjection());
     }
 
     _getMinMax(measurer) {

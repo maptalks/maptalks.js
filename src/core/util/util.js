@@ -29,9 +29,7 @@ let requestAnimFrame, cancelAnimFrame;
 
         requestFn = window['requestAnimationFrame'] || getPrefixed('RequestAnimationFrame') || timeoutDefer;
         cancelFn = window['cancelAnimationFrame'] || getPrefixed('CancelAnimationFrame') ||
-            getPrefixed('CancelRequestAnimationFrame') || function (id) {
-                window.clearTimeout(id);
-            };
+            getPrefixed('CancelRequestAnimationFrame') || function (id) { window.clearTimeout(id); };
     } else {
         requestFn = timeoutDefer;
         cancelFn = clearTimeout;
@@ -106,11 +104,16 @@ export function parseJSON(str) {
     return JSON.parse(str);
 }
 
-export function pushIn(arr1, arr2) {
-    for (let i = 0, l = arr2.length; i < l; i++) {
-        arr1.push(arr2[i]);
+export function pushIn(dest) {
+    for (let i = 1; i < arguments.length; i++) {
+        const src = arguments[i];
+        if (src) {
+            for (let ii = 0, ll = src.length; ii < ll; ii++) {
+                dest.push(src[ii]);
+            }
+        }
     }
-    return arr1.length;
+    return dest.length;
 }
 
 export function removeFromArray(obj, array) {
@@ -120,7 +123,7 @@ export function removeFromArray(obj, array) {
     }
 }
 
-export function mapArrayRecursively(arr, fn, context) {
+export function forEachCoord(arr, fn, context) {
     if (!Array.isArray(arr)) {
         return context ? fn.call(context, arr) : fn(arr);
     }
@@ -133,7 +136,7 @@ export function mapArrayRecursively(arr, fn, context) {
             continue;
         }
         if (Array.isArray(p)) {
-            result.push(mapArrayRecursively(p, fn, context));
+            result.push(forEachCoord(p, fn, context));
         } else {
             pp = context ? fn.call(context, p) : fn(p);
             result.push(pp);
@@ -165,6 +168,19 @@ export function sign(x) {
     return x > 0 ? 1 : -1;
 }
 
+export function log2(x) {
+    if (Math.log2) {
+        return Math.log2(x);
+    }
+    const v = Math.log(x) * Math.LOG2E;
+    const rounded = Math.round(v);
+    if (Math.abs(rounded - v) < 1E-14) {
+        return rounded;
+    } else {
+        return v;
+    }
+}
+
 /*
  * Interpolate between two number.
  *
@@ -178,17 +194,20 @@ export function interpolate(a, b, t) {
 }
 
 /*
- * constrain n to the given range, excluding the minimum, via modular arithmetic
+ * constrain n to the given range, via modular arithmetic
  * @param {Number} n value
- * @param {Number} min the minimum value to be returned, exclusive
+ * @param {Number} min the minimum value to be returned, inclusive
  * @param {Number} max the maximum value to be returned, inclusive
  * @returns {Number} constrained number
  * @private
  */
 export function wrap(n, min, max) {
+    if (n === max || n === min) {
+        return n;
+    }
     const d = max - min;
     const w = ((n - min) % d + d) % d + min;
-    return (w === min) ? max : w;
+    return w;
 }
 
 /**
@@ -314,6 +333,17 @@ export function btoa(input) {
     return output;
 }
 
+export function b64toBlob(b64Data, contentType) {
+    const byteCharacters = atob(b64Data);
+    const arraybuffer = new ArrayBuffer(byteCharacters.length);
+    const view = new Uint8Array(arraybuffer);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        view[i] = byteCharacters.charCodeAt(i) & 0xff;
+    }
+    const blob = new Blob([arraybuffer], { type: contentType });
+    return blob;
+}
+
 /**
  * Compute degree bewteen 2 points.
  * @param  {Point} p1 point 1
@@ -321,21 +351,19 @@ export function btoa(input) {
  * @return {Number}    degree between 2 points
  * @memberOf Util
  */
-export function computeDegree(p1, p2) {
-    const dx = p2.x - p1.x;
-    const dy = p2.y - p1.y;
+export function computeDegree(x0, y0, x1, y1) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
     return Math.atan2(dy, dx);
 }
 
 /**
- * from Leaflet.
- * Data URI string containing a base64-encoded empty GIF image.
- * Used as a hack to free memory from unused images on WebKit-powered
- * mobile devices (by setting image `src` to this string).
+ * Transparent 1X1 gif image
+ * from https://css-tricks.com/snippets/html/base64-encode-of-1x1px-transparent-gif/
  * @type {String}
  * @memberOf Util
  */
-export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+export const emptyImageUrl = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 
 /**

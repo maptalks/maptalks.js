@@ -19,7 +19,7 @@ describe('Map.Camera', function () {
         map = new maptalks.Map(container, option);
         // bring some offset to map, let view point is different from container point.
         map.setCenter(center._add(0.1, 0.1));
-        layer = new maptalks.VectorLayer('v', { 'enableAltitude' : true }).addTo(map);
+        layer = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableAltitude' : true }).addTo(map);
     });
 
     afterEach(function () {
@@ -52,7 +52,7 @@ describe('Map.Camera', function () {
                 return;
             }
             var baseLayer = new maptalks.TileLayer('b', {
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : TILE_IMAGE
             });
             map.addLayer(baseLayer);
             map.setBearing(60);
@@ -68,7 +68,7 @@ describe('Map.Camera', function () {
 
         it('render with canvas renderer', function (done) {
             var baseLayer = new maptalks.TileLayer('b', {
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : TILE_IMAGE,
                 renderer : 'canvas'
             });
             map.addLayer(baseLayer);
@@ -134,6 +134,147 @@ describe('Map.Camera', function () {
     });
 
     describe('conversions', function () {
+        var map2;
+        beforeEach(function () {
+            var container = document.createElement('div');
+            container.style.width = '300px';
+            container.style.height = '300px';
+            document.body.appendChild(container);
+            var option = {
+                zoomAnimation:true,
+                zoomAnimationDuration : 100,
+                zoom: 14,
+                pitch : 60,
+                center: center
+            };
+            map2 = new maptalks.Map(container, option);
+        });
+        afterEach(function () {
+            map2.remove();
+        });
+        context('point to containerPoint', function () {
+            it('1', function (){
+                var center = map2.getCenter();
+                var point = map2.coordToPoint(center) ;
+                var cp = map2._pointToContainerPoint(point);
+                expect(cp).to.be.closeTo(map2.getSize().toPoint().multi(1 / 2));
+                var point2 = map2._containerPointToPoint(cp);
+
+                expect(point.x).to.be.approx(point2.x);
+                expect(point.y).to.be.approx(point2.y);
+            });
+
+            /* it('2.1', function () {
+                map.setPitch(30);
+                var point = map._containerPointToPoint({ x: 0, y: 0});
+                var cp = map._pointToContainerPoint(point);
+
+                expect(cp.x).to.be.approx(0);
+                expect(cp.y).to.be.approx(0);
+            });
+
+            it('2.2', function () {
+                map.setPitch(30);
+                var point = map._containerPointToPoint({ x: 30, y: 0});
+                var cp = map._pointToContainerPoint(point);
+
+                expect(cp.x).to.be.approx(30);
+                expect(cp.y).to.be.approx(0);
+            });
+
+            it('2.3', function () {
+                map.setPitch(30);
+                var point = map._containerPointToPoint({ x: 0, y: 30});
+                var cp = map._pointToContainerPoint(point);
+
+                expect(cp.x).to.be.approx(0);
+                expect(cp.y).to.be.approx(30);
+            }); */
+
+            it('2.001', function () {
+
+                var ncenter = map.containerPointToCoord({x : 15, y: 15});
+                expect(ncenter.x).to.be.approx(center.x);
+                expect(ncenter.y).to.be.approx(center.y);
+            });
+
+            it('2.0', function () {
+                map.setPitch(45);
+                var ncenter = map.containerPointToCoord({x : 15, y: 15});
+                expect(center.x).to.be.approx(ncenter.x);
+                expect(center.y).to.be.approx(ncenter.y);
+            });
+
+            it('2.1', function () {
+                map.setPitch(1);
+                var extent = map.getExtent();
+                var point = map.coordToPoint({ x: extent.xmin, y: extent.ymax});
+                var cp = map._pointToContainerPoint(point);
+
+                expect(cp.x).to.be.approx(0);
+                expect(cp.y).to.be.approx(0);
+
+                var coord = map.containerPointToCoord(cp);
+                expect(coord.x).to.be.approx(extent.xmin);
+                expect(coord.y).to.be.approx(extent.ymax);
+            });
+
+            it('2.2', function () {
+                map.setPitch(1);
+                var extent = map.getExtent();
+                var point = map.coordToPoint({ x: extent.xmax, y: extent.ymax});
+                var cp = map._pointToContainerPoint(point);
+
+                expect(cp.x).to.be.approx(30);
+                expect(cp.y).to.be.approx(0);
+
+                var coord = map.containerPointToCoord(cp);
+                expect(coord.x).to.be.approx(extent.xmax);
+                expect(coord.y).to.be.approx(extent.ymax);
+            });
+
+            it('2.3', function () {
+                map.setPitch(1);
+                var extent = map.getExtent();
+                var point = map.coordToPoint({ x: extent.xmin, y: extent.ymin});
+                var cp = map._pointToContainerPoint(point);
+
+                expect(cp.x).to.be.approx(-0.175572);
+                expect(cp.y).to.be.approx(30);
+            });
+
+            it('2.4', function () {
+                map.setPitch(1);
+                var extent = map.getExtent();
+                var point = map.coordToPoint({ x: extent.xmax, y: extent.ymin});
+                var cp = map._pointToContainerPoint(point);
+
+                expect(cp.x).to.be.approx(30.175572);
+                expect(cp.y).to.be.approx(30);
+            });
+
+            it('3', function () {
+                map.setPitch(1);
+
+                var cExtent = map.getContainerExtent();
+                expect(cExtent.getMax()).to.be.closeTo({x:30, y:30});
+                expect(cExtent.getMin()).to.be.closeTo({x:0, y:0});
+
+                var pExtent = map._get2DExtent();
+                var cp = map._pointToContainerPoint(pExtent.getMin());
+                expect(cp).to.be.closeTo({x:0, y:0});
+
+                var nw = map.getExtent().getMin();
+                var point = map.coordToPoint(nw) ;
+                var cp = map._pointToContainerPoint(point);
+                // cp = map.coordToContainerPoint(nw);
+                expect(cp).to.be.closeTo({x:-0.175572, y: 30 });
+                // point2 = map._containerPointToPoint(pExtent.getMin());
+
+                // expect(point).to.be.closeTo(point2);
+            });
+        });
+
         it('containerPoint and viewPoint', function () {
             var center = map.getCenter();
             var cp = map.coordinateToContainerPoint(center);
@@ -236,7 +377,7 @@ describe('Map.Camera', function () {
             var size2 = geometry.getSize();
             expect(size.toPoint()).to.be.closeTo(new maptalks.Point([size2.height, size2.width]));
 
-            map.setPitch(60);
+            map.setPitch(70);
             var size3 = geometry.getSize();
             expect(size3.width).to.be.above(size2.width);
             expect(size3.height).to.be.below(size2.height);
@@ -356,7 +497,7 @@ describe('Map.Camera', function () {
             expect(geometry.containsPoint(topPt)).not.to.be.ok();
             var newTopPt = map.coordinateToContainerPoint(top);
             expect(geometry.containsPoint(newTopPt)).to.be.ok();
-            expect(geometry.containsPoint(newTopPt.sub(0, 1))).not.to.be.ok();
+            expect(geometry.containsPoint(newTopPt.sub(0, 3))).not.to.be.ok();
             expect(newTopPt.y).to.be.above(topPt.y);
         });
 
@@ -366,7 +507,7 @@ describe('Map.Camera', function () {
             layer.addGeometry(geometry);
             var topPt = map.coordinateToContainerPoint(top);
             expect(geometry.containsPoint(topPt)).to.be.ok();
-            map.setPitch(60);
+            map.setPitch(80);
             expect(geometry.containsPoint(topPt)).not.to.be.ok();
             var newTopPt = map.coordinateToContainerPoint(top);
             expect(geometry.containsPoint(newTopPt)).to.be.ok();
@@ -398,6 +539,12 @@ describe('Map.Camera', function () {
             expect(geometry.containsPoint(newTopPt)).to.be.ok();
             expect(newTopPt.y).to.be.above(topPt.y);
         });
+    });
+
+    it('should generate dom css matrix', function () {
+        map.setPitch(75);
+        map.setBearing(45);
+        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql('31.819805153394643,-8.235571585149868,0.6830127039600659,0.6830127018922193,31.819805153394636,8.23557158514987,-0.683012703960066,-0.6830127018922194,0,-43.466662183008076,-0.2588190458861051,-0.25881904510252074,0,0,44.800000135936436,45');
     });
 });
 

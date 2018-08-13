@@ -1,5 +1,5 @@
 import Curve from './Curve';
-import Canvas from 'core/Canvas';
+import Canvas from '../core/Canvas';
 
 /**
  * Cubic Bezier Curve
@@ -41,9 +41,13 @@ class CubicBezierCurve extends Curve {
     _paintOn(ctx, points, lineOpacity) {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
-        this._bezierCurve(ctx, points, lineOpacity);
+        this._bezierCurve(ctx, points);
         Canvas._stroke(ctx, lineOpacity);
         this._paintArrow(ctx, points, lineOpacity);
+    }
+
+    _getArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance) {
+        return this._getCurveArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance, 3);
     }
 }
 

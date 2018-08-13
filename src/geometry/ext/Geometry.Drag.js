@@ -1,13 +1,13 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { isNil } from 'core/util';
-import { lowerSymbolOpacity } from 'core/util/style';
-import Browser from 'core/Browser';
-import Handler from 'handler/Handler';
-import Geometry from 'geometry/Geometry';
-import DragHandler from 'handler/Drag';
-import VectorLayer from 'layer/VectorLayer';
-import { ConnectorLine } from 'geometry/ConnectorLine';
-import { ResourceCache } from 'renderer/layer/CanvasRenderer';
+import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
+import { lowerSymbolOpacity } from '../../core/util/style';
+import { on, off } from '../../core/util/dom';
+import Browser from '../../core/Browser';
+import Handler from '../../handler/Handler';
+import Geometry from '../Geometry';
+import DragHandler from '../../handler/Drag';
+import VectorLayer from '../../layer/VectorLayer';
+import { ConnectorLine } from '../ConnectorLine';
+import { ResourceCache } from '../../renderer/layer/CanvasRenderer';
 
 const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 
@@ -33,79 +33,16 @@ class GeometryDragHandler extends Handler  {
     }
 
     removeHooks() {
+        this._endDrag();
         this.target.off(EVENTS, this._startDrag, this);
-    }
-
-    _startDrag(param) {
-        const map = this.target.getMap();
-        if (!map) {
-            return;
-        }
-        const parent = this.target._getParent();
-        if (parent) {
-            return;
-        }
-        if (this.isDragging()) {
-            return;
-        }
-        const domEvent = param['domEvent'];
-        if (domEvent.touches && domEvent.touches.length > 1) {
-            return;
-        }
-        this.target.on('click', this._endDrag, this);
-        this._lastCoord = param['coordinate'];
-        this._lastPoint = param['containerPoint'];
-        this._prepareMap();
-        this._prepareDragHandler();
-        this._dragHandler.onMouseDown(param['domEvent']);
-        this._moved = false;
-        /**
-         * drag start event
-         * @event Geometry#dragstart
-         * @type {Object}
-         * @property {String} type                    - dragstart
-         * @property {Geometry} target       - the geometry fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        this.target._fireEvent('dragstart', param);
-    }
-
-    _prepareMap() {
-        const map = this.target.getMap();
-        this._mapDraggable = map.options['draggable'];
-        this._mapHitDetect = map.options['hitDetect'];
-        map._trySetCursor('move');
-        map.config({
-            'hitDetect': false,
-            'draggable': false
-        });
-    }
-
-    _restoreMap() {
-        const map = this.target.getMap();
-        //restore map status
-        map._trySetCursor('default');
-        if (isNil(this._mapDraggable)) {
-            this._mapDraggable = true;
-        }
-        map.config({
-            'hitDetect': this._mapHitDetect,
-            'draggable': this._mapDraggable
-        });
-
-        delete this._mapDraggable;
-        delete this._mapHitDetect;
+        delete this.container;
     }
 
     _prepareDragHandler() {
-        const map = this.target.getMap();
-        this._dragHandler = new DragHandler(map._panels.mapWrapper || map._containerDOM);
-        this._dragHandler.on('dragging', this._dragging, this);
-        this._dragHandler.on('mouseup', this._endDrag, this);
-        this._dragHandler.enable();
+        this._dragHandler = new DragHandler(this.container);
+        this._dragHandler.on('dragging', this._dragging, this)
+            .on('mouseup', this._endDrag, this)
+            .enable();
     }
 
     _prepareShadow() {
@@ -115,9 +52,8 @@ class GeometryDragHandler extends Handler  {
             this._shadow.remove();
         }
 
-        this._shadow = target.copy();
+        const shadow = this._shadow = target.copy();
         this._shadow.setSymbol(target._getInternalSymbol());
-        const shadow = this._shadow;
         if (target.options['dragShadow']) {
             const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
@@ -170,7 +106,10 @@ class GeometryDragHandler extends Handler  {
             layer = this.target.getLayer();
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
-            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID);
+            this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
+                enableAltitude : layer.options['enableAltitude'],
+                altitudeProperty : layer.options['altitudeProperty']
+            });
             map.addLayer(this._dragStageLayer);
         }
         //copy resources to avoid repeat resource loading.
@@ -179,12 +118,42 @@ class GeometryDragHandler extends Handler  {
         this._dragStageLayer._getRenderer().resources = resources;
     }
 
+    _startDrag(param) {
+        const map = this.target.getMap();
+        if (!map) {
+            return;
+        }
+        const parent = this.target._getParent();
+        if (parent) {
+            return;
+        }
+        if (this.isDragging()) {
+            return;
+        }
+        const domEvent = param['domEvent'];
+        if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
+            return;
+        }
+        this.container = map._panels.mapWrapper || map._containerDOM;
+        this.target.on('click', this._endDrag, this);
+        this._lastCoord = this._correctCoord(param['coordinate']);
+        this._lastPoint = param['containerPoint'];
+        this._prepareDragHandler();
+        this._dragHandler.onMouseDown(param['domEvent']);
+
+        on(this.container, 'mouseleave', this._endDrag, this);
+        this._startParam = param;
+        this._moved = false;
+
+        return;
+    }
+
     _dragging(param) {
         const target = this.target;
         const map = target.getMap(),
-            eventParam = map._parseEvent(param['domEvent']);
+            e = map._parseEvent(param['domEvent']);
 
-        const domEvent = eventParam['domEvent'];
+        const domEvent = e['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
@@ -192,45 +161,51 @@ class GeometryDragHandler extends Handler  {
         if (!this._moved) {
             this._moved = true;
             target.on('symbolchange', this._onTargetUpdated, this);
-            // this._prepareMap();
             this._isDragging = true;
             this._prepareShadow();
             if (!target.options['dragShadow']) {
                 target.hide();
             }
-            this._shadow._fireEvent('dragstart', eventParam);
+            this._shadow._fireEvent('dragstart', e);
+            /**
+             * drag start event
+             * @event Geometry#dragstart
+             * @type {Object}
+             * @property {String} type           - dragstart
+             * @property {Geometry} target       - the geometry fires event
+             * @property {Coordinate} coordinate - coordinate of the event
+             * @property {Point} containerPoint  - container point of the event
+             * @property {Point} viewPoint       - view point of the event
+             * @property {Event} domEvent                 - dom event
+             */
+            this.target._fireEvent('dragstart', this._startParam || e);
+            delete this._startParam;
             return;
         }
         if (!this._shadow) {
             return;
         }
         const axis = this._shadow.options['dragOnAxis'],
-            coord = eventParam['coordinate'],
-            point = eventParam['containerPoint'];
-        if (!this._lastCoord) {
-            this._lastCoord = coord;
-        }
-        if (!this._lastPoint) {
-            this._lastPoint = point;
-        }
-        const coordOffset = coord.sub(this._lastCoord),
-            pointOffset = point.sub(this._lastPoint);
+            coord = this._correctCoord(e['coordinate']),
+            point = e['containerPoint'];
+        this._lastPoint = this._lastPoint || point;
+        this._lastCoord = this._lastCoord || coord;
+        const pointOffset = point.sub(this._lastPoint);
+        const coordOffset = coord.sub(this._lastCoord);
         if (axis === 'x') {
-            coordOffset.y = 0;
-            pointOffset.y = 0;
+            pointOffset.y = coordOffset.y = 0;
         } else if (axis === 'y') {
-            coordOffset.x = 0;
-            pointOffset.x = 0;
+            pointOffset.x = coordOffset.x = 0;
         }
-        this._lastCoord = coord;
         this._lastPoint = point;
+        this._lastCoord = coord;
         this._shadow.translate(coordOffset);
         if (!target.options['dragShadow']) {
             target.translate(coordOffset);
         }
-        eventParam['coordOffset'] = coordOffset;
-        eventParam['pointOffset'] = pointOffset;
-        this._shadow._fireEvent('dragging', eventParam);
+        e['coordOffset'] = coordOffset;
+        e['pointOffset'] = pointOffset;
+        this._shadow._fireEvent('dragging', e);
 
         /**
          * dragging event
@@ -243,44 +218,52 @@ class GeometryDragHandler extends Handler  {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        target._fireEvent('dragging', eventParam);
+        target._fireEvent('dragging', e);
 
     }
 
     _endDrag(param) {
-        const target = this.target,
-            map = target.getMap();
         if (this._dragHandler) {
-            target.off('click', this._endDrag, this);
             this._dragHandler.disable();
             delete this._dragHandler;
         }
-        if (!map) {
+        if (this.container) {
+            off(this.container, 'mouseleave', this._endDrag, this);
+        }
+        if (!this.target) {
             return;
         }
-        const eventParam = map._parseEvent(param['domEvent']);
-        target.off('symbolchange', this._onTargetUpdated, this);
+        const target = this.target;
+        target.off('click', this._endDrag, this);
 
-        this._updateTargetAndRemoveShadow(eventParam);
+        target.off('symbolchange', this._onTargetUpdated, this);
 
         delete this._lastCoord;
         delete this._lastPoint;
 
-        this._restoreMap();
-
         this._isDragging = false;
-        /**
-         * dragend event
-         * @event Geometry#dragend
-         * @type {Object}
-         * @property {String} type                    - dragend
-         * @property {Geometry} target       - the geometry fires event
-         * @property {Coordinate} coordinate - coordinate of the event
-         * @property {Point} containerPoint  - container point of the event
-         * @property {Point} viewPoint       - view point of the event
-         * @property {Event} domEvent                 - dom event
-         */
-        target._fireEvent('dragend', eventParam);
+
+        const map = target.getMap();
+        if (this.enabled() && map) {
+            const e = map._parseEvent(param ? param['domEvent'] : null);
+            this._updateTargetAndRemoveShadow(e);
+            if (this._moved) {
+                /**
+                 * dragend event
+                 * @event Geometry#dragend
+                 * @type {Object}
+                 * @property {String} type                    - dragend
+                 * @property {Geometry} target       - the geometry fires event
+                 * @property {Coordinate} coordinate - coordinate of the event
+                 * @property {Point} containerPoint  - container point of the event
+                 * @property {Point} viewPoint       - view point of the event
+                 * @property {Event} domEvent                 - dom event
+                 */
+                target._fireEvent('dragend', e);
+            }
+        }
+
+
     }
 
     isDragging() {
@@ -314,6 +297,19 @@ class GeometryDragHandler extends Handler  {
         }
     }
 
+    //find correct coordinate for coordOffset if geometry has altitude
+    _correctCoord(coord) {
+        const map = this.target.getMap();
+        if (!map.getPitch()) {
+            return coord;
+        }
+        const painter = this.target._getPainter();
+        if (!painter.getMinAltitude()) {
+            return coord;
+        }
+        const alt = (painter.getMinAltitude() + painter.getMaxAltitude()) / 2;
+        return map.locateByPoint(coord, 0, -alt);
+    }
 }
 
 Geometry.mergeOptions({

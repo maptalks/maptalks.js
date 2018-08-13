@@ -4,10 +4,10 @@ describe('TileLayer', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    function createMap() {
+    function createMap(w, h) {
         container = document.createElement('div');
-        container.style.width = '3px';
-        container.style.height = '3px';
+        container.style.width = w || '3px';
+        container.style.height = h || '3px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -41,16 +41,47 @@ describe('TileLayer', function () {
         });
 
         it('add again', function (done) {
+            this.timeout(9500);
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
-                urlTemplate : '/resources/tile.png'
+                urlTemplate : '#',
+                placeholder : true
             });
             tile.once('layerload', function () {
-                expect(tile).to.be.painted();
                 map.removeLayer(tile);
                 tile.once('layerload', function () {
-                    expect(tile).to.be.painted();
+                    done();
+                });
+                map.addLayer(tile);
+            });
+            map.addLayer(tile);
+        });
+
+        it('invisible container, for #692', function (done) {
+            createMap('0px', '0px');
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '/resources/not-exists.png'
+            });
+            tile.once('layerload', function () {
+                done();
+            });
+            map.addLayer(tile);
+        });
+
+        it('with maxAvailableZoom set', function (done) {
+            createMap();
+            var zoom = map.getZoom();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '#',
+                maxAvailableZoom : zoom - 1
+            });
+            tile.once('layerload', function () {
+                map.removeLayer(tile);
+                tile.once('layerload', function () {
+                    expect(tile.getTiles().tileGrids[0].tiles[0].z === zoom - 1).to.be.ok();
                     done();
                 });
                 map.addLayer(tile);
@@ -62,18 +93,43 @@ describe('TileLayer', function () {
             createMap();
             var tile1 = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 tileSize : [1, 2]
             });
             expect(tile1.getTileSize().toArray()).to.be.eql([1, 2]);
 
             var tile2 = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 tileSize : { width : 1, height : 2 }
             });
 
             expect(tile2.getTileSize().toArray()).to.be.eql([1, 2]);
+        });
+
+        it('render after setting zoom without animation, bug found by sgh', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : TILE_IMAGE
+            });
+            map.setBaseLayer(tile);
+            map.setZoom(map.getZoom() - 2, { animation : false });
+
+            setTimeout(function () {
+                expect(map.getBaseLayer()).to.be.painted();
+                done();
+            }, 90);
+        });
+
+        it('getTiles in fractional zoom', function () {
+            createMap();
+            map.setZoom(12.5);
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                urlTemplate : '#'
+            }).addTo(map);
+            expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(1);
         });
     });
 
@@ -123,6 +179,32 @@ describe('TileLayer', function () {
             map.setBaseLayer(tile);
         });
 
+        it('#679, cascade tiles\'s bug on 4326', function (done) {
+            container = document.createElement('div');
+            container.style.width = '3px';
+            container.style.height = '3px';
+            document.body.appendChild(container);
+            map = new maptalks.Map(container, {
+                center: [241.7567321978039, 210.07750904461014],
+                zoom: 1,
+                bearing : 153.60000000000036,
+                pitch : 36,
+                minZoom:1,
+                maxZoom:18,
+                spatialReference:{
+                  projection:'EPSG:4326'
+                }
+            });
+            map.setBaseLayer(new maptalks.TileLayer('base', {
+                tileSystem : [1, -1, -180, 90],
+                crossOrigin:'Anonymous',
+                urlTemplate:'#'
+            }));
+            setTimeout(function () {
+                done();
+            }, 20);
+        });
+
         it('baidu', function (done) {
             createMap();
             map.config({
@@ -145,6 +227,69 @@ describe('TileLayer', function () {
             });
             map.setBaseLayer(tile);
         });
+
+        it('3857 map with baidu tilelayer', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                spatialReference : {
+                    'projection' : 'baidu',
+                    'resolutions': (function () {
+                      var res = Math.pow(2, 17);
+                      var resolutions = [];
+                      for (var i = 0; i < 20; i++) {
+                          resolutions[i] = res;
+                          res *= 0.5;
+                      }
+                      resolutions[0] = null;
+                      resolutions[1] = null;
+                      resolutions[2] = null;
+                      return resolutions;
+                  })(),
+                  'fullExtent': {
+                      'top': 33554432,
+                      'left': -33554432,
+                      'bottom': -33554432,
+                      'right': 33554432
+                  }
+                },
+                urlTemplate : '#'
+            });
+            tile.on('layerload', function () {
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
+        it('3857 map with 4326 tilelayer', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                spatialReference : {
+                    'projection' : 'EPSG:4326'
+                },
+                urlTemplate : '#'
+            });
+            tile.on('layerload', function () {
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
+
+        it('3857 map with 3857 tilelayer', function (done) {
+            createMap();
+            var tile = new maptalks.TileLayer('tile', {
+                renderer : 'canvas',
+                spatialReference : {
+                    'projection' : 'EPSG:3857'
+                },
+                urlTemplate : '#'
+            });
+            tile.on('layerload', function () {
+                done();
+            });
+            map.setBaseLayer(tile);
+        });
     });
 
     describe('Different Renderers', function () {
@@ -153,7 +298,7 @@ describe('TileLayer', function () {
             var tile = new maptalks.TileLayer('tile', {
                 renderer : 'canvas',
                 debug : true,
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 subdomains:['a', 'b', 'c']
             });
             tile.once('layerload', function () {
@@ -173,7 +318,7 @@ describe('TileLayer', function () {
             createMap();
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 subdomains:['a', 'b', 'c'],
                 renderer : 'gl'
             });
@@ -193,7 +338,7 @@ describe('TileLayer', function () {
             }
             createMap();
             var tile = new maptalks.TileLayer('tile', {
-                urlTemplate : '/resources/not-exist.png',
+                urlTemplate : '#',
                 renderer : 'gl'
             });
             tile.once('layerload', function () {
@@ -219,13 +364,12 @@ describe('TileLayer', function () {
             map = new maptalks.Map(container, option);
             var tile = new maptalks.TileLayer('tile', {
                 debug : true,
-                urlTemplate : '/resources/tile.png',
-                subdomains:['a', 'b', 'c'],
+                urlTemplate : '#',
                 renderer : 'canvas'
             });
             tile.on('layerload', function () {
                 expect(tile.isCanvasRender()).to.be.ok();
-                expect(map).to.be.painted();
+                // expect(map).to.be.painted();
                 done();
             });
             map.setBaseLayer(tile);
@@ -243,13 +387,13 @@ describe('TileLayer', function () {
             };
             map = new maptalks.Map(container, option);
             var tile = new maptalks.TileLayer('tile', {
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 subdomains:['a', 'b', 'c'],
                 renderer : 'canvas'
             });
             tile.on('layerload', function () {
                 expect(tile.isCanvasRender()).to.be.ok();
-                expect(map).to.be.painted();
+                // expect(map).to.be.painted();
                 done();
             });
             map.setBaseLayer(tile);
@@ -261,7 +405,7 @@ describe('TileLayer', function () {
     // this test is abandoned
     it('update tile view points when map center is the same but container offset changes.', function (done) {
         var tile = new maptalks.TileLayer('tile', {
-            urlTemplate : '/resources/tile.png',
+            urlTemplate : TILE_IMAGE,
             subdomains:['a', 'b', 'c']
         });
         var count = 0;
@@ -298,7 +442,7 @@ describe('TileLayer', function () {
             container.style.height = '10px';
             document.body.appendChild(container);
             var baselayer = new maptalks.TileLayer('tile', {
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : '#',
                 subdomains:['a', 'b', 'c'],
                 renderer : 'gl',
                 fadeAnimation : false
@@ -329,11 +473,11 @@ describe('TileLayer', function () {
             container.style.height = '10px';
             document.body.appendChild(container);
             var tile = new maptalks.TileLayer('tile', {
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : TILE_IMAGE,
                 subdomains:['a', 'b', 'c']
             });
             var tile2 = new maptalks.TileLayer('tile2', {
-                urlTemplate : '/resources/tile.png',
+                urlTemplate : TILE_IMAGE,
                 subdomains:['a', 'b', 'c'],
                 renderer : 'dom'
             });

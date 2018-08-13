@@ -6,10 +6,13 @@ describe('Geometry.LineString', function () {
     var layer;
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 400,
+            height : 300
+        });
         container = setups.container;
         map = setups.map;
-        layer = new maptalks.VectorLayer('id');
+        layer = new maptalks.VectorLayer('id', {'drawImmediate' : true});
         map.addLayer(layer);
     });
 
@@ -132,7 +135,38 @@ describe('Geometry.LineString', function () {
         ]);
         // layer.addGeometry(polyline);
 
-        expect(polyline.getExtent()).to.eql(new maptalks.Extent(0, 0, 0, 80));
+        expect(polyline.getExtent().toJSON()).to.eql(new maptalks.Extent(0, 0, 0, 80).toJSON());
+    });
+
+    describe('rotate the geometry', function () {
+        it('without a pivot', function () {
+            var polyline = new maptalks.LineString([
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
+            ]);
+            polyline.rotate(20);
+
+            var expected =  [[10.796595235860309, 1.8092213764076168], [7.350247889316506, 11.2061475842436], [-33.81727811167417, 76.98463103926437]];
+            var json = polyline.toGeoJSON().geometry.coordinates;
+            expect(json).to.eql(expected);
+        });
+
+        it('with a pivot', function () {
+            var polyline = new maptalks.LineString([
+                { x: 0, y: 0 },
+                { x: 0, y: 10 },
+                { x: 0, y: 80 }
+            ]);
+            polyline.rotate(20, [0, 0]);
+
+            var expected =  [ [ 0, 0 ],
+            [ -3.435638342187758, 9.396926207835993 ],
+            [ -42.531359521766376, 75.17540966285675 ] ];
+            var json = polyline.toGeoJSON().geometry.coordinates;
+            console.log(json);
+            expect(json).to.eql(expected);
+        });
     });
 
     describe('geometry fires events', function () {
@@ -160,17 +194,37 @@ describe('Geometry.LineString', function () {
     it('containsPoint', function () {
         var lineWidth = 8;
         var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
-            symbol : {
+            symbol : [{
                 'lineWidth' : lineWidth
-            }
+            },
+            {
+                'lineWidth' : 4
+            }]
         });
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp)).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth / 2, 0))).to.be.ok();
-        expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2))).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-1, 0), 0)).not.to.be.ok();
+        // expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 - 1), 0)).to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1), 0)).not.to.be.ok();
+    });
+
+    it('containsPoint with lineCap', function () {
+        var lineWidth = 8;
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
+            symbol : [{
+                'lineWidth' : lineWidth,
+                'lineCap' : 'round'
+            },
+            {
+                'lineWidth' : 4
+            }]
+        });
+        layer.addGeometry(line);
+        var cp = map.coordinateToContainerPoint(map.getCenter());
+        expect(line.containsPoint(cp)).to.be.ok();
+        expect(line.containsPoint(cp.add(-1, 0), 0)).to.be.ok();
     });
 
     it('containsPoint with dynamic linewidth', function () {
@@ -187,6 +241,7 @@ describe('Geometry.LineString', function () {
     it('containsPoint with arrow of vertex-first', function () {
         var lineWidth = 8;
         var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
+            enableSimplify : false,
             arrowStyle : 'classic',
             arrowPlacement : 'vertex-first',
             symbol : {
@@ -197,12 +252,13 @@ describe('Geometry.LineString', function () {
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp.add(-lineWidth / 2, 0))).to.be.ok();
         expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 7))).to.be.ok();
-        expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 8))).not.to.be.ok();
+        // expect(line.containsPoint(cp.add(lineWidth * 4, lineWidth + 10))).not.to.be.ok();
     });
 
     it('containsPoint with arrow of point', function () {
         var lineWidth = 8;
-        var line = new maptalks.LineString([map.getCenter().substract(0.1, 0), map.getCenter(), map.getCenter().add(0.1, 0)], {
+        var line = new maptalks.LineString([map.getCenter().substract(0.001, 0), map.getCenter(), map.getCenter().add(0.001, 0)], {
+            enableSimplify : false,
             arrowStyle : 'classic',
             arrowPlacement : 'point',
             symbol : {
@@ -213,7 +269,6 @@ describe('Geometry.LineString', function () {
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp.add(-4 * lineWidth, lineWidth + 7))).to.be.ok();
         expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 7))).to.be.ok();
-        expect(line.containsPoint(cp.add(-4 * lineWidth, -lineWidth - 8))).not.to.be.ok();
     });
     it('bug: create with dynamic textSize', function () {
         // bug desc:
@@ -234,6 +289,19 @@ describe('Geometry.LineString', function () {
         });
     });
 
+    it('should get2DLength', function () {
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)]);
+        layer.addGeometry(line);
+        expect(line._get2DLength()).to.be.above(0);
+    });
+
+    //issue #666
+    it('arc curve identify', function () {
+        var line = new maptalks.ArcCurve([map.getCenter(), map.getCenter().add(0.001, 0)]);
+        layer.addGeometry(line);
+
+        expect(layer.identify({x: 118.84733998413094, y: 32.04636121481619}).length).to.be.above(0);
+    });
 
     //issue #522
     it('drawn with arrow of vertex-first', function () {
@@ -258,8 +326,64 @@ describe('Geometry.LineString', function () {
         expect(layer).to.be.painted(-43, -12);
     });
 
+    describe('smoothness', function () {
+        it('draw 2 points with smoothness', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                    center.sub(0.1, 0),
+                    center.add(0.1, 0)
+                ], {
+                smoothness : 0.5,
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 4
+                }
+            }).addTo(layer);
+            expect(layer).to.be.painted();
+        });
+
+        it('draw 3 points with smoothness', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                smoothness : 0.5,
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            expect(layer).not.to.be.painted(0, 0);
+            expect(layer).to.be.painted(0, -7);
+        });
+    });
+
+    describe('outline', function () {
+        it('display outline', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.LineString([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            var outline = line.getOutline().updateSymbol({ polygonFill : '#0f0' }).addTo(layer);
+            expect(layer).not.to.be.painted(0, -20);
+            expect(layer).to.be.painted(0, 10, [0, 255, 0]);
+        });
+    });
+
     describe('animateShow', function () {
-        it('animateShow', function (done) {
+        it('#animateShow', function (done) {
             layer = new maptalks.VectorLayer('id2');
             var polyline = new maptalks.LineString([
                 map.getCenter(),
@@ -285,6 +409,53 @@ describe('Geometry.LineString', function () {
 
             });
             layer.addGeometry(polyline).addTo(map);
+        });
+        it('#animateShow with smoothness', function (done) {
+            layer = new maptalks.VectorLayer('id2');
+            var polyline = new maptalks.LineString([
+                map.getCenter(),
+                map.getCenter().add(0.01, 0.01),
+                map.getCenter().add(0.01, 0),
+                map.getCenter().add(0, 0),
+            ], {
+                'smoothness' : 0.1,
+                'visible' : false
+            });
+            layer.once('layerload', function () {
+                var geojson = polyline.toGeoJSON();
+                expect(layer._getRenderer().isBlank()).to.be.ok();
+                polyline.animateShow({
+                    'duration' : 100,
+                    'easing' : 'out'
+                }, function (frame) {
+                    if (frame.state.playState === 'finished') {
+                        expect(layer).to.be.painted(0, 0);
+                        expect(polyline.toGeoJSON()).to.be.eql(geojson);
+                        done();
+                    }
+                });
+
+            });
+            layer.addGeometry(polyline).addTo(map);
+        });
+        it('#649 fix infinite loop if removed during animateShow', function (done) {
+            layer = new maptalks.VectorLayer('id2', { drawImmediate : true });
+            var polyline = new maptalks.LineString([
+                map.getCenter(),
+                map.getCenter().add(0.01, 0.01)
+            ]);
+            layer.addGeometry(polyline).addTo(map);
+            var geojson = polyline.toGeoJSON();
+            polyline.animateShow({
+                'duration' : 20000,
+                'easing' : 'out'
+            });
+            setTimeout(function () {
+                polyline.remove();
+                setTimeout(function () {
+                    done();
+                }, 60);
+            }, 10);
         });
         it('The current coordinate should be correct', function (done) {
             layer = new maptalks.VectorLayer('animateShow_layer');

@@ -1,6 +1,6 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
-import { extend, isString, isArrayHasData, pushIn } from 'core/util';
-import Coordinate from 'geo/Coordinate';
+import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
+import { extend, isString, isArrayHasData, pushIn } from '../core/util';
+import Coordinate from '../geo/Coordinate';
 import Map from './Map';
 
 /**

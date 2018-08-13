@@ -1,4 +1,4 @@
-import Handler from 'handler/Handler';
+import Handler from '../../handler/Handler';
 import Map from '../Map';
 
 class MapDoubleClickZoomHandler extends Handler {

@@ -1,9 +1,9 @@
-import { extend, isNil, isString } from 'core/util';
-import { createEl, setStyle, removeDomNode } from 'core/util/dom';
-import Eventable from 'core/Eventable';
-import Class from 'core/Class';
-import Point from 'geo/Point';
-import Map from 'map/Map';
+import { extend, isNil, isString } from '../core/util';
+import { createEl, setStyle, removeDomNode } from '../core/util/dom';
+import Eventable from '../core/Eventable';
+import Class from '../core/Class';
+import Point from '../geo/Point';
+import Map from '../map/Map';
 
 /**
  * Base class for all the map controls, you can extend it to build your own customized Control.
@@ -50,7 +50,7 @@ class Control extends Eventable(Class) {
         this._map = map;
         const controlContainer = map._panels.control;
         this.__ctrlContainer = createEl('div');
-        setStyle(this.__ctrlContainer, 'position:absolute');
+        setStyle(this.__ctrlContainer, 'position:absolute;overflow:visible;');
         // on(this.__ctrlContainer, 'mousedown mousemove click dblclick contextmenu', stopPropagation)
         this.update();
         controlContainer.appendChild(this.__ctrlContainer);

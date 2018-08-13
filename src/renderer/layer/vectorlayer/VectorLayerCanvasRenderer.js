@@ -1,5 +1,5 @@
-import { getExternalResources } from 'core/util/resource';
-import VectorLayer from 'layer/VectorLayer';
+import { getExternalResources } from '../../../core/util/resource';
+import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 
 /**
@@ -38,7 +38,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return true;
         }
         // don't redraw when map is zooming without pitch and layer doesn't have any point symbolizer.
-        if (map.isZooming() && !map.getPitch() && !this._hasPoint && this.layer.constructor === VectorLayer) {
+        if (map.isZooming() && !map.isRotating() && !map.getPitch() && !this._hasPoint && this.layer.constructor === VectorLayer) {
             return false;
         }
         return super.needToRedraw();
@@ -77,7 +77,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this._geosToDraw) {
             return;
         }
-        this._getDisplayExtent();
+        this._updateDisplayExtent();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             if (!this._geosToDraw[i].isVisible()) {
                 continue;
@@ -102,7 +102,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     drawGeos() {
-        this._getDisplayExtent();
+        this._updateDisplayExtent();
         this.prepareToDraw();
 
         this.forEachGeo(this.checkGeo, this);
@@ -134,7 +134,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     onZoomEnd() {
-        delete this._extent2D;
+        delete this.canvasExtent2D;
         super.onZoomEnd.apply(this, arguments);
     }
 
@@ -152,8 +152,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         super.onGeometryPropertiesChange(param);
     }
 
-    _getDisplayExtent() {
-        let extent2D = this._extent2D;
+    _updateDisplayExtent() {
+        let extent2D = this.canvasExtent2D;
         if (this._maskExtent) {
             if (!this._maskExtent.intersects(extent2D)) {
                 this.completeRender();

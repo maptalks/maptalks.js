@@ -1,11 +1,11 @@
-import { isString, flash } from 'core/util';
-import { on, off, createEl, stopPropagation } from 'core/util/dom';
-import Browser from 'core/Browser';
-import Handler from 'handler/Handler';
-import Handlerable from 'handler/Handlerable';
-import DragHandler from 'handler/Drag';
-import Coordinate from 'geo/Coordinate';
-import Point from 'geo/Point';
+import { isString, flash } from '../core/util';
+import { on, off, createEl, stopPropagation } from '../core/util/dom';
+import Browser from '../core/Browser';
+import Handler from '../handler/Handler';
+import Handlerable from '../handler/Handlerable';
+import DragHandler from '../handler/Drag';
+import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 import UIComponent from './UIComponent';
 
 /**
@@ -17,6 +17,7 @@ import UIComponent from './UIComponent';
  * @instance
  */
 const options = {
+    'eventsPropagation' : true,
     'draggable': false,
     'single': false,
     'content': null
@@ -192,7 +193,7 @@ const domEvents =
  * @example
  * var dom = document.createElement('div');
  * dom.innerHTML = 'hello ui marker';
- * var marker = new maptalks.UIMarker([0, 0], {
+ * var marker = new maptalks.ui.UIMarker([0, 0], {
  *      draggable : true,
  *      content : dom
  *  }).addTo(map);
@@ -234,7 +235,8 @@ class UIMarker extends Handlerable(UIComponent) {
          */
         this.fire('positionchange');
         if (this.isVisible()) {
-            this.show();
+            this._coordinate = this._markerCoord;
+            this._setPosition();
         }
         return this;
     }
@@ -336,7 +338,7 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     getOffset() {
         const size = this.getSize();
-        return new Point(-size['width'] / 2, -size['height'] / 2);
+        return new Point(-size.width / 2, -size.height / 2);
     }
 
     /**
@@ -345,8 +347,7 @@ class UIMarker extends Handlerable(UIComponent) {
      * @return {Point} transform origin
      */
     getTransformOrigin() {
-        const size = this.getSize();
-        return new Point(size['width'] / 2, size['height'] / 2);
+        return 'center center';
     }
 
     onDomRemove() {
@@ -384,7 +385,7 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     _getConnectPoints() {
         const map = this.getMap();
-        const containerPoint = map.coordinateToContainerPoint(this.getCoordinates());
+        const containerPoint = map.coordToContainerPoint(this.getCoordinates());
         const size = this.getSize(),
             width = size.width,
             height = size.height;
@@ -431,7 +432,7 @@ class UIMarkerDragHandler extends Handler {
 
     _startDrag(param) {
         const domEvent = param['domEvent'];
-        if (domEvent.touches && domEvent.touches.length > 1) {
+        if (domEvent.touches && domEvent.touches.length > 1 || domEvent.button === 2) {
             return;
         }
         if (this.isDragging()) {

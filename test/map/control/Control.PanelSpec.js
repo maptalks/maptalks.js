@@ -5,7 +5,10 @@ describe('Control.Panel', function () {
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
     });
@@ -102,10 +105,6 @@ describe('Control.Panel', function () {
     });
 
     it('has connector points', function () {
-        if (maptalks.Browser.gecko) {
-            //for firefox, values are different from OS and versions.
-            return;
-        }
         var position = {
             top: '150',
             left: '150'
@@ -114,21 +113,18 @@ describe('Control.Panel', function () {
             position : position,
             draggable: true,
             custom: false,
-            content: '面板内容'
+            content: 'test'
         });
         map.addControl(panel);
 
         var points = panel._getConnectPoints();
         expect(points.length).to.be.eql(4);
-        expect(points[0].toArray()).to.be.closeTo([118.844486, 32.0478981]);
+
         if (maptalks.Browser.ie) {
-            expect(points[1].toArray()).to.be.closeTo([118.84482943649291, 32.04781623775102]);
-            expect(points[2].toArray()).to.be.closeTo([118.84448611373901, 32.04773439332491]);
+            expect(points[0].toArray()).to.be.closeTo([118.844260, 32.0478981]);
+            expect(points[1].toArray()).to.be.closeTo([118.844378, 32.04781623775102]);
+            expect(points[2].toArray()).to.be.closeTo([118.844261, 32.04773439332491]);
             expect(points[3].toArray()).to.be.closeTo([118.8441427909851, 32.04781623775102]);
-        } else {
-            expect(points[1].toArray()).to.be.closeTo([118.844829, 32.0478025]);
-            expect(points[2].toArray()).to.be.closeTo([118.844486, 32.047707]);
-            expect(points[3].toArray()).to.be.closeTo([118.8441427, 32.0478025]);
         }
     });
 });

@@ -1,10 +1,10 @@
-import { now } from 'core/util';
+import { now, extend } from '../core/util';
 import {
     addDomEvent,
     removeDomEvent,
     preventDefault,
     getEventContainerPoint
-} from 'core/util/dom';
+} from '../core/util/dom';
 import Map from './Map';
 
 const events =
@@ -189,7 +189,7 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _handleDOMEvent(e) {
-        let type = e.type;
+        const type = e.type;
         // prevent default contextmenu
         if (type === 'contextmenu') {
             preventDefault(e);
@@ -219,24 +219,14 @@ Map.include(/** @lends Map.prototype */ {
                 }
             }
         }
-        if (type === 'click') {
-            const button = e.button;
-            if (button === 2) {
-                type = 'contextmenu';
-            }
-        }
         this._fireDOMEvent(this, e, type);
         if (mimicClick) {
-            let mimicDblClick = false;
-            this._fireDOMEvent(this, e, 'click');
             if (this._clickTime && (now() - this._clickTime <= 300)) {
-                mimicDblClick = true;
                 delete this._clickTime;
+                this._fireDOMEvent(this, e, 'dblclick');
             } else {
                 this._clickTime = now();
-            }
-            if (mimicDblClick) {
-                this._fireDOMEvent(this, e, 'dblclick');
+                this._fireDOMEvent(this, e, 'click');
             }
         }
     },
@@ -250,12 +240,14 @@ Map.include(/** @lends Map.prototype */ {
             return true;
         }
         let target = domEvent.srcElement || domEvent.target;
+        let preTarget;
         if (target) {
             while (target && target !== this._containerDOM) {
                 if (target.className && target.className.indexOf &&
-                    (target.className.indexOf('maptalks-control') >= 0 || target.className.indexOf('maptalks-ui') >= 0)) {
+                    (target.className.indexOf('maptalks-control') >= 0  || (target.className.indexOf('maptalks-ui') >= 0 && !preTarget['eventsPropagation']))) {
                     return true;
                 }
+                preTarget = target;
                 target = target.parentNode;
             }
 
@@ -278,20 +270,34 @@ Map.include(/** @lends Map.prototype */ {
         if (!e) {
             return null;
         }
-        const eventParam = {
+        let eventParam = {
             'domEvent': e
         };
         if (type !== 'keypress') {
             const actual = this._getActualEvent(e);
             if (actual) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
-                eventParam['coordinate'] = this.containerPointToCoordinate(containerPoint);
-                eventParam['containerPoint'] = containerPoint;
-                eventParam['viewPoint'] = this.containerPointToViewPoint(containerPoint);
-                eventParam['point2d'] = this._containerPointToPoint(containerPoint);
+                eventParam = extend(eventParam, {
+                    'coordinate' : this.containerPointToCoord(containerPoint),
+                    'containerPoint' : containerPoint,
+                    'viewPoint' : this.containerPointToViewPoint(containerPoint),
+                    'point2d' : this._containerPointToPoint(containerPoint),
+                });
             }
         }
         return eventParam;
+    },
+
+    _parseEventFromCoord(coord) {
+        const containerPoint = this.coordToContainerPoint(coord),
+            viewPoint = this.containerPointToViewPoint(containerPoint);
+        const e = {
+            'coordinate' : coord,
+            'containerPoint' : containerPoint,
+            'viewPoint' : viewPoint,
+            'point2d' : this.coordToPoint(coord)
+        };
+        return e;
     },
 
     _getActualEvent(e) {
@@ -307,6 +313,12 @@ Map.include(/** @lends Map.prototype */ {
         const eventParam = this._parseEvent(e, type);
         this._fireEvent(type, eventParam);
     }
+
+    // _onKeyPress(e) {
+    //     if (!this.isRemoved() && e.keyCode === 48 && e.ctrlKey) {
+    //         this.setBearing(0);
+    //     }
+    // }
 });
 
 Map.addOnLoadHook('_registerDomEvents');

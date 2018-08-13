@@ -1,10 +1,10 @@
-import { isArrayHasData, UID } from 'core/util';
-import { extendSymbol } from 'core/util/style';
-import Size from 'geo/Size';
-import Geometry from 'geometry/Geometry';
-import Marker from 'geometry/Marker';
-import Label from 'geometry/Label';
-import VectorLayer from 'layer/VectorLayer';
+import { isArrayHasData, UID } from '../../core/util';
+import { extendSymbol } from '../../core/util/style';
+import Size from '../../geo/Size';
+import Geometry from '../../geometry/Geometry';
+import Marker from '../../geometry/Marker';
+import Label from '../../geometry/Label';
+import VectorLayer from '../../layer/VectorLayer';
 import DrawTool from './DrawTool';
 
 /**

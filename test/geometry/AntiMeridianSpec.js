@@ -9,7 +9,9 @@ describe('Geometry.AntiMeridian', function () {
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
             zoom : 1,
-            center : [0, 0]
+            center : [0, 0],
+            width : 300,
+            height : 300
         });
         container = setups.container;
         map = setups.map;

@@ -1,26 +1,24 @@
-import { GEOMETRY_COLLECTION_TYPES } from 'core/Constants';
-import Class from 'core/Class';
-import Eventable from 'core/Eventable';
-import JSONAble from 'core/JSONAble';
-import Handlerable from 'handler/Handlerable';
+import { GEOMETRY_COLLECTION_TYPES, NUMERICAL_PROPERTIES } from '../core/Constants';
+import Class from '../core/Class';
+import Eventable from '../core/Eventable';
+import JSONAble from '../core/JSONAble';
+import Handlerable from '../handler/Handlerable';
 import {
     extend,
     isNil,
     isString,
     isNumber,
     isObject,
-    mapArrayRecursively,
+    forEachCoord,
     flash
-} from 'core/util';
-import { extendSymbol } from 'core/util/style';
-import { convertResourceUrl, getExternalResources } from 'core/util/resource';
-import Point from 'geo/Point';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
-import { Measurer } from 'geo/measurer';
-import Painter from 'renderer/geometry/Painter';
-import CollectionPainter from 'renderer/geometry/CollectionPainter';
-import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
+} from '../core/util';
+import { extendSymbol } from '../core/util/style';
+import { convertResourceUrl, getExternalResources } from '../core/util/resource';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
+import Painter from '../renderer/geometry/Painter';
+import CollectionPainter from '../renderer/geometry/CollectionPainter';
+import SpatialReference from '../map/spatial-reference/SpatialReference';
 
 /**
  * @property {Object} options                       - geometry options
@@ -28,12 +26,11 @@ import Symbolizer from 'renderer/geometry/symbolizers/Symbolizer';
  * @property {Boolean} [options.visible=true]       - whether the geometry is visible.
  * @property {Boolean} [options.editable=true]      - whether the geometry can be edited.
  * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
- * @property {Number} [options.shadowBlur=0]        - level of the shadow around the geometry, see [MDN's explanation]{@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/shadowBlur}
- * @property {String} [options.shadowColor=black]   - color of the shadow around the geometry, a CSS style color
  * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
  * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
- * @property {Boolean} [options.dragShadow=false]   - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
+ * @property {Boolean} [options.dragShadow=true]    - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
  * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
+ * @property {Number}  [options.zIndex=undefined]   - geometry's initial zIndex
  * @memberOf Geometry
  * @instance
  */
@@ -42,9 +39,7 @@ const options = {
     'visible': true,
     'editable': true,
     'cursor': null,
-    'shadowBlur': 0,
-    'shadowColor': 'black',
-    'measure': 'EPSG:4326' // BAIDU, IDENTITY
+    'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
 };
 
 /**
@@ -221,6 +216,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     setProperties(properties) {
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
+        this._repaint();
         /**
          * propertieschange event, thrown when geometry's properties is changed.
          *
@@ -326,10 +322,22 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const prjExt = this._getPrjExtent();
         if (prjExt) {
             const p = this._getProjection();
-            return new Extent(p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])), p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax'])));
+            const min = p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])),
+                max = p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax']));
+            return new Extent(min, max, this._getProjection());
         } else {
             return this._computeExtent(this._getMeasurer());
         }
+    }
+
+    /**
+     * Get geometry's screen extent in pixel
+     *
+     * @returns {PointExtent}
+     */
+    getContainerExtent() {
+        const painter = this._getPainter();
+        return painter ? painter.getContainerExtent() : null;
     }
 
     /**
@@ -338,12 +346,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Size}
      */
     getSize() {
-        const map = this.getMap();
-        if (!map) {
-            return null;
-        }
-        const pxExtent = this._getPainter().getContainerExtent();
-        return pxExtent.getSize();
+        const extent = this.getContainerExtent();
+        return extent ? extent.getSize() : null;
     }
 
     /**
@@ -362,9 +366,21 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
         if (containerPoint instanceof Coordinate) {
-            containerPoint = this.getMap().coordinateToContainerPoint(containerPoint);
+            containerPoint = this.getMap().coordToContainerPoint(containerPoint);
         }
-        return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
+        return this._containsPoint(containerPoint, t);
+        // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
+    }
+
+    _containsPoint(containerPoint, t) {
+        const painter = this._getPainter();
+        if (!painter) {
+            return false;
+        }
+        if (isNil(t) && this._hitTestTolerance) {
+            t = this._hitTestTolerance();
+        }
+        return painter.hitTest(containerPoint, t);
     }
 
     /**
@@ -553,7 +569,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const coordinates = this.getCoordinates();
         if (coordinates) {
             if (Array.isArray(coordinates)) {
-                const translated = mapArrayRecursively(coordinates, function (coord) {
+                const translated = forEachCoord(coordinates, function (coord) {
                     return coord.add(offset);
                 });
                 this.setCoordinates(translated);
@@ -745,6 +761,39 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * Rotate the geometry of given angle around a pivot point
+     * @param {Number} angle - angle to rotate in degree
+     * @param {Coordinate} [pivot=null]  - optional, will be the geometry's center by default
+     * @returns {Geometry} this
+     */
+    rotate(angle, pivot) {
+        if (this.type === 'GeometryCollection') {
+            const geometries = this.getGeometries();
+            geometries.forEach(g => g.rotate(angle, pivot));
+            return this;
+        }
+        if (!pivot) {
+            pivot = this.getCenter();
+        } else {
+            pivot = new Coordinate(pivot);
+        }
+        const measurer = this._getMeasurer();
+        const coordinates = this.getCoordinates();
+        if (!Array.isArray(coordinates)) {
+            if (pivot.x !== coordinates.x || pivot.y !== coordinates.y) {
+                const c = measurer._rotate(coordinates, pivot, angle);
+                this.setCoordinates(c);
+            }
+            return this;
+        }
+        forEachCoord(coordinates, c => {
+            return measurer._rotate(c, pivot, angle);
+        });
+        this.setCoordinates(coordinates);
+        return this;
+    }
+
+    /**
      * Get the connect points for [ConnectorLine]{@link ConnectorLine}
      * @return {Coordinate[]} connect points
      * @private
@@ -802,9 +851,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _checkAndCopySymbol(symbol) {
         const s = {};
-        const numericalProperties = Symbolizer.numericalProperties;
         for (const i in symbol) {
-            if (numericalProperties[i] && isString(symbol[i])) {
+            if (NUMERICAL_PROPERTIES[i] && isString(symbol[i])) {
                 s[i] = +symbol[i];
             } else {
                 s[i] = symbol[i];
@@ -857,7 +905,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._animPlayer) {
             this._animPlayer.finish();
         }
-
+        this._clearHandlers();
         //contextmenu
         this._unbindMenu();
         //infowindow
@@ -891,7 +939,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._getProjection()) {
             return this._getProjection();
         }
-        return Measurer.getInstance(this.options['measure']);
+        return SpatialReference.getProjectionInstance(this.options['defaultProjection']);
     }
 
     _getProjection() {
@@ -1003,17 +1051,25 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     onConfig(conf) {
+        let properties;
+        if (conf['properties']) {
+            properties = conf['properties'];
+            delete conf['properties'];
+        }
         let needRepaint = false;
         for (const p in conf) {
             if (conf.hasOwnProperty(p)) {
                 const prefix = p.slice(0, 5);
-                if (prefix === 'arrow' || prefix === 'shado') {
+                if (prefix === 'arrow' || prefix === 'smoot') {
                     needRepaint = true;
                     break;
                 }
             }
         }
-        if (needRepaint) {
+        if (properties) {
+            this.setProperties(properties);
+            this._repaint();
+        } else if (needRepaint) {
             this._repaint();
         }
     }

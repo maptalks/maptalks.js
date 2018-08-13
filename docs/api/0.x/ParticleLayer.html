@@ -96,6 +96,11 @@
             
             
             
+            
+            
+            
+            
+            
         
         <h5>Methods</h5>
         <ul>
@@ -226,6 +231,26 @@
                 getZIndex</a></li>
         
             
+                <li><a class="inherit" href="#getMinZoom">
+            
+                getMinZoom</a></li>
+        
+            
+                <li><a class="inherit" href="#getMaxZoom">
+            
+                getMaxZoom</a></li>
+        
+            
+                <li><a class="inherit" href="#getOpacity">
+            
+                getOpacity</a></li>
+        
+            
+                <li><a class="inherit" href="#setOpacity">
+            
+                setOpacity</a></li>
+        
+            
                 <li><a class="inherit" href="#isCanvasRender">
             
                 isCanvasRender</a></li>
@@ -234,6 +259,11 @@
                 <li><a class="inherit" href="#getMap">
             
                 getMap</a></li>
+        
+            
+                <li><a class="inherit" href="#getProjection">
+            
+                getProjection</a></li>
         
             
                 <li><a class="inherit" href="#bringToFront">
@@ -384,13 +414,15 @@
         
             <li><a href="#event:idchange">idchange</a></li>
         
+            <li><a href="#event:renderercreate">renderercreate</a></li>
+        
             <li><a href="#event:resourceload">resourceload</a></li>
+        
+            <li><a href="#event:canvascreate">canvascreate</a></li>
         
             <li><a href="#event:renderstart">renderstart</a></li>
         
             <li><a href="#event:renderend">renderend</a></li>
-        
-            <li><a href="#event:layerload">layerload</a></li>
         
         </ul>
     
@@ -405,7 +437,7 @@
     
         <h2>ParticleLayer</h2>
         
-            <div class="class-description">A layer to draw particles. <br>ParticleLayer provides some interface methods to render particles. <br>You can use it directly, but can't serialize/dserialize a ParticleLayer with JSON in this way. <br>It is more recommended to extend it with a subclass.</div>
+            <div class="class-description">A layer to draw particles. <br>ParticleLayer provides some interface methods to render particles. <br>You can use it directly, but can't serialize/deserialize a ParticleLayer with JSON in this way. <br>It is more recommended to extend it with a subclass.</div>
         
     
 </header>
@@ -573,13 +605,15 @@
 <ul>
     <li><a href="#event:idchange">idchange</a></li>
 
+    <li><a href="#event:renderercreate">renderercreate</a></li>
+
     <li><a href="#event:resourceload">resourceload</a></li>
+
+    <li><a href="#event:canvascreate">canvascreate</a></li>
 
     <li><a href="#event:renderstart">renderstart</a></li>
 
     <li><a href="#event:renderend">renderend</a></li>
-
-    <li><a href="#event:layerload">layerload</a></li>
 </ul>
 
 
@@ -829,6 +863,43 @@
 
         <tr>
             
+                <td class="name"><code>attribution</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">the attribution of this layer, you can specify company or other information of this layer.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>minZoom</code>
                     
                         
@@ -977,6 +1048,41 @@
 
         <tr>
             
+                <td class="name"><code>zIndex</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">z index of the layer</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>renderer</code>
                     
                         
@@ -1082,6 +1188,43 @@
             
 
             <td class="description last">debug outline's color.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cssFilter</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">css filter apply to canvas context's filter</td>
         </tr>
 
     
@@ -3358,11 +3501,11 @@
     <h4 class="name" id="load"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#load">load</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L64" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L75" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L64" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L75" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#load" class="improvelink">[link]</a> -->
     </h4>
@@ -3435,11 +3578,11 @@
     <h4 class="name" id="getId"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getId">getId</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L85" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L97" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L85" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L97" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getId" class="improvelink">[link]</a> -->
     </h4>
@@ -3523,11 +3666,11 @@
     <h4 class="name" id="setId"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setId">setId</a><span class="signature">(id)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L95" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L107" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L95" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L107" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setId" class="improvelink">[link]</a> -->
     </h4>
@@ -3661,11 +3804,11 @@
     <h4 class="name" id="addTo"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#addTo">addTo</a><span class="signature">(map)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L123" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L135" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L123" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L135" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#addTo" class="improvelink">[link]</a> -->
     </h4>
@@ -3794,11 +3937,11 @@
     <h4 class="name" id="setZIndex"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setZIndex">setZIndex</a><span class="signature">(zIndex)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L133" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L145" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L133" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L145" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setZIndex" class="improvelink">[link]</a> -->
     </h4>
@@ -3927,11 +4070,11 @@
     <h4 class="name" id="getZIndex"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getZIndex">getZIndex</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L148" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L160" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L148" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L160" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getZIndex" class="improvelink">[link]</a> -->
     </h4>
@@ -4008,14 +4151,399 @@
     
     <li>
     
-    <h4 class="name" id="isCanvasRender"><span class="type-signature">(protected) </span><i><span class="type-signature"> (inherited)  </span><a href="#isCanvasRender">isCanvasRender</a><span class="signature">()</span></i>
+    <h4 class="name" id="getMinZoom"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getMinZoom">getMinZoom</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L157" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L168" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L157" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L168" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getMinZoom" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get Layer's minZoom to display
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Layer.html#getMinZoom">Layer#getMinZoom</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getMaxZoom"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getMaxZoom">getMaxZoom</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L178" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L178" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getMaxZoom" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get Layer's maxZoom to display
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Layer.html#getMaxZoom">Layer#getMaxZoom</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="getOpacity"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getOpacity">getOpacity</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L188" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L188" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getOpacity" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get layer's opacity
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Layer.html#getOpacity">Layer#getOpacity</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Number</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="setOpacity"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setOpacity">setOpacity</a><span class="signature">(opacity)</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L197" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L197" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#setOpacity" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Set opacity to the layer
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opacity</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">layer's opacity</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Layer.html#setOpacity">Layer#setOpacity</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature"><a href="Layer.html">Layer</a></span>:
+
+        
+<!-- <div class="param-desc"> -->
+    this
+<!-- </div> -->
+
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="isCanvasRender"><span class="type-signature">(protected) </span><i><span class="type-signature"> (inherited)  </span><a href="#isCanvasRender">isCanvasRender</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L207" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L207" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#isCanvasRender" class="improvelink">[link]</a> -->
     </h4>
@@ -4095,11 +4623,11 @@
     <h4 class="name" id="getMap"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getMap">getMap</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L166" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L216" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L166" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L216" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getMap" class="improvelink">[link]</a> -->
     </h4>
@@ -4176,14 +4704,98 @@
     
     <li>
     
-    <h4 class="name" id="bringToFront"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#bringToFront">bringToFront</a><span class="signature">()</span></i>
+    <h4 class="name" id="getProjection"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getProjection">getProjection</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L178" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L227" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L178" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L227" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#getProjection" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Get projection of layer's map
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Layer.html#getProjection">Layer#getProjection</a>
+    </li></ul>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">Object</span>:
+
+        
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="bringToFront"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#bringToFront">bringToFront</a><span class="signature">()</span></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L236" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L236" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#bringToFront" class="improvelink">[link]</a> -->
     </h4>
@@ -4267,11 +4879,11 @@
     <h4 class="name" id="bringToBack"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#bringToBack">bringToBack</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L196" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L254" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L196" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L254" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#bringToBack" class="improvelink">[link]</a> -->
     </h4>
@@ -4355,11 +4967,11 @@
     <h4 class="name" id="show"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#show">show</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L214" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L272" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L214" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L272" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#show" class="improvelink">[link]</a> -->
     </h4>
@@ -4443,11 +5055,11 @@
     <h4 class="name" id="hide"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#hide">hide</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L239" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L297" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L239" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L297" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#hide" class="improvelink">[link]</a> -->
     </h4>
@@ -4531,11 +5143,11 @@
     <h4 class="name" id="isVisible"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#isVisible">isVisible</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L265" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L323" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L265" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L323" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#isVisible" class="improvelink">[link]</a> -->
     </h4>
@@ -4615,11 +5227,11 @@
     <h4 class="name" id="remove"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#remove">remove</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L288" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L346" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L288" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L346" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#remove" class="improvelink">[link]</a> -->
     </h4>
@@ -4703,11 +5315,11 @@
     <h4 class="name" id="getMask"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#getMask">getMask</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L299" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L357" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L299" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L357" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getMask" class="improvelink">[link]</a> -->
     </h4>
@@ -4787,11 +5399,11 @@
     <h4 class="name" id="setMask"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#setMask">setMask</a><span class="signature">(mask)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L308" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L366" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L308" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L366" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setMask" class="improvelink">[link]</a> -->
     </h4>
@@ -4920,11 +5532,11 @@
     <h4 class="name" id="removeMask"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#removeMask">removeMask</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L340" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L398" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L340" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L398" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#removeMask" class="improvelink">[link]</a> -->
     </h4>
@@ -5008,11 +5620,11 @@
     <h4 class="name" id="onLoad"><span class="type-signature">(protected) </span><i><span class="type-signature"> (inherited)  </span><a href="#onLoad">onLoad</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L357" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L415" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L357" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L415" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#onLoad" class="improvelink">[link]</a> -->
     </h4>
@@ -5096,11 +5708,11 @@
     <h4 class="name" id="isLoaded"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#isLoaded">isLoaded</a><span class="signature">()</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L365" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L426" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L365" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L426" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#isLoaded" class="improvelink">[link]</a> -->
     </h4>
@@ -5404,11 +6016,11 @@
     <h4 class="name" id="addEventListener"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#addEventListener">addEventListener</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L61" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L64" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L61" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L64" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#addEventListener" class="improvelink">[link]</a> -->
     </h4>
@@ -5621,11 +6233,11 @@
     <h4 class="name" id="once"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#once">once</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L74" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L77" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L74" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L77" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#once" class="improvelink">[link]</a> -->
     </h4>
@@ -5845,11 +6457,11 @@
     <h4 class="name" id="off"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#off">off</a><span class="signature">(eventsOff, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L102" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L105" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L102" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L105" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#off" class="improvelink">[link]</a> -->
     </h4>
@@ -6069,11 +6681,11 @@
     <h4 class="name" id="removeEventListener"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#removeEventListener">removeEventListener</a><span class="signature">(eventTypes, handler, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L143" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L149" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L143" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L149" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#removeEventListener" class="improvelink">[link]</a> -->
     </h4>
@@ -6286,11 +6898,11 @@
     <h4 class="name" id="listens"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#listens">listens</a><span class="signature">(eventType, hanlder<span class="signature-attributes">opt</span>, context<span class="signature-attributes">opt</span>)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L156" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L162" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L156" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L162" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#listens" class="improvelink">[link]</a> -->
     </h4>
@@ -6503,11 +7115,11 @@
     <h4 class="name" id="copyEventListeners"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#copyEventListeners">copyEventListeners</a><span class="signature">(target)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L187" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L193" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L187" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L193" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#copyEventListeners" class="improvelink">[link]</a> -->
     </h4>
@@ -6644,11 +7256,11 @@
     <h4 class="name" id="fire"><span class="type-signature"></span><i><span class="type-signature"> (inherited)  </span><a href="#fire">fire</a><span class="signature">(eventType, param)</span></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L208" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L214" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L208" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Eventable.js#L214" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#fire" class="improvelink">[link]</a> -->
     </h4>
@@ -7922,11 +8534,11 @@
     <h4 class="name" id="event:idchange"><i><span class="type-signature"> (inherited)  </span><a href="#event:idchange">idchange</a></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L101" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L113" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L101" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L113" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:idchange" class="improvelink">[link]</a> -->
     </h4>
@@ -8144,7 +8756,246 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js">layer/Layer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L101">line 101</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js">layer/Layer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L113">line 113</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:renderercreate"><i><span class="type-signature"> (inherited)  </span><a href="#event:renderercreate">renderercreate</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L480" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L480" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:renderercreate" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    renderercreate event, fired when renderer is created.
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Layer.html#event:renderercreate">Layer#event:renderercreate</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">renderercreate</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">the layer fires the event</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>renderer</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Any</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">renderer of the layer</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Layer.html#event:renderercreate">Layer#event:renderercreate</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js">layer/Layer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/layer/Layer.js#L480">line 480</a>
         
 
     </li></ul></dd>
@@ -8397,14 +9248,278 @@
     
     <li>
     
-    <h4 class="name" id="event:renderstart"><i><span class="type-signature"> (inherited)  </span><a href="#event:renderstart">renderstart</a></i>
+    <h4 class="name" id="event:canvascreate"><i><span class="type-signature"> (inherited)  </span><a href="#event:canvascreate">canvascreate</a></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L467" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L456" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L467" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L456" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:canvascreate" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    canvascreate event, fired when canvas created.
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+    <h5>Inherited From:</h5>    
+    <ul><li>
+        <a href="Layer.html#event:canvascreate">Layer#event:canvascreate</a>
+    </li></ul>
+    
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">canvascreate</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">layer</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">CanvasRenderingContext2D</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">canvas's context</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gl</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">WebGLRenderingContext2D</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">canvas's webgl context</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Layer.html#event:canvascreate">Layer#event:canvascreate</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js">renderer/layer/CanvasRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L456">line 456</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:renderstart"><i><span class="type-signature"> (inherited)  </span><a href="#event:renderstart">renderstart</a></i>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L493" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L493" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:renderstart" class="improvelink">[link]</a> -->
     </h4>
@@ -8597,7 +9712,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js">renderer/layer/CanvasRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L467">line 467</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js">renderer/layer/CanvasRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L493">line 493</a>
         
 
     </li></ul></dd>
@@ -8639,11 +9754,11 @@
     <h4 class="name" id="event:renderend"><i><span class="type-signature"> (inherited)  </span><a href="#event:renderend">renderend</a></i>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L502" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L551" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L502" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L551" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:renderend" class="improvelink">[link]</a> -->
     </h4>
@@ -8836,221 +9951,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js">renderer/layer/CanvasRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L502">line 502</a>
-        
-
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="event:layerload"><i><span class="type-signature"> (inherited)  </span><a href="#event:layerload">layerload</a></i>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L250" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L250" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#event:layerload" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    layerload event, fired when layer is loaded.
-</div>
-
-
-
-
-<!-- 
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
- -->
-
-
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-    <h5>Inherited From:</h5>    
-    <ul><li>
-        <a href="Layer.html#event:layerload">Layer#event:layerload</a>
-    </li></ul>
-    
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">layerload</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>target</code>
-                    
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Layer.html">Layer</a></span>
-
-
-            
-            </td>
-
-
-
-            
-
-            <td class="description last">layer</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="Layer.html#event:layerload">Layer#event:layerload</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-        
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js">renderer/map/MapCanvasRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/map/MapCanvasRenderer.js#L250">line 250</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js">renderer/layer/CanvasRenderer.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/renderer/layer/CanvasRenderer.js#L551">line 551</a>
         
 
     </li></ul></dd>
@@ -9094,13 +9995,13 @@
 </div>
 
 <nav class="page-nav">
-    <h2><a href="index.html">V0.33.1</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="Circle.html">Circle</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="Curve.html">Curve</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="Label.html">Label</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Marker.html">Marker</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPath.html">MultiPath</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="Path.html">Path</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="TextMarker.html">TextMarker</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="AreaTool.html">AreaTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="MapTool.html">MapTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.Menu.html">ui.Menu</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li></ul><h5>Control</h5><ul><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Overview.html">control.Overview</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Zoom.html">control.Zoom</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="DragHandler.html">DragHandler</a></li><li><a href="Handler.html">Handler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li><li><a href="renderer.TileLayerCanvasRenderer.html">renderer.TileLayerCanvasRenderer</a></li><li><a href="renderer.TileLayerDomRenderer.html">renderer.TileLayerDomRenderer</a></li><li><a href="renderer.TileLayerGLRenderer.html">renderer.TileLayerGLRenderer</a></li><li><a href="renderer.MapCanvasRenderer.html">renderer.MapCanvasRenderer</a></li><li><a href="renderer.MapRenderer.html">renderer.MapRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="ui.html">ui</a></li><li><a href="control.html">control</a></li><li><a href="renderer.html">renderer</a></li><li><a href="animation.html">animation</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li></ul>
+    <h2><a href="index.html">V0.40.4</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="Layer.html">Layer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="ImageLayer.html">ImageLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="Geometry.html">Geometry</a></li><li><a href="Path.html">Path</a></li><li><a href="Marker.html">Marker</a></li><li><a href="TextMarker.html">TextMarker</a></li><li><a href="Label.html">Label</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Curve.html">Curve</a></li><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="Circle.html">Circle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Position.html">Position</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="MapTool.html">MapTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="AreaTool.html">AreaTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.Menu.html">ui.Menu</a></li></ul><h5>Control</h5><ul><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Zoom.html">control.Zoom</a></li><li><a href="control.LayerSwitcher.html">control.LayerSwitcher</a></li><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Scale.html">control.Scale</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Overview.html">control.Overview</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="Handler.html">Handler</a></li><li><a href="DragHandler.html">DragHandler</a></li></ul><h5>Other</h5><ul><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="renderer.html">renderer</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#RESOURCE_PROPERTIES">RESOURCE_PROPERTIES</a></li><li><a href="global.html#RESOURCE_SIZE_PROPERTIES">RESOURCE_SIZE_PROPERTIES</a></li><li><a href="global.html#NUMERICAL_PROPERTIES">NUMERICAL_PROPERTIES</a></li><li><a href="global.html#COLOR_PROPERTIES">COLOR_PROPERTIES</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li><li><a href="global.html#identity">identity</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#subtract">subtract</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#normalize">normalize</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#scale">scale</a></li><li><a href="global.html#cross">cross</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Wed Oct 25 2017 16:28:58 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Tue Jul 03 2018 14:40:30 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,4 +1,4 @@
-import { IS_NODE, isString, parseJSON, emptyImageUrl, UID } from 'core/util';
+import { IS_NODE, isString, isFunction, parseJSON, emptyImageUrl, UID } from './util';
 
 /**
  * @classdesc
@@ -42,11 +42,11 @@ const Ajax = {
     /**
      * Fetch remote resource by HTTP "GET" method
      * @param  {String}   url - resource url
+     * @param  {Object}   [options=null] - request options
+     * @param  {Object}   [options.headers=null] - HTTP headers
+     * @param  {String}   [options.responseType=null] - responseType
+     * @param  {String}   [options.credentials=null]  - if with credentials, set it to "include"
      * @param  {Function} cb  - callback function when completed
-     * @param  {Object}   options - request options
-     * @param  {Object}   options.headers - HTTP headers
-     * @param  {String}   options.responseType - responseType
-     * @param  {String}   options.credentials  - if with credentials, set it to "include"
      * @return {Ajax}  Ajax
      * @example
      * maptalks.Ajax.get(
@@ -59,7 +59,12 @@ const Ajax = {
      *     }
      * );
      */
-    get: function (url, cb, options) {
+    get: function (url, options, cb) {
+        if (isFunction(options)) {
+            const t = cb;
+            cb = options;
+            options = t;
+        }
         if (IS_NODE && Ajax.get.node) {
             return Ajax.get.node(url, cb, options);
         }
@@ -75,36 +80,55 @@ const Ajax = {
             }
         }
         client.send(null);
-        return this;
+        return client;
     },
 
     /**
      * Fetch remote resource by HTTP "POST" method
-     * @param  {Object}   options - post options
-     * @param  {String}   options.url - url
-     * @param  {Object}   options.headers - HTTP headers
-     * @param  {String|Object} postData - data post to server
+     * @param  {String}   url - resource url
+     * @param  {Object}   options - request options
+     * @param  {String|Object}  options.postData - post data
+     * @param  {Object}   [options.headers=null]  - HTTP headers
      * @param  {Function} cb  - callback function when completed
      * @return {Ajax}  Ajax
      * @example
      * maptalks.Ajax.post(
-     *     {
-     *         'url' : 'url/to/post'
-     *     },
-     *     {
-     *         'param0' : 'val0',
-     *         'param1' : 1
-     *     },
-     *     (err, data) => {
-     *         if (err) {
-     *             throw new Error(err);
-     *         }
-     *         // do things with data
+     *   'url/to/post',
+     *   {
+     *     postData : {
+     *       'param0' : 'val0',
+     *       'param1' : 1
      *     }
+     *   },
+     *   (err, data) => {
+     *     if (err) {
+     *       throw new Error(err);
+     *     }
+     *     // do things with data
+     *   }
      * );
      */
-    post: function (options, postData, cb) {
+    post: function (url, options, cb) {
+        let postData;
+        if (!isString(url)) {
+            //for compatible
+            //options, postData, cb
+            const t = cb;
+            postData = options;
+            options = url;
+            url = options.url;
+            cb = t;
+        } else {
+            if (isFunction(options)) {
+                const t = cb;
+                cb = options;
+                options = t;
+            }
+            options = options || {};
+            postData = options.postData;
+        }
         if (IS_NODE && Ajax.post.node) {
+            options.url = url;
             return Ajax.post.node(options, postData, cb);
         }
         const client = Ajax._getClient(cb);
@@ -126,7 +150,7 @@ const Ajax = {
             postData = JSON.stringify(postData);
         }
         client.send(postData);
-        return this;
+        return client;
     },
 
     _wrapCallback: function (client, cb) {
@@ -171,9 +195,9 @@ const Ajax = {
     },
     /**
      * Fetch resource as arraybuffer.
-     * @param {String} url          - url
-     * @param {Function} callback   - callback function when completed.
-     * @param {Object} options
+     * @param {String} url    - url
+     * @param {Object} [options=null] - options, same as Ajax.get
+     * @param {Function} cb   - callback function when completed.
      * @example
      * maptalks.Ajax.getArrayBuffer(
      *     'url/to/resource.bin',
@@ -185,17 +209,22 @@ const Ajax = {
      *     }
      * );
      */
-    getArrayBuffer(url, callback, options) {
+    getArrayBuffer(url, options, cb) {
+        if (isFunction(options)) {
+            const t = cb;
+            cb = options;
+            options = t;
+        }
         if (!options) {
             options = {};
         }
         options['responseType'] = 'arraybuffer';
-        return Ajax.get(url, callback, options);
+        return Ajax.get(url, options, cb);
     },
 
     // from mapbox-gl-js
     getImage(img, url, options) {
-        return Ajax.getArrayBuffer(url, (err, imgData) => {
+        return Ajax.getArrayBuffer(url, options, (err, imgData) => {
             if (err) {
                 if (img.onerror) {
                     img.onerror(err);
@@ -214,31 +243,36 @@ const Ajax = {
                 img.expires = imgData.expires;
                 img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : emptyImageUrl;
             }
-        }, options);
+        });
     }
 };
 
 /**
  * Fetch resource as a JSON Object.
  * @param {String} url          - json's url
- * @param {Function} callback   - callback function when completed.
- * @param {Object} options      - optional options
- * @param {String} options.jsonp - fetch by jsonp, false by default
+ * @param {Object} [options=null]        - optional options
+ * @param {String} [options.jsonp=false] - fetch by jsonp, false by default
+ * @param {Function} cb   - callback function when completed.
  * @example
  * maptalks.Ajax.getJSON(
  *     'url/to/resource.json',
+ *     { jsonp : true },
  *     (err, json) => {
  *         if (err) {
  *             throw new Error(err);
  *         }
  *         // json is a JSON Object
  *         console.log(json.foo);
- *     },
- *     { jsonp : true }
+ *     }
  * );
  * @static
  */
-Ajax.getJSON = function (url, cb, options) {
+Ajax.getJSON = function (url, options, cb) {
+    if (isFunction(options)) {
+        const t = cb;
+        cb = options;
+        options = t;
+    }
     const callback = function (err, resp) {
         const data = resp ? parseJSON(resp) : null;
         cb(err, data);
@@ -246,7 +280,7 @@ Ajax.getJSON = function (url, cb, options) {
     if (options && options['jsonp']) {
         return Ajax.jsonp(url, callback);
     }
-    return Ajax.get(url, callback, options);
+    return Ajax.get(url, options, callback);
 };
 
 export default Ajax;

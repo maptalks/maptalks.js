@@ -1,10 +1,10 @@
 
-describe('#GeometryDrag', function () {
+describe('Geometry.Drag', function () {
     var container, eventContainer;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
 
-    function dragGeometry(geometry, isMove) {
+    function dragGeometry(geometry, isMove, offset) {
         var layer = map.getLayer('id').clear();
         map.setCenter(geometry.getFirstCoordinate());
         geometry.addTo(layer);
@@ -13,6 +13,9 @@ describe('#GeometryDrag', function () {
 
         var domPosition = GET_PAGE_POSITION(container);
         var point = map.coordinateToContainerPoint(geometry.getFirstCoordinate()).add(domPosition);
+        if (offset) {
+            point._add(offset);
+        }
 
         happen.mousedown(eventContainer, {
             'clientX':point.x,
@@ -47,11 +50,15 @@ describe('#GeometryDrag', function () {
     }
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
         map.config('panAnimation', false);
-        var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
+        map.config('centerCross', true);
+        var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true, 'enableAltitude' : true });
         map.addLayer(layer);
         eventContainer = map._panels.canvasContainer;
     });
@@ -155,5 +162,54 @@ describe('#GeometryDrag', function () {
         });
     });
 
+    describe('drag geometry with altitude', function () {
+        it('dragging multipolygon', function () {
+            map.setPitch(80);
+            var coordinates = [
+                [
+                    [
+                        { x: 121.111, y: 30.111 },
+                        { x: 121.222, y: 30.222 },
+                        { x: 121.111, y: 30.333 }
+                    ]
+                ],
+                [
+                    [
+                        { x: 121.444, y: 30.444 },
+                        { x: 121.555, y: 30.555 },
+                        { x: 121.444, y: 30.666 }
+                    ]
+                ]
+            ];
+            var multiPolygon = new maptalks.MultiPolygon(coordinates, {
+                draggable : true,
+                properties : {
+                    altitude : 50
+                }
+            });
+            map.setCenter(multiPolygon.getCenter());
+            dragGeometry(multiPolygon, true, new maptalks.Point(20, -60));
+            expect(multiPolygon.getCoordinates()).not.to.be.closeTo(coordinates);
+        });
+
+        it('dragging marker', function () {
+            map.setPitch(80);
+            var marker = new maptalks.Marker(center, {
+                draggable : true,
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : 20,
+                    markerHeight : 20
+                },
+                properties : {
+                    altitude : 50
+                }
+            });
+            dragGeometry(marker, true, new maptalks.Point(0, -45));
+            expect(marker.getCoordinates()).not.to.be.closeTo(center);
+        });
+
+
+    });
 
 });

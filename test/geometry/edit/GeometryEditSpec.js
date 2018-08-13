@@ -45,6 +45,26 @@ describe('Geometry.Edit', function () {
             expect(marker.isEditing()).not.to.be.ok();
         });
 
+        it('should can change coordinates when being edited', function () {
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+            var coords = geometries.map(function (g) {
+                return maptalks.Coordinate.toNumberArrays(g.getCoordinates());
+            });
+
+            var changed = [];
+            geometries.forEach(function (g) {
+                g.startEdit();
+                g.translate(0.1, 0.2);
+                changed.push(maptalks.Coordinate.toNumberArrays(g.getCoordinates()));
+                g.endEdit();
+            });
+
+            expect(coords.length).to.be.eql(changed.length);
+            for (var i = 0, l = coords.length; i < l; i++) {
+                expect(coords[i]).not.to.be.eql(changed[i]);
+            }
+        });
+
         describe('drag all kinds of geometries', function () {
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             function testDrag(geo) {
@@ -64,7 +84,9 @@ describe('Geometry.Edit', function () {
                     if (!(geo instanceof maptalks.Marker) || geo._canEdit()) {
                         expect(geo.getCenter()).to.closeTo(newCenter);
                         geo.undoEdit();
-                        expect(geo.getCenter()).to.closeTo(center);
+                        var c = geo.getCenter();
+                        expect(c.x).to.be.approx(center.x, 1E-4);
+                        expect(c.y).to.be.approx(center.y, 1E-4);
                         geo.redoEdit();
                         expect(geo.getCenter()).to.closeTo(newCenter);
                     }
@@ -170,7 +192,7 @@ describe('Geometry.Edit', function () {
             });
             marker.startEdit();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
-            expect(marker.getWidth()).to.be.above(39);
+            expect(marker.getWidth()).to.be.above(30);
             expect(marker.getHeight()).to.be.approx(20);
             expect(fired).to.be.ok();
             marker.undoEdit();
@@ -179,7 +201,7 @@ describe('Geometry.Edit', function () {
             expect(marker.getHeight()).to.be.approx(20);
             marker.redoEdit();
 
-            expect(marker.getWidth()).to.be.above(39);
+            expect(marker.getWidth()).to.be.above(30);
             expect(marker.getHeight()).to.be.approx(20);
             marker.endEdit();
         });
@@ -193,12 +215,12 @@ describe('Geometry.Edit', function () {
             circle.startEdit();
             var size = circle.getSize();
             dragGeometry(circle, new maptalks.Point(size.width / 2, 0));
-            expect(circle.getRadius()).to.be.eql(1010.12334);
+            expect(circle.getRadius()).to.be.above(1005);
 
             circle.undoEdit();
             expect(circle.getRadius()).to.be.eql(1000);
             circle.redoEdit();
-            expect(circle.getRadius()).to.be.eql(1010.12334);
+            expect(circle.getRadius()).to.be.above(1005);
 
             circle.endEdit();
             expect(fired).to.be.ok();
@@ -213,15 +235,15 @@ describe('Geometry.Edit', function () {
             ellipse.startEdit();
             var size = ellipse.getSize();
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, size.height / 2));
-            expect(ellipse.getWidth()).to.be.approx(1020.24668);
-            expect(ellipse.getHeight()).to.be.approx(520.2339);
+            expect(ellipse.getWidth()).to.be.above(1010);
+            expect(ellipse.getHeight()).to.be.above(510);
 
             ellipse.undoEdit();
             expect(ellipse.getWidth()).to.be.approx(1000);
             expect(ellipse.getHeight()).to.be.approx(500);
             ellipse.redoEdit();
-            expect(ellipse.getWidth()).to.be.approx(1020.24668);
-            expect(ellipse.getHeight()).to.be.approx(520.2339);
+            expect(ellipse.getWidth()).to.be.above(1010);
+            expect(ellipse.getHeight()).to.be.above(510);
 
             ellipse.endEdit();
             expect(fired).to.be.ok();
@@ -237,16 +259,16 @@ describe('Geometry.Edit', function () {
             var size = ellipse.getSize();
             var ratio = ellipse.getWidth() / ellipse.getHeight();
             dragGeometry(ellipse, new maptalks.Point(size.width / 2, 0));
-            expect(ellipse.getWidth()).to.be.approx(120.24668);
-            expect(ellipse.getHeight()).to.be.approx(120.24668 / ratio);
+            expect(ellipse.getWidth()).to.be.above(114);
+            expect(ellipse.getHeight()).to.be.approx(ellipse.getWidth() / ratio);
 
             ellipse.undoEdit();
             expect(ellipse.getWidth()).to.be.approx(100);
             expect(ellipse.getHeight()).to.be.approx(50);
 
             ellipse.redoEdit();
-            expect(ellipse.getWidth()).to.be.approx(120.24668);
-            expect(ellipse.getHeight()).to.be.approx(120.24668 / ratio);
+            expect(ellipse.getWidth()).to.be.above(114);
+            expect(ellipse.getHeight()).to.be.approx(ellipse.getWidth() / ratio);
 
             ellipse.endEdit();
             expect(fired).to.be.ok();
@@ -261,15 +283,15 @@ describe('Geometry.Edit', function () {
             rect.startEdit();
             var size = rect.getSize();
             dragGeometry(rect, new maptalks.Point(size.width / 2, size.height / 2));
-            expect(rect.getWidth()).to.be.approx(1011.0866);
-            expect(rect.getHeight()).to.be.approx(511.11058);
+            expect(rect.getWidth()).to.be.above(1008);
+            expect(rect.getHeight()).to.be.above(508);
 
             rect.undoEdit();
             expect(rect.getWidth()).to.be.approx(1000);
             expect(rect.getHeight()).to.be.approx(500);
             rect.redoEdit();
-            expect(rect.getWidth()).to.be.approx(1011.0866);
-            expect(rect.getHeight()).to.be.approx(511.11058);
+            expect(rect.getWidth()).to.be.above(1008);
+            expect(rect.getHeight()).to.be.above(508);
 
             rect.endEdit();
             expect(fired).to.be.ok();
@@ -285,15 +307,15 @@ describe('Geometry.Edit', function () {
             var size = rect.getSize();
             var ratio = rect.getWidth() / rect.getHeight();
             dragGeometry(rect, new maptalks.Point(size.width / 2, 0));
-            expect(rect.getWidth()).to.be.approx(111.135, 3);
-            expect(rect.getHeight()).to.be.approx(111.135 / ratio, 3);
+            expect(rect.getWidth()).to.be.above(108);
+            expect(rect.getHeight()).to.be.approx(rect.getWidth() / ratio, 3);
 
             rect.undoEdit();
             expect(rect.getWidth()).to.be.approx(100);
             expect(rect.getHeight()).to.be.approx(50);
             rect.redoEdit();
-            expect(rect.getWidth()).to.be.approx(111.135, 3);
-            expect(rect.getHeight()).to.be.approx(111.135 / ratio, 3);
+            expect(rect.getWidth()).to.be.above(108);
+            expect(rect.getHeight()).to.be.approx(rect.getWidth() / ratio, 3);
 
             rect.endEdit();
             expect(fired).to.be.ok();
@@ -308,7 +330,7 @@ describe('Geometry.Edit', function () {
             var size = polygon.getSize();
             dragGeometry(polygon, new maptalks.Point(size.width / 2, size.height / 2));
             expect(polygon.toGeoJSON()).not.to.be.eqlGeoJSON(o);
-            var expected = { 'type':'Feature', 'geometry':{ 'type':'Polygon', 'coordinates':[[[118.84682500000001, 32.046534], [118.85742312186674, 32.046534], [118.85751916135895, 32.041960573990714], [118.84682500000001, 32.04204242358055], [118.84682500000001, 32.046534]]] }, 'properties':null };
+            var expected = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[118.84682499999997,32.04653400000004],[118.85742312186676,32.04653400000004],[118.85751916135894,32.04196057399085],[118.84682499999997,32.04204242358057],[118.84682499999997,32.04653400000004]]]},"properties":null};
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
 
             polygon.undoEdit();
@@ -317,6 +339,28 @@ describe('Geometry.Edit', function () {
             expect(polygon.toGeoJSON()).to.be.eqlGeoJSON(expected);
 
             polygon.endEdit();
+        });
+
+        it('click to remove a polygon vertex', function () {
+            var rect = new maptalks.Rectangle(map.getCenter(), 1000, 500).addTo(layer);
+            var polygon = new maptalks.Polygon(rect.getShell()).addTo(layer);
+            expect(polygon.getCoordinates()[0].length).to.be(5);
+
+            polygon.startEdit({
+                'removeVertexOn' : 'click'
+            });
+            var size = polygon.getSize();
+            var domPosition = GET_PAGE_POSITION(container);
+            var point = map.coordinateToContainerPoint(polygon.getCenter()).add(domPosition);
+            point._add(new maptalks.Point(size.width / 2, size.height / 2));
+
+            happen.click(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+
+            polygon.endEdit();
+            expect(polygon.getCoordinates()[0].length).to.be(4);
         });
 
         it('update symbol when editing', function (done) {

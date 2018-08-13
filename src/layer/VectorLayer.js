@@ -1,7 +1,8 @@
-import { extend, isNil } from 'core/util';
-import { getFilterFeature, compileStyle } from 'core/mapbox';
-import Extent from 'geo/Extent';
-import Geometry from 'geometry/Geometry';
+import Browser from '../core/Browser';
+import { isNil } from '../core/util';
+import { getFilterFeature, compileStyle } from '@maptalks/feature-filter';
+import Extent from '../geo/Extent';
+import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
 
 /**
@@ -24,7 +25,7 @@ const options = {
     'geometryEvents': true,
     'defaultIconSize': [20, 20],
     'cacheVectorOnCanvas': true,
-    'cacheSvgOnCanvas': false,
+    'cacheSvgOnCanvas': Browser.gecko,
     'enableAltitude' : false,
     'altitudeProperty' : 'altitude',
     'drawAltitude' : false
@@ -138,6 +139,7 @@ class VectorLayer extends OverlayLayer {
     }
 
     onConfig(conf) {
+        super.onConfig(conf);
         if (conf['enableAltitude'] || conf['drawAltitude'] || conf['altitudeProperty']) {
             const renderer = this.getRenderer();
             if (renderer && renderer.setToRedraw) {
@@ -192,20 +194,19 @@ class VectorLayer extends OverlayLayer {
         if (isNil(options['geometries']) || options['geometries']) {
             let clipExtent;
             if (options['clipExtent']) {
-                clipExtent = new Extent(options['clipExtent']);
+                const map = this.getMap();
+                const projection = map ? map.getProjection() : null;
+                clipExtent = new Extent(options['clipExtent'], projection);
             }
             const geoJSONs = [];
             const geometries = this.getGeometries();
-            let geoExt, json;
             for (let i = 0, len = geometries.length; i < len; i++) {
-                geoExt = geometries[i].getExtent();
+                const geo = geometries[i];
+                const geoExt = geo.getExtent();
                 if (!geoExt || (clipExtent && !clipExtent.intersects(geoExt))) {
                     continue;
                 }
-                json = geometries[i].toJSON(options['geometries']);
-                if (json['symbol'] && this.getStyle()) {
-                    json['symbol'] = geometries[i]._symbolBeforeStyle ? extend({}, geometries[i]._symbolBeforeStyle) : null;
-                }
+                const json = geo.toJSON(options['geometries']);
                 geoJSONs.push(json);
             }
             profile['geometries'] = geoJSONs;

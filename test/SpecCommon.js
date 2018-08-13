@@ -85,8 +85,9 @@ function GEN_GEOMETRIES_OF_ALL_TYPES() {
  */
 function COMMON_CREATE_MAP(center, baseLayer, options) {
     var container = document.createElement('div');
-    container.style.width = '800px';
-    container.style.height = '600px';
+    container.id = 'test_container';
+    container.style.width = (options && options.width || 80) + 'px';
+    container.style.height = (options && options.height || 60) + 'px';
     document.body.appendChild(container);
     var option = {
         zoomAnimationDuration : 50,
@@ -95,6 +96,8 @@ function COMMON_CREATE_MAP(center, baseLayer, options) {
         // centerCross : true
     };
     if (options) {
+        delete options.width;
+        delete options.height;
         for (var p in options) {
             if (options.hasOwnProperty(p)) {
                 option[p] = options[p];
@@ -114,6 +117,8 @@ function COMMON_CREATE_MAP(center, baseLayer, options) {
 function REMOVE_CONTAINER() {
     document.body.innerHTML = '';
 }
+
+var TILE_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAIAAAD9iXMrAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAPSURBVChTYxgFo4CBgQEAAggAAWc5B7gAAAAASUVORK5CYII=';
 
 var COMMON_SYMBOL_TESTOR = {
     markerSymbols : [

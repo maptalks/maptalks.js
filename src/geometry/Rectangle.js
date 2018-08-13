@@ -1,6 +1,6 @@
-import { extend, isNil } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import Extent from 'geo/Extent';
+import { extend, isNil } from '../core/util';
+import Coordinate from '../geo/Coordinate';
+import Extent from '../geo/Extent';
 import Polygon from './Polygon';
 
 /**
@@ -213,7 +213,7 @@ class Rectangle extends Polygon {
         const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             r = map._getResolution() * t;
         const extent = this._getPrjExtent().expand(r);
-        const p = map._pointToPrj(point);
+        const p = map._containerPointToPrj(point);
         return extent.contains(p);
     }
 
@@ -234,7 +234,7 @@ class Rectangle extends Polygon {
         if (!se) {
             return null;
         }
-        return new Extent(this._coordinates, se);
+        return new Extent(this._coordinates, se, this._getProjection());
     }
 
     _getSouthEast(measurer) {

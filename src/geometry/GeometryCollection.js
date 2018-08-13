@@ -1,7 +1,7 @@
-import { isFunction, isArrayHasData } from 'core/util';
-import { createFilter, getFilterFeature } from 'core/mapbox';
-import { getExternalResources } from 'core/util/resource';
-import Coordinate from 'geo/Coordinate';
+import { isFunction, isArrayHasData } from '../core/util';
+import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
+import { getExternalResources } from '../core/util/resource';
+import Coordinate from '../geo/Coordinate';
 import Geometry from './Geometry';
 
 /**

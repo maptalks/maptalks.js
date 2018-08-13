@@ -1,6 +1,6 @@
-import { isString, isFunction } from 'core/util';
-import { on, createEl, addClass, setStyle, preventDefault } from 'core/util/dom';
-import Point from 'geo/Point';
+import { isString, isFunction } from '../core/util';
+import { on, createEl, addClass, setStyle, preventDefault } from '../core/util/dom';
+import Point from '../geo/Point';
 import UIComponent from './UIComponent';
 
 /**
@@ -17,7 +17,6 @@ const defaultOptions = {
     'animation': null,
     'animationDelay': 10,
     'animationOnHide': false,
-    'eventsToStop': 'mousewheel mousedown dblclick click',
     'autoPan': false,
     'width': 160,
     'maxHeight' : 0,
@@ -139,7 +138,8 @@ class Menu extends UIComponent {
     }
 
     getTransformOrigin() {
-        return this.getOffset()._multi(-1);
+        const p = this.getOffset()._multi(-1);
+        return p.x + 'px ' + p.y + 'px';
     }
 
     getEvents() {

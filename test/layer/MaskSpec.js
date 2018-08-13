@@ -14,6 +14,7 @@ describe('Spec of Masks', function () {
         container.style.height = '100px';
         document.body.appendChild(container);
         var option = {
+            centerCross : true,
             zoom: 17,
             center: center
         };
@@ -26,13 +27,28 @@ describe('Spec of Masks', function () {
         REMOVE_CONTAINER(container);
     });
 
+    function isDrawn(canvas, p) {
+        var context = canvas.getContext('2d');
+        var imgData = context.getImageData(p.x, p.y, 1, 1).data;
+        if (imgData[3] > 0) {
+            return true;
+        }
+        return false;
+    }
+
     function testMask(layer, done) {
+        var canvas = layer.getMap().getRenderer().canvas;
+        var c = new maptalks.Point(canvas.width / 2, canvas.height / 2);
         layer.once('layerload', function () {
-            expect(layer).not.to.be.painted(-6, 0);
-            expect(layer).to.be.painted(0, 0, [0, 0, 0]);
+            expect(isDrawn(canvas, c.add(-6, 0))).not.to.be.ok();
+            expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
+            // expect(layer).not.to.be.painted(-6, 0);
+            // expect(layer).to.be.painted(0, 0/* , [0, 0, 0] */);
             layer.once('layerload', function () {
-                expect(layer).not.to.be.painted(-11, 0);
-                expect(layer).to.be.painted(0, 0, [0, 0, 0]);
+                expect(isDrawn(canvas, c.add(-11, 0))).not.to.be.ok();
+                expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
+                // expect(layer).not.to.be.painted(-11, 0);
+                // expect(layer).to.be.painted(0, 0, [0, 0, 0]);
                 done();
             });
             layer.setMask(new maptalks.Marker(map.getCenter(), {
@@ -46,6 +62,7 @@ describe('Spec of Masks', function () {
                     'markerDy' : 5
                 }
             }));
+            done();
         });
         layer.setMask(new maptalks.Circle(map.getCenter(), 5, {
             symbol : {
@@ -57,7 +74,7 @@ describe('Spec of Masks', function () {
 
     //test tilelayer
     runTests(new maptalks.TileLayer('tile', {
-        urlTemplate:'/resources/tile.png',
+        urlTemplate : TILE_IMAGE,
         renderer:'canvas'
     }), context);
 
@@ -89,25 +106,24 @@ describe('Spec of Masks', function () {
             });
 
             it('can remove mask,' + layerToTest.getJSONType(), function (done) {
-                layerToTest.once('layerload', function () {
-                    layerToTest.once('layerload', function () {
-                        layerToTest.once('layerload', function () {
-                            expect(layerToTest).to.be.painted(-20, 0);
-                            expect(layerToTest).to.be.painted();
-                            done();
-                        });
-                        layerToTest.removeMask();
-                    });
-                    layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
-                        'symbol' : {
-                            'markerType' : 'ellipse',
-                            'markerWidth' : 10,
-                            'markerHeight' : 10,
-                            'markerFill' : '#000',
-                            'markerFillOpacity' : 1
-                        }
-                    }));
-                });
+                layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
+                    'symbol' : {
+                        'markerType' : 'ellipse',
+                        'markerWidth' : 10,
+                        'markerHeight' : 10,
+                        'markerFill' : '#000',
+                        'markerFillOpacity' : 1
+                    }
+                }));
+                setTimeout(function () {
+                    layerToTest.removeMask();
+                    setTimeout(function () {
+                        expect(layerToTest).to.be.painted(-40, 0);
+                        expect(layerToTest).to.be.painted(-20, 0);
+                        expect(layerToTest).to.be.painted();
+                        done();
+                    }, 50);
+                }, 50);
             });
 
             it('zoom with mask,' + layerToTest.getJSONType(), function (done) {
@@ -128,5 +144,29 @@ describe('Spec of Masks', function () {
             });
         });
     }
+
+    it('#713', function (done) {
+        vlayer.setMask(new maptalks.Marker(map.getCenter(), {
+            'symbol' : {
+                'markerType' : 'ellipse',
+                'markerWidth' : 10,
+                'markerHeight' : 10,
+                'markerFill' : '#000',
+                'markerFillOpacity' : 1
+            }
+        }));
+        map.addLayer(vlayer);
+        var canvas = vlayer.getMap().getRenderer().canvas;
+        var c = new maptalks.Point(canvas.width / 2, canvas.height / 2);
+        vlayer.once('layerload', function () {
+            map.removeLayer(vlayer);
+            vlayer.once('layerload', function () {
+                expect(isDrawn(canvas, c.add(-11, 0))).not.to.be.ok();
+                expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
+                done();
+            });
+            map.addLayer(vlayer);
+        });
+    });
 
 });

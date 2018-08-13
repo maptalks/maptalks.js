@@ -1,21 +1,6 @@
 /*eslint-disable no-var*/
 // Contains code from glmatrix.js
 
-const ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
-
-export function transformMat4(out, a, m) {
-    var x = a[0],
-        y = a[1],
-        z = a[2],
-        w = a[3];
-    out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
-    out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
-    out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
-    out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
-    return out;
-}
-
-
 export function perspective(out, fovy, aspect, near, far) {
     var f = 1.0 / Math.tan(fovy / 2),
         nf = 1 / (near - far);
@@ -170,7 +155,7 @@ export function rotateZ(out, a, rad) {
     return out;
 }
 
-export function copy(out, a) {
+/* export function copy(out, a) {
     out[0] = a[0];
     out[1] = a[1];
     out[2] = a[2];
@@ -188,28 +173,7 @@ export function copy(out, a) {
     out[14] = a[14];
     out[15] = a[15];
     return out;
-}
-
-export function create() {
-    var out = new ARRAY_TYPE(16);
-    out[0] = 1;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = 1;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = 1;
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-    return out;
-}
+} */
 
 export function multiply(out, a, b) {
     var a00 = a[0],
@@ -303,6 +267,32 @@ export function invert(out, a) {
     out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
     out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
 
+    return out;
+}
+
+/**
+ * Set a mat4 to the identity matrix
+ *
+ * @param {mat4} out the receiving matrix
+ * @returns {mat4} out
+ */
+export function identity(out) {
+    out[0] = 1;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = 1;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = 1;
+    out[11] = 0;
+    out[12] = 0;
+    out[13] = 0;
+    out[14] = 0;
+    out[15] = 1;
     return out;
 }
 /*eslint-enable no-var*/

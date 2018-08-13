@@ -1,23 +1,26 @@
-import { INTERNAL_LAYER_PREFIX } from 'core/Constants';
+import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
 import {
     now,
     extend,
     IS_NODE,
     isNil,
     isString,
-    isFunction
-} from 'core/util';
-import Class from 'core/Class';
-import Browser from 'core/Browser';
-import Eventable from 'core/Eventable';
-import Handlerable from 'handler/Handlerable';
-import Point from 'geo/Point';
-import Size from 'geo/Size';
-import PointExtent from 'geo/PointExtent';
-import Extent from 'geo/Extent';
-import Coordinate from 'geo/Coordinate';
-import Layer from 'layer/Layer';
-import Renderable from 'renderer/Renderable';
+    isFunction,
+    sign,
+    UID,
+    b64toBlob
+} from '../core/util';
+import Class from '../core/Class';
+import Browser from '../core/Browser';
+import Eventable from '../core/Eventable';
+import Handlerable from '../handler/Handlerable';
+import Point from '../geo/Point';
+import Size from '../geo/Size';
+import PointExtent from '../geo/PointExtent';
+import Extent from '../geo/Extent';
+import Coordinate from '../geo/Coordinate';
+import Layer from '../layer/Layer';
+import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
 
 
@@ -27,14 +30,13 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
- * @property {Boolean} [options.zoomBackground=false]           - leaves a background after zooming.
  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
  * @property {Boolean} [options.hitDetectLimit=5]               - the maximum number of layers to perform hit detect.
- * @property {Boolean} [options.fpsOnInteracting=25]            - fps when map is interacting.
+ * @property {Boolean} [options.fpsOnInteracting=25]            - fps when map is interacting, some slow layers will not be drawn on interacting when fps is low. Set to 0 to disable it.
  * @property {Boolean} [options.layerCanvasLimitOnInteracting=-1]    - limit of layer canvas to draw on map when interacting, set it to improve perf.
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
@@ -50,16 +52,24 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.dragPan=true]                           - if true, map can be dragged to pan.
  * @property {Boolean} [options.dragRotate=true]                        - default true. If true, map can be dragged to rotate by right click or ctrl + left click.
  * @property {Boolean} [options.dragPitch=true]                         - default true. If true, map can be dragged to pitch by right click or ctrl + left click.
- * @property {Boolean} [options.doublClickZoom=true]                    - whether to allow map to zoom by double click events.
+ * @property {Boolean} [options.dragRotatePitch=true]                  - if true, map is dragged to pitch and rotate at the same time.
+ * @property {Boolean} [options.touchGesture=true]                      - whether to allow map to zoom/rotate/tilt by two finger touch gestures.
+ * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch pinch.
+ * @property {Boolean} [options.touchRotate=true]                       - whether to allow map to rotate by touch pinch.
+ * @property {Boolean} [options.touchPitch=true]                        - whether to allow map to pitch by touch pinch.
+ * @property {Boolean} [options.touchZoomRotate=false]                  - if true, map is to zoom and rotate at the same time by touch pinch.
+ * @property {Boolean} [options.doubleClickZoom=true]                    - whether to allow map to zoom by double click events.
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
- * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch events.
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  *
  * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
- * @property {Boolean|Object} [options.attribution=false]        - display the attribution control on the map if set to true or a object as the control construct option.
+ * @property {Boolean|Object} [options.attribution=true]                - whether to display the attribution control on the map. if true, attribution display maptalks info; if object, you can specify positon or your base content, and both;
  * @property {Boolean|Object} [options.zoomControl=false]               - display the zoom control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.scaleControl=false]              - display the scale control on the map if set to true or a object as the control construct option.
  * @property {Boolean|Object} [options.overviewControl=false]           - display the overview control on the map if set to true or a object as the control construct option.
+ *
+ * @property {Boolean}        [options.fog=true]                        - whether to draw fog in far distance.
+ * @property {Number[]}       [options.fogColor=[233, 233, 233]]        - color of fog: [r, g, b]
  *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @memberOf Map
@@ -68,7 +78,6 @@ import SpatialReference from './spatial-reference/SpatialReference';
 const options = {
     'maxVisualPitch' : 60,
     'maxPitch' : 80,
-
     'centerCross': false,
 
     'zoomInCenter' : false,
@@ -76,8 +85,6 @@ const options = {
         return !IS_NODE;
     })(),
     'zoomAnimationDuration': 330,
-    //still leave background after zooming, set it to false if baseLayer is a transparent layer
-    'zoomBackground': false,
 
     'panAnimation': (function () {
         return !IS_NODE;
@@ -163,8 +170,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete opts['baseLayer'];
         const layers = opts['layers'];
         delete opts['layers'];
-
         super(opts);
+
+        Object.defineProperty(this, 'id', {
+            value: UID(),
+            writable: false
+        });
 
         this._loaded = false;
         this._initContainer(container);
@@ -273,7 +284,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     setSpatialReference(ref) {
         const oldRef = this.options['spatialReference'];
-        if (oldRef && !ref) {
+        if (this._loaded && SpatialReference.equals(oldRef, ref)) {
             return this;
         }
         ref = extend({}, ref);
@@ -420,7 +431,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const projection = this.getProjection();
         const _pcenter = projection.project(center);
         this._setPrjCenter(_pcenter);
-        this.onMoveEnd();
+        this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
         return this;
     }
 
@@ -444,10 +455,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const pitch = this.getPitch(),
             maxVisualPitch = this.options['maxVisualPitch'];
         if (maxVisualPitch && pitch > maxVisualPitch) {
-            const visualDistance = this.height / 2 * Math.tan(maxVisualPitch * Math.PI / 180);
-            visualHeight = this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+            visualHeight = this._getVisualHeight(maxVisualPitch);
         }
         return new PointExtent(0, this.height - visualHeight, this.width, this.height);
+    }
+
+    _getVisualHeight(maxVisualPitch) {
+        const pitch = this.getPitch();
+        const visualDistance = this.height / 2 * Math.tan(maxVisualPitch * Math.PI / 180);
+        return this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
     }
 
     /**
@@ -473,6 +489,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Alias for getProjExtent
+     *
+     * @return {Extent}
+     */
+    getPrjExtent() {
+        return this.getProjExtent();
+    }
+
+    /**
      * Get the max extent that the map is restricted to.
      * @return {Extent}
      */
@@ -480,7 +505,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!this.options['maxExtent']) {
             return null;
         }
-        return new Extent(this.options['maxExtent']);
+        return new Extent(this.options['maxExtent'], this.getProjection());
     }
 
     /**
@@ -492,7 +517,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     setMaxExtent(extent) {
         if (extent) {
-            const maxExt = new Extent(extent);
+            const maxExt = new Extent(extent, this.getProjection());
             this.options['maxExtent'] = maxExt;
             const center = this.getCenter();
             if (!this._verifyExtent(center)) {
@@ -533,9 +558,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isFraction) {
             return scaleZoom;
         } else {
-            const resolutions = this._getResolutions();
-            return resolutions[0] < resolutions[resolutions.length - 1] ?
-                Math.ceil(scaleZoom) : Math.floor(scaleZoom);
+            const delta = 1E-6; //avoid precision
+            return this.getSpatialReference().getZoomDirection() < 0 ?
+                Math.ceil(scaleZoom - delta) : Math.floor(scaleZoom + delta);
         }
     }
 
@@ -562,7 +587,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             const gap = resolutions[i + 1] - resolutions[i];
             const test = res - resolutions[i];
-            if (Math.abs(gap) >= Math.abs(test)) {
+            if (sign(gap) === sign(test) && Math.abs(gap) >= Math.abs(test)) {
                 return i + test / gap;
             }
         }
@@ -600,28 +625,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Maximum zoom the map has
-     * @return {Number}
-     */
-    getMaxNativeZoom() {
-        const ref = this.getSpatialReference();
-        if (!ref) {
-            return null;
-        }
-        return ref.getResolutions().length - 1;
-    }
-
-    /**
      * Sets the max zoom that the map can be zoom to.
      * @param {Number} maxZoom
      * @returns {Map} this
      */
     setMaxZoom(maxZoom) {
-        const viewMaxZoom = this._spatialReference.getMaxZoom();
+        const viewMaxZoom = this.getMaxNativeZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
         }
-        if (maxZoom < this._zoomLevel) {
+        if (maxZoom !== null && maxZoom < this._zoomLevel) {
             this.setZoom(maxZoom);
         }
         this.options['maxZoom'] = maxZoom;
@@ -636,7 +649,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
-        return 0;
+        return this._spatialReference.getMinZoom();
     }
 
     /**
@@ -645,12 +658,53 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      */
     setMinZoom(minZoom) {
-        const viewMinZoom = this._spatialReference.getMinZoom();
-        if (minZoom < viewMinZoom) {
-            minZoom = viewMinZoom;
+        if (minZoom !== null) {
+            const viewMinZoom = this._spatialReference.getMinZoom();
+            if (minZoom < viewMinZoom) {
+                minZoom = viewMinZoom;
+            }
+            if (minZoom > this._zoomLevel) {
+                this.setZoom(minZoom);
+            }
         }
         this.options['minZoom'] = minZoom;
         return this;
+    }
+
+    /**
+     * Maximum zoom the map has
+     * @return {Number}
+     */
+    getMaxNativeZoom() {
+        const ref = this.getSpatialReference();
+        if (!ref) {
+            return null;
+        }
+        return ref.getMaxZoom();
+    }
+
+    /**
+     * Zoom for world point in WebGL context
+     * @returns {Number}
+     */
+    getGLZoom() {
+        return this.getMaxNativeZoom() / 2;
+    }
+
+    /**
+     * Caculate scale from gl zoom to given zoom (default by current zoom)
+     * @param {Number} [zoom=undefined] target zoom, current zoom by default
+     * @returns {Number}
+     * @examples
+     * const point = map.coordToPoint(map.getCenter());
+     * // convert to point in gl zoom
+     * const glPoint = point.multi(this.getGLScale());
+     */
+    getGLScale(zoom) {
+        if (isNil(zoom)) {
+            zoom = this.getZoom();
+        }
+        return this.getScale(zoom) / this.getScale(this.getGLZoom());
     }
 
     /**
@@ -716,13 +770,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this.getMaxZoom();
         }
         const size = this.getSize();
-        const containerExtent = extent.convertTo(p => this.coordinateToContainerPoint(p));
+        const containerExtent = extent.convertTo(p => this.coordToContainerPoint(p));
         const w = containerExtent.getWidth(),
             h = containerExtent.getHeight();
         const scaleX = size['width'] / w,
             scaleY = size['height'] / h;
-        const resolutions = this._getResolutions();
-        const scale = resolutions[0] < resolutions[resolutions.length - 1] ?
+        const scale = this.getSpatialReference().getZoomDirection() < 0 ?
             Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
         const zoom = this.getZoomForScale(scale);
         return zoom;
@@ -792,14 +845,23 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} zoomOffset - zoom offset
      * @return {Map} - this
      */
-    fitExtent(extent, zoomOffset) {
+    fitExtent(extent, zoomOffset, options = {}, step) {
         if (!extent) {
             return this;
         }
-        extent = new Extent(extent);
+        extent = new Extent(extent, this.getProjection());
         const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
         const center = extent.getCenter();
-        return this.setCenterAndZoom(center, zoom);
+        if (typeof (options['animation']) === 'undefined' || options['animation'])
+            return this.animateTo({
+                center,
+                zoom
+            }, {
+                'duration' : options['duration'] || this.options['zoomAnimationDuration'],
+                'easing' : options['easing'] || 'out',
+            }, step);
+        else
+            return this.setCenterAndZoom(center, zoom);
     }
 
     /**
@@ -958,11 +1020,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         if (!Array.isArray(layers)) {
-            return this.addLayer([layers]);
+            layers = Array.prototype.slice.call(arguments, 0);
+            return this.addLayer(layers);
         }
         if (!this._layerCache) {
             this._layerCache = {};
         }
+        const mapLayers = this._layers;
         for (let i = 0, len = layers.length; i < len; i++) {
             const layer = layers[i];
             const id = layer.getId();
@@ -976,12 +1040,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
                 throw new Error('Duplicate layer id in the map: ' + id);
             }
             this._layerCache[id] = layer;
-            layer._bindMap(this, this._layers.length);
-            this._layers.push(layer);
+            layer._bindMap(this);
+            mapLayers.push(layer);
             if (this._loaded) {
                 layer.load();
             }
         }
+
+        this._sortLayersByZIndex();
+
         /**
          * addlayer event, fired when adding layers.
          *
@@ -1115,12 +1182,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             }
             const dataURL = renderer.toDataURL(mimeType);
             if (save && dataURL) {
-                const imgURL = dataURL;
-
+                let imgURL;
+                if (typeof Blob !== 'undefined' && typeof atob !== 'undefined') {
+                    const blob = b64toBlob(dataURL.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''), mimeType);
+                    imgURL = URL.createObjectURL(blob);
+                } else {
+                    imgURL = dataURL;
+                }
                 const dlLink = document.createElement('a');
                 dlLink.download = file;
                 dlLink.href = imgURL;
-                dlLink.dataset.downloadurl = [mimeType, dlLink.download, dlLink.href].join(':');
 
                 document.body.appendChild(dlLink);
                 dlLink.click();
@@ -1148,10 +1219,17 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for coordinateToPoint
+     */
+    coordToPoint(coordinate, zoom) {
+        return this.coordinateToPoint(coordinate, zoom);
+    }
+
+    /**
      * Converts a 2D point in current zoom or a specific zoom to a coordinate.
      * Usually used in plugin development.
      * @param  {Point} point - 2D point
-     * @param  {Number} zoom  - zoom level
+     * @param  {Number} zoom  - point's zoom level
      * @return {Coordinate} coordinate
      * @example
      * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
@@ -1159,6 +1237,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     pointToCoordinate(point, zoom) {
         const prjCoord = this._pointToPrj(point, zoom);
         return this.getProjection().unproject(prjCoord);
+    }
+
+    /**
+     * shorter alias for pointToCoordinate
+     */
+    pointToCoord(point, zoom) {
+        return this.pointToCoordinate(point, zoom);
     }
 
     /**
@@ -1173,6 +1258,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for coordinateToViewPoint
+     */
+    coordToViewPoint(coordinate) {
+        return this.coordinateToViewPoint(coordinate);
+    }
+
+    /**
      * Converts a view point to the geographical coordinate.
      * Usually used in plugin development.
      * @param {Point} viewPoint
@@ -1180,6 +1272,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     viewPointToCoordinate(viewPoint) {
         return this.getProjection().unproject(this._viewPointToPrj(viewPoint));
+    }
+
+    /**
+     * shorter alias for viewPointToCoordinate
+     */
+    viewPointToCoord(viewPoint) {
+        return this.viewPointToCoordinate(viewPoint);
     }
 
     /**
@@ -1195,6 +1294,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for coordinateToContainerPoint
+     */
+    coordToContainerPoint(coordinate, zoom) {
+        return this.coordinateToContainerPoint(coordinate, zoom);
+    }
+
+    /**
      * Converts a container point to geographical coordinate.
      * @param {Point}
      * @return {Coordinate}
@@ -1202,6 +1308,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     containerPointToCoordinate(containerPoint) {
         const pCoordinate = this._containerPointToPrj(containerPoint);
         return this.getProjection().unproject(pCoordinate);
+    }
+
+    /**
+     * shorter alias for containerPointToCoordinate
+     */
+    containerPointToCoord(containerPoint) {
+        return this.containerPointToCoordinate(containerPoint);
     }
 
     /**
@@ -1292,10 +1405,32 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const scale = this.getScale() / this.getScale(zoom);
         const center = this.getCenter(),
             target = projection.locate(center, xDist, yDist);
-        const p0 = this.coordinateToContainerPoint(center),
-            p1 = this.coordinateToContainerPoint(target);
+        const p0 = this.coordToContainerPoint(center),
+            p1 = this.coordToContainerPoint(target);
         p1._sub(p0)._multi(scale)._abs();
         return new Size(p1.x, p1.y);
+    }
+
+    /**
+     * Converts geographical distances to the 2d point length.<br>
+     * The value varis with difference zoom level.
+     *
+     * @param  {Number} xDist - distance on X axis.
+     * @param  {Number} yDist - distance on Y axis.
+     * @param  {Number} zoom - point's zoom
+     * @return {Point}
+     */
+    distanceToPoint(xDist, yDist, zoom) {
+        const projection = this.getProjection();
+        if (!projection) {
+            return null;
+        }
+        const center = this.getCenter(),
+            target = projection.locate(center, xDist, yDist);
+        const p0 = this.coordToPoint(center, zoom),
+            p1 = this.coordToPoint(target, zoom);
+        p1._sub(p0)._abs();
+        return p1;
     }
 
     /**
@@ -1313,8 +1448,27 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const fullExt = this.getFullExtent();
         const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
         const target = new Point(this.width / 2 + width, this.height / 2 + d * height);
-        const coord = this.containerPointToCoordinate(target);
+        const coord = this.containerPointToCoord(target);
         return projection.measureLength(this.getCenter(), coord);
+    }
+
+    /**
+     * Converts 2d point distances to geographic length.<br>
+     *
+     * @param  {Number} dx - distance on X axis.
+     * @param  {Number} dy - distance on Y axis.
+     * @param  {Number} zoom - point's zoom
+     * @return {Number} distance
+     */
+    pointToDistance(dx, dy, zoom) {
+        const projection = this.getProjection();
+        if (!projection) {
+            return null;
+        }
+        const c = this._prjToPoint(this._getPrjCenter(), zoom);
+        c._add(dx, dy);
+        const target = this.pointToCoord(c, zoom);
+        return projection.measureLength(this.getCenter(), target);
     }
 
     /**
@@ -1325,7 +1479,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locate(coordinate, dx, dy) {
-        return this.getProjection().locate(new Coordinate(coordinate), dx, dy);
+        return this.getProjection()._locate(new Coordinate(coordinate), dx, dy);
     }
 
     /**
@@ -1336,8 +1490,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate} Result coordinate
      */
     locateByPoint(coordinate, px, py) {
-        const point = this.coordinateToContainerPoint(coordinate);
-        return this.containerPointToCoordinate(point._add(px, py));
+        const point = this.coordToContainerPoint(coordinate);
+        return this.containerPointToCoord(point._add(px, py));
     }
 
     /**
@@ -1364,6 +1518,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this.isRemoved()) {
             return this;
         }
+        this._fireEvent('removestart');
         this._removeDomEvents();
         this._clearHandlers();
         this.removeBaseLayer();
@@ -1374,13 +1529,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this._getRenderer()) {
             this._getRenderer().remove();
         }
-        this._clearAllListeners();
         if (this._containerDOM.innerHTML) {
             this._containerDOM.innerHTML = '';
         }
         delete this._panels;
         delete this._containerDOM;
         delete this.renderer;
+        this._fireEvent('removeend');
+        this._clearAllListeners();
         return this;
     }
 
@@ -1452,7 +1608,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('moveend', this._parseEvent(param ? param['domEvent'] : null, 'moveend'));
+        this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
         if (!this._verifyExtent(this.getCenter())) {
             let moveTo = this._originCenter;
             if (!this._verifyExtent(moveTo)) {
@@ -1587,15 +1743,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _get2DExtent(zoom) {
         const cExtent = this.getContainerExtent();
-        const c1 = this._containerPointToPoint(new Point(cExtent.xmin, cExtent.ymin), zoom),
-            c2 = this._containerPointToPoint(new Point(cExtent.xmax, cExtent.ymin), zoom),
-            c3 = this._containerPointToPoint(new Point(this.width, this.height), zoom),
-            c4 = this._containerPointToPoint(new Point(0, this.height), zoom);
-        const xmin = Math.min(c1.x, c2.x, c3.x, c4.x),
-            xmax = Math.max(c1.x, c2.x, c3.x, c4.x),
-            ymin = Math.min(c1.y, c2.y, c3.y, c4.y),
-            ymax = Math.max(c1.y, c2.y, c3.y, c4.y);
-        return new PointExtent(xmin, ymin, xmax, ymax);
+        return cExtent.convertTo(c => this._containerPointToPoint(c, zoom));
     }
 
     /**
@@ -1605,9 +1753,17 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @protected
      */
     _pointToExtent(extent2D) {
+        const min2d = extent2D.getMin(),
+            max2d = extent2D.getMax();
+        const fullExtent = this.getFullExtent();
+        const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
+        const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
+        const min = new Coordinate(minx, miny),
+            max = new Coordinate(maxx, maxy);
         return new Extent(
-            this.pointToCoordinate(extent2D.getMin()),
-            this.pointToCoordinate(extent2D.getMax())
+            this.pointToCoord(min),
+            this.pointToCoord(max),
+            this.getProjection()
         );
     }
 
@@ -1619,11 +1775,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const index = layerList.indexOf(layer);
         if (index > -1) {
             layerList.splice(index, 1);
-            for (let j = 0, jlen = layerList.length; j < jlen; j++) {
-                if (layerList[j].setZIndex) {
-                    layerList[j].setZIndex(j);
-                }
-            }
         }
     }
 
@@ -1631,8 +1782,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!this._layers) {
             return;
         }
+        for (let i = 0, l = this._layers.length; i < l; i++) {
+            this._layers[i]._order = i;
+        }
         this._layers.sort(function (a, b) {
-            return a.getZIndex() - b.getZIndex();
+            const c = a.getZIndex() - b.getZIndex();
+            if (c === 0) {
+                return a._order - b._order;
+            }
+            return c;
         });
     }
 
@@ -1756,6 +1914,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this._prjCenter;
         const projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
+        this._calcMatrices();
         const renderer = this._getRenderer();
         if (renderer) {
             renderer.resetContainer();
@@ -1927,7 +2086,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Converts the projected coordinate to a 2D point in the specific zoom
      * @param  {Coordinate} pCoord - projected Coordinate
-     * @param  {Number} zoom   - zoom level
+     * @param  {Number} zoom   - point's zoom level
      * @return {Point} 2D point
      * @private
      */
@@ -1939,7 +2098,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Converts the 2D point to projected coordinate
      * @param  {Point} point - 2D point
-     * @param  {Number} zoom   - zoom level
+     * @param  {Number} zoom   - point's zoom level
      * @return {Coordinate} projected coordinate
      * @private
      */

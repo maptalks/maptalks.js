@@ -1,19 +1,22 @@
-import Class from 'core/Class';
-import { isNil, isNumber } from 'core/util';
-import Eventable from 'core/Eventable';
-import JSONAble from 'core/JSONAble';
-import Renderable from 'renderer/Renderable';
-import CanvasRenderer from 'renderer/layer/CanvasRenderer';
+import Class from '../core/Class';
+import { isNil, isNumber } from '../core/util';
+import Eventable from '../core/Eventable';
+import JSONAble from '../core/JSONAble';
+import Renderable from '../renderer/Renderable';
+import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
+ * @property {String}  [options.attribution= null] - the attribution of this layer, you can specify company or other information of this layer.
  * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
  * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
- * @property {String}  [options.renderer=canvas] - renderer type, "canvas" in default.
+ * @property {Number}  [options.zIndex=undefined] - z index of the layer
+ * @property {String}  [options.renderer=canvas]  - renderer type, "canvas" in default.
  * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
  * @property {String}   [options.debugOutline='#0f0']  - debug outline's color.
+ * @property {String}   [options.cssFilter=null]       - css filter apply to canvas context's filter
  * @property {Boolean}  [options.forceRenderOnMoving=false]    - force to render layer when map is moving
  * @property {Boolean}  [options.forceRenderOnZooming=false]   - force to render layer when map is zooming
  * @property {Boolean}  [options.forceRenderOnRotating=false]  - force to render layer when map is Rotating
@@ -21,6 +24,7 @@ import CanvasRenderer from 'renderer/layer/CanvasRenderer';
  * @instance
  */
 const options = {
+    'attribution': null,
     'minZoom': null,
     'maxZoom': null,
     'visible': true,
@@ -28,7 +32,11 @@ const options = {
     // context.globalCompositeOperation, 'source-over' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
-    'debugOutline' : '#0f0'
+    'debugOutline' : '#0f0',
+    'cssFilter': null,
+    'forceRenderOnMoving' : false,
+    'forceRenderOnZooming' : false,
+    'forceRenderOnRotating' : false
 };
 
 /**
@@ -56,6 +64,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this._canvas = canvas;
         }
         this.setId(id);
+        if (options) {
+            this.setZIndex(options.zIndex);
+        }
     }
 
     /**
@@ -74,6 +85,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
                     this._renderer.render();
                 }
             }
+            this.onLoadEnd();
         }
         return this;
     }
@@ -146,7 +158,45 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @return {Number}
      */
     getZIndex() {
-        return this._zIndex;
+        return this._zIndex || 0;
+    }
+
+    /**
+     * Get Layer's minZoom to display
+     * @return {Number}
+     */
+    getMinZoom() {
+        const map = this.getMap();
+        const minZoom = this.options['minZoom'];
+        return map ? Math.max(map.getMinZoom(), minZoom || 0) : minZoom;
+    }
+
+    /**
+     * Get Layer's maxZoom to display
+     * @return {Number}
+     */
+    getMaxZoom() {
+        const map = this.getMap();
+        const maxZoom = this.options['maxZoom'];
+        return map ? Math.min(map.getMaxZoom(), isNil(maxZoom) ? Infinity : maxZoom) : maxZoom;
+    }
+
+    /**
+     * Get layer's opacity
+     * @returns {Number}
+     */
+    getOpacity() {
+        return this.options['opacity'];
+    }
+
+    /**
+     * Set opacity to the layer
+     * @param {Number} opacity - layer's opacity
+     * @return {Layer} this
+     */
+    setOpacity(op) {
+        this.config('opacity', op);
+        return this;
     }
 
     /**
@@ -170,6 +220,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return null;
     }
 
+    /**
+     * Get projection of layer's map
+     * @returns {Object}
+     */
+    getProjection() {
+        const map = this.getMap();
+        return map ? map.getProjection() : null;
+    }
 
     /**
      * Brings the layer to the top of all the layers
@@ -307,7 +365,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     setMask(mask) {
         if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon')) {
-            throw new Error('Mask for a layer must be a marker with vector marker symbol, a Polygon or a MultiPolygon.');
+            throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon.');
         }
 
         if (mask.type === 'Point') {
@@ -358,6 +416,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return true;
     }
 
+    onLoadEnd() {
+    }
+
     /**
      * Whether the layer is loaded
      * @return {Boolean}
@@ -370,17 +431,30 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return this._getRenderer();
     }
 
+    onConfig(conf) {
+        if (isNumber(conf['opacity']) || conf['cssFilter']) {
+            const renderer = this.getRenderer();
+            if (renderer) {
+                renderer.setToRedraw();
+            }
+        }
+    }
+
+    onAdd() {}
+
+    onRemove() {}
+
     _bindMap(map, zIndex) {
         if (!map) {
             return;
         }
         this.map = map;
-        this.setZIndex(zIndex);
+        if (!isNil(zIndex)) {
+            this.setZIndex(zIndex);
+        }
         this._switchEvents('on', this);
 
-        if (this.onAdd) {
-            this.onAdd();
-        }
+        this.onAdd();
 
         this.fire('add');
     }
@@ -398,9 +472,20 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this._renderer.layer = this;
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
+        // some plugin of dom renderer doesn't implement onAdd
         if (this._renderer.onAdd) {
             this._renderer.onAdd();
         }
+
+        /**
+         * renderercreate event, fired when renderer is created.
+         *
+         * @event Layer#renderercreate
+         * @type {Object}
+         * @property {String} type - renderercreate
+         * @property {Layer} target    - the layer fires the event
+         * @property {Any} renderer    - renderer of the layer
+         */
         this.fire('renderercreate', {
             'renderer': this._renderer
         });
@@ -408,16 +493,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _doRemove() {
         this._loaded = false;
-        if (this.onRemove) {
-            this.onRemove();
-        }
+        this.onRemove();
+
         this._switchEvents('off', this);
         if (this._renderer) {
             this._switchEvents('off', this._renderer);
             this._renderer.remove();
             delete this._renderer;
         }
-        delete this._mask;
         delete this.map;
     }
 

@@ -1,6 +1,6 @@
 /** @namespace measurer */
 
-import { hasOwn } from 'core/util';
+import { hasOwn } from '../../core/util';
 import Identity from './Identity';
 import { WGS84Sphere, BaiduSphere } from './Sphere';
 

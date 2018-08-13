@@ -1,5 +1,5 @@
 import Point from './Point';
-import { isNumber } from 'core/util';
+import { isNumber } from '../core/util';
 
 /**
  * Represents a size.

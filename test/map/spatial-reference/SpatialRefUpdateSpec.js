@@ -20,21 +20,21 @@ describe('SpatialReference.Update', function () {
 
     it('TileLayer', function (done) {
         var tileLayer = new maptalks.TileLayer('base', {
-            urlTemplate:'/resources/tile.png'
+            urlTemplate : '#'
         });
         tileLayer.once('layerload', function () {
             map.setSpatialReference({
                 projection : 'baidu'
             });
-            var tiles = tileLayer.getTiles();
-            expect(tiles.anchor.toArray()).to.be.eql([-1252344, -1252344]);
-            expect(tiles.anchor.zoom).to.be.eql(14);
+            var tiles = tileLayer.getTiles().tileGrids[0].tiles;
+            var tile = tiles[tiles.length - 1];
+            expect(tile.point.toArray()).to.be.eql([-256, -256]);
             done();
         });
         map.setBaseLayer(tileLayer);
-        var tiles = tileLayer.getTiles();
-        expect(tiles.anchor.toArray()).to.be.eql([-2097151, -2097151]);
-        expect(tiles.anchor.zoom).to.be.eql(14);
+        var tiles = tileLayer.getTiles().tileGrids[0].tiles;
+        var tile = tiles[tiles.length - 1];
+        expect(tile.point.toArray()).to.be.eql([-256.0000000001879, -256.0000000001879]);
     });
 
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();

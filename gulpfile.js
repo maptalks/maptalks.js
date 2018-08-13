@@ -2,15 +2,17 @@ const minimist = require('minimist'),
     path = require('path'),
     gulp = require('gulp'),
     del = require('del'),
+    zip = require('gulp-zip'),
     concat = require('gulp-concat'),
     cssnano = require('gulp-cssnano'),
     connect = require('gulp-connect'),
     rollupCfg = require('./build/rollup.config'),
     BundleHelper = require('maptalks-build-helpers').BundleHelper,
-    Server = require('karma').Server;
+    Server = require('karma').Server,
+    package = require('./package.json');
 
 const rollupWatch = rollupCfg.watch;
-const bundler = new BundleHelper(require('./package.json'));
+const bundler = new BundleHelper(package);
 
 const knownOptions = {
     string: ['browsers', 'pattern'],
@@ -82,12 +84,20 @@ gulp.task('test', function (done) {
     if (options.coverage) {
         karmaConfig.configFile = path.join(__dirname, 'build/karma.cover.config.js');
     }
+    if (configBrowsers === 'IE9') {
+        //override IE9's pattern
+        options.pattern = 'IE9.Specs';
+    }
     if (options.pattern) {
-        karmaConfig.client = {
-            mocha: {
-                grep: options.pattern
-            }
-        };
+        if (!karmaConfig.client) {
+            karmaConfig.client = {
+                mocha: {
+                    grep: options.pattern
+                }
+            };
+        } else {
+            karmaConfig.client.mocha.grep = options.pattern;
+        }
     }
     new Server(karmaConfig, done).start();
 });
@@ -109,6 +119,18 @@ gulp.task('tdd', function (done) {
             }
         };
     }
+    if (options.pattern) {
+        if (!karmaConfig.client) {
+            karmaConfig.client = {
+                mocha: {
+                    grep: options.pattern
+                }
+            };
+        } else {
+            karmaConfig.client.mocha.grep = options.pattern;
+        }
+    }
+
     let started = false;
     rollupWatch(() => {
         if (!started) {
@@ -163,4 +185,24 @@ gulp.task('editdoc', ['doc'], () => {
     gulp.watch(['src/**/*.js'], ['doc']);
 });
 
+gulp.task('beforeZip', () => {
+    return gulp.src(['LICENSE', 'ACKNOWLEDGEMENT', 'docs/**/*'])
+    .pipe(gulp.dest('dist'))
+});
+
+gulp.task('zip', ['beforeZip'], done => {
+    gulp.src(['dist/*.js', 'dist/*.mjs', 'dist/images/**/*', 'dist/maptalks.css', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT', 'dist/api/**/*'], { base: 'dist/' })
+        .pipe(zip('maptalks-' + package.version + '.zip'))
+        .pipe(gulp.dest('dist'));
+    setTimeout(function () {
+        del([
+            'dist/api/**/*', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT'
+        ], {
+            force : true
+        });
+        done();
+    }, 2000);
+});
+
 gulp.task('default', ['connect']);
+

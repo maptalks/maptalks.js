@@ -1,11 +1,16 @@
-import Geometry from 'geometry/Geometry';
-import GeometryEditor from 'geometry/editor/GeometryEditor';
+import Geometry from '../Geometry';
+import GeometryEditor from '../editor/GeometryEditor';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
      * Start to edit
      * @param {Object} [options=null]        - edit options
      * @param {Object} [options.symbol=null] - symbol for the geometry during editing
+     * @param {Object} [options.fixAspectRatio=false]    - fix outline's aspect ratio when resizing
+     * @param {Object} [options.centerHandleSymbol=null] - symbol of center handle
+     * @param {Object} [options.vertexHandleSymbol=null] - symbol of vertex handle
+     * @param {Object} [options.newVertexHandleSymbol=null] - symbol of new vertex handle
+     * @param {Object} [options.removeVertexOn=contextmenu] - event to remove a vertex from line or polygon, contextmenu by default
      * @return {Geometry} this
      */
     startEdit(opts) {

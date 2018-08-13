@@ -1,4 +1,4 @@
-describe('#Map Profile', function () {
+describe('Map.Profile', function () {
 
     var container;
     var map;
@@ -16,7 +16,7 @@ describe('#Map Profile', function () {
         };
         map = new maptalks.Map(container, option);
         tile = new maptalks.TileLayer('tile', {
-            urlTemplate:'/resources/tile.png',
+            urlTemplate:'#',
             subdomains: [1, 2, 3],
             visible:false,
             renderer : 'canvas'
@@ -75,7 +75,9 @@ describe('#Map Profile', function () {
                     expect(geometries[i].toJSON()).to.be.eql(json.geometries[i]);
                 } else {
                     var j = geometries[i].toJSON();
-                    j.symbol = null;
+                    if (!(geometries[i] instanceof maptalks.TextMarker)) {
+                        j.symbol = null;
+                    }
                     expect(j).to.be.eql(json.geometries[i]);
                 }
             }
@@ -147,7 +149,7 @@ describe('#Map Profile', function () {
         it('get profile with various layers', function () {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road', {
-                urlTemplate:'/resources/tile.png',
+                urlTemplate:'#',
                 subdomains:['1', '2', '3', '4', '5'],
                 opacity:0.6
             });
@@ -169,7 +171,7 @@ describe('#Map Profile', function () {
         it('get profile of selected layers', function () {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road', {
-                urlTemplate:'/resources/tile.png',
+                urlTemplate:'#',
                 subdomains:['1', '2', '3', '4', '5'],
                 opacity:0.6
             });
@@ -199,7 +201,7 @@ describe('#Map Profile', function () {
         it('get map from various profile', function () {
             map.setBaseLayer(tile);
             var tile2 = new maptalks.TileLayer('road', {
-                urlTemplate:'/resources/tile.png',
+                urlTemplate:'#',
                 subdomains:['1', '2', '3', '4', '5'],
                 opacity:0.6
             });
@@ -225,6 +227,7 @@ describe('#Map Profile', function () {
             expect(layers[0].toJSON()).to.be.eql(tile2.toJSON());
             expect(layers[1].toJSON()).to.be.eql(vectorLayer.toJSON());
             expect(layers[2].toJSON()).to.be.eql(vectorLayer2.toJSON());
+            profileMap.remove();
         });
 
 
@@ -365,33 +368,33 @@ describe('#Map Profile', function () {
                     'textHorizontalAlignment': 'middle', //left middle right
                     'textVerticalAlignment': 'bottom', //top middle bottom
                 },
-                'draggable': false,
-                'boxAutoSize': false,
-                'boxMinWidth': 500,
-                'boxMinHeight': 100
+                'draggable' : true,
+                'boxStyle' : {
+                  'padding' : [12, 8],
+                  'verticalAlignment' : 'top',
+                  'horizontalAlignment' : 'right',
+                  'minWidth' : 300,
+                  'minHeight' : 200
+                }
             };
             //创建label
             var label = new maptalks.Label('文本标签', [100, 0], options);
             label.setProperties({
                 'foo' : 1
             });
-            label.setSymbol({
-                'lineWidth' : 2,
-                'lineColor' : '#ff0000'
-            });
             var json = label.toJSON();
             var deser = maptalks.Geometry.fromJSON(json);
             expect(deser instanceof maptalks.Label).to.be.ok();
             expect(deser.getId()).to.be.eql('label');
             var deserOptions = deser.config();
-            expect(deserOptions.draggable).not.to.be.ok();
-            expect(deserOptions.boxAutoSize).not.to.be.ok();
-            expect(deserOptions.boxMinWidth).to.be.eql(500);
-            expect(deserOptions.boxMinHeight).to.be.eql(100);
+            expect(deserOptions.draggable).to.be.ok();
+            expect(deserOptions.textSymbol).to.be.ok();
+            expect(deserOptions.boxStyle).to.be.ok();
             expect(deser.getContent()).to.be.eql(label.getContent());
             expect(deser.getCoordinates()).to.be.eql(label.getCoordinates());
             expect(deser.getProperties()).to.be.eql(label.getProperties());
-            expect(deser.getSymbol()).to.be.eql(label.getSymbol());
+            expect(deser.getTextSymbol()).to.be.eql(label.getTextSymbol());
+            expect(deser.getBoxStyle()).to.be.eql(label.getBoxStyle());
         });
     });
 });

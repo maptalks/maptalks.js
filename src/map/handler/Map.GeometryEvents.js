@@ -1,7 +1,7 @@
-import { now, requestAnimFrame, cancelAnimFrame } from 'core/util';
-import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from 'core/util/dom';
-import Handler from 'handler/Handler';
-import Geometry from 'geometry/Geometry';
+import { now, requestAnimFrame, cancelAnimFrame } from '../../core/util';
+import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from '../../core/util/dom';
+import Handler from '../../handler/Handler';
+import Geometry from '../../geometry/Geometry';
 import Map from '../Map';
 
 const EVENTS =

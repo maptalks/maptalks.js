@@ -1,7 +1,7 @@
 import { isString, isNil } from './common';
 import { getDomRuler, removeDomNode } from './dom';
-import Point from 'geo/Point';
-import Size from 'geo/Size';
+import Point from '../../geo/Point';
+import Size from '../../geo/Size';
 
 /**
  * @classdesc
@@ -204,6 +204,8 @@ export function getAlignPoint(size, horizontalAlignment, verticalAlignment) {
     return new Point(alignW, alignH);
 }
 
+const DEFAULT_FONT = 'monospace';
+
 /**
  * Returns CSS Font from a symbol with text styles.
  * @param  {Object} style symbol with text styles
@@ -217,7 +219,7 @@ export function getFont(style) {
         return (style['textStyle'] && style['textStyle'] !== 'normal' ? style['textStyle'] + ' ' : '') +
             (style['textWeight'] && style['textWeight'] !== 'normal' ? style['textWeight'] + ' ' : '') +
             style['textSize'] + 'px ' +
-            (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"');
+            (!style['textFaceName'] ? DEFAULT_FONT : (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"'));
     }
 }
 

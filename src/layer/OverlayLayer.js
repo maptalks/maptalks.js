@@ -1,9 +1,9 @@
-import { GEOJSON_TYPES } from 'core/Constants';
-import { isNil, UID, isObject } from 'core/util';
-import Extent from 'geo/Extent';
-import { Geometry, GeometryCollection, LineString } from 'geometry';
+import { GEOJSON_TYPES } from '../core/Constants';
+import { isNil, UID, isObject } from '../core/util';
+import Extent from '../geo/Extent';
+import { Geometry, GeometryCollection, LineString, Curve } from '../geometry';
 import Layer from './Layer';
-import GeoJSON from 'geometry/GeoJSON';
+import GeoJSON from '../geometry/GeoJSON';
 
 /**
  * @property {Boolean}  [options.drawImmediate=false] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) <br>
@@ -121,7 +121,7 @@ class OverlayLayer extends Layer {
         if (this.getCount() === 0) {
             return null;
         }
-        const extent = new Extent();
+        const extent = new Extent(this.getProjection());
         this.forEach(g => {
             extent._combine(g.getExtent());
         });
@@ -195,6 +195,7 @@ class OverlayLayer extends Layer {
             extent = new Extent();
         }
         this._toSort = this._maxZIndex > 0;
+        const geos = [];
         for (let i = 0, l = geometries.length; i < l; i++) {
             let geo = geometries[i];
             if (!geo) {
@@ -205,16 +206,18 @@ class OverlayLayer extends Layer {
                 if (Array.isArray(geo)) {
                     for (let ii = 0, ll = geo.length; ii < ll; ii++) {
                         this._add(geo[ii], extent, i);
+                        geos.push(geo[ii]);
                     }
                 }
             }
             if (!Array.isArray(geo)) {
                 this._add(geo, extent, i);
+                geos.push(geo);
             }
         }
         const map = this.getMap();
         if (map) {
-            this._getRenderer().onGeometryAdd(geometries);
+            this._getRenderer().onGeometryAdd(geos);
             if (fitView === true && !isNil(extent.xmin)) {
                 const z = map.getFitZoom(extent);
                 map.setCenterAndZoom(extent.getCenter(), z);
@@ -399,16 +402,16 @@ class OverlayLayer extends Layer {
             tolerance = options['tolerance'],
             hits = [];
         const map = this.getMap();
-        const point = map.coordinateToPoint(coordinate);
+        const point = map.coordToPoint(coordinate);
         const cp = map._pointToContainerPoint(point);
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter()) {
                 continue;
             }
-            if (!(geo instanceof LineString) || !geo._getArrowStyle()) {
-                // Except for LineString with arrows
-                let extent = geo._getPainter().getContainerExtent();
+            if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
+                // Except for LineString with arrows or curves
+                let extent = geo.getContainerExtent();
                 if (tolerance) {
                     extent = extent.expand(tolerance);
                 }
@@ -416,7 +419,7 @@ class OverlayLayer extends Layer {
                     continue;
                 }
             }
-            if (geo._containsPoint(point, tolerance) && (!filter || filter(geo))) {
+            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {

@@ -6,13 +6,14 @@ describe('Geometry.Circle', function () {
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
     var layer;
-    var canvasContainer;
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
-        canvasContainer = map._panels.canvasContainer;
         layer = new maptalks.VectorLayer('v').addTo(map);
     });
 
@@ -168,30 +169,67 @@ describe('Geometry.Circle', function () {
         COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
     });
 
-    it('Circle._containsPoint', function () {
+    it('Circle.containsPoint', function () {
 
-        var geometry = new maptalks.Circle(center, 10, {
+        var geometry = new maptalks.Circle(center, 20, {
             symbol: {
-                'lineWidth': 6
+                'lineWidth': 6,
+                'lineOpacity' : 0,
+                'polygonOpacity' : 0
             }
         });
         layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
-        var spy = sinon.spy();
-        geometry.on('click', spy);
+        var p1 = new maptalks.Point(400 + 20 + 6, 300);
+        expect(geometry.containsPoint(p1)).not.to.be.ok();
 
-        happen.click(canvasContainer, {
-            clientX: 400 + 8 + 10 + 6,
-            clientY: 300 + 8
-        });
-        expect(spy.called).to.not.be.ok();
+        var p2 = new maptalks.Point(400 + 20 + 2, 300);
+        expect(geometry.containsPoint(p2)).to.be.ok();
 
-        happen.click(canvasContainer, {
-            clientX: 400 + 8 + 10 + 2,
-            clientY: 300 + 8
+        var p3 = new maptalks.Point(400, 300);
+        expect(geometry.containsPoint(p3)).to.be.ok();
+    });
+
+    it('redraw when map is pitched', function (done) {
+        var circle = new maptalks.Circle(center, 20, {
+            symbol: {
+                'polygonFill' : '#f00',
+                'lineWidth': 6
+            }
         });
-        expect(spy.called).to.be.ok();
+        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate' : true });
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted();
+                done();
+            });
+            map.setPitch(60);
+        });
+        map.addLayer(layer);
+
+    });
+
+    it('redraw when map not pitched', function (done) {
+        map.setPitch(60);
+        var circle = new maptalks.Circle(center, 20, {
+            symbol: {
+                'polygonFill' : '#f00',
+                'lineWidth': 6
+            }
+        });
+        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate' : true });
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted();
+                done();
+            });
+            map.setPitch(0);
+        });
+        map.addLayer(layer);
+
     });
 });

@@ -1,20 +1,17 @@
-import { isNil, isNumber } from 'core/util';
-import Coordinate from 'geo/Coordinate';
-import PointExtent from 'geo/PointExtent';
-import { pointInsidePolygon, distanceToSegment, clipLine } from 'core/util/path';
+import Coordinate from '../geo/Coordinate';
+import { clipLine } from '../core/util/path';
 import Path from './Path';
 
 /**
  * @property {Object} [options=null]
- * @property {String} [options.arrowStyle=null]                 - style of arrow, if not null, arrows will be drawn, possible values: classic
+ * @property {String|Number[]} [options.arrowStyle=null]        - style of arrow, can be a pre-defined value or an array [arrow-width, arrow-height] (value in the array is times of linewidth), possible predefined values: classic ([3, 4])
  * @property {String} [options.arrowPlacement=vertex-last]      - arrow's placement: vertex-first, vertex-last, vertex-firstlast, point
  * @memberOf LineString
  * @instance
  */
 const options = {
     'arrowStyle': null,
-    'arrowPlacement': 'vertex-last', //vertex-first, vertex-last, vertex-firstlast, point
-    'clipToPaint' : true
+    'arrowPlacement': 'vertex-last' //vertex-first, vertex-last, vertex-firstlast, point
 };
 
 /**
@@ -93,75 +90,6 @@ class LineString extends Path {
     _computeGeodesicArea() {
         return 0;
     }
-
-    _containsPoint(point, tolerance) {
-        let t = isNil(tolerance) ? this._hitTestTolerance() : tolerance;
-
-        function isContains(points) {
-            let p1, p2;
-
-            for (let i = 0, len = points.length; i < len - 1; i++) {
-                p1 = points[i];
-                p2 = points[i + 1];
-
-                if (distanceToSegment(point, p1, p2) <= t) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        if (t < 2) {
-            t = 2;
-        }
-
-        const arrowStyle = this._getArrowStyle();
-        let lineWidth = this._getInternalSymbol()['lineWidth'];
-        if (!isNumber(lineWidth)) {
-            lineWidth = 2;
-        }
-        const map = this.getMap(),
-            extent = this._getPrjExtent(),
-            nw = new Coordinate(extent.xmin, extent.ymax),
-            se = new Coordinate(extent.xmax, extent.ymin),
-            pxMin = map._prjToPoint(nw),
-            pxMax = map._prjToPoint(se),
-            pxExtent = new PointExtent(pxMin.x - t, pxMin.y - t,
-                pxMax.x + t, pxMax.y + t);
-        if (arrowStyle) {
-            pxExtent._expand(Math.max(arrowStyle[0] * lineWidth, arrowStyle[1] * lineWidth));
-        }
-        if (!pxExtent.contains(point)) {
-            return false;
-        }
-
-        // check arrow
-        let points;
-        if (this._getArrowStyle()) {
-            points = this._getPath2DPoints(this._getPrjCoordinates(), true);
-            const arrows = this._getArrows(points, lineWidth, (tolerance ? tolerance : 2) + lineWidth / 2);
-            for (let ii = arrows.length - 1; ii >= 0; ii--) {
-                if (pointInsidePolygon(point, arrows[ii])) {
-                    return true;
-                }
-            }
-        }
-
-        points = points || this._getPath2DPoints(this._getPrjCoordinates());
-        const isSplitted = points.length > 0 && Array.isArray(points[0]);
-        if (isSplitted) {
-            for (let i = 0, l = points.length; i < l; i++) {
-                if (isContains(points[i])) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return isContains(points);
-        }
-
-    }
-
 }
 
 LineString.mergeOptions(options);

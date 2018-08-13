@@ -1,5 +1,5 @@
-import { extend } from 'core/util';
-import Browser from 'core/Browser';
+import { extend } from '../../core/util';
+import Browser from '../../core/Browser';
 import TileLayer from './TileLayer';
 
 /**
@@ -72,7 +72,10 @@ class WMSTileLayer extends TileLayer {
     }
 
     onAdd() {
-        this.wmsParams.crs = this.options.crs || this.getMap().getProjection().code;
+        const crs = this.options.crs || this.getMap().getProjection().code;
+        const projectionKey = this._wmsVersion >= 1.3 ? 'crs' : 'srs';
+        this.wmsParams[projectionKey] = crs;
+        super.onAdd();
     }
 
     getTileUrl(x, y, z) {

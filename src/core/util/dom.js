@@ -6,12 +6,12 @@
  * @name DomUtil
  */
 
-import Browser from 'core/Browser';
+import Browser from  '../Browser';
 import { IS_NODE } from './env';
 import { isString, isNil } from './common';
 import { splitWords } from './strings';
-import Point from 'geo/Point';
-import Size from 'geo/Size';
+import Point from '../../geo/Point';
+import Size from '../../geo/Size';
 
 const first = (props) => {
     return props[0];

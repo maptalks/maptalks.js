@@ -1,8 +1,8 @@
-import { isFunction } from 'core/util';
-import { extendSymbol } from 'core/util/style';
-import { Animation } from 'core/Animation';
-import Coordinate from 'geo/Coordinate';
-import Geometry from 'geometry/Geometry';
+import { isFunction } from '../../core/util';
+import { extendSymbol } from '../../core/util/style';
+import { Animation } from '../../core/Animation';
+import Coordinate from '../../geo/Coordinate';
+import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**
@@ -10,9 +10,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
      *
      * @param  {Object}   styles          - styles to animate
      * @param  {Object}   [options=null]  - animation options
-     * @param  {Object}   [options.duration=1000]      - duration
-     * @param  {Object}   [options.startTime=null]  - time to start animation in ms
-     * @param  {Object}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
+     * @param  {NUmber}   [options.duration=1000]      - duration
+     * @param  {Number}   [options.startTime=null]  - time to start animation in ms
+     * @param  {String}   [options.easing=linear]   - animation easing: in, out, inAndOut, linear, upAndDown
+     * @param  {Boolean}  [options.repeat=false]      - repeat animation
      * @param  {Function} [step=null]  - step function during animation, animation frame as the parameter
      * @return {animation.Player} animation player
      * @example
@@ -88,10 +89,11 @@ Geometry.include(/** @lends Geometry.prototype */ {
             if (map && isFocusing) {
                 const pcenter = projection.project(this.getCenter());
                 map._setPrjCenter(pcenter);
+                const e = map._parseEventFromCoord(projection.unproject(pcenter));
                 if (player.playState !== 'running') {
-                    map.onMoveEnd();
+                    map.onMoveEnd(e);
                 } else {
-                    map.onMoving();
+                    map.onMoving(e);
                 }
             }
             this._fireAnimateEvent(player.playState);

@@ -1,5 +1,5 @@
-import { extend, isNil } from 'core/util';
-import { escapeSpecialChars } from 'core/util/strings';
+import { extend, isNil } from '../core/util';
+import { escapeSpecialChars } from '../core/util/strings';
 import TextMarker from './TextMarker';
 
 /**
@@ -169,6 +169,9 @@ class TextBox extends TextMarker {
         const textBox = new TextBox(json['content'], feature['geometry']['coordinates'], json['width'], json['height'], json['options']);
         textBox.setProperties(feature['properties']);
         textBox.setId(feature['id']);
+        if (json['symbol']) {
+            textBox.setSymbol(json['symbol']);
+        }
         return textBox;
     }
 
@@ -225,8 +228,9 @@ class TextBox extends TextMarker {
             symbol['textVerticalAlignment'] = 'top';
             symbol['textDy'] += offsetY;
         }
-
+        this._refreshing = true;
         this.updateSymbol(symbol);
+        delete this._refreshing;
     }
 }
 

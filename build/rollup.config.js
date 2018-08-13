@@ -2,15 +2,13 @@ const rollup = require('rollup'),
     commonjs = require('rollup-plugin-commonjs'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     localResolve = require('rollup-plugin-local-resolve'),
-    babel = require('maptalks-rollup-plugin-babel'),
-    alias = require('maptalks-rollup-plugin-alias');
+    babel = require('rollup-plugin-babel');
 const pkg = require('../package.json');
 
 
 
 const config = {
     plugins: [
-        alias(require('./alias')),
         localResolve(),
         nodeResolve({
             jsnext: true,

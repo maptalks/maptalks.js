@@ -20,11 +20,11 @@ module.exports = function (config) {
         return plugin.name === 'babel';
     });
     if (idx >= 0) {
-        const babel = require('maptalks-rollup-plugin-babel');
+        const babel = require('rollup-plugin-babel');
         plugins.splice(idx, 1, babel({
             plugins: [['istanbul', {
                 // TileLayerGLRenderer is not testable on CI
-                exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'src/renderer/layer/tilelayer/TileLayerGLRenderer.js', 'node_modules/**/*']
+                exclude: ['test/**/*.js', 'src/core/mapbox/*.js', 'src/util/dom.js', 'src/renderer/layer/tilelayer/TileLayerGLRenderer.js', 'src/renderer/layer/ImageGLRenderable.js', 'node_modules/**/*']
             }]]
         }));
     }

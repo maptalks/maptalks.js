@@ -1,6 +1,6 @@
-import { extend } from 'core/util';
-import { getAlignPoint, escapeSpecialChars } from 'core/util/strings';
-import Size from 'geo/Size';
+import { extend } from '../core/util';
+import { getAlignPoint, escapeSpecialChars } from '../core/util/strings';
+import Size from '../geo/Size';
 import TextMarker from './TextMarker';
 
 /**
@@ -129,6 +129,9 @@ class Label extends TextMarker {
         const label = new Label(json['content'], feature['geometry']['coordinates'], json['options']);
         label.setProperties(feature['properties']);
         label.setId(feature['id']);
+        if (json['symbol']) {
+            label.setSymbol(json['symbol']);
+        }
         return label;
     }
 
@@ -140,8 +143,7 @@ class Label extends TextMarker {
         return {
             'feature': this.toGeoJSON(options),
             'subType': 'Label',
-            'content': this._content,
-            'textSymbol' : this.getTextSymbol()
+            'content': this._content
         };
     }
 
@@ -188,7 +190,9 @@ class Label extends TextMarker {
                 symbol['markerDy'] += textSize['height'] / 2;
             }
         }
+        this._refreshing = true;
         this.updateSymbol(symbol);
+        delete this._refreshing;
     }
 
     _getBoxSize(symbol) {

@@ -1,7 +1,9 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault } from 'core/util';
-import Point from 'geo/Point';
-import PointExtent from 'geo/PointExtent';
-import Canvas from 'core/Canvas';
+import { isNil, isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
+import { getAlignPoint } from '../../../core/util/strings';
+import Size from '../../../geo/Size';
+import Point from '../../../geo/Point';
+import PointExtent from '../../../geo/PointExtent';
+import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
@@ -23,7 +25,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
 
     symbolize(ctx, resources) {
         const style = this.style;
-        if (style['markerWidth'] === 0 || style['markerHeight'] === 0 || style['markerOpacity'] === 0) {
+        if (!this.painter.isHitTesting() && (style['markerWidth'] === 0 || style['markerHeight'] === 0 || style['markerOpacity'] === 0)) {
             return;
         }
         const cookedPoints = this._getRenderContainerPoints();
@@ -62,16 +64,16 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             alpha = ctx.globalAlpha;
             ctx.globalAlpha *= style['markerOpacity'];
         }
+        const alignPoint = getAlignPoint(new Size(width, height), style['markerHorizontalAlignment'], style['markerVerticalAlignment']);
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
             const origin = this._rotate(ctx, p, this._getRotationAt(i));
             if (origin) {
                 p = origin;
             }
-            //图片定位到中心底部
             Canvas.image(ctx, img,
-                p.x - width / 2,
-                p.y - height,
+                p.x + alignPoint.x,
+                p.y + alignPoint.y,
                 width, height);
             if (origin) {
                 ctx.restore();
@@ -97,7 +99,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             return null;
         }
         //to radian
-        return r * Math.PI / 180;
+        return -r * Math.PI / 180;
     }
 
     getDxDy() {
@@ -107,13 +109,21 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         return new Point(dx, dy);
     }
 
-    getMarkerExtent(resources) {
-        const url = this.style['markerFile'],
+    getFixedExtent(resources) {
+        const style = this.style;
+        const url = style['markerFile'],
             img = resources ? resources.getImage(url) : null;
-        const width = this.style['markerWidth'] || (img ? img.width : 0),
-            height = this.style['markerHeight'] || (img ? img.height : 0);
+        const width = style['markerWidth'] || (img ? img.width : 0),
+            height = style['markerHeight'] || (img ? img.height : 0);
         const dxdy = this.getDxDy();
-        return new PointExtent(dxdy.add(-width / 2, 0), dxdy.add(width / 2, -height));
+        const alignPoint = getAlignPoint(new Size(width, height), style['markerHorizontalAlignment'], style['markerVerticalAlignment']);
+        let result = new PointExtent(dxdy.add(0, 0), dxdy.add(width, height));
+        result._add(alignPoint);
+        const rotation = this.getRotation();
+        if (rotation) {
+            result = this._rotateExtent(result, rotation);
+        }
+        return result;
     }
 
     translate() {
@@ -126,7 +136,10 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             'markerRotation' : getValueOrDefault(s['markerRotation'], 0),
 
             'markerDx': getValueOrDefault(s['markerDx'], 0),
-            'markerDy': getValueOrDefault(s['markerDy'], 0)
+            'markerDy': getValueOrDefault(s['markerDy'], 0),
+
+            'markerHorizontalAlignment': getValueOrDefault(s['markerHorizontalAlignment'], 'middle'), //left | middle | right
+            'markerVerticalAlignment': getValueOrDefault(s['markerVerticalAlignment'], 'top'), // top | middle | bottom
         };
     }
 }

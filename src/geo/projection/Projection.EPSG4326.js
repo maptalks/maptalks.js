@@ -1,4 +1,4 @@
-import { extend } from 'core/util';
+import { extend } from '../../core/util';
 import Common from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere } from '../measurer';

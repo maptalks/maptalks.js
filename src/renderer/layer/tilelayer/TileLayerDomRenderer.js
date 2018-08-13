@@ -1,3 +1,8 @@
+//--------------------------------------------------------------
+//THIS RENDERER IS NOT USED ANYMORE AND REPLACED BY GL RENDERER.
+//--------------------------------------------------------------
+//
+//
 //------------------
 // It's a little bit tricky to test tilelayer with CI.
 // run gulp test
@@ -10,8 +15,8 @@ import {
     cancelAnimFrame,
     emptyImageUrl,
     now
-} from 'core/util';
-import * as mat4 from 'core/util/mat4';
+} from '../../../core/util';
+import * as mat4 from '../../../core/util/mat4';
 import {
     on,
     createEl,
@@ -21,10 +26,10 @@ import {
     setOpacity,
     TRANSFORM,
     CSSFILTER
-} from 'core/util/dom';
-import Class from 'core/Class';
-import Browser from 'core/Browser';
-import TileLayer from 'layer/tile/TileLayer';
+} from '../../../core/util/dom';
+import Class from '../../../core/Class';
+import Browser from '../../../core/Browser';
+import TileLayer from '../../../layer/tile/TileLayer';
 
 
 const POSITION0 = 'position:absolute;';
@@ -32,7 +37,6 @@ const POSITION0 = 'position:absolute;';
 /**
  * @classdesc
  * @deprecated
- * THIS RENDERER IS NOT USED ANYMORE AND REPLACED BY GL RENDERER.
  *
  * A renderer based on HTML Doms for TileLayers.
  * It is implemented based on Leaflet's GridLayer.
@@ -349,7 +353,7 @@ class TileLayerDomRenderer extends Class {
         }
         let matrix;
         if (fraction !== 1) {
-            const m = mat4.create();
+            const m = new Float32Array();
             if (map.isZooming() && this._zoomParam) {
                 const origin = this._zoomParam['origin'],
                     // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a offset to fix.

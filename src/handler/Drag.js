@@ -1,7 +1,7 @@
-import { isNumber } from 'core/util';
-import Handler from 'handler/Handler';
-import { on, off } from 'core/util/dom';
-import Point from 'geo/Point';
+import { isNumber } from '../core/util';
+import Handler from './Handler';
+import { on, off } from '../core/util/dom';
+import Point from '../geo/Point';
 
 const START_EVENTS = 'touchstart mousedown';
 const MOVE_EVENTS = {
@@ -35,7 +35,11 @@ class DragHandler extends Handler {
         if (!this.dom) {
             return this;
         }
-        on(this.dom, START_EVENTS, this.onMouseDown, this);
+        //create a dynamic method to resolve conflicts with other drag handler
+        this._onMouseDown = function (e) {
+            return this.onMouseDown(e);
+        };
+        on(this.dom, START_EVENTS, this._onMouseDown, this);
         return this;
     }
 
@@ -45,13 +49,17 @@ class DragHandler extends Handler {
             return this;
         }
         this._offEvents();
-        off(this.dom, START_EVENTS, this.onMouseDown);
+        off(this.dom, START_EVENTS, this._onMouseDown);
+        delete this._onMouseDown;
         return this;
     }
 
     onMouseDown(event) {
         if (!this.options['rightclick'] && event.button === 2) {
             //ignore right mouse down
+            return;
+        }
+        if (event.touches && event.touches.length > 1) {
             return;
         }
         if (this.options['cancelOn'] && this.options['cancelOn'](event) === true) {
@@ -66,7 +74,7 @@ class DragHandler extends Handler {
         dom['ondragstart'] = function () {
             return false;
         };
-        this.moved = false;
+        delete this.moved;
         const actual = event.touches ? event.touches[0] : event;
         this.startPos = new Point(actual.clientX, actual.clientY);
         on(document, MOVE_EVENTS[event.type], this.onMouseMove, this);
@@ -82,6 +90,10 @@ class DragHandler extends Handler {
 
     onMouseMove(event) {
         if (event.touches && event.touches.length > 1) {
+            if (this.moved) {
+                this.interupted = true;
+                this.onMouseUp(event);
+            }
             return;
         }
         const actual = event.touches ? event.touches[0] : event;
@@ -115,7 +127,10 @@ class DragHandler extends Handler {
             param['mousePos'] = new Point(parseInt(actual.clientX, 0), parseInt(actual.clientY, 0));
         }
         if (this.moved/* && this.moving*/) {
+            param.interupted = this.interupted;
             this.fire('dragend', param);
+            delete this.interupted;
+            delete this.moved;
         }
 
         this.fire('mouseup', param);

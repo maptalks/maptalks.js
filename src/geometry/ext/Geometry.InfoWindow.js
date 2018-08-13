@@ -1,6 +1,6 @@
-import { extend } from 'core/util';
-import Geometry from 'geometry/Geometry';
-import { InfoWindow } from 'ui';
+import { extend } from '../../core/util';
+import Geometry from '../Geometry';
+import InfoWindow from '../../ui/InfoWindow';
 
 Geometry.include(/** @lends Geometry.prototype */ {
     /**

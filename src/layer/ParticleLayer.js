@@ -1,6 +1,6 @@
-import { now } from 'core/util';
+import { now } from '../core/util';
 import CanvasLayer from './CanvasLayer';
-import CanvasLayerRenderer from 'renderer/layer/canvaslayer/CanvasLayerRenderer';
+import CanvasLayerRenderer from '../renderer/layer/canvaslayer/CanvasLayerRenderer';
 /**
  * @property {Object} options                  - configuration options
  * @property {Boolean} [options.animation=true]       - if the layer is an animated layer
@@ -15,7 +15,7 @@ const options = {
  * @classdesc
  * A layer to draw particles. <br>
  * ParticleLayer provides some interface methods to render particles. <br>
- * You can use it directly, but can't serialize/dserialize a ParticleLayer with JSON in this way. <br>
+ * You can use it directly, but can't serialize/deserialize a ParticleLayer with JSON in this way. <br>
  * It is more recommended to extend it with a subclass.
  * @example
  * import { ParticleLayer } from 'maptalks';

@@ -1,4 +1,4 @@
-import { extend, isNil } from 'core/util';
+import { extend, isNil } from '../core/util';
 import Circle from './Circle';
 
 /**
@@ -108,10 +108,11 @@ class Sector extends Circle {
     }
 
     _containsPoint(point, tolerance) {
-        if (this.getMap().isTransforming()) {
+        const map = this.getMap();
+        if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
         }
-        const center = this._getCenter2DPoint(),
+        const center = map._pointToContainerPoint(this._getCenter2DPoint()),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
             pc = center,

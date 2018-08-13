@@ -1,9 +1,9 @@
-import { extend } from 'core/util';
-import { on, off, createEl } from 'core/util/dom';
-import Polygon from 'geometry/Polygon';
-import Layer from 'layer/Layer';
-import VectorLayer from 'layer/VectorLayer';
-import Map from 'map/Map';
+import { extend, isFunction } from '../core/util';
+import { on, off, createEl } from '../core/util/dom';
+import Polygon from '../geometry/Polygon';
+import Layer from '../layer/Layer';
+import VectorLayer from '../layer/VectorLayer';
+import Map from '../map/Map';
 import Control from './Control';
 
 /**
@@ -78,7 +78,7 @@ class Overview extends Control {
         if (this.options['maximize']) {
             this._createOverview();
         }
-        this.getMap().on('resize moving dragrotating viewchange', this._update, this)
+        this.getMap().on('resize moving zooming rotate dragrotating viewchange', this._update, this)
             .on('setbaselayer', this._updateBaseLayer, this)
             .on('spatialreferencechange', this._updateSpatialReference, this);
         on(this.button, 'click', this._onButtonClick, this);
@@ -87,7 +87,7 @@ class Overview extends Control {
 
     onRemove() {
         this.getMap()
-            .off('resize moving dragrotating viewchange', this._update, this)
+            .off('resize moving zooming rotate dragrotating viewchange', this._update, this)
             .off('setbaselayer', this._updateBaseLayer, this)
             .off('spatialreferencechange', this._updateSpatialReference, this);
         if (this._overview) {
@@ -98,14 +98,23 @@ class Overview extends Control {
         off(this.button, 'click', this._onButtonClick, this);
     }
 
+    /**
+     * Maximize overview control
+     * @returns {control.Overview}
+     */
     maxmize() {
         const size = this.options['size'];
         const dom = this.mapContainer;
         dom.style.width = size[0] + 'px';
         dom.style.height = size[1] + 'px';
         this._createOverview();
+        return this;
     }
 
+    /**
+     * Minimize overview control
+     * @returns {control.Overview}
+     */
     minimize() {
         if (this._overview) {
             this._overview.remove();
@@ -115,6 +124,15 @@ class Overview extends Control {
         const dom = this.mapContainer;
         dom.style.width = 0 + 'px';
         dom.style.height = 0 + 'px';
+        return this;
+    }
+
+    /**
+     * Return overview's map object
+     * @returns {Map}
+     */
+    getOverviewMap() {
+        return this._overview;
     }
 
     _onButtonClick() {
@@ -159,7 +177,6 @@ class Overview extends Control {
             'cursor': 'move',
             'symbol': this.options['symbol']
         })
-            .on('dragstart', this._onDragStart, this)
             .on('dragend', this._onDragEnd, this);
         new VectorLayer('perspective_layer', this._perspective).addTo(this._overview);
         this.fire('load');
@@ -187,16 +204,11 @@ class Overview extends Control {
         return zoom;
     }
 
-    _onDragStart() {
-        this._origDraggable = this.getMap().options['draggable'];
-        this.getMap().config('draggable', false);
-    }
 
     _onDragEnd() {
         const center = this._perspective.getCenter();
         this._overview.setCenter(center);
         this.getMap().panTo(center);
-        this.getMap().config('draggable', this._origDraggable);
     }
 
     _getPerspectiveCoords() {
@@ -226,18 +238,47 @@ class Overview extends Control {
         if (!this._overview) {
             return;
         }
-        const map = this.getMap();
-        if (map.getBaseLayer()) {
-            const json = map.getBaseLayer().toJSON();
-            delete json.options.canvas;
-            json.options.renderer = 'canvas';
-            const layer = Layer.fromJSON(json);
-            this._overview.setBaseLayer(layer);
-        } else {
+        const map = this.getMap(),
+            baseLayer = map.getBaseLayer();
+        if (!baseLayer) {
             this._overview.setBaseLayer(null);
+            return;
         }
-    }
+        const layers = baseLayer.layers;
+        let showIndex = 0;
+        if (layers) {
+            for (let i = 0, l = layers.length; i < l; i++) {
+                const layer = layers[i];
+                if (layer.isVisible()) {
+                    showIndex = i;
+                    break;
+                }
+            }
+        }
 
+        const json = baseLayer.toJSON();
+        let options = null;
+        if (layers) {
+            options = json.layers[showIndex].options;
+            options.visible = true;
+        } else {
+            options = json.options;
+        }
+        this._overview.setMinZoom(options.minZoom || null)
+            .setMaxZoom(options.maxZoom || null);
+        delete options.minZoom;
+        delete options.maxZoom;
+        delete json.options.canvas;
+        json.options.visible = true;
+        json.options.renderer = 'canvas';
+        const layer = Layer.fromJSON(json);
+        for (const p in baseLayer) {
+            if (isFunction(baseLayer[p]) && baseLayer.hasOwnProperty(p) && baseLayer[p] !== baseLayer.constructor.prototype[p]) {
+                layer[p] = baseLayer[p];
+            }
+        }
+        this._overview.setBaseLayer(layer);
+    }
 }
 
 Overview.mergeOptions(options);

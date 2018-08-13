@@ -121,3 +121,13 @@ export function join(arr, seperator) {
         return Array.prototype.join.call(arr, seperator || ',');
     }
 }
+
+const pi = Math.PI / 180;
+
+export function toRadian(d) {
+    return d * pi;
+}
+
+export function toDegree(r) {
+    return r / pi;
+}

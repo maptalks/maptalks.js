@@ -1,4 +1,4 @@
-import { pushIn } from 'core/util';
+import { pushIn } from '../../core/util';
 import Layer from '../Layer';
 import TileLayer from './TileLayer';
 
@@ -55,6 +55,9 @@ class GroupTileLayer extends TileLayer {
     constructor(id, layers, options) {
         super(id, options);
         this.layers = layers || [];
+        this._checkChildren();
+        this.layerMap = {};
+        this._groupChildren = [];
     }
 
     /**
@@ -89,32 +92,37 @@ class GroupTileLayer extends TileLayer {
     getTiles(z) {
         const layers = this.layers;
         const tiles = [];
-        let grid;
-        for (let i = layers.length - 1; i >= 0; i--) {
+        let count = 0;
+        for (let i = 0, l = layers.length; i < l; i++) {
             const layer = layers[i];
             if (!layer.options['visible']) {
                 continue;
             }
             const childGrid = layer.getTiles(z);
-            if (!childGrid || childGrid.tiles.length === 0) {
+            if (!childGrid || childGrid.count === 0) {
                 continue;
             }
-            pushIn(tiles, childGrid.tiles);
-            grid = childGrid;
+            count += childGrid.count;
+            pushIn(tiles, childGrid.tileGrids);
         }
-        if (!grid) {
-            return null;
-        }
-        grid.tiles = tiles;
-        return grid;
+
+        return {
+            count : count,
+            tileGrids : tiles
+        };
     }
 
     onAdd() {
         const map = this.getMap();
         this.layers.forEach(layer => {
+            this.layerMap[layer.getId()] = layer;
+            if (layer.getChildLayer) {
+                this._groupChildren.push(layer);
+            }
             layer._bindMap(map);
             layer.on('show hide', this._onLayerShowHide, this);
         });
+        super.onAdd();
     }
 
     onRemove() {
@@ -122,6 +130,23 @@ class GroupTileLayer extends TileLayer {
             layer._doRemove();
             layer.off('show hide', this._onLayerShowHide, this);
         });
+        delete this.layerMap;
+        delete this._groupChildren;
+        super.onRemove();
+    }
+
+    getChildLayer(id) {
+        const layer = this.layerMap[id];
+        if (layer) {
+            return layer;
+        }
+        for (let i = 0; i < this._groupChildren.length; i++) {
+            const child = this._groupChildren[i].getChildLayer(id);
+            if (child) {
+                return child;
+            }
+        }
+        return null;
     }
 
     _onLayerShowHide() {
@@ -129,6 +154,31 @@ class GroupTileLayer extends TileLayer {
         if (renderer) {
             renderer.setToRedraw();
         }
+    }
+
+    isVisible() {
+        if (!super.isVisible()) {
+            return false;
+        }
+        const children = this.layers;
+        for (let i = 0, l = children.length; i < l; i++) {
+            if (children[i].isVisible()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    _checkChildren() {
+        const ids = {};
+        this.layers.forEach(layer => {
+            const layerId = layer.getId();
+            if (ids[layerId]) {
+                throw new Error(`Duplicate child layer id (${layerId}) in the GroupTileLayer (${this.getId()})`);
+            } else {
+                ids[layerId] = 1;
+            }
+        });
     }
 }
 

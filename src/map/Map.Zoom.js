@@ -1,6 +1,6 @@
-import { isNil } from 'core/util';
-import Browser from 'core/Browser';
-import Point from 'geo/Point';
+import { isNil } from '../core/util';
+import Browser from '../core/Browser';
+import Point from '../geo/Point';
 import Map from './Map';
 
 Map.include(/** @lends Map.prototype */{
@@ -43,11 +43,13 @@ Map.include(/** @lends Map.prototype */{
             'zoom' : nextZoom,
             'around' : origin
         }, {
+            'continueOnViewChanged' : true,
             'duration' : duration
         });
     },
 
     onZoomStart(nextZoom, origin) {
+        if (!this.options['zoomable'] || this.isZooming()) { return; }
         this._zooming = true;
         this._startZoomVal = this.getZoom();
         this._startZoomCoord = this._containerPointToPrj(origin);
@@ -64,6 +66,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     onZooming(nextZoom, origin, startScale) {
+        if (!this.options['zoomable']) { return; }
         const frameZoom = this._frameZoom;
         if (frameZoom === nextZoom) {
             return;
@@ -109,6 +112,7 @@ Map.include(/** @lends Map.prototype */{
     },
 
     onZoomEnd(nextZoom, origin) {
+        if (!this.options['zoomable']) { return; }
         const startZoomVal = this._startZoomVal;
         this._zoomTo(nextZoom, origin);
         this._zooming = false;

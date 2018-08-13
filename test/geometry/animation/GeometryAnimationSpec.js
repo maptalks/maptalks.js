@@ -176,6 +176,29 @@ describe('Geometry.Animation', function () {
                 duration : animSpeed
             }, step);
         });
+
+        it('should be able to re-animated', function (done) {
+            var circle = new maptalks.Circle([100, 0], 100);
+            function step(frame) {
+                if (frame.state.playState !== 'finished') {
+                    return;
+                }
+                circle.setRadius(100);
+                var player = circle.animate({
+                    radius:1000
+                }, {
+                    duration : animSpeed
+                }, step);
+                expect(circle.getRadius()).to.be.eql(100);
+                player.cancel();
+                done();
+            }
+            circle.animate({
+                radius:1000
+            }, {
+                duration : animSpeed
+            }, step);
+        });
     });
 
     describe('animate a geometry on a map', function () {

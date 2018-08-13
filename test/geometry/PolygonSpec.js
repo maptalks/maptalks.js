@@ -7,7 +7,10 @@ describe('Geometry.Polygon', function () {
     var canvasContainer;
 
     beforeEach(function () {
-        var setups = COMMON_CREATE_MAP(center);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width : 800,
+            height : 600
+        });
         container = setups.container;
         map = setups.map;
         layer = new maptalks.VectorLayer('id');
@@ -243,7 +246,9 @@ describe('Geometry.Polygon', function () {
             new maptalks.Coordinate([center.x + 0.002, center.y])
         ]], {
             symbol: {
-                'lineWidth': 6
+                'lineWidth': 6,
+                'polygonOpacity' : 0,
+                'lineOpacity' : 0
             }
         });
         layer.addGeometry(geometry);
@@ -310,6 +315,47 @@ describe('Geometry.Polygon', function () {
         // expect(vector.getLength()).to.be.eql(comparison.getLength());
 
         // expect(vector.getArea()).to.be.eql(comparison.getArea());
+    });
+
+    describe('smoothness', function () {
+        it('draw 3 points with smoothness', function () {
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.Polygon([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                smoothness : 0.5,
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            expect(layer).not.to.be.painted(0, 0);
+            expect(layer).to.be.painted(0, -10);
+        });
+    });
+
+    describe('outline', function () {
+        it('display outline', function () {
+            map.config('centerCross', true);
+            layer.config('drawImmediate', true);
+            var center = map.getCenter();
+            var line = new maptalks.Polygon([
+                    center.sub(0.001, 0),
+                    center.add(0.001, 0),
+                    center.add(0.001, -0.001)
+                ], {
+                symbol : {
+                    'lineColor' : '#000',
+                    'lineWidth' : 8
+                }
+            }).addTo(layer);
+            var outline = line.getOutline().updateSymbol({ polygonFill : '#0f0' }).addTo(layer);
+            expect(layer).not.to.be.painted(0, -20);
+            expect(layer).to.be.painted(0, 10, [0, 255, 0]);
+        });
     });
 
     describe('animateShow', function () {

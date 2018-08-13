@@ -1,20 +1,27 @@
-import Point from 'geo/Point';
+import Point from '../../geo/Point';
 
 
-export function clipLine(points, bounds, round) {
+export function clipLine(points, bounds, round, noCut) {
     const parts = [];
     let k = 0, segment;
     for (let j = 0, l = points.length; j < l - 1; j++) {
-        segment = clipSegment(points[j], points[j + 1], bounds, j, round);
+        segment = clipSegment(points[j], points[j + 1], bounds, j, round, noCut);
 
         if (!segment) { continue; }
 
         parts[k] = parts[k] || [];
-        parts[k].push(segment[0]);
+        parts[k].push({
+            'point' : segment[0],
+            'index' : j
+        });
 
         // if segment goes out of screen, or it's the last one, it's the end of the line part
         if ((segment[1] !== points[j + 1]) || (j === l - 2)) {
-            parts[k].push(segment[1]);
+            // parts[k].push(segment[1]);
+            parts[k].push({
+                'point' : segment[1],
+                'index' : j + 1
+            });
             k++;
         }
     }
@@ -29,7 +36,7 @@ let _lastCode;
 // (modifying the segment points directly!). Used by Leaflet to only show polyline
 // points that are on the screen or near, increasing performance.
 // @copyright Leaflet
-export function clipSegment(a, b, bounds, useLastCode, round) {
+export function clipSegment(a, b, bounds, useLastCode, round, noCut) {
     let codeA = useLastCode ? _lastCode : _getBitCode(a, bounds),
         codeB = _getBitCode(b, bounds),
 
@@ -49,6 +56,9 @@ export function clipSegment(a, b, bounds, useLastCode, round) {
             return false;
         }
 
+        if (noCut) {
+            return [a, b];
+        }
         // other cases
         codeOut = codeA || codeB;
         p = _getEdgeIntersection(a, b, codeOut, bounds, round);
@@ -232,8 +242,8 @@ function _getBitCode(p, bounds) {
  */
 export function withInEllipse(point, center, southeast, tolerance) {
     point = new Point(point);
-    const a = Math.abs(southeast.x - center.x) * 2,
-        b = Math.abs(southeast.y - center.y) * 2,
+    const a = Math.abs(southeast.x - center.x),
+        b = Math.abs(southeast.y - center.y),
         c = Math.sqrt(Math.abs(a * a - b * b)),
         xfocus = a >= b;
     let f1, f2, d;
@@ -252,5 +262,5 @@ export function withInEllipse(point, center, southeast, tolerance) {
     L2 + t >= L2'
     D + 2t >= L1' + L2'
     */
-    return point.distanceTo(f1) + point.distanceTo(f2) <= d + 2 * tolerance;
+    return (point.distanceTo(f1) + point.distanceTo(f2)) <= (d + 2 * tolerance);
 }
