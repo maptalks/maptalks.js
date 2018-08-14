@@ -60,9 +60,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             delete options.canvas;
         }
         super(options);
-        if (canvas) {
-            this._canvas = canvas;
-        }
+        this._canvas = canvas;
         this.setId(id);
         if (options) {
             this.setZIndex(options.zIndex);
