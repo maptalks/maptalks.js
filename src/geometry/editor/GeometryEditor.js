@@ -306,6 +306,14 @@ class GeometryEditor extends Eventable(Class) {
 
         function onHandleDragstart(param) {
             if (opts.onDown) {
+                /**
+                 * change geometry shape start event, fired when drag to change geometry shape.
+                 *
+                 * @event Geometry#handledragstart
+                 * @type {Object}
+                 * @property {String} type - handledragstart
+                 * @property {Geometry} target - the geometry fires the event
+                 */
                 this._geometry.fire('handledragstart');
                 opts.onDown.call(me, param['viewPoint'], param);
             }
@@ -316,6 +324,14 @@ class GeometryEditor extends Eventable(Class) {
             me._hideContext();
             const viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
             if (opts.onMove) {
+                /**
+                 * changing geometry shape event, fired when dragging to change geometry shape.
+                 *
+                 * @event Geometry#handledragging
+                 * @type {Object}
+                 * @property {String} type - handledragging
+                 * @property {Geometry} target - the geometry fires the event
+                 */
                 this._geometry.fire('handledragging');
                 opts.onMove.call(me, viewPoint, param);
             }
@@ -324,6 +340,14 @@ class GeometryEditor extends Eventable(Class) {
 
         function onHandleDragEnd(ev) {
             if (opts.onUp) {
+                /**
+                 * changed geometry shape event, fired when drag end to change geometry shape.
+                 *
+                 * @event Geometry#handledragend
+                 * @type {Object}
+                 * @property {String} type - handledragend
+                 * @property {Geometry} target - the geometry fires the event
+                 */
                 this._geometry.fire('handledragend');
                 opts.onUp.call(me, ev);
             }
