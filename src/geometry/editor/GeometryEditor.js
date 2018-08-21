@@ -306,6 +306,7 @@ class GeometryEditor extends Eventable(Class) {
 
         function onHandleDragstart(param) {
             if (opts.onDown) {
+                this._geometry.fire('handledragstart');
                 opts.onDown.call(me, param['viewPoint'], param);
             }
             return false;
@@ -315,6 +316,7 @@ class GeometryEditor extends Eventable(Class) {
             me._hideContext();
             const viewPoint = map._prjToViewPoint(handle._getPrjCoordinates());
             if (opts.onMove) {
+                this._geometry.fire('handledragging');
                 opts.onMove.call(me, viewPoint, param);
             }
             return false;
