@@ -322,6 +322,7 @@ class GeometryEditor extends Eventable(Class) {
 
         function onHandleDragEnd(ev) {
             if (opts.onUp) {
+                this._geometry.fire('handledragend');
                 opts.onUp.call(me, ev);
             }
             return false;
