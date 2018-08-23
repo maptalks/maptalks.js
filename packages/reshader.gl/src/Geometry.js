@@ -4,24 +4,9 @@ import BoundingBox from './BoundingBox';
 
 const defaultDesc = {
     'primitive' : 'triangles',
-    'aPosition' : {
-        size : 3
-    },
-    'aNormal' : {
-        size : 3
-    },
-    'aTexCoord' : {
-        size : 2
-    },
-    'aColor' : {
-        size : 3
-    },
-    'aTangent' : {
-        size : 3
-    },
-    'aBarycentric' : {
-        size : 3
-    }
+    //name of position attribute
+    'positionAttribute' : 'aPosition',
+    'attrToKeepFromBuffer' : ['aPickingId']
 };
 
 export default class Geometry {
@@ -42,39 +27,18 @@ export default class Geometry {
     generateBuffers(regl) {
         //generate regl buffers beforehand to avoid repeated bufferData
         const data = this.data;
-        const buffers = {
-            'aPosition' : {
-                buffer : data.aPosition.destroy ? data.aPosition : regl.buffer(data.aPosition)
+        this.rawData = {};
+        const attrToKeep = this.desc['attrToKeepFromBuffer'];
+        const buffers = {};
+        for (const p in data) {
+            if (!data[p]) {
+                continue;
             }
-        };
-
-        if (data.aNormal) {
-            buffers.aNormal = data.aNormal.destroy ? data.aNormal : {
-                buffer : regl.buffer(data.aNormal)
-            };
-        }
-
-        if (data.aBarycentric) {
-            buffers.aBarycentric = data.aBarycentric.destroy ? data.aBarycentric : {
-                buffer : regl.buffer(data.aBarycentric)
-            };
-        }
-
-        if (data.aTangent) {
-            buffers.aTangent = data.aTangent.destroy ? data.aTangent : {
-                buffer : regl.buffer(data.aTangent)
-            };
-        }
-
-        if (data.aTexCoord) {
-            buffers.aTexCoord = data.aTexCoord.destroy ? data.aTexCoord : {
-                buffer : regl.buffer(data.aTexCoord)
-            };
-        }
-
-        if (data.aColor) {
-            buffers.aColor = data.aColor.destroy ? data.aColor : {
-                buffer : regl.buffer(data.aColor)
+            if (attrToKeep && attrToKeep.indexOf(p) >= 0) {
+                this.rawData[p] = data[p];
+            }
+            buffers[p] = {
+                buffer : data[p].destroy ? data[p] : regl.buffer(data[p])
             };
         }
         this.data = buffers;
@@ -116,7 +80,8 @@ export default class Geometry {
         if (!bbox) {
             bbox = this.boundingBox = new BoundingBox();
         }
-        const posArr = this.data.aPosition;
+        const posAttr = this.desc.positionAttribute;
+        const posArr = this.data[posAttr];
         if (posArr && posArr.length) {
             const min = bbox.min;
             const max = bbox.max;

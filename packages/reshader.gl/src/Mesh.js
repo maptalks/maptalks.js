@@ -12,6 +12,7 @@ class Mesh {
         this.config = config;
         this.transparent = config.transparent;
         this.castShadow = isNil(config.castShadow) || config.castShadow;
+        this.picking = isNil(config.picking) || config.picking;
         this.uniforms = {};
         this.localTransform = mat4.identity(new Array(16));
     }

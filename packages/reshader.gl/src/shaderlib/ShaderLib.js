@@ -1,11 +1,13 @@
 /* eslint-disable camelcase */
 import vsm_shadow_vert from './glsl/vsm_shadow.vert';
 import vsm_shadow_frag from './glsl/vsm_shadow.frag';
+import fbo_picking_vert from './glsl/fbo_picking.vert';
 
 //Shader Chunks for includes
 const ShaderChunk = {
     vsm_shadow_vert,
-    vsm_shadow_frag
+    vsm_shadow_frag,
+    fbo_picking_vert
 };
 /* eslint-enable camelcase */
 

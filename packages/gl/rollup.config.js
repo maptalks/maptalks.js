@@ -42,7 +42,7 @@ module.exports = {
     external : ['maptalks'],
     output: [
         {
-            'sourcemap': false,
+            'sourcemap': production ? false : 'inline',
             'format': 'umd',
             'name': 'maptalksgl',
             'globals' : {

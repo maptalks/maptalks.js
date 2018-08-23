@@ -80,3 +80,15 @@ export function normalize(out, arr) {
     }
     return out;
 }
+
+/*
+ * Interpolate between two number.
+ *
+ * @param {Number} from
+ * @param {Number} to
+ * @param {Number} t interpolation factor between 0 and 1
+ * @returns {Number} interpolated color
+ */
+export function interpolate(a, b, t) {
+    return (a * (1 - t)) + (b * t);
+}

@@ -20,7 +20,8 @@ class ShadowDisplayShader extends MeshShader {
                         return projectionViewModel;
                     }
                 },
-                `vsm_shadow_lightProjViewModel[${numOfDirLights}]`, `vsm_shadow_shadowMap[${numOfDirLights}]`,
+                `vsm_shadow_lightProjViewModel[${numOfDirLights}]`,
+                `vsm_shadow_shadowMap[${numOfDirLights}]`,
                 'color', 'opacity'
             ],
             defines : {
