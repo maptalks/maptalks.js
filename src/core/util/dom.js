@@ -344,8 +344,8 @@ export function getEventContainerPoint(ev, dom) {
     }
     // div by scaleX, scaleY to fix #450
     return new Point(
-        ev.clientX / domPos[2] - domPos[0] - dom.clientLeft,
-        ev.clientY / domPos[3] - domPos[1] - dom.clientTop
+       (ev.clientX - domPos[0] - dom.clientLeft) / domPos[2] ,
+       (ev.clientY - domPos[1] - dom.clientTop) / domPos[3] 
     );
 }
 
