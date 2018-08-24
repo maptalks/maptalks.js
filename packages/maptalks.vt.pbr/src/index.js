@@ -101,13 +101,13 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
     },
 
     _generateColorArray(features, indexes, indices, vertices) {
-        const colors = new Float32Array(vertices.length);
+        const colors = new Uint8Array(vertices.length);
         let symbol, color, rgb;
         let start, end, pos;
         for (let i = 0, l = indexes.length; i < l; i++) {
             symbol = features[i].symbol;
             color = Color(symbol.polygonFill);
-            rgb = color.unitArray();
+            rgb = color.array();
             // colors.push(rgb[0], rgb[1], rgb[2], op);
             start = i === 0 ? 0 : indexes[i - 1];
             end = indexes[i];

@@ -1,5 +1,6 @@
 import { compileStyle } from '@maptalks/feature-filter';
 import { extend } from '../../layer/core/Util';
+import { getIndexArrayType } from '../util/Util';
 import { buildExtrudeFaces } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
 //TODO 改为从maptalks中载入compileStyle方法
@@ -57,12 +58,14 @@ export default class BaseLayerWorker {
             //only save feature's indexes, and restore features in renderer
             //[feature index, style index, feature index, style index, ....]
             const indexes = [];
+            let maxIndex = 0;
             let feature;
             for (let ii = 0, ll = features.length; ii < ll; ii++) {
                 feature = features[ii];
                 if (feature.styleMark && feature.styleMark[i] !== undefined) {
                     filteredFeas.push(feature);
                     indexes.push(ii, feature.styleMark[i]);
+                    maxIndex = Math.max(ii, feature.styleMark[i], maxIndex);
                 }
             }
 
@@ -72,9 +75,10 @@ export default class BaseLayerWorker {
 
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
             const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, glScale, zScale });
+            const arrCtor = getIndexArrayType(maxIndex);
             data[i] = {
                 data : tileData.data,
-                featureIndex : new Uint16Array(indexes)
+                featureIndex : new arrCtor(indexes)
             };
 
             buffers.push(data[i].featureIndex.buffer);
@@ -154,7 +158,11 @@ export default class BaseLayerWorker {
             if (shadowVolume) {
                 oldIndices = new faces.indices.constructor(faces.indices);
             }
-
+            const l = faces.indices.length;
+            const ctor = getIndexArrayType(l);
+            if (!(faces.indices instanceof ctor)) {
+                faces.indices = new ctor(faces.indices);
+            }
             const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
             faces.vertices = uniqueFaces.vertices;
             // debugger

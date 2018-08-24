@@ -1,7 +1,7 @@
 import { countVertexes, calculateSignedArea, fillPosArray } from './Common';
 import { buildFaceUV, buildSideUV } from './UV.js';
 import { pushIn } from '../../layer/core/Util.js';
-import { exportIndices } from '../util/Util.js';
+import { getIndexArrayType } from '../util/Util.js';
 import earcut from 'earcut';
 
 export function buildExtrudeFaces(
@@ -21,8 +21,10 @@ export function buildExtrudeFaces(
 
     const size = countVertexes(features) * 2;
     //featIndexes : index of indices for each feature
+    // const arrCtor = getIndexArrayType(features.length);
     const featIndexes = new Array(features.length),
         vertices = new Int16Array(size);
+    let maxFeaIndex = 0;
     const indices = [];
     const generateUV = uv;
     const uvs = generateUV ? [] : null;
@@ -138,15 +140,21 @@ export function buildExtrudeFaces(
             }
         }
         featIndexes[r] = indices.length;
+        maxFeaIndex = Math.max(maxFeaIndex, indices.length);
     }
+    const maxIndex = indices.reduce((a, b) => {
+        return Math.max(a, b);
+    });
 
-    const tIndices = exportIndices(indices);
+    const ctor = getIndexArrayType(maxIndex);
+    const tIndices = new ctor(indices);
 
+    const feaCtor = getIndexArrayType(maxFeaIndex);
 
     const data = {
         vertices,  // vertexes
         indices : tIndices,    // indices for drawElements
-        indexes : new tIndices.constructor(featIndexes)     // vertex index of each feature
+        indexes : new feaCtor(featIndexes)     // vertex index of each feature
     };
     if (uvs) {
         data.uvs = new Float32Array(uvs);

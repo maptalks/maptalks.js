@@ -26,3 +26,16 @@ export function pushIn(dest) {
     }
     return dest.length;
 }
+
+export function getIndexArrayType(max) {
+    if (max < 256) return Uint8Array;
+    if (max < 65536) return Uint16Array;
+    return Uint32Array;
+}
+
+export function getPosArrayType(max) {
+    max = Math.abs(max);
+    if (max < 128) return Int8Array;
+    if (max < 65536 / 2) return Int16Array;
+    return Int32Array;
+}

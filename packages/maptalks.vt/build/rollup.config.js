@@ -29,7 +29,7 @@ module.exports = [{
 },
 {
     input: 'src/layer/index.js',
-    external: ['maptalks'],
+    external: ['maptalks', '@maptalks/gl'],
     plugins: [
         resolve({
             module : true,
@@ -42,7 +42,8 @@ module.exports = [{
         format: 'amd',
         name: 'maptalks',
         globals : {
-            'maptalks' : 'maptalks'
+            'maptalks' : 'maptalks',
+            '@maptalks/gl' : 'maptalksgl'
         },
         extend :true,
         file: 'build/layer.js'
@@ -53,10 +54,11 @@ module.exports = [{
 },
 {
     input: './build/index.js',
-    external: ['maptalks'],
+    external: ['maptalks', '@maptalks/gl'],
     output: {
         globals : {
-            'maptalks' : 'maptalks'
+            'maptalks' : 'maptalks',
+            '@maptalks/gl' : 'maptalksgl'
         },
         extend : true,
         name: 'maptalks',
@@ -71,7 +73,7 @@ if (!workerLoaded) {
     workerLoaded = true;
 } else {
     var exports = maptalks;
-    chunk(exports, maptalks);
+    chunk(exports, maptalks, maptalksgl);
 }
 }`
     },
