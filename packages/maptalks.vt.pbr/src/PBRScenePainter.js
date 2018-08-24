@@ -5,7 +5,8 @@ import VSMShadowPass from './VSMShadowPass.js';
 import StencilShadowPass from './StencilShadowPass.js';
 
 class PBRScenePainter {
-    constructor(regl, sceneConfig) {
+    constructor(regl, layer, sceneConfig) {
+        this.layer = layer;
         this.regl = regl;
         this.sceneConfig = sceneConfig || {};
         if (!this.sceneConfig.lights) {
@@ -64,8 +65,9 @@ class PBRScenePainter {
         return mesh;
     }
 
-    paint(layer) {
+    paint() {
         this._redraw = false;
+        const layer = this.layer;
         const map = layer.getMap();
         if (!map) {
             return {
@@ -95,9 +97,51 @@ class PBRScenePainter {
             this.shadowPass.pass2();
         }
 
+        this._pickingRendered = false;
+
         return {
             redraw : false
         };
+    }
+
+    pick(x, y) {
+        const map = this.layer.getMap();
+        const uniforms = this._getUniformValues(map);
+        if (!this._pickingRendered) {
+            this._raypicking.render(this.scene.getMeshes().opaques, uniforms);
+            this._pickingRendered = true;
+        }
+        const picked = this._raypicking.pick(x, y, uniforms, {
+            viewMatrix : map.viewMatrix,
+            projMatrix : map.projMatrix,
+            returnPoint : true
+        });
+
+        // const lookat = map.cameraLookAt;
+        // console.log('lookat', lookat);
+        // let h = [];
+        // console.log(vec4.transformMat4(h, lookat.concat(1), map.projViewMatrix));
+
+        // const w2 = map.width / 2 || 1, h2 = map.height / 2 || 1;
+        // x = w2;
+        // y = h2;
+        // const cp0 = [], cp1 = [];
+        // vec4.set(cp0, (x - w2) / w2, (h2 - y) / h2, 0, 1);
+        // vec4.set(cp1, (x - w2) / w2, (h2 - y) / h2, 1, 1);
+        // const inverseProjMatrix = mat4.invert([], map.projMatrix);
+        // const vcp0 = [], vcp1 = [];
+        // applyMatrix(vcp0, cp0, inverseProjMatrix);
+        // applyMatrix(vcp1, cp1, inverseProjMatrix);
+        // const n = -vcp0[2], f = -vcp1[2];
+        // const t = (h[3] - n) / (f - n);
+
+        // const inverseProjViewMatrix = mat4.invert([], map.projViewMatrix);
+        // const near = applyMatrix(cp0, cp0, inverseProjViewMatrix),
+        //     far = applyMatrix(cp1, cp1, inverseProjViewMatrix);
+        // const result = [interpolate(near[0], far[0], t), interpolate(near[1], far[1], t), interpolate(near[2], far[2], t)];
+        // console.log(result);
+        // this.debugFBO('shadow', this.layer.getRenderer().pickingFBO);
+        console.log(JSON.stringify(picked));
     }
 
     updateSceneConfig(config) {
@@ -148,7 +192,8 @@ class PBRScenePainter {
         }
     }
 
-    _transformGround(layer) {
+    _transformGround() {
+        const layer = this.layer;
         const map = layer.getMap();
         // console.log(layer.getRenderer()._getMeterScale());
         const extent = map._get2DExtent(map.getGLZoom());
@@ -183,7 +228,31 @@ class PBRScenePainter {
             }
         }
 
-        this.shader = new reshader.MeshShader({
+        const viewport = {
+            x : 0,
+            y : 0,
+            width : () => {
+                return this.layer ? this.layer.getMap().width : 1;
+            },
+            height : () => {
+                return this.layer ? this.layer.getMap().height : 1;
+            }
+        };
+        const scissor = {
+            enable: true,
+            box: {
+                x : 0,
+                y : 0,
+                width : () => {
+                    return this.layer ? this.layer.getMap().width : 1;
+                },
+                height : () => {
+                    return this.layer ? this.layer.getMap().height : 1;
+                }
+            }
+        };
+
+        const config = {
             vert : reshader.pbr.StandardVert,
             frag : reshader.pbr.StandardFrag,
             uniforms : this._getUniforms(),
@@ -194,15 +263,10 @@ class PBRScenePainter {
                     enable: true,
                     face: 'back'
                 },
-                // stencil: {
-                //     enable: false,
-                //     mask: 0x0,
-                //     func: {
-                //         cmp: '=',
-                //         ref: regl.prop('stencilRef'),
-                //         mask: 0xff
-                //     }
-                // },
+                stencil: {
+                    enable: false
+                },
+                viewport, scissor
                 // polygonOffset: {
                 //     enable: true,
                 //     offset: {
@@ -211,11 +275,16 @@ class PBRScenePainter {
                 //     }
                 // }
             }
-        });
+        };
+
+        this.shader = new reshader.MeshShader(config);
 
         this._updateMaterial();
 
         this._initCubeLight();
+
+        this._raypicking = new reshader.FBORayPicking(this.renderer, config, this.layer.getRenderer().pickingFBO);
+
     }
 
     _createIBLMaps(hdr) {

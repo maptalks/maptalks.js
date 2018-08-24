@@ -7,10 +7,10 @@ import * as maptalks from '@maptalks/vt';
 const PBRPlugin = VectorTilePlugin.extend('pbr', {
 
     startFrame(context) {
-        const { regl, sceneCache, sceneConfig } = context;
+        const { layer, regl, sceneCache, sceneConfig } = context;
         let painter = sceneCache.painter;
         if (!painter) {
-            painter = sceneCache.painter = new PBRScenePainter(regl, sceneConfig);
+            painter = sceneCache.painter = new PBRScenePainter(regl, layer, sceneConfig);
         }
         //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
         painter.clear();
@@ -60,8 +60,9 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         }
     },
 
-    raypicking(sceneCache, x, y) {
-
+    picking(sceneCache, x, y) {
+        let { painter } = sceneCache;
+        painter.pick(x, y);
     },
 
     deleteTile(context) {

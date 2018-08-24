@@ -1,8 +1,7 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec3, createREGL } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
-import createREGL from 'regl';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -56,6 +55,31 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     createContext() {
         const layer = this.layer;
+        this.prepareWorker();
+        const EXTENT = layer.options['extent'];
+
+
+        if (this.canvas.groupRegl) {
+            this.regl = this.canvas.groupRegl;
+            this.gl =  this.canvas.gl;
+            //it's a child layer of a GroupREGLLayer
+            //regl from parent layer
+        } else {
+            this._createREGLContext();
+        }
+        this.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
+        this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Float32Array([
+            // positions
+            0, EXTENT, 0,
+            0, 0, 0,
+            EXTENT, EXTENT, 0,
+            EXTENT, 0, 0
+        ]), layer.options['stencil'] === 'debug');
+    }
+
+    _createREGLContext() {
+        const layer = this.layer;
+
         const attributes = layer.options.glOptions || {
             alpha: true,
             depth: true,
@@ -66,7 +90,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.glOptions = attributes;
         this.gl = this._createGLContext(this.canvas, attributes);
         // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
-        this.prepareWorker();
         //TODO 迁移到fusion后，不再需要初始化regl，而是将createREGL传给插件
         this.regl = createREGL({
             gl : this.gl,
@@ -80,21 +103,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             ],
             optionalExtensions : layer.options['glExtensions'] || ['WEBGL_draw_buffers', 'EXT_shader_texture_lod']
         });
-
-        const EXTENT = layer.options['extent'];
-        this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Float32Array([
-            // positions
-            0, EXTENT, 0,
-            0, 0, 0,
-            EXTENT, EXTENT, 0,
-            EXTENT, 0, 0
-        ]), layer.options['stencil'] === 'debug');
     }
 
     prepareWorker() {
         const map = this.getMap();
         if (!this.workerConn) {
-            this.workerConn = new WorkerConnection('maptalks.vt', map.id);
+            this.workerConn = new WorkerConnection('@maptalks/vt', map.id);
         }
         const workerConn = this.workerConn;
         //setTimeout in case layer's style is set to layer after layer's creating.
@@ -302,6 +316,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (feature) hits.push(feature);
             }
         });
+        this.setCanvasUpdated();
         return hits;
     }
 
@@ -333,6 +348,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
+        this.pickingFBO.resize(this.canvas.width, this.canvas.height);
         let cache = this.sceneCache;
         if (!cache) {
             cache = this.sceneCache = {};
@@ -355,6 +371,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.workerConn.remove();
             delete this.workerConn;
         }
+        this.pickingFBO.destroy();
         this._quadStencil.remove();
         if (super.onRemove) super.onRemove();
         this._clearPlugin();
