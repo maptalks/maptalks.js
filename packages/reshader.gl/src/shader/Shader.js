@@ -146,11 +146,11 @@ class Shader {
         const command = {
             vert, frag, uniforms, attributes
         };
-        if (isNumber(elements)) {
-            command.count = regl.prop('elements');
-        } else {
+        if (elements) {
             command.elements = regl.prop('elements');
         }
+        command.count = regl.prop('count');
+        command.offset = regl.prop('offset');
         command.primitive = regl.prop('primitive');
         command.framebuffer = regl.prop('framebuffer');
         extend(command, this.extraCommandProps);

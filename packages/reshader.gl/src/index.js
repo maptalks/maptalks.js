@@ -40,4 +40,4 @@ export { pbr };
 export { default as ShadowPass } from './shadow/ShadowPass.js';
 export { default as ShadowDisplayShader } from './shadow/ShadowDisplayShader.js';
 
-export { default as RayPicking } from './picking/RayPicking';
+export { default as FBORayPicking } from './picking/FBORayPicking';

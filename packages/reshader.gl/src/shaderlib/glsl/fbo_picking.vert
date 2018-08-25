@@ -15,8 +15,8 @@
 
 #ifdef ENABLE_PICKING
 #ifdef USE_PICKING_ID
-attribute vec3 aPickingId;
-varying vec3 vPickingId;
+attribute float aPickingId;
+varying float vPickingId;
 #endif
 varying float vFbo_picking_viewZ;
 #endif

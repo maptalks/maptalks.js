@@ -3,6 +3,7 @@ import { isNumber } from './common/Util';
 import BoundingBox from './BoundingBox';
 
 const defaultDesc = {
+    'positionSize' : 3,
     'primitive' : 'triangles',
     //name of position attribute
     'positionAttribute' : 'aPosition',
@@ -10,17 +11,22 @@ const defaultDesc = {
 };
 
 export default class Geometry {
-    constructor(data, indices, desc) {
+    constructor(data, elements, count, desc) {
         // this.aPosition = data.vertices;
         // this.aNormal = data.normals;
         // this.aTexCoord = data.uvs;
         // this.aColor = data.colors;
         // this.aTangent = data.tangents;
-        // this.indices = data.indices;
+        // this.elements = data.elements;
 
         this.data = data;
-        this.indices = indices;
+        this.elements = elements;
         this.desc = desc || defaultDesc;
+        const pos = data[this.desc.positionAttribute];
+        if (!count && pos && pos.length) {
+            count = pos.length / this.desc.positionSize;
+        }
+        this.count = count;
         this.updateBoundingBox();
     }
 
@@ -43,10 +49,10 @@ export default class Geometry {
         }
         this.data = buffers;
 
-        if (!isNumber(this.indices)) {
-            this.indices = this.indices.destroy ? this.indices : regl.elements({
+        if (!isNumber(this.elements)) {
+            this.elements = this.elements.destroy ? this.elements : regl.elements({
                 primitive: this.getPrimitive(),
-                data: this.indices,
+                data: this.elements,
                 //type : 'uint16' // type is inferred from data
             });
         }
@@ -61,14 +67,32 @@ export default class Geometry {
     }
 
     getElements() {
-        return this.indices;
+        return this.elements;
+    }
+
+    setDrawCount(count) {
+        this.count1 = count;
+        return this;
+    }
+
+    getDrawCount() {
+        return this.count1 || this.count;
+    }
+
+    setOffset(offset) {
+        this.offset = offset;
+        return this;
+    }
+
+    getOffset() {
+        return this.offset || 0;
     }
 
     dispose() {
         this._forEachBuffer(buffer => {
             buffer.destroy();
         });
-        delete this.indices;
+        delete this.elements;
         delete this.data;
     }
 
@@ -103,8 +127,8 @@ export default class Geometry {
     }
 
     _forEachBuffer(fn) {
-        if (this.indices && this.indices.destroy)  {
-            fn(this.indices);
+        if (this.elements && this.elements.destroy)  {
+            fn(this.elements);
         }
         for (const p in this.data) {
             if (this.data.hasOwnProperty(p)) {

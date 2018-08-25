@@ -44,7 +44,7 @@
         vNormal = mat3(model) * aNormal;
 
         #ifdef USE_COLOR
-            vColor = aColor;
+            vColor = aColor / 255.0;
         #endif
         gl_Position =  projectionViewModel * pos;
 

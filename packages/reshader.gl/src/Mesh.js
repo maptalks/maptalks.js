@@ -97,6 +97,8 @@ class Mesh {
     getREGLProps() {
         const props = extend({}, this.geometry.data);
         props.elements = this.geometry.getElements();
+        props.count = this.geometry.getDrawCount();
+        props.offset = this.geometry.getOffset();
         // command primitive : triangle, triangle strip, etc
         props.primitive = this.geometry.getPrimitive();
         const uniforms = this.getUniforms();

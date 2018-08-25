@@ -1,8 +1,8 @@
 import { isNil, interpolate } from '../common/Util';
-import { vec4, mat4 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader';
 import Scene from '../Scene';
-import { pack3, pack4, packDepth } from './PickingUtil';
+import { pack3, packDepth } from './PickingUtil';
 
 const unpackFun = `
     vec3 unpack(float f) {
@@ -50,7 +50,7 @@ const frag2 = `
     ${unpackFun}
 
     void main() {
-        gl_FragColor = vec4(vPickingId / 255.0, 1.0);
+        gl_FragColor = vec4(unpack(vPickingId), 1.0);
     }
 `;
 
@@ -60,7 +60,6 @@ const depthFrag = `
     #define FLOAT_MIN  1.17549435e-38
 
     precision highp float;
-
     varying float vFbo_picking_viewZ;
 
     lowp vec4 unpack(highp float v) {
@@ -109,7 +108,7 @@ const depthFrag = `
 
 const pixels = new Uint8Array(4);
 
-export default class RayPicking {
+export default class FBORayPicking {
 
     constructor(renderer, { vert, uniforms, defines, extraCommandProps }, fbo) {
         this._renderer = renderer;
@@ -151,62 +150,91 @@ export default class RayPicking {
             defines,
             extraCommandProps
         });
-        delete defines['USE_PICKING_ID'];
+        const defines1 = {
+            'ENABLE_PICKING' : 1
+        };
+        if (this._defines) {
+            for (const p in this._defines) {
+                defines1[p] = this._defines[p];
+            }
+        }
         this._shader1 = new MeshShader({
             vert,
             frag : frag1,
             uniforms,
-            defines,
+            defines : defines1,
             extraCommandProps
         });
         this._depthShader = new MeshShader({
             vert,
             frag : depthFrag,
             uniforms,
-            defines,
+            defines : defines1,
             extraCommandProps
         });
         this._scene = new Scene();
         this._scene1 = new Scene();
     }
 
-    pick(x, y, meshes, uniforms, options = {}) {
-        x = Math.round(x);
-        y = Math.round(y);
-        const regl = this._renderer.regl;
+    render(meshes, uniforms) {
         const fbo = this._fbo;
         this._clearFbo(fbo);
 
         this._scene.setMeshes(meshes);
-        let shader = this._getShader(meshes);
+        const shader = this._getShader(meshes);
+        this._currentShader = shader;
+        this._currentMeshes = meshes;
         meshes.forEach((m, idx) => {
             m.setUniform('fbo_picking_meshId', idx);
         });
         this._renderer.render(shader, uniforms, this._scene, fbo);
-        let data = regl.read({
+        return this;
+    }
+
+    pick(x, y, uniforms, options = {}) {
+        const shader = this._currentShader;
+        const meshes = this._currentMeshes;
+        if (!shader || !meshes || !meshes.length) {
+            return null;
+        }
+
+        x = Math.round(x);
+        y = Math.round(y);
+
+        const regl = this._renderer.regl;
+        const fbo = this._fbo;
+        const data = regl.read({
             data : pixels,
             x, y : fbo.height - y,
             framebuffer : fbo,
             width : 1,
             height : 1
         });
-        let { pickingId, batchId } = this._packData(data, shader);
+
+        let { pickingId, meshId } = this._packData(data, shader);
         if (shader === this._shader1 && meshes[0].geometry.rawData && !isNil(meshes[0].geometry.rawData['aPickingId'])) {
-            //再次渲染，获得aPickingId
-            pickingId = this._getPickingId(x, y, meshes[batchId], uniforms);
+            //TODO 再次渲染，获得aPickingId
+            pickingId = this._getPickingId(x, y, meshes[meshId], uniforms);
         }
         let point = null;
-        if (meshes[batchId] && options['returnPoint']) {
+        if (meshes[meshId] && options['returnPoint']) {
             const { viewMatrix, projMatrix } = options;
-            const depth = this._pickDepth(x, y, meshes[batchId], uniforms, pickingId);
+            const depth = this._pickDepth(x, y, meshes[meshId], uniforms, pickingId);
             point = this._getWorldPos(x, y, depth, viewMatrix, projMatrix);
         }
 
         return {
             pickingId,
-            batchId,
+            meshId,
             point
         };
+    }
+
+    getMeshAt(idx) {
+        if (!this._currentMeshes) {
+            return null;
+        }
+        return this._currentMeshes[idx];
     }
 
     _getWorldPos(x, y, depth, viewMatrix, projMatrix) {
@@ -266,19 +294,25 @@ export default class RayPicking {
     }
 
     _packData(data, shader) {
-        let pickingId, batchId;
+        if (data[0] === 255 && data[1] === 255 &&
+            data[2] === 255 && data[3] === 255) {
+            return {
+                meshId : null,
+                pickingId : null
+            };
+        }
+        let pickingId, meshId;
         if (shader === this._shader1) {
             //only fbo_picking_meshId
-            batchId = pack3(data);
-        } else if (shader === this.shader0) {
-            batchId = data[3];
-            data[3] = 0;
+            meshId = pack3(data);
+        } else if (shader === this._shader0) {
+            meshId = data[3];
             pickingId = pack3(data);
         } else {
-            batchId = null;
+            meshId = null;
             pickingId = pack3(data);
         }
-        return { batchId, pickingId };
+        return { meshId, pickingId };
     }
 
     _clearFbo(framebuffer) {
