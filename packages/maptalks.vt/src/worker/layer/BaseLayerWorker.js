@@ -57,14 +57,14 @@ export default class BaseLayerWorker {
             const filteredFeas = [];
             //only save feature's indexes, and restore features in renderer
             //[feature index, style index, feature index, style index, ....]
-            const indexes = [];
+            const styledFeatures = [];
             let maxIndex = 0;
             let feature;
             for (let ii = 0, ll = features.length; ii < ll; ii++) {
                 feature = features[ii];
                 if (feature.styleMark && feature.styleMark[i] !== undefined) {
                     filteredFeas.push(feature);
-                    indexes.push(ii, feature.styleMark[i]);
+                    styledFeatures.push(ii, feature.styleMark[i]);
                     maxIndex = Math.max(ii, feature.styleMark[i], maxIndex);
                 }
             }
@@ -75,13 +75,14 @@ export default class BaseLayerWorker {
 
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
             const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, glScale, zScale });
+
             const arrCtor = getIndexArrayType(maxIndex);
             data[i] = {
                 data : tileData.data,
-                featureIndex : new arrCtor(indexes)
+                styledFeatures : new arrCtor(styledFeatures)
             };
 
-            buffers.push(data[i].featureIndex.buffer);
+            buffers.push(data[i].styledFeatures.buffer);
             if (tileData.buffers && tileData.buffers.length > 0) {
                 for (let i = 0, l = tileData.buffers.length; i < l; i++) {
                     buffers.push(tileData.buffers[i]);
@@ -90,13 +91,13 @@ export default class BaseLayerWorker {
         }
 
 
-        const styledFeas = [];
+        const allFeas = [];
         if (options.features) {
             let feature;
             for (let i = 0, l = features.length; i < l; i++) {
                 feature = features[i];
                 if (feature.styleMark !== undefined) {
-                    styledFeas.push({
+                    allFeas.push({
                         type : feature.type,
                         layer : feature.layer,
                         properties : feature.properties
@@ -104,7 +105,7 @@ export default class BaseLayerWorker {
                     //reset feature's style mark
                     delete feature.styleMark;
                 } else {
-                    styledFeas.push(null);
+                    allFeas.push(null);
                 }
             }
         }
@@ -112,7 +113,7 @@ export default class BaseLayerWorker {
         return {
             data : {
                 data,
-                features : styledFeas
+                features : allFeas
             },
             buffers
         };
@@ -131,7 +132,6 @@ export default class BaseLayerWorker {
                 uv, uvSize,
                 shadowVolume, shadowDir
             } = dataConfig;
-
             const faces = buildExtrudeFaces(
                 features, extent,
                 {
@@ -152,7 +152,7 @@ export default class BaseLayerWorker {
                     //<<
                 });
 
-            const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.indexes.buffer];
+            const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer];
 
             let oldIndices;
             if (shadowVolume) {
@@ -178,7 +178,7 @@ export default class BaseLayerWorker {
                 buffers.push(faces.uvs.buffer);
             }
             if (shadowVolume) {
-                const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, faces.indexes, shadowDir);
+                const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, faces.featureIndexes, shadowDir);
                 faces.shadowVolume = shadowVolume;
                 buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
             }

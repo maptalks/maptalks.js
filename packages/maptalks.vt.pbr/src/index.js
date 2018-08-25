@@ -39,9 +39,8 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         const key = tileInfo.dupKey;
         if (!tileCache.geometry) {
             const glData = tileData.data;
-            const features = tileData.features,
-                indexes = glData.indexes;
-            const colors = this._generateColorArray(features, indexes, glData.indices, glData.vertices);
+            const features = tileData.features;
+            const colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
             tileCache.geometry = painter.createGeometry(extend({}, glData, { colors }));
         }
         let mesh = painter.getMesh(key);
@@ -100,52 +99,27 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         return painter.needToRedraw();
     },
 
-    _generateColorArray(features, indexes, indices, vertices) {
+    _generateColorArray(features, featureIndexes, indices, vertices) {
         const colors = new Uint8Array(vertices.length);
-        let symbol, color, rgb;
-        let start, end, pos;
-        for (let i = 0, l = indexes.length; i < l; i++) {
-            symbol = features[i].symbol;
-            color = Color(symbol.polygonFill);
-            rgb = color.array();
-            // colors.push(rgb[0], rgb[1], rgb[2], op);
-            start = i === 0 ? 0 : indexes[i - 1];
-            end = indexes[i];
-            for (let ii = start; ii < end; ii++) {
-                pos = indices[ii] * 3;
-                colors[pos] = rgb[0];
-                colors[pos + 1] = rgb[1];
-                colors[pos + 2] = rgb[2];
+        let symbol, rgb;
+        const visitedColors = {};
+        let pos;
+        for (let i = 0, l = featureIndexes.length; i < l; i++) {
+            const idx = featureIndexes[i];
+            symbol = features[idx].symbol;
+            rgb = visitedColors[idx];
+            if (!rgb) {
+                const color = Color(symbol.polygonFill);
+                rgb = visitedColors[idx] = color.array();
             }
+            pos = indices[i] * 3;
+            colors[pos] = rgb[0];
+            colors[pos + 1] = rgb[1];
+            colors[pos + 2] = rgb[2];
+
         }
         return colors;
     }
-
-    // _generateColorArray(features, indexes, indices, vertices) {
-    //     const colors = new Float32Array(vertices.length * 4 / 3);
-    //     let symbol, color, rgb, op;
-    //     let start, end, pos;
-    //     for (let i = 0, l = indexes.length; i < l; i++) {
-    //         symbol = features[i].symbol;
-    //         color = Color(symbol.polygonFill);
-    //         op = 1;
-    //         if (symbol.polygonOpacity != null) {
-    //             op = symbol.polygonOpacity;
-    //         }
-    //         rgb = color.unitArray();
-    //         // colors.push(rgb[0], rgb[1], rgb[2], op);
-    //         start = i === 0 ? 0 : indexes[i - 1];
-    //         end = indexes[i];
-    //         for (let ii = start; ii < end; ii++) {
-    //             pos = indices[ii] * 4;
-    //             colors[pos] = rgb[0];
-    //             colors[pos + 1] = rgb[1];
-    //             colors[pos + 2] = rgb[2];
-    //             colors[pos + 3] = op;
-    //         }
-    //     }
-    //     return colors;
-    // }
 });
 
 PBRPlugin.registerAt(maptalks.VectorTileLayer);

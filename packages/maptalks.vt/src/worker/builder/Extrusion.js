@@ -22,9 +22,8 @@ export function buildExtrudeFaces(
     const size = countVertexes(features) * 2;
     //featIndexes : index of indices for each feature
     // const arrCtor = getIndexArrayType(features.length);
-    const featIndexes = new Array(features.length),
+    const featIndexes = [],
         vertices = new Int16Array(size);
-    let maxFeaIndex = 0;
     const indices = [];
     const generateUV = uv;
     const uvs = generateUV ? [] : null;
@@ -139,8 +138,10 @@ export function buildExtrudeFaces(
                 offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
             }
         }
-        featIndexes[r] = indices.length;
-        maxFeaIndex = Math.max(maxFeaIndex, indices.length);
+        const count = indices.length - featIndexes.length;
+        for (let i = 0; i < count; i++) {
+            featIndexes.push(r);
+        }
     }
     const maxIndex = indices.reduce((a, b) => {
         return Math.max(a, b);
@@ -149,12 +150,12 @@ export function buildExtrudeFaces(
     const ctor = getIndexArrayType(maxIndex);
     const tIndices = new ctor(indices);
 
-    const feaCtor = getIndexArrayType(maxFeaIndex);
+    const feaCtor = getIndexArrayType(features.length);
 
     const data = {
         vertices,  // vertexes
         indices : tIndices,    // indices for drawElements
-        indexes : new feaCtor(featIndexes)     // vertex index of each feature
+        featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
     };
     if (uvs) {
         data.uvs = new Float32Array(uvs);

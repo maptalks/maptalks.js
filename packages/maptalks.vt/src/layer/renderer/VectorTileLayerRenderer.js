@@ -225,7 +225,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             for (let i = 0; i < data.data.length; i++) {
                 const pluginData = data.data[i]; // { data, featureIndex }
                 const symbols = this.layer.getStyle()[i].style;//TODO 读取所有的symbol
-                const feaIndex = pluginData.featureIndex;
+                const feaIndex = pluginData.styledFeatures;
                 const pFeatures = new Array(feaIndex.length / 2);
                 //[feature index, style index]
                 for (let i = 1, l = feaIndex.length; i < l; i += 2) {
@@ -234,7 +234,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                         symbol : symbols[feaIndex[i]].symbol
                     };
                 }
-                delete pluginData.featureIndex;
+                delete pluginData.styledFeatures;
                 pluginData.features = pFeatures;
             }
             this.onTileLoad(data.data, tileInfo);
