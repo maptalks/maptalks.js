@@ -31,14 +31,16 @@ class PBRScenePainter {
         return this._redraw;
     }
 
-    createGeometry(glData) {
+    createGeometry(glData, features) {
         const data = {
             aPosition : glData.vertices,
             aTexCoord : glData.uvs,
             aNormal : glData.normals,
-            aColor : glData.colors
+            aColor : glData.colors,
+            aPickingId : glData.featureIndexes
         };
         const geometry = new reshader.Geometry(data, glData.indices);
+        geometry._pbrFeatures = features;
         geometry.generateBuffers(this.regl);
 
         if (glData.shadowVolume && this.shadowPass && this.shadowPass.createShadowVolume) {
@@ -111,11 +113,21 @@ class PBRScenePainter {
             this._raypicking.render(this.scene.getMeshes().opaques, uniforms);
             this._pickingRendered = true;
         }
-        const picked = this._raypicking.pick(x, y, uniforms, {
+        const { meshId, pickingId, point } = this._raypicking.pick(x, y, uniforms, {
             viewMatrix : map.viewMatrix,
             projMatrix : map.projMatrix,
             returnPoint : true
         });
+        if (meshId === null) {
+            return {
+                feature : null,
+                point
+            };
+        }
+        return {
+            feature : this._raypicking.getMeshAt(meshId).geometry._pbrFeatures[pickingId],
+            point
+        };
 
         // const lookat = map.cameraLookAt;
         // console.log('lookat', lookat);

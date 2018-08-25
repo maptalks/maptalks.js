@@ -41,7 +41,7 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
             const glData = tileData.data;
             const features = tileData.features;
             const colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
-            tileCache.geometry = painter.createGeometry(extend({}, glData, { colors }));
+            tileCache.geometry = painter.createGeometry(extend({}, glData, { colors }), features);
         }
         let mesh = painter.getMesh(key);
         if (!mesh) {
@@ -59,9 +59,9 @@ const PBRPlugin = VectorTilePlugin.extend('pbr', {
         }
     },
 
-    picking(sceneCache, x, y) {
+    pick(sceneCache, x, y) {
         let { painter } = sceneCache;
-        painter.pick(x, y);
+        return painter.pick(x, y);
     },
 
     deleteTile(context) {

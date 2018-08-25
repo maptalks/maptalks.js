@@ -17,7 +17,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             //https://github.com/mapbox/geojson-vt/issues/35
             this.zoomOffset = -log2(options.tileSize[0] / 256);
         }
-        this.setData(options.data, options, cb);
+        this.setData(JSON.parse(options.data), options, cb);
     }
 
     /**
@@ -77,6 +77,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             features.push({
                 type : feature.type,
                 layer : this.id,
+                id : feature.id,
                 geometry : feature.geometry,
                 properties : feature.tags,
                 extent : this.options.extent

@@ -3,11 +3,11 @@ const registedClazz = {};
 function VectorTilePlugin() {}
 
 VectorTilePlugin.prototype.paint = function (glData) {
-    throw new Error('to be implemented.')
+    throw new Error('to be implemented.');
 };
 
 VectorTilePlugin.prototype.getType = function () {
-    return VectorTilePlugin.type;
+    return Object.getPrototypeOf(this).constructor.type;
 };
 
 VectorTilePlugin.prototype.needToRedraw = function () {
@@ -29,7 +29,7 @@ VectorTilePlugin.extend = function (type, props) {
     clazz.registerAt = registerAt.bind(clazz);
     registedClazz[type] = clazz;
     return clazz;
-}
+};
 
 function registerAt(VectorTileLayer) {
     VectorTileLayer.registerPlugin(this);

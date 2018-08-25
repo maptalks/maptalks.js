@@ -14,7 +14,8 @@ const defaultOptions = {
     extent : 8192,
     zoomBackground : true,
     tileSize : [512, 512],
-    stencil : false
+    stencil : false,
+    features : true
 };
 
 /**
@@ -47,7 +48,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             tileSize : this.options['tileSize'],
             baseRes : map.getResolution(map.getGLZoom()),
             style : this.options.style,
-            extent : this.options.extent
+            extent : this.options.extent,
+            features : this.options.features
         };
     }
 
@@ -94,7 +96,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             return [];
         }
         const cp = map.coordToContainerPoint(coordinate);
-        return renderer.picking(cp.x, cp.y);
+        return renderer.pick(cp.x, cp.y);
     }
 
     static registerPlugin(Plugin) {

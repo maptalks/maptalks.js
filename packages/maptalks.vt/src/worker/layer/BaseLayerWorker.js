@@ -90,18 +90,17 @@ export default class BaseLayerWorker {
             }
         }
 
-
         const allFeas = [];
         if (options.features) {
             let feature;
             for (let i = 0, l = features.length; i < l; i++) {
                 feature = features[i];
                 if (feature.styleMark !== undefined) {
-                    allFeas.push({
-                        type : feature.type,
-                        layer : feature.layer,
-                        properties : feature.properties
-                    });
+                    if (options.features === 'id') {
+                        allFeas.push(feature.id);
+                    } else {
+                        allFeas.push(feature);
+                    }
                     //reset feature's style mark
                     delete feature.styleMark;
                 } else {
@@ -113,7 +112,7 @@ export default class BaseLayerWorker {
         return {
             data : {
                 data,
-                features : allFeas
+                features : JSON.stringify(allFeas)
             },
             buffers
         };

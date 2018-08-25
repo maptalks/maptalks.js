@@ -220,7 +220,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 return;
             }
             //restore features for plugin data
-            const features = data.features;
+            const features = JSON.parse(data.features);
             //iterate plugins
             for (let i = 0; i < data.data.length; i++) {
                 const pluginData = data.data[i]; // { data, featureIndex }
@@ -229,8 +229,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 const pFeatures = new Array(feaIndex.length / 2);
                 //[feature index, style index]
                 for (let i = 1, l = feaIndex.length; i < l; i += 2) {
+                    let feature = features[feaIndex[i - 1]];
+                    if (this.layer.options['features'] === 'id' && this.layer.getFeature) {
+                        feature = this.layer.getFeature(feature);
+                    }
                     pFeatures[(i - 1) / 2] = {
-                        feature : features[feaIndex[i - 1]],
+                        feature : feature,
                         symbol : symbols[feaIndex[i]].symbol
                     };
                 }
@@ -308,15 +312,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setCanvasUpdated();
     }
 
-    picking(x, y) {
+    pick(x, y) {
         const hits = [];
         this.plugins.forEach((plugin, idx) => {
             if (this.sceneCache[idx]) {
-                const feature = plugin.picking(this.sceneCache[idx], x, y);
-                if (feature) hits.push(feature);
+                const picked = plugin.pick(this.sceneCache[idx], x, y);
+                picked.type = plugin.getType();
+                if (picked) hits.push(picked);
             }
         });
-        this.setCanvasUpdated();
         return hits;
     }
 
