@@ -25,10 +25,6 @@
     #include <vsm_shadow_vert>
 #endif
 
-#ifdef ENABLE_PICKING
-    #include <fbo_picking_vert>
-#endif
-
     void main()
     {
         #if defined(USE_NORMAL_MAP) || defined(USE_ALBEDO_MAP) || defined(USE_OCCULUSIONROUGHNESSMETALLIC_MAP)
@@ -50,9 +46,6 @@
 
         #ifdef USE_SHADOW_MAP
             shadow_computeShadowPars(pos);
-        #endif
-        #ifdef ENABLE_PICKING
-            fbo_picking_setData(gl_Position.w);
         #endif
     }
 

@@ -43,6 +43,7 @@ class QuadShader extends MeshShader {
                 aPosition : quadVertices,
                 aTexCoord : quadTexcoords
             },
+            null,
             quadVertices.length / 3,
             {
                 primitive : 'triangle strip'

@@ -53,7 +53,7 @@ export default class Geometry {
         }
         this.data = buffers;
 
-        if (!isNumber(this.elements)) {
+        if (this.elements && !isNumber(this.elements)) {
             this.elements = this.elements.destroy ? this.elements : regl.elements({
                 primitive: this.getPrimitive(),
                 data: this.elements,
