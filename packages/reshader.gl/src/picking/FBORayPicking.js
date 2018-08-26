@@ -1,4 +1,4 @@
-import { isNil, interpolate } from '../common/Util';
+import { interpolate } from '../common/Util';
 import { mat4 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader';
 import Scene from '../Scene';
@@ -213,7 +213,7 @@ export default class FBORayPicking {
         });
 
         let { pickingId, meshId } = this._packData(data, shader);
-        if (shader === this._shader1 && meshes[0].geometry.rawData && !isNil(meshes[0].geometry.rawData['aPickingId'])) {
+        if (shader === this._shader1 && meshes[0].geometry.data['aPickingId']) {
             //TODO 再次渲染，获得aPickingId
             pickingId = this._getPickingId(x, y, meshes[meshId], uniforms);
         }
@@ -276,24 +276,24 @@ export default class FBORayPicking {
         return pack3(data);
     }
 
-    _pickDepth(x, y, mesh, uniforms, pickingId) {
+    _pickDepth(x, y, mesh, uniforms) {
         const regl = this._renderer.regl;
         const fbo1 = this._getFBO1();
         //second render to find depth value of point
 
-        const { count, offset } = this._getPartialMeshForPicking(mesh, pickingId);
+        // const { count, offset } = this._getPartialMeshForPicking(mesh, pickingId);
 
-        const geometry = mesh.geometry;
-        geometry.setDrawCount(count);
-        geometry.setOffset(offset);
+        // const geometry = mesh.geometry;
+        // geometry.setDrawCount(count);
+        // geometry.setOffset(offset);
 
         this._scene1.setMeshes([mesh]);
         this._clearFbo(fbo1);
 
         this._renderer.render(this._depthShader, uniforms, this._scene1, fbo1);
 
-        geometry.setDrawCount(null);
-        geometry.setOffset(0);
+        // geometry.setDrawCount(null);
+        // geometry.setOffset(0);
 
         const data = regl.read({
             x, y : fbo1.height - y,
@@ -338,7 +338,7 @@ export default class FBORayPicking {
 
     _getShader(meshes) {
         const mesh = meshes[0];
-        if (!mesh.geometry.rawData || !mesh.geometry.rawData['aPickingId']) {
+        if (!mesh.geometry.data['aPickingId']) {
             //only fbo_picking_meshId
             return this._shader1;
         }
@@ -359,31 +359,31 @@ export default class FBORayPicking {
         return this._fbo1;
     }
 
-    _getPartialMeshForPicking(mesh, pickingId) {
-        if (!mesh.geometry.rawData || !mesh.geometry.rawData.aPickingId) {
-            return { count : null, offset : 0 };
-        }
-        let pickingMap = mesh._pickingIdMap;
-        if (!pickingMap) {
-            const pickingIds = mesh.geometry.rawData.aPickingId;
-            const map = {};
-            let offset = 0;
-            let prev = pickingIds[0];
-            for (let i = 1, l = pickingIds.length; i < l; i++) {
-                if (pickingIds[i] !== prev || i === l - 1) {
-                    map[prev] = {
-                        offset,
-                        count : i === l - 1 ? l - offset : i - offset
-                    };
-                    offset = i;
-                    prev = pickingIds[i];
-                }
-            }
-            pickingMap = mesh._pickingIdMap = map;
-        }
+    // _getPartialMeshForPicking(mesh, pickingId) {
+    //     if (!mesh.geometry.rawData || !mesh.geometry.rawData.aPickingId) {
+    //         return { count : null, offset : 0 };
+    //     }
+    //     let pickingMap = mesh._pickingIdMap;
+    //     if (!pickingMap) {
+    //         const pickingIds = mesh.geometry.rawData.aPickingId;
+    //         const map = {};
+    //         let offset = 0;
+    //         let prev = pickingIds[0];
+    //         for (let i = 1, l = pickingIds.length; i < l; i++) {
+    //             if (pickingIds[i] !== prev || i === l - 1) {
+    //                 map[prev] = {
+    //                     offset,
+    //                     count : i === l - 1 ? l - offset : i - offset
+    //                 };
+    //                 offset = i;
+    //                 prev = pickingIds[i];
+    //             }
+    //         }
+    //         pickingMap = mesh._pickingIdMap = map;
+    //     }
 
-        return pickingMap[pickingId];
-    }
+    //     return pickingMap[pickingId];
+    // }
 }
 
 function applyMatrix(out, v, e) {

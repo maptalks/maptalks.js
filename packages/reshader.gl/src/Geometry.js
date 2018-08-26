@@ -6,8 +6,7 @@ const defaultDesc = {
     'positionSize' : 3,
     'primitive' : 'triangles',
     //name of position attribute
-    'positionAttribute' : 'aPosition',
-    'attrToKeepFromBuffer' : ['aPickingId']
+    'positionAttribute' : 'aPosition'
 };
 
 export default class Geometry {
@@ -37,15 +36,10 @@ export default class Geometry {
     generateBuffers(regl) {
         //generate regl buffers beforehand to avoid repeated bufferData
         const data = this.data;
-        this.rawData = {};
-        const attrToKeep = this.desc['attrToKeepFromBuffer'];
         const buffers = {};
         for (const p in data) {
             if (!data[p]) {
                 continue;
-            }
-            if (attrToKeep && attrToKeep.indexOf(p) >= 0) {
-                this.rawData[p] = data[p];
             }
             buffers[p] = {
                 buffer : data[p].destroy ? data[p] : regl.buffer(data[p])
