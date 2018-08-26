@@ -32,12 +32,12 @@ export default class BaseLayerWorker {
                 cb();
                 return;
             }
-            const data = this.createTileData(features, context);
+            const data = this._createTileData(features, context);
             cb(null, data.data, data.buffers);
         });
     }
 
-    createTileData(features, { glScale, zScale }) {
+    _createTileData(features, { glScale, zScale }) {
         const data = [],
             options = this.options,
             buffers = [];
@@ -74,7 +74,7 @@ export default class BaseLayerWorker {
             }
 
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
-            const tileData = this.createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, glScale, zScale });
+            const tileData = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, glScale, zScale });
 
             const arrCtor = getIndexArrayType(maxIndex);
             data[i] = {
@@ -118,7 +118,7 @@ export default class BaseLayerWorker {
         };
     }
 
-    createTileGeometry(features, dataConfig = {}, { extent, glScale, zScale }) {
+    _createTileGeometry(features, dataConfig = {}, { extent, glScale, zScale }) {
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
             const {

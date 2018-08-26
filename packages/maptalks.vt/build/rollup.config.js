@@ -1,7 +1,20 @@
 const resolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
+const uglify = require('rollup-plugin-uglify').uglify;
 const pkg = require('../package.json');
+
+const production = process.env.BUILD === 'production';
+const outputFile = production ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
+const plugins = production ? [
+    uglify({
+        mangle: {
+            properties: {
+                'regex' : /^_/,
+                'keep_quoted' : true
+            }
+        }
+    })] : [];
 
 module.exports = [{
     input: 'src/worker/index.js',
@@ -62,7 +75,7 @@ module.exports = [{
         },
         extend : true,
         name: 'maptalks',
-        file: pkg.main,
+        file: outputFile,
         format: 'umd',
         sourcemap: false,
         intro: `
@@ -79,7 +92,7 @@ if (!workerLoaded) {
     },
     plugins : [
         babel()
-    ],
+    ].concat(plugins),
     watch: {
         include: 'build/**/*.js'
     }

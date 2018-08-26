@@ -1,8 +1,20 @@
 const resolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
-// const glslify = require('rollup-plugin-glslify');
+const uglify = require('rollup-plugin-uglify').uglify;
 const pkg = require('./package.json');
+
+const production = process.env.BUILD === 'production';
+const outputFile = production ? 'dist/maptalks.vt.pbr.js' : 'dist/maptalks.vt.pbr-dev.js';
+const plugins = production ? [
+    uglify({
+        mangle: {
+            properties: {
+                'regex' : /^_/,
+                'keep_quoted' : true
+            }
+        }
+    })] : [];
 
 function glsl() {
     return {
@@ -31,17 +43,14 @@ module.exports = {
         }),
         commonjs(),
         glsl(),
-        // glslify({
-        //     include : ['../reshader.gl/**/*.vert', '../reshader.gl/**/*.frag', '../reshader.gl/**/*.glsl']
-        // }),
         babel({
             exclude: 'node_modules/**'
         })
-    ],
+    ].concat(plugins),
     external : ['@maptalks/vt', '@maptalks/gl'],
     output: [
         {
-            'sourcemap': false,
+            'sourcemap': production ? false : 'inline',
             'format': 'umd',
             'name': 'maptalks.vt.pbr',
             'banner': banner,
@@ -49,13 +58,13 @@ module.exports = {
                 '@maptalks/vt' : 'maptalks',
                 '@maptalks/gl' : 'maptalksgl'
             },
-            'file': pkg.main
-        },
+            'file': outputFile
+        }/* ,
         {
             'sourcemap': false,
             'format': 'es',
             'banner': banner,
             'file': pkg.module
-        }
+        } */
     ]
 };

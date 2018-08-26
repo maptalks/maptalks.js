@@ -153,7 +153,6 @@ class PBRScenePainter {
         // const result = [interpolate(near[0], far[0], t), interpolate(near[1], far[1], t), interpolate(near[2], far[2], t)];
         // console.log(result);
         // this.debugFBO('shadow', this.layer.getRenderer().pickingFBO);
-        console.log(JSON.stringify(picked));
     }
 
     updateSceneConfig(config) {
@@ -208,7 +207,7 @@ class PBRScenePainter {
         const layer = this.layer;
         const map = layer.getMap();
         // console.log(layer.getRenderer()._getMeterScale());
-        const extent = map._get2DExtent(map.getGLZoom());
+        const extent = map['_get2DExtent'](map.getGLZoom());
         const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
         const localTransform = this.ground.localTransform;
         mat4.identity(localTransform);
@@ -295,7 +294,26 @@ class PBRScenePainter {
 
         this._initCubeLight();
 
-        this._raypicking = new reshader.FBORayPicking(this.renderer, config, this.layer.getRenderer().pickingFBO);
+        const pickingConfig = extend({}, config);
+        pickingConfig.vert = `
+            attribute vec3 aPosition;
+            uniform mat4 projectionViewModel;
+            #include <fbo_picking_vert>
+            void main() {
+                vec4 pos = vec4(aPosition, 1.0);
+                gl_Position = projectionViewModel * pos;
+                fbo_picking_setData(gl_Position.w);
+            }
+        `;
+        let u;
+        for (let i = 0; i < config.uniforms.length; i++) {
+            if (config.uniforms[i] === 'projectionViewModel' || config.uniforms[i].name === 'projectionViewModel') {
+                u = config.uniforms[i];
+                break;
+            }
+        }
+        pickingConfig.uniforms = [u];
+        this._raypicking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
 
     }
 
