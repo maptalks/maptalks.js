@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { isNumber } from './common/Util';
+import { isNumber, extend } from './common/Util';
 import BoundingBox from './BoundingBox';
 
 const defaultDesc = {
@@ -21,10 +21,14 @@ export default class Geometry {
 
         this.data = data;
         this.elements = elements;
-        this.desc = desc || defaultDesc;
+        this.desc = extend({}, defaultDesc, desc) || defaultDesc;
         const pos = data[this.desc.positionAttribute];
-        if (!count && pos && pos.length) {
-            count = pos.length / this.desc.positionSize;
+        if (!count) {
+            if (elements && elements.length) {
+                count = elements.length;
+            } else if (pos && pos.length) {
+                count = pos.length / this.desc.positionSize;
+            }
         }
         this.count = count;
         this.updateBoundingBox();
