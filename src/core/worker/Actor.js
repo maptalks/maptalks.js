@@ -44,7 +44,7 @@ export default class Actor {
         this.workerKey = workerKey;
         this.workerPool = getGlobalWorkerPool();
         this.currentActor = 0;
-        this.dedicatedActor = 0;
+        this.dedicatedWorker = 0;
         this.poolId = UID();
         this.workers = this.workerPool.acquire(this.poolId);
         this.callbacks = {};
