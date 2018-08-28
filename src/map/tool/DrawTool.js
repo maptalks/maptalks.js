@@ -4,6 +4,7 @@ import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
 import Polygon from '../../geometry/Polygon';
+import Marker from '../../geometry/Marker';
 import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
 
@@ -330,6 +331,15 @@ class DrawTool extends MapTool {
     _firstClickHandler(event) {
         const registerMode = this._getRegisterMode();
         const coordinate = event['coordinate'];
+        const map = this.getMap();        
+        const vertexMarkerOptions = this.options.vertexMarkerOptions;
+
+        if (vertexMarkerOptions) {
+            (map.getLayer('vertexMarker') || new VectorLayer('vertexMarker'))
+            .addGeometry(new Marker(coordinate, vertexMarkerOptions))
+            .addTo(map);
+        }
+
         if (!this._geometry) {
             this._createGeometry(event);
         } else {
@@ -357,7 +367,7 @@ class DrawTool extends MapTool {
              * @property {Point} viewPoint       - view point of the event
              * @property {Event} domEvent                 - dom event
              */
-            this._fireEvent('drawvertex', event);
+            this._fireEvent('drawvertex', event);            
         }
     }
 
@@ -474,6 +484,8 @@ class DrawTool extends MapTool {
         }
         registerMode['update'](path, this._geometry, event);
         this.endDraw(event);
+        //remove vertexMarker layer
+        this.getMap().removeLayer('vertexMarker');
     }
 
     _addGeometryToStage(geometry) {
