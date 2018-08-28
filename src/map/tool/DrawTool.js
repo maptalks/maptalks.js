@@ -367,7 +367,7 @@ class DrawTool extends MapTool {
              * @property {Point} viewPoint       - view point of the event
              * @property {Event} domEvent                 - dom event
              */
-            this._fireEvent('drawvertex', event);            
+            this._fireEvent('drawvertex', event);
         }
     }
 
