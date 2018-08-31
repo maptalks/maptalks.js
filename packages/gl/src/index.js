@@ -7,5 +7,5 @@ export {
     vec2, vec3, vec4,
 } from 'gl-matrix';
 export { createREGL, reshader };
-export { default as GroupREGLLayer } from './layer/GroupREGLLayer';
+export { default as GroupGLLayer } from './layer/GroupGLLayer';
 export { GLContext } from 'fusion.gl';
