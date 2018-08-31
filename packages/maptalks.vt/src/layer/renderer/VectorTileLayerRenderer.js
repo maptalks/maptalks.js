@@ -58,18 +58,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.prepareWorker();
         const EXTENT = layer.options['extent'];
 
-
-        if (this.canvas.groupRegl) {
-            this.regl = this.canvas.groupRegl;
-            this.gl =  this.canvas.gl;
-            //it's a child layer of a GroupREGLLayer
-            //regl from parent layer
-        } else {
-            this._createREGLContext();
+        if (this.canvas.gl && this.canvas.gl.wrap) {
+            this.gl = this.canvas.gl.wrap();
         }
+        this._createREGLContext();
         this.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
         this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Float32Array([
-            // positions
             0, EXTENT, 0,
             0, 0, 0,
             EXTENT, EXTENT, 0,
@@ -88,7 +82,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         attributes.preserveDrawingBuffer = true;
         attributes.stencil = !!layer.options['stencil'];
         this.glOptions = attributes;
-        this.gl = this._createGLContext(this.canvas, attributes);
+        this.gl = this.gl || this._createGLContext(this.canvas, attributes);
         // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
         //TODO 迁移到fusion后，不再需要初始化regl，而是将createREGL传给插件
         this.regl = createREGL({
