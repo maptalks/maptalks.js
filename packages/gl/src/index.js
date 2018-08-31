@@ -8,3 +8,4 @@ export {
 } from 'gl-matrix';
 export { createREGL, reshader };
 export { default as GroupREGLLayer } from './layer/GroupREGLLayer';
+export { GLContext } from 'fusion.gl';

@@ -1,5 +1,6 @@
 import * as maptalks from 'maptalks';
-import createREGL from 'regl';
+// import createREGL from 'regl';
+import { GLContext } from 'fusion.gl';
 
 const options = {
     renderer : 'gl',
@@ -13,21 +14,21 @@ const options = {
     optionalExtensions : ['WEBGL_draw_buffers', 'EXT_shader_texture_lod']
 };
 
-export default class GroupREGLLayer extends maptalks.Layer {
+export default class GroupGLLayer extends maptalks.Layer {
     /**
-     * Reproduce a GroupREGLLayer from layer's profile JSON.
+     * Reproduce a GroupGLLayer from layer's profile JSON.
      * @param  {Object} layerJSON - layer's profile JSON
-     * @return {GroupREGLLayer}
+     * @return {GroupGLLayer}
      * @static
      * @private
      * @function
      */
     static fromJSON(layerJSON) {
-        if (!layerJSON || layerJSON['type'] !== 'GroupREGLLayer') {
+        if (!layerJSON || layerJSON['type'] !== 'GroupGLLayer') {
             return null;
         }
         const layers = layerJSON['layers'].map(json => maptalks.Layer.fromJSON(json));
-        return new GroupREGLLayer(layerJSON['id'], layers, layerJSON['options']);
+        return new GroupGLLayer(layerJSON['id'], layers, layerJSON['options']);
     }
 
     /**
@@ -141,7 +142,7 @@ export default class GroupREGLLayer extends maptalks.Layer {
         this.layers.forEach(layer => {
             const layerId = layer.getId();
             if (ids[layerId]) {
-                throw new Error(`Duplicate child layer id (${layerId}) in the GroupREGLLayer (${this.getId()})`);
+                throw new Error(`Duplicate child layer id (${layerId}) in the GroupGLLayer (${this.getId()})`);
             } else {
                 ids[layerId] = 1;
             }
@@ -149,9 +150,9 @@ export default class GroupREGLLayer extends maptalks.Layer {
     }
 }
 
-GroupREGLLayer.mergeOptions(options);
+GroupGLLayer.mergeOptions(options);
 
-GroupREGLLayer.registerJSONType('GroupREGLLayer');
+GroupGLLayer.registerJSONType('GroupGLLayer');
 
 class Renderer extends maptalks.renderer.CanvasRenderer {
 
@@ -167,7 +168,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.prepareRender();
         this.prepareCanvas();
         this.forEachRenderer(renderer => {
+            const gl = this.gl;
+            // console.log('restored', gl.states);
             renderer.render.apply(renderer, args);
+            // console.log('saved', gl.states);
         });
         this['_toRedraw'] = false;
     }
@@ -248,29 +252,49 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
         attributes.preserveDrawingBuffer = true;
         this.glOptions = attributes;
-        this.gl = this._createGLContext(this.canvas, attributes);
-
-        this.regl = createREGL({
-            gl : this.gl,
-            attributes,
-            extensions : layer.options['extensions'],
-            optionalExtensions : layer.options['optionalExtensions']
-        });
-        this.canvas.groupRegl = this.regl;
+        const gl = this.gl = this._createGLContext(this.canvas, attributes);        // this.gl = gl;
+        this._initGL(gl);
+        gl.createChildGLInstance = () => {
+            return new GLContext(this.gl);
+        };
+        this.glCtx = gl.createChildGLInstance();
         this.canvas.gl = this.gl;
+    }
+
+    _initGL() {
+        const layer = this.layer;
+        const gl = this.gl;
+        const extensions = layer.options['extensions'];
+        if (extensions) {
+            extensions.forEach(ext => {
+                gl.getExtension(ext);
+            });
+        }
+        const optionalExtensions = layer.options['optionalExtensions'];
+        if (optionalExtensions) {
+            optionalExtensions.forEach(ext => {
+                gl.getExtension(ext);
+            });
+        }
+        this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
     }
 
     clearCanvas() {
         super.clearCanvas();
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            depth: 1,
-            stencil: 0
-        });
+        const gl = this.glCtx;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+
+        // only clear main framebuffer
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     }
 
     resizeCanvas() {
         super.resizeCanvas();
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.forEachRenderer(renderer => {
             if (renderer.canvas) {
                 renderer.resizeCanvas();
@@ -297,27 +321,27 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _createGLContext(canvas, options) {
         const names = ['webgl', 'experimental-webgl'];
-        let context = null;
+        let gl = null;
         /* eslint-disable no-empty */
         for (let i = 0; i < names.length; ++i) {
             try {
-                context = canvas.getContext(names[i], options);
+                gl = canvas.getContext(names[i], options);
             } catch (e) {}
-            if (context) {
+            if (gl) {
                 break;
             }
         }
-        return context;
+        return gl;
         /* eslint-enable no-empty */
     }
 }
 
-GroupREGLLayer.registerRenderer('gl', Renderer);
-GroupREGLLayer.registerRenderer('canvas', null);
+GroupGLLayer.registerRenderer('gl', Renderer);
+GroupGLLayer.registerRenderer('canvas', null);
 
 function empty() {}
 
 if (typeof window !== 'undefined') {
-    // append GroupREGLLayer on maptalks manually
-    if (window.maptalks) window.maptalks.GroupREGLLayer = GroupREGLLayer;
+    // append GroupGLLayer on maptalks manually
+    if (window.maptalks) window.maptalks.GroupGLLayer = GroupGLLayer;
 }

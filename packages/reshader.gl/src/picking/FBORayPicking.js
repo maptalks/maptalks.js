@@ -178,6 +178,11 @@ export default class FBORayPicking {
     }
 
     render(meshes, uniforms) {
+        delete this._currentMeshes;
+        delete this._currentShader;
+        if (!meshes || !meshes.length) {
+            return this;
+        }
         const fbo = this._fbo;
         this._clearFbo(fbo);
 
@@ -196,7 +201,11 @@ export default class FBORayPicking {
         const shader = this._currentShader;
         const meshes = this._currentMeshes;
         if (!shader || !meshes || !meshes.length) {
-            return null;
+            return {
+                pickingId : null,
+                meshId : null,
+                point : null
+            };
         }
 
         x = Math.round(x);

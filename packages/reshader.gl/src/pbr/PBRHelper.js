@@ -217,20 +217,22 @@ const quadTexcoords = [
     1.0, 1.0,
     1.0, 0.0,
 ];
-let quadBuf, quadTexBuf;
 
 const BRDF_CACHE = {};
 
 function generateBRDFLUT(regl, size, sampleSize, roughnessLevels) {
-    const key = size + '-' + sampleSize + '-' + roughnessLevels;
-    if (BRDF_CACHE[key]) {
-        return BRDF_CACHE[key];
-    }
-
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
 
-    const distro = generateNormalDistribution(sampleSize, roughnessLevels);
+    const key = size + '-' + sampleSize + '-' + roughnessLevels;
+
+    let distro;
+    if (BRDF_CACHE[key]) {
+        distro = BRDF_CACHE[key];
+    } else {
+        distro = generateNormalDistribution(sampleSize, roughnessLevels);
+        BRDF_CACHE[key] = distro;
+    }
 
     const distributionMap = regl.texture({
         data : distro,
@@ -241,8 +243,8 @@ function generateBRDFLUT(regl, size, sampleSize, roughnessLevels) {
         mag : 'nearest'
     });
 
-    quadBuf = quadBuf || regl.buffer(quadVertices);
-    quadTexBuf = quadTexBuf || regl.buffer(quadTexcoords);
+    const quadBuf = regl.buffer(quadVertices);
+    const quadTexBuf = regl.buffer(quadTexcoords);
     const fbo = regl.framebuffer({
         radius : size,
         type : 'float',
@@ -280,8 +282,6 @@ function generateBRDFLUT(regl, size, sampleSize, roughnessLevels) {
         primitive: 'triangle strip'
     });
     drawLUT();
-
-    BRDF_CACHE[key] = fbo;
 
     return fbo;
 
