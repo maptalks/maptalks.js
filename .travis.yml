@@ -4,7 +4,7 @@ branches:
     - "dev"
 language: node_js
 node_js:
-  - "6"
+  - "8"
 addons:
   firefox: "latest"
 before_script:
