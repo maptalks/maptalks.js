@@ -12,7 +12,7 @@ export default class WorkerPool {
     constructor() {
         this.active = {};
         this.currentID = 0;
-        this.workerCount = window.MAPTALKS_VT_WORKER_COUNT || workerCount;
+        this.workerCount = window.MAPTALKS_WORKER_COUNT || workerCount;
     }
 
     acquire(id) {
