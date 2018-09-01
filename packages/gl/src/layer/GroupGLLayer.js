@@ -254,10 +254,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.glOptions = attributes;
         const gl = this.gl = this._createGLContext(this.canvas, attributes);        // this.gl = gl;
         this._initGL(gl);
-        gl.createChildGLInstance = () => {
+        gl.wrap = () => {
             return new GLContext(this.gl);
         };
-        this.glCtx = gl.createChildGLInstance();
+        this.glCtx = gl.wrap();
         this.canvas.gl = this.gl;
     }
 
