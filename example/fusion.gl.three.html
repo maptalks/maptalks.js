@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <script src="../dist/bundle.js"></script>
+    <script src="../dist/fusion.gl-dev.js"></script>
     <script src="../node_modules/three/build/three.js"></script>
 </head>
 
@@ -12,8 +12,9 @@
     <canvas width="800" height="600" id="mapCanvas"></canvas>
     <script type="text/javascript">
 
-        const canvasElement = document.getElementById('mapCanvas');
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
+        const canvas = document.getElementById('mapCanvas');
+        const realGL = canvas.getContext('webgl');
+        const gl = new fusion.GLContext(realGL);
         //
         const camera = new THREE.PerspectiveCamera(70, 800 / 600, 0.01, 10);
         camera.position.z = 1;
@@ -23,21 +24,45 @@
         mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
         renderer = new THREE.WebGLRenderer({
-            canvas: glCanvas,
-            context: glCanvas.getContext()
+            canvas: canvas,
+            context: gl
         });
+        renderer.autoClear = false;
         renderer.setSize(800, 600);
         renderer.render(scene, camera);
 
+        const gl1 = new fusion.GLContext(realGL);
+        const camera1 = new THREE.PerspectiveCamera(70, 800 / 600, 0.01, 10);
+        camera1.position.z = 1;
+        var scene1 = new THREE.Scene();
+        var geometry1 = new THREE.BoxGeometry(0.5, 0.3, 0.8);
+        var material1 = new THREE.MeshNormalMaterial();
+        var mesh1 = new THREE.Mesh(geometry1, material1);
+        mesh1.rotation.x += 0.1;
+        mesh1.rotation.y += 0.2;
+        scene1.add(mesh1);
+        var renderer1 = new THREE.WebGLRenderer({
+            canvas: canvas,
+            context: gl1
+        });
+        renderer1.autoClear = false;
+        renderer1.setSize(800, 600);
+        renderer1.render(scene1, camera1);
+
         function animate() {
             requestAnimationFrame(animate);
-            mesh.rotation.x += 0.01;
-            mesh.rotation.y += 0.02;
+            renderer.clear(true, true, true);
+            renderer1.clear(true, true, true);
+            mesh.rotation.x -= 0.01;
+            mesh.rotation.y -= 0.02;
+            mesh1.rotation.x += 0.01;
+            mesh1.rotation.y += 0.02;
             renderer.render(scene, camera);
+            renderer1.render(scene1, camera1);
         }
 
         animate();
-        
+
     </script>
 </body>
 

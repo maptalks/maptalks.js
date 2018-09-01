@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <script src="../dist/bundle.js"></script>
+    <script src="../dist/fusion.gl-dev.js"></script>
 </head>
 <body>
     <canvas width="800" height="600" id="mapCanvas"></canvas>
     <script   type="text/javascript">
-    
-        const canvasElement = document.getElementById('mapCanvas');
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl',{
+
+        const canvas = document.getElementById('mapCanvas');
+        const gl = new fusion.GLContext(canvas.getContext('webgl', {
             alpha:false,
             depth:true,
             stencil:true,
@@ -19,7 +19,6 @@
             preserveDrawingBuffer:false,
             failIfMajorPerformanceCaveat:false
         }));
-        const gl = glCanvas.getContext('webgl');
 
         var vertCode = 'attribute vec2 coordinates;' +
         'void main(void) {' +

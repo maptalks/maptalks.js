@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <script src="../dist/bundle.js"></script>
+    <script src="../dist/fusion.gl-dev.js"></script>
 </head>
 
 <body>
@@ -1221,9 +1221,8 @@ uniform sampler2D u_texture;
 void main() {
    gl_FragColor = texture2D(u_texture, v_texcoord);
 }`;
-        const canvasElement = document.getElementById('mapCanvas');
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
-        const gl = glCanvas.getContext('webgl');
+        const canvas = document.getElementById('mapCanvas');
+        const gl = new fusion.GLContext(canvas.getContext('webgl'));
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vText);
@@ -1349,7 +1348,7 @@ void main() {
             gl.drawArrays(gl.TRIANGLES, 0, 6 * 6);
             requestAnimationFrame(drawScene);
         }
-        glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
+        // glCanvas.linkToCanvas(document.getElementById('mapCanvas'));
     </script>
 </body>
 

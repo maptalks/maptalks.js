@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <script src="../dist/bundle.js"></script>
+    <script src="../dist/fusion.gl-dev.js"></script>
 </head>
 
 <body>
@@ -24,9 +24,8 @@ void main() {
   // is responsible for setting
   gl_FragColor = vec4(1, 0, 0.5, 1); // return redish-purple
 }`;
-        const canvasElement = document.getElementById('mapCanvas');
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
-        const gl = glCanvas.getContext('webgl');
+        const canvas = document.getElementById('mapCanvas');
+        const gl = new fusion.GLContext(canvas.getContext('webgl'));
 
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);

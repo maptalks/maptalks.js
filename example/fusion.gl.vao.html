@@ -4,16 +4,15 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <script src="../dist/bundle.js"></script>
+    <script src="../dist/fusion.gl-dev.js"></script>
 </head>
 
 <body>
     <canvas width="800" height="600" id="mapCanvas"></canvas>
     <script type="text/javascript">
         //
-        const canvasElement = document.getElementById('mapCanvas');
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
-        const gl = glCanvas.getContext('webgl');
+        const canvas = document.getElementById('mapCanvas');
+        const gl = new fusion.GLContext(canvas.getContext('webgl'));
         //vertex shader text
         var vertCode = 'attribute vec3 a_position;' +
             'attribute vec3 a_color;' +
@@ -53,7 +52,7 @@
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.viewport(0, 0, 800, 600);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-        
+
     </script>
 </body>
 

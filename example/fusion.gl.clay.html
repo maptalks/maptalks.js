@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <script src="../dist/bundle.js"></script>
+    <script src="../dist/fusion.gl-dev.js"></script>
     <script src="../node_modules/claygl/dist/claygl.js"></script>
 </head>
 
@@ -12,9 +12,8 @@
     <canvas width="800" height="600" id="mapCanvas" style="width:800px;height:600px;"></canvas>
     <script type="text/javascript">
 
-        const canvasElement = document.getElementById('mapCanvas');
-
-        const glCanvas = new fusion.gl.GLCanvas(canvasElement.getContext('webgl'));
+        const canvas = document.getElementById('mapCanvas');
+        const gl = new fusion.GLContext(canvas.getContext('webgl'));
 
         var vertexShader = `
 attribute vec3 position: POSITION;
@@ -36,7 +35,7 @@ void main() {
 }
 `;
 
-        var app = clay.application.create(glCanvas, {
+        var app = clay.application.create(canvas, {
             init: function (app) {
                 // Create a orthographic camera
                 this._camera = app.createCamera([0, 2, 5], [0, 0, 0]);

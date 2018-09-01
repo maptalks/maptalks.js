@@ -3,7 +3,7 @@
  * reference https://github.com/uber/luma.gl/blob/master/src/webgl-utils/constants.js
  * reference https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Types
  * Store GLEnum value the boost glContext setting
- * webgl2 used within a WebGL2RenderingContext,add GLint64(GLuint64EXT) 
+ * webgl2 used within a WebGL2RenderingContext,add GLint64(GLuint64EXT)
  * @author yellow date 2017/6/15
  */
 const GLConstants = {
@@ -336,7 +336,7 @@ const GLConstants = {
     TEXTURE15:0x84CF,
     TEXTURE16:0x84D0,
     // The current active texture unit.
-    ACTIVE_TEXTURE: 0x84E0, 
+    ACTIVE_TEXTURE: 0x84E0,
     REPEAT: 0x2901,
     CLAMP_TO_EDGE: 0x812F,
     MIRRORED_REPEAT: 0x8370,
@@ -378,7 +378,7 @@ const GLConstants = {
      */
     FRAMEBUFFER: 0x8D40,
     /**
-     * 绑定 renderbuffer 
+     * 绑定 renderbuffer
      */
     RENDERBUFFER: 0x8D41,
     RGBA4: 0x8056,
@@ -898,4 +898,4 @@ const GLConstants = {
     GPU_DISJOINT_EXT: 0x8FBB // A Boolean indicating whether or not the GPU performed any disjoint operation.
 };
 
-module.exports = GLConstants;
+export default GLConstants;

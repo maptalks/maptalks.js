@@ -1,26 +1,17 @@
-import resolve from 'rollup-plugin-node-resolve';
-import babel from 'rollup-plugin-babel';
-import commonjs from 'rollup-plugin-commonjs';
+const resolve = require('rollup-plugin-node-resolve');
+const commonjs = require('rollup-plugin-commonjs');
 
 export default {
-    input: './src/init.js',
-    output:{
+    input: './src/index.js',
+    output: {
+        sourcemap : 'inline',
         name:'fusion',
         exports: 'named',
         format:'umd',
-        file:'./dist/bundle.js'
+        file:'./dist/fusion.gl-dev.js'
     },
-    external: [
-        'fs',
-        'steam',
-        'path',
-        'through'
-    ],
     plugins: [
         resolve(),
-        commonjs(),
-        babel({
-            //exclude: 'node_modules/**'
-        })
+        commonjs()
     ]
 };
