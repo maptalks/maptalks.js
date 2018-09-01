@@ -1,12 +1,12 @@
 import { createProgram, enableVertexAttrib } from '../../../core/util/gl';
 
-const quadVertices = new Float32Array([
+const quadVertices = typeof Float32Array !== 'undefined' ? new Float32Array([
     // positions
     -1,  1, 0,
     -1, -1, 0,
     1,  1, 0,
     1, -1, 0,
-]);
+]) : [];
 
 const attributes = ['a_position', 3];
 
