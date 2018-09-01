@@ -5,7 +5,7 @@ const base = {
     files: [
         'dist/maptalks.js',
         'test/core/ClassSpec.js',
-        'test/**/*.js',
+        'test/**/!(ClassSpec).js',
         {
             pattern: 'assets/css/**/*.css',
             included: false
@@ -22,9 +22,6 @@ const base = {
         '/css/': '/base/assets/css/',
         '/lib/': '/base/assets/lib/',
         '/resources/': '/base/test/resources/'
-    },
-    preprocessors: {
-        'test/core/ClassSpec.js': ['babel']
     },
     customLaunchers: {
         IE10: {

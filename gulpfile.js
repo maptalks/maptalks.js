@@ -1,4 +1,5 @@
 const minimist = require('minimist'),
+    fs = require('fs'),
     path = require('path'),
     gulp = require('gulp'),
     del = require('del'),
@@ -6,13 +7,10 @@ const minimist = require('minimist'),
     concat = require('gulp-concat'),
     cssnano = require('gulp-cssnano'),
     connect = require('gulp-connect'),
-    rollupCfg = require('./build/rollup.config'),
-    BundleHelper = require('maptalks-build-helpers').BundleHelper,
+    uglify = require('uglify-js').minify,
+    zlib = require('zlib'),
     Server = require('karma').Server,
     package = require('./package.json');
-
-const rollupWatch = rollupCfg.watch;
-const bundler = new BundleHelper(package);
 
 const knownOptions = {
     string: ['browsers', 'pattern'],
@@ -38,14 +36,10 @@ configBrowsers.split(',').forEach(name => {
     browsers.push(name);
 });
 
-gulp.task('scripts', () => {
-    return bundler.bundle('src/index.js', rollupCfg.config);
-});
-
 
 const stylesPattern = './assets/css/**/*.css';
 
-gulp.task('styles', () => {
+gulp.task('styles', ['images'], () => {
     return gulp.src(stylesPattern)
         .pipe(concat('maptalks.css'))
         .pipe(cssnano())
@@ -57,32 +51,59 @@ gulp.task('images', () => {
         .pipe(gulp.dest('./dist/images'));
 });
 
-gulp.task('build', ['scripts', 'styles', 'images'], () => {});
-
-gulp.task('minify', ['build'], () => {
-    bundler.minify();
+gulp.task('transform-proto', () => {
+    //a silly work round as transform proto-to-assign is not working in babel 7
+    const filename = __dirname + '/dist/maptalks.js';
+    const code = fs.readFileSync(filename).toString('utf-8');
+    const transformed = code.replace('subClass.__proto__ = superClass;',
+        "if (typeof document !== 'undefined' && document.documentMode < 11) { _defaults(subClass, superClass); } else { subClass.__proto__ = superClass;}"
+    );
+    // fs.writeFileSync(__dirname + '/dist/compiled.js', transformed);
+    fs.writeFileSync(filename, transformed);
 });
 
-gulp.task('watch', ['styles', 'images'], () => {
-    rollupWatch(() => {
-        gulp.src('./dist/*.js')
-            .pipe(connect.reload());
+gulp.task('minify', () => {
+    const name = package.name;
+    const dest = package.main;
+    const code = fs.readFileSync(dest).toString('utf-8');
+    const u = uglify(code, {
+        'output': {
+            'ascii_only': true
+        }
     });
-    gulp.watch(stylesPattern, ['styles']);
+    const minified = this.banner + '\n' + u.code;
+    fs.writeFileSync('dist/' + name + '.min.js', minified);
+    const gzipped = zlib.gzipSync(minified);
+    fs.writeFileSync('dist/' + name + '.min.js.gz', gzipped);
 });
 
 /**
  * Run test once and exit
  */
 gulp.task('test', function (done) {
-    const karmaConfig = {
-        configFile: path.join(__dirname, 'build/karma.test.config.js')
-    };
+    // const karmaConfig = {
+    //     configFile: path.join(__dirname, 'build/karma.test.config.js')
+    // };
+    let file = 'build/karma.test.config.js';
+    if (options.coverage) {
+        file = 'build/karma.cover.config.js';
+    }
+    const cfg = require('karma').config;
+    const karmaConfig = cfg.parseConfig(path.join(__dirname, file));
     if (browsers.length > 0) {
         karmaConfig.browsers = browsers;
     }
-    if (options.coverage) {
-        karmaConfig.configFile = path.join(__dirname, 'build/karma.cover.config.js');
+    if (configBrowsers.indexOf('IE') >= 0) {
+        let idx = -1;
+        for (let i = 0; i < karmaConfig.files.length; i++) {
+            if (karmaConfig.files[i].pattern.indexOf('test/core/ClassSpec.js') >= 0) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx >= 0) {
+            karmaConfig.files.splice(idx, 1);
+        }
     }
     if (configBrowsers === 'IE9') {
         //override IE9's pattern
@@ -131,17 +152,12 @@ gulp.task('tdd', function (done) {
         }
     }
 
-    let started = false;
-    rollupWatch(() => {
-        if (!started) {
-            const karmaServer = new Server(karmaConfig, done);
-            karmaServer.start();
-            started = true;
-        }
-    });
+    const karmaServer = new Server(karmaConfig, done);
+    karmaServer.start();
+    started = true;
 });
 
-gulp.task('connect', ['watch'], () => {
+gulp.task('connect', () => {
     connect.server({
         root: ['dist', 'debug'],
         livereload: true,

@@ -1,6 +1,5 @@
 import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES } from '../Constants';
 import { IS_NODE } from './env';
-import Browser from '../Browser';
 import { extend, isNil, isNumber, isString } from './common';
 import { isURL, extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
@@ -27,12 +26,6 @@ export function translateToSVGStyles(s) {
             'fill-opacity': s['markerFillOpacity']
         }
     };
-    //vml和svg对linecap的定义不同
-    if (result['stroke']['stroke-linecap'] === 'butt') {
-        if (Browser.vml) {
-            result['stroke']['stroke-linecap'] = 'flat';
-        }
-    }
     if (result['stroke']['stroke-width'] === 0) {
         result['stroke']['stroke-opacity'] = 0;
     }
