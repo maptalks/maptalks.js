@@ -1,5 +1,5 @@
 import { extend, isFunction } from '../core/util';
-import { on, off, createEl } from '../core/util/dom';
+import { on, off, createEl, computeDomPosition } from '../core/util/dom';
 import Polygon from '../geometry/Polygon';
 import Layer from '../layer/Layer';
 import VectorLayer from '../layer/VectorLayer';
@@ -220,6 +220,8 @@ class Overview extends Control {
         if (!this._overview) {
             return;
         }
+        // refresh map's dom position
+        computeDomPosition(this._overview._containerDOM);
         const coords = this._getPerspectiveCoords();
         this._perspective.setCoordinates(coords);
         this._overview.setCenterAndZoom(this.getMap().getCenter(), this._getOverviewZoom());
