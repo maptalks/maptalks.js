@@ -420,10 +420,6 @@ class DrawTool extends MapTool {
             if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
                 return;
             }
-            if (!(this._historyPointer === null)) {
-                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
-            }
-            this._historyPointer = this._clickCoords.length;
             registerMode['update'](path.concat([coordinate]), this._geometry, event);
         } else {
             registerMode['update']([coordinate], this._geometry, event);
