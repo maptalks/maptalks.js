@@ -156,6 +156,33 @@ describe('Map.Projection', function () {
             var z = map.getFitZoom(map.getMaxExtent());
             expect(z).to.be.eql(7);
         });
+
+        it('rotate polygon with  IDENTITY projection, #726', function () {
+            map.setSpatialReference({
+                projection:'IDENTITY',
+                resolutions : [1, 10, 20],
+                fullExtent:{
+                    'top':0,
+                    'left':0,
+                    'bottom':1000000,
+                    'right':1000000
+                }
+            });
+
+            var vecLayer = new maptalks.VectorLayer('field').addTo(map);
+            var baseGeom = new maptalks.Polygon([[[0,0],[0,20],[20,30],[20,0]]], {
+                symbol : {
+                lineWidth : 2,
+                lineColor : '#000',
+                polygonFill : 'rgb(129, 0, 0)'
+                }
+            })
+            baseGeom.copy().addTo(vecLayer)
+                .translate(90,90)
+                .rotate(30).rotate(30).rotate(30);
+            var geojson = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[0,0],[0,20],[20,30],[20,0],[0,0]]]},"properties":null};
+            expect(baseGeom.toGeoJSON()).to.be.eqlGeoJSON(geojson);
+        });
     });
 
     describe('change to Baidu', function () {

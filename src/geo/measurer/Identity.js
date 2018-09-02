@@ -106,7 +106,9 @@ export default extend(/** @lends measurer.Identity */{
             tmp.x = c.x - pivot.x;
             tmp.y = c.y - pivot.y;
             tmp._rotate(angle * Math.PI / 180);
-            return c._add(tmp.x, tmp.y);
+            c.x = pivot.x + tmp.x;
+            c.y = pivot.y + tmp.y;
+            return c;
         };
     }()
 }, Common);
