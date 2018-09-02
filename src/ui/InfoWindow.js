@@ -1,5 +1,5 @@
 import { isString } from '../core/util';
-import { createEl } from '../core/util/dom';
+import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
 import Point from '../geo/Point';
 import { Geometry, Marker, MultiPoint } from '../geometry';
 import UIComponent from './UIComponent';
@@ -154,19 +154,16 @@ class InfoWindow extends UIComponent {
         }
         content += '<a href="javascript:void(0);" class="maptalks-close"></a><div class="maptalks-msgContent"></div>';
         dom.innerHTML = content;
-        const closeBtn = dom.querySelector('.maptalks-close');
-        closeBtn.addEventListener('click', ()=>{
-            super.hide();
-        })
-        closeBtn.addEventListener('touchend', ()=>{
-            super.hide();
-        })
         const msgContent = dom.querySelector('.maptalks-msgContent');
         if (isString(this.options['content'])) {
             msgContent.innerHTML = this.options['content'];
         } else {
             msgContent.appendChild(this.options['content']);
         }
+        this._onCloseBtnClick = this.hide.bind(this);
+        const closeBtn = dom.querySelector('.maptalks-close');
+        addDomEvent(closeBtn, 'click touchend', this._onCloseBtnClick);
+
         return dom;
     }
 
@@ -235,6 +232,19 @@ class InfoWindow extends UIComponent {
         const events = {};
         events[this.options['autoOpenOn']] = this._onAutoOpen;
         return events;
+    }
+
+    onRemove() {
+        this.onDomRemove();
+    }
+
+    onDomRemove() {
+        if (this._onCloseBtnClick) {
+            const dom = this.getDOM();
+            const closeBtn = dom.childNodes[2];
+            removeDomEvent(closeBtn, 'click touchend', this._onCloseBtnClick);
+            delete this._onCloseBtnClick;
+        }
     }
 
     _onAutoOpen(e) {
