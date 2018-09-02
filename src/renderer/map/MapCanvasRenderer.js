@@ -56,7 +56,7 @@ class MapCanvasRenderer extends MapRenderer {
         delete this._spatialRefChanged;
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
-        this._needRedraw = false;
+        this._canvasUpdated = false;
         return true;
     }
 
@@ -106,7 +106,7 @@ class MapCanvasRenderer extends MapRenderer {
                 if (!needsRedraw) {
                     updatedIds.push(layer.getId());
                 }
-                this.setToRedraw();
+                this.setLayerCanvasUpdated();
             }
             delete renderer.__shouldZoomTransform;
             if (!needsRedraw) {
@@ -143,7 +143,7 @@ class MapCanvasRenderer extends MapRenderer {
 
             if (isCanvas) {
                 updatedIds.push(layer.getId());
-                this.setToRedraw();
+                this.setLayerCanvasUpdated();
             }
         }
         // compare:
@@ -154,10 +154,10 @@ class MapCanvasRenderer extends MapRenderer {
         const preUpdatedIds = this._updatedIds || [];
         this._canvasIds = canvasIds;
         this._updatedIds = updatedIds;
-        if (!this._needToRedraw()) {
+        if (!this.isLayerCanvasUpdated()) {
             const sep = '---';
             if (preCanvasIds.join(sep) !== canvasIds.join(sep) || preUpdatedIds.join(sep) !== updatedIds.join(sep)) {
-                this.setToRedraw();
+                this.setLayerCanvasUpdated();
             }
         }
     }
@@ -261,12 +261,12 @@ class MapCanvasRenderer extends MapRenderer {
 
     }
 
-    _needToRedraw() {
-        return this._needRedraw;
+    isLayerCanvasUpdated() {
+        return this._canvasUpdated;
     }
 
-    setToRedraw() {
-        this._needRedraw = true;
+    setLayerCanvasUpdated() {
+        this._canvasUpdated = true;
     }
 
     /**
@@ -277,7 +277,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map) {
             return;
         }
-        if (!this._needToRedraw() && !this.isViewChanged()) {
+        if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
             return;
         }
         if (!this.canvas) {
@@ -348,6 +348,17 @@ class MapCanvasRenderer extends MapRenderer {
         map._fireEvent('renderend', {
             'context': this.context
         });
+    }
+
+    setToRedraw() {
+        const layers = this._getAllLayerToRender();
+        for (let i = 0, l = layers.length; i < l; i++) {
+            const renderer = layers[i].getRenderer();
+            if (renderer && renderer.canvas && renderer.setToRedraw) {
+                //to fix lost webgl context
+                renderer.setToRedraw();
+            }
+        }
     }
 
     updateMapSize(size) {
@@ -792,14 +803,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (document.visibilityState !== 'visible') {
             return;
         }
-        const layers = this._getAllLayerToRender();
-        for (let i = 0, l = layers.length; i < l; i++) {
-            const renderer = layers[i].getRenderer();
-            if (renderer && renderer.canvas && renderer.setToRedraw) {
-                //to fix lost webgl context
-                renderer.setToRedraw();
-            }
-        }
+        this.setToRedraw();
     }
 }
 

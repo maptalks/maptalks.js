@@ -198,6 +198,11 @@ Map.include(/** @lends Map.prototype */{
         if (evtType) {
             this._fireEvent(evtType);
         }
+        if (!isNil(props['pitch']) && !this.getPitch()) {
+            //https://github.com/maptalks/maptalks.js/issues/732
+            //fix blank map when pitch changes to 0
+            this.getRenderer().setToRedraw();
+        }
     },
 
     _startAnim(props, zoomOrigin) {
