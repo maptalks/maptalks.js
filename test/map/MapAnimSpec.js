@@ -97,12 +97,12 @@ describe('Map.Anim', function () {
         });
     });
 
-    it('interupt animateTo by setCenter', function (done) {
+    it('interrupt animateTo by setCenter', function (done) {
         var center = map.getCenter().add(0.1, 0.1);
         var zoom = map.getZoom() - 4;
         var pitch = map.getPitch() + 10;
         var bearing = map.getBearing() + 60;
-        map.on('animateinterupted', function () {
+        map.on('animateinterrupted', function () {
             expect(map.getCenter().toArray()).not.to.be.closeTo(center.toArray());
             expect(map.getZoom()).not.to.be.eql(zoom);
             expect(map.getPitch()).not.to.be.eql(pitch);
