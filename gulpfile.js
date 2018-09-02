@@ -68,10 +68,11 @@ gulp.task('minify', () => {
     const code = fs.readFileSync(dest).toString('utf-8');
     const u = uglify(code, {
         'output': {
-            'ascii_only': true
+            'ascii_only': true,
+            'comments' : /^!/
         }
     });
-    const minified = this.banner + '\n' + u.code;
+    const minified = u.code;
     fs.writeFileSync('dist/' + name + '.min.js', minified);
     const gzipped = zlib.gzipSync(minified);
     fs.writeFileSync('dist/' + name + '.min.js.gz', gzipped);
