@@ -30,7 +30,8 @@ class MultiGeometry extends GeometryCollection {
         const coordinates = [];
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
-            coordinates.push(geometries[i].getCoordinates());
+            const child = geometries[i];
+            coordinates.push(child.getShell ? child.getShell() : child.getCoordinates());
         }
         return coordinates;
     }
