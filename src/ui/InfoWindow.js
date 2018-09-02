@@ -1,7 +1,7 @@
 import { isString } from '../core/util';
 import { createEl } from '../core/util/dom';
 import Point from '../geo/Point';
-import { Geometry, Marker } from '../geometry';
+import { Geometry, Marker, MultiPoint } from '../geometry';
 import UIComponent from './UIComponent';
 
 
@@ -177,10 +177,20 @@ class InfoWindow extends UIComponent {
             o._sub(4, 12);
         }
         const owner = this.getOwner();
-        if (owner instanceof Marker) {
-            const painter = owner._getPainter();
+        if (owner instanceof Marker || owner instanceof MultiPoint) {
+            let painter, markerSize;
+            if (owner instanceof Marker) {
+                painter = owner._getPainter();
+                markerSize = owner.getSize();
+            } else {
+                const children = owner.getGeometries();
+                if (!children || !children.length) {
+                    return o;
+                }
+                painter = children[0]._getPainter();
+                markerSize = children[0].getSize();
+            }
             if (painter) {
-                const markerSize = owner.getSize();
                 const fixExtent = painter.getFixedExtent();
                 o._add(fixExtent.xmax - markerSize.width / 2, fixExtent.ymin);
             }
@@ -222,6 +232,8 @@ class InfoWindow extends UIComponent {
         setTimeout(() => {
             if (owner instanceof Marker) {
                 this.show(owner.getCoordinates());
+            } else if (owner instanceof MultiPoint) {
+                this.show(owner.findClosest(e.coordinate));
             } else {
                 this.show(e.coordinate);
             }

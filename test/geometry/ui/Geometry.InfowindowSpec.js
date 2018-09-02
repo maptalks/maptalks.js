@@ -87,6 +87,25 @@ describe('Geometry.InfoWindow', function () {
         }, 2);
     });
 
+    it('autoOpen multipoint infowindow on click, #739', function (done) {
+        var marker = new maptalks.MultiPoint([center]);
+        marker.addTo(layer);
+        var options = {
+            title: 'title',
+            content: 'content',
+            autoOpenOn : 'click',
+            animation : false
+        };
+        marker.setInfoWindow(options);
+        marker._fireEvent('click');
+        setTimeout(function () {
+            var w = marker.getInfoWindow();
+            var position = w._getViewPoint();
+            expect(position.round().toArray()).to.be.eql([400, 300]);
+            done();
+        }, 2);
+    });
+
     it('close when layer is removed', function () {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);
