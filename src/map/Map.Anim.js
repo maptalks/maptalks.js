@@ -109,6 +109,14 @@ Map.include(/** @lends Map.prototype */{
                     this.setBearing(frame.styles['bearing']);
                 }
                 preView = this.getView();
+                /**
+                 * fired when map is animating.  (panning, zooming, rotating)
+                 *
+                 * @event Map#animating
+                 * @type {Object}
+                 * @property {String} type - animating
+                 * @property {Map} target - the map fires the event
+                 */
                 this._fireEvent('animating');
             } else if (player.playState === 'finished') {
                 if (!player._interupted) {
@@ -149,7 +157,23 @@ Map.include(/** @lends Map.prototype */{
 
     _endAnim(player, props, zoomOrigin, options) {
         delete this._animRotating;
-        const evtType = player._interupted ? 'animateinterupted' : 'animateend';
+        /**
+         * fired when map's animation is interrupted by mouse event or else.
+         *
+         * @event Map#animateinterrupted
+         * @type {Object}
+         * @property {String} type - animateinterrupted
+         * @property {Map} target - the map fires the event
+         */
+        /**
+         * fired when map's animation ended (panning, zooming, rotating).
+         *
+         * @event Map#animateend
+         * @type {Object}
+         * @property {String} type - animateend
+         * @property {Map} target - the map fires the event
+         */
+        const evtType = player._interupted ? 'animateinterrupted' : 'animateend';
         if (player === this._animPlayer) {
             delete this._animPlayer;
         }
@@ -189,6 +213,14 @@ Map.include(/** @lends Map.prototype */{
         if (props['pitch'] || props['bearing']) {
             this._animRotating = true;
         }
+        /**
+         * fired when map starts to animate (panning, zooming, rotating).
+         *
+         * @event Map#animatestart
+         * @type {Object}
+         * @property {String} type - animatestart
+         * @property {Map} target - the map fires the event
+         */
         this._fireEvent('animatestart');
         this._animPlayer.play();
     },
