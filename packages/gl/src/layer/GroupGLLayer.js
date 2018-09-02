@@ -168,10 +168,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.prepareRender();
         this.prepareCanvas();
         this.forEachRenderer(renderer => {
-            const gl = this.gl;
-            // console.log('restored', gl.states);
             renderer.render.apply(renderer, args);
-            // console.log('saved', gl.states);
         });
         this['_toRedraw'] = false;
     }
@@ -284,8 +281,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const gl = this.glCtx;
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 
         // only clear main framebuffer
         gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
