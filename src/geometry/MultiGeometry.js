@@ -31,7 +31,7 @@ class MultiGeometry extends GeometryCollection {
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
             const child = geometries[i];
-            coordinates.push(child.getShell ? child.getShell() : child.getCoordinates());
+            coordinates.push(child.getShell && child.getJSONType() !== 'Polygon' ? [child.getShell()] : child.getCoordinates());
         }
         return coordinates;
     }
