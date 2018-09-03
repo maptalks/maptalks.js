@@ -20,6 +20,7 @@ const options = {
     'eventsPropagation' : true,
     'draggable': false,
     'single': false,
+    'pitch': false,
     'content': null
 };
 
@@ -290,6 +291,22 @@ class UIMarker extends Handlerable(UIComponent) {
         this.show();
     }
 
+    getEvents() {
+        return {
+            'pitch' : this.options['pitch'] ? this._syncPitchRotate : null,
+            'dragrotating': this.options['pitch'] ? this._syncPitchRotate : null
+        };
+    }
+
+    _syncPitchRotate() {
+        if (Browser.ie9) return;
+        const dom = this.getDOM();
+        const markerRotate = -this.getMap().getBearing();
+        if (dom && dom.children && dom.children[0]) {
+            dom.children[0].style.transform = `rotateX(${this.getMap().getPitch()}deg) rotateZ(${markerRotate}deg)`;
+        }
+    }
+
     /**
      * Show the UIMarker
      * @returns {UIMarker} this
@@ -320,12 +337,11 @@ class UIMarker extends Handlerable(UIComponent) {
      * @return {HTMLElement} UIMarker's HTMLElement
      */
     buildOn() {
-        let dom;
+        const dom = createEl('div');
         if (isString(this.options['content'])) {
-            dom = createEl('div');
             dom.innerHTML = this.options['content'];
         } else {
-            dom = this.options['content'];
+            dom.appendChild(this.options['content']);
         }
         this._registerDOMEvents(dom);
         return dom;
