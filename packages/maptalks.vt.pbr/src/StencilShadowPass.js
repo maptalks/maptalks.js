@@ -11,10 +11,10 @@ export default class StencilShadowPass {
         this.debugShader = new reshader.MeshShader({
             vert : `
                 attribute vec4 aPosition;
-                uniform mat4 projectionViewModel;
+                uniform mat4 projViewModelMatrix;
 
                 void main() {
-                    gl_Position = projectionViewModel * aPosition;
+                    gl_Position = projViewModelMatrix * aPosition;
                 }
             `,
             frag : `
@@ -24,13 +24,13 @@ export default class StencilShadowPass {
             `,
             uniforms : [
                 {
-                    name : 'projectionViewModel',
+                    name : 'projViewModelMatrix',
                     type : 'function',
                     fn : function (context, props) {
-                        const projectionViewModel = [];
-                        mat4.multiply(projectionViewModel, props['view'], props['model']);
-                        mat4.multiply(projectionViewModel, props['projection'], projectionViewModel);
-                        return projectionViewModel;
+                        const projViewModelMatrix = [];
+                        mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                        mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                        return projViewModelMatrix;
                     }
                 }
             ]

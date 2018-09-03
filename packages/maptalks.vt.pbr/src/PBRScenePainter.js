@@ -299,17 +299,17 @@ class PBRScenePainter {
         const pickingConfig = extend({}, config);
         pickingConfig.vert = `
             attribute vec3 aPosition;
-            uniform mat4 projectionViewModel;
+            uniform mat4 projViewModelMatrix;
             #include <fbo_picking_vert>
             void main() {
                 vec4 pos = vec4(aPosition, 1.0);
-                gl_Position = projectionViewModel * pos;
+                gl_Position = projViewModelMatrix * pos;
                 fbo_picking_setData(gl_Position.w);
             }
         `;
         let u;
         for (let i = 0; i < config.uniforms.length; i++) {
-            if (config.uniforms[i] === 'projectionViewModel' || config.uniforms[i].name === 'projectionViewModel') {
+            if (config.uniforms[i] === 'projViewModelMatrix' || config.uniforms[i].name === 'projViewModelMatrix') {
                 u = config.uniforms[i];
                 break;
             }
@@ -388,26 +388,26 @@ class PBRScenePainter {
 
     _getUniforms() {
         const uniforms = [
-            'model',
+            'modelMatrix',
             'camPos',
             'ambientIntensity',
             'ambientColor',
             {
-                name : 'projectionViewModel',
+                name : 'projViewModelMatrix',
                 type : 'function',
                 fn : function (context, props) {
-                    const projectionViewModel = [];
-                    mat4.multiply(projectionViewModel, props['view'], props['model']);
-                    mat4.multiply(projectionViewModel, props['projection'], projectionViewModel);
-                    return projectionViewModel;
+                    const projViewModelMatrix = [];
+                    mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                    mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                    return projViewModelMatrix;
                 }
             },
             {
-                name : 'viewModel',
+                name : 'viewModelMatrix',
                 type : 'function',
                 fn : function (context, props) {
                     const viewModel = [];
-                    mat4.multiply(viewModel, props['view'], props['model']);
+                    mat4.multiply(viewModel, props['viewMatrix'], props['modelMatrix']);
                     return viewModel;
                 }
             }
@@ -436,12 +436,12 @@ class PBRScenePainter {
     }
 
     _getUniformValues(map) {
-        const view = map.viewMatrix,
-            projection = map.projMatrix,
+        const viewMatrix = map.viewMatrix,
+            projMatrix = map.projMatrix,
             camPos = map.cameraPosition;
         const lightUniforms = this._getLightUniforms();
         return extend({
-            view, projection, camPos
+            viewMatrix, projMatrix, camPos
         }, lightUniforms);
     }
 

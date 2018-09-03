@@ -23,11 +23,11 @@ class VSMShadowPass {
     getUniforms(numOfDirLights) {
         const uniforms = [];
         uniforms.push({
-            name : `vsm_shadow_lightProjViewModel[${numOfDirLights}]`,
+            name : `vsm_shadow_lightProjViewModelMatrix[${numOfDirLights}]`,
             type : 'function',
             fn : function (context, props) {
-                const lightProjViews = props['vsm_shadow_lightProjView'];
-                const model = props['model'];
+                const lightProjViews = props['vsm_shadow_lightProjViewMatrix'];
+                const model = props['modelMatrix'];
                 return lightProjViews.map(mat => mat4.multiply([], mat, model));
             }
         });
@@ -46,25 +46,25 @@ class VSMShadowPass {
     }) {
         const shadowConfig = this.sceneConfig.shadow;
         const map = layer.getMap();
-        const cameraProjView = mat4.multiply([], uniforms.projection, uniforms.view);
+        const cameraProjViewMatrix = mat4.multiply([], uniforms.projMatrix, uniforms.viewMatrix);
         const lightDir = vec3.normalize([], uniforms['dirLightDirections'][0]);
         const extent = map['_get2DExtent'](map.getGLZoom());
         const arr = extent.toArray();
-        const { lightProjView, shadowMap, /* depthFBO, */ blurFBO } = this.shadowPass.render(
+        const { lightProjViewMatrix, shadowMap, /* depthFBO, */ blurFBO } = this.shadowPass.render(
             scene,
-            { cameraProjView, lightDir, farPlane : arr.map(c => [c.x, c.y, 0, 1]) }
+            { cameraProjViewMatrix, lightDir, farPlane : arr.map(c => [c.x, c.y, 0, 1]) }
         );
 
-        uniforms['vsm_shadow_lightProjView'] = [lightProjView];
+        uniforms['vsm_shadow_lightProjViewMatrix'] = [lightProjViewMatrix];
         uniforms['vsm_shadow_shadowMap'] = [shadowMap];
 
         const ground = groundScene.meshes[0];
         //display ground shadows
         this.renderer.render(this.shadowShader, {
-            'model' : ground.localTransform,
-            'projection' : uniforms.projection,
-            'view' : uniforms.view,
-            'vsm_shadow_lightProjViewModel' : [mat4.multiply([], lightProjView, ground.localTransform)],
+            'modelMatrix' : ground.localTransform,
+            'projMatrix' : uniforms.projMatrix,
+            'viewMatrix' : uniforms.viewMatrix,
+            'vsm_shadow_lightProjViewModelMatrix' : [mat4.multiply([], lightProjViewMatrix, ground.localTransform)],
             'vsm_shadow_shadowMap' : [shadowMap],
             'color' : shadowConfig.color || [0, 0, 0],
             'opacity' : isNil(shadowConfig.opacity) ? 1 : shadowConfig.opacity
