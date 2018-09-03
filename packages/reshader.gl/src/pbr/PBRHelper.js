@@ -71,8 +71,8 @@ function createEquirectangularMapCube(regl, texture, size) {
             'aPosition' : cubeData.vertices
         },
         uniforms : {
-            'projection' : regl.context('projection'),
-            'view' :  regl.context('view'),
+            'projMatrix' : regl.context('projMatrix'),
+            'viewMatrix' :  regl.context('viewMatrix'),
             'equirectangularMap' : texture
         },
         elements : cubeData.indices
@@ -105,8 +105,8 @@ function createIrradianceCube(regl, envCube, SIZE) {
             'aPosition' : cubeData.vertices
         },
         uniforms : {
-            'projection' : regl.context('projection'),
-            'view' :  regl.context('view'),
+            'projMatrix' : regl.context('projMatrix'),
+            'viewMatrix' :  regl.context('viewMatrix'),
             'environmentMap' : envCube
         },
         elements : cubeData.indices
@@ -144,8 +144,8 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
             'aPosition' : cubeData.vertices
         },
         uniforms : {
-            'projection' : regl.context('projection'),
-            'view' :  regl.context('view'),
+            'projMatrix' : regl.context('projMatrix'),
+            'viewMatrix' :  regl.context('viewMatrix'),
             'environmentMap' : fromCubeMap,
             'distributionMap' : distributionMap,
             'roughness' : regl.prop('roughness')

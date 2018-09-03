@@ -10,12 +10,12 @@ let config;
  *
  * @param {REGL} regl - regl instance
  * @param {REGLCubeMap} cubeMap - a regl cubemap
- * @param {Number[]} view - camera view matrix, a column-major float array of 4x4 matrix
- * @param {Number[]} projection  - camera projection matrix, column-major float array of 4x4 matrix
+ * @param {Number[]} viewMatrix - camera view matrix, a column-major float array of 4x4 matrix
+ * @param {Number[]} projMatrix  - camera projection matrix, column-major float array of 4x4 matrix
  * @param {Boolean} [useHDR=false] - whether export color using HDR
  * @param {REGLFramebuffer} [frameBuffer=false] - the framebuffer to render to
  */
-export function drawSkybox(regl, cubeMap, view, projection, useHDR, frameBuffer) {
+export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameBuffer) {
     let drawCommand;
     config = config || {
         vert : skyboxVS,
@@ -24,8 +24,8 @@ export function drawSkybox(regl, cubeMap, view, projection, useHDR, frameBuffer)
         },
         uniforms : {
             'cubeMap' : regl.prop('cubeMap'),
-            'view' : regl.prop('view'),
-            'projection' : regl.prop('projection')
+            'viewMatrix' : regl.prop('viewMatrix'),
+            'projMatrix' : regl.prop('projMatrix')
         },
         count : skyboxData.vertices.length / 3,
         framebuffer : regl.prop('frameBuffer'),
@@ -44,8 +44,8 @@ export function drawSkybox(regl, cubeMap, view, projection, useHDR, frameBuffer)
 
     drawCommand({
         cubeMap,
-        view,
-        projection,
+        viewMatrix,
+        projMatrix,
         frameBuffer
     });
 }

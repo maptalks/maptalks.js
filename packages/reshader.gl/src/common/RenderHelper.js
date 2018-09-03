@@ -18,15 +18,15 @@ const renderToCube = function () {
         const aspect = 1;
         const near = 0.5;
         const far = 1.1;
-        const projection = mat4.perspective(pmat, fov, aspect, near, far);
+        const projMatrix = mat4.perspective(pmat, fov, aspect, near, far);
 
         const config = {
             context : {
                 //每次应用不同的 view matrix
-                view: function (context, props, batchId) {
+                viewMatrix: function (context, props, batchId) {
                     return captureViews[batchId];
                 },
-                projection : projection
+                projMatrix
             }
         };
         if (fbo) {

@@ -11,10 +11,10 @@ class WireframeShader extends MeshShader {
             uniforms : [
                 'color', 'lineWidth', 'alpha',
                 {
-                    name : 'projectionViewModel',
+                    name : 'projViewModelMatrix',
                     type : 'function',
                     fn : (context, props) => {
-                        return mat4.multiply([], props['projectionView'], props['model']);
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
             ]

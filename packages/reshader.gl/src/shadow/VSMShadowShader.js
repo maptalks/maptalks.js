@@ -11,10 +11,10 @@ class VSMShadowShader extends MeshShader {
             frag : vsmFrag,
             uniforms : [
                 {
-                    name : 'lightProjViewModel',
+                    name : 'lightProjViewModelMatrix',
                     type : 'function',
                     fn : function (context, props) {
-                        return mat4.multiply([], props['lightProjView'], props['model']);
+                        return mat4.multiply([], props['lightProjViewMatrix'], props['modelMatrix']);
                     }
                 }
             ]

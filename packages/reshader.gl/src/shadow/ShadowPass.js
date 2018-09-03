@@ -14,10 +14,10 @@ class ShadowPass {
         this._init();
     }
 
-    render(scene, { cameraProjView, lightDir, farPlane }) {
-        const lightProjView = this._renderShadow(scene, cameraProjView, lightDir, farPlane);
+    render(scene, { cameraProjViewMatrix, lightDir, farPlane }) {
+        const lightProjViewMatrix = this._renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane);
         return {
-            lightProjView,
+            lightProjViewMatrix,
             shadowMap : this.blurTex || this.depthTex,
             depthFBO : this.depthFBO,
             blurFBO : this.blurFBO
@@ -36,12 +36,12 @@ class ShadowPass {
         return this;
     }
 
-    _renderShadow(scene, cameraProjView, lightDir, farPlane) {
+    _renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane) {
         const renderer = this.renderer;
         if (!this.vsmShader) {
             this.vsmShader = new VSMShadowShader();
         }
-        const frustum = getFrustumWorldSpace(cameraProjView);
+        const frustum = getFrustumWorldSpace(cameraProjViewMatrix);
         if (farPlane) {
             for (let i = 4; i < 8; i++) {
                 frustum[i] = farPlane[i - 4];
@@ -49,13 +49,13 @@ class ShadowPass {
         }
         //TODO 计算Frustum和scene的相交部分，作为光源的frustum
         //TODO 遍历scene中的图形，如果aabb不和frustum相交，就不绘制
-        const lightProjView = getDirLightCameraProjView(frustum, lightDir);
+        const lightProjViewMatrix = getDirLightCameraProjView(frustum, lightDir);
         renderer.clear({
             color : [0, 0, 0, 1],
             depth : 1,
             framebuffer : this.depthFBO
         });
-        renderer.render(this.vsmShader, { lightProjView }, scene, this.depthFBO);
+        renderer.render(this.vsmShader, { lightProjViewMatrix }, scene, this.depthFBO);
         if (this.blurFBO) {
             if (!this.boxBlurShader) {
                 this.boxBlurShader = new BoxBlurShader({
@@ -77,7 +77,7 @@ class ShadowPass {
                 this.blurFBO
             );
         }
-        return lightProjView;
+        return lightProjViewMatrix;
     }
 
     _init() {

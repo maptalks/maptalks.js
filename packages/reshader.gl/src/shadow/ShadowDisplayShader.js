@@ -11,16 +11,16 @@ class ShadowDisplayShader extends MeshShader {
             frag : shadowDisplayFrag,
             uniforms : [
                 {
-                    name : 'projectionViewModel',
+                    name : 'projViewModelMatrix',
                     type : 'function',
                     fn : function (context, props) {
-                        const projectionViewModel = [];
-                        mat4.multiply(projectionViewModel, props['view'], props['model']);
-                        mat4.multiply(projectionViewModel, props['projection'], projectionViewModel);
-                        return projectionViewModel;
+                        const projViewModelMatrix = [];
+                        mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                        mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                        return projViewModelMatrix;
                     }
                 },
-                `vsm_shadow_lightProjViewModel[${numOfDirLights}]`,
+                `vsm_shadow_lightProjViewModelMatrix[${numOfDirLights}]`,
                 `vsm_shadow_shadowMap[${numOfDirLights}]`,
                 'color', 'opacity'
             ],

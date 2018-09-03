@@ -64,7 +64,7 @@ class Mesh {
 
     getUniforms(regl) {
         const uniforms = {
-            'model' : this.localTransform
+            'modelMatrix' : this.localTransform
         };
         for (const p in this.uniforms) {
             uniforms[p] = this.uniforms[p];

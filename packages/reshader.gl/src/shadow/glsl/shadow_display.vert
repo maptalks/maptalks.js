@@ -1,6 +1,6 @@
 attribute vec3 aPosition;
 
-uniform mat4 projectionViewModel;
+uniform mat4 projViewModelMatrix;
 
 varying vec4 vPosition;
 
@@ -9,7 +9,7 @@ varying vec4 vPosition;
 void main() {
     vec4 pos = vec4(aPosition, 1.);
 
-    gl_Position = projectionViewModel * pos;
+    gl_Position = projViewModelMatrix * pos;
     vPosition = gl_Position;
 
     shadow_computeShadowPars(pos);
