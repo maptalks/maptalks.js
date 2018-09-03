@@ -31,7 +31,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
         plugins[idx].config = this.layer.getStyle()[idx];
         plugins[idx].updateSceneConfig({
-            sceneCache : this.sceneCache[idx],
             sceneConfig : sceneConfig
         });
         this.setToRedraw();
@@ -286,7 +285,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!tileCache[idx]) {
                 tileCache[idx] = {};
             }
-            const param = {
+            const context = {
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
@@ -297,7 +296,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 t : this._frameTime - tileData.loadTime,
                 tileInfo, tileTransform, stencilRef
             };
-            const status = plugin.paintTile(param);
+            const status = plugin.paintTile(context);
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
@@ -308,12 +307,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     pick(x, y) {
         const hits = [];
-        this.plugins.forEach((plugin, idx) => {
-            if (this.sceneCache[idx]) {
-                const picked = plugin.pick(this.sceneCache[idx], x, y);
-                picked.type = plugin.getType();
-                if (picked) hits.push(picked);
-            }
+        this.plugins.forEach(plugin => {
+            const picked = plugin.pick(x, y);
+            picked.type = plugin.getType();
+            if (picked) hits.push(picked);
         });
         return hits;
     }
@@ -356,7 +353,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!cache[idx]) {
                 cache[idx] = {};
             }
-            plugin.resize(cache[idx], size);
+            plugin.resize(size);
         });
     }
 

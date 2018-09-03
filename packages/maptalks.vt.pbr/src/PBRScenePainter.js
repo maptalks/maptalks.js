@@ -203,6 +203,8 @@ class PBRScenePainter {
         }
     }
 
+    resize() {}
+
     _transformGround() {
         const layer = this.layer;
         const map = layer.getMap();

@@ -12,5 +12,8 @@
         "vectortile"
     ],
     "author": "fuzhenn",
-    "license": "UNLICENSED"
+    "license": "UNLICENSED",
+    "dependencies": {
+      "color": "^3.0.0"
+    }
 }
