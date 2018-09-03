@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
-    <title>Class: Transformation</title>
+    <title>Class: module.exports</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <body>
 
-<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: Transformation</h1></div>
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: module.exports</h1></div>
 <div id="main" style="margin-top:77px;">
     
 
@@ -28,29 +28,9 @@
 
 <nav class="classnav scroll-styled">
 
-    <h5><a href="#main" style="color:#000">class : Transformation</a></h5>
+    <h5><a href="#main" style="color:#000">class : worker.module.exports</a></h5>
     
 
-    
-
-        
-            
-            
-        
-        <h5>Methods</h5>
-        <ul>
-        
-            
-                <li><a href="#transform">
-            
-                transform</a></li>
-        
-            
-                <li><a href="#untransform">
-            
-                untransform</a></li>
-        
-        </ul>
     
 
     
@@ -63,9 +43,9 @@
 
 <header>
     
-        <h2>Transformation</h2>
+        <h2>module.exports</h2>
         
-            <div class="class-description">Transformation between projected coordinates and base 2d point system.A core class used internally for mapping map's (usually geographical) coordinates to 2d points.<br></div>
+            <div class="class-description">An actor to exchange data from main-thread to workerscontains code from [mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js)</div>
         
     
 </header>
@@ -77,16 +57,16 @@
 
     <!-- <h2>Constructor</h2> -->
     
-    <h4 class="name" id="Transformation"><span class="type-signature">(protected) </span>new <a href="#Transformation">Transformation</a><span class="signature">(matrix)</span>
+    <h4 class="name" id="module.exports"><span class="type-signature"></span>new <a href="#module.exports">worker.module.exports</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/transformation/Transformation.js#L11" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L41" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/transformation/Transformation.js#L11" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L41" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#Transformation" class="improvelink">[link]</a> -->
+    <!-- <a href="#module.exports" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -95,9 +75,41 @@
 
 
 
-<div class="description">
-    The base 2d point system is a fixed system that is consistent with HTML coordinate system: on X-Axis, left is smaller and right is larger; on Y-Axis, top is smaller and bottom is larger. <br>As map's coordinates may not be in the same order(e.g. on a mercator projected earth, top is larger and bottom is smaller), <br>transformation provides mapping functions to map arbitrary coordinates system to the fixed 2d point system. <br>How to transform is decided by the constructor parameters which is a 4 number array [a, b, c, d]:<br>a : the order scale of X-axis values 1 means right is larger and -1 means the reverse, left is larger;<br>b : the order scale of Y-axis values 1 means bottom is larger and -1 means the reverse, top is larger;<br>c : x of the origin point of the projected coordinate system <br>d : y of the origin point of the projected coordinate system <br>e.g.: Transformation parameters for Google map: [1, -1, -20037508.34, 20037508.34] <br>
-</div>
+
+    <!--<h5>Example:</h5>-->
+    
+    
+        <pre class="prettyprint"><code>const workerKey = 'test_worker_key';
+    maptalks.registerWorkerAdapter(workerKey, function (exports, global) {
+      //will be called only for once when loaded in worker thread
+      exports.initialize = function () {
+        console.log('[worker] initialized');
+      };
+      //to receive message from main thread sent by maptalks.worker.Actor
+      exports.onmessage = function (message, postResponse) {
+        const data = message.data;
+        console.log(`[worker] received data : ` + data);
+        //send message back to main thread
+        //the parameters:
+        //error, data, buffers (arraybuffers in data)
+        postResponse(null, 'message from worker thread', null);
+      };
+    });
+
+    const MyActor = class extends maptalks.worker.Actor {
+      test(info, cb) {
+        //send data to worker thread
+        this.send(info, null, cb);
+      }
+    }
+
+    //must be same with workerKey for maptalks.registerWorkerAdapter
+    const actor = new MyActor(workerKey);
+    actor.test('hi', (err, data) => {
+      //received data from worker thread
+      console.log(data);
+    });</code></pre>
+    
 
 
 
@@ -105,51 +117,6 @@
 <!--  -->
 
 
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>matrix</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;Number></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">transformation array</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -201,317 +168,6 @@
     
 
     
-        
-
-        
-                    <h3 class="subsection-title">Methods</h3>
-                
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="transform"><span class="type-signature"></span><a href="#transform">transform</a><span class="signature">(coordinates, scale)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/transformation/Transformation.js#L35" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/transformation/Transformation.js#L35" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#transform" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Transform a projected coordinate to a 2d point. <br>Parameter scale in transform/untransform method is used to scale the result 2d points on map's different zoom levels.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>coordinates</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;Number></span>
-|
-
-<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">projected coordinate to transform</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>scale</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">transform scale</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Point.html">Point</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    2d point.
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="untransform"><span class="type-signature"></span><a href="#untransform">untransform</a><span class="signature">(point, scale)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/transformation/Transformation.js#L48" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/geo/transformation/Transformation.js#L48" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#untransform" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Transform a 2d point to a projected coordinate.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>point</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Point.html">Point</a></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">2d point</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>scale</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">transform scale</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Coordinate.html">Coordinate</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    projected coordinate.
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-    
 
     
 
@@ -532,7 +188,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 03 2018 10:13:37 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 03 2018 10:13:36 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>
