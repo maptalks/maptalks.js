@@ -55,10 +55,45 @@ class Scale extends Control {
     }
 
     _addScales() {
-        //
-        const css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
-            'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
-            ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
+      var css = "";
+      var ScaleCss = {
+        "border": "2px solid #000000",
+        "border-top": "none",
+        "line-height": "1.1",
+        "padding": "2px 5px 1px",
+        "color": "#000000",
+        "font-size": "11px",
+        "text-align": "center",
+        "white-space": "nowrap",
+        "overflow": "hidden",
+        "-moz-box-sizing": "content-box",
+        "box-sizing": "content-box",
+        "background": "rgba(255, 255, 255, 0)"
+      }
+      if (!this.options['ScaleCss']) {
+        for (var i in ScaleCss) {
+          css += i + ":" + ScaleCss[i] + ";"
+        }
+      } else {
+        var _opScaleCss = this.options['ScaleCss'];
+        var _ScaleCss = {
+          "border": _opScaleCss["border"] || ScaleCss["border"],
+          "border-top": _opScaleCss["border-top"] || ScaleCss["border-top"],
+          "line-height": _opScaleCss["line-height"] || ScaleCss["line-height"],
+          "padding": _opScaleCss["padding"] || ScaleCss["padding"],
+          "color": _opScaleCss["color"] || ScaleCss["color"],
+          "font-size": _opScaleCss["font-size"] || ScaleCss["font-size"],
+          "text-align": _opScaleCss["text-align"] || ScaleCss["text-align"],
+          "white-space": _opScaleCss["white-space"] || ScaleCss["white-space"],
+          "overflow": _opScaleCss["overflow"] || ScaleCss["overflow"],
+          "-moz-box-sizing": _opScaleCss["-moz-box-sizing"] || ScaleCss["-moz-box-sizing"],
+          "box-sizing": _opScaleCss["box-sizing"] || ScaleCss["box-sizing"],
+          "background": _opScaleCss["background"] || ScaleCss["background"]
+        }
+        for (var i in _ScaleCss) {
+          css += i + ":" + _ScaleCss[i] + ";"
+        }
+      }
         if (this.options['metric']) {
             this._mScale = createElOn('div', css, this._scaleContainer);
         }
