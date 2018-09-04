@@ -20,7 +20,8 @@ const options = {
     'eventsPropagation' : true,
     'draggable': false,
     'single': false,
-    'pitch': false,
+    'pitchWithMap': false,
+    'rotateWithMap': false,
     'content': null
 };
 
@@ -293,17 +294,25 @@ class UIMarker extends Handlerable(UIComponent) {
 
     getEvents() {
         return {
-            'pitch' : this.options['pitch'] ? this._syncPitchRotate : null,
-            'dragrotating': this.options['pitch'] ? this._syncPitchRotate : null
+            'pitch' : this.options['pitchWithMap'] ? this._pitchWithMap : null,
+            'rotate': this.options['rotateWithMap'] ? this._rotateWithMap : null
         };
     }
 
-    _syncPitchRotate() {
+    _pitchWithMap() {
+        if (Browser.ie9) return;
+        const dom = this.getDOM();
+        if (dom && dom.children && dom.children[0]) {
+            dom.children[0].style.transform = dom.children[0].style.transform.replace(/rotateX(.+)\s/g, `rotateX(${this.getMap().getPitch()}deg) `);
+        }
+    }
+
+    _rotateWithMap() {
         if (Browser.ie9) return;
         const dom = this.getDOM();
         const markerRotate = -this.getMap().getBearing();
         if (dom && dom.children && dom.children[0]) {
-            dom.children[0].style.transform = `rotateX(${this.getMap().getPitch()}deg) rotateZ(${markerRotate}deg)`;
+            dom.children[0].style.transform = dom.children[0].style.transform.replace(/rotateZ(.+)/g, `rotateZ(${markerRotate}deg)`);
         }
     }
 
@@ -342,6 +351,9 @@ class UIMarker extends Handlerable(UIComponent) {
             dom.innerHTML = this.options['content'];
         } else {
             dom.appendChild(this.options['content']);
+        }
+        if (dom.children && dom.children[0]) {
+            dom.children[0].style.transform = 'rotateX(0deg) rotateZ(0deg)';
         }
         this._registerDOMEvents(dom);
         return dom;
