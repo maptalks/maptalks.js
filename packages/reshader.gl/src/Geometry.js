@@ -122,6 +122,7 @@ export default class Geometry {
                 if (z > max[2]) { max[2] = z; }
             }
         }
+        bbox.dirty();
     }
 
     _forEachBuffer(fn) {

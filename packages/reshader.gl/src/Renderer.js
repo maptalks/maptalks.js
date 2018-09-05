@@ -15,7 +15,7 @@ class Renderer {
         shader.setUniforms(extend({}, uniforms || {}));
         shader.setFramebuffer(framebuffer);
         if (scene) {
-            const { opaques, transparents } = scene.getMeshes();
+            const { opaques, transparents } = scene.getSortedMeshes();
             shader.draw(this.regl, opaques);
             shader.draw(this.regl, transparents);
         } else {
