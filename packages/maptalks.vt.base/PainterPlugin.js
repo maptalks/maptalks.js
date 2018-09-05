@@ -18,10 +18,9 @@ function createPainterPlugin(type, Painter) {
         },
 
         endFrame(context) {
-            const { layer } = context;
             const painter = this.painter;
             if (painter) {
-                return painter.paint(layer);
+                return painter.paint(context);
             }
             return null;
         },

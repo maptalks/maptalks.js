@@ -198,9 +198,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.completeRender();
             return;
         }
-        this.startFrame();
-        super.drawOnInteracting();
-        this.endFrame();
+        this.draw();
     }
 
     loadTile(tileInfo) {
@@ -255,13 +253,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     endFrame() {
+        const cameraPosition = this.getMap().cameraPosition;
         this.plugins.forEach((plugin, idx) => {
             const status = plugin.endFrame({
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
                 sceneCache : this.sceneCache[idx],
-                sceneConfig : plugin.config.sceneConfig
+                sceneConfig : plugin.config.sceneConfig,
+                cameraPosition
             });
             if (status && status.redraw) {
                 //let plugin to determine when to redraw

@@ -145,7 +145,7 @@ export function buildExtrudeFaces(
     }
     const maxIndex = indices.reduce((a, b) => {
         return Math.max(a, b);
-    });
+    }, 0);
 
     const ctor = getIndexArrayType(maxIndex);
     const tIndices = new ctor(indices);
