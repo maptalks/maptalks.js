@@ -100,11 +100,13 @@ class Player {
      * @param {Function} animation - animation [framing]{@link framing} function
      * @param {Object} options     - animation options
      * @param {Function} onFrame  - callback function for animation steps
+     * @param {Function} onComplete  - callback function for animation complete
      */
-    constructor(animation, options, onFrame) {
+    constructor(animation, options, onFrame,onComplete) {
         this._animation = animation;
         this.options = options;
         this._onFrame = onFrame;
+        this._onComplete = onComplete;
         this.playState = 'idle';
         this.ready = true;
         this.finished = false;
@@ -368,14 +370,15 @@ const Animation = {
      * @param  {Object} styles  - styles to animate
      * @param  {Object} options - animation options
      * @param  {Function} step  - callback function for animation steps
+     * @param  {Function} complete  - callback function for animation complete
      * @return {Player} player
      */
-    animate(styles, options, step) {
+    animate(styles, options, step,complete) {
         if (!options) {
             options = {};
         }
         const animation = Animation.framing(styles, options);
-        return new Player(animation, options, step);
+        return new Player(animation, options, step,complete);
     }
 };
 
@@ -471,6 +474,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
 
     _run() {
         const onFrame = this._onFrame;
+        const onComplete = this._onComplete;
         const t = now();
         let elapsed = t - this._playStartTime;
         if (this.options['repeat'] && elapsed >= this.duration) {
@@ -478,7 +482,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             elapsed = 0;
         }
         if (this.playState !== 'running') {
-            if (onFrame) {
+            if (onComplete) {
                 if (this.playState === 'finished') {
                     elapsed = this.duration;
                 } else if (this.playState === 'idle') {
@@ -486,7 +490,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
                 }
                 const frame = this._animation(elapsed, this.duration);
                 frame.state.playState = this.playState;
-                onFrame(frame);
+                onComplete(frame);
             }
             return;
         }
@@ -513,8 +517,8 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         } else if (this.playState === 'finished') {
             this.finished = true;
             //finished
-            if (onFrame) {
-                onFrame(frame);
+            if (onComplete) {
+                onComplete(frame);
             }
         }
 
