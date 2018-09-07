@@ -16,7 +16,8 @@ const defaultOptions = {
     tileSize : [512, 512],
     stencil : false,
     features : true,
-    cascadeTiles : false
+    cascadeTiles : false,
+    tileBuffer : 64
 };
 
 /**
@@ -50,7 +51,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             baseRes : map.getResolution(map.getGLZoom()),
             style : this.options.style,
             extent : this.options.extent,
-            features : this.options.features
+            features : this.options.features,
+            tileBuffer : this.options.tileBuffer
         };
     }
 

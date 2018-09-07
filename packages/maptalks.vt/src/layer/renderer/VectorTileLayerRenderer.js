@@ -294,7 +294,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache : tileCache[idx],
                 tileData : tileData[idx],
                 t : this._frameTime - tileData.loadTime,
-                tileInfo, tileTransform, stencilRef
+                tileInfo, tileTransform, stencilRef,
+                tileZoom : this._tileZoom
             };
             const status = plugin.paintTile(context);
             if (status && status.redraw) {

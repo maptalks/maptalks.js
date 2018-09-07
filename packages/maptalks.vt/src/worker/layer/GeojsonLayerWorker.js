@@ -43,12 +43,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 cb();
             });
         } else {
-            // debugger
             this.index = geojsonvt(data, options.geojsonvt || {
                 maxZoom: 24,  // max zoom to preserve detail on; can't be higher than 24
                 tolerance: 3, // simplification tolerance (higher means simpler)
                 extent: this.options.extent, // tile extent (both width and height)
-                buffer: 64,	  // tile buffer on each side
+                buffer: this.options.tileBuffer || 64,	  // tile buffer on each side
                 debug: 0,      // logging level (0 to disable, 1 or 2)
 
                 indexMaxZoom: 5,       // max zoom in the initial tile index
@@ -64,7 +63,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             cb(null, features);
             return;
         }
-        // debugger
         const tile = this.index.getTile(tileInfo.z + this.zoomOffset, tileInfo.x, tileInfo.y);
         if (!tile || tile.features.length === 0) {
             cb(null, features);

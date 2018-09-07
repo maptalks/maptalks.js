@@ -26,7 +26,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         paintTile(context) {
-            const { tileCache, tileData, tileInfo, tileTransform } = context;
+            const { tileCache, tileData, tileInfo, tileTransform, tileZoom } = context;
             const painter = this.painter;
             if (!painter) {
                 return {
@@ -44,6 +44,7 @@ function createPainterPlugin(type, Painter) {
             if (!mesh) {
                 mesh = painter.addMesh(key, tileCache.geometry, tileTransform);
             }
+            mesh.setUniform('level', Math.abs(tileInfo.z - tileZoom));
             return {
                 'redraw' : false
             };

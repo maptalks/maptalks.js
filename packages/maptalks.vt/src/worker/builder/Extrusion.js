@@ -29,6 +29,7 @@ export function buildExtrudeFaces(
     const uvs = generateUV ? [] : null;
 
     function fillData(start, offset, holes, height) {
+        // debugger
         const count = offset - start;
 
         const top = vertices.subarray(start, offset);
@@ -66,7 +67,7 @@ export function buildExtrudeFaces(
         if (generateUV) {
             buildFaceUV(uvs, vertices, triangles, [uvSize[0] / glScale, uvSize[1] / glScale]);
         }
-        // debugger
+
         const s = indices.length;
         //side face indices
         const startIdx = start / 3;
@@ -74,7 +75,7 @@ export function buildExtrudeFaces(
         let ringStartIdx = startIdx;
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
             if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
-                if (!isBoundaryEdge(vertices, i, ringStartIdx, EXTENT)) {
+                if (!isClippedEdge(vertices, i, ringStartIdx, EXTENT)) {
                     //top[l - 1], bottom[l - 1], top[0]
                     indices.push(i + vertexCount, i, ringStartIdx);
                     //bottom[0], top[0], bottom[l - 1]
@@ -85,7 +86,7 @@ export function buildExtrudeFaces(
                     ringStartIdx = i + 1;
                 }
             } else if (i < l - 1) {
-                if (isBoundaryEdge(vertices, i, i + 1, EXTENT)) {
+                if (isClippedEdge(vertices, i, i + 1, EXTENT)) {
                     continue;
                 }
                 //top[i], bottom[i], top[i + 1]
@@ -117,7 +118,7 @@ export function buildExtrudeFaces(
             const isHole = calculateSignedArea(geometry[i]) < 0;
             //fill bottom vertexes
             if (!isHole && i > 0) {
-                //an exterior ring (multi plygon)
+                //an exterior ring (multi polygon)
                 offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
                 holes = [];
                 start = offset;
@@ -176,7 +177,7 @@ function getHeightValue(properties, heightProp, defaultValue) {
     return height;
 }
 
-function isBoundaryEdge(vertices, i0, i1, EXTENT) {
+function isClippedEdge(vertices, i0, i1, EXTENT) {
     const x0 = vertices[i0 * 3], y0 = vertices[i0 * 3 + 1],
         x1 = vertices[i1 * 3], y1 = vertices[i1 * 3 + 1];
     return (x0 === x1 && (x0 < 0 || x0 > EXTENT)) ||

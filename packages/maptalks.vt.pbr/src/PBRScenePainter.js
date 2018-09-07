@@ -110,7 +110,7 @@ class PBRScenePainter {
         const map = this.layer.getMap();
         const uniforms = this._getUniformValues(map);
         if (!this._pickingRendered) {
-            this._raypicking.render(this.scene.getMeshes().opaques, uniforms);
+            this._raypicking.render(this.scene.getMeshes(), uniforms);
             this._pickingRendered = true;
         }
         const { meshId, pickingId, point } = this._raypicking.pick(x, y, uniforms, {
