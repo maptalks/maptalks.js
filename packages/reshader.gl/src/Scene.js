@@ -68,24 +68,27 @@ class Scene {
         //     }
         //     return 1;
         // });
-
-        this._cameraPosition = cameraPosition;
-        transparents.sort(this._compareBinded);
-        delete this._mat;
-        delete this._cameraPosition;
+        if (cameraPosition) {
+            this._cameraPosition = cameraPosition;
+            transparents.sort(this._compareBinded);
+            delete this._cameraPosition;
+        }
 
         this._dirty = false;
 
     }
 
     getSortedMeshes() {
+        if (this._dirty) {
+            this.sortMeshes();
+        }
         return this.sortedMeshes;
     }
 
     _compare(a, b) {
         vec3.transformMat4(p0, a.geometry.boundingBox.getCenter(), a.localTransform);
         vec3.transformMat4(p1, b.geometry.boundingBox.getCenter(), b.localTransform);
-        return vec3.dist(p0, this._cameraPosition) - vec3.dist(p1, this._cameraPosition);
+        return vec3.dist(p1, this._cameraPosition) - vec3.dist(p0, this._cameraPosition);
     }
 }
 
