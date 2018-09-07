@@ -5,6 +5,7 @@ import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
 export { Util, DomUtil, StringUtil, MapboxUtil };
+export { default as LRUCache } from './core/util/LRUCache';
 export { default as Ajax } from './core/Ajax';
 export { default as Canvas } from './core/Canvas';
 
@@ -57,3 +58,16 @@ import * as symbolizer from './renderer/geometry/symbolizers';
 /** @namespace animation */
 import * as animation from './core/Animation';
 export { symbolizer, animation };
+
+export { registerWorkerAdapter } from './core/worker/Worker';
+
+import Actor from './core/worker/Actor';
+
+/**
+ * @namespace worker
+ */
+const worker = {
+    Actor : Actor
+};
+
+export { worker };

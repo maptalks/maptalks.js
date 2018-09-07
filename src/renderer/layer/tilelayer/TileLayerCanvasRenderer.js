@@ -10,7 +10,7 @@ import Canvas2D from '../../../core/Canvas';
 import TileLayer from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
-import LruCache from '../../../core/util/LruCache';
+import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
 
 /**
@@ -33,7 +33,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.tilesLoading = {};
         this._parentTiles = [];
         this._childTiles = [];
-        this.tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
+        this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
     }
 
     draw() {
