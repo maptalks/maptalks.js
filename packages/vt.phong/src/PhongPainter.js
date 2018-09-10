@@ -325,7 +325,7 @@ class PhongPainter {
                     opBack: {
                         fail: 'keep',
                         zfail: 'keep',
-                        zpass: 'replace'
+                        zpass: 'keep'
                     }
                 },
                 blend: {
