@@ -79,8 +79,7 @@ export function buildUniqueVertex(data, indices, desc) {
                 array[cursor * size + k] = oldData[name][idx * size + k];
             }
         }
-        indices[i] = cursor;
-        cursor++;
+        indices[i] = cursor++;
     }
 
     return data;

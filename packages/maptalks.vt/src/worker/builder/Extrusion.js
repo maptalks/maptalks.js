@@ -27,6 +27,7 @@ export function buildExtrudeFaces(
     const indices = [];
     const generateUV = uv;
     const uvs = generateUV ? [] : null;
+    const clipEdges = [];
 
     function fillData(start, offset, holes, height) {
         // debugger
@@ -55,6 +56,7 @@ export function buildExtrudeFaces(
             triangles[i - 1] = triangles[i] + start / 3;
             triangles[i] = tmp + start / 3;
             triangles[i - 2] += start / 3;
+            clipEdges.push(0, 0, 0);
         }
 
         // //cw widing
@@ -68,36 +70,40 @@ export function buildExtrudeFaces(
             buildFaceUV(uvs, vertices, triangles, [uvSize[0] / glScale, uvSize[1] / glScale]);
         }
 
-        const s = indices.length;
         //side face indices
         const startIdx = start / 3;
         const vertexCount = count / 3;
-        let ringStartIdx = startIdx;
+        const sideIndices = [],
+            sideEdges = [];
+        let ringStartIdx = startIdx, isClipped, current, next;
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
+            current = i;
             if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
-                if (!isClippedEdge(vertices, i, ringStartIdx, EXTENT)) {
-                    //top[l - 1], bottom[l - 1], top[0]
-                    indices.push(i + vertexCount, i, ringStartIdx);
-                    //bottom[0], top[0], bottom[l - 1]
-                    indices.push(ringStartIdx, ringStartIdx + vertexCount, i + vertexCount);
-                }
+                next = ringStartIdx;
                 if (i < l - 1) {
-                    //it's a hole, relocate ringStartIdx to hole's start
                     ringStartIdx = i + 1;
                 }
             } else if (i < l - 1) {
-                if (isClippedEdge(vertices, i, i + 1, EXTENT)) {
-                    continue;
-                }
-                //top[i], bottom[i], top[i + 1]
-                indices.push(i + vertexCount, i, i + 1);
-                //bottom[i + 1], top[i + 1], bottom[i]
-                indices.push(i + 1, i + vertexCount + 1, i + vertexCount);
+                next = i + 1;
             }
+            isClipped = isClippedEdge(vertices, current, next, EXTENT);
+            if (isClipped) {
+                sideEdges.unshift(1, 1, 1, 1, 1, 1);
+            } else {
+                sideEdges.push(0, 0, 0, 0, 0, 0);
+            }
+            const fn = isClipped ? 'unshift' : 'push';
+            //top[i], bottom[i], top[i + 1]
+            sideIndices[fn](current + vertexCount, current, next);
+            //bottom[i + 1], top[i + 1], bottom[i]
+            sideIndices[fn](next, next + vertexCount, current + vertexCount);
+        }
+        for (let i = 0; i < sideIndices.length; i++) {
+            indices.push(sideIndices[i]);
+            clipEdges.push(sideEdges[i]);
         }
         if (generateUV) {
-            // debugger
-            buildSideUV(uvs, vertices, indices.slice(s, indices.length), [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
+            buildSideUV(uvs, vertices, sideIndices, [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
         }
         return offset + count;
     }
@@ -156,7 +162,8 @@ export function buildExtrudeFaces(
     const data = {
         vertices,  // vertexes
         indices : tIndices,    // indices for drawElements
-        featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
+        featureIndexes : new feaCtor(featIndexes),     // vertex index of each feature
+        clipEdges : new Uint8Array(clipEdges)
     };
     if (uvs) {
         data.uvs = new Float32Array(uvs);

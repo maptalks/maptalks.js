@@ -162,8 +162,7 @@ export default class BaseLayerWorker {
                 vScale : zScale * (extent / this.options['tileSize'][1])
                 //<<
             });
-
-        const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer];
+        const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer, faces.clipEdges.buffer];
 
         let oldIndices;
         if (shadowVolume) {

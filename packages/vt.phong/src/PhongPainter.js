@@ -5,6 +5,7 @@ import { extend } from './Util';
 const vert = `
     attribute vec3 aPosition;
     attribute vec3 aNormal;
+    attribute float aClipEdge;
 
     uniform mat4 projViewModelMatrix; //
     uniform mat4 modelMatrix;
@@ -12,6 +13,7 @@ const vert = `
 
     varying vec3 vNormal;
     varying vec3 vFragPos;
+    varying float vClipEdge;
 
     void main()
     {
@@ -19,6 +21,7 @@ const vert = `
         gl_Position = projViewModelMatrix * pos;
         vNormal = normalMatrix * aNormal;
         vFragPos = vec3(modelMatrix * pos);
+        vClipEdge = aClipEdge;
     }
 `;
 
@@ -30,6 +33,7 @@ const frag = `
     //漫反射所需变量
     varying vec3 vNormal; //法线矩阵用于消除 model 变换(不等比缩放时)给法线带来的误差，其计算方法： mat3(transpose(inverse(model)))
     varying vec3 vFragPos; //物体当前表面点的世界坐标
+    varying float vClipEdge;
 
     //镜面光照所需变量
     uniform vec3 camPos; //相机的位置，用于计算
@@ -61,6 +65,11 @@ const frag = `
 
     void main()
     {
+        if (vClipEdge == 1.0) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+            return;
+        }
+
         // -------------- 光照 ----------------------
         //环境光
         vec3 ambient = light.ambient * material.ambient;
@@ -139,12 +148,13 @@ class PhongPainter {
     createGeometry(glData, features) {
         const data = {
             aPosition : glData.vertices,
+            aClipEdge : glData.clipEdges,
             aNormal : glData.normals,
             aColor : glData.colors,
             aPickingId : glData.featureIndexes
         };
         const geometry = new reshader.Geometry(data, glData.indices);
-        geometry._pbrFeatures = features;
+        geometry._features = features;
         geometry.generateBuffers(this.regl);
 
         return geometry;
@@ -195,7 +205,7 @@ class PhongPainter {
         const map = this.layer.getMap();
         const uniforms = this._getUniformValues(map);
         if (!this._pickingRendered) {
-            this._raypicking.render(this.scene.getMeshes().opaques, uniforms);
+            this._raypicking.render(this.scene.getMeshes(), uniforms);
             this._pickingRendered = true;
         }
         const { meshId, pickingId, point } = this._raypicking.pick(x, y, uniforms, {
@@ -210,7 +220,7 @@ class PhongPainter {
             };
         }
         return {
-            feature : this._raypicking.getMeshAt(meshId).geometry._pbrFeatures[pickingId],
+            feature : this._raypicking.getMeshAt(meshId).geometry._features[pickingId],
             point
         };
     }
