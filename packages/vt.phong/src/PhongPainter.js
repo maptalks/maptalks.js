@@ -188,9 +188,22 @@ class PhongPainter {
             stencil: 0xFF
         });
         this.scene.sortMeshes(context.cameraPosition);
+
+        const opacity = uniforms.material.opacity;
+
+        uniforms.enableCullFace = true;
+        uniforms.face = 'front';
+        uniforms.material.opacity = 0;
+        this.shader.filter = levelNFilter;
+        this.renderer.render(this.shader, uniforms, this.scene);
+
+        uniforms.material.opacity = opacity;
+        uniforms.enableCullFace = false;
         this.shader.filter = level0Filter;
         this.renderer.render(this.shader, uniforms, this.scene);
 
+        uniforms.enableCullFace = true;
+        uniforms.face = 'back';
         this.shader.filter = levelNFilter;
         this.renderer.render(this.shader, uniforms, this.scene);
 
@@ -305,10 +318,14 @@ class PhongPainter {
             defines : this._getDefines(),
             extraCommandProps : {
                 //enable cullFace
-                // cull : {
-                //     enable: false,
-                //     face: 'back'
-                // },
+                cull : {
+                    enable: (context, props) => {
+                        return props.enableCullFace;
+                    },
+                    face: (context, props) => {
+                        return props.face;
+                    }
+                },
                 stencil: {
                     enable: true,
                     func: {
@@ -356,7 +373,7 @@ class PhongPainter {
         this._updateMaterial();
 
 
-        const pickingConfig = extend({}, config);
+        const pickingConfig = {};
         pickingConfig.vert = `
             attribute vec3 aPosition;
             uniform mat4 projViewModelMatrix;

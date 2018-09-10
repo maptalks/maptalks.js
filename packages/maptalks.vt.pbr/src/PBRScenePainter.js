@@ -298,7 +298,7 @@ class PBRScenePainter {
 
         this._initCubeLight();
 
-        const pickingConfig = extend({}, config);
+        const pickingConfig = {};
         pickingConfig.vert = `
             attribute vec3 aPosition;
             uniform mat4 projViewModelMatrix;
