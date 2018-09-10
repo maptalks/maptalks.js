@@ -119,7 +119,8 @@ class PBRScenePainter {
             projMatrix : map.projMatrix,
             returnPoint : true
         });
-        if (meshId === null) {
+        const mesh = meshId && this._raypicking.getMeshAt(meshId);
+        if (!mesh) {
             return {
                 feature : null,
                 point
