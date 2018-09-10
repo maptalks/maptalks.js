@@ -12,9 +12,10 @@
   <link rel="stylesheet" href="screen.css" />
   <!-- 需要用 maptalks worker 分支下的版本 -->
   <script src="http://localhost:20000/maptalks.js"></script>
+  <script src="http://localhost/maptalksgl/dist/maptalksgl-dev.js"></script>
   <script src="buildings.js"></script>
-  <script src="../../packages/maptalks.vt/dist/maptalks.vt.js"></script>
-  <script src="../../packages/maptalks.vt.pbr/dist/maptalks.vt.pbr.js"></script>
+  <script src="../../packages/maptalks.vt/dist/maptalks.vt-dev.js"></script>
+  <script src="../../packages/maptalks.vt.pbr/dist/maptalks.vt.pbr-dev.js"></script>
   <script src="js/stats.min.js"></script>
 </head>
 
@@ -34,15 +35,15 @@
       环境光贴图：<br><img id="hdr" style="width:200px;height:200px;border:1px black solid;"/>
     </div>
     <!-- <canvas id="debugc" width=256 height=1024 /> -->
-    
+
   </div>
-  
+
   <script>
     var stats = new Stats();
     stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     document.body.appendChild( stats.dom );
     window.MAPTALKS_VT_WORKER_COUNT = 1;
-    
+
 
     var osm = new maptalks.TileLayer('osm', {
         crossOrigin : 'anonymous',
@@ -60,12 +61,15 @@
       zoom: 15,
       pitch : 45,
 
-      dragRotatePitch : true,
+      "center":[13.422091481252892,52.53081935839131],"zoom":17,"pitch":45,"bearing":0,
+
       // bearing : -42,
-      baseLayer: osm
+      // baseLayer: osm
     });
+    var id = 0;
     var data = buildings.reduce(function (v, b) {
       for (let i = 0, l = b.features.length; i < l; i++) {
+        b.features[i].id = id++;
         v.features.push(b.features[i]);
       }
       return v;
@@ -74,7 +78,7 @@
       "features" : []
     })
 
-    
+
     map.on('framestart', e => {
       stats.begin();
     });
@@ -84,7 +88,7 @@
     });
 
     console.log(data.features.length);
-    
+
     const style = [
       {
         type : 'pbr',
@@ -101,8 +105,8 @@
         },
         sceneConfig : {
           material : {
-            roughness : 0,
-            metallic :1,
+            roughness : 0.0,
+            metallic : 1.0,
             albedoColor : [1, 1, 1],
             // occulusionRoughnessMetallicMap : 'resources/occulusionRoughnessMetallicMap.png',
             // albedoMap : 'resources/brickwall.jpg',
@@ -124,12 +128,12 @@
             },
             ambientColor : [0.00, 0.00, 0.00],
             ambientIntensity : 1,
-            // dirLights : [
-            //   {
-            //     color : [1, 1, 1],
-            //     direction : [0, 1, 1]
-            //   }
-            // ]
+            dirLights : [
+              {
+                color : [1, 1, 1],
+                direction : [0, 1, 1]
+              }
+            ]
           }
         },
 
@@ -173,8 +177,13 @@
     //   alert(JSON.stringify(layer1.identify(e.coordinate)));
     // });
 
-    map.addLayer(layer1);
-    
+    // map.addLayer(layer1);
+    new maptalks.GroupGLLayer('group', [layer1]).addTo(map);
+
+    map.on('click', e => {
+      console.log(JSON.stringify(layer1.identify(e.coordinate)));
+    });
+
     function updateStyle(imageMaps) {
       const sceneConfig = style[0].sceneConfig;
       const config = {
@@ -226,7 +235,7 @@
         return false;
       };
     }
-  
+
     function humanFileSize(size) {
         var i = Math.floor(Math.log(size) / Math.log(1024));
         return Math.round(100 * (size / Math.pow(1024, i))) / 100 + ' ' + ['B', 'kB', 'MB', 'GB'][i];
