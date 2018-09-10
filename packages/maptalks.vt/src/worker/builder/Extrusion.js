@@ -1,4 +1,4 @@
-import { countVertexes, calculateSignedArea, fillPosArray } from './Common';
+import { countVertexes, calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV.js';
 import { pushIn } from '../../layer/core/Util.js';
 import { getIndexArrayType } from '../util/Util.js';
@@ -162,24 +162,4 @@ export function buildExtrudeFaces(
         data.uvs = new Float32Array(uvs);
     }
     return data;
-}
-
-// get height value from properties
-function getHeightValue(properties, heightProp, defaultValue) {
-    //prepare altitude property
-    let height = defaultValue;
-    if (heightProp) {
-        height = properties[heightProp];
-    }
-    if (height === undefined) {
-        height = defaultValue;
-    }
-    return height;
-}
-
-function isClippedEdge(vertices, i0, i1, EXTENT) {
-    const x0 = vertices[i0 * 3], y0 = vertices[i0 * 3 + 1],
-        x1 = vertices[i1 * 3], y1 = vertices[i1 * 3 + 1];
-    return (x0 === x1 && (x0 < 0 || x0 > EXTENT)) ||
-        (y0 === y1 && (y0 < 0 || y0 > EXTENT));
 }

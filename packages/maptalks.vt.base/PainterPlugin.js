@@ -58,7 +58,10 @@ function createPainterPlugin(type, Painter) {
         },
 
         pick(x, y) {
-            return this.painter.pick(x, y);
+            if (this.painter.pick) {
+                return this.painter.pick(x, y);
+            }
+            return null;
         },
 
         deleteTile(context) {
@@ -104,7 +107,7 @@ function createPainterPlugin(type, Painter) {
                 symbol = features[idx].symbol;
                 rgb = visitedColors[idx];
                 if (!rgb) {
-                    const color = Color(symbol.polygonFill);
+                    const color = Color(symbol[this.painter.colorSymbol]);
                     rgb = visitedColors[idx] = color.array();
                 }
                 pos = indices[i] * 3;

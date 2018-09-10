@@ -1,7 +1,7 @@
 import { compileStyle } from '@maptalks/feature-filter';
 import { extend } from '../../layer/core/Util';
 import { getIndexArrayType } from '../util/Util';
-import { buildExtrudeFaces } from '../builder/';
+import { buildExtrudeFaces, buildWireframe } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
 //TODO 改为从maptalks中载入compileStyle方法
 
@@ -121,76 +121,91 @@ export default class BaseLayerWorker {
     _createTileGeometry(features, dataConfig = {}, { extent, glScale, zScale }) {
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
-            const {
-                altitudeScale,
-                altitudeProperty,
-                defaultAltitude,
-                heightProperty,
-                defaultHeight,
-                normal, tangent,
-                uv, uvSize,
-                shadowVolume, shadowDir
-            } = dataConfig;
-            const faces = buildExtrudeFaces(
-                features, extent,
-                {
-                    altitudeScale, altitudeProperty,
-                    defaultAltitude : defaultAltitude || 0,
-                    heightProperty,
-                    defaultHeight : defaultHeight || 0
-                },
-                {
-                    uv,
-                    uvSize : uvSize || [128, 128],
-                    //>> needed by uv computation
-                    glScale,
-                    //用于白模侧面的uv坐标v的计算
-                    // zScale用于将meter转为gl point值
-                    // (extent / this.options['tileSize'][1])用于将gl point转为瓦片内坐标
-                    vScale : zScale * (extent / this.options['tileSize'][1])
-                    //<<
-                });
-
-            const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer];
-
-            let oldIndices;
-            if (shadowVolume) {
-                oldIndices = new faces.indices.constructor(faces.indices);
-            }
-            const l = faces.indices.length;
-            const ctor = getIndexArrayType(l);
-            if (!(faces.indices instanceof ctor)) {
-                faces.indices = new ctor(faces.indices);
-            }
-            const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
-            faces.vertices = uniqueFaces.vertices;
-            // debugger
-            if (normal || shadowVolume) {
-                const normals = buildFaceNormals(faces.vertices, faces.indices);
-                faces.normals = normals;
-                buffers.push(normals.buffer);
-            }
-            if (tangent) {
-                //TODO caculate tangent
-            }
-            if (uv) {
-                buffers.push(faces.uvs.buffer);
-            }
-            if (shadowVolume) {
-                const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, faces.featureIndexes, shadowDir);
-                faces.shadowVolume = shadowVolume;
-                buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
-            }
-            return {
-                data : faces,
-                buffers
-            };
+            return this._build3DExtrusion(features, dataConfig, extent, glScale, zScale);
+        } else if (type === 'wireframe') {
+            return this._buildWireframe(features, dataConfig, extent);
         } else {
             return {
                 data : {},
                 buffers : null
             };
         }
+    }
+
+    _build3DExtrusion(features, dataConfig, extent, glScale, zScale) {
+        const {
+            altitudeScale,
+            altitudeProperty,
+            defaultAltitude,
+            heightProperty,
+            defaultHeight,
+            normal, tangent,
+            uv, uvSize,
+            shadowVolume, shadowDir
+        } = dataConfig;
+        const faces = buildExtrudeFaces(
+            features, extent,
+            {
+                altitudeScale, altitudeProperty,
+                defaultAltitude : defaultAltitude || 0,
+                heightProperty,
+                defaultHeight : defaultHeight || 0
+            },
+            {
+                uv,
+                uvSize : uvSize || [128, 128],
+                //>> needed by uv computation
+                glScale,
+                //用于白模侧面的uv坐标v的计算
+                // zScale用于将meter转为gl point值
+                // (extent / this.options['tileSize'][1])用于将gl point转为瓦片内坐标
+                vScale : zScale * (extent / this.options['tileSize'][1])
+                //<<
+            });
+
+        const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer];
+
+        let oldIndices;
+        if (shadowVolume) {
+            oldIndices = new faces.indices.constructor(faces.indices);
+        }
+        const l = faces.indices.length;
+        const ctor = getIndexArrayType(l);
+        if (!(faces.indices instanceof ctor)) {
+            faces.indices = new ctor(faces.indices);
+        }
+        const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
+        faces.vertices = uniqueFaces.vertices;
+        // debugger
+        if (normal || shadowVolume) {
+            const normals = buildFaceNormals(faces.vertices, faces.indices);
+            faces.normals = normals;
+            buffers.push(normals.buffer);
+        }
+        if (tangent) {
+            //TODO caculate tangent
+        }
+        if (uv) {
+            buffers.push(faces.uvs.buffer);
+        }
+        if (shadowVolume) {
+            const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, faces.featureIndexes, shadowDir);
+            faces.shadowVolume = shadowVolume;
+            buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
+        }
+        return {
+            data : faces,
+            buffers
+        };
+    }
+
+    _buildWireframe(features, dataConfig, extent) {
+        const frames = buildWireframe(features, extent, dataConfig);
+        const buffers = [frames.vertices.buffer, frames.indices.buffer, frames.featureIndexes.buffer];
+        return {
+            data : frames,
+            buffers
+        };
     }
 
     /**

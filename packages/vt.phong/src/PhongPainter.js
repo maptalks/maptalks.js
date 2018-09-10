@@ -110,6 +110,14 @@ const defaultUniforms = {
     }
 };
 
+const level0Filter = mesh => {
+    return mesh.uniforms['level'] === 0;
+};
+
+const levelNFilter = mesh => {
+    return mesh.uniforms['level'] > 0;
+};
+
 class PhongPainter {
     constructor(regl, layer, sceneConfig) {
         this.layer = layer;
@@ -120,6 +128,7 @@ class PhongPainter {
         }
         this._redraw = false;
         this.meshCache = {};
+        this.colorSymbol = 'polygonFill';
         this._init();
     }
 
@@ -164,31 +173,16 @@ class PhongPainter {
         }
 
         const uniforms = this._getUniformValues(map);
-        const meshes = this.scene.getMeshes();
-        const currentMeshes = [],
-            backgroundMeshes = [];
-
-        for (let i = 0; i < meshes.length; i++) {
-            if (meshes[i].uniforms.level === 0) {
-                currentMeshes.push(meshes[i]);
-            } else {
-                backgroundMeshes.push(meshes[i]);
-            }
-        }
 
         this.regl.clear({
             stencil: 0xFF
         });
-
-        this.scene.setMeshes(currentMeshes);
         this.scene.sortMeshes(context.cameraPosition);
+        this.shader.filter = level0Filter;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        this.scene.setMeshes(backgroundMeshes);
-        this.scene.sortMeshes(context.cameraPosition);
+        this.shader.filter = levelNFilter;
         this.renderer.render(this.shader, uniforms, this.scene);
-
-        this.scene.setMeshes(meshes);
 
         this._pickingRendered = false;
 

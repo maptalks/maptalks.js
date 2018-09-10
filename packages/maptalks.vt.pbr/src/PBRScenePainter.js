@@ -24,6 +24,7 @@ class PBRScenePainter {
             }
             this._redraw = true;
         });
+        this.colorSymbol = 'polygonFill';
         this._init();
     }
 

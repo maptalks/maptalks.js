@@ -310,8 +310,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const hits = [];
         this.plugins.forEach(plugin => {
             const picked = plugin.pick(x, y);
-            picked.type = plugin.getType();
-            if (picked) hits.push(picked);
+            if (picked) {
+                picked.type = plugin.getType();
+                hits.push(picked);
+            }
         });
         return hits;
     }
