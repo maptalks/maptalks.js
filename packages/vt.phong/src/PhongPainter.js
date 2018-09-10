@@ -213,14 +213,15 @@ class PhongPainter {
             projMatrix : map.projMatrix,
             returnPoint : true
         });
-        if (meshId === null) {
+        const mesh = meshId && this._raypicking.getMeshAt(meshId);
+        if (!mesh) {
             return {
                 feature : null,
                 point
             };
         }
         return {
-            feature : this._raypicking.getMeshAt(meshId).geometry._features[pickingId],
+            feature : mesh.geometry._features[pickingId],
             point
         };
     }
