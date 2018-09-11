@@ -1,4 +1,4 @@
-import { extend, isNumber, isString, isFunction } from '../common/Util.js';
+import { extend, isString, isFunction } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
 const UNIFORM_TYPE = {

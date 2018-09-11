@@ -11,7 +11,10 @@ const options = {
         'OES_element_index_uint',
         'OES_standard_derivatives'
     ],
-    optionalExtensions : ['WEBGL_draw_buffers', 'EXT_shader_texture_lod']
+    optionalExtensions : ['WEBGL_draw_buffers', 'EXT_shader_texture_lod'],
+    forceRenderOnZooming : true,
+    forceRenderOnMoving : true,
+    forceRenderOnRotating : true
 };
 
 export default class GroupGLLayer extends maptalks.Layer {
