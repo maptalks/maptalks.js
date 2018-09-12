@@ -90,7 +90,7 @@ class TileConfig {
         }
 
         //有可能tileIndex超出世界范围
-        return this.getNeighorTileIndex(tileIndex['x'], tileIndex['y'], 0, 0, true);
+        return this.getNeighorTileIndex(tileIndex['x'], tileIndex['y'], 0, 0, res);
     }
 
     /**
@@ -106,11 +106,12 @@ class TileConfig {
         const tileSystem = this.tileSystem;
         let x = (tileX + tileSystem['scale']['x'] * offsetX);
         let y = (tileY - tileSystem['scale']['y'] * offsetY);
+        let out = false;
         const idx = x;
         const idy = y;
+        const ext = this._getTileFullIndex(res);
         if (isRepeatWorld) {
             //caculate tile index to request in url in repeated world.
-            const ext = this._getTileFullIndex(res);
             if (x < ext['xmin']) {
                 x = ext['xmax'] - (ext['xmin'] - x) % (ext['xmax'] - ext['xmin']);
                 if (x === ext['xmax']) {
@@ -128,6 +129,8 @@ class TileConfig {
                     y = ext['ymin'];
                 }
             }
+        } else if (x < ext['xmin'] || x > ext['xmax'] || y > ext['ymax'] || y < ext['ymin']) {
+            out = true;
         }
         return {
             // tile index to request in url
@@ -135,7 +138,8 @@ class TileConfig {
             'y': y,
             // real tile index
             'idx' : idx,
-            'idy' : idy
+            'idy' : idy,
+            out
         };
     }
 
