@@ -406,7 +406,7 @@ class OverlayLayer extends Layer {
         const cp = map._pointToContainerPoint(point);
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
-            if (!geo || !geo.isVisible() || !geo._getPainter()) {
+            if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.isInteractive()) {
                 continue;
             }
             if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
