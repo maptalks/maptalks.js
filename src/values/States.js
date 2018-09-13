@@ -496,26 +496,17 @@ include(GLContext.prototype, {
                 p === 'arrayBuffer' || p === 'elementArrayBuffer') {
                 continue;
             } else if (p === 'program') {
-                if (!gl.isProgram(target.program)) {
-                    target.program = null;
-                }
                 if (target.program !== preStates.program) {
                     gl.useProgram(target.program);
                 }
             } else if (p === 'framebuffer') {
                 for (const t in target[p]) {
-                    if (!gl.isFramebuffer(target[p][t])) {
-                        target[p][t] = null;
-                    }
                     if (target[p][t] !== preStates[p][t]) {
                         gl.bindFramebuffer(+t, target[p][t]);
                     }
                 }
             } else if (p === 'renderbuffer') {
                 for (const t in target[p]) {
-                    if (!gl.isRenderbuffer(target[p][t])) {
-                        target[p][t] = null;
-                    }
                     if (target[p][t] !== preStates[p][t]) {
                         gl.bindRenderbuffer(+t, target[p][t]);
                     }
@@ -573,24 +564,15 @@ include(GLContext.prototype, {
         for (const p in attrs) {
             if (!preAttrs[p] || attrs[p].buffer !== preAttrs[p].buffer ||
                 !equal(attrs[p].args, preAttrs[p].args)) {
-                if (gl.isBuffer(attrs[p].buffer)) {
+                if (attrs[p].buffer) {
                     gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
                     gl.vertexAttribPointer(...attrs[p].args);
-                } else {
-                    attrs[p].buffer = null;
                 }
             }
         }
 
         //restore array buffer and element array buffer
-        if (!gl.isBuffer(target.arrayBuffer)) {
-            target.arrayBuffer = null;
-        }
         gl.bindBuffer(gl.ARRAY_BUFFER, target.arrayBuffer);
-
-        if (!gl.isBuffer(target.elementArrayBuffer)) {
-            target.elementArrayBuffer = null;
-        }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
 
     }

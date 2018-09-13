@@ -33,12 +33,17 @@ include(GLContext.prototype, {
      * @param {*} buffer
      */
     deleteBuffer(buffer) {
-        this._checkAndRestore();
-        if (this.states.arrayBuffer === buffer) {
-            this.states.arrayBuffer = null;
+        const states = this.states;
+        if (states.arrayBuffer === buffer) {
+            states.arrayBuffer = null;
+        } else if (states.elementArrayBuffer === buffer) {
+            states.elementArrayBuffer = null;
         }
-        if (this.states.elementArrayBuffer === buffer) {
-            this.states.elementArrayBuffer = null;
+        const attrs = states.attributes;
+        for (const p in attrs) {
+            if (attrs[p].buffer === buffer) {
+                attrs[p].buffer = null;
+            }
         }
         return this._gl.deleteBuffer(buffer);
     },
