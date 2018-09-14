@@ -27,7 +27,7 @@ export function buildExtrudeFaces(
     const indices = [];
     const generateUV = uv;
     const uvs = generateUV ? [] : null;
-    const clipEdges = [];
+    // const clipEdges = [];
 
     function fillData(start, offset, holes, height) {
         // debugger
@@ -56,7 +56,7 @@ export function buildExtrudeFaces(
             triangles[i - 1] = triangles[i] + start / 3;
             triangles[i] = tmp + start / 3;
             triangles[i - 2] += start / 3;
-            clipEdges.push(0, 0, 0);
+            // clipEdges.push(0, 0, 0);
         }
 
         // //cw widing
@@ -73,9 +73,8 @@ export function buildExtrudeFaces(
         //side face indices
         const startIdx = start / 3;
         const vertexCount = count / 3;
-        const sideIndices = [],
-            sideEdges = [];
-        let ringStartIdx = startIdx, isClipped, current, next;
+        const sideIndices = [];
+        let ringStartIdx = startIdx, current, next, isClipped;
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
             current = i;
             if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
@@ -88,20 +87,18 @@ export function buildExtrudeFaces(
             }
             isClipped = isClippedEdge(vertices, current, next, EXTENT);
             if (isClipped) {
-                sideEdges.unshift(1, 1, 1, 1, 1, 1);
-            } else {
-                sideEdges.push(0, 0, 0, 0, 0, 0);
+                continue;
             }
-            const fn = isClipped ? 'unshift' : 'push';
+            // const fn = isClipped ? 'unshift' : 'push';
             //top[i], bottom[i], top[i + 1]
-            sideIndices[fn](current + vertexCount, current, next);
+            indices.push(current + vertexCount, current, next);
             //bottom[i + 1], top[i + 1], bottom[i]
-            sideIndices[fn](next, next + vertexCount, current + vertexCount);
+            indices.push(next, next + vertexCount, current + vertexCount);
         }
-        for (let i = 0; i < sideIndices.length; i++) {
-            indices.push(sideIndices[i]);
-            clipEdges.push(sideEdges[i]);
-        }
+        // for (let i = 0; i < sideIndices.length; i++) {
+        //     indices.push(sideIndices[i]);
+        //     // clipEdges.push(sideEdges[i]);
+        // }
         if (generateUV) {
             buildSideUV(uvs, vertices, sideIndices, [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
         }
@@ -162,8 +159,8 @@ export function buildExtrudeFaces(
     const data = {
         vertices,  // vertexes
         indices : tIndices,    // indices for drawElements
-        featureIndexes : new feaCtor(featIndexes),     // vertex index of each feature
-        clipEdges : new Uint8Array(clipEdges)
+        featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
+        // clipEdges : new Uint8Array(clipEdges)
     };
     if (uvs) {
         data.uvs = new Float32Array(uvs);

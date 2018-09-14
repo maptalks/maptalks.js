@@ -295,7 +295,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileData : tileData[idx],
                 t : this._frameTime - tileData.loadTime,
                 tileInfo, tileTransform, stencilRef,
-                tileZoom : this._tileZoom
+                tileZoom : this['_tileZoom']
             };
             const status = plugin.paintTile(context);
             if (status && status.redraw) {
@@ -307,6 +307,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     pick(x, y) {
+        if (maptalks['Browser']['retina']) {
+            x *= 2;
+            y *= 2;
+        }
         const hits = [];
         this.plugins.forEach(plugin => {
             const picked = plugin.pick(x, y);
@@ -346,7 +350,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
-        this.pickingFBO.resize(this.canvas.width, this.canvas.height);
+        if (this.pickingFBO) {
+            this.pickingFBO.resize(this.canvas.width, this.canvas.height);
+        }
         let cache = this.sceneCache;
         if (!cache) {
             cache = this.sceneCache = {};

@@ -122,7 +122,7 @@ export default class BaseLayerWorker {
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
             return this._build3DExtrusion(features, dataConfig, extent, glScale, zScale);
-        } else if (type === 'wireframe') {
+        } else if (type === '3d-wireframe') {
             return this._buildWireframe(features, dataConfig, extent);
         } else {
             return {
@@ -162,7 +162,7 @@ export default class BaseLayerWorker {
                 vScale : zScale * (extent / this.options['tileSize'][1])
                 //<<
             });
-        const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer, faces.clipEdges.buffer];
+        const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer];
 
         let oldIndices;
         if (shadowVolume) {
@@ -225,7 +225,7 @@ export default class BaseLayerWorker {
                 }
                 feature.styleMark[type] = styleIdx;
             }
-            if (feature.styleMark) {
+            if (feature.styleMark && feature.styleMark[type]) {
                 count++;
             }
         }

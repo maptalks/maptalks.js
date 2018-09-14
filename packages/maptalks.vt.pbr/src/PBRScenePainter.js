@@ -6,20 +6,21 @@ import StencilShadowPass from './StencilShadowPass.js';
 
 class PBRScenePainter {
     constructor(regl, layer, sceneConfig) {
-        this.layer = layer;
-        this.regl = regl;
-        this.sceneConfig = sceneConfig || {};
-        if (!this.sceneConfig.lights) {
-            this.sceneConfig.lights = {};
+        this._layer = layer;
+        this._regl = regl;
+        this._canvas = layer.getRenderer().canvas;
+        this._sceneConfig = sceneConfig || {};
+        if (!this._sceneConfig.lights) {
+            this._sceneConfig.lights = {};
         }
         this._redraw = false;
-        this.meshCache = {};
-        this.loader = new reshader.ResourceLoader(regl.texture(2));
-        this.hdr = null;
-        this.loader.on('complete', () => {
-            if (this.hdr && this.hdr.isReady() && !this._isIBLRecreated) {
+        this._meshCache = {};
+        this._loader = new reshader.ResourceLoader(regl.texture(2));
+        this._hdr = null;
+        this._loader.on('complete', () => {
+            if (this._hdr && this._hdr.isReady() && !this._isIBLRecreated) {
                 //环境光纹理载入，重新生成ibl纹理
-                this.iblMaps = this._createIBLMaps(this.hdr);
+                this.iblMaps = this._createIBLMaps(this._hdr);
                 this._isIBLRecreated = true;
             }
             this._redraw = true;
@@ -42,7 +43,7 @@ class PBRScenePainter {
         };
         const geometry = new reshader.Geometry(data, glData.indices);
         geometry._pbrFeatures = features;
-        geometry.generateBuffers(this.regl);
+        geometry.generateBuffers(this._regl);
 
         if (glData.shadowVolume && this.shadowPass && this.shadowPass.createShadowVolume) {
             const shadowGeos = this.shadowPass.createShadowVolume(glData.shadowVolume);
@@ -55,7 +56,7 @@ class PBRScenePainter {
     addMesh(key, geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this.material);
         mesh.setLocalTransform(transform);
-        this.meshCache[key] = mesh;
+        this._meshCache[key] = mesh;
         this.scene.addMesh(mesh);
         if (this.shadowScene) {
             // 如果shadow mesh已经存在， 则优先用它
@@ -70,7 +71,7 @@ class PBRScenePainter {
 
     paint() {
         this._redraw = false;
-        const layer = this.layer;
+        const layer = this._layer;
         const map = layer.getMap();
         if (!map) {
             return {
@@ -88,9 +89,9 @@ class PBRScenePainter {
                 scene : this.shadowScene,
                 groundScene : this.groundScene
             });
-            if (this.sceneConfig.shadow.debug) {
+            if (this._sceneConfig.shadow.debug) {
                 // this.debugFBO(shadowConfig.debug[0], depthFBO);
-                this.debugFBO(this.sceneConfig.shadow.debug[1], fbo);
+                this.debugFBO(this._sceneConfig.shadow.debug[1], fbo);
             }
         }
 
@@ -108,7 +109,7 @@ class PBRScenePainter {
     }
 
     pick(x, y) {
-        const map = this.layer.getMap();
+        const map = this._layer.getMap();
         const uniforms = this._getUniformValues(map);
         if (!this._pickingRendered) {
             this._raypicking.render(this.scene.getMeshes(), uniforms);
@@ -119,7 +120,7 @@ class PBRScenePainter {
             projMatrix : map.projMatrix,
             returnPoint : true
         });
-        const mesh = meshId && this._raypicking.getMeshAt(meshId);
+        const mesh = (meshId === 0 || meshId) && this._raypicking.getMeshAt(meshId);
         if (!mesh) {
             return {
                 feature : null,
@@ -154,37 +155,37 @@ class PBRScenePainter {
         //     far = applyMatrix(cp1, cp1, inverseProjViewMatrix);
         // const result = [interpolate(near[0], far[0], t), interpolate(near[1], far[1], t), interpolate(near[2], far[2], t)];
         // console.log(result);
-        // this.debugFBO('shadow', this.layer.getRenderer().pickingFBO);
+        // this.debugFBO('shadow', this._layer.getRenderer().pickingFBO);
     }
 
     updateSceneConfig(config) {
         const keys = Object.keys(config);
         if (keys.length === 1 && keys[0] === 'material') {
-            this.sceneConfig.material = config.material;
+            this._sceneConfig.material = config.material;
             this._updateMaterial();
         } else {
-            extend(this.sceneConfig, config);
+            extend(this._sceneConfig, config);
             this._init();
             this._redraw = true;
         }
     }
 
     getMesh(key) {
-        return this.meshCache[key];
+        return this._meshCache[key];
     }
 
     delete(key) {
-        const mesh = this.meshCache[key];
+        const mesh = this._meshCache[key];
         if (mesh) {
             const geometry = mesh.geometry;
             geometry.dispose();
             mesh.dispose();
-            delete this.meshCache[key];
+            delete this._meshCache[key];
         }
     }
 
     clear() {
-        this.meshCache = {};
+        this._meshCache = {};
         this.scene.clear();
         if (this.shadowScene) {
             this.shadowScene.clear();
@@ -193,7 +194,7 @@ class PBRScenePainter {
     }
 
     remove() {
-        delete this.meshCache;
+        delete this._meshCache;
         this.material.dispose();
         this.shader.dispose();
         if (this.ground) {
@@ -208,7 +209,7 @@ class PBRScenePainter {
     resize() {}
 
     _transformGround() {
-        const layer = this.layer;
+        const layer = this._layer;
         const map = layer.getMap();
         // console.log(layer.getRenderer()._getMeterScale());
         const extent = map['_get2DExtent'](map.getGLZoom());
@@ -220,15 +221,15 @@ class PBRScenePainter {
     }
 
     _init() {
-        const regl = this.regl;
+        const regl = this._regl;
 
         this.scene = new reshader.Scene();
 
-        const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
+        const shadowEnabled = this._sceneConfig.shadow && this._sceneConfig.shadow.enable;
 
         this.renderer = new reshader.Renderer(regl);
 
-        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
+        if (shadowEnabled && this._sceneConfig.lights && this._sceneConfig.lights.dirLights) {
             const planeGeo = new reshader.Plane();
             planeGeo.generateBuffers(regl);
             this.ground = new reshader.Mesh(planeGeo);
@@ -236,10 +237,10 @@ class PBRScenePainter {
 
             this.shadowScene = new reshader.Scene();
             this.shadowScene.addMesh(this.ground);
-            if (this.sceneConfig.shadow.type === 'vsm') {
-                this.shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
+            if (this._sceneConfig.shadow.type === 'vsm') {
+                this.shadowPass = new VSMShadowPass(this._sceneConfig, this.renderer);
             } else {
-                this.shadowPass = new StencilShadowPass(this.sceneConfig, this.renderer);
+                this.shadowPass = new StencilShadowPass(this._sceneConfig, this.renderer);
             }
         }
 
@@ -247,10 +248,10 @@ class PBRScenePainter {
             x : 0,
             y : 0,
             width : () => {
-                return this.layer ? this.layer.getMap().width : 1;
+                return this._canvas ? this._canvas.width : 1;
             },
             height : () => {
-                return this.layer ? this.layer.getMap().height : 1;
+                return this._canvas ? this._canvas.height : 1;
             }
         };
         const scissor = {
@@ -259,10 +260,10 @@ class PBRScenePainter {
                 x : 0,
                 y : 0,
                 width : () => {
-                    return this.layer ? this.layer.getMap().width : 1;
+                    return this._canvas ? this._canvas.width : 1;
                 },
                 height : () => {
-                    return this.layer ? this.layer.getMap().height : 1;
+                    return this._canvas ? this._canvas.height : 1;
                 }
             }
         };
@@ -317,12 +318,12 @@ class PBRScenePainter {
             }
         }
         pickingConfig.uniforms = [u];
-        this._raypicking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
+        this._raypicking = new reshader.FBORayPicking(this.renderer, pickingConfig, this._layer.getRenderer().pickingFBO);
 
     }
 
     _createIBLMaps(hdr) {
-        const regl = this.regl;
+        const regl = this._regl;
         return reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture : hdr.getREGLTexture(regl),
             // prefilterCubeSize : 256
@@ -333,7 +334,7 @@ class PBRScenePainter {
         if (this.material) {
             this.material.dispose();
         }
-        const materialConfig = this.sceneConfig.material;
+        const materialConfig = this._sceneConfig.material;
         const material = {};
         for (const p in materialConfig) {
             if (materialConfig.hasOwnProperty(p)) {
@@ -342,7 +343,7 @@ class PBRScenePainter {
                     material[p] = new reshader.Texture2D({
                         url : materialConfig[p],
                         wrapS : 'repeat', wrapT : 'repeat'
-                    }, this.loader);
+                    }, this._loader);
                 } else {
                     material[p] = materialConfig[p];
                 }
@@ -352,7 +353,7 @@ class PBRScenePainter {
     }
 
     _initCubeLight() {
-        const cubeLightConfig = this.sceneConfig.lights && this.sceneConfig.lights.ambientCubeLight;
+        const cubeLightConfig = this._sceneConfig.lights && this._sceneConfig.lights.ambientCubeLight;
         if (cubeLightConfig) {
             if (!cubeLightConfig.url && !cubeLightConfig.data) {
                 throw new Error('Must provide url or data(ArrayBuffer) for ambientCubeLight');
@@ -378,13 +379,13 @@ class PBRScenePainter {
                     props.data = data;
                 }
             }
-            this.hdr = new reshader.Texture2D(
+            this._hdr = new reshader.Texture2D(
                 props,
-                this.loader
+                this._loader
             );
 
             //生成ibl纹理
-            this.iblMaps = this._createIBLMaps(this.hdr);
+            this.iblMaps = this._createIBLMaps(this._hdr);
         }
     }
 
@@ -415,7 +416,7 @@ class PBRScenePainter {
             }
         ];
 
-        const lightConfig = this.sceneConfig.lights;
+        const lightConfig = this._sceneConfig.lights;
 
         if (lightConfig.dirLights) {
             const numOfDirLights = lightConfig.dirLights.length;
@@ -448,7 +449,7 @@ class PBRScenePainter {
     }
 
     _getLightUniforms() {
-        const lightConfig = this.sceneConfig.lights;
+        const lightConfig = this._sceneConfig.lights;
 
         const ambientColor = lightConfig.ambientColor || [0.08, 0.08, 0.08];
         const aoIntensity = lightConfig.ambientIntensity;
@@ -479,7 +480,7 @@ class PBRScenePainter {
             'USE_COLOR' : 1
         };
 
-        const lightConfig = this.sceneConfig.lights;
+        const lightConfig = this._sceneConfig.lights;
 
         if (lightConfig.dirLights) {
             defines['USE_DIR_LIGHT'] = 1;
@@ -505,7 +506,7 @@ class PBRScenePainter {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        const pixels = this.regl.read({
+        const pixels = this._regl.read({
             framebuffer : fbo
         });
 

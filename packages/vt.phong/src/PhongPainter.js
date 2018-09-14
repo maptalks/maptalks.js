@@ -1,106 +1,8 @@
 import { reshader } from '@maptalks/gl';
 import { mat3, mat4 } from '@maptalks/gl';
 import { extend } from './Util';
-
-const vert = `
-    attribute vec3 aPosition;
-    attribute vec3 aNormal;
-    attribute float aClipEdge;
-
-    uniform mat4 projViewModelMatrix; //
-    uniform mat4 modelMatrix;
-    uniform mat3 normalMatrix; //法线矩阵
-
-    varying vec3 vNormal;
-    varying vec3 vFragPos;
-    varying float vClipEdge;
-
-    void main()
-    {
-        vec4 pos = vec4(aPosition, 1.0);
-        gl_Position = projViewModelMatrix * pos;
-        vNormal = normalMatrix * aNormal;
-        vFragPos = vec3(modelMatrix * pos);
-        vClipEdge = aClipEdge;
-    }
-`;
-
-const frag = `
-    #ifdef GL_ES
-        precision mediump float;
-    #endif
-
-    //漫反射所需变量
-    varying vec3 vNormal; //法线矩阵用于消除 model 变换(不等比缩放时)给法线带来的误差，其计算方法： mat3(transpose(inverse(model)))
-    varying vec3 vFragPos; //物体当前表面点的世界坐标
-    varying float vClipEdge;
-
-    //镜面光照所需变量
-    uniform vec3 camPos; //相机的位置，用于计算
-
-    //材质struct
-    struct Material {
-        vec3 ambient;  //环境光的物体颜色
-        vec3 diffuse;  //漫反射的物体颜色
-        vec3 specular; //镜面光照的反射颜色
-        float shininess; //反光度，镜面高光的散射/半径
-        float opacity;
-    };
-    uniform Material material;
-
-    //光源
-    struct Light {
-        vec3 direction; //光源位置的世界坐标
-
-        vec3 ambient;  //环境光光强（颜色）
-        vec3 diffuse;  //漫反射光光强（颜色）
-        vec3 specular; //镜面反射光光强（颜色）
-    };
-
-    uniform Light light;
-
-    uniform float opacity;
-
-    //光源
-
-    void main()
-    {
-        if (vClipEdge == 1.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        // -------------- 光照 ----------------------
-        //环境光
-        vec3 ambient = light.ambient * material.ambient;
-        //------
-
-        //漫反射光
-        vec3 norm = normalize(vNormal);
-        // vec3 lightDir = normalize(light.position - vFragPos); //计算光入射方向
-        vec3 lightDir = normalize(-light.direction);
-
-        float diff = max(dot(norm, lightDir), 0.0); //散射系数，计算光的入射方向和法线夹角，夹角越大则系数越小，去掉小于0的值（没有意义）
-        vec3 diffuse = light.diffuse * (diff * material.diffuse);
-        //------
-
-        //镜面反射
-        // float specularStrength = 1.0; //镜面强度(Specular Intensity)变量
-        vec3 viewDir = normalize(camPos - vFragPos); //观察方向
-        vec3 reflectDir = reflect(-lightDir, norm);  //反射光方向
-
-        //blinn
-        vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
-
-        vec3 specular = light.specular * (spec * material.specular);
-        //------
-
-        vec3 result = ambient + diffuse + specular;
-        gl_FragColor = vec4(result, material.opacity);
-        // gl_FragColor = vec4(1.0, 0.0, 0.0, material.opacity);
-    }
-`;
+import vert from './glsl/phong.vert';
+import frag from './glsl/phong.frag';
 
 const defaultUniforms = {
     light : {
@@ -129,14 +31,15 @@ const levelNFilter = mesh => {
 
 class PhongPainter {
     constructor(regl, layer, sceneConfig) {
-        this.layer = layer;
-        this.regl = regl;
-        this.sceneConfig = sceneConfig || {};
-        if (!this.sceneConfig.lights) {
-            this.sceneConfig.lights = {};
+        this._layer = layer;
+        this._regl = regl;
+        this._canvas = layer.getRenderer().canvas;
+        this._sceneConfig = sceneConfig || {};
+        if (!this._sceneConfig.lights) {
+            this._sceneConfig.lights = {};
         }
         this._redraw = false;
-        this.meshCache = {};
+        this._meshCache = {};
         this.colorSymbol = 'polygonFill';
         this._init();
     }
@@ -148,14 +51,13 @@ class PhongPainter {
     createGeometry(glData, features) {
         const data = {
             aPosition : glData.vertices,
-            aClipEdge : glData.clipEdges,
             aNormal : glData.normals,
             aColor : glData.colors,
             aPickingId : glData.featureIndexes
         };
         const geometry = new reshader.Geometry(data, glData.indices);
         geometry._features = features;
-        geometry.generateBuffers(this.regl);
+        geometry.generateBuffers(this._regl);
 
         return geometry;
     }
@@ -167,14 +69,14 @@ class PhongPainter {
             picking : true
         });
         mesh.setLocalTransform(transform);
-        this.meshCache[key] = mesh;
+        this._meshCache[key] = mesh;
         this.scene.addMesh(mesh);
         return mesh;
     }
 
     paint(context) {
         this._redraw = false;
-        const layer = this.layer;
+        const layer = this._layer;
         const map = layer.getMap();
         if (!map) {
             return {
@@ -184,26 +86,14 @@ class PhongPainter {
 
         const uniforms = this._getUniformValues(map);
 
-        this.regl.clear({
+        this._regl.clear({
             stencil: 0xFF
         });
         this.scene.sortMeshes(context.cameraPosition);
 
-        const opacity = uniforms.material.opacity;
-
-        uniforms.enableCullFace = true;
-        uniforms.face = 'front';
-        uniforms.material.opacity = 0;
-        this.shader.filter = levelNFilter;
-        this.renderer.render(this.shader, uniforms, this.scene);
-
-        uniforms.material.opacity = opacity;
-        uniforms.enableCullFace = false;
         this.shader.filter = level0Filter;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        uniforms.enableCullFace = true;
-        uniforms.face = 'back';
         this.shader.filter = levelNFilter;
         this.renderer.render(this.shader, uniforms, this.scene);
 
@@ -215,7 +105,7 @@ class PhongPainter {
     }
 
     pick(x, y) {
-        const map = this.layer.getMap();
+        const map = this._layer.getMap();
         const uniforms = this._getUniformValues(map);
         if (!this._pickingRendered) {
             this._raypicking.render(this.scene.getMeshes(), uniforms);
@@ -226,7 +116,7 @@ class PhongPainter {
             projMatrix : map.projMatrix,
             returnPoint : true
         });
-        const mesh = meshId && this._raypicking.getMeshAt(meshId);
+        const mesh = (meshId === 0 || meshId) && this._raypicking.getMeshAt(meshId);
         if (!mesh) {
             return {
                 feature : null,
@@ -242,36 +132,36 @@ class PhongPainter {
     updateSceneConfig(config) {
         const keys = Object.keys(config);
         if (keys.length === 1 && keys[0] === 'material') {
-            this.sceneConfig.material = config.material;
+            this._sceneConfig.material = config.material;
             this._updateMaterial();
         } else {
-            extend(this.sceneConfig, config);
+            extend(this._sceneConfig, config);
             this._init();
             this._redraw = true;
         }
     }
 
     getMesh(key) {
-        return this.meshCache[key];
+        return this._meshCache[key];
     }
 
     delete(key) {
-        const mesh = this.meshCache[key];
+        const mesh = this._meshCache[key];
         if (mesh) {
             const geometry = mesh.geometry;
             geometry.dispose();
             mesh.dispose();
-            delete this.meshCache[key];
+            delete this._meshCache[key];
         }
     }
 
     clear() {
-        this.meshCache = {};
+        this._meshCache = {};
         this.scene.clear();
     }
 
     remove() {
-        delete this.meshCache;
+        delete this._meshCache;
         this.material.dispose();
         this.shader.dispose();
     }
@@ -279,9 +169,7 @@ class PhongPainter {
     resize() {}
 
     _init() {
-        const regl = this.regl;
-
-        const map = this.layer.getMap();
+        const regl = this._regl;
 
         this.scene = new reshader.Scene();
 
@@ -291,10 +179,10 @@ class PhongPainter {
             x : 0,
             y : 0,
             width : () => {
-                return this.layer ? map.width : 1;
+                return this._canvas ? this._canvas.width : 1;
             },
             height : () => {
-                return this.layer ? map.height : 1;
+                return this._canvas ? this._canvas.height : 1;
             }
         };
         const scissor = {
@@ -303,10 +191,10 @@ class PhongPainter {
                 x : 0,
                 y : 0,
                 width : () => {
-                    return this.layer ? map.width : 1;
+                    return this._canvas ? this._canvas.width : 1;
                 },
                 height : () => {
-                    return this.layer ? map.height : 1;
+                    return this._canvas ? this._canvas.height : 1;
                 }
             }
         };
@@ -319,12 +207,8 @@ class PhongPainter {
             extraCommandProps : {
                 //enable cullFace
                 cull : {
-                    enable: (context, props) => {
-                        return props.enableCullFace;
-                    },
-                    face: (context, props) => {
-                        return props.face;
-                    }
+                    enable: true,
+                    face: 'back'
                 },
                 stencil: {
                     enable: true,
@@ -392,7 +276,7 @@ class PhongPainter {
             }
         }
         pickingConfig.uniforms = [u];
-        this._raypicking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
+        this._raypicking = new reshader.FBORayPicking(this.renderer, pickingConfig, this._layer.getRenderer().pickingFBO);
 
     }
 
@@ -401,7 +285,7 @@ class PhongPainter {
         if (this.material) {
             this.material.dispose();
         }
-        const materialConfig = this.sceneConfig.material;
+        const materialConfig = this._sceneConfig.material;
         const material = {};
         for (const p in materialConfig) {
             if (materialConfig.hasOwnProperty(p)) {
@@ -461,8 +345,8 @@ class PhongPainter {
     }
 
     _getLightUniformValues() {
-        const lightConfig = this.sceneConfig.light;
-        const materialConfig = this.sceneConfig.material;
+        const lightConfig = this._sceneConfig.light;
+        const materialConfig = this._sceneConfig.material;
 
         const uniforms = {
             light : extend({}, defaultUniforms.light, lightConfig),

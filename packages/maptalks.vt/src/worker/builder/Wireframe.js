@@ -4,10 +4,11 @@ import { getIndexArrayType } from '../util/Util.js';
 export function buildWireframe(
     features, EXTENT,
     {
-        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight
+        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight,
+        bottom
     }
 ) {
-    // debugger
+    const drawBottom = bottom;
     const scale = EXTENT / features[0].extent;
     // debugger
     const size = countVertexes(features) * 2 + features.length * 3 * 2; //wireframe need to count last point in
@@ -46,7 +47,12 @@ export function buildWireframe(
             //top
             indices.push(current, next);
             //bottom
-            indices.push(current + vertexCount, next + vertexCount);
+            if (drawBottom) {
+                indices.push(current + vertexCount, next + vertexCount);
+            }
+            if (hasClippedPoint(vertices, current, EXTENT)) {
+                continue;
+            }
             //vertical top -> bottom
             indices.push(current, current + vertexCount);
         }
@@ -95,4 +101,10 @@ export function buildWireframe(
         featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
     };
     return data;
+}
+
+export function hasClippedPoint(vertices, i0, EXTENT) {
+    const x0 = vertices[i0 * 3], y0 = vertices[i0 * 3 + 1];
+    return (x0 < 0 || x0 > EXTENT ||
+        y0 < 0 || y0 > EXTENT);
 }

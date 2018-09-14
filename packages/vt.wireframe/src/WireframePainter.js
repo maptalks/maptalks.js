@@ -41,12 +41,13 @@ const levelNFilter = mesh => {
 
 class WireframePainter {
     constructor(regl, layer, sceneConfig) {
-        this.layer = layer;
-        this.regl = regl;
+        this._layer = layer;
+        this._canvas = layer.getRenderer().canvas;
+        this._regl = regl;
         this._redraw = false;
-        this.meshCache = {};
+        this._meshCache = {};
         this.colorSymbol = 'lineColor';
-        this.sceneConfig = sceneConfig || {};
+        this._sceneConfig = sceneConfig || {};
         this._init();
     }
 
@@ -60,7 +61,7 @@ class WireframePainter {
             aColor : glData.colors
         };
         const geometry = new reshader.Geometry(data, glData.indices, 0, { 'primitive' : 'lines' });
-        geometry.generateBuffers(this.regl);
+        geometry.generateBuffers(this._regl);
 
         return geometry;
     }
@@ -68,14 +69,14 @@ class WireframePainter {
     addMesh(key, geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this.material);
         mesh.setLocalTransform(transform);
-        this.meshCache[key] = mesh;
+        this._meshCache[key] = mesh;
         this.scene.addMesh(mesh);
         return mesh;
     }
 
     paint() {
         this._redraw = false;
-        const layer = this.layer;
+        const layer = this._layer;
         const map = layer.getMap();
         if (!map) {
             return {
@@ -85,7 +86,7 @@ class WireframePainter {
 
         const uniforms = this._getUniformValues(map);
 
-        this.regl.clear({
+        this._regl.clear({
             stencil: 0xFF
         });
         this.shader.filter = level0Filter;
@@ -100,26 +101,26 @@ class WireframePainter {
     }
 
     getMesh(key) {
-        return this.meshCache[key];
+        return this._meshCache[key];
     }
 
     delete(key) {
-        const mesh = this.meshCache[key];
+        const mesh = this._meshCache[key];
         if (mesh) {
             const geometry = mesh.geometry;
             geometry.dispose();
             mesh.dispose();
-            delete this.meshCache[key];
+            delete this._meshCache[key];
         }
     }
 
     clear() {
-        this.meshCache = {};
+        this._meshCache = {};
         this.scene.clear();
     }
 
     remove() {
-        delete this.meshCache;
+        delete this._meshCache;
         this.material.dispose();
         this.shader.dispose();
     }
@@ -127,9 +128,7 @@ class WireframePainter {
     resize() {}
 
     _init() {
-        const regl = this.regl;
-
-        const map = this.layer.getMap();
+        const regl = this._regl;
 
         this.scene = new reshader.Scene();
 
@@ -139,10 +138,10 @@ class WireframePainter {
             x : 0,
             y : 0,
             width : () => {
-                return this.layer ? map.width : 1;
+                return this._canvas ? this._canvas.width : 1;
             },
             height : () => {
-                return this.layer ? map.height : 1;
+                return this._canvas ? this._canvas.height : 1;
             }
         };
         const scissor = {
@@ -151,10 +150,10 @@ class WireframePainter {
                 x : 0,
                 y : 0,
                 width : () => {
-                    return this.layer ? map.width : 1;
+                    return this._canvas ? this._canvas.width : 1;
                 },
                 height : () => {
-                    return this.layer ? map.height : 1;
+                    return this._canvas ? this._canvas.height : 1;
                 }
             }
         };
@@ -215,7 +214,7 @@ class WireframePainter {
 
     _getUniformValues(map) {
         const projViewMatrix = map.projViewMatrix;
-        const opacity = this.sceneConfig.opacity || 0.3;
+        const opacity = this._sceneConfig.opacity || 0.3;
         return {
             projViewMatrix,
             opacity
