@@ -38,7 +38,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
 const options = {
     'id': null,
     'visible': true,
-    "interactive":true,
+    'interactive':true,
     'editable': true,
     'cursor': null,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
@@ -435,25 +435,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
              */
             this._fireEvent('hide');
         }
-        return this;
-    }
-    
-    /**
-     * Get interactive of the geometry, default is true
-     *
-     * @returns {Boolean}
-     */
-    isInteractive() {
-        return this.options['interactive'];
-    }
-
-    /**
-     * Set a new interactive to style the geometry 
-     * @param {Boolean}  - a new interactive
-     * @returns {Boolean}
-     */
-    setInteractive(val) {
-        this.options['interactive'] = val;
         return this;
     }
 
