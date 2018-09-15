@@ -55,9 +55,8 @@ class Scale extends Control {
     }
 
     _addScales() {
-    //liquid
-      var css = "";
-      var ScaleCss = {
+      let css = "";
+      const ScaleCss = {
         "border": "2px solid #000000",
         "border-top": "none",
         "line-height": "1.1",
@@ -72,27 +71,15 @@ class Scale extends Control {
         "background": "rgba(255, 255, 255, 0)"
       }
       if (!this.options['ScaleCss']) {
-        for (var i in ScaleCss) {
-          css += i + ":" + ScaleCss[i] + ";"
+        for (const p in ScaleCss) {
+          css += p + ":" + ScaleCss[p] + ";"
         }
       } else {
-        var _opScaleCss = this.options['ScaleCss'];
-        var _ScaleCss = {
-          "border": _opScaleCss["border"] || ScaleCss["border"],
-          "border-top": _opScaleCss["border-top"] || ScaleCss["border-top"],
-          "line-height": _opScaleCss["line-height"] || ScaleCss["line-height"],
-          "padding": _opScaleCss["padding"] || ScaleCss["padding"],
-          "color": _opScaleCss["color"] || ScaleCss["color"],
-          "font-size": _opScaleCss["font-size"] || ScaleCss["font-size"],
-          "text-align": _opScaleCss["text-align"] || ScaleCss["text-align"],
-          "white-space": _opScaleCss["white-space"] || ScaleCss["white-space"],
-          "overflow": _opScaleCss["overflow"] || ScaleCss["overflow"],
-          "-moz-box-sizing": _opScaleCss["-moz-box-sizing"] || ScaleCss["-moz-box-sizing"],
-          "box-sizing": _opScaleCss["box-sizing"] || ScaleCss["box-sizing"],
-          "background": _opScaleCss["background"] || ScaleCss["background"]
-        }
-        for (var i in _ScaleCss) {
-          css += i + ":" + _ScaleCss[i] + ";"
+        const _opScaleCss = this.options['ScaleCss'];
+        const _ScaleCss={}
+        for(const p in ScaleCss){
+            _ScaleCss[p]=_opScaleCss[p]||ScaleCss[p];
+            css += p + ":" + _ScaleCss[p] + ";"
         }
       }
         if (this.options['metric']) {
