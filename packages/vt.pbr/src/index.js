@@ -1,4 +1,4 @@
-import { createPainterPlugin } from '@maptalks/vt.base';
+import { createPainterPlugin } from '@maptalks/vt-plugin';
 import PBRScenePainter from './PBRScenePainter';
 import * as maptalks from '@maptalks/vt';
 

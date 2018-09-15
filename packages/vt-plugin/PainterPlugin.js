@@ -38,7 +38,11 @@ function createPainterPlugin(type, Painter) {
                 const glData = tileData.data;
                 const features = tileData.features;
                 const colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
-                tileCache.geometry = painter.createGeometry(extend({}, glData, { colors }), features);
+                const data = extend({}, glData);
+                if (colors) {
+                    data.colors = colors;
+                }
+                tileCache.geometry = painter.createGeometry(data, features);
             }
             let mesh = painter.getMesh(key);
             if (!mesh) {
@@ -98,6 +102,9 @@ function createPainterPlugin(type, Painter) {
         },
 
         _generateColorArray(features, featureIndexes, indices, vertices) {
+            if (!vertices) {
+                return null;
+            }
             const colors = new Uint8Array(vertices.length);
             let symbol, rgb;
             const visitedColors = {};

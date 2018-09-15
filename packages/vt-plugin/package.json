@@ -1,5 +1,5 @@
 {
-    "name": "@maptalks/vt.base",
+    "name": "@maptalks/vt-plugin",
     "version": "0.1.0",
     "description": "The base plugin for maptalks vectortile layer",
     "main": "index.js",

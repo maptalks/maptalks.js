@@ -19,7 +19,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/vt.base": "^0.1.0",
+    "@maptalks/vt-plugin": "^0.1.0",
     "@maptalks/gl": "file:../maptalksgl/packages/gl"
   },
   "devDependencies": {

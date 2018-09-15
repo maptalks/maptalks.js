@@ -1,4 +1,4 @@
-import { createPainterPlugin } from '@maptalks/vt.base';
+import { createPainterPlugin } from '@maptalks/vt-plugin';
 import PhongPainter from './PhongPainter';
 import * as maptalks from '@maptalks/vt';
 

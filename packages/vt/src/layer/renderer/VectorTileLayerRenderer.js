@@ -178,7 +178,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.regl._refresh();
     }
 
-    draw() {
+    draw(framestamp) {
         this.prepareCanvas();
         if (!this.ready) {
             this.completeRender();
@@ -187,18 +187,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._frameTime = maptalks.Util.now();
         this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this.startFrame();
-        super.draw();
+        super.draw(framestamp);
         this.endFrame();
         // TODO: shoule be called in parent
         // this.completeRender();
     }
 
-    drawOnInteracting() {
+    drawOnInteracting(event, framestamp) {
         if (!this.ready) {
             this.completeRender();
             return;
         }
-        this.draw();
+        this.draw(framestamp);
     }
 
     loadTile(tileInfo) {

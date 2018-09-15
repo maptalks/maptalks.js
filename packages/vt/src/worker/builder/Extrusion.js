@@ -1,7 +1,8 @@
-import { countVertexes, calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
+import { calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV.js';
 import { pushIn } from '../../layer/core/Util.js';
 import { getIndexArrayType } from '../util/Util.js';
+import { clipPolygon } from './clip';
 import earcut from 'earcut';
 
 export function buildExtrudeFaces(
@@ -16,14 +17,15 @@ export function buildExtrudeFaces(
         vScale //用于将meter转化为矢量瓦片内的坐标值
     }
 ) {
+    const BOUNDS = [-1, -1, EXTENT + 1, EXTENT + 1];
     // debugger
     const scale = EXTENT / features[0].extent;
 
-    const size = countVertexes(features) * 2;
+    // const size = countVertexes(features) * 2;
     //featIndexes : index of indices for each feature
     // const arrCtor = getIndexArrayType(features.length);
     const featIndexes = [],
-        vertices = new Int16Array(size);
+        vertices = [];
     const indices = [];
     const generateUV = uv;
     const uvs = generateUV ? [] : null;
@@ -33,12 +35,17 @@ export function buildExtrudeFaces(
         // debugger
         const count = offset - start;
 
-        const top = vertices.subarray(start, offset);
+        const top = vertices.slice(start, offset);
         //fill bottom vertexes
-        const bottom = vertices.subarray(offset, offset + count);
-        bottom.set(top);
-        for (let i = 2, l = bottom.length; i < l; i += 3) {
-            bottom[i] = top[i] - height; //top[i] is altitude
+        // const bottom = vertices.subarray(offset, offset + count);
+        // if (top.length > bottom.length) {
+        //     debugger
+        // }
+        // bottom.set(top);
+        for (let i = 2, l = count; i < l; i += 3) {
+            vertices[offset + i - 2] = top[i - 2]; //top[i] is altitude
+            vertices[offset + i - 1] = top[i - 1]; //top[i] is altitude
+            vertices[offset + i] = top[i] - height; //top[i] is altitude
         }
 
         //just ignore bottom faces never appear in sight
@@ -71,9 +78,9 @@ export function buildExtrudeFaces(
         }
 
         //side face indices
+        const s = indices.length;
         const startIdx = start / 3;
         const vertexCount = count / 3;
-        const sideIndices = [];
         let ringStartIdx = startIdx, current, next, isClipped;
         for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
             current = i;
@@ -89,25 +96,20 @@ export function buildExtrudeFaces(
             if (isClipped) {
                 continue;
             }
-            // const fn = isClipped ? 'unshift' : 'push';
             //top[i], bottom[i], top[i + 1]
             indices.push(current + vertexCount, current, next);
             //bottom[i + 1], top[i + 1], bottom[i]
             indices.push(next, next + vertexCount, current + vertexCount);
         }
-        // for (let i = 0; i < sideIndices.length; i++) {
-        //     indices.push(sideIndices[i]);
-        //     // clipEdges.push(sideEdges[i]);
-        // }
         if (generateUV) {
-            buildSideUV(uvs, vertices, sideIndices, [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
+            buildSideUV(uvs, vertices, indices.slice(s, indices.length), [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
         }
         return offset + count;
     }
 
 
     let offset = 0;
-
+    // debugger
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
@@ -128,6 +130,14 @@ export function buildExtrudeFaces(
             }
             const segStart = offset - start;
             let ring = geometry[i];
+            ring = clipPolygon(ring, BOUNDS, true);
+            if (!ring.length) {
+                // debugger
+                if (i === l - 1) {
+                    offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
+                }
+                continue;
+            }
             //earcut required the first and last position must be different
             const ringLen = ring.length;
             if (ring[0][0] === ring[ringLen - 1][0] && ring[0][1] === ring[ringLen - 1][1]) {
@@ -157,7 +167,7 @@ export function buildExtrudeFaces(
     const feaCtor = getIndexArrayType(features.length);
 
     const data = {
-        vertices,  // vertexes
+        vertices : new Int16Array(vertices),  // vertexes
         indices : tIndices,    // indices for drawElements
         featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
         // clipEdges : new Uint8Array(clipEdges)

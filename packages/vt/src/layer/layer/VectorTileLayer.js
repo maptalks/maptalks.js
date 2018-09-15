@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { log2 } from '../../worker/util/Util';
-import { extend } from '../../../../maptalks.vt.pbr/src/Util';
+import { extend } from '../core/Util';
 
 const defaultOptions = {
     renderer: 'gl',
@@ -16,7 +16,6 @@ const defaultOptions = {
     tileSize : [512, 512],
     stencil : false,
     features : true,
-    cascadeTiles : false,
     tileBuffer : 64
 };
 

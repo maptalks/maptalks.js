@@ -1,4 +1,4 @@
-import { createPainterPlugin } from '@maptalks/vt.base';
+import { createPainterPlugin } from '@maptalks/vt-plugin';
 import WireframePainter from './WireframePainter';
 import * as maptalks from '@maptalks/vt';
 

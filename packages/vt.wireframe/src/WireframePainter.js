@@ -107,11 +107,18 @@ class WireframePainter {
     delete(key) {
         const mesh = this._meshCache[key];
         if (mesh) {
-            const geometry = mesh.geometry;
-            geometry.dispose();
-            mesh.dispose();
+            this._deleteMesh(mesh);
             delete this._meshCache[key];
         }
+    }
+
+    _deleteMesh(mesh) {
+        if (!mesh) {
+            return;
+        }
+        const geometry = mesh.geometry;
+        geometry.dispose();
+        mesh.dispose();
     }
 
     clear() {
@@ -120,6 +127,9 @@ class WireframePainter {
     }
 
     remove() {
+        for (const key in this._meshCache) {
+            this._deleteMesh(this._meshCache[key]);
+        }
         delete this._meshCache;
         this.material.dispose();
         this.shader.dispose();
