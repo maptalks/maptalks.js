@@ -17,7 +17,6 @@ export function buildExtrudeFaces(
         vScale //用于将meter转化为矢量瓦片内的坐标值
     }
 ) {
-    const BOUNDS = [-1, -1, EXTENT + 1, EXTENT + 1];
     // debugger
     const scale = EXTENT / features[0].extent;
 
@@ -112,6 +111,7 @@ export function buildExtrudeFaces(
     // debugger
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
+        const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
         const geometry = feature.geometry;
 
         const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
@@ -132,7 +132,6 @@ export function buildExtrudeFaces(
             let ring = geometry[i];
             ring = clipPolygon(ring, BOUNDS, true);
             if (!ring.length) {
-                // debugger
                 if (i === l - 1) {
                     offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
                 }
