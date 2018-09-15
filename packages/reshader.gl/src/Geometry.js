@@ -23,7 +23,7 @@ export default class Geometry {
         this.desc = extend({}, defaultDesc, desc) || defaultDesc;
         const pos = data[this.desc.positionAttribute];
         if (!count) {
-            if (elements && elements.length) {
+            if (elements) {
                 count = elements.length;
             } else if (pos && pos.length) {
                 count = pos.length / this.desc.positionSize;

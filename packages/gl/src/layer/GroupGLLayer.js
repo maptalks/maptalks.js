@@ -171,6 +171,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.prepareRender();
         this.prepareCanvas();
         this.forEachRenderer(renderer => {
+            const gl = renderer.gl;
+            if (gl && (gl instanceof GLContext)) {
+                gl.clear(gl.STENCIL_BUFFER_BIT);
+            }
             renderer.render.apply(renderer, args);
         });
         this['_toRedraw'] = false;
@@ -178,6 +182,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     drawOnInteracting(...args) {
         this.forEachRenderer(renderer => {
+            const gl = renderer.gl;
+            if (gl && (gl instanceof GLContext)) {
+                gl.clear(gl.STENCIL_BUFFER_BIT);
+            }
             renderer.drawOnInteracting.apply(renderer, args);
         });
         this['_toRedraw'] = false;

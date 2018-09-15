@@ -7,7 +7,7 @@ class MeshShader extends Shader {
         const props = [];
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
-            if (!this.filter(meshes[i])) {
+            if (!meshes[i].geometry.count || !this.filter(meshes[i])) {
                 if (i === l - 1 && preCommand && props.length) {
                     preCommand(props);
                 }
