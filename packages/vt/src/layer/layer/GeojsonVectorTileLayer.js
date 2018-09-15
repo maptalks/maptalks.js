@@ -3,7 +3,10 @@ import VectorTileLayer from './VectorTileLayer';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 
 const options = {
-    features : 'id'
+    //feature data to return from worker
+    //for geojson layer, only need to return id of features
+    features : 'id',
+    tileBuffer : 64
 };
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {
@@ -16,6 +19,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     getWorkerOptions() {
         const options = super.getWorkerOptions();
         options.data = this.options.data;
+        options.tileBuffer = this.options.tileBuffer;
         return options;
     }
 
