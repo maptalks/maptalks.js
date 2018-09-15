@@ -55,6 +55,7 @@ class Scale extends Control {
     }
 
     _addScales() {
+    //liquid
       var css = "";
       var ScaleCss = {
         "border": "2px solid #000000",
