@@ -83,8 +83,8 @@ include(GLContext.prototype, {
             return;
         }
         v[0] = sfactor;
-        v[1] = sfactor;
-        v[2] = dfactor;
+        v[1] = dfactor;
+        v[2] = sfactor;
         v[3] = dfactor;
         this._gl.blendFunc(sfactor, dfactor);
     },
