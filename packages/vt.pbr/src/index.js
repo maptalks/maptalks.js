@@ -1,8 +1,8 @@
 import { createPainterPlugin } from '@maptalks/vt-plugin';
-import PBRScenePainter from './PBRScenePainter';
+import PBRPainter from './PBRPainter';
 import * as maptalks from '@maptalks/vt';
 
-const PBRPlugin = createPainterPlugin('pbr', PBRScenePainter);
+const PBRPlugin = createPainterPlugin('pbr', PBRPainter);
 
 PBRPlugin.registerAt(maptalks.VectorTileLayer);
 

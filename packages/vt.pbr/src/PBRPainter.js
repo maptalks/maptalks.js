@@ -4,7 +4,7 @@ import { extend } from './Util';
 import VSMShadowPass from './VSMShadowPass.js';
 import StencilShadowPass from './StencilShadowPass.js';
 
-class PBRScenePainter {
+class PBRPainter {
     constructor(regl, layer, sceneConfig) {
         this._layer = layer;
         this._regl = regl;
@@ -534,4 +534,4 @@ class PBRScenePainter {
     }
 }
 
-export default PBRScenePainter;
+export default PBRPainter;
