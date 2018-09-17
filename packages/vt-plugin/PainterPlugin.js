@@ -7,6 +7,9 @@ import Color from 'color';
 function createPainterPlugin(type, Painter) {
     const PainterPlugin = VectorTilePlugin.extend(type, {
 
+        init() {
+        },
+
         startFrame(context) {
             const { layer, regl, sceneConfig } = context;
             let painter = this.painter;
@@ -15,6 +18,7 @@ function createPainterPlugin(type, Painter) {
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
             painter.clear();
+            this._meshCache = {};
         },
 
         endFrame(context) {
@@ -44,9 +48,10 @@ function createPainterPlugin(type, Painter) {
                 }
                 tileCache.geometry = painter.createGeometry(data, features);
             }
-            let mesh = painter.getMesh(key);
+            let mesh = this._getMesh(key);
             if (!mesh) {
-                mesh = painter.addMesh(key, tileCache.geometry, tileTransform);
+                mesh = painter.addMesh(tileCache.geometry, tileTransform);
+                this._meshCache[key] = mesh;
             }
             mesh.setUniform('level', Math.abs(tileInfo.z - tileZoom));
             return {
@@ -62,29 +67,32 @@ function createPainterPlugin(type, Painter) {
         },
 
         pick(x, y) {
-            if (this.painter.pick) {
+            if (this.painter && this.painter.pick) {
                 return this.painter.pick(x, y);
             }
             return null;
         },
 
         deleteTile(context) {
-            const { tileCache, tileInfo } = context;
-            if (!tileCache.painted) {
-                return;
+            const { tileInfo } = context;
+            const key = tileInfo.dupKey;
+            const mesh = this._meshCache[key];
+            if (mesh && this.painter) {
+                this.painter.deleteMesh(mesh);
             }
-            const painter = this.painter;
-            if (painter) {
-                painter.delete(tileInfo.dupKey);
-            }
+            delete this._meshCache[key];
         },
 
         remove() {
             const painter = this.painter;
             if (painter) {
+                for (const key in this._meshCache) {
+                    painter.deleteMesh(this._meshCache[key]);
+                }
                 painter.remove();
                 delete this.painter;
             }
+            delete this._meshCache;
         },
 
         resize(size) {
@@ -124,6 +132,10 @@ function createPainterPlugin(type, Painter) {
 
             }
             return colors;
+        },
+
+        _getMesh(key) {
+            return this._meshCache[key];
         }
     });
 

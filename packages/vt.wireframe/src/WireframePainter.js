@@ -45,7 +45,6 @@ class WireframePainter {
         this._canvas = layer.getRenderer().canvas;
         this._regl = regl;
         this._redraw = false;
-        this._meshCache = {};
         this.colorSymbol = 'lineColor';
         this._sceneConfig = sceneConfig || {};
         this._init();
@@ -66,10 +65,9 @@ class WireframePainter {
         return geometry;
     }
 
-    addMesh(key, geometry, transform) {
+    addMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this.material);
         mesh.setLocalTransform(transform);
-        this._meshCache[key] = mesh;
         this.scene.addMesh(mesh);
         return mesh;
     }
@@ -100,42 +98,26 @@ class WireframePainter {
         };
     }
 
-    getMesh(key) {
-        return this._meshCache[key];
-    }
-
-    delete(key) {
-        const mesh = this._meshCache[key];
-        if (mesh) {
-            this._deleteMesh(mesh);
-            delete this._meshCache[key];
-        }
-    }
-
-    _deleteMesh(mesh) {
+    deleteMesh(mesh) {
         if (!mesh) {
             return;
         }
         const geometry = mesh.geometry;
         geometry.dispose();
         mesh.dispose();
+        this.scene.removeMesh(mesh);
     }
 
     clear() {
-        this._meshCache = {};
         this.scene.clear();
     }
 
+    resize() {}
+
     remove() {
-        for (const key in this._meshCache) {
-            this._deleteMesh(this._meshCache[key]);
-        }
-        delete this._meshCache;
         this.material.dispose();
         this.shader.dispose();
     }
-
-    resize() {}
 
     _init() {
         const regl = this._regl;

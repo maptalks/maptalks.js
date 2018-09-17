@@ -14,7 +14,6 @@ class PBRScenePainter {
             this._sceneConfig.lights = {};
         }
         this._redraw = false;
-        this._meshCache = {};
         this._loader = new reshader.ResourceLoader(regl.texture(2));
         this._hdr = null;
         this._loader.on('complete', () => {
@@ -53,10 +52,9 @@ class PBRScenePainter {
         return geometry;
     }
 
-    addMesh(key, geometry, transform) {
+    addMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this.material);
         mesh.setLocalTransform(transform);
-        this._meshCache[key] = mesh;
         this.scene.addMesh(mesh);
         if (this.shadowScene) {
             // 如果shadow mesh已经存在， 则优先用它
@@ -170,22 +168,17 @@ class PBRScenePainter {
         }
     }
 
-    getMesh(key) {
-        return this._meshCache[key];
-    }
-
-    delete(key) {
-        const mesh = this._meshCache[key];
-        if (mesh) {
-            const geometry = mesh.geometry;
-            geometry.dispose();
-            mesh.dispose();
-            delete this._meshCache[key];
+    deleteMesh(mesh) {
+        if (!mesh) {
+            return;
         }
+        const geometry = mesh.geometry;
+        geometry.dispose();
+        mesh.dispose();
+        this.scene.removeMesh(mesh);
     }
 
     clear() {
-        this._meshCache = {};
         this.scene.clear();
         if (this.shadowScene) {
             this.shadowScene.clear();
@@ -193,8 +186,9 @@ class PBRScenePainter {
         }
     }
 
+    resize() {}
+
     remove() {
-        delete this._meshCache;
         this.material.dispose();
         this.shader.dispose();
         if (this.ground) {
@@ -205,8 +199,6 @@ class PBRScenePainter {
             this.shadowPass.remove();
         }
     }
-
-    resize() {}
 
     _transformGround() {
         const layer = this._layer;
