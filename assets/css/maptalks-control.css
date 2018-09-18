@@ -152,3 +152,17 @@
   border-radius: 5px;
   background-color: #777;
 }
+.maptalks-scalcontrol{
+  border: 2px solid #000000;
+  border-top: none;
+  line-height: 1.1;
+  padding: 2px 5px 1px;
+  color: #000000;
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+  background: rgba(255, 255, 255, 0)
+}
