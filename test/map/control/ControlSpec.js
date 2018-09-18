@@ -17,8 +17,7 @@ describe('Control Common Tests', function () {
         map = new maptalks.Map(container, option);
         control = new maptalks.control.Scale({
             metric: true,
-            imperial: true,
-            containerClass:null
+            imperial: true
         });
         map.addControl(control);
     });
