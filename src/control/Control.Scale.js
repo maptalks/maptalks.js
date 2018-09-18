@@ -75,13 +75,12 @@ class Scale extends Control {
                 css += p + ':' + ScaleCss[p] + ';';
             }
         } else {
-            const _opScaleCss = this.options['ScaleCss'];
-            const _ScaleCss = {};
+            const meScaleCss = {};
             for (const p in ScaleCss) {
-                _ScaleCss[p] = _opScaleCss[p] || ScaleCss[p];
-                css += p + ':' + _ScaleCss[p] + ';';
+                meScaleCss[p] = this.options['ScaleCss'][p] || ScaleCss[p];
+                css += p + ':' + meScaleCss[p] + ';';
             }
-        } 
+        }
         if (this.options['metric']) {
             this._mScale = createElOn('div', css, this._scaleContainer);
         }
