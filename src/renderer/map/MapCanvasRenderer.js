@@ -578,7 +578,8 @@ class MapCanvasRenderer extends MapRenderer {
             point._multi(2);
         }
         const canvasImage = layerImage['image'];
-        if (point.x + canvasImage.width <= 0 || point.y + canvasImage.height <= 0) {
+        const width = canvasImage.width, height = canvasImage.height;
+        if (point.x + width <= 0 || point.y + height <= 0) {
             return;
         }
         //opacity of the layer image
@@ -629,7 +630,7 @@ class MapCanvasRenderer extends MapRenderer {
                 point.x + 18, point.y + 18);
         }*/
 
-        ctx.drawImage(canvasImage, point.x, point.y);
+        ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, width, height);
         if (matrix && shouldTransform) {
             ctx.restore();
         }
