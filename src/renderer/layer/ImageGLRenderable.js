@@ -138,7 +138,12 @@ const ImageGLRenderable = Base => {
          * Get webgl context(this.gl). It prefers canvas2, and will change to this.canvas if canvas2 is not created
          */
         createGLContext() {
-            const gl = this.gl = createGLContext(this.canvas2 || this.canvas, this.layer.options['glOptions']);
+            if (this.canvas.gl && this.canvas.gl.wrap) {
+                this.gl = this.canvas.gl.wrap();
+            } else {
+                this.gl = createGLContext(this.canvas2 || this.canvas, this.layer.options['glOptions']);
+            }
+            const gl = this.gl;
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
             gl.disable(gl.DEPTH_TEST);

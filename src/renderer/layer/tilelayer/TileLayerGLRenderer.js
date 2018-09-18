@@ -101,7 +101,10 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     // prepare gl, create program, create buffers and fill unchanged data: image samplers, texture coordinates
     onCanvasCreate() {
-        this.createCanvas2();
+        //not in a GroupGLLayer
+        if (!this.canvas.gl || !this.canvas.gl.wrap) {
+            this.createCanvas2();
+        }
     }
 
     createContext() {
@@ -126,7 +129,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     getCanvasImage() {
-        if (!this._gl()) {
+        if (!this._gl() || !this.canvas2) {
             return super.getCanvasImage();
         }
         const img = super.getCanvasImage();
@@ -139,6 +142,10 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     // decide whether the layer is renderer with gl.
     // when map is pitching, or fragmentShader is set in options
     _gl() {
+        if (this.canvas.gl && this.canvas.gl.wrap) {
+            //in GroupGLLayer
+            return true;
+        }
         return this.getMap() && !!this.getMap().getPitch() || this.layer && !!this.layer.options['fragmentShader'];
     }
 
