@@ -32,7 +32,7 @@ const options = {
  *     maxWidth : 160,
  *     metric : true,
  *     imperial : true,
- *     containerClass :'null'
+ *     containerClass :null
  * }).addTo(map);
  */
 class Scale extends Control {
@@ -64,7 +64,7 @@ class Scale extends Control {
         if (this.options['metric']) {
             this._mScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer);
         }
-        if (this.options['imperial'] && this.options['containerClass']) {
+        if (this.options['imperial']) {
             this._iScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer);
         }
     }
