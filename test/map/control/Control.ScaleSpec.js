@@ -32,6 +32,17 @@ describe('Control.Scale', function () {
         expect(control._mScale.innerHTML).to.not.be.empty();
         expect(control._iScale.innerHTML).to.not.be.empty();
         expect(control._mScale.innerHTML).to.contain('100');
+
+        var control1 = new maptalks.control.Scale({
+            metric: true,
+            imperial: true,
+            containerClass: 'mycontainerClass'
+        });
+        map.addControl(control1);
+
+        expect(control1._mScale.innerHTML).to.not.be.empty();
+        expect(control1._iScale.innerHTML).to.not.be.empty();
+        expect(control1._mScale.innerHTML).to.contain('100');
     });
 
 });
