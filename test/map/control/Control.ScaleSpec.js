@@ -25,7 +25,7 @@ describe('Control.Scale', function () {
         var control = new maptalks.control.Scale({
             metric: true,
             imperial: true,
-            containerClass:null
+            containerClass: null
         });
         map.addControl(control);
 
