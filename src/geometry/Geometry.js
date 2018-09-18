@@ -25,6 +25,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
  * @property {Boolean} [options.id=null]            - id of the geometry
  * @property {Boolean} [options.visible=true]       - whether the geometry is visible.
  * @property {Boolean} [options.editable=true]      - whether the geometry can be edited.
+ * @property {Boolean} [options.interactive=true]   - whether the geometry can be interactived.
  * @property {String} [options.cursor=null]         - cursor style when mouseover the geometry, same as the definition in CSS.
  * @property {String} [options.measure=EPSG:4326]   - the measure code for the geometry, defines {@tutorial measureGeometry how it can be measured}.
  * @property {Boolean} [options.draggable=false]    - whether the geometry can be dragged.
@@ -37,6 +38,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
 const options = {
     'id': null,
     'visible': true,
+    'interactive':true,
     'editable': true,
     'cursor': null,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
