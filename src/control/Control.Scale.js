@@ -55,9 +55,33 @@ class Scale extends Control {
     }
 
     _addScales() {
-        const css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
-            'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
-            ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
+        let css = '';
+        const ScaleCss = {
+            'border': '2px solid #000000',
+            'border-top': 'none',
+            'line-height': '1.1',
+            'padding': '2px 5px 1px',
+            'color': '#000000',
+            'font-size': '11px',
+            'text-align': 'center',
+            'white-space': 'nowrap',
+            'overflow': 'hidden',
+            '-moz-box-sizing': 'content-box',
+            'box-sizing': 'content-box',
+            'background': 'rgba(255, 255, 255, 0)'
+        };
+        if (!this.options['ScaleCss']) {
+            for (const p in ScaleCss) {
+                css += p + ':' + ScaleCss[p] + ';';
+            }
+        } else {
+            const _opScaleCss = this.options['ScaleCss'];
+            const _ScaleCss = {};
+            for (const p in ScaleCss) {
+                _ScaleCss[p] = _opScaleCss[p] || ScaleCss[p];
+                css += p + ':' + _ScaleCss[p] + ';';
+            }
+        } 
         if (this.options['metric']) {
             this._mScale = createElOn('div', css, this._scaleContainer);
         }
