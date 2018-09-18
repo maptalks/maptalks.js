@@ -17,7 +17,7 @@ const options = {
     'maxWidth': 100,
     'metric': true,
     'imperial': false,
-    'containerClass':'maptalks-scalcontrol'
+    'containerClass': 'maptalks-scalcontrol'
 };
 
 /**
@@ -44,7 +44,11 @@ class Scale extends Control {
      */
     buildOn(map) {
         this._map = map;
-        this._scaleContainer = createEl('div', this.options['containerClass']);
+        if (this.options['containerClass']) {
+            this._scaleContainer = createEl('div', this.options['containerClass']);
+        } else {
+            this._scaleContainer = createEl('div');
+        }
         this._addScales();
         map.on('zoomend', this._update, this);
         if (this._map._loaded) {
@@ -58,11 +62,20 @@ class Scale extends Control {
     }
 
     _addScales() {
-        if (this.options['metric']) {
+        const css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
+            'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
+            ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
+        if (this.options['metric'] && this.options['containerClass']) {
             this._mScale = createElOn('div', null, this._scaleContainer);
         }
-        if (this.options['imperial']) {
+        if (this.options['metric'] && this.options['containerClass'] === '') {
+            this._mScale = createElOn('div', css, this._scaleContainer);
+        }
+        if (this.options['imperial'] && this.options['containerClass']) {
             this._iScale = createElOn('div', null, this._scaleContainer);
+        }
+        if (this.options['imperial'] && this.options['containerClass'] === '') {
+            this._iScale = createElOn('div', css, this._scaleContainer);
         }
     }
 
