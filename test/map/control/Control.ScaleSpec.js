@@ -39,7 +39,7 @@ describe('Control.Scale', function () {
             containerClass: 'mycontainerClass'
         });
         map.addControl(control1);
-        expect(control1.getDOM().className === 'mycontainerClass').to.not.be.empty();
+        expect(control1.getDOM().className === 'mycontainerClass').to.be.ok();
     });
 
 });
