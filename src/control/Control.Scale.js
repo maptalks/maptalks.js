@@ -44,7 +44,7 @@ class Scale extends Control {
      */
     buildOn(map) {
         this._map = map;
-        this._scaleContainer = createEl('div', this.options['containerClass'] ? this.options['containerClass'] : null);
+        this._scaleContainer = createEl('div', this.options['containerClass']);
         this._addScales();
         map.on('zoomend', this._update, this);
         if (this._map._loaded) {
