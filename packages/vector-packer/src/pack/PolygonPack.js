@@ -1,4 +1,4 @@
-import { MAX_SEGMENTS_LENGTH, default as VectorPack } from './VectorPack';
+import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import classifyRings from './util/classify_rings';
 import earcut from 'earcut';
@@ -13,7 +13,6 @@ export default class PolygonPack extends VectorPack {
     constructor(...args) {
         super(...args);
         this.lineElements = [];
-        this.lineSegments = [];
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
@@ -38,7 +37,6 @@ export default class PolygonPack extends VectorPack {
     createDataPack(...args) {
         this.maxLineIndex = 0;
         this.lineElements = [];
-        this.lineSegments = [];
         const pack = super.createDataPack(...args);
         if (!pack) {
             return pack;
@@ -47,7 +45,6 @@ export default class PolygonPack extends VectorPack {
         const ElementType = getIndexArrayType(this.maxLineIndex);
         lineElements = new ElementType(this.lineElements);
         pack.lineElements = lineElements;
-        pack.lineSegments = this.lineSegments;
         pack.buffers.push(lineElements.buffer);
         return pack;
     }
@@ -111,17 +108,8 @@ export default class PolygonPack extends VectorPack {
     }
 
     addLineElements(...e) {
-        let segment = this.lineSegments[this.lineSegments.length - 1];
-        if (!segment || this.lineElements.length + e.length > MAX_SEGMENTS_LENGTH) {
-            segment = {
-                offset: segment ? segment.offset + segment.count : 0,
-                count: 0
-            };
-            this.lineSegments.push(segment);
-        }
         this.maxLineIndex = Math.max(this.maxLineIndex, ...e);
-        Array.prototype.push.apply(this.lineElements, e);
-        segment.count += e.length;
+        this.lineElements.push(...e);
     }
 }
 

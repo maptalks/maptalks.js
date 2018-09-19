@@ -2,12 +2,8 @@ import convert from './util/convert';
 import IconAtlas from './atlas/IconAtlas';
 import GlyphAtlas from './atlas/GlyphAtlas';
 import Promise from './util/Promise';
-import SegmentVector from './SegmentVector';
 import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
-
-// 16bit unsigned int (short) in default
-export const MAX_SEGMENTS_LENGTH = Math.pow(2, 16) - 1;
 
 /**
  * abstract class for all vector packs
@@ -21,7 +17,6 @@ export default class VectorPack {
         this.options = options;
         this.styledVectors = [];
         this.featureGroup = [];
-        this.segments = new SegmentVector();
     }
 
     _check(features) {
@@ -64,25 +59,32 @@ export default class VectorPack {
         const options = { minZoom : this.options.minZoom, maxZoom : this.options.maxZoom };
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
-            let vectors, feas;
-            for (let ii = 0; ii < styles.length; ii++) {
-                vectors = styledVectors[ii] = styledVectors[ii] || [];
-                feas = featureGroup[ii] = featureGroup[ii] || [];
-                if (styles[ii].filter(feature)) {
-                    feas.push(feature);
-                    const symbol = styles[ii].symbol;
-                    if (Array.isArray(symbol)) {
-                        for (let iii = 0; iii < symbol.length; iii++) {
-                            this.count++;
-                            vectors[iii] = vectors[iii] || [];
-                            vectors[iii].push(this.createStyledVector(feature, symbol[iii], options, iconReqs, glyphReqs));
-                        }
-                    } else {
-                        this.count++;
-                        vectors.push(this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs));
+            let styleIdx = feature['__style_idx'];
+            if (styleIdx === undefined) {
+                for (let ii = 0; ii < styles.length; ii++) {
+                    if (styles[ii].filter(feature)) {
+                        styleIdx = ii;
+                        break;
                     }
-                    break;
                 }
+            }
+            const style = styles[styleIdx];
+            if (!style) {
+                continue;
+            }
+            const vectors = styledVectors[styleIdx] = styledVectors[styleIdx] || [];
+            const feas = featureGroup[styleIdx] = featureGroup[styleIdx] || [];
+            feas.push(feature);
+            const symbol = style.symbol;
+            if (Array.isArray(symbol)) {
+                for (let ii = 0; ii < symbol.length; ii++) {
+                    this.count++;
+                    vectors[ii] = vectors[ii] || [];
+                    vectors[ii].push(this.createStyledVector(feature, symbol[ii], options, iconReqs, glyphReqs));
+                }
+            } else {
+                this.count++;
+                vectors.push(this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs));
             }
         }
 
@@ -144,7 +146,7 @@ export default class VectorPack {
                     const packBufs = pack.buffers;
                     delete pack.buffers;
                     packs.push(pack);
-                    Array.prototype.push.apply(buffers, packBufs);
+                    buffers.push(...packBufs);
                 }
             } else {
                 const pack = this.createDataPack(this.styledVectors[i], scale);
@@ -152,7 +154,7 @@ export default class VectorPack {
                 const packBufs = pack.buffers;
                 delete pack.buffers;
                 packs.push(pack);
-                Array.prototype.push.apply(buffers, packBufs);
+                buffers.push(...packBufs);
             }
         }
 
@@ -179,10 +181,6 @@ export default class VectorPack {
         this.maxPos = 0;
         const data = this.data = [];
         let elements = this.elements = [];
-        const segments = this.segments = [{
-            offset : 0,
-            count : 0
-        }];
 
         if (!vectors || !vectors.length) {
             return null;
@@ -216,24 +214,14 @@ export default class VectorPack {
             data : arrays,
             format,
             elements,
-            segments,
             featureIndex,
             buffers
         };
     }
 
     addElements(...e) {
-        let segment = this.segments[this.segments.length - 1];
-        if (!segment || this.elements.length + e.length > MAX_SEGMENTS_LENGTH) {
-            segment = {
-                offset: segment ? segment.offset + segment.count : 0,
-                count: 0
-            };
-            this.segments.push(segment);
-        }
         this.maxIndex = Math.max(this.maxIndex, ...e);
-        Array.prototype.push.apply(this.elements, e);
-        segment.count += e.length;
+        this.elements.push(...e);
     }
 
 }

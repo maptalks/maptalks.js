@@ -3,7 +3,11 @@ import { extend } from '../../layer/core/Util';
 import { getIndexArrayType } from '../util/Util';
 import { buildExtrudeFaces, buildWireframe } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
+// import { PolygonPack } from '@maptalks/vector-packer';
+import Promise from '../util/Promise';
 //TODO 改为从maptalks中载入compileStyle方法
+
+const KEY_STYLE_IDX = '__style_idx';
 
 export default class BaseLayerWorker {
     constructor(id, options) {
@@ -32,8 +36,9 @@ export default class BaseLayerWorker {
                 cb();
                 return;
             }
-            const data = this._createTileData(features, context);
-            cb(null, data.data, data.buffers);
+            this._createTileData(features, context).then(data => {
+                cb(null, data.data, data.buffers);
+            });
         });
     }
 
@@ -41,6 +46,7 @@ export default class BaseLayerWorker {
         const data = [],
             options = this.options,
             buffers = [];
+        const promises = [];
         for (let i = 0; i < this.pluginConfig.length; i++) {
             const pluginConfig = this.pluginConfig[i];
             const styles = pluginConfig.style;
@@ -62,10 +68,15 @@ export default class BaseLayerWorker {
             let feature;
             for (let ii = 0, ll = features.length; ii < ll; ii++) {
                 feature = features[ii];
+                delete feature[KEY_STYLE_IDX];
                 if (feature.styleMark && feature.styleMark[i] !== undefined) {
+                    const styleIdx = feature.styleMark[i];
+                    //vector-packer 中会读取 style_idx，能省略掉style遍历逻辑
+                    //KEY_STYLE_IDX中的值会在下次循环被替换掉，必须保证createTileGeometry不是在异步逻辑中读取的KEY_STYLE_IDX
+                    feature[KEY_STYLE_IDX] = styleIdx;
                     filteredFeas.push(feature);
-                    styledFeatures.push(ii, feature.styleMark[i]);
-                    maxIndex = Math.max(ii, feature.styleMark[i], maxIndex);
+                    styledFeatures.push(ii, styleIdx);
+                    maxIndex = Math.max(ii, styleIdx, maxIndex);
                 }
             }
 
@@ -73,63 +84,83 @@ export default class BaseLayerWorker {
                 continue;
             }
 
-            // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
-            const tileData = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, { extent : options.extent, glScale, zScale });
-
             const arrCtor = getIndexArrayType(maxIndex);
             data[i] = {
-                data : tileData.data,
                 styledFeatures : new arrCtor(styledFeatures)
             };
-
             buffers.push(data[i].styledFeatures.buffer);
-            if (tileData.buffers && tileData.buffers.length > 0) {
-                for (let i = 0, l = tileData.buffers.length; i < l; i++) {
-                    buffers.push(tileData.buffers[i]);
-                }
-            }
+            // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
+            const promise = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, styles, { extent : options.extent, glScale, zScale });
+            promises.push(promise);
         }
 
-        const allFeas = [];
-        if (options.features) {
-            let feature;
-            for (let i = 0, l = features.length; i < l; i++) {
-                feature = features[i];
-                if (feature.styleMark !== undefined) {
-                    if (options.features === 'id') {
-                        allFeas.push(feature.id);
-                    } else {
-                        allFeas.push(feature);
+        return Promise.all(promises).then(tileDatas => {
+            for (let i = 0; i < tileDatas.length; i++) {
+                if (!tileDatas[i]) {
+                    continue;
+                }
+                data[i].data = tileDatas[i].data;
+                if (tileDatas[i].buffers && tileDatas[i].buffers.length > 0) {
+                    for (let ii = 0, ll = tileDatas[i].buffers.length; ii < ll; ii++) {
+                        buffers.push(tileDatas[i].buffers[ii]);
                     }
-                    //reset feature's style mark
-                    delete feature.styleMark;
-                } else {
-                    allFeas.push(null);
                 }
             }
-        }
 
-        return {
-            data : {
-                data,
-                features : JSON.stringify(allFeas)
-            },
-            buffers
-        };
+            const allFeas = [];
+            if (options.features) {
+                let feature;
+                for (let i = 0, l = features.length; i < l; i++) {
+                    feature = features[i];
+                    if (feature.styleMark !== undefined) {
+                        if (options.features === 'id') {
+                            allFeas.push(feature.id);
+                        } else {
+                            allFeas.push(feature);
+                        }
+                        //reset feature's style mark
+                        delete feature.styleMark;
+                        delete feature[KEY_STYLE_IDX];
+                    } else {
+                        allFeas.push(null);
+                    }
+                }
+            }
+
+            return {
+                data : {
+                    data,
+                    features : JSON.stringify(allFeas)
+                },
+                buffers
+            };
+        });
+
     }
 
-    _createTileGeometry(features, dataConfig = {}, { extent, glScale, zScale }) {
+    _createTileGeometry(features, dataConfig = {}, styles, { extent, glScale, zScale }) {
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
-            return this._build3DExtrusion(features, dataConfig, extent, glScale, zScale);
+            return Promise.resolve(this._build3DExtrusion(features, dataConfig, extent, glScale, zScale));
         } else if (type === '3d-wireframe') {
-            return this._buildWireframe(features, dataConfig, extent);
-        } else {
-            return {
-                data : {},
-                buffers : null
-            };
+            return Promise.resolve(this._buildWireframe(features, dataConfig, extent));
+        } else if (type === 'point') {
+            //TODO
+            return null;
+        } else if (type === 'line') {
+            return null;
+        } else if (type === 'fill') {
+            // debugger
+            // //TODO 需要实现requestor，把数据返回给主线程绘制glyph，获取icon等
+            // const options = extend({}, dataConfig, { EXTENT : extent });
+            // const pack = new PolygonPack(features, styles, options);
+            // return pack.load();
+            return null;
         }
+        return {
+            data : {},
+            buffers : null
+        };
     }
 
     _build3DExtrusion(features, dataConfig, extent, glScale, zScale) {
