@@ -44,7 +44,7 @@ export default class PolygonPack extends VectorPack {
         let lineElements = this.lineElements;
         const ElementType = getIndexArrayType(this.maxLineIndex);
         lineElements = new ElementType(this.lineElements);
-        pack.lineElements = lineElements;
+        pack.lineIndices = lineElements;
         pack.buffers.push(lineElements.buffer);
         return pack;
     }

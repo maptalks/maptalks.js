@@ -15,7 +15,7 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
+        pack.load(1).then(() => {
             const glyphImage = pack.glyphAtlas.image;
             expect(pack.iconAltlas).not.to.be.ok();
             expect(glyphImage.width).to.be.above(0);
@@ -41,8 +41,8 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
 
             expect(data.aOffset.length).to.be(32);
@@ -81,8 +81,8 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
             expect(data.aSize.length).to.be(32);
             expect(data.aSize[0]).to.be(5);
@@ -110,8 +110,8 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
             expect(data.aShape.length).to.be(16);
             expect(data.aShape[0]).to.be(-1);
@@ -141,8 +141,8 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
             expect(data.aColor.length).to.be(24);
             expect(data.aColor[0]).to.be(17);
@@ -170,8 +170,8 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
             expect(data.aRotation.length).to.be(8);
             expect(data.aRotation[0]).to.be(new Float32Array([60 * Math.PI / 180])[0]);
@@ -196,8 +196,8 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
             expect(data.aOpacity.length).to.be(8);
             expect(data.aOpacity[0]).to.be(128);
@@ -221,8 +221,8 @@ describe('Point Pack of texts specs', function () {
             }
         ]);
         const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
 
             const data = result.packs[0].data;
             expect(data.aShape.length).to.be(48);

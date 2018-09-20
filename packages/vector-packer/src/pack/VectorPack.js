@@ -5,6 +5,8 @@ import Promise from './util/Promise';
 import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
 
+const KEY_IDX = '__fea_idx';
+
 /**
  * abstract class for all vector packs
  */
@@ -16,7 +18,7 @@ export default class VectorPack {
         this.styles = styles;
         this.options = options;
         this.styledVectors = [];
-        this.featureGroup = [];
+        // this.featureGroup = [];
     }
 
     _check(features) {
@@ -48,9 +50,9 @@ export default class VectorPack {
         }
     }
 
-    load() {
+    load(scale) {
         const styledVectors = this.styledVectors = [];
-        const featureGroup = this.featureGroup = [];
+        // const featureGroup = this.featureGroup = [];
         this.count = 0;
         const features = this.features;
         if (!features || !features.length) return Promise.resolve();
@@ -73,18 +75,23 @@ export default class VectorPack {
                 continue;
             }
             const vectors = styledVectors[styleIdx] = styledVectors[styleIdx] || [];
-            const feas = featureGroup[styleIdx] = featureGroup[styleIdx] || [];
-            feas.push(feature);
+            // const feas = featureGroup[styleIdx] = featureGroup[styleIdx] || [];
+            // feas.push(i);
             const symbol = style.symbol;
             if (Array.isArray(symbol)) {
                 for (let ii = 0; ii < symbol.length; ii++) {
                     this.count++;
                     vectors[ii] = vectors[ii] || [];
-                    vectors[ii].push(this.createStyledVector(feature, symbol[ii], options, iconReqs, glyphReqs));
+                    const styledVector = this.createStyledVector(feature, symbol[ii], options, iconReqs, glyphReqs);
+                    //KEY_IDX是feature在数组中的序号，在BaseLayerWorker中设置
+                    styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+                    vectors[ii].push(styledVector);
                 }
             } else {
                 this.count++;
-                vectors.push(this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs));
+                const styledVector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
+                styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+                vectors.push(styledVector);
             }
         }
 
@@ -115,7 +122,8 @@ export default class VectorPack {
 
                     this.glyphAtlas = new GlyphAtlas(glyphs);
                 }
-                resolve(this.iconAtlas, this.glyphAtlas);
+                resolve(this.pack(scale));
+                // resolve(this.iconAtlas, this.glyphAtlas);
             });
         });
     }
@@ -159,7 +167,7 @@ export default class VectorPack {
         }
 
         const vectorPack = {
-            features : this.featureGroup,
+            // features : this.featureGroup,
             packs, buffers,
         };
 
@@ -190,13 +198,19 @@ export default class VectorPack {
         const format = this.getFormat(vectors[0].symbol),
             formatWidth = getFormatWidth(format);
 
-        let featureIndex = [];
+        let featureIndexes = [];
+        let maxFeaIndex = 0;
         for (let i = 0, l = vectors.length; i < l; i++) {
             this.placeVector(vectors[i], scale, formatWidth);
-            featureIndex.push(data.length / formatWidth);
+            //fill feature index of every data
+            const count = elements.length - featureIndexes.length;
+            for (let ii = 0; ii < count; ii++) {
+                featureIndexes.push(vectors[i].featureIdx);
+            }
+            maxFeaIndex = Math.max(maxFeaIndex, vectors[i].featureIdx);
         }
-        const ArrType = getIndexArrayType(data.length / formatWidth);
-        featureIndex = new ArrType(featureIndex);
+        const ArrType = getIndexArrayType(maxFeaIndex);
+        featureIndexes = new ArrType(featureIndexes);
 
         format[0].type = getPosArrayType(this.maxPos);
 
@@ -205,7 +219,7 @@ export default class VectorPack {
         for (const p in arrays) {
             buffers.push(arrays[p].buffer);
         }
-        buffers.push(featureIndex.buffer);
+        buffers.push(featureIndexes.buffer);
 
         const ElementType = getIndexArrayType(this.maxIndex);
         elements = new ElementType(elements);
@@ -213,8 +227,8 @@ export default class VectorPack {
         return {
             data : arrays,
             format,
-            elements,
-            featureIndex,
+            indices : elements,
+            featureIndexes,
             buffers
         };
     }

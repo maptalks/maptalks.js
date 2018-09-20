@@ -17,8 +17,8 @@ describe('Line Pack specs', function () {
             }
         ]);
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(18);
@@ -57,8 +57,8 @@ describe('Line Pack specs', function () {
             }
         ]);
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(27);
@@ -94,8 +94,8 @@ describe('Line Pack specs', function () {
             }
         ]);
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(24);
@@ -131,8 +131,8 @@ describe('Line Pack specs', function () {
             }
         ]);
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(30);
@@ -167,8 +167,8 @@ describe('Line Pack specs', function () {
             }
         ]);
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
-        pack.load().then(() => {
-            const result = pack.pack(1);
+        pack.load(1).then(result => {
+            // const result = pack.pack(1);
             const data = result.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(18);

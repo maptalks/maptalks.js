@@ -3,11 +3,12 @@ import { extend } from '../../layer/core/Util';
 import { getIndexArrayType } from '../util/Util';
 import { buildExtrudeFaces, buildWireframe } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
-// import { PolygonPack } from '@maptalks/vector-packer';
+import { PolygonPack } from '@maptalks/vector-packer';
 import Promise from '../util/Promise';
 //TODO 改为从maptalks中载入compileStyle方法
 
 const KEY_STYLE_IDX = '__style_idx';
+const KEY_IDX = '__fea_idx';
 
 export default class BaseLayerWorker {
     constructor(id, options) {
@@ -74,6 +75,7 @@ export default class BaseLayerWorker {
                     //vector-packer 中会读取 style_idx，能省略掉style遍历逻辑
                     //KEY_STYLE_IDX中的值会在下次循环被替换掉，必须保证createTileGeometry不是在异步逻辑中读取的KEY_STYLE_IDX
                     feature[KEY_STYLE_IDX] = styleIdx;
+                    feature[KEY_IDX] = ii;
                     filteredFeas.push(feature);
                     styledFeatures.push(ii, styleIdx);
                     maxIndex = Math.max(ii, styleIdx, maxIndex);
@@ -112,15 +114,16 @@ export default class BaseLayerWorker {
                 let feature;
                 for (let i = 0, l = features.length; i < l; i++) {
                     feature = features[i];
-                    if (feature.styleMark !== undefined) {
+                    //reset feature's marks
+                    if (feature && feature.styleMark) {
                         if (options.features === 'id') {
                             allFeas.push(feature.id);
                         } else {
                             allFeas.push(feature);
                         }
-                        //reset feature's style mark
                         delete feature.styleMark;
                         delete feature[KEY_STYLE_IDX];
+                        delete feature[KEY_IDX];
                     } else {
                         allFeas.push(null);
                     }
@@ -152,10 +155,9 @@ export default class BaseLayerWorker {
         } else if (type === 'fill') {
             // debugger
             // //TODO 需要实现requestor，把数据返回给主线程绘制glyph，获取icon等
-            // const options = extend({}, dataConfig, { EXTENT : extent });
-            // const pack = new PolygonPack(features, styles, options);
-            // return pack.load();
-            return null;
+            const options = extend({}, dataConfig, { EXTENT : extent });
+            const pack = new PolygonPack(features, styles, options);
+            return pack.load();
         }
         return {
             data : {},
