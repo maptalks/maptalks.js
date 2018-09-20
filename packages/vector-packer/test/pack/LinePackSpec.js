@@ -95,7 +95,7 @@ describe('Line Pack specs', function () {
         ]);
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load(1).then(result => {
-            // const result = pack.pack(1);
+            const pack = result.packs[0];
             const data = result.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(24);
@@ -106,6 +106,13 @@ describe('Line Pack specs', function () {
 
             expect(data.aNormal.length).to.be.eql(16);
             expect(data.aNormal).to.a(Int8Array);
+
+            expect(pack.indices.length).to.be.eql(18);
+
+            expect(pack.featureIndexes.length).to.be.eql(18);
+            expect(pack.featureIndexes).to.be.a(Uint8Array);
+            //18 zeros
+            expect(pack.featureIndexes).to.be.eql(new Uint8Array(18));
 
             expect(data.aExtrude.length).to.be.eql(16);
             expect(data.aExtrude).to.a(Uint8Array);
