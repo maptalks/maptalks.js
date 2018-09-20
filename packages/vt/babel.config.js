@@ -1,6 +1,6 @@
-{
+module.exports = {
   "presets": [
-    ["env", {
+    ["@babel/env", {
       "loose": true,
       "modules": false
     }]
@@ -11,4 +11,4 @@
     "dist/*.js"
   ],
   "comments": false
-}
+};

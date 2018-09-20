@@ -5,14 +5,16 @@ import Color from 'color';
  * Create a VT Plugin with a given painter
  */
 function createPainterPlugin(type, Painter) {
-    const PainterPlugin = VectorTilePlugin.extend(type, {
+    var PainterPlugin = VectorTilePlugin.extend(type, {
 
-        init() {
+        init: function () {
         },
 
-        startFrame(context) {
-            const { layer, regl, sceneConfig } = context;
-            let painter = this.painter;
+        startFrame: function (context) {
+            var layer = context.layer,
+                regl = context.regl,
+                sceneConfig = context.sceneConfig;
+            var painter = this.painter;
             if (!painter) {
                 painter = this.painter = new Painter(regl, layer, sceneConfig);
             }
@@ -21,34 +23,38 @@ function createPainterPlugin(type, Painter) {
             this._meshCache = {};
         },
 
-        endFrame(context) {
-            const painter = this.painter;
+        endFrame: function (context) {
+            var painter = this.painter;
             if (painter) {
                 return painter.paint(context);
             }
             return null;
         },
 
-        paintTile(context) {
-            const { tileCache, tileData, tileInfo, tileTransform, tileZoom } = context;
-            const painter = this.painter;
+        paintTile: function (context) {
+            var tileCache = context.tileCache,
+                tileData = context.tileData,
+                tileInfo = context.tileInfo,
+                tileTransform = context.tileTransform,
+                tileZoom = context.tileZoom;
+            var painter = this.painter;
             if (!painter) {
                 return {
                     redraw : false
                 };
             }
-            const key = tileInfo.dupKey;
+            var key = tileInfo.dupKey;
             if (!tileCache.geometry) {
-                const glData = tileData.data;
-                const features = tileData.features;
-                const colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
-                const data = extend({}, glData);
+                var glData = tileData.data;
+                var features = tileData.features;
+                var colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
+                var data = extend({}, glData);
                 if (colors) {
                     data.colors = colors;
                 }
                 tileCache.geometry = painter.createGeometry(data, features);
             }
-            let mesh = this._getMesh(key);
+            var mesh = this._getMesh(key);
             if (!mesh) {
                 mesh = painter.addMesh(tileCache.geometry, tileTransform);
                 this._meshCache[key] = mesh;
@@ -59,34 +65,34 @@ function createPainterPlugin(type, Painter) {
             };
         },
 
-        updateSceneConfig({ sceneConfig }) {
-            const painter = this.painter;
+        updateSceneConfig: function (context) {
+            var painter = this.painter;
             if (painter) {
-                painter.updateSceneConfig(sceneConfig);
+                painter.updateSceneConfig(context.sceneConfig);
             }
         },
 
-        pick(x, y) {
+        pick: function (x, y) {
             if (this.painter && this.painter.pick) {
                 return this.painter.pick(x, y);
             }
             return null;
         },
 
-        deleteTile(context) {
-            const { tileInfo } = context;
-            const key = tileInfo.dupKey;
-            const mesh = this._meshCache[key];
+        deleteTile: function (context) {
+            var tileInfo = context.tileInfo;
+            var key = tileInfo.dupKey;
+            var mesh = this._meshCache[key];
             if (mesh && this.painter) {
                 this.painter.deleteMesh(mesh);
             }
             delete this._meshCache[key];
         },
 
-        remove() {
-            const painter = this.painter;
+        remove: function () {
+            var painter = this.painter;
             if (painter) {
-                for (const key in this._meshCache) {
+                for (var key in this._meshCache) {
                     painter.deleteMesh(this._meshCache[key]);
                 }
                 painter.remove();
@@ -95,34 +101,34 @@ function createPainterPlugin(type, Painter) {
             delete this._meshCache;
         },
 
-        resize(size) {
-            const painter = this.painter;
+        resize: function (size) {
+            var painter = this.painter;
             if (painter) {
                 painter.resize(size);
             }
         },
 
-        needToRedraw() {
+        needToRedraw: function () {
             if (!this.painter) {
                 return false;
             }
             return this.painter.needToRedraw();
         },
 
-        _generateColorArray(features, featureIndexes, indices, vertices) {
+        _generateColorArray: function (features, featureIndexes, indices, vertices) {
             if (!vertices) {
                 return null;
             }
-            const colors = new Uint8Array(vertices.length);
-            let symbol, rgb;
-            const visitedColors = {};
-            let pos;
-            for (let i = 0, l = featureIndexes.length; i < l; i++) {
-                const idx = featureIndexes[i];
+            var colors = new Uint8Array(vertices.length);
+            var symbol, rgb;
+            var visitedColors = {};
+            var pos;
+            for (var i = 0, l = featureIndexes.length; i < l; i++) {
+                var idx = featureIndexes[i];
                 symbol = features[idx].symbol;
                 rgb = visitedColors[idx];
                 if (!rgb) {
-                    const color = Color(symbol[this.painter.colorSymbol]);
+                    var color = Color(symbol[this.painter.colorSymbol]);
                     rgb = visitedColors[idx] = color.array();
                 }
                 pos = indices[i] * 3;
@@ -134,7 +140,7 @@ function createPainterPlugin(type, Painter) {
             return colors;
         },
 
-        _getMesh(key) {
+        _getMesh: function (key) {
             return this._meshCache[key];
         }
     });
@@ -145,9 +151,9 @@ function createPainterPlugin(type, Painter) {
 export default createPainterPlugin;
 
 export function extend(dest) {
-    for (let i = 1; i < arguments.length; i++) {
-        const src = arguments[i];
-        for (const k in src) {
+    for (var i = 1; i < arguments.length; i++) {
+        var src = arguments[i];
+        for (var k in src) {
             dest[k] = src[k];
         }
     }

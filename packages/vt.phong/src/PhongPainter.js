@@ -62,13 +62,13 @@ class PhongPainter {
     }
 
     addMesh(geometry, transform) {
-        const mesh = new reshader.Mesh(geometry, this.material, {
+        const mesh = new reshader.Mesh(geometry, this._material, {
             transparent : true,
             castShadow : false,
             picking : true
         });
         mesh.setLocalTransform(transform);
-        this.scene.addMesh(mesh);
+        this._scene.addMesh(mesh);
         return mesh;
     }
 
@@ -87,13 +87,13 @@ class PhongPainter {
         this._regl.clear({
             stencil: 0xFF
         });
-        this.scene.sortMeshes(context.cameraPosition);
+        this._scene.sortMeshes(context.cameraPosition);
 
-        this.shader.filter = level0Filter;
-        this.renderer.render(this.shader, uniforms, this.scene);
+        this._shader.filter = level0Filter;
+        this._renderer.render(this._shader, uniforms, this._scene);
 
-        this.shader.filter = levelNFilter;
-        this.renderer.render(this.shader, uniforms, this.scene);
+        this._shader.filter = levelNFilter;
+        this._renderer.render(this._shader, uniforms, this._scene);
 
         this._pickingRendered = false;
 
@@ -106,7 +106,7 @@ class PhongPainter {
         const map = this._layer.getMap();
         const uniforms = this._getUniformValues(map);
         if (!this._pickingRendered) {
-            this._raypicking.render(this.scene.getMeshes(), uniforms);
+            this._raypicking.render(this._scene.getMeshes(), uniforms);
             this._pickingRendered = true;
         }
         const { meshId, pickingId, point } = this._raypicking.pick(x, y, uniforms, {
@@ -146,26 +146,26 @@ class PhongPainter {
         const geometry = mesh.geometry;
         geometry.dispose();
         mesh.dispose();
-        this.scene.removeMesh(mesh);
+        this._scene.removeMesh(mesh);
     }
 
     clear() {
-        this.scene.clear();
+        this._scene.clear();
     }
 
     resize() {}
 
     remove() {
-        this.material.dispose();
-        this.shader.dispose();
+        this._material.dispose();
+        this._shader.dispose();
     }
 
     _init() {
         const regl = this._regl;
 
-        this.scene = new reshader.Scene();
+        this._scene = new reshader.Scene();
 
-        this.renderer = new reshader.Renderer(regl);
+        this._renderer = new reshader.Renderer(regl);
 
         const viewport = {
             x : 0,
@@ -244,7 +244,7 @@ class PhongPainter {
             }
         };
 
-        this.shader = new reshader.MeshShader(config);
+        this._shader = new reshader.MeshShader(config);
 
         this._updateMaterial();
 
@@ -268,14 +268,14 @@ class PhongPainter {
             }
         }
         pickingConfig.uniforms = [u];
-        this._raypicking = new reshader.FBORayPicking(this.renderer, pickingConfig, this._layer.getRenderer().pickingFBO);
+        this._raypicking = new reshader.FBORayPicking(this._renderer, pickingConfig, this._layer.getRenderer().pickingFBO);
 
     }
 
 
     _updateMaterial() {
-        if (this.material) {
-            this.material.dispose();
+        if (this._material) {
+            this._material.dispose();
         }
         const materialConfig = this._sceneConfig.material;
         const material = {};
@@ -284,7 +284,7 @@ class PhongPainter {
                 material[p] = materialConfig[p];
             }
         }
-        this.material = new reshader.Material(material);
+        this._material = new reshader.Material(material);
     }
 
     _getUniforms() {
