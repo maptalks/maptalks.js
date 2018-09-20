@@ -8,6 +8,7 @@ import Control from './Control';
  * @property {Number} [options.maxWidth=100]               - max width of the scale control.
  * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
  * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
+ * @property {String|Object} [options.containerClass=null]           - scalControl's container div's CSS class
  * @instance
  * @memberOf control.Scale
  */
@@ -15,7 +16,8 @@ const options = {
     'position': 'bottom-left',
     'maxWidth': 100,
     'metric': true,
-    'imperial': false
+    'imperial': false,
+    'containerClass': null
 };
 
 /**
@@ -29,7 +31,8 @@ const options = {
  *     position : 'bottom-left',
  *     maxWidth : 160,
  *     metric : true,
- *     imperial : true
+ *     imperial : true,
+ *     containerClass : null
  * }).addTo(map);
  */
 class Scale extends Control {
@@ -41,7 +44,7 @@ class Scale extends Control {
      */
     buildOn(map) {
         this._map = map;
-        this._scaleContainer = createEl('div');
+        this._scaleContainer = createEl('div', this.options['containerClass']);
         this._addScales();
         map.on('zoomend', this._update, this);
         if (this._map._loaded) {
@@ -59,10 +62,10 @@ class Scale extends Control {
             'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
             ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
         if (this.options['metric']) {
-            this._mScale = createElOn('div', css, this._scaleContainer);
+            this._mScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer);
         }
         if (this.options['imperial']) {
-            this._iScale = createElOn('div', css, this._scaleContainer);
+            this._iScale = createElOn('div', this.options['containerClass'] ? null : css, this._scaleContainer);
         }
     }
 

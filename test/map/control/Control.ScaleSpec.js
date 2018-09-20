@@ -24,13 +24,24 @@ describe('Control.Scale', function () {
     it('widgets contain correct value after initialized', function () {
         var control = new maptalks.control.Scale({
             metric: true,
-            imperial: true
+            imperial: true,
+            containerClass: null
         });
         map.addControl(control);
 
         expect(control._mScale.innerHTML).to.not.be.empty();
         expect(control._iScale.innerHTML).to.not.be.empty();
         expect(control._mScale.innerHTML).to.contain('100');
+    });
+
+    it('Is the className of dom myContainerClass?', function () {
+        var control1 = new maptalks.control.Scale({
+            metric: true,
+            imperial: true,
+            containerClass: 'mycontainerClass'
+        });
+        map.addControl(control1);
+        expect(control1.getDOM().className === 'mycontainerClass').to.be.ok();
     });
 
 });
