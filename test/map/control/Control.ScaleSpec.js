@@ -35,4 +35,14 @@ describe('Control.Scale', function () {
 
     });
 
+    it('Is the className of dom myContainerClass?', function () {
+        var control1 = new maptalks.control.Scale({
+            metric: true,
+            imperial: true,
+            containerClass: 'mycontainerClass'
+        });
+        map.addControl(control1);
+        expect(control1.getDOM().className === 'mycontainerClass').to.be.ok();
+    });
+
 });
