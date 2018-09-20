@@ -8,7 +8,7 @@ import Control from './Control';
  * @property {Number} [options.maxWidth=100]               - max width of the scale control.
  * @property {Boolean} [options.metric=true]               - Whether to show the metric scale line (m/km).
  * @property {Boolean} [options.imperial=false]            - Whether to show the imperial scale line (mi/ft).
- * @property {String|Object} [options.containerClass=maptalks-scalcontrol]           - scalControl's container div's CSS class
+ * @property {String|Object} [options.containerClass=null]           - scalControl's container div's CSS class
  * @instance
  * @memberOf control.Scale
  */
@@ -32,7 +32,7 @@ const options = {
  *     maxWidth : 160,
  *     metric : true,
  *     imperial : true,
- *     containerClass :null
+ *     containerClass : null
  * }).addTo(map);
  */
 class Scale extends Control {
