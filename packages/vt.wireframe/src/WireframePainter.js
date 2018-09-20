@@ -66,7 +66,7 @@ class WireframePainter {
     }
 
     addMesh(geometry, transform) {
-        const mesh = new reshader.Mesh(geometry, this.material);
+        const mesh = new reshader.Mesh(geometry);
         mesh.setLocalTransform(transform);
         this.scene.addMesh(mesh);
         return mesh;
@@ -115,7 +115,6 @@ class WireframePainter {
     resize() {}
 
     remove() {
-        this.material.dispose();
         this.shader.dispose();
     }
 
