@@ -1,10 +1,14 @@
 import GeoJSONLayerWorker from './layer/GeojsonLayerWorker';
 import VectorLayerWorker from './layer/VectorLayerWorker';
 
+let callbackId = 0;
+
 export default class Dispatcher {
 
-    constructor() {
-        this.layers = {};
+    constructor(workerId) {
+        this._layers = {};
+        this._callbacks = {};
+        this.workerId = workerId;
     }
 
     /**
@@ -15,7 +19,7 @@ export default class Dispatcher {
      * @param {Object} options  - layer initialization options
      * @param {Function} callback - callback function
      */
-    addLayer({ mapId, layerId, params }, callback) {
+    addLayer({ actorId, mapId, layerId, params }, callback) {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
             return;
@@ -23,10 +27,11 @@ export default class Dispatcher {
         const key = this._genKey(mapId, layerId);
         const type = params.type;
         const options = params.options;
+        const uploader = this.send.bind(this, actorId);
         if (type === 'GeoJSONVectorTileLayer') {
-            this.layers[key] = new GeoJSONLayerWorker(layerId, options, callback);
+            this._layers[key] = new GeoJSONLayerWorker(layerId, options, uploader, callback);
         } else if (type === 'VectorTileLayer') {
-            this.layers[key] = new VectorLayerWorker(layerId, options, callback);
+            this._layers[key] = new VectorLayerWorker(layerId, options, uploader, callback);
         }
     }
 
@@ -39,7 +44,7 @@ export default class Dispatcher {
     removeLayer({ mapId, layerId }, callback) {
         const layer = this._getLayerById(mapId, layerId);
         const key = this._genKey(mapId, layerId);
-        delete this.layers[key];
+        delete this._layers[key];
         if (layer) {
             layer.onRemove(callback);
         }
@@ -80,12 +85,48 @@ export default class Dispatcher {
         }
     }
 
+    /**
+     * Receive response from main thread and call callback
+     * @param {Object} data
+     */
+    receive(data) {
+        const id = data.callback;
+        const callback = this._callbacks[id];
+        delete this._callbacks[id];
+        if (callback && data.error) {
+            callback(new Error(data.error));
+        } else if (callback) {
+            callback(null, data.data);
+        }
+    }
+
+    /**
+     * Send a request to main thread
+     * @param {String} actorId - actor's id
+     * @param {String} command - actor's method name to call
+     * @param {Object} params - parameters
+     * @param {ArrayBuffer[]} buffers - transferable buffers
+     * @param {Function} callback - callback of main thread's reponse
+     */
+    send(actorId, command, params, buffers, callback) {
+        const id = callback ? `${actorId}-${callbackId++}` : null;
+        if (callback) this._callbacks[id] = callback;
+        postMessage({
+            type : '<request>',
+            workerId : this.workerId,
+            actorId,
+            command,
+            params,
+            callback : String(id)
+        }, buffers || []);
+    }
+
     _genKey(mapId, layerId) {
         return `${mapId}-${layerId}`;
     }
 
     _getLayerById(mapId, layerId) {
         const key = this._genKey(mapId, layerId);
-        return this.layers[key];
+        return this._layers[key];
     }
 }

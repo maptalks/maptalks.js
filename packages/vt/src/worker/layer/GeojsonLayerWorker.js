@@ -5,8 +5,8 @@ import BaseLayerWorker from './BaseLayerWorker';
 // import EXTENT from '../../data/extent';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
-    constructor(id, options, cb) {
-        super(id, options);
+    constructor(id, options, uploader, cb) {
+        super(id, options, uploader);
         options = options || {};
         if (!options.extent) {
             options.extent = 8192;
