@@ -1,6 +1,10 @@
 import { getGlobalWorkerPool } from './WorkerPool';
 import { UID } from '../util';
 
+let dedicatedWorker = 0;
+
+const EMPTY_BUFFERS = [];
+
 /**
  * An actor to exchange data from main-thread to workers
  * contains code from [mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js)
@@ -44,9 +48,8 @@ export default class Actor {
         this.workerKey = workerKey;
         this.workerPool = getGlobalWorkerPool();
         this.currentActor = 0;
-        this.dedicatedWorker = 0;
-        this.poolId = UID();
-        this.workers = this.workerPool.acquire(this.poolId);
+        this.actorId = UID();
+        this.workers = this.workerPool.acquire(this.actorId);
         this.callbacks = {};
         this.callbackID = 0;
         this.receiveFn = this.receive.bind(this);
@@ -86,10 +89,9 @@ export default class Actor {
      * @param {Number} [workerId=undefined] - Optional, a particular worker id to which to send this message.
      */
     send(data, buffers, cb, workerId) {
-        const id = cb ? `${this.poolId}:${this.callbackID++}` : null;
+        const id = cb ? `${this.actorId}:${this.callbackID++}` : null;
         if (cb) this.callbacks[id] = cb;
         this.post({
-            workerKey : this.workerKey,
             data : data,
             callback: String(id)
         }, buffers, workerId);
@@ -106,7 +108,23 @@ export default class Actor {
             id = data.callback;
         const callback = this.callbacks[id];
         delete this.callbacks[id];
-        if (callback && data.error) {
+        if (data.type === '<request>') {
+            if (this.actorId === data.actorId) {
+                //request from worker to main thread
+                this[data.command](data.params,  (err, cbData, buffers) => {
+                    const message = {
+                        type : '<response>',
+                        callback : data.callback
+                    };
+                    if (err) {
+                        message.error = err.message;
+                    } else {
+                        message.data = cbData;
+                    }
+                    this.post(message, buffers || EMPTY_BUFFERS, data.workerId);
+                });
+            }
+        } else if (callback && data.error) {
             callback(new Error(data.error));
         } else if (callback) {
             callback(null, data.data);
@@ -120,7 +138,7 @@ export default class Actor {
         this.workers.forEach(w => {
             w.removeEventListener('message', this.receiveFn, false);
         });
-        this.workerPool.release(this.poolId);
+        this.workerPool.release(this.actorId);
         delete this.receiveFn;
         delete this.workers;
         delete this.callbacks;
@@ -139,11 +157,10 @@ export default class Actor {
             // Use round robin to send requests to web workers.
             targetID = this.currentActor = (this.currentActor + 1) % this.workerPool.workerCount;
         }
-        if (buffers) {
-            this.workers[targetID].postMessage(data, buffers);
-        } else {
-            this.workers[targetID].postMessage(data);
-        }
+        data.workerId = targetID;
+        data.workerKey = this.workerKey;
+        data.actorId = this.actorId;
+        this.workers[targetID].postMessage(data, buffers || EMPTY_BUFFERS);
 
         return targetID;
     }
@@ -152,8 +169,8 @@ export default class Actor {
      * Get a dedicated worker in a round-robin fashion
      */
     getDedicatedWorker() {
-        this.dedicatedWorker = (this.dedicatedWorker + 1) % this.workerPool.workerCount;
-        return this.dedicatedWorker;
+        dedicatedWorker = (dedicatedWorker + 1) % this.workerPool.workerCount;
+        return dedicatedWorker;
     }
 
 }

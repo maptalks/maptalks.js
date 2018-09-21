@@ -11,7 +11,6 @@ const workerCount = Math.max(Math.floor(hardwareConcurrency / 2), 1);
 export default class WorkerPool {
     constructor() {
         this.active = {};
-        this.currentID = 0;
         this.workerCount = window.MAPTALKS_WORKER_COUNT || workerCount;
     }
 
