@@ -1,4 +1,4 @@
-import { isNumber } from '../../layer/core/Util';
+import { isNumber } from '../../common/Util';
 
 /**
  * Iterate features, and caculate vertex count in typedarray position

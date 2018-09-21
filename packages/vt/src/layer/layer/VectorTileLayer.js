@@ -1,7 +1,6 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { log2 } from '../../worker/util/Util';
-import { extend } from '../core/Util';
+import { extend, log2 } from '../../common/Util';
 
 const defaultOptions = {
     renderer: 'gl',

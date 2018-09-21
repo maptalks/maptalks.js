@@ -1,5 +1,5 @@
 import { countVertexes, isClippedEdge, fillPosArray, getHeightValue } from './Common';
-import { getIndexArrayType } from '../util/Util.js';
+import { getIndexArrayType } from '../../common/Util';
 
 export function buildWireframe(
     features, EXTENT,

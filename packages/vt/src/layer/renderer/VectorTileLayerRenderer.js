@@ -13,8 +13,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     setStyle() {
-        if (this.workerConn) {
-            this.workerConn.updateStyle(this.layer.getId(), this.layer.getStyle(), err => {
+        if (this._workerConn) {
+            this._workerConn.updateStyle(this.layer.getId(), this.layer.getStyle(), err => {
                 if (err) throw new Error(err);
                 this.clear();
                 this._clearPlugin();
@@ -54,7 +54,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     createContext() {
         const layer = this.layer;
-        this.prepareWorker();
+        this._prepareWorker();
         const EXTENT = layer.options['extent'];
 
         if (this.canvas.gl && this.canvas.gl.wrap) {
@@ -98,12 +98,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
-    prepareWorker() {
+    _prepareWorker() {
         const map = this.getMap();
-        if (!this.workerConn) {
-            this.workerConn = new WorkerConnection('@maptalks/vt', map.id);
+        if (!this._workerConn) {
+            this._workerConn = new WorkerConnection('@maptalks/vt', map.id);
         }
-        const workerConn = this.workerConn;
+        const workerConn = this._workerConn;
         //setTimeout in case layer's style is set to layer after layer's creating.
         setTimeout(() => {
             if (!workerConn.isActive()) {
@@ -186,9 +186,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         this._frameTime = maptalks.Util.now();
         this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
-        this.startFrame();
+        this._startFrame();
         super.draw(framestamp);
-        this.endFrame();
+        this._endFrame();
         // TODO: shoule be called in parent
         // this.completeRender();
     }
@@ -204,7 +204,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     loadTile(tileInfo) {
         const map = this.getMap();
         const glScale = map.getGLScale(tileInfo.z);
-        this.workerConn.loadTile(this.layer.getId(), { tileInfo, glScale, zScale : this._zScale }, (err, data) => {
+        this._workerConn.loadTile(this.layer.getId(), { tileInfo, glScale, zScale : this._zScale }, (err, data) => {
             if (err) this.onTileError(EMPTY_VECTOR_TILE, tileInfo);
             if (!data) {
                 this.onTileLoad({ _empty : true }, tileInfo);
@@ -237,7 +237,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return {};
     }
 
-    startFrame() {
+    _startFrame() {
         this.plugins.forEach((plugin, idx) => {
             if (!this.sceneCache[idx]) {
                 this.sceneCache[idx] = {};
@@ -252,7 +252,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
-    endFrame() {
+    _endFrame() {
         const cameraPosition = this.getMap().cameraPosition;
         this.plugins.forEach((plugin, idx) => {
             const status = plugin.endFrame({
@@ -368,12 +368,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     onRemove() {
         // const map = this.getMap();
-        if (this.workerConn) {
-            this.workerConn.removeLayer(this.layer.getId(), err => {
+        if (this._workerConn) {
+            this._workerConn.removeLayer(this.layer.getId(), err => {
                 if (err) throw err;
             });
-            this.workerConn.remove();
-            delete this.workerConn;
+            this._workerConn.remove();
+            delete this._workerConn;
         }
         this.pickingFBO.destroy();
         this._quadStencil.remove();

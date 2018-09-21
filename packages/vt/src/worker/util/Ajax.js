@@ -1,4 +1,4 @@
-import { isFunction, isString, uid } from '../../layer/core/Util';
+import { isFunction, uid } from '../../common/Util';
 
 /**
  * @classdesc

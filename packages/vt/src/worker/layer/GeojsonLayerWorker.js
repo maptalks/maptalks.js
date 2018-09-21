@@ -1,5 +1,5 @@
 import Ajax from '../util/Ajax';
-import { log2 } from '../util/Util';
+import { log2 } from '../../common/Util';
 import geojsonvt from 'geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
 // import EXTENT from '../../data/extent';

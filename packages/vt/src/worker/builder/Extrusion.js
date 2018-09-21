@@ -1,7 +1,6 @@
 import { calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
-import { buildFaceUV, buildSideUV } from './UV.js';
-import { pushIn } from '../../layer/core/Util.js';
-import { getIndexArrayType } from '../util/Util.js';
+import { buildFaceUV, buildSideUV } from './UV';
+import { pushIn, getIndexArrayType } from '../../common/Util';
 import { clipPolygon } from './clip';
 import earcut from 'earcut';
 

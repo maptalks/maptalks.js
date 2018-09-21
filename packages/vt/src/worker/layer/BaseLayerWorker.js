@@ -1,11 +1,9 @@
 import { compileStyle } from '@maptalks/feature-filter';
-import { extend } from '../../layer/core/Util';
-import { getIndexArrayType } from '../util/Util';
+import { extend, getIndexArrayType } from '../../common/Util';
 import { buildExtrudeFaces, buildWireframe } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
 import { PolygonPack } from '@maptalks/vector-packer';
-import Promise from '../util/Promise';
-//TODO 改为从maptalks中载入compileStyle方法
+import Promise from '../../common/Promise';
 
 const KEY_STYLE_IDX = '__style_idx';
 const KEY_IDX = '__fea_idx';
