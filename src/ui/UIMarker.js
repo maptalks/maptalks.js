@@ -20,8 +20,6 @@ const options = {
     'eventsPropagation' : true,
     'draggable': false,
     'single': false,
-    'pitchWithMap': false,
-    'rotateWithMap': false,
     'content': null
 };
 
@@ -292,30 +290,6 @@ class UIMarker extends Handlerable(UIComponent) {
         this.show();
     }
 
-    getEvents() {
-        return {
-            'pitch' : this.options['pitchWithMap'] ? this._pitchWithMap : null,
-            'rotate': this.options['rotateWithMap'] ? this._rotateWithMap : null
-        };
-    }
-
-    _pitchWithMap() {
-        if (Browser.ie9) return;
-        const dom = this.getDOM();
-        if (dom && dom.children && dom.children[0]) {
-            dom.children[0].style.transform = dom.children[0].style.transform.replace(/rotateX(.+)\s/g, `rotateX(${this.getMap().getPitch()}deg) `);
-        }
-    }
-
-    _rotateWithMap() {
-        if (Browser.ie9) return;
-        const dom = this.getDOM();
-        const markerRotate = -this.getMap().getBearing();
-        if (dom && dom.children && dom.children[0]) {
-            dom.children[0].style.transform = dom.children[0].style.transform.replace(/rotateZ(.+)/g, `rotateZ(${markerRotate}deg)`);
-        }
-    }
-
     /**
      * Show the UIMarker
      * @returns {UIMarker} this
@@ -346,14 +320,12 @@ class UIMarker extends Handlerable(UIComponent) {
      * @return {HTMLElement} UIMarker's HTMLElement
      */
     buildOn() {
-        const dom = createEl('div');
+        let dom;
         if (isString(this.options['content'])) {
+            dom = createEl('div');
             dom.innerHTML = this.options['content'];
         } else {
-            dom.appendChild(this.options['content']);
-        }
-        if (dom.children && dom.children[0]) {
-            dom.children[0].style.transform = 'rotateX(0deg) rotateZ(0deg)';
+            dom = this.options['content'];
         }
         this._registerDOMEvents(dom);
         return dom;
