@@ -224,7 +224,7 @@ include(GLContext.prototype, {
 
     hint(target, mode) {
         this._checkAndRestore();
-        const v = this.states.hints;
+        const v = this.states.hint;
         if (v[target][0] === mode) {
             return;
         }
@@ -566,6 +566,7 @@ include(GLContext.prototype, {
                 !equal(attrs[p].args, preAttrs[p].args)) {
                 if (attrs[p].buffer) {
                     gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
+                    gl.enableVertexAttribArray(attrs[p].args[0]);
                     gl.vertexAttribPointer(...attrs[p].args);
                 }
             }

@@ -119,8 +119,8 @@ class GLContext {
      * @param {*} program
      */
     deleteProgram(program) {
-        if (this.states.useProgram[0] === program) {
-            this.states.useProgram[0] = null;
+        if (this.states.program === program) {
+            this.states.program = null;
         }
         return this._gl.deleteProgram(program);
     }

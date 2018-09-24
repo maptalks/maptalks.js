@@ -65,12 +65,12 @@ export function createDefaultStates(gl) {
         polygonOffset : [0, 0],
         sampleCoverage : [1.0, false],
         stencilFuncSeparate : {
-            0x0404 : [gl.ALWAYS, 0, 255], //FRONT
-            0x0405 : [gl.ALWAYS, 0, 255], //BACK
+            0x0404 : [gl.ALWAYS, 0, 4294967295], //FRONT
+            0x0405 : [gl.ALWAYS, 0, 4294967295], //BACK
         },
         stencilMaskSeparate : {
-            0x0404 : [255], //FRONT
-            0x0405 : [255], //BACK
+            0x0404 : [4294967295], //FRONT
+            0x0405 : [4294967295], //BACK
         },
         stencilOpSeparate : {
             0x0404 : [gl.KEEP, gl.KEEP, gl.KEEP], //FRONT
