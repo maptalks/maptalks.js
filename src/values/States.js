@@ -468,10 +468,14 @@ include(GLContext.prototype, {
     vertexAttribPointer(index, size, type, normalized, stride, offset) {
         this._checkAndRestore();
         const args = [index, size, type, normalized, stride, offset];
-        this.states.attributes[index] = {
-            buffer : this.states.arrayBuffer,
-            args
-        };
+        if (!this.states.attributes[index]) {
+            this.states.attributes[index] = {
+                enable : true
+            };
+        }
+        const attrib = this.states.attributes[index];
+        attrib.buffer = this.states.arrayBuffer;
+        attrib.args = args;
         return this._gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
     },
     //VAO
@@ -566,8 +570,12 @@ include(GLContext.prototype, {
                 !equal(attrs[p].args, preAttrs[p].args)) {
                 if (attrs[p].buffer) {
                     gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
-                    gl.enableVertexAttribArray(attrs[p].args[0]);
                     gl.vertexAttribPointer(...attrs[p].args);
+                    if (attrs[p].enable) {
+                        gl.enableVertexAttribArray(attrs[p].args[0]);
+                    } else {
+                        gl.disableVertexAttribArray(attrs[p].args[0]);
+                    }
                 }
             }
         }

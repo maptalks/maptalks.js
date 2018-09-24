@@ -12,6 +12,10 @@ include(GLContext.prototype, {
      */
     enableVertexAttribArray(index) {
         this._checkAndRestore();
+        if (!this.states.attributes[index]) {
+            this.states.attributes[index] = {};
+        }
+        this.states.attributes[index].enable = true;
         return this._gl.enableVertexAttribArray(index);
     },
     /**
@@ -20,6 +24,10 @@ include(GLContext.prototype, {
      */
     disableVertexAttribArray(index) {
         this._checkAndRestore();
+        if (!this.states.attributes[index]) {
+            this.states.attributes[index] = {};
+        }
+        this.states.attributes[index].enable = false;
         return this._gl.disableVertexAttribArray(index);
     },
     /**
