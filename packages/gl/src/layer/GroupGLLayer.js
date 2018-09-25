@@ -1,5 +1,4 @@
 import * as maptalks from 'maptalks';
-// import createREGL from 'regl';
 import { GLContext } from 'fusion.gl';
 
 const options = {
@@ -45,7 +44,47 @@ export default class GroupGLLayer extends maptalks.Layer {
         this.layers = layers || [];
         this._checkChildren();
         this._layerMap = {};
-        this._groupChildren = [];
+    }
+
+    /**
+     * Add a new Layer.
+     * @param {Layer} layer - new layer
+     * @returns {GroupGLLayer} this
+     */
+    addLayer(layer, idx) {
+        if (layer.getMap()) {
+            throw new Error(`layer(${layer.getId()} is already added on map`);
+        }
+        if (idx === undefined) {
+            this.layers.push(layer);
+        } else {
+            this.layers.splice(idx, 0, layer);
+        }
+        this._checkChildren();
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            // not loaded yet
+            return this;
+        }
+        this._prepareLayer(layer);
+        renderer.setToRedraw();
+        return this;
+    }
+
+    removeLayer(layer) {
+        if (maptalks.Util.isString(layer)) {
+            layer = this.getChildLayer(layer);
+        }
+        const idx = this.layers.indexOf(layer);
+        if (idx < 0) {
+            return this;
+        }
+        layer._doRemove();
+        layer.off('show hide', this._onLayerShowHide, this);
+        delete this._layerMap[layer.getId()];
+        this.layers.splice(idx, 1);
+        this.getRenderer().setToRedraw();
+        return this;
     }
 
     /**
@@ -73,19 +112,20 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     onLoadEnd() {
-        const map = this.getMap();
         this.layers.forEach(layer => {
-            this._layerMap[layer.getId()] = layer;
-            if (layer.getChildLayer) {
-                this._groupChildren.push(layer);
-            }
-            layer['_canvas'] = this.getRenderer().canvas;
-            layer['_bindMap'](map);
-            layer.once('renderercreate', this._onChildRendererCreate, this);
-            layer.load();
-            this._bindChildListeners(layer);
+            this._prepareLayer(layer);
         });
         super.onLoadEnd();
+    }
+
+    _prepareLayer(layer) {
+        const map = this.getMap();
+        this._layerMap[layer.getId()] = layer;
+        layer['_canvas'] = this.getRenderer().canvas;
+        layer['_bindMap'](map);
+        layer.once('renderercreate', this._onChildRendererCreate, this);
+        layer.load();
+        this._bindChildListeners(layer);
     }
 
     onRemove() {
@@ -94,22 +134,12 @@ export default class GroupGLLayer extends maptalks.Layer {
             layer.off('show hide', this._onLayerShowHide, this);
         });
         delete this._layerMap;
-        delete this._groupChildren;
         super.onRemove();
     }
 
     getChildLayer(id) {
         const layer = this._layerMap[id];
-        if (layer) {
-            return layer;
-        }
-        for (let i = 0; i < this._groupChildren.length; i++) {
-            const child = this._groupChildren[i].getChildLayer(id);
-            if (child) {
-                return child;
-            }
-        }
-        return null;
+        return layer || null;
     }
 
     _bindChildListeners(layer) {
