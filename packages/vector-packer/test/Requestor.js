@@ -1,29 +1,18 @@
-const REQUESTOR = function ({ iconReqs, glyphReqs }, cb) {
-    let icons, glyphs, iconReady, glyphReady;
+const REQUESTOR = function (iconReqs, glyphReqs, cb) {
     const iconRequestor = new packer.IconRequestor();
     const glyphRequestor = new packer.GlyphRequestor();
+
+    const glyphs = glyphRequestor.getGlyphs(glyphReqs);
 
     iconRequestor.getIcons(iconReqs, (err, response) => {
         if (err) {
             cb(err);
             return;
         }
-        iconReady = true;
-        icons = response.icons;
-        if (iconReady && glyphReady) {
-            cb(null, icons, glyphs);
-        }
+
+        const icons = response.icons;
+        cb(null, { icons, glyphs : glyphs.glyphs });
     });
 
-    glyphRequestor.getGlyphs(glyphReqs, (err, response) => {
-        if (err) {
-            cb(err);
-            return;
-        }
-        glyphReady = true;
-        glyphs = response.glyphs;
-        if (iconReady && glyphReady) {
-            cb(null, icons, glyphs);
-        }
-    });
+
 };

@@ -17,7 +17,7 @@ describe('Polygon Pack specs', function () {
         const packs = new packer.PolygonPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         packs.load(1).then(result => {
             // const result = packs.pack(1);
-            const pack = result.packs[0];
+            const pack = result.data.packs[0];
             expect(pack.lineIndices).to.be.eql([4, 0, 0, 1, 1, 2, 2, 3, 3, 4]);
             // expect(pack.lineSegments).to.be.eql([{ offset : 0, count : 10 }]);
             expect(pack.indices).to.be.eql([3, 0, 1, 1, 2, 3]);

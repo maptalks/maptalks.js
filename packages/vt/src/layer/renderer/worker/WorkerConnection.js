@@ -1,5 +1,6 @@
 import * as maptalks from 'maptalks';
 import { toJSON } from '../../../common/Util';
+import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 
 // GeoJSONVectorLayer caches data in memory, should use a dedicated worker.
 const dedicatedLayers = ['GeoJSONVectorTileLayer'];
@@ -12,6 +13,8 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         this._layer = layer;
         this._mapId = mapId;
         this._dedicatedVTWorkers = {};
+        this._iconRequestor = new IconRequestor();
+        this._glyphRequestor = new GlyphRequestor();
     }
 
     initialize(cb) {
@@ -92,9 +95,21 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         this._dedicatedVTWorkers = [];
     }
 
-    fetchIconGlyphs(data, cb) {
+    fetchIconGlyphs({ icons, glyphs }, cb) {
         //error, data, buffers
-        cb(null, { icons : null, glyphs : null }, null);
+        const glyphData = this._glyphRequestor.getGlyphs(glyphs);
+        const dataBuffers = glyphData.buffers || [];
+        this._iconRequestor.getIcons(icons, (err, data) => {
+            if (err) {
+                throw err;
+            }
+            if (data.buffers) {
+                dataBuffers.push(...data.buffers);
+            }
+            cb(null, { icons : data.icons, glyphs : glyphData.glyphs }, dataBuffers);
+        });
+        //error, data, buffers
+
     }
 
     _getTileKey(tileInfo) {

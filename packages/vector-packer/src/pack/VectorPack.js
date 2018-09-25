@@ -50,7 +50,7 @@ export default class VectorPack {
         }
     }
 
-    load(scale) {
+    load(scale = 1) {
         const styledVectors = this.styledVectors = [];
         // const featureGroup = this.featureGroup = [];
         this.count = 0;
@@ -96,32 +96,37 @@ export default class VectorPack {
         }
 
         return new Promise((resolve, reject) => {
-            this.fetchAtlas(iconReqs, glyphReqs, (err, icons, glyphs) => {
+            this.fetchAtlas(iconReqs, glyphReqs, (err, data) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                if (icons && Object.keys(icons).length) {
-                    for (const url in icons) {
-                        const icon = icons[url];
-                        const { width, height, data } = icon.data;
-                        icon.data = new RGBAImage({ width, height }, data);
+                // debugger
+                if (data) {
+                    const { icons, glyphs } = data;
+                    if (icons && Object.keys(icons).length) {
+                        for (const url in icons) {
+                            const icon = icons[url];
+                            const { width, height, data } = icon.data;
+                            icon.data = new RGBAImage({ width, height }, data);
+                        }
+                        this.iconAtlas = new IconAtlas(icons);
                     }
-                    this.iconAtlas = new IconAtlas(icons);
-                }
-                if (glyphs && Object.keys(glyphs).length) {
-                    for (const font in glyphs) {
-                        const glyph = glyphs[font];
-                        for (const code in glyph) {
-                            const sdf = glyph[code];
-                            const { width, height, data } = sdf.bitmap;
-                            sdf.bitmap = new AlphaImage({ width, height }, data);
+                    if (glyphs && Object.keys(glyphs).length) {
+                        for (const font in glyphs) {
+                            const glyph = glyphs[font];
+                            for (const code in glyph) {
+                                const sdf = glyph[code];
+                                const { width, height, data } = sdf.bitmap;
+                                sdf.bitmap = new AlphaImage({ width, height }, data);
+                            }
+
                         }
 
+                        this.glyphAtlas = new GlyphAtlas(glyphs);
                     }
-
-                    this.glyphAtlas = new GlyphAtlas(glyphs);
                 }
+
                 resolve(this.pack(scale));
                 // resolve(this.iconAtlas, this.glyphAtlas);
             });
@@ -130,7 +135,7 @@ export default class VectorPack {
 
     fetchAtlas(iconReqs, glyphReqs, cb) {
         //TODO 从主线程获取 IconAtlas 和 GlyphAtlas
-        return this.options.requestor({ iconReqs, glyphReqs }, cb);
+        return this.options.requestor(iconReqs, glyphReqs, cb);
     }
 
     pack(scale) {
@@ -168,17 +173,17 @@ export default class VectorPack {
 
         const vectorPack = {
             // features : this.featureGroup,
-            packs, buffers,
+            data : { packs }, buffers,
         };
 
         if (this.iconAtlas) {
-            vectorPack.iconAtlas = serializeAtlas(this.iconAtlas);
-            buffers.push(vectorPack.iconAtlas.image.data.buffer);
+            vectorPack.data.iconAtlas = serializeAtlas(this.iconAtlas);
+            buffers.push(vectorPack.data.iconAtlas.image.data.buffer);
         }
 
         if (this.glyphAtlas) {
-            vectorPack.glyphAtlas = serializeAtlas(this.glyphAtlas);
-            buffers.push(vectorPack.glyphAtlas.image.data.buffer);
+            vectorPack.data.glyphAtlas = serializeAtlas(this.glyphAtlas);
+            buffers.push(vectorPack.data.glyphAtlas.image.data.buffer);
         }
 
         return vectorPack;
@@ -203,6 +208,7 @@ export default class VectorPack {
         for (let i = 0, l = vectors.length; i < l; i++) {
             this.placeVector(vectors[i], scale, formatWidth);
             //fill feature index of every data
+            //TODO 这里的逻辑有问题，需要规整为unique data才能这样设置
             const count = elements.length - featureIndexes.length;
             for (let ii = 0; ii < count; ii++) {
                 featureIndexes.push(vectors[i].featureIdx);
@@ -226,7 +232,7 @@ export default class VectorPack {
         buffers.push(elements.buffer);
         return {
             data : arrays,
-            format,
+            // format,
             indices : elements,
             featureIndexes,
             buffers

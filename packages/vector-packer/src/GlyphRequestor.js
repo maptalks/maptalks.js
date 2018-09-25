@@ -6,10 +6,9 @@ export default class GlyphRequestor {
         this._cachedFont = {};
     }
 
-    getGlyphs(glyphs, cb) {
+    getGlyphs(glyphs) {
         if (!glyphs || !Object.keys(glyphs).length) {
-            cb(null, { glyphs : {}});
-            return;
+            return { glyphs : null };
         }
         const glyphSdfs = {};
         const buffers = [];
@@ -25,7 +24,7 @@ export default class GlyphRequestor {
             }
         }
 
-        cb(null, { glyphs : glyphSdfs, buffers });
+        return { glyphs : glyphSdfs, buffers };
     }
 
     _tinySDF(entry, font, charCode) {

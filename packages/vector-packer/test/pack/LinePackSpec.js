@@ -19,7 +19,7 @@ describe('Line Pack specs', function () {
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
-            const data = result.packs[0].data;
+            const data = result.data.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(18);
             expect(data.aPos).to.be.a(Int16Array);
@@ -59,7 +59,7 @@ describe('Line Pack specs', function () {
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
-            const data = result.packs[0].data;
+            const data = result.data.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(27);
             expect(data.aPos).to.be.a(Int16Array);
@@ -95,8 +95,8 @@ describe('Line Pack specs', function () {
         ]);
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load(1).then(result => {
-            const pack = result.packs[0];
-            const data = result.packs[0].data;
+            const pack = result.data.packs[0];
+            const data = result.data.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(24);
             expect(data.aPos).to.be.a(Int16Array);
@@ -140,7 +140,7 @@ describe('Line Pack specs', function () {
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
-            const data = result.packs[0].data;
+            const data = result.data.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(30);
             expect(data.aPos).to.be.a(Int16Array);
@@ -176,7 +176,7 @@ describe('Line Pack specs', function () {
         const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
-            const data = result.packs[0].data;
+            const data = result.data.packs[0].data;
 
             expect(data.aPos.length).to.be.eql(18);
             expect(data.aPos).to.be.a(Int16Array);

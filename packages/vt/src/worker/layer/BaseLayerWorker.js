@@ -9,9 +9,10 @@ const KEY_STYLE_IDX = '__style_idx';
 const KEY_IDX = '__fea_idx';
 
 export default class BaseLayerWorker {
-    constructor(id, options) {
+    constructor(id, options, upload) {
         this.id = id;
         this.options = options;
+        this.upload = upload;
         this._compileStyle(options.style || {});
     }
 
@@ -39,6 +40,11 @@ export default class BaseLayerWorker {
                 cb(null, data.data, data.buffers);
             });
         });
+    }
+
+    fetchIconGlyphs(icons, glyphs, cb) {
+        //command, params, buffers and callback
+        this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
     }
 
     _createTileData(features, { glScale, zScale }) {
@@ -153,7 +159,10 @@ export default class BaseLayerWorker {
         } else if (type === 'fill') {
             // debugger
             // //TODO 需要实现requestor，把数据返回给主线程绘制glyph，获取icon等
-            const options = extend({}, dataConfig, { EXTENT : extent });
+            const options = extend({}, dataConfig, {
+                EXTENT : extent,
+                requestor : this.fetchIconGlyphs.bind(this)
+            });
             const pack = new PolygonPack(features, styles, options);
             return pack.load();
         }
