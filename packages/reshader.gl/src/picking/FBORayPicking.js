@@ -5,11 +5,11 @@ import Scene from '../Scene';
 import { pack3, packDepth } from './PickingUtil';
 
 const unpackFun = `
-    vec3 unpack(float f) {
-        vec3 color;
+    vec3 unpack(highp float f) {
+        highp vec3 color;
         color.b = floor(f / 256.0 / 256.0);
         color.g = floor((f - color.b * 256.0 * 256.0) / 256.0);
-        color.r = floor(f - color.b * 256.0 * 256.0 - color.g * 256.0);
+        color.r = f - floor(color.b * 256.0 * 256.0) - floor(color.g * 256.0);
         // now we have a vec3 with the 3 components in range [0..255]. Let's normalize it!
         return color / 255.0;
     }
