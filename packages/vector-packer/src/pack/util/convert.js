@@ -88,11 +88,11 @@ function convertFeature(features, geojson, options, index) {
     features.push(createFeature(id, type, geometry, geojson.properties));
 }
 
-function convertPoint(coords, out) {
+export function convertPoint(coords, out) {
     out.push([new Point(coords[0], coords[1])]);
 }
 
-function convertLine(ring, out) {
+export function convertLine(ring, out) {
     // var x0, y0;
     // var size = 0;
 
@@ -125,7 +125,7 @@ function convertLine(ring, out) {
     // out.end = out.size;
 }
 
-function convertLines(rings, out, tolerance, isPolygon) {
+export function convertLines(rings, out, tolerance, isPolygon) {
     for (var i = 0; i < rings.length; i++) {
         var geom = [];
         convertLine(rings[i], geom, tolerance, isPolygon);

@@ -1,11 +1,16 @@
+import Point from '@mapbox/point-geometry';
 import convert from './util/convert';
 import IconAtlas from './atlas/IconAtlas';
 import GlyphAtlas from './atlas/GlyphAtlas';
 import Promise from './util/Promise';
 import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
+import convertGeometry from './util/convert_geometry';
 
+//feature index defined in BaseLayerWorker
 const KEY_IDX = '__fea_idx';
+//style index defined in BaseLayerWorker
+const STLYE_IDX = '__style_idx';
 
 /**
  * abstract class for all vector packs
@@ -27,15 +32,28 @@ export default class VectorPack {
         }
         const first = features[0];
         if (Array.isArray(first.geometry) && first.properties) {
-            return features;
+            let g = first.geometry[0];
+            while (Array.isArray(g)) {
+                g = g[0];
+            }
+            if (g instanceof Point) {
+                //a converted one
+                return features;
+            }
         }
         const checked = [];
-        if (first.tags) {
-            //TODO geojson-vt转化的feature转成vt feature
+        if (Array.isArray(first.geometry)) {
+            for (let i = 0; i < features.length; i++) {
+                const feature = features[i];
+                checked.push(convertGeometry(feature));
+            }
         } else {
-            for (const feature of features) {
+            for (let i = 0; i < features.length; i++) {
+                const feature = features[i];
                 const feas = convert(feature);
                 for (const fea of feas) {
+                    fea[STLYE_IDX] = feature[STLYE_IDX];
+                    fea[KEY_IDX] = feature[KEY_IDX];
                     checked.push(fea);
                 }
             }
@@ -61,7 +79,7 @@ export default class VectorPack {
         const options = { minZoom : this.options.minZoom, maxZoom : this.options.maxZoom };
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
-            let styleIdx = feature['__style_idx'];
+            let styleIdx = feature[STLYE_IDX];
             if (styleIdx === undefined) {
                 for (let ii = 0; ii < styles.length; ii++) {
                     if (styles[ii].filter(feature)) {
