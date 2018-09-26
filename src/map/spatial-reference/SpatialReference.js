@@ -5,7 +5,7 @@ import * as projections from '../../geo/projection';
 import Transformation from '../../geo/transformation/Transformation';
 import { Measurer } from '../../geo/measurer';
 
-const DefaultSpatialRef = {
+const DefaultSpatialReference = {
     'EPSG:3857': {
         'resolutions': (function () {
             const resolutions = [];
@@ -76,7 +76,7 @@ const DefaultSpatialRef = {
     }
 };
 
-DefaultSpatialRef['EPSG:4490'] = DefaultSpatialRef['EPSG:4326'];
+DefaultSpatialReference['EPSG:4490'] = DefaultSpatialReference['EPSG:4326'];
 
 export default class SpatialReference {
     constructor(options = {}) {
@@ -151,9 +151,10 @@ export default class SpatialReference {
             resolutions = this.options['resolutions'];
         if (!resolutions) {
             if (projection['code']) {
-                defaultSpatialRef = DefaultSpatialRef[projection['code']];
+                defaultSpatialRef = DefaultSpatialReference[projection['code']];
                 if (defaultSpatialRef) {
                     resolutions = defaultSpatialRef['resolutions'];
+                    this.isEPSG = projection['code'] !== 'IDENTITY';
                 }
             }
             if (!resolutions) {
@@ -164,7 +165,7 @@ export default class SpatialReference {
         let fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
             if (projection['code']) {
-                defaultSpatialRef = DefaultSpatialRef[projection['code']];
+                defaultSpatialRef = DefaultSpatialReference[projection['code']];
                 if (defaultSpatialRef) {
                     fullExtent = defaultSpatialRef['fullExtent'];
                 }

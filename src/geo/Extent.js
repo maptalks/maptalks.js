@@ -7,7 +7,7 @@ import Size from './Size';
  * There are serveral ways to create a extent:
  * @category basic types
  * @example
- * //with 4 numbers
+ * //with 4 numbers: xmin, ymin, xmax and ymax
  * var extent = new Extent(100, 10, 120, 20);
  * @example
  * //with 2 coordinates
