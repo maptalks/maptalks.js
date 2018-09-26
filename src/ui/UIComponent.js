@@ -197,7 +197,7 @@ class UIComponent extends Eventable(Class) {
                     const origin = this.getTransformOrigin();
                     dom.style[TRANSFORMORIGIN] = origin;
                 }
-                dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
+                dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
             }
         }
 
@@ -225,7 +225,7 @@ class UIComponent extends Eventable(Class) {
                 dom.style.opacity = 1;
             }
             if (anim.scale) {
-                dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(1)';
+                dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(1)';
             }
         }
 
@@ -263,7 +263,7 @@ class UIComponent extends Eventable(Class) {
             dom.style.opacity = 0;
         }
         if (anim.scale) {
-            dom.style[TRANSFORM] = toCSSTranslate(this._pos) + ' scale(0)';
+            dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
         }
 
         /**
@@ -351,20 +351,6 @@ class UIComponent extends Eventable(Class) {
             }
         }
         return p;
-    }
-
-    getBearing() {
-        if (!this.getMap()) {
-            return null;
-        }
-        return this.getMap().getBearing();
-    }
-
-    getPitch() {
-        if (!this.getMap()) {
-            return null;
-        }
-        return this.getMap().getPitch();
     }
 
     _getAnimation() {
@@ -584,40 +570,35 @@ class UIComponent extends Eventable(Class) {
     }
 
     _setPosition() {
-        const dom = this.getDOM(),
-            p = this.getPosition(),
-            rotate = this.getBearing(),
-            pitch = this.getPitch();
-        this._pos = p;
+        const dom = this.getDOM();
         if (!dom) return;
-        if (!dom.style[TRANSFORM].match(/translate[3d]?.+px(\))/g) || !dom.style[TRANSFORM].match(/rotateZ(\().+deg(\))/g)) {
-            // if No translate or rotate ... first initial.
-            dom.style[TRANSFORM] = toCSSTranslate(p) + ' rotateX(0deg) rotateZ(0deg) scale(1)';
-            return;
+        const p = this.getPosition();
+        this._pos = p;
+        dom.style[TRANSFORM] = this._toCSSTranslate(p) + ' scale(1)';
+    }
+
+    _toCSSTranslate(p) {
+        if (!p) {
+            return '';
         }
-        if (dom.style[TRANSFORM].match(/rotateX(\()[0-9]{1,2}deg(\))/g) && this.options['pitchWithMap'] && pitch !== null) {
-            dom.style[TRANSFORM] = dom.style[TRANSFORM].replace(/rotateX(\()[0-9]{1,2}deg(\))/g, `rotateX(${Math.round(pitch)}deg)`);
-        }
-        if (dom.style[TRANSFORM].match(/rotateZ(\().+deg(\))/g) && this.options['rotateWithMap'] && rotate !== null) {
-            dom.style[TRANSFORM] = dom.style[TRANSFORM].replace(/rotateZ(\().+deg(\))/g, `rotateZ(${-rotate}deg)`);
-        }
-        if (dom.style[TRANSFORM].match(/translate[3d]?.+px(\))/g)) {
-            dom.style[TRANSFORM] = dom.style[TRANSFORM].replace(/translate[3d]?.+px(\))/g, toCSSTranslate(p));
+        if (Browser.any3d) {
+            const map = this.getMap(),
+                bearing = map ? map.getBearing() : 0,
+                pitch = map ? map.getPitch() : 0;
+            let r = '';
+            if (this.options['pitchWithMap'] && pitch) {
+                r += ` rotateX(${Math.round(pitch)}deg)`;
+            }
+            if (this.options['rotateWithMap'] && bearing) {
+                r += ` rotateZ(${Math.round(-bearing)}deg)`;
+            }
+            return 'translate3d(' + p.x + 'px,' + p.y + 'px, 0px)' + r;
+        } else {
+            return 'translate(' + p.x + 'px,' + p.y + 'px)';
         }
     }
 }
 
 UIComponent.mergeOptions(options);
-
-function toCSSTranslate(p) {
-    if (!p) {
-        return '';
-    }
-    if (Browser.any3d) {
-        return 'translate3d(' + p.x + 'px,' + p.y + 'px, 0px)';
-    } else {
-        return 'translate(' + p.x + 'px,' + p.y + 'px)';
-    }
-}
 
 export default UIComponent;

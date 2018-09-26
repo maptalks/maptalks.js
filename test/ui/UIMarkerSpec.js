@@ -172,6 +172,7 @@ describe('UI.UIMarker', function () {
     it('can be set to pitchWithMap', function(done) {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             pitchWithMap: true,
+            rotateWithMap: true,
             content : '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
@@ -179,15 +180,14 @@ describe('UI.UIMarker', function () {
         expect(m).to.be.ok();
         marker.setCoordinates(map.getCenter().add(0.01, 0.01));
 
-        map.setPitch(40);
+        map.setPitch(40).setBearing(50);
 
         var renderer = map._getRenderer();
         renderer.callInNextFrame(function() {
             var transform = m.parentElement.style.transform;
             var mapPitch = Math.round(map.getPitch());
-            var rotateX = transform.match(/rotateX(\()[0-9]{1,2}deg/g)[0];
-            console.warn(rotateX);
-            expect(rotateX).to.be.eql('rotateX(' + mapPitch + 'deg');
+            var mapBearing = Math.round(map.getBearing());
+            expect(transform.indexOf('rotateX(' + mapPitch + 'deg) rotateZ(-' + mapBearing + 'deg)')).to.be.above(0);
             done();
         });
     });
