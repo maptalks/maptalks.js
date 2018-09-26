@@ -40,7 +40,9 @@ const options = {
     'single': true,
     'animation': 'scale',
     'animationOnHide': true,
-    'animationDuration': 500
+    'animationDuration': 500,
+    'pitchWithMap': false,
+    'rotateWithMap': false,
 };
 
 /**
@@ -351,6 +353,20 @@ class UIComponent extends Eventable(Class) {
         return p;
     }
 
+    getBearing() {
+        if (!this.getMap()) {
+            return null;
+        }
+        return this.getMap().getBearing();
+    }
+
+    getPitch() {
+        if (!this.getMap()) {
+            return null;
+        }
+        return this.getMap().getPitch();
+    }
+
     _getAnimation() {
         const anim = {
             'fade': false,
@@ -569,11 +585,25 @@ class UIComponent extends Eventable(Class) {
 
     _setPosition() {
         const dom = this.getDOM(),
-            p = this.getPosition();
+            p = this.getPosition(),
+            rotate = this.getBearing(),
+            pitch = this.getPitch();
         this._pos = p;
         if (!dom) return;
-        dom.style[TRANSITION] = null;
-        dom.style[TRANSFORM] = toCSSTranslate(p) + ' scale(1)';
+        if (!dom.style[TRANSFORM].match(/translate[3d]?.+px(\))/g) || !dom.style[TRANSFORM].match(/rotateZ(\().+deg(\))/g)) {
+            // if No translate or rotate ... first initial.
+            dom.style[TRANSFORM] = toCSSTranslate(p) + ' rotateX(0deg) rotateZ(0deg) scale(1)';
+            return;
+        }
+        if (dom.style[TRANSFORM].match(/rotateX(\()[0-9]{1,2}deg(\))/g) && this.options['pitchWithMap'] && pitch !== null) {
+            dom.style[TRANSFORM] = dom.style[TRANSFORM].replace(/rotateX(\()[0-9]{1,2}deg(\))/g, `rotateX(${Math.round(pitch)}deg)`);
+        }
+        if (dom.style[TRANSFORM].match(/rotateZ(\().+deg(\))/g) && this.options['rotateWithMap'] && rotate !== null) {
+            dom.style[TRANSFORM] = dom.style[TRANSFORM].replace(/rotateZ(\().+deg(\))/g, `rotateZ(${-rotate}deg)`);
+        }
+        if (dom.style[TRANSFORM].match(/translate[3d]?.+px(\))/g)) {
+            dom.style[TRANSFORM] = dom.style[TRANSFORM].replace(/translate[3d]?.+px(\))/g, toCSSTranslate(p));
+        }
     }
 }
 

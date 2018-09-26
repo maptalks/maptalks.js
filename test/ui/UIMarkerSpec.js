@@ -168,4 +168,27 @@ describe('UI.UIMarker', function () {
         marker.setCoordinates(map.getCenter().add(0.01, 0.01));
         expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().add(0.01, 0.01).toArray());
     });
+
+    it('can be set to pitchWithMap', function(done) {
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            pitchWithMap: true,
+            content : '<div id="uimarker">marker</div>'
+        });
+        marker.addTo(map).show();
+        var m = document.getElementById('uimarker');
+        expect(m).to.be.ok();
+        marker.setCoordinates(map.getCenter().add(0.01, 0.01));
+
+        map.setPitch(40);
+
+        var renderer = map._getRenderer();
+        renderer.callInNextFrame(function() {
+            var transform = m.parentElement.style.transform;
+            var mapPitch = Math.round(map.getPitch());
+            var rotateX = transform.match(/rotateX(\()[0-9]{1,2}deg/g)[0];
+            console.warn(rotateX);
+            expect(rotateX).to.be.eql('rotateX(' + mapPitch + 'deg');
+            done();
+        });
+    });
 });
