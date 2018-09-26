@@ -208,6 +208,7 @@ export default class BaseLayerWorker {
         if (shadowVolume) {
             oldIndices = new faces.indices.constructor(faces.indices);
         }
+        //in buildUniqueVertex, indices will be updated
         const l = faces.indices.length;
         const ctor = getIndexArrayType(l);
         if (!(faces.indices instanceof ctor)) {
