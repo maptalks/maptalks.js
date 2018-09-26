@@ -150,6 +150,7 @@ export function buildExtrudeFaces(
                 offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
             }
         }
+        // need to buildUniqueVertex
         const count = indices.length - featIndexes.length;
         for (let i = 0; i < count; i++) {
             featIndexes.push(r);
@@ -160,13 +161,12 @@ export function buildExtrudeFaces(
     }, 0);
 
     const ctor = getIndexArrayType(maxIndex);
-    const tIndices = new ctor(indices);
 
     const feaCtor = getIndexArrayType(features.length);
 
     const data = {
         vertices : new Int16Array(vertices),  // vertexes
-        indices : tIndices,    // indices for drawElements
+        indices : new ctor(indices),    // indices for drawElements
         featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
         // clipEdges : new Uint8Array(clipEdges)
     };

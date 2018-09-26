@@ -1,4 +1,4 @@
-// import * as maptalks from 'maptalks';
+import * as maptalks from 'maptalks';
 import VectorTileLayer from './VectorTileLayer';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 
@@ -43,6 +43,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     _generateIdMap() {
         this.features = this.options.data;
+        if (maptalks.Util.isString(this.features)) {
+            this.features = JSON.parse(this.features);
+        }
         let uid = 0;
         this._idMaps = {};
         const data = this.features;
