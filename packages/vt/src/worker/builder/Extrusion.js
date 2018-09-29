@@ -156,18 +156,12 @@ export function buildExtrudeFaces(
             featIndexes.push(r);
         }
     }
-    const maxIndex = indices.reduce((a, b) => {
-        return Math.max(a, b);
-    }, 0);
-
-    const ctor = getIndexArrayType(maxIndex);
-
     const feaCtor = getIndexArrayType(features.length);
 
     const data = {
-        vertices : new Int16Array(vertices),  // vertexes
-        indices : new ctor(indices),    // indices for drawElements
-        featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
+        vertices : new Int16Array(vertices),        // vertexes
+        indices,                                    // indices for drawElements
+        featureIndexes : new feaCtor(featIndexes)   // vertex index of each feature
         // clipEdges : new Uint8Array(clipEdges)
     };
     if (uvs) {

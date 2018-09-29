@@ -23,7 +23,7 @@ function getPackSDFFormat() {
         {
             type : Int32Array,
             width : 3,
-            name : 'aPos'
+            name : 'aPosition'
         },
         {
             type : Int16Array,
@@ -46,6 +46,7 @@ function getPackSDFFormat() {
             name : 'aOpacity'
         },
         {
+            //TODO 更小的类型？
             type : Float32Array,
             width : 1,
             name : 'aRotation'
@@ -68,7 +69,7 @@ function getPackMarkerFormat() {
         {
             type : Int32Array,
             width : 3,
-            name : 'aPos'
+            name : 'aPosition'
         },
         {
             type : Int16Array,
@@ -115,6 +116,10 @@ function getPackMarkerFormat() {
  *   4.1 symbol 变化时，则重新生成3中的绘制数据，并重新生成 arraybuffer
  */
 export default class PointPack extends VectorPack {
+    getType() {
+        return 'point';
+    }
+
     //TODO 点的碰撞检测， 但带高度的碰撞检测无法在worker中计算
 
     createStyledVector(feature, symbol, options, iconReqs, glyphReqs) {

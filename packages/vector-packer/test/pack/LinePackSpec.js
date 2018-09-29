@@ -21,9 +21,9 @@ describe('Line Pack specs', function () {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
 
-            expect(data.aPos.length).to.be.eql(18);
-            expect(data.aPos).to.be.a(Int16Array);
-            expect(data.aPos).to.be.eql(new Int16Array([0, 0, 0, 0, 0, 0, 500, 0, 0, 500, 0, 0, 550, 50, 0, 550, 50, 0]));
+            expect(data.aPosition.length).to.be.eql(18);
+            expect(data.aPosition).to.be.a(Int16Array);
+            expect(data.aPosition).to.be.eql(new Int16Array([0, 0, 0, 0, 0, 0, 500, 0, 0, 500, 0, 0, 550, 50, 0, 550, 50, 0]));
 
             expect(data.aLinesofar.length).to.be.eql(6);
             expect(data.aLinesofar).to.a(Uint16Array);
@@ -61,8 +61,8 @@ describe('Line Pack specs', function () {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
 
-            expect(data.aPos.length).to.be.eql(27);
-            expect(data.aPos).to.be.a(Int16Array);
+            expect(data.aPosition.length).to.be.eql(27);
+            expect(data.aPosition).to.be.a(Int16Array);
 
             expect(data.aLinesofar.length).to.be.eql(9);
             expect(data.aLinesofar).to.a(Uint16Array);
@@ -98,8 +98,8 @@ describe('Line Pack specs', function () {
             const pack = result.data.packs[0];
             const data = result.data.packs[0].data;
 
-            expect(data.aPos.length).to.be.eql(24);
-            expect(data.aPos).to.be.a(Int16Array);
+            expect(data.aPosition.length).to.be.eql(24);
+            expect(data.aPosition).to.be.a(Int16Array);
 
             expect(data.aLinesofar.length).to.be.eql(8);
             expect(data.aLinesofar).to.a(Uint16Array);
@@ -142,8 +142,8 @@ describe('Line Pack specs', function () {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
 
-            expect(data.aPos.length).to.be.eql(30);
-            expect(data.aPos).to.be.a(Int16Array);
+            expect(data.aPosition.length).to.be.eql(30);
+            expect(data.aPosition).to.be.a(Int16Array);
 
             expect(data.aLinesofar.length).to.be.eql(10);
             expect(data.aLinesofar).to.a(Uint16Array);
@@ -178,8 +178,8 @@ describe('Line Pack specs', function () {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
 
-            expect(data.aPos.length).to.be.eql(18);
-            expect(data.aPos).to.be.a(Int16Array);
+            expect(data.aPosition.length).to.be.eql(18);
+            expect(data.aPosition).to.be.a(Int16Array);
 
             expect(data.aLinesofar.length).to.be.eql(6);
             expect(data.aLinesofar).to.a(Uint16Array);

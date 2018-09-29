@@ -23,7 +23,7 @@ describe('Polygon Pack specs', function () {
             expect(pack.indices).to.be.eql([3, 0, 1, 1, 2, 3]);
             // expect(pack.segments).to.be.eql([{ offset : 0, count : 6 }]);
 
-            expect(pack.data.aPos).to.be.eql([0, 0, 0, 500, 0, 0, 500, 100, 0, 0, 100, 0, 0, 0, 0]);
+            expect(pack.data.aPosition).to.be.eql([0, 0, 0, 500, 0, 0, 500, 100, 0, 0, 100, 0, 0, 0, 0]);
 
             done();
         }).catch(err => {

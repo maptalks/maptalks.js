@@ -61,15 +61,19 @@ class PhongPainter {
         return geometry;
     }
 
-    addMesh(geometry, transform) {
+    createMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this._material, {
             transparent : true,
             castShadow : false,
             picking : true
         });
         mesh.setLocalTransform(transform);
-        this._scene.addMesh(mesh);
         return mesh;
+    }
+
+    addMesh(mesh) {
+        this._scene.addMesh(mesh);
+        return this;
     }
 
     paint(context) {

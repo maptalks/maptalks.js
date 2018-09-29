@@ -3,8 +3,6 @@ export default class StyledVector {
         //a_vertex, aTexCoord, aOpacity
         this.feature = feature;
         this.symbol = symbol;
-        this.options = options;
+        this.options = options;//minZoom maxZoom
     }
-
-
 }

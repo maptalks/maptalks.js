@@ -72,7 +72,7 @@ export default class LinePack extends VectorPack {
             {
                 type : Int32Array,
                 width : 3,
-                name : 'aPos'
+                name : 'aPosition'
             },
             //round? + up?
             {
@@ -107,6 +107,16 @@ export default class LinePack extends VectorPack {
             lines = feature.geometry;
         for (const line of lines) {
             this._addLine(line, feature, join, cap, miterLimit, roundLimit, scale);
+        }
+    }
+
+    getType(symbol) {
+        if (symbol['linePatternFile']) {
+            return 'linePattern';
+        } else if (symbol['lineColor'] && symbol['lineColor']['colorStops']) {
+            return 'lineGradient';
+        } else {
+            return 'line';
         }
     }
 

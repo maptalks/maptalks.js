@@ -1,9 +1,6 @@
 const registedClazz = {};
 
 function VectorTilePlugin() {
-    if (this.init) {
-        this.init();
-    }
 }
 
 VectorTilePlugin.prototype.getType = function () {
@@ -42,8 +39,14 @@ VectorTilePlugin.prototype.needToRedraw = function () {
     return false;
 };
 
+VectorTilePlugin.prototype.constructor = VectorTilePlugin;
+
 VectorTilePlugin.extend = function (type, props) {
-    var clazz = function () {};
+    var clazz = function () {
+        if (this.init) {
+            this.init();
+        }
+    };
     var proto = Object.create(VectorTilePlugin.prototype);
     proto.constructor = clazz;
     clazz.prototype = proto;

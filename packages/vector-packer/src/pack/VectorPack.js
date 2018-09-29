@@ -152,7 +152,6 @@ export default class VectorPack {
     }
 
     fetchAtlas(iconReqs, glyphReqs, cb) {
-        //TODO 从主线程获取 IconAtlas 和 GlyphAtlas
         return this.options.requestor(iconReqs, glyphReqs, cb);
     }
 
@@ -176,6 +175,8 @@ export default class VectorPack {
                     if (!pack) continue;
                     const packBufs = pack.buffers;
                     delete pack.buffers;
+                    pack.symbol = symbol[ii];
+                    pack.type = this.getType(symbol);
                     packs.push(pack);
                     buffers.push(...packBufs);
                 }
@@ -183,6 +184,8 @@ export default class VectorPack {
                 const pack = this.createDataPack(this.styledVectors[i], scale);
                 if (!pack) continue;
                 const packBufs = pack.buffers;
+                pack.symbol = symbol;
+                pack.type = this.getType(symbol);
                 delete pack.buffers;
                 packs.push(pack);
                 buffers.push(...packBufs);
@@ -190,7 +193,6 @@ export default class VectorPack {
         }
 
         const vectorPack = {
-            // features : this.featureGroup,
             data : { packs }, buffers,
         };
 
@@ -208,14 +210,13 @@ export default class VectorPack {
     }
 
     createDataPack(vectors, scale) {
+        if (!vectors || !vectors.length) {
+            return null;
+        }
         this.maxIndex = 0;
         this.maxPos = 0;
         const data = this.data = [];
         let elements = this.elements = [];
-
-        if (!vectors || !vectors.length) {
-            return null;
-        }
         //uniforms: opacity, u_size_t
 
         const format = this.getFormat(vectors[0].symbol),
@@ -236,14 +237,16 @@ export default class VectorPack {
         const ArrType = getIndexArrayType(maxFeaIndex);
         featureIndexes = new ArrType(featureIndexes);
 
+        //update aPosition's type
         format[0].type = getPosArrayType(this.maxPos);
 
         const arrays = fillTypedArray(format, data);
+        arrays.featureIndexes = featureIndexes;
+
         const buffers = [];
         for (const p in arrays) {
             buffers.push(arrays[p].buffer);
         }
-        buffers.push(featureIndexes.buffer);
 
         const ElementType = getIndexArrayType(this.maxIndex);
         elements = new ElementType(elements);
@@ -252,7 +255,6 @@ export default class VectorPack {
             data : arrays,
             // format,
             indices : elements,
-            featureIndexes,
             buffers
         };
     }
@@ -261,7 +263,6 @@ export default class VectorPack {
         this.maxIndex = Math.max(this.maxIndex, ...e);
         this.elements.push(...e);
     }
-
 }
 
 function serializeAtlas(atlas) {

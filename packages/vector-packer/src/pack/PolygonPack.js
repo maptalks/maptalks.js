@@ -28,7 +28,7 @@ export default class PolygonPack extends VectorPack {
             {
                 type : Int32Array,
                 width : 3,
-                name : 'aPos'
+                name : 'aPosition'
             }
             //TODO 动态color
         ];
@@ -61,7 +61,7 @@ export default class PolygonPack extends VectorPack {
 
     _addPolygon(geometry) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
-            const triangleIndex = this.elements.length;
+            const triangleIndex = this.data.length / 3;
 
             const flattened = [];
             const holeIndices = [];
@@ -110,6 +110,16 @@ export default class PolygonPack extends VectorPack {
     addLineElements(...e) {
         this.maxLineIndex = Math.max(this.maxLineIndex, ...e);
         this.lineElements.push(...e);
+    }
+
+    getType(symbol) {
+        if (symbol['polygonPatternFile']) {
+            return 'fillPattern';
+        } else if (symbol['polygonFill'] && symbol['polygonFill']['colorStops']) {
+            return 'fillGradient';
+        } else {
+            return 'fill';
+        }
     }
 }
 

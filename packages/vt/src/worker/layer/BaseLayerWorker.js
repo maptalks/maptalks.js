@@ -202,18 +202,18 @@ export default class BaseLayerWorker {
                 vScale : zScale * (extent / this.options['tileSize'][1])
                 //<<
             });
-        const buffers = [faces.vertices.buffer, faces.indices.buffer, faces.featureIndexes.buffer];
+        const buffers = [faces.vertices.buffer, faces.featureIndexes.buffer];
 
         let oldIndices;
         if (shadowVolume) {
-            oldIndices = new faces.indices.constructor(faces.indices);
+            oldIndices = faces.indices;
         }
         //in buildUniqueVertex, indices will be updated
         const l = faces.indices.length;
         const ctor = getIndexArrayType(l);
-        if (!(faces.indices instanceof ctor)) {
-            faces.indices = new ctor(faces.indices);
-        }
+        faces.indices = new ctor(faces.indices);
+        buffers.push(faces.indices.buffer);
+
         const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
         faces.vertices = uniqueFaces.vertices;
         // debugger

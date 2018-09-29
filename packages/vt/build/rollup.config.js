@@ -36,9 +36,9 @@ module.exports = [{
         extend : true,
         file: 'build/worker.js'
     },
-    watch: {
-        include: 'src/worker/**'
-    }
+    // watch: {
+    //     include: 'src/worker/**'
+    // }
 },
 {
     input: 'src/layer/index.js',
@@ -61,9 +61,9 @@ module.exports = [{
         extend :true,
         file: 'build/layer.js'
     },
-    watch: {
-        include: 'src/layer/**'
-    }
+    // watch: {
+    //     include: 'src/layer/**'
+    // }
 },
 {
     input: './build/index.js',

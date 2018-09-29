@@ -8,6 +8,7 @@ function createPainterPlugin(type, Painter) {
     var PainterPlugin = VectorTilePlugin.extend(type, {
 
         init: function () {
+            this._meshCache = {};
         },
 
         startFrame: function (context) {
@@ -20,7 +21,7 @@ function createPainterPlugin(type, Painter) {
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
             painter.clear();
-            this._meshCache = {};
+            this._frameCache = {};
         },
 
         endFrame: function (context) {
@@ -47,19 +48,38 @@ function createPainterPlugin(type, Painter) {
             if (!tileCache.geometry) {
                 var glData = tileData.data;
                 var features = tileData.features;
-                var colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
-                var data = extend({}, glData);
-                if (colors) {
-                    data.colors = colors;
+                var data = glData;
+                if (this.painter.colorSymbol) {
+                    var colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
+                    data = extend({}, glData);
+                    if (colors) {
+                        data.colors = colors;
+                    }
                 }
                 tileCache.geometry = painter.createGeometry(data, features);
             }
+            if (!tileCache.geometry) {
+                return {
+                    'redraw' : false
+                };
+            }
             var mesh = this._getMesh(key);
             if (!mesh) {
-                mesh = painter.addMesh(tileCache.geometry, tileTransform);
+                mesh = painter.createMesh(tileCache.geometry, tileTransform);
                 this._meshCache[key] = mesh;
             }
-            mesh.setUniform('level', Math.abs(tileInfo.z - tileZoom));
+            if (!this._frameCache[key]) {
+                painter.addMesh(mesh);
+                this._frameCache[key] = 1;
+            }
+
+            if (Array.isArray(mesh)) {
+                mesh.forEach(m => {
+                    m.setUniform('level', Math.abs(tileInfo.z - tileZoom));
+                });
+            } else {
+                mesh.setUniform('level', Math.abs(tileInfo.z - tileZoom));
+            }
             return {
                 'redraw' : false
             };
@@ -87,6 +107,7 @@ function createPainterPlugin(type, Painter) {
                 this.painter.deleteMesh(mesh);
             }
             delete this._meshCache[key];
+            delete this._frameCache[key];
         },
 
         remove: function () {
@@ -99,6 +120,7 @@ function createPainterPlugin(type, Painter) {
                 delete this.painter;
             }
             delete this._meshCache;
+            delete this._frameCache;
         },
 
         resize: function (size) {
