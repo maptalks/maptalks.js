@@ -1,6 +1,7 @@
 import { createEl } from '../core/util/dom';
 import { Geometry } from '../geometry';
 import UIComponent from './UIComponent';
+import UIMarker from './UIMarker'
 
 
 /**
@@ -49,12 +50,12 @@ class ToolTip extends UIComponent {
      * @fires UIComponent#add
      */
     addTo(owner) {
-        if (owner instanceof Geometry) {
+        if (owner instanceof Geometry || owner instanceof UIMarker) {
             owner.on('mousemove', this.onMouseMove, this);
             owner.on('mouseout', this.onMouseOut, this);
             return super.addTo(owner);
         } else {
-            throw new Error('Invalid geometry the tooltip is added to.');
+            throw new Error('Invalid geometry or UIMarker the tooltip is added to.');
         }
     }
 
