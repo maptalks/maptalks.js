@@ -2,7 +2,7 @@ import { compileStyle } from '@maptalks/feature-filter';
 import { extend, getIndexArrayType } from '../../common/Util';
 import { buildExtrudeFaces, buildWireframe } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
-import { PolygonPack } from '@maptalks/vector-packer';
+import { PolygonPack, LinePack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 
 const KEY_STYLE_IDX = '__style_idx';
@@ -155,7 +155,12 @@ export default class BaseLayerWorker {
             //TODO
             return null;
         } else if (type === 'line') {
-            return null;
+            const options = extend({}, dataConfig, {
+                EXTENT : extent,
+                requestor : this.fetchIconGlyphs.bind(this)
+            });
+            const pack = new LinePack(features, styles, options);
+            return pack.load();
         } else if (type === 'fill') {
             // debugger
             // //TODO 需要实现requestor，把数据返回给主线程绘制glyph，获取icon等
