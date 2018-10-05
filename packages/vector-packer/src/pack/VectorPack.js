@@ -51,7 +51,8 @@ export default class VectorPack {
             for (let i = 0; i < features.length; i++) {
                 const feature = features[i];
                 const feas = convert(feature);
-                for (const fea of feas) {
+                for (let ii = 0; ii < feas.length; ii++) {
+                    const fea = feas[ii];
                     fea[STLYE_IDX] = feature[STLYE_IDX];
                     fea[KEY_IDX] = feature[KEY_IDX];
                     checked.push(fea);

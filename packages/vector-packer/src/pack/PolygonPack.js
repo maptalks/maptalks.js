@@ -79,7 +79,6 @@ export default class PolygonPack extends VectorPack {
 
                 this.data.push(
                     ring[0].x, ring[0].y, 0
-                    //TODO color?
                 );
                 this.maxPos = Math.max(this.maxPos, Math.abs(ring[0].x), Math.abs(ring[0].y));
                 this.addLineElements(lineIndex + ring.length - 1, lineIndex);

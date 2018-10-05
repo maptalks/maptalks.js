@@ -68,6 +68,11 @@ function createPainterPlugin(type, Painter) {
                 mesh = painter.createMesh(tileCache.geometry, tileTransform);
                 this._meshCache[key] = mesh;
             }
+            if (!mesh) {
+                return {
+                    'redraw' : false
+                };
+            }
             if (!this._frameCache[key]) {
                 painter.addMesh(mesh);
                 this._frameCache[key] = 1;

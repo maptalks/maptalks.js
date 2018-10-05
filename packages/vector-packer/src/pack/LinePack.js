@@ -102,11 +102,12 @@ export default class LinePack extends VectorPack {
             cap = symbol['lineCap'] || 'butt', //butt, round, square
             miterLimit = 2,
             roundLimit = 1.05;
+        this.offset = this.data.length / 8;
 
         const feature = line.feature,
             lines = feature.geometry;
-        for (const line of lines) {
-            this._addLine(line, feature, join, cap, miterLimit, roundLimit, scale);
+        for (let i = 0; i < lines.length; i++) {
+            this._addLine(lines[i], feature, join, cap, miterLimit, roundLimit, scale);
         }
     }
 
@@ -520,15 +521,10 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    // addElements(e1, e2, e3) {
-    //     const max = Math.max(e1, e2, e3);
-    //     if (max > this.maxIndex) {
-    //         this.maxIndex = max;
-    //     }
+    addElements(e1, e2, e3) {
+        super.addElements(this.offset + e1, this.offset + e2, this.offset + e3);
+    }
 
-    //     this.elements.push(e1, e2, e3);
-    //     this.primitiveLength++;
-    // }
 }
 
 
