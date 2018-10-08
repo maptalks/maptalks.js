@@ -100,8 +100,7 @@ class Painter {
         }
         return {
             feature : mesh.geometry._features[pickingId],
-            point,
-            fbo : this.pickingFBO
+            point
         };
     }
 
