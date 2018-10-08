@@ -123,26 +123,27 @@ class FillPainter extends Painter {
                 viewport, scissor
             }
         });
-
-        this.picking = new reshader.FBORayPicking(
-            this._renderer,
-            {
-                vert : pickingVert,
-                uniforms : [
-                    {
-                        name : 'projViewModelMatrix',
-                        type : 'function',
-                        fn : function (context, props) {
-                            const projViewModelMatrix = [];
-                            mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                            mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                            return projViewModelMatrix;
+        if (this.pickingFBO) {
+            this.picking = new reshader.FBORayPicking(
+                this._renderer,
+                {
+                    vert : pickingVert,
+                    uniforms : [
+                        {
+                            name : 'projViewModelMatrix',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const projViewModelMatrix = [];
+                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                                return projViewModelMatrix;
+                            }
                         }
-                    }
-                ]
-            },
-            this.layer.getRenderer().pickingFBO
-        );
+                    ]
+                },
+                this.pickingFBO
+            );
+        }
     }
 
     getUniformValues(map) {

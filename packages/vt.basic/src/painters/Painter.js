@@ -7,6 +7,9 @@ class Painter {
         this.canvas = layer.getRenderer().canvas;
         this.sceneConfig = sceneConfig || {};
         this.scene = new reshader.Scene();
+        if (sceneConfig.picking !== false) {
+            this.pickingFBO = layer.getRenderer().pickingFBO;
+        }
         this.init();
     }
 
@@ -72,7 +75,6 @@ class Painter {
     }
 
     render(context) {
-        this._pickingRendered = false;
         return this.paint(context);
     }
 
@@ -81,15 +83,12 @@ class Painter {
     }
 
     pick(x, y) {
-        if (!this.picking) {
+        if (!this.pickingFBO) {
             return null;
         }
         const map = this.layer.getMap();
         const uniforms = this.getUniformValues(map);
-        if (!this._pickingRendered) {
-            this.picking.render(this.scene.getMeshes(), uniforms);
-            this._pickingRendered = true;
-        }
+        this.picking.render(this.scene.getMeshes(), uniforms);
         const { meshId, pickingId, point } = this.picking.pick(x, y, uniforms, {
             viewMatrix : map.viewMatrix,
             projMatrix : map.projMatrix,
@@ -101,7 +100,8 @@ class Painter {
         }
         return {
             feature : mesh.geometry._features[pickingId],
-            point
+            point,
+            fbo : this.pickingFBO
         };
     }
 
@@ -126,8 +126,8 @@ class Painter {
 
     resize() {}
 
-    remove() {
-        throw new Error('not implemented');
+    delete(context) {
+        this.remove(context);
     }
 }
 

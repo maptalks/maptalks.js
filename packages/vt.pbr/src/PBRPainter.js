@@ -67,7 +67,7 @@ class PBRPainter {
         return mesh;
     }
 
-    paint() {
+    render() {
         this._redraw = false;
         const layer = this._layer;
         const map = layer.getMap();
@@ -99,8 +99,6 @@ class PBRPainter {
             this.shadowPass.pass2();
         }
 
-        this._pickingRendered = false;
-
         return {
             redraw : false
         };
@@ -109,10 +107,7 @@ class PBRPainter {
     pick(x, y) {
         const map = this._layer.getMap();
         const uniforms = this.getUniformValues(map);
-        if (!this._pickingRendered) {
-            this.picking.render(this.scene.getMeshes(), uniforms);
-            this._pickingRendered = true;
-        }
+        this.picking.render(this.scene.getMeshes(), uniforms);
         const { meshId, pickingId, point } = this.picking.pick(x, y, uniforms, {
             viewMatrix : map.viewMatrix,
             projMatrix : map.projMatrix,
@@ -188,7 +183,7 @@ class PBRPainter {
 
     resize() {}
 
-    remove() {
+    delete() {
         this.material.dispose();
         this.shader.dispose();
         if (this.ground) {

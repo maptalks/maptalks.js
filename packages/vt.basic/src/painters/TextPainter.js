@@ -173,31 +173,32 @@ class TextPainter extends Painter {
                 },
             }
         });
-
-        this.picking = new reshader.FBORayPicking(
-            this._renderer,
-            {
-                vert : pickingVert,
-                uniforms : [
-                    'cameraToCenterDistance',
-                    {
-                        name : 'projViewModelMatrix',
-                        type : 'function',
-                        fn : function (context, props) {
-                            const projViewModelMatrix = [];
-                            mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                            mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                            return projViewModelMatrix;
-                        }
-                    },
-                    'viewMatrix',
-                    'canvasSize',
-                    'glyphSize',
-                    'pitchWithMap'
-                ]
-            },
-            this.layer.getRenderer().pickingFBO
-        );
+        if (this.pickingFBO) {
+            this.picking = new reshader.FBORayPicking(
+                this._renderer,
+                {
+                    vert : pickingVert,
+                    uniforms : [
+                        'cameraToCenterDistance',
+                        {
+                            name : 'projViewModelMatrix',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const projViewModelMatrix = [];
+                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                                return projViewModelMatrix;
+                            }
+                        },
+                        'viewMatrix',
+                        'canvasSize',
+                        'glyphSize',
+                        'pitchWithMap'
+                    ]
+                },
+                this.pickingFBO
+            );
+        }
     }
 
     getUniformValues(map) {

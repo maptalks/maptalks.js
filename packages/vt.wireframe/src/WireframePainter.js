@@ -76,7 +76,7 @@ class WireframePainter {
         return this;
     }
 
-    paint() {
+    render() {
         this._redraw = false;
         const layer = this._layer;
         const map = layer.getMap();
@@ -118,7 +118,7 @@ class WireframePainter {
 
     resize() {}
 
-    remove() {
+    delete() {
         this._shader.dispose();
     }
 

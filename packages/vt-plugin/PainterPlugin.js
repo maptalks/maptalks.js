@@ -121,7 +121,7 @@ function createPainterPlugin(type, Painter) {
                 for (var key in this._meshCache) {
                     painter.deleteMesh(this._meshCache[key]);
                 }
-                painter.remove();
+                painter.delete();
                 delete this.painter;
             }
             delete this._meshCache;

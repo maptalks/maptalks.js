@@ -174,30 +174,31 @@ class LinePainter extends Painter {
             }
         });
 
-
-        this.picking = new reshader.FBORayPicking(
-            this._renderer,
-            {
-                vert : pickingVert,
-                uniforms : [
-                    'canvasSize',
-                    'lineWidth',
-                    'lineGapWidth',
-                    {
-                        name : 'projViewModelMatrix',
-                        type : 'function',
-                        fn : function (context, props) {
-                            const projViewModelMatrix = [];
-                            mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                            mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                            return projViewModelMatrix;
-                        }
-                    },
-                    'uMatrix'
-                ]
-            },
-            this.layer.getRenderer().pickingFBO
-        );
+        if (this.pickingFBO) {
+            this.picking = new reshader.FBORayPicking(
+                this._renderer,
+                {
+                    vert : pickingVert,
+                    uniforms : [
+                        'canvasSize',
+                        'lineWidth',
+                        'lineGapWidth',
+                        {
+                            name : 'projViewModelMatrix',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const projViewModelMatrix = [];
+                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                                return projViewModelMatrix;
+                            }
+                        },
+                        'uMatrix'
+                    ]
+                },
+                this.pickingFBO
+            );
+        }
     }
 
     getUniformValues(map) {
