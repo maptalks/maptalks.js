@@ -196,7 +196,8 @@ export default class PointPack extends VectorPack {
             // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
             // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
             // top-left
-            for (const quad of quads) {
+            for (let ii = 0; ii < quads.length; ii++) {
+                const quad = quads[ii];
                 const { tl, tr, bl, br, tex } = quad;
                 const y = quad.glyphOffset[1];
                 data.push(
@@ -290,10 +291,10 @@ export default class PointPack extends VectorPack {
                 lines = clipLine(feature.geometry, 0, 0, EXTENT, EXTENT);
             }
 
-            for (const line of lines) {
+            for (let i = 0; i < lines.length; i++) {
                 anchors.push.apply(
                     anchors,
-                    getAnchors(line,
+                    getAnchors(lines[i],
                         spacing,
                         TEXT_MAX_ANGLE,
                         shape.vertical || shape.horizontal || shape,
@@ -307,19 +308,24 @@ export default class PointPack extends VectorPack {
             }
 
         } else if (type === 3) {
-            for (const polygon of classifyRings(feature.geometry, 0)) {
+            const rings = classifyRings(feature.geometry, 0);
+            for (let i = 0; i < rings.length; i++) {
+                const polygon = rings[i];
                 // 16 here represents 2 pixels
                 const poi = findPoleOfInaccessibility(polygon, 16);
                 anchors.push(poi);
             }
         } else if (feature.type === 2) {
             // https://github.com/mapbox/mapbox-gl-js/issues/3808
-            for (const line of feature.geometry) {
+            for (let i = 0; i < feature.geometry.length; i++) {
+                const line = feature.geometry[i];
                 anchors.push(line[0]);
             }
         } else if (feature.type === 1) {
-            for (const points of feature.geometry) {
-                for (const point of points) {
+            for (let i = 0; i < feature.geometry.length; i++) {
+                const points = feature.geometry[i];
+                for (let ii = 0; ii < points.length; ii++) {
+                    const point = points[ii];
                     anchors.push(point);
                 }
             }

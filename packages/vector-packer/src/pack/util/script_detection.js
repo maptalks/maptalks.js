@@ -5,21 +5,24 @@
 import isChar from './is_char_in_unicode_block';
 
 export function allowsIdeographicBreaking(chars) {
-    for (const char of chars) {
+    for (let i = 0; i < chars.length; i++) {
+        const char = chars.charAt(i);
         if (!charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
     }
     return true;
 }
 
 export function allowsVerticalWritingMode(chars) {
-    for (const char of chars) {
+    for (let i = 0; i < chars.length; i++) {
+        const char = chars.charAt(i);
         if (charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
     }
     return false;
 }
 
 export function allowsLetterSpacing(chars) {
-    for (const char of chars) {
+    for (let i = 0; i < chars.length; i++) {
+        const char = chars.charAt(i);
         if (!charAllowsLetterSpacing(char.charCodeAt(0))) return false;
     }
     return true;

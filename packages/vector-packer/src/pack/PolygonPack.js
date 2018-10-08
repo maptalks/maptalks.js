@@ -60,13 +60,16 @@ export default class PolygonPack extends VectorPack {
     }
 
     _addPolygon(geometry) {
-        for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
+        const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
+        for (let i = 0; i < rings.length; i++) {
+            const polygon = rings[i];
             const triangleIndex = this.data.length / 3;
 
             const flattened = [];
             const holeIndices = [];
 
-            for (const ring of polygon) {
+            for (let ii = 0; ii < polygon.length; ii++) {
+                const ring = polygon[ii];
                 if (ring.length === 0) {
                     continue;
                 }

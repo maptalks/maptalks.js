@@ -37,7 +37,8 @@ export { shapeText, shapeIcon, WritingMode };
 function breakLines(text, lineBreakPoints) {
     const lines = [];
     let start = 0;
-    for (const lineBreak of lineBreakPoints) {
+    for (let i = 0; i < lineBreakPoints.length; i++) {
+        const lineBreak = lineBreakPoints[i];
         lines.push(text.substring(start, lineBreak));
         start = lineBreak;
     }
@@ -197,7 +198,8 @@ function evaluateBreak(breakIndex, //: number,
     let bestPriorBreak = null;
     let bestBreakBadness = calculateBadness(breakX, targetWidth, penalty, isLastBreak);
 
-    for (const potentialBreak of potentialBreaks) {
+    for (let i = 0; i < potentialBreaks.length; i++) {
+        const potentialBreak = potentialBreaks[i];
         const lineWidth = breakX - potentialBreak.x;
         const breakBadness =
             calculateBadness(lineWidth, targetWidth, penalty, isLastBreak) + potentialBreak.badness;
@@ -325,7 +327,8 @@ function shapeLines(shaping, //: Shaping,
         textJustify === 'right' ? 1 :
             textJustify === 'left' ? 0 : 0.5;
 
-    for (let line of lines) {
+    for (let ii = 0; ii < lines.length; ii++) {
+        let line = lines[ii];
         line = line.trim();
 
         if (!line.length) {

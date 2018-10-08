@@ -8,7 +8,8 @@ export function fillTypedArray(format, data) {
     const arrays = {};
     const dataWidth = getFormatWidth(format);
     const count = data.length / dataWidth;
-    for (const d of format) {
+    for (const p in format) {
+        const d = format[p];
         const type = d.type;
         const width = d.width;
         const name = d.name;
@@ -17,7 +18,8 @@ export function fillTypedArray(format, data) {
 
     for (let i = 0; i < count; i++) {
         let p = 0;
-        for (const d of format) {
+        for (const prop in format) {
+            const d = format[prop];
             const width = d.width;
             const name  = d.name;
             const arr = arrays[name];
@@ -32,8 +34,8 @@ export function fillTypedArray(format, data) {
 
 export function getFormatWidth(format) {
     let width = 0;
-    for (const d of format) {
-        width += d.width;
+    for (const p in format) {
+        width += format[p].width;
     }
     return width;
 }
