@@ -3,6 +3,7 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
+import pickingVert from './glsl/marker.picking.vert';
 
 const defaultUniforms = {
     'markerOpacity' : 1,
@@ -62,21 +63,12 @@ class PointPainter extends Painter {
             };
         }
 
-        const uniforms = this._getUniformValues(map);
+        const uniforms = this.getUniformValues(map);
 
         this._renderer.render(this._shader, uniforms, this.scene);
 
-        this._pickingRendered = false;
-
         return {
             redraw : false
-        };
-    }
-
-    pick(x, y) {
-        return {
-            feature : null,
-            point : null
         };
     }
 
@@ -153,10 +145,32 @@ class PointPainter extends Painter {
             }
         });
 
-        //TODO picking的初始化
+        this.picking = new reshader.FBORayPicking(
+            this._renderer,
+            {
+                vert : pickingVert,
+                uniforms : [
+                    'cameraToCenterDistance',
+                    {
+                        name : 'projViewModelMatrix',
+                        type : 'function',
+                        fn : function (context, props) {
+                            const projViewModelMatrix = [];
+                            mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                            mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                            return projViewModelMatrix;
+                        }
+                    },
+                    'uMatrix',
+                    'canvasSize',
+                    'pitchWithMap'
+                ]
+            },
+            this.layer.getRenderer().pickingFBO
+        );
     }
 
-    _getUniformValues(map) {
+    getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
             uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),

@@ -12,20 +12,16 @@
 #define EXTRUDE_SCALE 0.015873016
 
 attribute vec3 aPosition;
-attribute vec2 aNormal;
 attribute vec2 aExtrude;
 // attribute float aLinesofar;
 
-uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
 uniform float lineWidth;
 uniform vec2 canvasSize;
 uniform mat4 projViewModelMatrix;
 uniform mat4 uMatrix;
 
-varying vec2 vNormal;
-varying vec2 vWidth;
-varying float vGammaScale;
+#include <fbo_picking_vert>
 
 void main() {
     gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
@@ -48,9 +44,5 @@ void main() {
 
     gl_Position.xy += (uMatrix * vec4(dist, aPosition.z, 1.0)).xy * gl_Position.w;
 
-    // x is 1 if it's a round cap, 0 otherwise
-    // y is 1 if the normal points up, and -1 if it points down
-    vNormal = aNormal;
-    vWidth = vec2(outset, inset);
-    vGammaScale = cameraToCenterDistance / distance;
+    fbo_picking_setData(gl_Position.w);
 }

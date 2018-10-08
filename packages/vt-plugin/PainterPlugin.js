@@ -27,7 +27,7 @@ function createPainterPlugin(type, Painter) {
         endFrame: function (context) {
             var painter = this.painter;
             if (painter) {
-                return painter.paint(context);
+                return painter.render(context);
             }
             return null;
         },

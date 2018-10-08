@@ -65,11 +65,15 @@ class WireframePainter {
         return geometry;
     }
 
-    addMesh(geometry, transform) {
+    createMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry);
         mesh.setLocalTransform(transform);
-        this.scene.addMesh(mesh);
         return mesh;
+    }
+
+    addMesh(mesh) {
+        this._scene.addMesh(mesh);
+        return this;
     }
 
     paint() {
@@ -82,16 +86,16 @@ class WireframePainter {
             };
         }
 
-        const uniforms = this._getUniformValues(map);
+        const uniforms = this.getUniformValues(map);
 
         this._regl.clear({
             stencil: 0xFF
         });
-        this.shader.filter = level0Filter;
-        this.renderer.render(this.shader, uniforms, this.scene);
+        this._shader.filter = level0Filter;
+        this._renderer.render(this._shader, uniforms, this._scene);
 
-        this.shader.filter = levelNFilter;
-        this.renderer.render(this.shader, uniforms, this.scene);
+        this._shader.filter = levelNFilter;
+        this._renderer.render(this._shader, uniforms, this._scene);
 
         return {
             redraw : false
@@ -105,25 +109,25 @@ class WireframePainter {
         const geometry = mesh.geometry;
         geometry.dispose();
         mesh.dispose();
-        this.scene.removeMesh(mesh);
+        this._scene.removeMesh(mesh);
     }
 
     clear() {
-        this.scene.clear();
+        this._scene.clear();
     }
 
     resize() {}
 
     remove() {
-        this.shader.dispose();
+        this._shader.dispose();
     }
 
     _init() {
         const regl = this._regl;
 
-        this.scene = new reshader.Scene();
+        this._scene = new reshader.Scene();
 
-        this.renderer = new reshader.Renderer(regl);
+        this._renderer = new reshader.Renderer(regl);
 
         const viewport = {
             x : 0,
@@ -182,7 +186,7 @@ class WireframePainter {
             }
         };
 
-        this.shader = new reshader.MeshShader(config);
+        this._shader = new reshader.MeshShader(config);
 
     }
 
@@ -203,7 +207,7 @@ class WireframePainter {
         return uniforms;
     }
 
-    _getUniformValues(map) {
+    getUniformValues(map) {
         const projViewMatrix = map.projViewMatrix;
         const opacity = this._sceneConfig.opacity || 0.3;
         return {

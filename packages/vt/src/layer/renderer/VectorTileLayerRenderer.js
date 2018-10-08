@@ -410,6 +410,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 throw new Error('invalid plugin type for style at ' + idx);
             }
             const P = pluginClazz[config.type];
+            if (!P) {
+                throw new Error(`Plugin for (${config.type}) is not loaded.`);
+            }
             const p = new P();
             p.config = config;
             return p;

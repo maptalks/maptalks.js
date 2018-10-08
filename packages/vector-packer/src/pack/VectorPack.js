@@ -226,12 +226,12 @@ export default class VectorPack {
         let featureIndexes = [];
         let maxFeaIndex = 0;
         for (let i = 0, l = vectors.length; i < l; i++) {
+            const eleCount = elements.length;
             this.placeVector(vectors[i], scale, formatWidth);
+            const count = elements.length - eleCount;
             //fill feature index of every data
-            //TODO 这里的逻辑有问题，需要规整为unique data才能这样设置
-            const count = elements.length - featureIndexes.length;
             for (let ii = 0; ii < count; ii++) {
-                featureIndexes.push(vectors[i].featureIdx);
+                featureIndexes[elements[eleCount + ii]] = vectors[i].featureIdx;
             }
             maxFeaIndex = Math.max(maxFeaIndex, vectors[i].featureIdx);
         }

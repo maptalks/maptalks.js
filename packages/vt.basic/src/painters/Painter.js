@@ -48,6 +48,8 @@ class Painter {
 
         const geometries = [];
         for (let i = 0; i < packs.length; i++) {
+            packs[i].data.aPickingId = packs[i].data.featureIndexes;
+            delete packs[i].data.featureIndexes;
             const geometry = new reshader.Geometry(packs[i].data, packs[i].indices);
             geometry['_features'] = features;
             geometry['_symbol'] = packs[i].symbol;
@@ -69,12 +71,38 @@ class Painter {
         return meshes;
     }
 
+    render(context) {
+        this._pickingRendered = false;
+        return this.paint(context);
+    }
+
     paint() {
         throw new Error('not implemented');
     }
 
-    pick(/* x, y */) {
-        throw new Error('not implemented');
+    pick(x, y) {
+        if (!this.picking) {
+            return null;
+        }
+        const map = this.layer.getMap();
+        const uniforms = this.getUniformValues(map);
+        if (!this._pickingRendered) {
+            this.picking.render(this.scene.getMeshes(), uniforms);
+            this._pickingRendered = true;
+        }
+        const { meshId, pickingId, point } = this.picking.pick(x, y, uniforms, {
+            viewMatrix : map.viewMatrix,
+            projMatrix : map.projMatrix,
+            returnPoint : true
+        });
+        const mesh = (meshId === 0 || meshId) && this.picking.getMeshAt(meshId);
+        if (!mesh) {
+            return null;
+        }
+        return {
+            feature : mesh.geometry._features[pickingId],
+            point
+        };
     }
 
     updateSceneConfig(/* config */) {

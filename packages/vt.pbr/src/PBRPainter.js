@@ -77,7 +77,7 @@ class PBRPainter {
             };
         }
 
-        const uniforms = this._getUniformValues(map);
+        const uniforms = this.getUniformValues(map);
 
         if (this.shadowPass) {
             this._transformGround(layer);
@@ -108,17 +108,17 @@ class PBRPainter {
 
     pick(x, y) {
         const map = this._layer.getMap();
-        const uniforms = this._getUniformValues(map);
+        const uniforms = this.getUniformValues(map);
         if (!this._pickingRendered) {
-            this._raypicking.render(this.scene.getMeshes(), uniforms);
+            this.picking.render(this.scene.getMeshes(), uniforms);
             this._pickingRendered = true;
         }
-        const { meshId, pickingId, point } = this._raypicking.pick(x, y, uniforms, {
+        const { meshId, pickingId, point } = this.picking.pick(x, y, uniforms, {
             viewMatrix : map.viewMatrix,
             projMatrix : map.projMatrix,
             returnPoint : true
         });
-        const mesh = (meshId === 0 || meshId) && this._raypicking.getMeshAt(meshId);
+        const mesh = (meshId === 0 || meshId) && this.picking.getMeshAt(meshId);
         if (!mesh) {
             return {
                 feature : null,
@@ -126,7 +126,7 @@ class PBRPainter {
             };
         }
         return {
-            feature : this._raypicking.getMeshAt(meshId).geometry._pbrFeatures[pickingId],
+            feature : this.picking.getMeshAt(meshId).geometry._pbrFeatures[pickingId],
             point
         };
 
@@ -310,7 +310,7 @@ class PBRPainter {
             }
         }
         pickingConfig.uniforms = [u];
-        this._raypicking = new reshader.FBORayPicking(this.renderer, pickingConfig, this._layer.getRenderer().pickingFBO);
+        this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this._layer.getRenderer().pickingFBO);
 
     }
 
@@ -430,7 +430,7 @@ class PBRPainter {
         return uniforms;
     }
 
-    _getUniformValues(map) {
+    getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
             camPos = map.cameraPosition;

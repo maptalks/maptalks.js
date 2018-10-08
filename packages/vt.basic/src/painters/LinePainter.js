@@ -4,6 +4,7 @@ import { mat4 } from '@maptalks/gl';
 import Color from 'color';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
+import pickingVert from './glsl/line.picking.vert';
 
 const defaultUniforms = {
     'lineColor' : [0, 0, 0, 1],
@@ -25,7 +26,7 @@ class LinePainter extends Painter {
             return null;
         }
 
-        // const mapUniforms = this._getUniformValues(this.layer.getMap());
+        // const mapUniforms = this.getUniformValues(this.layer.getMap());
 
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
@@ -94,45 +95,15 @@ class LinePainter extends Painter {
             };
         }
 
-        const uniforms = this._getUniformValues(map);
+        const uniforms = this.getUniformValues(map);
 
         this._renderer.render(this._shader, uniforms, this.scene);
-
-        this._pickingRendered = false;
 
         return {
             redraw : false
         };
     }
 
-    pick(x, y) {
-        return {
-            feature : null,
-            point : null
-        };
-        // const map = this.layer.getMap();
-        // const uniforms = this._getUniformValues(map);
-        // if (!this._pickingRendered) {
-        //     this._raypicking.render(this.scene.getMeshes(), uniforms);
-        //     this._pickingRendered = true;
-        // }
-        // const { meshId, pickingId, point } = this._raypicking.pick(x, y, uniforms, {
-        //     viewMatrix : map.viewMatrix,
-        //     projMatrix : map.projMatrix,
-        //     returnPoint : true
-        // });
-        // const mesh = (meshId === 0 || meshId) && this._raypicking.getMeshAt(meshId);
-        // if (!mesh) {
-        //     return {
-        //         feature : null,
-        //         point
-        //     };
-        // }
-        // return {
-        //     feature : mesh.geometry._features[pickingId],
-        //     point
-        // };
-    }
 
     remove() {
         this._shader.dispose();
@@ -203,10 +174,33 @@ class LinePainter extends Painter {
             }
         });
 
-        //TODO picking的初始化
+
+        this.picking = new reshader.FBORayPicking(
+            this._renderer,
+            {
+                vert : pickingVert,
+                uniforms : [
+                    'canvasSize',
+                    'lineWidth',
+                    'lineGapWidth',
+                    {
+                        name : 'projViewModelMatrix',
+                        type : 'function',
+                        fn : function (context, props) {
+                            const projViewModelMatrix = [];
+                            mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                            mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                            return projViewModelMatrix;
+                        }
+                    },
+                    'uMatrix'
+                ]
+            },
+            this.layer.getRenderer().pickingFBO
+        );
     }
 
-    _getUniformValues(map) {
+    getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
             uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),

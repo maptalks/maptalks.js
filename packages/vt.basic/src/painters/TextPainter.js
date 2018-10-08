@@ -4,6 +4,7 @@ import { mat4 } from '@maptalks/gl';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import frag from './glsl/text.frag';
+import pickingVert from './glsl/text.picking.vert';
 
 const defaultUniforms = {
     'textFill' : [0, 0, 0, 1],
@@ -91,21 +92,12 @@ class TextPainter extends Painter {
             };
         }
 
-        const uniforms = this._getUniformValues(map);
+        const uniforms = this.getUniformValues(map);
 
         this._renderer.render(this._shader, uniforms, this.scene);
 
-        this._pickingRendered = false;
-
         return {
             redraw : false
-        };
-    }
-
-    pick(x, y) {
-        return {
-            feature : null,
-            point : null
         };
     }
 
@@ -182,10 +174,33 @@ class TextPainter extends Painter {
             }
         });
 
-        //TODO picking的初始化
+        this.picking = new reshader.FBORayPicking(
+            this._renderer,
+            {
+                vert : pickingVert,
+                uniforms : [
+                    'cameraToCenterDistance',
+                    {
+                        name : 'projViewModelMatrix',
+                        type : 'function',
+                        fn : function (context, props) {
+                            const projViewModelMatrix = [];
+                            mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                            mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                            return projViewModelMatrix;
+                        }
+                    },
+                    'viewMatrix',
+                    'canvasSize',
+                    'glyphSize',
+                    'pitchWithMap'
+                ]
+            },
+            this.layer.getRenderer().pickingFBO
+        );
     }
 
-    _getUniformValues(map) {
+    getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
             // uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
