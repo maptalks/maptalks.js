@@ -1,3 +1,4 @@
+* markerPitchAlignment
 * markerSpacing
 * textSpacing
 * textLineHeight

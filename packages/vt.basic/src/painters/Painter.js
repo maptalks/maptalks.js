@@ -19,12 +19,42 @@ class Painter {
         if (!packs || !packs.length) {
             return null;
         }
+        const regl = this.regl;
+        let iconAtlas, glyphAtlas;
+        if (glData.iconAtlas) {
+            const image = glData.iconAtlas.image;
+            iconAtlas = regl.texture({
+                width : image.width,
+                height : image.height,
+                data : image.data,
+                format : image.format,
+                mag : 'linear', //very important
+                min : 'linear', //very important
+                flipY : false,
+            });
+        }
+        if (glData.glyphAtlas) {
+            const sdf = glData.glyphAtlas.image;
+            glyphAtlas = regl.texture({
+                width : sdf.width,
+                height : sdf.height,
+                data : sdf.data,
+                format : sdf.format,
+                mag : 'linear', //very important
+                min : 'linear', //very important
+                flipY : false,
+            });
+        }
+
         const geometries = [];
         for (let i = 0; i < packs.length; i++) {
             const geometry = new reshader.Geometry(packs[i].data, packs[i].indices);
-            geometry._features = features;
-            geometry._symbol = packs[i].symbol;
+            geometry['_features'] = features;
+            geometry['_symbol'] = packs[i].symbol;
+            geometry['_iconAtlas'] = iconAtlas;
+            geometry['_glyphAtlas'] = glyphAtlas;
             geometry.generateBuffers(this.regl);
+            geometries.push(geometry);
         }
 
         return geometries;

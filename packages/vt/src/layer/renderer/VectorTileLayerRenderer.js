@@ -212,6 +212,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             //iterate plugins
             for (let i = 0; i < data.data.length; i++) {
                 const pluginData = data.data[i]; // { data, featureIndex }
+                if (!pluginData) {
+                    continue;
+                }
                 const symbols = this.layer.getStyle()[i].style;//TODO 读取所有的symbol
                 const feaIndex = pluginData.styledFeatures;
                 const pFeatures = new Array(feaIndex.length / 2);
@@ -300,6 +303,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this.setToRedraw();
             }
         });
+        //TODO stencil
         this.setCanvasUpdated();
     }
 
@@ -432,6 +436,47 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const map = this.getMap();
         const p = map.distanceToPoint(1000, 0, z).x;
         return p / 1000;
+    }
+
+    debugFBO(id, fbo) {
+        const canvas = document.getElementById(id);
+        const width = fbo.width, height = fbo.height;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const pixels = this.regl.read({
+            framebuffer : fbo
+        });
+
+        const halfHeight = height / 2 | 0;  // the | 0 keeps the result an int
+        const bytesPerRow = width * 4;
+
+        for (let i = 0; i < pixels.length; i++) {
+            pixels[i] *= 255;
+        }
+
+        // make a temp buffer to hold one row
+        const temp = new Uint8Array(width * 4);
+        for (let y = 0; y < halfHeight; ++y) {
+            const topOffset = y * bytesPerRow;
+            const bottomOffset = (height - y - 1) * bytesPerRow;
+
+            // make copy of a row on the top half
+            temp.set(pixels.subarray(topOffset, topOffset + bytesPerRow));
+
+            // copy a row from the bottom half to the top
+            pixels.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
+
+            // copy the copy of the top half row to the bottom half
+            pixels.set(temp, bottomOffset);
+        }
+
+        // This part is not part of the answer. It's only here
+        // to show the code above worked
+        // copy the pixels in a 2d canvas to show it worked
+        const imgdata = new ImageData(width, height);
+        imgdata.data.set(pixels);
+        ctx.putImageData(imgdata, 0, 0);
     }
 }
 

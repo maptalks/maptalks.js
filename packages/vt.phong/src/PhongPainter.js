@@ -55,7 +55,7 @@ class PhongPainter {
             aPickingId : glData.featureIndexes
         };
         const geometry = new reshader.Geometry(data, glData.indices);
-        geometry._features = features;
+        geometry['_features'] = features;
         geometry.generateBuffers(this._regl);
 
         return geometry;
@@ -126,7 +126,7 @@ class PhongPainter {
             };
         }
         return {
-            feature : mesh.geometry._features[pickingId],
+            feature : mesh.geometry['_features'][pickingId],
             point
         };
     }

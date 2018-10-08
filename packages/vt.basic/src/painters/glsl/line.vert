@@ -46,7 +46,7 @@ void main() {
     mediump vec2 dist = outset * extrude * EXTRUDE_SCALE;
     dist /= canvasSize;
 
-    gl_Position.xy += (uMatrix * vec4(dist, aPosition.z, 1.0)).xy * distance;
+    gl_Position.xy += (uMatrix * vec4(dist, aPosition.z, 1.0)).xy * gl_Position.w;
     // gl_Position.xy += extrude * vec2(1.0, 1.0) / canvasSize;
     // gl_Position.xy += extrude * vec2(1.0, 1.0) / canvasSize * distance;
 

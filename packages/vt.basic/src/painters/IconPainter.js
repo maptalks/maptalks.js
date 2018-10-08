@@ -1,16 +1,15 @@
 import Painter from './Painter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import Color from 'color';
-import vert from './glsl/fill.vert';
-import frag from './glsl/fill.frag';
+import vert from './glsl/marker.vert';
+import frag from './glsl/marker.frag';
 
 const defaultUniforms = {
-    'polygonFill' : [255, 255, 255],
-    'polygonOpacity' : 1
+    'markerOpacity' : 1,
+    'pitchWithMap' : 0
 };
 
-class FillPainter extends Painter {
+class PointPainter extends Painter {
     needToRedraw() {
         return this._redraw;
     }
@@ -19,23 +18,26 @@ class FillPainter extends Painter {
         if (!geometries || !geometries.length) {
             return null;
         }
+
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
             const symbol = geometries[i]['_symbol'];
             const uniforms = {};
-            if (symbol['polygonFill']) {
-                const color = Color(symbol['polygonFill']);
-                uniforms.polygonFill = color.unitArray();
-                if (uniforms.polygonFill.length === 3) {
-                    uniforms.polygonFill.push(1);
-                }
-            }
+
             let transparent = false;
-            if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
-                uniforms.polygonOpacity = symbol['polygonOpacity'];
-                if (symbol['polygonOpacity'] < 1) {
+            if (symbol['markerOpacity'] || symbol['markerOpacity'] === 0) {
+                uniforms.markerOpacity = symbol['markerOpacity'];
+                if (symbol['markerOpacity'] < 1) {
                     transparent = true;
                 }
+            }
+
+            const iconAtlas = geometries[i]['_iconAtlas'];
+            uniforms['texture'] = iconAtlas;
+            uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
+
+            if (symbol['markerPitchAlignment'] === 'map') {
+                uniforms['pitchWithMap'] = 1;
             }
 
             const material = new reshader.Material(uniforms, defaultUniforms);
@@ -76,28 +78,6 @@ class FillPainter extends Painter {
             feature : null,
             point : null
         };
-        // const map = this.layer.getMap();
-        // const uniforms = this._getUniformValues(map);
-        // if (!this._pickingRendered) {
-        //     this._raypicking.render(this.scene.getMeshes(), uniforms);
-        //     this._pickingRendered = true;
-        // }
-        // const { meshId, pickingId, point } = this._raypicking.pick(x, y, uniforms, {
-        //     viewMatrix : map.viewMatrix,
-        //     projMatrix : map.projMatrix,
-        //     returnPoint : true
-        // });
-        // const mesh = (meshId === 0 || meshId) && this._raypicking.getMeshAt(meshId);
-        // if (!mesh) {
-        //     return {
-        //         feature : null,
-        //         point
-        //     };
-        // }
-        // return {
-        //     feature : mesh.geometry._features[pickingId],
-        //     point
-        // };
     }
 
     remove() {
@@ -137,7 +117,7 @@ class FillPainter extends Painter {
         this._shader = new reshader.MeshShader({
             vert, frag,
             uniforms : [
-                'polygonFill', 'polygonOpacity',
+                'cameraToCenterDistance',
                 {
                     name : 'projViewModelMatrix',
                     type : 'function',
@@ -148,9 +128,28 @@ class FillPainter extends Painter {
                         return projViewModelMatrix;
                     }
                 },
+                'uMatrix',
+                'textSize',
+                'canvasSize',
+                'pitchWithMap',
+                'texture'
             ],
             extraCommandProps : {
-                viewport, scissor
+                viewport, scissor,
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 'src alpha',
+                        // srcAlpha: 1,
+                        dst: 'one minus src alpha',
+                        // dstAlpha: 1
+                    },
+                    equation: 'add',
+                    // color: [0, 0, 0, 0]
+                },
+                depth: {
+                    enable: false
+                },
             }
         });
 
@@ -159,11 +158,16 @@ class FillPainter extends Painter {
 
     _getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
-            projMatrix = map.projMatrix;
+            projMatrix = map.projMatrix,
+            uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
+            cameraToCenterDistance = map.cameraToCenterDistance,
+            canvasSize = [this.canvas.width, this.canvas.height];
+        uMatrix[12] = uMatrix[13] = uMatrix[14] = 0;
         return {
-            viewMatrix, projMatrix
+            viewMatrix, projMatrix, uMatrix,
+            cameraToCenterDistance, canvasSize
         };
     }
 }
 
-export default FillPainter;
+export default PointPainter;

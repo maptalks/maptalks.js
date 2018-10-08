@@ -2,7 +2,7 @@ import { compileStyle } from '@maptalks/feature-filter';
 import { extend, getIndexArrayType } from '../../common/Util';
 import { buildExtrudeFaces, buildWireframe } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
-import { PolygonPack, LinePack } from '@maptalks/vector-packer';
+import { PolygonPack, LinePack, PointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 
 const KEY_STYLE_IDX = '__style_idx';
@@ -49,6 +49,7 @@ export default class BaseLayerWorker {
 
     _createTileData(features, { glScale, zScale }) {
         const data = [],
+            dataIndexes = [],
             options = this.options,
             buffers = [];
         const promises = [];
@@ -94,6 +95,7 @@ export default class BaseLayerWorker {
             data[i] = {
                 styledFeatures : new arrCtor(styledFeatures)
             };
+            dataIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
             const promise = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, styles, { extent : options.extent, glScale, zScale });
@@ -105,7 +107,7 @@ export default class BaseLayerWorker {
                 if (!tileDatas[i]) {
                     continue;
                 }
-                data[i].data = tileDatas[i].data;
+                data[dataIndexes[i]].data = tileDatas[i].data;
                 if (tileDatas[i].buffers && tileDatas[i].buffers.length > 0) {
                     for (let ii = 0, ll = tileDatas[i].buffers.length; ii < ll; ii++) {
                         buffers.push(tileDatas[i].buffers[ii]);
@@ -152,8 +154,12 @@ export default class BaseLayerWorker {
         } else if (type === '3d-wireframe') {
             return Promise.resolve(this._buildWireframe(features, dataConfig, extent));
         } else if (type === 'point') {
-            //TODO
-            return null;
+            const options = extend({}, dataConfig, {
+                EXTENT : extent,
+                requestor : this.fetchIconGlyphs.bind(this)
+            });
+            const pack = new PointPack(features, styles, options);
+            return pack.load();
         } else if (type === 'line') {
             const options = extend({}, dataConfig, {
                 EXTENT : extent,

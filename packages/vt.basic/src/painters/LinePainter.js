@@ -1,6 +1,6 @@
 import Painter from './Painter';
 import { reshader } from '@maptalks/gl';
-import { mat4, vec4 } from '@maptalks/gl';
+import { mat4 } from '@maptalks/gl';
 import Color from 'color';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
@@ -29,7 +29,7 @@ class LinePainter extends Painter {
 
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
-            const symbol = geometries[i]._symbol;
+            const symbol = geometries[i]['_symbol'];
             const uniforms = {};
             if (symbol['lineColor']) {
                 const color = Color(symbol['lineColor']);
