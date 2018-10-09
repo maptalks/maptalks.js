@@ -41,8 +41,8 @@ export default class Geometry {
             if (!data[p]) {
                 continue;
             }
-            buffers[p] = {
-                buffer : data[p].destroy ? data[p] : regl.buffer(data[p])
+            buffers[p] = data[p].buffer && data[p].buffer.destroy ? data[p] : {
+                buffer : regl.buffer(data[p])
             };
         }
         this.data = buffers;
@@ -66,6 +66,15 @@ export default class Geometry {
 
     getElements() {
         return this.elements;
+    }
+
+    setElements(elements) {
+        if (this.elements && this.elements.destroy) {
+            this.elements.destroy();
+        }
+        this.elements = elements;
+        this.count = elements.length;
+        return this;
     }
 
     setDrawCount(count) {
