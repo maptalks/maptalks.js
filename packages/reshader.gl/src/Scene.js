@@ -103,6 +103,7 @@ class Scene {
 
     sortMeshes(cameraPosition) {
         const meshes = this.meshes;
+
         //sort meshes by defines
         let transparents = this.sortedMeshes.transparents;
         if (this._dirty) {
@@ -126,14 +127,13 @@ class Scene {
         //     }
         //     return 1;
         // });
-        if (cameraPosition) {
+        if (cameraPosition && transparents.length > 1) {
             this._cameraPosition = cameraPosition;
             transparents.sort(this._compareBinded);
             delete this._cameraPosition;
         }
 
         this._dirty = false;
-
     }
 
     getSortedMeshes() {
