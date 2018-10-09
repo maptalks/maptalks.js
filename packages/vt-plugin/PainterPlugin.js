@@ -1,3 +1,4 @@
+import { createFilter } from '@maptalks/feature-filter';
 import VectorTilePlugin from './VectorTilePlugin';
 import Color from 'color';
 
@@ -19,6 +20,12 @@ function createPainterPlugin(type, Painter) {
             if (!painter) {
                 painter = this.painter = new Painter(regl, layer, sceneConfig);
             }
+            var excludes = sceneConfig.excludes;
+            if (excludes !== this._excludes) {
+                this._excludesFunc = excludes ? createFilter(excludes) : null;
+                this._excludes = excludes;
+                this._excludesUpdated = true;
+            }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
             painter.clear();
             this._frameCache = {};
@@ -29,6 +36,7 @@ function createPainterPlugin(type, Painter) {
             if (painter) {
                 return painter.render(context);
             }
+            delete this._excludesUpdated;
             return null;
         },
 
@@ -45,9 +53,10 @@ function createPainterPlugin(type, Painter) {
                 };
             }
             var key = tileInfo.dupKey;
-            if (!tileCache.geometry) {
+            let geometry = tileCache.geometry;
+            var features = tileData.features;
+            if (!geometry) {
                 var glData = tileData.data;
-                var features = tileData.features;
                 var data = glData;
                 if (this.painter.colorSymbol) {
                     var colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
@@ -56,16 +65,19 @@ function createPainterPlugin(type, Painter) {
                         data.colors = colors;
                     }
                 }
-                tileCache.geometry = painter.createGeometry(data, features);
+                geometry = tileCache.geometry = painter.createGeometry(data, features);
             }
-            if (!tileCache.geometry) {
+            if (!geometry) {
                 return {
                     'redraw' : false
                 };
             }
+            if (this._excludesUpdated) {
+                this._filterElements(geometry, tileData.data, features, context.regl);
+            }
             var mesh = this._getMesh(key);
             if (!mesh) {
-                mesh = painter.createMesh(tileCache.geometry, tileTransform);
+                mesh = painter.createMesh(geometry, tileTransform);
                 this._meshCache[key] = mesh;
             }
             if (!mesh) {
@@ -169,6 +181,40 @@ function createPainterPlugin(type, Painter) {
 
         _getMesh: function (key) {
             return this._meshCache[key];
+        },
+
+        _filterElements(geometry, glData, features, regl) {
+            if (Array.isArray(geometry)) {
+                geometry.forEach((g, idx) => {
+                    this._filterGeoElements(g, glData.packs[idx], features, regl);
+                });
+            } else {
+                this._filterGeoElements(geometry, glData, features, regl);
+            }
+        },
+
+        _filterGeoElements(geometry, glData, features, regl) {
+            if (this._excludesFunc) {
+                var indices = glData.indices;
+                var featureIndexes = glData.featureIndexes || glData.data.featureIndexes;
+                var pre = null,
+                    excluded = false;
+                var elements = [];
+                for (var i = 0; i < indices.length; i++) {
+                    var feature = features[featureIndexes[indices[i]]];
+                    if (pre === null || pre !== indices[i]) {
+                        excluded = this._excludesFunc(feature.feature);
+                        pre = indices[i];
+                    }
+                    if (!excluded) {
+                        elements.push(indices[i]);
+                    }
+                }
+                geometry.setElements(new glData.indices.constructor(elements));
+            } else {
+                geometry.setElements(glData.indices);
+            }
+            geometry.generateBuffers(regl);
         }
     });
 

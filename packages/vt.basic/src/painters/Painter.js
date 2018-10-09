@@ -1,4 +1,5 @@
 import { reshader } from '@maptalks/gl';
+import { extend } from '../Util';
 
 class Painter {
     constructor(regl, layer, sceneConfig) {
@@ -51,8 +52,9 @@ class Painter {
 
         const geometries = [];
         for (let i = 0; i < packs.length; i++) {
-            packs[i].data.aPickingId = packs[i].data.featureIndexes;
-            delete packs[i].data.featureIndexes;
+            const data = extend({}, packs[i].data);
+            data.aPickingId = data.featureIndexes;
+            delete data.featureIndexes;
             const geometry = new reshader.Geometry(packs[i].data, packs[i].indices);
             geometry['_features'] = features;
             geometry['_symbol'] = packs[i].symbol;

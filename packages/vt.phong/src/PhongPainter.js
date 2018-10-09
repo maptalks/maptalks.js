@@ -171,14 +171,15 @@ class PhongPainter {
 
         this._renderer = new reshader.Renderer(regl);
 
+        const canvas = this._canvas;
         const viewport = {
             x : 0,
             y : 0,
             width : () => {
-                return this._canvas ? this._canvas.width : 1;
+                return canvas ? canvas.width : 1;
             },
             height : () => {
-                return this._canvas ? this._canvas.height : 1;
+                return canvas ? canvas.height : 1;
             }
         };
         const scissor = {
@@ -187,10 +188,10 @@ class PhongPainter {
                 x : 0,
                 y : 0,
                 width : () => {
-                    return this._canvas ? this._canvas.width : 1;
+                    return canvas ? canvas.width : 1;
                 },
                 height : () => {
-                    return this._canvas ? this._canvas.height : 1;
+                    return canvas ? canvas.height : 1;
                 }
             }
         };

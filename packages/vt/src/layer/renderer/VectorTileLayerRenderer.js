@@ -171,8 +171,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
         quadStencil.end();
         super.onDrawTileStart(context);
-        //TODO 迁移到fusion上后，应该不再需要refresh
-        this.regl._refresh();
     }
 
     draw(framestamp) {
