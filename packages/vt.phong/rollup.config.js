@@ -3,6 +3,7 @@ const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const uglify = require('rollup-plugin-uglify').uglify;
 const pkg = require('./package.json');
+const fs = require('fs');
 
 const production = process.env.BUILD === 'production';
 const outputFile = production ? 'dist/maptalks.vt.phong.js' : 'dist/maptalks.vt.phong-dev.js';
@@ -24,6 +25,7 @@ function glsl() {
             var transformedCode = code.replace(/[ \t]*\/\/.*\n/g, '') // remove //
                 .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
                 .replace(/\n{1,}/g, '\\n') // # \n+ to \n
+                .replace(/\r{1,}/g, '\\n') // # \r+ to \n
                 .replace(/"/g, '\\"');
             transformedCode = `export default "${transformedCode}";`;
             return {

@@ -76,7 +76,7 @@ class PhongPainter {
         return this;
     }
 
-    paint(context) {
+    render(context) {
         this._redraw = false;
         const layer = this._layer;
         const map = layer.getMap();
@@ -159,7 +159,7 @@ class PhongPainter {
 
     resize() {}
 
-    remove() {
+    delete() {
         this._material.dispose();
         this._shader.dispose();
     }

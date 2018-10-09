@@ -24,6 +24,7 @@ function glsl() {
             var transformedCode = code.replace(/[ \t]*\/\/.*\n/g, '') // remove //
                 .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
                 .replace(/\n{1,}/g, '\\n') // # \n+ to \n
+                .replace(/\r{1,}/g, '\\n') // # \r+ to \n
                 .replace(/"/g, '\\"');
             transformedCode = `export default "${transformedCode}";`;
             return {
