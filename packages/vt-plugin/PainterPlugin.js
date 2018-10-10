@@ -90,12 +90,15 @@ function createPainterPlugin(type, Painter) {
                 this._frameCache[key] = 1;
             }
 
+            //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
+            //level:    4       2     0     1       3
+            const level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
-                    m.setUniform('level', Math.abs(tileInfo.z - tileZoom));
+                    m.setUniform('level', level);
                 });
             } else {
-                mesh.setUniform('level', Math.abs(tileInfo.z - tileZoom));
+                mesh.setUniform('level', level);
             }
             return {
                 'redraw' : false
@@ -194,9 +197,10 @@ function createPainterPlugin(type, Painter) {
         },
 
         _filterGeoElements(geometry, glData, features, regl) {
+            var featureIndexes = glData.featureIndexes || glData.data.featureIndexes;
+            if (!featureIndexes) return;
             if (this._excludesFunc) {
                 var indices = glData.indices;
-                var featureIndexes = glData.featureIndexes || glData.data.featureIndexes;
                 var pre = null,
                     excluded = false;
                 var elements = [];
