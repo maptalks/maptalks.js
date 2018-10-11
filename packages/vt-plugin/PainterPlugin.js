@@ -44,7 +44,7 @@ function createPainterPlugin(type, Painter) {
             var tileCache = context.tileCache,
                 tileData = context.tileData,
                 tileInfo = context.tileInfo,
-                tileTransform = context.tileTransform,
+                tileTransform = tileData.transform,
                 tileZoom = context.tileZoom;
             var painter = this.painter;
             if (!painter) {

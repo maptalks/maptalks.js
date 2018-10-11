@@ -22,7 +22,7 @@ class FillPainter extends Painter {
         }
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
-            const symbol = geometries[i]['_symbol'];
+            const symbol = geometries[i].properties.symbol;
             const uniforms = {};
             if (symbol['polygonFill']) {
                 const color = Color(symbol['polygonFill']);
@@ -49,25 +49,6 @@ class FillPainter extends Painter {
             meshes.push(mesh);
         }
         return meshes;
-    }
-
-    paint() {
-        this._redraw = false;
-        const layer = this.layer;
-        const map = layer.getMap();
-        if (!map) {
-            return {
-                redraw : false
-            };
-        }
-
-        const uniforms = this.getUniformValues(map);
-
-        this._renderer.render(this._shader, uniforms, this.scene);
-
-        return {
-            redraw : false
-        };
     }
 
     remove() {

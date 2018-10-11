@@ -55,11 +55,13 @@ class Painter {
             const data = extend({}, packs[i].data);
             data.aPickingId = data.featureIndexes;
             delete data.featureIndexes;
-            const geometry = new reshader.Geometry(packs[i].data, packs[i].indices);
-            geometry['_features'] = features;
-            geometry['_symbol'] = packs[i].symbol;
-            geometry['_iconAtlas'] = iconAtlas;
-            geometry['_glyphAtlas'] = glyphAtlas;
+            const geometry = new reshader.Geometry(data, packs[i].indices);
+            geometry.properties = {
+                features,
+                symbol : packs[i].symbol,
+                iconAtlas,
+                glyphAtlas
+            };
             geometry.generateBuffers(this.regl);
             geometries.push(geometry);
         }
@@ -81,7 +83,22 @@ class Painter {
     }
 
     paint() {
-        throw new Error('not implemented');
+        this._redraw = false;
+        const layer = this.layer;
+        const map = layer.getMap();
+        if (!map) {
+            return {
+                redraw : false
+            };
+        }
+
+        const uniforms = this.getUniformValues(map);
+
+        this._renderer.render(this._shader, uniforms, this.scene);
+
+        return {
+            redraw : false
+        };
     }
 
     pick(x, y) {
@@ -101,7 +118,7 @@ class Painter {
             return null;
         }
         return {
-            feature : mesh.geometry._features[pickingId],
+            feature : mesh.geometry.properties.features[pickingId],
             point
         };
     }

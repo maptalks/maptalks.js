@@ -3,56 +3,58 @@ const registedClazz = {};
 function VectorTilePlugin() {
 }
 
-VectorTilePlugin.prototype.getType = function () {
+const parentProto = VectorTilePlugin.prototype;
+
+parentProto.getType = function () {
     return Object.getPrototypeOf(this).constructor.type;
 };
 
-VectorTilePlugin.prototype.startFrame = function () {
+parentProto.startFrame = function () {
     throw new Error('to be implemented.');
 };
 
-VectorTilePlugin.prototype.endFrame = function () {
+parentProto.endFrame = function () {
     throw new Error('to be implemented.');
 };
 
-VectorTilePlugin.prototype.paintTile = function () {
+parentProto.paintTile = function () {
     throw new Error('to be implemented.');
 };
 
-VectorTilePlugin.prototype.pick = function () {
+parentProto.pick = function () {
     throw new Error('to be implemented.');
 };
 
-VectorTilePlugin.prototype.resize = function () {
+parentProto.resize = function () {
     throw new Error('to be implemented.');
 };
 
-VectorTilePlugin.prototype.deleteTile = function () {
+parentProto.deleteTile = function () {
     throw new Error('to be implemented.');
 };
 
-VectorTilePlugin.prototype.remove = function () {
+parentProto.remove = function () {
     throw new Error('to be implemented.');
 };
 
-VectorTilePlugin.prototype.needToRedraw = function () {
+parentProto.needToRedraw = function () {
     return false;
 };
 
-VectorTilePlugin.prototype.constructor = VectorTilePlugin;
+parentProto.constructor = VectorTilePlugin;
 
 VectorTilePlugin.extend = function (type, props) {
-    var clazz = function () {
+    const clazz = function () {
         if (this.init) {
             this.init();
         }
     };
-    var proto = Object.create(VectorTilePlugin.prototype);
+    const proto = Object.create(parentProto);
     proto.constructor = clazz;
     clazz.prototype = proto;
 
     clazz.type = type;
-    for (var p in props) {
+    for (const p in props) {
         if (props.hasOwnProperty(p)) {
             clazz.prototype[p] = props[p];
         }

@@ -62,7 +62,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         this._createREGLContext();
         this.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Float32Array([
+        this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Uint16Array([
             0, EXTENT, 0,
             0, 0, 0,
             EXTENT, EXTENT, 0,
@@ -142,36 +142,36 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return result;
     }
 
-    onDrawTileStart(context) {
-        if (!this.layer.options['stencil']) {
-            return;
-        }
-        const map = this.getMap();
-        // this.regl._refresh();
-        const { tiles, parentTiles, childTiles } = context;
-        const gl = this.gl;
-        const quadStencil = this._quadStencil;
+    // onDrawTileStart(context) {
+    //     if (!this.layer.options['stencil']) {
+    //         return;
+    //     }
+    //     const map = this.getMap();
+    //     // this.regl._refresh();
+    //     const { tiles, parentTiles, childTiles } = context;
+    //     const gl = this.gl;
+    //     const quadStencil = this._quadStencil;
 
-        quadStencil.start();
-        // Tests will always pass, and ref value will be written to stencil buffer.
-        quadStencil.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+    //     quadStencil.start();
+    //     // Tests will always pass, and ref value will be written to stencil buffer.
+    //     quadStencil.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-        let idNext = 1;
-        this._tileStencilRefs = {};
-        const stencilTiles = [];
-        maptalks.Util.pushIn(stencilTiles, parentTiles, childTiles, tiles);
-        for (const tile of stencilTiles) {
-            const id = this._tileStencilRefs[tile.info.dupKey] = idNext++;
-            quadStencil.stencilFunc(gl.ALWAYS, id, 0xFF);
+    //     let idNext = 1;
+    //     this._tileStencilRefs = {};
+    //     const stencilTiles = [];
+    //     maptalks.Util.pushIn(stencilTiles, parentTiles, childTiles, tiles);
+    //     for (const tile of stencilTiles) {
+    //         const id = this._tileStencilRefs[tile.info.dupKey] = idNext++;
+    //         quadStencil.stencilFunc(gl.ALWAYS, id, 0xFF);
 
-            const mat = this.calculateTileMatrix(tile.info);
-            mat4.multiply(mat, map.projViewMatrix, mat);
-            quadStencil.draw(mat);
-        }
+    //         const mat = this.calculateTileMatrix(tile.info);
+    //         mat4.multiply(mat, map.projViewMatrix, mat);
+    //         quadStencil.draw(mat);
+    //     }
 
-        quadStencil.end();
-        super.onDrawTileStart(context);
-    }
+    //     quadStencil.end();
+    //     super.onDrawTileStart(context);
+    // }
 
     draw(framestamp) {
         this.prepareCanvas();
@@ -259,7 +259,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 gl : this.gl,
                 sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
-                cameraPosition
+                cameraPosition,
+                quadStencil : this._quadStencil
             });
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
@@ -274,7 +275,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
-        const stencilRef = this._tileStencilRefs && this._tileStencilRefs[tileInfo.dupKey];
         const tileTransform = this.calculateTileMatrix(tileInfo);
         this.plugins.forEach((plugin, idx) => {
             if (!tileData[idx]) {
@@ -283,6 +283,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!tileCache[idx]) {
                 tileCache[idx] = {};
             }
+            tileData[idx].transform = tileTransform;
             const context = {
                 regl : this.regl,
                 layer : this.layer,
@@ -292,7 +293,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache : tileCache[idx],
                 tileData : tileData[idx],
                 t : this._frameTime - tileData.loadTime,
-                tileInfo, tileTransform, stencilRef,
+                tileInfo,
                 tileZoom : this['_tileZoom']
             };
             const status = plugin.paintTile(context);
