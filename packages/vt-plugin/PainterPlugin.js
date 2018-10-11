@@ -24,7 +24,6 @@ function createPainterPlugin(type, Painter) {
             if (excludes !== this._excludes) {
                 this._excludesFunc = excludes ? createFilter(excludes) : null;
                 this._excludes = excludes;
-                this._excludesUpdated = true;
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
             painter.clear();
@@ -36,7 +35,6 @@ function createPainterPlugin(type, Painter) {
             if (painter) {
                 return painter.render(context);
             }
-            delete this._excludesUpdated;
             return null;
         },
 
@@ -72,8 +70,9 @@ function createPainterPlugin(type, Painter) {
                     'redraw' : false
                 };
             }
-            if (this._excludesUpdated) {
+            if (tileCache.excludes !== this._excludes) {
                 this._filterElements(geometry, tileData.data, features, context.regl);
+                tileCache.excludes = this._excludes;
             }
             var mesh = this._getMesh(key);
             if (!mesh) {
@@ -95,9 +94,11 @@ function createPainterPlugin(type, Painter) {
             const level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
+                    m.properties.tile = key;
                     m.setUniform('level', level);
                 });
             } else {
+                mesh.properties.tile = key;
                 mesh.setUniform('level', level);
             }
             return {
