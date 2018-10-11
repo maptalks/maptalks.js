@@ -362,7 +362,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @returns {Layer} this
      */
     setMask(mask) {
-        if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type==='MultiPolygon')) {
+        if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
 

@@ -523,20 +523,19 @@ class CanvasRenderer extends Class {
         }
 
         // Handle MultiPolygon
-        if(mask.getGeometries){
-            context.isMultiClip=true;
-            let masks=mask.getGeometries() || [];
+        if (mask.getGeometries) {
+            context.isMultiClip = true;
+            const masks = mask.getGeometries() || [];
             masks.forEach(_mask => {
-                const painter= _mask._getPainter();
+                const painter =  _mask._getPainter();
                 painter.paint(null, context);
             });
             context.stroke();
             delete context.isMultiClip;
-        }else{
-            const painter= mask._getPainter();
+        } else {
+            const painter = mask._getPainter();
             painter.paint(null, context);
         }
-      
         if (Browser.retina) {
             context.restore();
         }

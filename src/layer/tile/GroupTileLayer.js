@@ -130,8 +130,8 @@ class GroupTileLayer extends TileLayer {
             layer._doRemove();
             layer.off('show hide', this._onLayerShowHide, this);
         });
-        this.layerMap={};
-        this._groupChildren=[];
+        this.layerMap = {};
+        this._groupChildren = [];
         super.onRemove();
     }
 
