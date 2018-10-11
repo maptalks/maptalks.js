@@ -90,6 +90,9 @@ class LinePainter extends Painter {
     }
 
     init() {
+        //tell parent Painter to run stencil when painting
+        this.needStencil = true;
+
         const regl = this.regl;
         const canvas = this.canvas;
 
@@ -127,7 +130,6 @@ class LinePainter extends Painter {
                 // 'uColor',
                 'lineWidth',
                 'lineGapWidth',
-
                 'blur',
                 'lineOpacity',
                 {
@@ -141,16 +143,30 @@ class LinePainter extends Painter {
                     }
                 },
                 'uMatrix'
-                /* {
-                    name : 'uMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
-                        return mat4.multiply([], props['projMatrix'], props['viewMatrix2']);
-                    }
-                }, */
             ],
             extraCommandProps : {
-                viewport, scissor
+                viewport, scissor,
+                stencil: {
+                    enable: true,
+                    mask : 0,
+                    func: {
+                        cmp: '=',
+                        ref: (context, props) => {
+                            return props.ref;
+                        },
+                        mask: 0xff
+                    },
+                    opFront: {
+                        fail: 'keep',
+                        zfail: 'keep',
+                        zpass: 'replace' //TODO must be set or paint wrongly
+                    },
+                    opBack: {
+                        fail: 'keep',
+                        zfail: 'keep',
+                        zpass: 'keep'
+                    }
+                },
             }
         });
 

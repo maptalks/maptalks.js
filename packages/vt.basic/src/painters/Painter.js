@@ -1,5 +1,6 @@
-import { reshader } from '@maptalks/gl';
+import { reshader, mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
+import { StencilHelper } from '@maptalks/vt-plugin';
 
 class Painter {
     constructor(regl, layer, sceneConfig) {
@@ -11,6 +12,7 @@ class Painter {
         if (sceneConfig.picking !== false) {
             this.pickingFBO = layer.getRenderer().pickingFBO;
         }
+        this._stencilHelper = new StencilHelper();
         this.init();
     }
 
@@ -82,7 +84,7 @@ class Painter {
         return this.paint(context);
     }
 
-    paint() {
+    paint(context) {
         this._redraw = false;
         const layer = this.layer;
         const map = layer.getMap();
@@ -91,9 +93,11 @@ class Painter {
                 redraw : false
             };
         }
+        if (this.needStencil) {
+            this._stencil(context.quadStencil);
+        }
 
         const uniforms = this.getUniformValues(map);
-
         this._renderer.render(this._shader, uniforms, this.scene);
 
         return {
@@ -146,6 +150,40 @@ class Painter {
 
     delete(context) {
         this.remove(context);
+    }
+
+    _stencil(quadStencil) {
+        const meshes = this.scene.getMeshes();
+        if (!meshes.length) {
+            return;
+        }
+        const stencils = meshes.map(mesh => {
+            return {
+                transform : mesh.localTransform,
+                level : mesh.getUniform('level'),
+                mesh
+            };
+        }).sort(this._compareStencil);
+        const projViewMatrix = this.layer.getMap().projViewMatrix,
+            mat = [];
+        this._stencilHelper.start(quadStencil);
+        const painted = {};
+        for (let i = 0; i < stencils.length; i++) {
+            const mesh = stencils[i].mesh;
+            let id = painted[mesh.properties.tile];
+            if (id === undefined) {
+                mat4.multiply(mat, projViewMatrix, stencils[i].transform);
+                id = this._stencilHelper.write(quadStencil, mat, stencils[i].level);
+                painted[mesh.properties.tile] = id;
+            }
+            // stencil ref value
+            mesh.setUniform('ref', id);
+        }
+        this._stencilHelper.end(quadStencil);
+    }
+
+    _compareStencil(a, b) {
+        return b.level - a.level;
     }
 }
 
