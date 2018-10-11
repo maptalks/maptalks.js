@@ -1,7 +1,7 @@
 import { createEl } from '../core/util/dom';
 import { Geometry } from '../geometry';
 import UIComponent from './UIComponent';
-import UIMarker from './UIMarker'
+import UIMarker from './UIMarker';
 
 
 /**
