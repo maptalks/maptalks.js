@@ -453,7 +453,32 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity);
     },
 
+    _multiClip(ctx, points, lineOpacity, fillOpacity, lineDashArray, smoothness){
+        if(! points || points.length===0) return;
+        //not Handle holes
+        points=points[0];
+        for(let i=0,len=points.length;i<len;i++){
+            const point=points[i];
+            let x=point.x,y=point.y;
+            if(i===0){
+                ctx.moveTo(x,y);
+            }else{
+                ctx.lineTo(x,y);
+            }
+            if(i===len-1){
+                x=points[0].x;
+                y=points[0].y;
+                ctx.lineTo(x,y);
+            }
+        }
+    },
+
     polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray, smoothness) {
+        // if MultiClip
+        if(ctx.isMultiClip){
+            Canvas._multiClip(ctx,points,lineOpacity, fillOpacity, lineDashArray, smoothness);
+            return ;
+        }
         if (!isArrayHasData(points)) {
             return;
         }
