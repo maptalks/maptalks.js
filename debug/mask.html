@@ -14,7 +14,7 @@
     .container {
         width: 100%;
         height: 100%;
-        background: black;
+        /* background: black; */
     }
 </style>
 <link rel="stylesheet" href="../dist/maptalks.css">
@@ -34,12 +34,26 @@
             console.log(e.coordinate.toArray());
         })
 
-        let baseLayer = new maptalks.TileLayer('base', {
+        var baseLayer = new maptalks.TileLayer('masked', {
+            'urlTemplate': 'http://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}',
+            'subdomains': ['a', 'b', 'c', 'd']
+        });
+        baseLayer.addTo(map);
+
+        // var baseLayer2=new maptalks.TileLayer('base', {
+        //   urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+        //   subdomains: ['a','b','c','d'],
+        //   attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+        // });
+        // baseLayer2.addTo(map);
+
+
+        let maskedLayer = new maptalks.TileLayer('base2', {
             urlTemplate: 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}',
             subdomains: ['a', 'b', 'c'],
             attribution: '&copy; <a href="http://www.google.cn/maps" target="_blank">Google Maps</a> contributors'
         });
-        map.setBaseLayer(baseLayer);
+        map.addLayer(maskedLayer);
 
         // let lnglats = [
         //     [
@@ -67,7 +81,7 @@
         //         ]
         //     ]
         // ]
-
+        // data from https://lbs.amap.com/
         const lnglatStrArray = [
             "122.009975,29.902646;122.008021,29.903762;122.005969,29.905802;122.005174,29.908408;122.004976,29.910586;122.005308,29.913063;122.006731,29.91518;122.008089,29.916075;122.009778,29.91674;122.011499,29.917042;122.012592,29.916782;122.013817,29.916092;122.015704,29.914942;122.016598,29.913988;122.017194,29.913264;122.01822,29.91287;122.019644,29.912908;122.020935,29.913308;122.021829,29.913112;122.023153,29.911894;122.024179,29.909587;122.024278,29.906484;122.02398,29.904536;122.023086,29.902784;122.021629,29.901558;122.018219,29.901218;122.016067,29.901212;122.013352,29.901732;122.009975,29.902646",
             "122.025569,29.909029;122.027134,29.910615;122.027996,29.910951;122.029442,29.910922;122.030138,29.910396;122.030634,29.909275;122.030832,29.907856;122.030601,29.906535;122.029972,29.905675;122.028788,29.905207;122.027555,29.904975;122.025933,29.905234;122.025072,29.90576;122.02494,29.906849;122.025106,29.907972;122.025569,29.909029",
@@ -94,20 +108,20 @@
 
         let polygon = new maptalks.Polygon(lnglatsList[0]);
         let multiPolygon = new maptalks.MultiPolygon(lnglatsList,
-        {
-            'symbol': [
-                {
-                    'lineColor': 'red',
-                    'lineWidth': 3,
-                    'polygonFillOpacity': 0
-                }
-            ]
-        });
+            {
+                'symbol': [
+                    {
+                        'lineColor': 'red',
+                        'lineWidth': 3,
+                        'polygonFillOpacity': 0
+                    }
+                ]
+            });
         let polygon1 = new maptalks.Polygon(lnglatsList[lnglatsList.length - 1]);
         var outline = multiPolygon.copy();
         // baseLayer.setMask(polygon);
         // baseLayer.setMask(polygon1);
-        baseLayer.setMask(multiPolygon);
+        maskedLayer.setMask(multiPolygon);
 
 
         var point = new maptalks.Marker(
@@ -130,8 +144,8 @@
                 }
             }
         );
-       
-        new maptalks.VectorLayer('vector', [outline,point]).addTo(map);
+
+        new maptalks.VectorLayer('vector', [outline, point]).addTo(map);
     </script>
 </body>
 
