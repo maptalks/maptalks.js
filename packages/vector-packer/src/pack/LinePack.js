@@ -163,8 +163,6 @@ export default class LinePack extends VectorPack {
         // const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
 
         this.distance = 0;
-        this.maxIndex = 0;
-        this.maxPos = 0;
         this.vertexLength = 0;
         this.primitiveLength = 0;
 
@@ -515,10 +513,7 @@ export default class LinePack extends VectorPack {
             // ((linesofar & 0xFF)),
             // linesofar >> 8
         );
-        const max = Math.max(Math.abs(point.x), Math.abs(point.y));
-        if (max > this.maxPos) {
-            this.maxPos = max;
-        }
+        this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
 
     addElements(e1, e2, e3) {
