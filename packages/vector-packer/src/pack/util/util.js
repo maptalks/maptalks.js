@@ -27,3 +27,9 @@ export function calculateSignedArea(ring) {
     return sum;
 }
 
+export function isClippedEdge(vertices, i0, i1, width, EXTENT) {
+    const x0 = vertices[i0 * width], y0 = vertices[i0 * width + 1],
+        x1 = vertices[i1 * width], y1 = vertices[i1 * width + 1];
+    return x0 === x1 && (x0 < 0 || x0 > EXTENT) && y0 !== y1 ||
+        y0 === y1 && (y0 < 0 || y0 > EXTENT) && x0 !== x1;
+}

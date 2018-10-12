@@ -1,6 +1,7 @@
 // import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
+import { isClippedEdge } from './util/util';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -70,7 +71,7 @@ export default class LinePack extends VectorPack {
     getFormat() {
         return [
             {
-                type : Int32Array,
+                type : Int16Array,
                 width : 3,
                 name : 'aPosition'
             },
@@ -102,13 +103,23 @@ export default class LinePack extends VectorPack {
             cap = symbol['lineCap'] || 'butt', //butt, round, square
             miterLimit = 2,
             roundLimit = 1.05;
-        this.offset = this.data.length / 8;
+        this.offset = this.data.length / this.formatWidth;
 
         const feature = line.feature,
+            isPolygon = feature.type === 3, //POLYGON
             lines = feature.geometry;
+        const elements = this.elements;
+        if (isPolygon) {
+            this.elements = [];
+        }
         for (let i = 0; i < lines.length; i++) {
             this._addLine(lines[i], feature, join, cap, miterLimit, roundLimit, scale);
+            if (isPolygon) {
+                this._filterPolygonEdges(elements);
+                this.elements = [];
+            }
         }
+        this.elements = elements;
     }
 
     getType(symbol) {
@@ -518,6 +529,16 @@ export default class LinePack extends VectorPack {
 
     addElements(e1, e2, e3) {
         super.addElements(this.offset + e1, this.offset + e2, this.offset + e3);
+    }
+
+    _filterPolygonEdges(elements) {
+        const edges = this.elements;
+        for (let i = 0; i < edges.length; i += 3) {
+            if (!isClippedEdge(this.data, edges[i], edges[i + 1], this.formatWidth, this.options['EXTENT']) &&
+                !isClippedEdge(this.data, edges[i + 1], edges[i + 2], this.formatWidth, this.options['EXTENT'])) {
+                elements.push(edges[i], edges[i + 1], edges[i + 2]);
+            }
+        }
     }
 
 }

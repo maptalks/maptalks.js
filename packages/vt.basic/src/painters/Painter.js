@@ -2,6 +2,8 @@ import { reshader, mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import { StencilHelper } from '@maptalks/vt-plugin';
 
+const mat = [];
+
 class Painter {
     constructor(regl, layer, sceneConfig) {
         this.regl = regl;
@@ -67,7 +69,6 @@ class Painter {
             geometry.generateBuffers(this.regl);
             geometries.push(geometry);
         }
-
         return geometries;
     }
 
@@ -96,6 +97,9 @@ class Painter {
         if (this.needStencil) {
             this._stencil(context.quadStencil);
         }
+        // this._shader.filter = mesh => {
+        //     return mesh.uniforms['level'] !== 0;
+        // };
 
         const uniforms = this.getUniformValues(map);
         this._renderer.render(this._shader, uniforms, this.scene);
@@ -164,22 +168,24 @@ class Painter {
                 mesh
             };
         }).sort(this._compareStencil);
-        const projViewMatrix = this.layer.getMap().projViewMatrix,
-            mat = [];
+        const projViewMatrix = this.layer.getMap().projViewMatrix;
         this._stencilHelper.start(quadStencil);
         const painted = {};
         for (let i = 0; i < stencils.length; i++) {
             const mesh = stencils[i].mesh;
-            let id = painted[mesh.properties.tile];
+            let id = painted[mesh.properties.tile.dupKey];
             if (id === undefined) {
                 mat4.multiply(mat, projViewMatrix, stencils[i].transform);
-                id = this._stencilHelper.write(quadStencil, mat, stencils[i].level);
-                painted[mesh.properties.tile] = id;
+                id = this._stencilHelper.write(quadStencil, mat);
+                painted[mesh.properties.tile.dupKey] = id;
             }
             // stencil ref value
             mesh.setUniform('ref', id);
         }
         this._stencilHelper.end(quadStencil);
+        //TODO 因为stencilHelper会改变 gl.ARRAY_BUFFER 和 vertexAttribPointer 的值，需要重刷regl状态
+        //记录 array_buffer 和 vertexAttribPointer 后， 能省略掉 _refresh
+        this.regl._refresh();
     }
 
     _compareStencil(a, b) {

@@ -154,7 +154,7 @@ class LinePainter extends Painter {
                         ref: (context, props) => {
                             return props.ref;
                         },
-                        mask: 0xff
+                        mask: 0xFF
                     },
                     opFront: {
                         fail: 'keep',

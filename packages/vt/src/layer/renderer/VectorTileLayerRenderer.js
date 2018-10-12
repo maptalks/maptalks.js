@@ -302,7 +302,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this.setToRedraw();
             }
         });
-        //TODO stencil
         this.setCanvasUpdated();
     }
 
@@ -491,7 +490,8 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
         const glScale = map.getGLScale(tileInfo.z);
         const tilePos = tileInfo.point;
         const tileSize = this.layer.getTileSize();
-        const posMatrix = mat4.identity(new Array(3));
+        const posMatrix = mat4.identity([]);
+        //TODO 计算zScale时，zoom可能和tileInfo.z不同
         mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
         mat4.translate(posMatrix, posMatrix, vec3.set(v1, tilePos.x, tilePos.y, 0));
         mat4.scale(posMatrix, posMatrix, vec3.set(v2, tileSize.width / EXTENT, tileSize.height / EXTENT, 1));

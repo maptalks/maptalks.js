@@ -220,8 +220,8 @@ export default class VectorPack {
         let elements = this.elements = [];
         //uniforms: opacity, u_size_t
 
-        const format = this.getFormat(vectors[0].symbol),
-            formatWidth = getFormatWidth(format);
+        const format = this.getFormat(vectors[0].symbol);
+        const formatWidth = this.formatWidth = getFormatWidth(format);
 
         let featureIndexes = [];
         let maxFeaIndex = 0;

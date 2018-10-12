@@ -84,23 +84,24 @@ function createPainterPlugin(type, Painter) {
                     'redraw' : false
                 };
             }
-            if (!this._frameCache[key]) {
-                painter.addMesh(mesh);
-                this._frameCache[key] = 1;
-            }
-
             //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
             //level:    4       2     0     1       3
             const level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
-                    m.properties.tile = key;
+                    m.properties.tile = tileInfo;
                     m.setUniform('level', level);
                 });
             } else {
-                mesh.properties.tile = key;
+                mesh.properties.tile = tileInfo;
                 mesh.setUniform('level', level);
             }
+
+            if (!this._frameCache[key]) {
+                painter.addMesh(mesh);
+                this._frameCache[key] = 1;
+            }
+
             return {
                 'redraw' : false
             };
