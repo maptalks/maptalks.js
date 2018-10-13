@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import { mat4, vec3, createREGL } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
+import DebugPainter from './utils/DebugPainter';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -68,6 +69,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             EXTENT, EXTENT, 0,
             EXTENT, 0, 0
         ]), layer.options['stencil'] === 'debug');
+        this._debugPainter = new DebugPainter(this.regl, this.canvas, EXTENT);
     }
 
     _createREGLContext() {
@@ -83,7 +85,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.glOptions = attributes;
         this.gl = this.gl || this._createGLContext(this.canvas, attributes);
         // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
-        //TODO 迁移到fusion后，不再需要初始化regl，而是将createREGL传给插件
         this.regl = createREGL({
             gl : this.gl,
             attributes,
@@ -184,6 +185,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._startFrame();
         super.draw(framestamp);
         this._endFrame();
+        if (this.layer.options['debug']) {
+            const mat = [];
+            const projViewMatrix = this.getMap().projViewMatrix;
+            for (const p in this.tilesInView) {
+                const transform = this.tilesInView[p].info.transform;
+                if (transform) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform));
+            }
+        }
         // TODO: shoule be called in parent
         // this.completeRender();
     }
@@ -275,7 +284,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
-        const tileTransform = this.calculateTileMatrix(tileInfo);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo);
         this.plugins.forEach((plugin, idx) => {
             if (!tileData[idx]) {
                 return;
@@ -378,6 +387,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.pickingFBO.destroy();
         }
         this._quadStencil.remove();
+        this._debugPainter.remove();
         if (super.onRemove) super.onRemove();
         this._clearPlugin();
     }

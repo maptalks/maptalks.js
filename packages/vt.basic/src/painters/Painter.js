@@ -4,6 +4,14 @@ import { StencilHelper } from '@maptalks/vt-plugin';
 
 const mat = [];
 
+const level0Filter = mesh => {
+    return mesh.uniforms['level'] === 0;
+};
+
+const levelNFilter = mesh => {
+    return mesh.uniforms['level'] > 0;
+};
+
 class Painter {
     constructor(regl, layer, sceneConfig) {
         this.regl = regl;
@@ -101,8 +109,18 @@ class Painter {
         //     return mesh.uniforms['level'] !== 0;
         // };
 
+        this.regl.clear({
+            stencil: 0xFF
+        });
         const uniforms = this.getUniformValues(map);
+
+        this._shader.filter = level0Filter;
         this._renderer.render(this._shader, uniforms, this.scene);
+
+        this._shader.filter = levelNFilter;
+        this._renderer.render(this._shader, uniforms, this.scene);
+
+        // this._renderer.render(this._shader, uniforms, this.scene);
 
         return {
             redraw : false

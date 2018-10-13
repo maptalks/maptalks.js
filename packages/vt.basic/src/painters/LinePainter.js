@@ -91,7 +91,7 @@ class LinePainter extends Painter {
 
     init() {
         //tell parent Painter to run stencil when painting
-        this.needStencil = true;
+        // this.needStencil = true;
 
         const regl = this.regl;
         const canvas = this.canvas;
@@ -137,8 +137,7 @@ class LinePainter extends Painter {
                     type : 'function',
                     fn : function (context, props) {
                         const projViewModelMatrix = [];
-                        mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                        mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                        mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
                     }
                 },
@@ -148,24 +147,35 @@ class LinePainter extends Painter {
                 viewport, scissor,
                 stencil: {
                     enable: true,
-                    mask : 0,
+                    mask : 0xFF,
                     func: {
-                        cmp: '=',
+                        cmp: '<',
                         ref: (context, props) => {
-                            return props.ref;
+                            return props.level;
                         },
                         mask: 0xFF
                     },
                     opFront: {
                         fail: 'keep',
                         zfail: 'keep',
-                        zpass: 'replace' //TODO must be set or paint wrongly
+                        zpass: 'replace'
                     },
                     opBack: {
                         fail: 'keep',
                         zfail: 'keep',
-                        zpass: 'keep'
+                        zpass: 'replace'
                     }
+                },
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 'src alpha',
+                        // srcAlpha: 1,
+                        dst: 'one minus src alpha',
+                        // dstAlpha: 1
+                    },
+                    equation: 'add',
+                    // color: [0, 0, 0, 0]
                 },
             }
         });
@@ -184,8 +194,7 @@ class LinePainter extends Painter {
                             type : 'function',
                             fn : function (context, props) {
                                 const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                                 return projViewModelMatrix;
                             }
                         },
@@ -199,12 +208,12 @@ class LinePainter extends Painter {
 
     getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
-            projMatrix = map.projMatrix,
+            projViewMatrix = map.projViewMatrix,
             uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
             cameraToCenterDistance = map.cameraToCenterDistance,
             canvasSize = [this.canvas.width, this.canvas.height];
         return {
-            viewMatrix, uMatrix, projMatrix, cameraToCenterDistance, canvasSize, blur : 0
+            uMatrix, projViewMatrix, cameraToCenterDistance, canvasSize, blur : 0
         };
     }
 }
