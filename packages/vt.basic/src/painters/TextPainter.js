@@ -12,7 +12,11 @@ const defaultUniforms = {
     'pitchWithMap' : 0,
     'textHaloRadius' : 0,
     'textHaloFill' : [1, 1, 1, 1],
-    'textHaloOpacity' : 1
+    'textHaloBlur' : 0,
+    'textHaloOpacity' : 1,
+    'isHalo' : 0,
+    'fadeOpacity' : 1,
+    'textPerspectiveRatio' : 0
 };
 
 class TextPainter extends Painter {
@@ -56,10 +60,15 @@ class TextPainter extends Painter {
 
             if (symbol['textHaloRadius']) {
                 uniforms.textHaloRadius = symbol['textHaloRadius'];
+                uniforms.isHalo = 1;
             }
 
             if (symbol['textHaloOpacity']) {
                 uniforms.textHaloOpacity = symbol['textHaloOpacity'];
+            }
+
+            if (symbol['textPerspectiveRatio']) {
+                uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
             }
 
             const glyphAtlas = geometries[i].properties.glyphAtlas;
@@ -67,9 +76,8 @@ class TextPainter extends Painter {
             uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
 
             if (symbol['textPitchAlignment'] === 'map') {
-                uniforms['pitchWithMap'] = 1;
+                uniforms.pitchWithMap = 1;
             }
-
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometries[i], material, {
                 transparent,
@@ -78,6 +86,18 @@ class TextPainter extends Painter {
             });
             mesh.setLocalTransform(transform);
             meshes.push(mesh);
+
+            if (uniforms.isHalo) {
+                uniforms.isHalo = 0;
+                const material = new reshader.Material(uniforms, defaultUniforms);
+                const mesh = new reshader.Mesh(geometries[i], material, {
+                    transparent,
+                    castShadow : false,
+                    picking : true
+                });
+                mesh.setLocalTransform(transform);
+                meshes.push(mesh);
+            }
         }
         return meshes;
     }
@@ -124,20 +144,25 @@ class TextPainter extends Painter {
                     name : 'projViewModelMatrix',
                     type : 'function',
                     fn : function (context, props) {
-                        const projViewModelMatrix = [];
-                        mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                        mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                        return projViewModelMatrix;
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 },
-                'viewMatrix',
-                'textSize',
+                'textPerspectiveRatio',
+                'texSize',
                 'canvasSize',
                 'glyphSize',
                 'pitchWithMap',
+                'mapPitch',
                 'texture',
                 'gammaScale',
-                'textFill'
+                'textFill',
+                'textOpacity',
+                'textHaloRadius',
+                'textHaloFill',
+                'textHaloBlur',
+                'textHaloOpacity',
+                'isHalo',
+                'fadeOpacity'
             ],
             extraCommandProps : {
                 viewport, scissor,
@@ -165,16 +190,14 @@ class TextPainter extends Painter {
                             name : 'projViewModelMatrix',
                             type : 'function',
                             fn : function (context, props) {
-                                const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                                return projViewModelMatrix;
+                                return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                             }
                         },
-                        'viewMatrix',
+                        'textPerspectiveRatio',
                         'canvasSize',
                         'glyphSize',
-                        'pitchWithMap'
+                        'pitchWithMap',
+                        'mapPitch'
                     ]
                 },
                 this.pickingFBO
@@ -183,14 +206,12 @@ class TextPainter extends Painter {
     }
 
     getUniformValues(map) {
-        const viewMatrix = map.viewMatrix,
-            projMatrix = map.projMatrix,
-            // uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
+        const projViewMatrix = map.projViewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             canvasSize = [this.canvas.width, this.canvas.height];
-        // uMatrix[12] = uMatrix[13] = uMatrix[14] = 0;
         return {
-            viewMatrix, projMatrix,
+            mapPitch : map.getPitch() * Math.PI / 180,
+            projViewMatrix,
             cameraToCenterDistance, canvasSize,
             glyphSize : 24,
             gammaScale : 2

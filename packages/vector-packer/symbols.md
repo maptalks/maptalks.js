@@ -1,8 +1,11 @@
 * markerPitchAlignment
 * markerSpacing
+* markerPerspectiveRatio
 * textSpacing
 * textLineHeight
 * textLetterSpacing
 * textRotationAlignment
 * textPitchAlignment
 * textKeepUpright
+* textPerspectiveRatio
+* lineGapWidth

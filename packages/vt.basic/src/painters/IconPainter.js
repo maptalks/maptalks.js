@@ -7,7 +7,8 @@ import pickingVert from './glsl/marker.picking.vert';
 
 const defaultUniforms = {
     'markerOpacity' : 1,
-    'pitchWithMap' : 0
+    'pitchWithMap' : 0,
+    'markerPerspectiveRatio' : 0
 };
 
 class PointPainter extends Painter {
@@ -39,6 +40,10 @@ class PointPainter extends Painter {
 
             if (symbol['markerPitchAlignment'] === 'map') {
                 uniforms['pitchWithMap'] = 1;
+            }
+
+            if (symbol['markerPerspectiveRatio']) {
+                uniforms['markerPerspectiveRatio'] = symbol['markerPerspectiveRatio'];
             }
 
             const material = new reshader.Material(uniforms, defaultUniforms);
@@ -95,16 +100,14 @@ class PointPainter extends Painter {
                     name : 'projViewModelMatrix',
                     type : 'function',
                     fn : function (context, props) {
-                        const projViewModelMatrix = [];
-                        mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                        mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                        return projViewModelMatrix;
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 },
-                'uMatrix',
-                'textSize',
+                'texSize',
                 'canvasSize',
                 'pitchWithMap',
+                'mapPitch',
+                'markerPerspectiveRatio',
                 'texture'
             ],
             extraCommandProps : {
@@ -136,15 +139,13 @@ class PointPainter extends Painter {
                             name : 'projViewModelMatrix',
                             type : 'function',
                             fn : function (context, props) {
-                                const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                                return projViewModelMatrix;
+                                return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                             }
                         },
-                        'uMatrix',
                         'canvasSize',
-                        'pitchWithMap'
+                        'pitchWithMap',
+                        'mapPitch',
+                        'markerPerspectiveRatio'
                     ]
                 },
                 this.pickingFBO
@@ -153,14 +154,12 @@ class PointPainter extends Painter {
     }
 
     getUniformValues(map) {
-        const viewMatrix = map.viewMatrix,
-            projMatrix = map.projMatrix,
-            uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
+        const projViewMatrix = map.projViewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             canvasSize = [this.canvas.width, this.canvas.height];
-        uMatrix[12] = uMatrix[13] = uMatrix[14] = 0;
         return {
-            viewMatrix, projMatrix, uMatrix,
+            mapPitch : map.getPitch() * Math.PI / 180,
+            projViewMatrix,
             cameraToCenterDistance, canvasSize
         };
     }
