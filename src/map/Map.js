@@ -806,14 +806,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (view['center']) {
             this.setCenter(view['center']);
         }
-        if (view['zoom']) {
-            this.setZoom(view['zoom'], { 'animation' : false });
+        if (view['zoom'] !== null && !isNaN(+view['zoom'])) {
+            this.setZoom(+view['zoom'], { 'animation' : false });
         }
-        if (view['pitch']) {
-            this.setPitch(view['pitch']);
+        if (view['pitch'] !== null && !isNaN(+view['pitch'])) {
+            this.setPitch(+view['pitch']);
         }
-        if (view['bearing']) {
-            this.setBearing(view['bearing']);
+        if (view['pitch'] !== null && !isNaN(+view['bearing'])) {
+            this.setBearing(+view['bearing']);
         }
         return this;
     }
