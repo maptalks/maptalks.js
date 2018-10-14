@@ -30,6 +30,7 @@ export default class Geometry {
             }
         }
         this.count = count;
+        this.properties = {};
         this.updateBoundingBox();
     }
 

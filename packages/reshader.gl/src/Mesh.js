@@ -15,6 +15,7 @@ class Mesh {
         this.picking = !!config.picking;
         this.uniforms = {};
         this.localTransform = mat4.identity(new Array(16));
+        this.properties = {};
     }
 
     setParent() {
@@ -30,6 +31,10 @@ class Mesh {
     setUniform(k, v) {
         this.uniforms[k] = v;
         return this;
+    }
+
+    getUniform(k) {
+        return this.uniforms[k];
     }
 
     getDefines() {
