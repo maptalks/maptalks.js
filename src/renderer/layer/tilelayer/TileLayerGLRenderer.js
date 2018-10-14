@@ -62,14 +62,14 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     writeZoomStencil() {
         const gl = this.gl;
-        gl.stencilFunc(gl.ALWAYS, 1, 4294967295);
+        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
     startZoomStencilTest() {
         const gl = this.gl;
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-        gl.stencilFunc(gl.EQUAL, 0, 4294967295);
+        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
     }
 
     endZoomStencilTest() {
@@ -78,12 +78,12 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     pauseZoomStencilTest() {
         const gl = this.gl;
-        gl.stencilFunc(gl.ALWAYS, 1, 4294967295);
+        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
     }
 
     resumeZoomStencilTest() {
         const gl = this.gl;
-        gl.stencilFunc(gl.EQUAL, 0, 4294967295);
+        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
     }
 
     _bindGLBuffer(image, w, h) {

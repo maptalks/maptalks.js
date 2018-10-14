@@ -27,6 +27,8 @@ import Geometry from '../geometry/Geometry';
  * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
  * @property {Boolean} [options.animation=null]         - fade | scale | fade,scale, add animation effect when showing and hiding.
  * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
+ * @property {Boolean}  [options.pitchWithMap=false]    - whether tilt with map
+ * @property {Boolean}  [options.rotateWithMap=false]  - whether rotate with map
  * @memberOf ui.UIComponent
  * @instance
  */
