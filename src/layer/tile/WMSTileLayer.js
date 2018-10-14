@@ -63,6 +63,7 @@ class WMSTileLayer extends TileLayer {
             }
         }
         this.setOptions(options);
+        this.setZIndex(options.zIndex);
         const r = options.detectRetina && Browser.retina ? 2 : 1,
             tileSize = this.getTileSize();
         wmsParams.width = tileSize.width * r;

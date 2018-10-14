@@ -142,6 +142,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     setZIndex(zIndex) {
         this._zIndex = zIndex;
+        this.options.zIndex = zIndex;
         if (this.map) {
             this.map._sortLayersByZIndex();
         }
