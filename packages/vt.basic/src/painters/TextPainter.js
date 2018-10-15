@@ -24,14 +24,16 @@ class TextPainter extends Painter {
         return this._redraw;
     }
 
-    createMesh(geometries, transform) {
+    createMesh(geometries, transform, tileData) {
         if (!geometries || !geometries.length) {
             return null;
         }
 
+        const packMeshes = tileData.meshes;
         const meshes = [];
-        for (let i = 0; i < geometries.length; i++) {
-            const symbol = geometries[i].properties.symbol;
+        for (let i = 0; i < packMeshes.length; i++) {
+            const geometry = geometries[packMeshes[i].pack];
+            const symbol = packMeshes[i].symbol;
             const uniforms = {};
 
             let transparent = false;
@@ -71,7 +73,7 @@ class TextPainter extends Painter {
                 uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
             }
 
-            const glyphAtlas = geometries[i].properties.glyphAtlas;
+            const glyphAtlas = geometry.properties.glyphAtlas;
             uniforms['texture'] = glyphAtlas;
             uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
 
@@ -79,7 +81,7 @@ class TextPainter extends Painter {
                 uniforms.pitchWithMap = 1;
             }
             const material = new reshader.Material(uniforms, defaultUniforms);
-            const mesh = new reshader.Mesh(geometries[i], material, {
+            const mesh = new reshader.Mesh(geometry, material, {
                 transparent,
                 castShadow : false,
                 picking : true
@@ -90,7 +92,7 @@ class TextPainter extends Painter {
             if (uniforms.isHalo) {
                 uniforms.isHalo = 0;
                 const material = new reshader.Material(uniforms, defaultUniforms);
-                const mesh = new reshader.Mesh(geometries[i], material, {
+                const mesh = new reshader.Mesh(geometry, material, {
                     transparent,
                     castShadow : false,
                     picking : true

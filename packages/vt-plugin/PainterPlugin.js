@@ -76,7 +76,7 @@ function createPainterPlugin(type, Painter) {
             }
             var mesh = this._getMesh(key);
             if (!mesh) {
-                mesh = painter.createMesh(geometry, tileTransform);
+                mesh = painter.createMesh(geometry, tileTransform, tileData.data);
                 this._meshCache[key] = mesh;
             }
             if (!mesh) {

@@ -77,7 +77,7 @@ export default class BaseLayerWorker {
                 delete feature[KEY_STYLE_IDX];
                 if (feature.styleMark && feature.styleMark[i] !== undefined) {
                     const styleIdx = feature.styleMark[i];
-                    //vector-packer 中会读取 style_idx，能省略掉style遍历逻辑
+                    //vector-packer 中会读取 style_idx，能省略掉 style 遍历逻辑
                     //KEY_STYLE_IDX中的值会在下次循环被替换掉，必须保证createTileGeometry不是在异步逻辑中读取的KEY_STYLE_IDX
                     feature[KEY_STYLE_IDX] = styleIdx;
                     feature[KEY_IDX] = ii;
@@ -95,6 +95,7 @@ export default class BaseLayerWorker {
             data[i] = {
                 styledFeatures : new arrCtor(styledFeatures)
             };
+            //index of plugin with data
             dataIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
@@ -108,7 +109,7 @@ export default class BaseLayerWorker {
                     continue;
                 }
                 data[dataIndexes[i]].data = tileDatas[i].data;
-                if (tileDatas[i].buffers && tileDatas[i].buffers.length > 0) {
+                if (tileDatas[i].buffers && tileDatas[i].buffers.length) {
                     for (let ii = 0, ll = tileDatas[i].buffers.length; ii < ll; ii++) {
                         buffers.push(tileDatas[i].buffers[ii]);
                     }
@@ -285,9 +286,15 @@ export default class BaseLayerWorker {
     }
 
     _compileStyle(layerStyle) {
-        this.pluginConfig = layerStyle.map(s => extend({}, s, {
-            style : compileStyle(s.style)
-        }));
+        this.pluginConfig = layerStyle.map(s => {
+            const style = extend({}, s, {
+                style : compileStyle(s.style)
+            });
+            for (let i = 0; i < style.style.length; i++) {
+                style.style[i].filterKey = Array.isArray(s.style[i].filter) ? s.style[i].filter.join() : 'default';
+            }
+            return style;
+        });
     }
 }
 

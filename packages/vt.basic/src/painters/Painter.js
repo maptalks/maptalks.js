@@ -70,7 +70,6 @@ class Painter {
             const geometry = new reshader.Geometry(data, packs[i].indices);
             geometry.properties = {
                 features,
-                symbol : packs[i].symbol,
                 iconAtlas,
                 glyphAtlas
             };

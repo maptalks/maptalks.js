@@ -163,38 +163,49 @@ export default class VectorPack {
         if (scale === undefined || scale === null) {
             throw new Error('layout scale is undefined');
         }
+        const me = this;
         const styles = this.styles;
-        const packs = [], buffers = [];
+        const packs = [], meshes = [], buffers = [], saved = {};
+
+        function create(key, vector, symbol) {
+            let pack;
+            if (saved[key] === undefined) {
+                pack = me.createDataPack(vector, scale);
+                if (pack) {
+                    saved[key] = packs.length;
+                    packs.push(pack);
+                    buffers.push(...pack.buffers);
+                    delete pack.buffers;
+                } else {
+                    saved[key] = null;
+                }
+            } else {
+                pack = packs[saved[key]];
+            }
+            if (!pack) return;
+            meshes.push({
+                pack : saved[key],
+                symbol
+            });
+        }
+
         for (let i = 0; i < this.styles.length; i++) {
             const symbol = styles[i].symbol;
+            const key = styles[i].filterKey;
             const vectors = this.styledVectors[i];
             if (!vectors || !vectors.length) continue;
             if (Array.isArray(symbol)) {
                 for (let ii = 0; ii < symbol.length; ii++) {
                     if (!vectors[ii] || !vectors[ii].length) continue;
-                    const pack = this.createDataPack(vectors[ii], scale);
-                    if (!pack) continue;
-                    const packBufs = pack.buffers;
-                    delete pack.buffers;
-                    pack.symbol = symbol[ii];
-                    pack.type = this.getType(symbol);
-                    packs.push(pack);
-                    buffers.push(...packBufs);
+                    create(key, vectors[ii], symbol[ii]);
                 }
             } else {
-                const pack = this.createDataPack(this.styledVectors[i], scale);
-                if (!pack) continue;
-                const packBufs = pack.buffers;
-                pack.symbol = symbol;
-                pack.type = this.getType(symbol);
-                delete pack.buffers;
-                packs.push(pack);
-                buffers.push(...packBufs);
+                create(key, vectors, symbol, key);
             }
         }
 
         const vectorPack = {
-            data : { packs }, buffers,
+            data : { packs, meshes }, buffers,
         };
 
         if (this.iconAtlas) {

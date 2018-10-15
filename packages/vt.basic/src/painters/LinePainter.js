@@ -21,16 +21,18 @@ class LinePainter extends Painter {
         return this._redraw;
     }
 
-    createMesh(geometries, transform) {
+    createMesh(geometries, transform, tileData) {
         if (!geometries || !geometries.length) {
             return null;
         }
 
         // const mapUniforms = this.getUniformValues(this.layer.getMap());
 
+        const packMeshes = tileData.meshes;
         const meshes = [];
-        for (let i = 0; i < geometries.length; i++) {
-            const symbol = geometries[i].properties.symbol;
+        for (let i = 0; i < packMeshes.length; i++) {
+            const geometry = geometries[packMeshes[i].pack];
+            const symbol = packMeshes[i].symbol;
             const uniforms = {};
             if (symbol['lineColor']) {
                 const color = Color(symbol['lineColor']);
@@ -74,7 +76,7 @@ class LinePainter extends Painter {
             // }
 
             const material = new reshader.Material(uniforms, defaultUniforms);
-            const mesh = new reshader.Mesh(geometries[i], material, {
+            const mesh = new reshader.Mesh(geometry, material, {
                 transparent,
                 castShadow : false,
                 picking : true
