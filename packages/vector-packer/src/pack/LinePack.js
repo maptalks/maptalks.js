@@ -119,7 +119,9 @@ export default class LinePack extends VectorPack {
                 this.elements = [];
             }
         }
-        this.elements = elements;
+        if (isPolygon) {
+            this.elements = elements;
+        }
     }
 
     getType(symbol) {

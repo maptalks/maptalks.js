@@ -112,6 +112,19 @@ export default class WorkerConnection extends maptalks.worker.Actor {
 
     }
 
+    setData(geojson, cb) {
+        const layerId = this._layer.getId();
+        const data = {
+            mapId : this._mapId,
+            layerId,
+            command : 'setData',
+            params : {
+                data : JSON.stringify(geojson)
+            }
+        };
+        this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+    }
+
     _getTileKey(tileInfo) {
         return tileInfo.id;
     }

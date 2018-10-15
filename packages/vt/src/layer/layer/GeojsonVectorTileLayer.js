@@ -30,6 +30,16 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     setData(data) {
         this.options.data = data;
         this._generateIdMap();
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.clear();
+            const workerConn = renderer.getWorkerConnection();
+            if (workerConn) {
+                workerConn.setData(data, () => {
+                    renderer.setToRedraw();
+                });
+            }
+        }
         return this;
     }
 
@@ -43,6 +53,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     _generateIdMap() {
         this.features = this.options.data;
+        if (!this.features) {
+            return;
+        }
         if (maptalks.Util.isString(this.features)) {
             this.features = JSON.parse(this.features);
         }

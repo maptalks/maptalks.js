@@ -85,6 +85,13 @@ export default class Dispatcher {
         }
     }
 
+    setData({ mapId, layerId, params }, callback) {
+        const layer = this._getLayerById(mapId, layerId);
+        if (layer) {
+            layer.setData(params.data, callback);
+        }
+    }
+
     /**
      * Receive response from main thread and call callback
      * @param {Object} data

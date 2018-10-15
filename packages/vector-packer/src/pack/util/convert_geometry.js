@@ -1,4 +1,4 @@
-import { convertPoint, convertLine, convertLines } from './convert';
+import { convertPoint, convertLines } from './convert';
 
 export default function convertGeometry(feature) {
     const type = feature.type;
@@ -8,7 +8,7 @@ export default function convertGeometry(feature) {
         convertPoint(feature.geometry, geometry);
     } else if (type === 2) {
         //LineString
-        convertLine(feature.geometry, geometry);
+        convertLines(feature.geometry, geometry);
     } else if (type === 3) {
         //Polygon
         convertLines(feature.geometry, geometry);

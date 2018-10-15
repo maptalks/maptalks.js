@@ -5,6 +5,16 @@ import BaseLayerWorker from './BaseLayerWorker';
 // import EXTENT from '../../data/extent';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
+    /**
+     *
+     * @param {String} id - id
+     * @param {Object} options - options
+     * @param {Object} options.geojsonvt - options of geojsonvt
+     * @param {Object} [options.headers=null]  - headers of http request for remote geojson
+     * @param {Object} [options.jsonp=false]   - use jsonp to fetch remote geojson
+     * @param {*} uploader
+     * @param {*} cb
+     */
     constructor(id, options, uploader, cb) {
         super(id, options, uploader);
         options = options || {};
@@ -17,19 +27,15 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             //https://github.com/mapbox/geojson-vt/issues/35
             this.zoomOffset = -log2(options.tileSize[0] / 256);
         }
-        this.setData(JSON.parse(options.data), options, cb);
+        this.setData(options.data, cb);
     }
 
     /**
      * Set data
      * @param {Object} data
-     * @param {Object} options - options
-     * @param {Object} options.geojsonvt - options of geojsonvt
-     * @param {Object} [options.headers=null]  - headers of http request for remote geojson
-     * @param {Object} [options.jsonp=false]   - use jsonp to fetch remote geojson
      * @param {Function} cb  - callback function when finished
      */
-    setData(data, options, cb) {
+    setData(data, cb) {
         delete this.index;
         if (!data) {
             cb();
@@ -37,13 +43,16 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         }
         const prefix = typeof data === 'string' ? data.substring(0, 4) : null;
         if (prefix === 'http' || prefix === 'blob') {
-            Ajax.getJSON(data, options, (err, resp) => {
+            Ajax.getJSON(data, this.options, (err, resp) => {
                 if (err) cb(err);
-                this.index = geojsonvt(resp, options.geojsonvt);
+                this.index = geojsonvt(resp, this.options.geojsonvt);
                 cb();
             });
         } else {
-            this.index = geojsonvt(data, options.geojsonvt || {
+            if (typeof data === 'string') {
+                data = JSON.parse(data);
+            }
+            this.index = geojsonvt(data, this.options.geojsonvt || {
                 maxZoom: 24,  // max zoom to preserve detail on; can't be higher than 24
                 tolerance: 3, // simplification tolerance (higher means simpler)
                 extent: this.options.extent, // tile extent (both width and height)

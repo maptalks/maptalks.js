@@ -13,6 +13,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.sceneCache = {};
     }
 
+    getWorkerConnection() {
+        return this._workerConn;
+    }
+
     setStyle() {
         if (this._workerConn) {
             this._workerConn.updateStyle(this.layer.getStyle(), err => {
