@@ -41,12 +41,8 @@ class LinePainter extends Painter {
                     uniforms.lineColor.push(1);
                 }
             }
-            let transparent = false;
             if (symbol['lineOpacity'] || symbol['lineOpacity'] === 0) {
                 uniforms.lineOpacity = symbol['lineOpacity'];
-                if (symbol['lineOpacity'] < 1) {
-                    transparent = true;
-                }
             }
 
             if (symbol['lineWidth'] || symbol['lineWidth'] === 0) {
@@ -77,7 +73,6 @@ class LinePainter extends Painter {
 
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
-                transparent,
                 castShadow : false,
                 picking : true
             });

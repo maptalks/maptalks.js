@@ -33,17 +33,12 @@ class FillPainter extends Painter {
                     uniforms.polygonFill.push(1);
                 }
             }
-            let transparent = false;
             if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
                 uniforms.polygonOpacity = symbol['polygonOpacity'];
-                if (symbol['polygonOpacity'] < 1) {
-                    transparent = true;
-                }
             }
 
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
-                transparent,
                 castShadow : false,
                 picking : true
             });
