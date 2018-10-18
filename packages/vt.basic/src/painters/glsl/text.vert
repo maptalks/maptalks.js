@@ -1,7 +1,7 @@
 attribute vec3 aPosition;
 attribute vec2 aShape;
 attribute vec2 aTexCoord;
-attribute vec2 aSize;
+attribute float aSize;
 attribute float aRotation;
 
 uniform float cameraToCenterDistance;
@@ -37,7 +37,7 @@ void main() {
     //文字的旋转角度
     float angleSin = sin(aRotation);
     float angleCos = cos(aRotation);
-    vec2 shape = aShape / glyphSize * aSize.xy * 2.0 / canvasSize; //乘以2.0
+    vec2 shape = aShape / glyphSize * aSize * 2.0 / canvasSize; //乘以2.0
 
     float pitch = mapPitch * pitchWithMap;
     // section 3 随视角倾斜
@@ -53,5 +53,5 @@ void main() {
     vTexCoord = aTexCoord / texSize;
     vGammaScale = distance / cameraToCenterDistance;
 
-    vSize = aSize.x;
+    vSize = aSize;
 }

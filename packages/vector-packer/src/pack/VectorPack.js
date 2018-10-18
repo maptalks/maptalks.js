@@ -6,6 +6,7 @@ import Promise from './util/Promise';
 import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
+import { extend } from '../style/Util';
 
 //feature index defined in BaseLayerWorker
 const KEY_IDX = '__fea_idx';
@@ -45,7 +46,8 @@ export default class VectorPack {
         if (Array.isArray(first.geometry)) {
             for (let i = 0; i < features.length; i++) {
                 const feature = features[i];
-                checked.push(convertGeometry(feature));
+                const fea = extend({}, feature);
+                checked.push(convertGeometry(fea));
             }
         } else {
             for (let i = 0; i < features.length; i++) {

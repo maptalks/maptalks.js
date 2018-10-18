@@ -7,9 +7,10 @@ import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 import { evaluate } from '../style/Util';
 import { getGlyphQuads, getIconQuads } from './util/quads';
+import { getLineOffset } from './util/line_offset';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
-const DEFAULT_SPACING = 80;
+const DEFAULT_SPACING = 250;
 //uint32 [anchor.x, anchor.y]
 //uint16 [shape.x, shape.y]
 //uint16 [tex.x, tex.y]
@@ -21,7 +22,7 @@ const DEFAULT_SPACING = 80;
 function getPackSDFFormat() {
     return [
         {
-            type : Int32Array,
+            type : Int16Array,
             width : 3,
             name : 'aPosition'
         },
@@ -53,7 +54,7 @@ function getPackSDFFormat() {
         },
         {
             type : Uint8Array,
-            width : 2,
+            width : 1,
             name : 'aSize'
         },
         {
@@ -67,7 +68,7 @@ function getPackSDFFormat() {
 function getPackMarkerFormat() {
     return [
         {
-            type : Int32Array,
+            type : Int16Array,
             width : 3,
             name : 'aPosition'
         },
@@ -98,7 +99,7 @@ function getPackMarkerFormat() {
         },
         {
             type : Uint8Array,
-            width : 4,
+            width : 2,
             name : 'aSize'
         }
     ];
@@ -180,7 +181,7 @@ export default class PointPack extends VectorPack {
         } else {
             dx = evaluate(symbol['markerDx'], properties) || 0;
             dy = evaluate(symbol['markerDy'], properties) || 0;
-            rotation = evaluate(symbol['markerRotation'], properties) || 0;
+            rotation = (evaluate(symbol['markerRotation'], properties) || 0) * Math.PI / 180;
             opacity = evaluate(symbol['markerOpacity'], properties);
             if (opacity === undefined) {
                 opacity = 1;
@@ -189,7 +190,9 @@ export default class PointPack extends VectorPack {
             //TODO icon的情况
         }
         opacity = Math.round(opacity * 255);
+        let lineOffset = [0, 0];
         for (let i = 0; i < anchors.length; i++) {
+            const anchor = anchors[i];
             // const y = symbol.glyphOffset[1];
             // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex);
             // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex);
@@ -198,75 +201,78 @@ export default class PointPack extends VectorPack {
             // top-left
             for (let ii = 0; ii < quads.length; ii++) {
                 const quad = quads[ii];
+
+                //TODO 计算每个字符/icon沿线的偏移量
+                if (alongLine) {
+                    lineOffset = getLineOffset(lineOffset, anchor, quad, shape);
+                }
                 const { tl, tr, bl, br, tex } = quad;
                 const y = quad.glyphOffset[1];
                 data.push(
-                    anchors[i].x, anchors[i].y, 0,
+                    anchor.x, anchor.y, 0,
                     tl.x, y + tl.y,
                     tex.x, tex.y + tex.h,
                     dx, dy,
                     opacity,
-                    rotation * Math.PI / 180
+                    rotation,
                 );
                 if (isText) {
-                    data.push(size.min[0], size.max[0]);
+                    data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
+                    data.push(size[0], size[1]);
                 }
 
-
                 data.push(
-                    anchors[i].x, anchors[i].y, 0,
+                    anchor.x, anchor.y, 0,
                     tr.x, y + tr.y,
                     tex.x + tex.w, tex.y + tex.h,
                     dx, dy,
                     opacity,
-                    rotation * Math.PI / 180
+                    rotation
                 );
                 if (isText) {
-                    data.push(size.min[0], size.max[0]);
+                    data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
+                    data.push(size[0], size[1]);
                 }
 
                 data.push(
-                    anchors[i].x, anchors[i].y, 0,
+                    anchor.x, anchor.y, 0,
                     bl.x, y + bl.y,
                     tex.x, tex.y,
                     dx, dy,
                     opacity,
-                    rotation * Math.PI / 180
+                    rotation
                 );
                 if (isText) {
-                    data.push(size.min[0], size.max[0]);
+                    data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
+                    data.push(size[0], size[1]);
                 }
 
-
                 data.push(
-                    anchors[i].x, anchors[i].y, 0,
+                    anchor.x, anchor.y, 0,
                     br.x, y + br.y,
                     tex.x + tex.w, tex.y,
                     dx, dy,
                     opacity,
-                    rotation * Math.PI / 180
+                    rotation
                 );
                 if (isText) {
-                    data.push(size.min[0], size.max[0]);
+                    data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(size.min[0], size.min[1], size.max[0], size.max[1]);
+                    data.push(size[0], size[1]);
                 }
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
                 this.addElements(currentIdx + 1, currentIdx + 2, currentIdx + 3);
                 currentIdx += 4;
 
-                const max = Math.max(Math.abs(anchors[i].x), Math.abs(anchors[i].y));
+                const max = Math.max(Math.abs(anchor.x), Math.abs(anchor.y));
                 if (max > this.maxPos) {
                     this.maxPos = max;
                 }
@@ -277,12 +283,16 @@ export default class PointPack extends VectorPack {
     _getAnchors(point, shape, scale) {
         const feature = point.feature,
             type = point.feature.type,
+            size = point.size,
             symbol = point.symbol,
             placement = this._getPlacement(symbol);
 
         let anchors = [];
         const glyphSize = 24,
-            textMaxBoxScale = 1, //TODO 可能的最大的 textMaxSize / glyphSize
+            fontScale = size[0] / glyphSize,
+            textBoxScale = scale * fontScale,
+            // textMaxBoxScale = scale * textMaxSize / glyphSize,
+            // textMaxBoxScale = 1, //TODO 可能的最大的 textMaxSize / glyphSize
             spacing = (symbol['markerSpacing'] || symbol['textSpacing'] || DEFAULT_SPACING) * scale;
         if (placement === 'line') {
             const EXTENT = this.options.EXTENT;
@@ -300,7 +310,7 @@ export default class PointPack extends VectorPack {
                         shape.vertical || shape.horizontal || shape,
                         null, //shapedIcon,
                         glyphSize,
-                        scale * textMaxBoxScale,
+                        textBoxScale,
                         1, //bucket.overscaling,
                         EXTENT || Infinity
                     )

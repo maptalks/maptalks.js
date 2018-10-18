@@ -109,7 +109,7 @@ function translateToSVGStyles(s) {
     return result;
 }
 
-export function evaluateSize(symbol, properties, minZoom, maxZoom) {
+export function evaluateIconSize(symbol, properties, zoom) {
     let width = isNil(symbol.markerWidth) ? symbol.textSize : symbol.markerWidth,
         height = symbol.markerHeight;
     if (symbol['__fn_markerWidth'] || symbol['__fn_textSize']) {
@@ -118,27 +118,35 @@ export function evaluateSize(symbol, properties, minZoom, maxZoom) {
     if (symbol['__fn_markerHeight']) {
         height = symbol['__fn_markerHeight'];
     }
-    const min = [], max = [];
+    const size = [];
     if (isFunction(width)) {
-        const w0 = width(minZoom, properties),
-            w1 = width(maxZoom, properties);
-        min[0] = Math.min(w0, w1);
-        max[0] = Math.max(w0, w1);
+        size[0] = width(zoom, properties);
     } else {
-        min[0] = max[0] = width;
+        size[0] = width;
     }
 
-    if (!isNil(symbol.textSize)) {
-        min[1] = min[0];
-        max[1] = max[0];
-    } else if (isFunction(height)) {
-        const h0 = height(minZoom, properties),
-            h1 = height(maxZoom, properties);
-        min[1] = Math.min(h0, h1);
-        max[1] = Math.max(h0, h1);
+    if (isFunction(height)) {
+        const h = height(zoom, properties);
+        size[1] = h;
     } else {
-        min[1] = max[1] = height;
+        size[1] = height;
     }
 
-    return { min, max };
+    return size;
+}
+
+export function evaluateTextSize(symbol, properties, zoom) {
+    let textSize = symbol.textSize;
+    if (symbol['__fn_textSize']) {
+        textSize = symbol['__fn_textSize'];
+    }
+    const size = [];
+    if (isFunction(textSize)) {
+        size[0] = textSize(zoom, properties);
+    } else {
+        size[0] = textSize;
+    }
+
+    size[1] = size[0];
+    return size;
 }

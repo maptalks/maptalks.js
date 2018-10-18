@@ -2,6 +2,7 @@
  * Codes from mapbox-gl-js
  * github.com/mapbox/mapbox-gl-js
  * MIT License
+ * TODO 升级为potpack
  */
 
 import ShelfPack from '@mapbox/shelf-pack';

@@ -142,6 +142,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                     markedDistance - halfLabelLength >= 0 &&
                     markedDistance + halfLabelLength <= lineLength) {
                 const anchor = new Anchor(x, y, angle, i);
+                anchor.line = line; //fuzhen 在anchor上增加了对line的引用，方便计算沿线偏移量
                 anchor._round();
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {

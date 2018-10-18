@@ -149,6 +149,7 @@ export default class BaseLayerWorker {
     }
 
     _createTileGeometry(features, dataConfig = {}, styles, { extent, glScale, zScale }) {
+        const tileSize = this.options.tileSize[0];
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
             return Promise.resolve(this._build3DExtrusion(features, dataConfig, extent, glScale, zScale));
@@ -160,7 +161,7 @@ export default class BaseLayerWorker {
                 requestor : this.fetchIconGlyphs.bind(this)
             });
             const pack = new PointPack(features, styles, options);
-            return pack.load();
+            return pack.load(extent / tileSize);
         } else if (type === 'line') {
             const options = extend({}, dataConfig, {
                 EXTENT : extent,
