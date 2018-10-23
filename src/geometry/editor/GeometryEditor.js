@@ -855,6 +855,11 @@ class GeometryEditor extends Eventable(Class) {
                 onUp: function () {
                     me._refresh();
                     me._updateCoordFromShadow();
+                },
+                onDown: function (param, e) {
+                    if (e && e.domEvent && e.domEvent.button === 2) {
+                        return;
+                    }
                 }
             });
             handle[propertyOfVertexIndex] = index;
