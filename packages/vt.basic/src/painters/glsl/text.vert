@@ -61,8 +61,8 @@ void main() {
 
     //计算 offset
     vec2 offset = mix(aOffset.xy, aOffset.zw, interpolation);
-    vec2 planeOffset = (planeMatrix * vec3(offset, 0.0)).xy;
-    offset = planeOffset * 2.0 / canvasSize;
+    offset = (planeMatrix * vec3(offset, 0.0)).xy;
+    offset = offset * 2.0 / canvasSize;
 
     gl_Position.xy += (shape + offset) * perspectiveRatio * gl_Position.w;
 
