@@ -345,7 +345,6 @@ function shapeLines(shaping, //: Shaping,
 
             if (!charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
                 positionedGlyphs.push({ glyph: codePoint, x, y, vertical: false });
-                // x += glyph.metrics.advance + spacing;
                 x += glyph.metrics.advance + spacing;
             } else {
                 positionedGlyphs.push({ glyph: codePoint, x, y: 0, vertical: true });

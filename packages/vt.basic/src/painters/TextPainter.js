@@ -34,7 +34,9 @@ class TextPainter extends Painter {
         for (let i = 0; i < packMeshes.length; i++) {
             const geometry = geometries[packMeshes[i].pack];
             const symbol = packMeshes[i].symbol;
-            const uniforms = {};
+            const uniforms = {
+                tileResolution : geometry.properties.res
+            };
 
             let transparent = false;
             if (symbol['textOpacity'] || symbol['textOpacity'] === 0) {
@@ -73,6 +75,10 @@ class TextPainter extends Painter {
                 uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
             }
 
+            if (symbol['textRotationAlignment'] === 'map' || symbol['textPlacement'] === 'line') {
+                uniforms.rotateWithMap = 1;
+            }
+
             const glyphAtlas = geometry.properties.glyphAtlas;
             uniforms['texture'] = glyphAtlas;
             uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
@@ -103,6 +109,7 @@ class TextPainter extends Painter {
         }
         return meshes;
     }
+
 
     remove() {
         this._shader.dispose();
@@ -164,7 +171,12 @@ class TextPainter extends Painter {
                 'textHaloBlur',
                 'textHaloOpacity',
                 'isHalo',
-                'fadeOpacity'
+                'fadeOpacity',
+                'resolution',
+                'tileResolution',
+                'planeMatrix',
+                'rotateWithMap',
+                'mapRotation'
             ],
             extraCommandProps : {
                 viewport, scissor,
@@ -199,7 +211,12 @@ class TextPainter extends Painter {
                         'canvasSize',
                         'glyphSize',
                         'pitchWithMap',
-                        'mapPitch'
+                        'mapPitch',
+                        'resolution',
+                        'tileResolution',
+                        'planeMatrix',
+                        'rotateWithMap',
+                        'mapRotation'
                     ]
                 },
                 this.pickingFBO
@@ -211,12 +228,29 @@ class TextPainter extends Painter {
         const projViewMatrix = map.projViewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             canvasSize = [this.canvas.width, this.canvas.height];
+        //手动构造map的x,z轴旋转矩阵
+        //http://planning.cs.uiuc.edu/node102.html
+        const pitch = map.getPitch() * Math.PI / 180,
+            bearing = -map.getBearing() * Math.PI / 180;
+        const angleCos = Math.cos(bearing),
+            angleSin = Math.sin(bearing),
+            pitchCos = Math.cos(pitch),
+            pitchSin = Math.sin(pitch);
+        const planeMatrix = [
+            angleCos, -1.0 * angleSin * pitchCos, angleSin * pitchSin,
+            angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
+            0.0, pitchSin, pitchCos
+        ];
+
         return {
             mapPitch : map.getPitch() * Math.PI / 180,
+            mapRotation : map.getBearing() * Math.PI / 180,
             projViewMatrix,
             cameraToCenterDistance, canvasSize,
             glyphSize : 24,
-            gammaScale : 2
+            gammaScale : 2,
+            resolution : map.getResolution(),
+            planeMatrix
         };
     }
 }

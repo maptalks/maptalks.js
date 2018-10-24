@@ -22,6 +22,9 @@ export default class StyledPoint {
         const iconGlyph = this.getIconAndGlyph();
         if (iconGlyph && iconGlyph.glyph) {
             const { font, text } = iconGlyph.glyph;
+            if (text === '') {
+                return null;
+            }
             const glyphSize = 24;
             const size = this.size[0],
                 fontScale = size / glyphSize;
@@ -30,12 +33,13 @@ export default class StyledPoint {
                 textAlongLine = symbol['textRotationAlignment'] === 'map' && symbol['textPlacement'] === 'line';
             const glyphs = glyphAtlas.glyphMap[font],
                 textAnchor = getAnchor(symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
-                lineHeight = ((symbol['textSpacing'] || 0) + symbol['textSize']) / fontScale, //TODO 默认的lineHeight的计算
+                lineHeight = 1.2 * oneEm, //TODO 默认的lineHeight的计算
                 isAllowLetterSpacing = allowsLetterSpacing(text),
                 textLetterSpacing =  isAllowLetterSpacing ? symbol['textLetterSpacing'] / fontScale || 0 : 0,
                 textOffset = [symbol['textDx'] / fontScale || 0, symbol['textDy'] / fontScale || 0],
                 textWrapWidth = (symbol['textWrapWidth'] || 10 * oneEm) / fontScale;
             shape = {};
+
             shape.horizontal = shapeText(
                 text,
                 glyphs,

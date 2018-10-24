@@ -30,11 +30,13 @@ class Painter {
         throw new Error('not implemented');
     }
 
-    createGeometry(glData, features) {
+    createGeometry(glData, features, tile) {
         const packs = glData.packs;
         if (!packs || !packs.length) {
             return null;
         }
+        const map = this.layer.getMap(),
+            res = map.getResolution(tile.z);
         const regl = this.regl;
         let iconAtlas, glyphAtlas;
         if (glData.iconAtlas) {
@@ -71,7 +73,8 @@ class Painter {
             geometry.properties = {
                 features,
                 iconAtlas,
-                glyphAtlas
+                glyphAtlas,
+                res
             };
             geometry.generateBuffers(this.regl);
             geometries.push(geometry);

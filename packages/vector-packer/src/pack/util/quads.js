@@ -51,13 +51,13 @@ export function getGlyphQuads(shaping,
         const rectBuffer = GLYPH_PBF_BORDER + glyphPadding;
 
         const halfAdvance = glyph.metrics.advance / 2;
-
+        //fuzhen builtInOffset 被统一为了positionedGlyph.y，否则placement为line时，文字会偏上
         const glyphOffset = alongLine ?
-            [positionedGlyph.x + halfAdvance, positionedGlyph.y] :
+            [positionedGlyph.x + halfAdvance, 0] :
             [0, 0];
 
         const builtInOffset = alongLine ?
-            [0, 0] :
+            [0, positionedGlyph.y] :
             [positionedGlyph.x + halfAdvance, positionedGlyph.y];
 
 

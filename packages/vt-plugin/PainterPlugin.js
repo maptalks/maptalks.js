@@ -63,7 +63,7 @@ function createPainterPlugin(type, Painter) {
                         data.colors = colors;
                     }
                 }
-                geometry = tileCache.geometry = painter.createGeometry(data, features);
+                geometry = tileCache.geometry = painter.createGeometry(data, features, tileInfo);
             }
             if (!geometry) {
                 return {

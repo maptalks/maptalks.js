@@ -37,19 +37,19 @@ function getPackSDFFormat() {
             name : 'aTexCoord'
         },
         {
-            type : Int8Array,
-            width : 2,
-            name : 'aOffset'
-        },
-        {
             type : Uint8Array,
             width : 1,
             name : 'aOpacity'
         },
         {
+            type : Int16Array,
+            width : 4,
+            name : 'aOffset'
+        },
+        {
             //TODO 更小的类型？
             type : Float32Array,
-            width : 1,
+            width : 2,
             name : 'aRotation'
         },
         {
@@ -149,21 +149,23 @@ export default class PointPack extends VectorPack {
     }
 
     placeVector(point, scale, formatWidth) {
-        const data = this.data;
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
+        if (!shape) {
+            return;
+        }
         const anchors = this._getAnchors(point, shape, scale);
         const count = anchors.length;
         if (count === 0) {
             return;
         }
+        const data = this.data;
         let currentIdx = data.length / formatWidth;
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol,
             properties = point.feature.properties;
         const size = point.size;
-        const alongLine = point.feature.type === 2 && point.symbol['textPlacement'] === 'line' || point.symbol['markerPlacement'] === 'line';
-
+        const alongLine = point.symbol['textPlacement'] === 'line' || point.symbol['markerPlacement'] === 'line';
         const isText = symbol['textName'] !== undefined;
         let quads, dx, dy, rotation, opacity, color;
         if (isText) {
@@ -190,7 +192,8 @@ export default class PointPack extends VectorPack {
             //TODO icon的情况
         }
         opacity = Math.round(opacity * 255);
-        let lineOffset = [0, 0];
+        let lineOffset = [dx, dy, 0, dx, dy, 0];
+        const scales = [scale * 2, scale / 2];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             // const y = symbol.glyphOffset[1];
@@ -202,19 +205,28 @@ export default class PointPack extends VectorPack {
             for (let ii = 0; ii < quads.length; ii++) {
                 const quad = quads[ii];
 
-                //TODO 计算每个字符/icon沿线的偏移量
                 if (alongLine) {
-                    lineOffset = getLineOffset(lineOffset, anchor, quad, shape);
+                    // debugger
+                    lineOffset = getLineOffset(lineOffset, anchor, quad, dx, dy, false, scales);
+                } else {
+                    lineOffset[1] = lineOffset[3] = dx;
+                    lineOffset[2] = lineOffset[4] = dy;
                 }
-                const { tl, tr, bl, br, tex } = quad;
                 const y = quad.glyphOffset[1];
+                lineOffset[2] += y;
+                lineOffset[4] += y;
+
+                const { tl, tr, bl, br, tex } = quad;
+
                 data.push(
                     anchor.x, anchor.y, 0,
-                    tl.x, y + tl.y,
+                    tl.x, tl.y,
                     tex.x, tex.y + tex.h,
-                    dx, dy,
                     opacity,
-                    rotation,
+                    //   minDx         minDy           maxDx        maxDy
+                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
+                    //     minRotation               maxRotation
+                    rotation + lineOffset[2], rotation + lineOffset[5],
                 );
                 if (isText) {
                     data.push(size[0]);
@@ -225,11 +237,11 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchor.x, anchor.y, 0,
-                    tr.x, y + tr.y,
+                    tr.x, tr.y,
                     tex.x + tex.w, tex.y + tex.h,
-                    dx, dy,
                     opacity,
-                    rotation
+                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
+                    rotation + lineOffset[2], rotation + lineOffset[5],
                 );
                 if (isText) {
                     data.push(size[0]);
@@ -240,11 +252,11 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchor.x, anchor.y, 0,
-                    bl.x, y + bl.y,
+                    bl.x, bl.y,
                     tex.x, tex.y,
-                    dx, dy,
                     opacity,
-                    rotation
+                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
+                    rotation + lineOffset[2], rotation + lineOffset[5],
                 );
                 if (isText) {
                     data.push(size[0]);
@@ -255,11 +267,11 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchor.x, anchor.y, 0,
-                    br.x, y + br.y,
+                    br.x, br.y,
                     tex.x + tex.w, tex.y,
-                    dx, dy,
                     opacity,
-                    rotation
+                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
+                    rotation + lineOffset[2], rotation + lineOffset[5],
                 );
                 if (isText) {
                     data.push(size[0]);
