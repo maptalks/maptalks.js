@@ -1,3 +1,4 @@
+* markerRotationAlignment
 * markerPitchAlignment
 * markerSpacing
 * markerPerspectiveRatio

@@ -10,6 +10,7 @@ const defaultUniforms = {
     'textFill' : [0, 0, 0, 1],
     'textOpacity' : 1,
     'pitchWithMap' : 0,
+    'rotateWithMap' : 0,
     'textHaloRadius' : 0,
     'textHaloFill' : [1, 1, 1, 1],
     'textHaloBlur' : 0,
@@ -37,7 +38,6 @@ class TextPainter extends Painter {
             const uniforms = {
                 tileResolution : geometry.properties.res
             };
-
             let transparent = false;
             if (symbol['textOpacity'] || symbol['textOpacity'] === 0) {
                 uniforms.textOpacity = symbol['textOpacity'];
@@ -228,7 +228,7 @@ class TextPainter extends Painter {
         const projViewMatrix = map.projViewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             canvasSize = [this.canvas.width, this.canvas.height];
-        //手动构造map的x,z轴旋转矩阵
+        //手动构造map的x与z轴的三维旋转矩阵
         //http://planning.cs.uiuc.edu/node102.html
         const pitch = map.getPitch() * Math.PI / 180,
             bearing = -map.getBearing() * Math.PI / 180;

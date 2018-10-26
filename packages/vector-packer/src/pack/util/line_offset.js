@@ -7,7 +7,6 @@
  * @param {Number} dy - offset y
  */
 export function getLineOffset(out, anchor, quad, dx, dy, flip, scales) {
-    // const tileScale = scales[0] / 2;
     const glyphOffset = quad.glyphOffset[0];
     const offsetX = flip ?
         glyphOffset - dx :
@@ -29,7 +28,7 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, scales) {
     const lineStartIndex = 0;
     const lineEndIndex = line.length;
 
-
+    const absOffsetX = Math.abs(offsetX);
 
     for (let i = 0; i < scales.length; i++) {
         let currentIndex = dir > 0 ?
@@ -40,7 +39,6 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, scales) {
         let prev = anchor;
         let distanceToPrev = 0;
         let currentSegmentDistance = 0;
-        const absOffsetX = Math.abs(offsetX);
         let miss = false;
         while (distanceToPrev + currentSegmentDistance <= absOffsetX) {
             currentIndex += dir;
@@ -55,14 +53,14 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, scales) {
 
             current = line[currentIndex];
 
-            distanceToPrev += currentSegmentDistance / scales[i];
+            distanceToPrev += currentSegmentDistance;
             currentSegmentDistance = prev.dist(current) / scales[i];
         }
         if (miss) {
             out[0] = out[3] = quad.glyphOffset[0];
             out[1] = out[4] = quad.glyphOffset[1];
             out[2] = out[5] = 0;
-            return out;
+            continue;
         }
         // The point is on the current segment. Interpolate to find it.
         const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
@@ -72,7 +70,11 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, scales) {
         // offset the point from the line to text-offset and icon-offset
         p._add(prevToCurrent._unit()._perp()._mult(dy * dir));
 
-        const segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
+        let segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
+        if (segmentAngle > Math.PI) {
+            segmentAngle = segmentAngle - 2 * Math.PI;
+        }
+
         out[i * 3] = Math.round((p.x - anchor.x) / scales[i]);
         out[i * 3 + 1] = -Math.round((p.y - anchor.y) / scales[i]);
         out[i * 3 + 2] = segmentAngle;

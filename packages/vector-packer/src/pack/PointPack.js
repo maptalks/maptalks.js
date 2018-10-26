@@ -42,14 +42,24 @@ function getPackSDFFormat() {
             name : 'aOpacity'
         },
         {
-            type : Int16Array,
-            width : 4,
-            name : 'aOffset'
+            type : Int8Array,
+            width : 2,
+            name : 'aOffset0'
+        },
+        {
+            type : Int8Array,
+            width : 2,
+            name : 'aOffset1'
+        },
+        {
+            type : Int8Array,
+            width : 2,
+            name : 'aOffset2'
         },
         {
             //TODO 更小的类型？
             type : Float32Array,
-            width : 2,
+            width : 3,
             name : 'aRotation'
         },
         {
@@ -192,8 +202,8 @@ export default class PointPack extends VectorPack {
             //TODO icon的情况
         }
         opacity = Math.round(opacity * 255);
-        let lineOffset = [dx, dy, 0, dx, dy, 0];
-        const scales = [scale * 2, scale / 2];
+        let lineOffset = [dx, dy, 0, dx, dy, 0, dx, dy, 0];
+        const scales = [scale * 2, scale, scale / 2];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             // const y = symbol.glyphOffset[1];
@@ -209,12 +219,13 @@ export default class PointPack extends VectorPack {
                     // debugger
                     lineOffset = getLineOffset(lineOffset, anchor, quad, dx, dy, false, scales);
                 } else {
-                    lineOffset[1] = lineOffset[3] = dx;
-                    lineOffset[2] = lineOffset[4] = dy;
+                    lineOffset[0] = lineOffset[3] = lineOffset[6] = dx;
+                    lineOffset[1] = lineOffset[4] = lineOffset[7] = dy;
                 }
                 const y = quad.glyphOffset[1];
-                lineOffset[2] += y;
+                lineOffset[1] += y;
                 lineOffset[4] += y;
+                lineOffset[7] += y;
 
                 const { tl, tr, bl, br, tex } = quad;
 
@@ -222,16 +233,19 @@ export default class PointPack extends VectorPack {
                     anchor.x, anchor.y, 0,
                     tl.x, tl.y,
                     tex.x, tex.y + tex.h,
-                    opacity,
-                    //   minDx         minDy           maxDx        maxDy
-                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
-                    //     minRotation               maxRotation
-                    rotation + lineOffset[2], rotation + lineOffset[5],
+                    opacity
                 );
                 if (isText) {
+                    data.push(
+                        //   minDx         minDy                                         maxDx        maxDy
+                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                        //     minRotation               maxRotation
+                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                    );
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
+                    data.push(dx, dy, rotation);
                     data.push(size[0], size[1]);
                 }
 
@@ -239,14 +253,17 @@ export default class PointPack extends VectorPack {
                     anchor.x, anchor.y, 0,
                     tr.x, tr.y,
                     tex.x + tex.w, tex.y + tex.h,
-                    opacity,
-                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
-                    rotation + lineOffset[2], rotation + lineOffset[5],
+                    opacity
                 );
                 if (isText) {
+                    data.push(
+                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                    );
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
+                    data.push(dx, dy, rotation);
                     data.push(size[0], size[1]);
                 }
 
@@ -254,14 +271,17 @@ export default class PointPack extends VectorPack {
                     anchor.x, anchor.y, 0,
                     bl.x, bl.y,
                     tex.x, tex.y,
-                    opacity,
-                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
-                    rotation + lineOffset[2], rotation + lineOffset[5],
+                    opacity
                 );
                 if (isText) {
+                    data.push(
+                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                    );
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
+                    data.push(dx, dy, rotation);
                     data.push(size[0], size[1]);
                 }
 
@@ -269,14 +289,17 @@ export default class PointPack extends VectorPack {
                     anchor.x, anchor.y, 0,
                     br.x, br.y,
                     tex.x + tex.w, tex.y,
-                    opacity,
-                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4],
-                    rotation + lineOffset[2], rotation + lineOffset[5],
+                    opacity
                 );
                 if (isText) {
+                    data.push(
+                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                    );
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
+                    data.push(dx, dy, rotation);
                     data.push(size[0], size[1]);
                 }
 
