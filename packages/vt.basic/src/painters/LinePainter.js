@@ -171,16 +171,16 @@ class LinePainter extends Painter {
                         zpass: 'replace'
                     }
                 },
+                depth : {
+                    enable : this.sceneConfig.depth === undefined ? true : this.sceneConfig.depth,
+                },
                 blend: {
                     enable: true,
                     func: {
                         src: 'src alpha',
-                        // srcAlpha: 1,
-                        dst: 'one minus src alpha',
-                        // dstAlpha: 1
+                        dst: 'one minus src alpha'
                     },
-                    equation: 'add',
-                    // color: [0, 0, 0, 0]
+                    equation: 'add'
                 },
             }
         });
