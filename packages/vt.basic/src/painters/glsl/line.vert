@@ -19,20 +19,16 @@ attribute vec2 aExtrude;
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
 uniform float lineWidth;
-uniform vec2 canvasSize;
 uniform mat4 projViewModelMatrix;
-uniform mat4 uMatrix;
+uniform float tileResolution;
+uniform float resolution;
+uniform float tileRatio; //EXTENT / tileSize
 
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
 
 void main() {
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
-    float distance = gl_Position.w;
-    //预乘w，得到gl_Position在NDC中的坐标值
-    // gl_Position /= gl_Position.w;
-
     float gapwidth = lineGapWidth / 2.0;
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
@@ -44,9 +40,11 @@ void main() {
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
     vec2 dist = outset * extrude * EXTRUDE_SCALE;
-    dist /= canvasSize;
 
-    gl_Position.xy += (uMatrix * vec4(dist, aPosition.z, 1.0)).xy * gl_Position.w;
+    float scale = tileResolution / resolution;
+    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+
+    float distance = gl_Position.w;
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
     vNormal = aNormal;

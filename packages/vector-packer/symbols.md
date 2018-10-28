@@ -10,3 +10,4 @@
 * textKeepUpright
 * textPerspectiveRatio
 * lineGapWidth
+* lineBlur

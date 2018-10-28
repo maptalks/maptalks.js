@@ -36,6 +36,7 @@ class Painter {
             return null;
         }
         const map = this.layer.getMap(),
+            //TODO 3857?
             res = map.getResolution(tile.z);
         const regl = this.regl;
         let iconAtlas, glyphAtlas;
@@ -74,7 +75,8 @@ class Painter {
                 features,
                 iconAtlas,
                 glyphAtlas,
-                res
+                res,
+                tileRatio : this.layer.options.extent / this.layer.getTileSize().width
             };
             geometry.generateBuffers(this.regl);
             geometries.push(geometry);

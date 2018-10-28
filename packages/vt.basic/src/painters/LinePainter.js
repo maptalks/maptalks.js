@@ -12,7 +12,8 @@ const defaultUniforms = {
     'lineWidth' : 1,
     'lineGapWidth' : 0,
     'lineDx'   : 0,
-    'lineDy'   : 0
+    'lineDy'   : 0,
+    'lineBlur' : 2
 };
 
 
@@ -33,7 +34,10 @@ class LinePainter extends Painter {
         for (let i = 0; i < packMeshes.length; i++) {
             const geometry = geometries[packMeshes[i].pack];
             const symbol = packMeshes[i].symbol;
-            const uniforms = {};
+            const uniforms = {
+                tileResolution : geometry.properties.res,
+                tileRatio : geometry.properties.tileRatio
+            };
             if (symbol['lineColor']) {
                 const color = Color(symbol['lineColor']);
                 uniforms.lineColor = color.unitArray();
@@ -51,6 +55,10 @@ class LinePainter extends Painter {
 
             if (symbol['lineGapWidth']) {
                 uniforms.lineGapWidth = symbol['lineGapWidth'];
+            }
+
+            if (symbol['lineBlur'] || symbol['lineBlur'] === 0) {
+                uniforms.lineBlur = symbol['lineBlur'];
             }
 
             //TODO lineDx, lineDy
@@ -123,8 +131,6 @@ class LinePainter extends Painter {
             vert, frag,
             uniforms : [
                 'cameraToCenterDistance',
-                'canvasSize',
-                // 'uColor',
                 'lineWidth',
                 'lineGapWidth',
                 'blur',
@@ -138,7 +144,9 @@ class LinePainter extends Painter {
                         return projViewModelMatrix;
                     }
                 },
-                'uMatrix'
+                'tileRatio',
+                'resolution',
+                'tileResolution',
             ],
             extraCommandProps : {
                 viewport, scissor,
@@ -183,7 +191,6 @@ class LinePainter extends Painter {
                 {
                     vert : pickingVert,
                     uniforms : [
-                        'canvasSize',
                         'lineWidth',
                         'lineGapWidth',
                         {
@@ -195,7 +202,9 @@ class LinePainter extends Painter {
                                 return projViewModelMatrix;
                             }
                         },
-                        'uMatrix'
+                        'tileRatio',
+                        'resolution',
+                        'tileResolution'
                     ]
                 },
                 this.pickingFBO
@@ -208,9 +217,9 @@ class LinePainter extends Painter {
             projViewMatrix = map.projViewMatrix,
             uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
             cameraToCenterDistance = map.cameraToCenterDistance,
-            canvasSize = [this.canvas.width, this.canvas.height];
+            resolution = map.getResolution();
         return {
-            uMatrix, projViewMatrix, cameraToCenterDistance, canvasSize, blur : 1
+            uMatrix, projViewMatrix, cameraToCenterDistance, resolution
         };
     }
 }
