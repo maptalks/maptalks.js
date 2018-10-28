@@ -43,11 +43,10 @@ void main() {
     vec2 extrude = aExtrude - 128.0;
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec2 dist = outset * extrude * EXTRUDE_SCALE;
+    vec2 dist = outset * extrude * EXTRUDE_SCALE;
     dist /= canvasSize;
 
     gl_Position.xy += (uMatrix * vec4(dist, aPosition.z, 1.0)).xy * gl_Position.w;
-
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
     vNormal = aNormal;

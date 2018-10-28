@@ -11,13 +11,6 @@ import { getLineOffset } from './util/line_offset';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
-//uint32 [anchor.x, anchor.y]
-//uint16 [shape.x, shape.y]
-//uint16 [tex.x, tex.y]
-//uint8 [size.minx, size.miny, size.maxx, size.maxy]
-//uint8 [offset.x, offset.y]
-//uint8 [r, g, b, a]
-//float [rotation]
 
 function getPackSDFFormat() {
     return [
@@ -199,19 +192,12 @@ export default class PointPack extends VectorPack {
                 opacity = 1;
             }
             quads = getIconQuads(shape);
-            //TODO icon的情况
         }
         opacity = Math.round(opacity * 255);
         let lineOffset = [dx, dy, 0, dx, dy, 0, dx, dy, 0];
         const scales = [scale * 2, scale, scale / 2];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
-            // const y = symbol.glyphOffset[1];
-            // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tl.x, y + tl.y, tex.x, tex.y, sizeVertex);
-            // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, tr.x, y + tr.y, tex.x + tex.w, tex.y, sizeVertex);
-            // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, bl.x, y + bl.y, tex.x, tex.y + tex.h, sizeVertex);
-            // addVertex(layoutVertexArray, labelAnchor.x, labelAnchor.y, br.x, y + br.y, tex.x + tex.w, tex.y + tex.h, sizeVertex);
-            // top-left
             for (let ii = 0; ii < quads.length; ii++) {
                 const quad = quads[ii];
 

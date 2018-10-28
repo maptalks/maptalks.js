@@ -97,14 +97,13 @@ export default class LinePack extends VectorPack {
         ];
     }
 
-    placeVector(line, scale) {
+    placeVector(line) {
         const symbol = line.symbol,
             join = symbol['lineJoin'] || 'miter', //bevel, miter, round
             cap = symbol['lineCap'] || 'butt', //butt, round, square
             miterLimit = 2,
             roundLimit = 1.05;
         this.offset = this.data.length / this.formatWidth;
-
         const feature = line.feature,
             isPolygon = feature.type === 3, //POLYGON
             lines = feature.geometry;
@@ -113,7 +112,7 @@ export default class LinePack extends VectorPack {
             this.elements = [];
         }
         for (let i = 0; i < lines.length; i++) {
-            this._addLine(lines[i], feature, join, cap, miterLimit, roundLimit, scale);
+            this._addLine(lines[i], feature, join, cap, miterLimit, roundLimit);
             if (isPolygon) {
                 this._filterPolygonEdges(elements);
                 this.elements = [];
@@ -134,7 +133,11 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    _addLine(vertices, feature, join, cap, miterLimit, roundLimit, scale) {
+    _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
+        //TODO overscaling的含义？
+        const EXTENT = this.options.EXTENT,
+            overscaling = 1;
+
         let lineDistances = null;
         //TODO lineDistances 和 gradient 的处理
         // if (!!feature.properties &&
@@ -168,7 +171,7 @@ export default class LinePack extends VectorPack {
 
         if (join === 'bevel') miterLimit = 1.05;
 
-        const sharpCornerOffset = SHARP_CORNER_OFFSET * scale; //(EXTENT / (512 * this.overscaling));
+        const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * overscaling));
 
         const firstVertex = vertices[first];
 

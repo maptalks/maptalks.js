@@ -210,7 +210,7 @@ class LinePainter extends Painter {
             cameraToCenterDistance = map.cameraToCenterDistance,
             canvasSize = [this.canvas.width, this.canvas.height];
         return {
-            uMatrix, projViewMatrix, cameraToCenterDistance, canvasSize, blur : 0
+            uMatrix, projViewMatrix, cameraToCenterDistance, canvasSize, blur : 1
         };
     }
 }
