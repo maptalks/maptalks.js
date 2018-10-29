@@ -203,7 +203,10 @@ export default class PointPack extends VectorPack {
 
                 if (alongLine) {
                     // debugger
-                    lineOffset = getLineOffset(lineOffset, anchor, quad, dx, dy, false, scales);
+                    //TODO icon的逻辑还没有实现
+                    if (isText) {
+                        lineOffset = getLineOffset(lineOffset, anchor, quad, dx, dy, false, size[0] / 24, scales);
+                    }
                 } else {
                     lineOffset[0] = lineOffset[3] = lineOffset[6] = dx;
                     lineOffset[1] = lineOffset[4] = lineOffset[7] = dy;

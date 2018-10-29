@@ -13,7 +13,7 @@ const defaultUniforms = {
     'lineGapWidth' : 0,
     'lineDx'   : 0,
     'lineDy'   : 0,
-    'lineBlur' : 2
+    'lineBlur' : 1
 };
 
 

@@ -125,16 +125,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     clearCanvas() {
         super.clearCanvas();
+        //这里必须通过regl来clear，如果直接调用webgl context的clear，则brdf的texture会被设为0
         if (this.glOptions.depth) {
-            // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
-            //TODO 这里必须通过regl来clear，如果直接调用webgl context的clear，则brdf的texture会被设为0
             this.regl.clear({
                 color: [0, 0, 0, 0],
                 depth: 1,
                 stencil: 0
             });
         } else {
-            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
+            this.regl.clear({
+                color: [0, 0, 0, 0],
+                stencil: 0
+            });
         }
     }
 
@@ -146,37 +148,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const result = [];
         return result;
     }
-
-    // onDrawTileStart(context) {
-    //     if (!this.layer.options['stencil']) {
-    //         return;
-    //     }
-    //     const map = this.getMap();
-    //     // this.regl._refresh();
-    //     const { tiles, parentTiles, childTiles } = context;
-    //     const gl = this.gl;
-    //     const quadStencil = this._quadStencil;
-
-    //     quadStencil.start();
-    //     // Tests will always pass, and ref value will be written to stencil buffer.
-    //     quadStencil.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-
-    //     let idNext = 1;
-    //     this._tileStencilRefs = {};
-    //     const stencilTiles = [];
-    //     maptalks.Util.pushIn(stencilTiles, parentTiles, childTiles, tiles);
-    //     for (const tile of stencilTiles) {
-    //         const id = this._tileStencilRefs[tile.info.dupKey] = idNext++;
-    //         quadStencil.stencilFunc(gl.ALWAYS, id, 0xFF);
-
-    //         const mat = this.calculateTileMatrix(tile.info);
-    //         mat4.multiply(mat, map.projViewMatrix, mat);
-    //         quadStencil.draw(mat);
-    //     }
-
-    //     quadStencil.end();
-    //     super.onDrawTileStart(context);
-    // }
 
     draw(framestamp) {
         this.prepareCanvas();

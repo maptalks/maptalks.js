@@ -79,7 +79,7 @@ export default class VectorPack {
         if (!features || !features.length) return Promise.resolve();
         const styles = this.styles;
         const iconReqs = {}, glyphReqs = {};
-        const options = { minZoom : this.options.minZoom, maxZoom : this.options.maxZoom };
+        const options = { zoom : this.options.zoom };
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
             let styleIdx = feature[STLYE_IDX];

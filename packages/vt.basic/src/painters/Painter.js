@@ -118,9 +118,12 @@ class Painter {
         });
         const uniforms = this.getUniformValues(map);
 
+        //1. render current tile level's meshes
         this._shader.filter = level0Filter;
         this._renderer.render(this._shader, uniforms, this.scene);
 
+        //2. render background tile level's meshes
+        //stenciled pixels already rendered in step 1
         this._shader.filter = levelNFilter;
         this._renderer.render(this._shader, uniforms, this.scene);
 

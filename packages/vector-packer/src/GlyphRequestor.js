@@ -32,18 +32,24 @@ export default class GlyphRequestor {
         // if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
         //     return;
         // }
-        const fontFamily = this._getFontFamliy(font);
+        // const fontFamily = this._getFontFamliy(font);
+        const fonts = font.split(' ');
+        const textWeight = fonts[1],
+            textFaceName = fonts.slice(3).join(' ');
+        const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
         if (!tinySDF) {
             let fontWeight = '400';
-            if (/bold/i.test(font)) {
+            if (/bolder/i.test(textWeight)) {
+                fontWeight = '1000';
+            } else if (/bold/i.test(textWeight)) {
                 fontWeight = '900';
-            } else if (/medium/i.test(font)) {
+            } else if (/medium/i.test(textWeight)) {
                 fontWeight = '500';
-            } else if (/light/i.test(font)) {
+            } else if (/light/i.test(textWeight)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new TinySDF(24, 3, 8, .25, fontFamily, fontWeight);
+            tinySDF = entry.tinySDF = new TinySDF(24, 3, 12, .24, fontFamily, fontWeight);
         }
 
         return {
@@ -63,15 +69,15 @@ export default class GlyphRequestor {
         };
     }
 
-    _getFontFamliy(font) {
-        if (!this._cachedFont[font]) {
-            this._cachedFont[font] = extractFontFamily(font);
-        }
-        return this._cachedFont[font];
-    }
+    // _getFontFamliy(font) {
+    //     if (!this._cachedFont[font]) {
+    //         this._cachedFont[font] = extractFontFamily(font);
+    //     }
+    //     return this._cachedFont[font];
+    // }
 }
 
-function extractFontFamily(font) {
+/* function extractFontFamily(font) {
     const span = document.createElement('span');
     document.body.appendChild(span);
     span.style.font = font;
@@ -79,4 +85,4 @@ function extractFontFamily(font) {
     const family = computedStyle.getPropertyValue('font-family');
     document.body.removeChild(span);
     return family;
-}
+} */

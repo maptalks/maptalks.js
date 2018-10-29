@@ -132,21 +132,13 @@ export function toDegree(r) {
     return r / pi;
 }
 
-export function evaluate(prop, properties, minZoom, maxZoom) {
+export function evaluate(prop, properties, zoom) {
     if (isFunction(prop)) {
-        if (minZoom !== undefined && maxZoom !== undefined) {
-            const value = [];
-            const w0 = prop(minZoom, properties),
-                w1 = prop(maxZoom, properties);
-            value[0] = Math.min(w0, w1);
-            value[1] = Math.max(w0, w1);
-            return value;
+        if (zoom !== undefined) {
+            return prop(zoom, properties);
         } else {
             return prop(null, properties);
         }
-
-    } else if (minZoom !== undefined && maxZoom !== undefined) {
-        return [prop, prop];
     } else {
         return prop;
     }

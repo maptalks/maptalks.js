@@ -47,8 +47,9 @@ export default class BaseLayerWorker {
         this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
     }
 
-    _createTileData(features, { glScale, zScale }) {
-        const data = [],
+    _createTileData(features, { glScale, zScale, tileInfo }) {
+        const zoom = tileInfo.z,
+            data = [],
             dataIndexes = [],
             options = this.options,
             buffers = [];
@@ -99,7 +100,7 @@ export default class BaseLayerWorker {
             dataIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
             // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
-            const promise = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, styles, { extent : options.extent, glScale, zScale });
+            const promise = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, styles, { extent : options.extent, glScale, zScale, zoom });
             promises.push(promise);
         }
 
@@ -148,7 +149,7 @@ export default class BaseLayerWorker {
 
     }
 
-    _createTileGeometry(features, dataConfig = {}, styles, { extent, glScale, zScale }) {
+    _createTileGeometry(features, dataConfig = {}, styles, { extent, glScale, zScale, zoom }) {
         const tileSize = this.options.tileSize[0];
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
@@ -158,14 +159,16 @@ export default class BaseLayerWorker {
         } else if (type === 'point') {
             const options = extend({}, dataConfig, {
                 EXTENT : extent,
-                requestor : this.fetchIconGlyphs.bind(this)
+                requestor : this.fetchIconGlyphs.bind(this),
+                zoom
             });
             const pack = new PointPack(features, styles, options);
             return pack.load(extent / tileSize);
         } else if (type === 'line') {
             const options = extend({}, dataConfig, {
                 EXTENT : extent,
-                requestor : this.fetchIconGlyphs.bind(this)
+                requestor : this.fetchIconGlyphs.bind(this),
+                zoom
             });
             const pack = new LinePack(features, styles, options);
             return pack.load();
@@ -174,7 +177,8 @@ export default class BaseLayerWorker {
             // //TODO 需要实现requestor，把数据返回给主线程绘制glyph，获取icon等
             const options = extend({}, dataConfig, {
                 EXTENT : extent,
-                requestor : this.fetchIconGlyphs.bind(this)
+                requestor : this.fetchIconGlyphs.bind(this),
+                zoom
             });
             const pack = new PolygonPack(features, styles, options);
             return pack.load();

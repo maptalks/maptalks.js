@@ -6,8 +6,8 @@
  * @param {Number} dx - offset x
  * @param {Number} dy - offset y
  */
-export function getLineOffset(out, anchor, quad, dx, dy, flip, scales) {
-    const glyphOffset = quad.glyphOffset[0];
+export function getLineOffset(out, anchor, quad, dx, dy, flip, fontScale, scales) {
+    const glyphOffset = quad.glyphOffset[0] * fontScale;
     const offsetX = flip ?
         glyphOffset - dx :
         glyphOffset + dx;
@@ -57,8 +57,8 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, scales) {
             currentSegmentDistance = prev.dist(current) / scales[i];
         }
         if (miss) {
-            out[0] = out[3] = quad.glyphOffset[0];
-            out[1] = out[4] = quad.glyphOffset[1];
+            out[0] = out[3] = glyphOffset;
+            out[1] = out[4] = quad.glyphOffset[1] * fontScale + dy * dir;
             out[2] = out[5] = 0;
             continue;
         }
