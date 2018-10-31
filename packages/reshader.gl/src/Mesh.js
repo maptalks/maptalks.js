@@ -123,6 +123,10 @@ class Mesh {
         return this;
     }
 
+    isValid() {
+        return this.geometry && !this.geometry.isDisposed() && (!this.material || !this.material.isDisposed());
+    }
+
     _createDefinesKey(defines) {
         const v = [];
         for (const p in defines) {

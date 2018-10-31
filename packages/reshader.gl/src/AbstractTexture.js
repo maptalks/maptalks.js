@@ -83,8 +83,9 @@ class AbstractTexture {
         if (this.config.url) {
             this.resLoader.disposeRes(this.config.url);
         }
-        if (this._texture) {
+        if (this._texture && !this._texture['__destroyed']) {
             this._texture.destroy();
+            this._texture['__destroyed'] = true;
         }
         delete this.resLoader;
         delete this.config;

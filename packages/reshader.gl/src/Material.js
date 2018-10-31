@@ -86,12 +86,24 @@ class Material {
 
     dispose() {
         for (const p in this.uniforms) {
-            if (this.uniforms[p] && this.uniforms[p].dispose) {
-                this.uniforms[p].dispose();
+            const u = this.uniforms[p];
+            if (u) {
+                if (u.dispose) {
+                    u.dispose();
+                } else if (u.destroy && !u['__destroyed']) {
+                    //a normal regl texture
+                    u.destroy();
+                    u['__destroyed'] = true;
+                }
             }
         }
         delete this.uniforms;
         delete this._reglUniforms;
+        this._disposed = true;
+    }
+
+    isDisposed() {
+        return !!this._disposed;
     }
 
     _checkTextures() {

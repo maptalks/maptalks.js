@@ -102,6 +102,11 @@ export default class Geometry {
         });
         delete this.elements;
         delete this.data;
+        this._disposed = true;
+    }
+
+    isDisposed() {
+        return !!this._disposed;
     }
 
     /**
