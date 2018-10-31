@@ -126,7 +126,8 @@ class PointPainter extends Painter {
                     // color: [0, 0, 0, 0]
                 },
                 depth: {
-                    enable: false
+                    enable: true,
+                    func : 'always'
                 },
             }
         });

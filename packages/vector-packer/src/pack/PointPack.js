@@ -12,60 +12,116 @@ import { getLineOffset } from './util/line_offset';
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
 
-function getPackSDFFormat() {
-    return [
-        {
-            type : Int16Array,
-            width : 3,
-            name : 'aPosition'
-        },
-        {
-            type : Int16Array,
-            width : 2,
-            name : 'aShape'
-        },
-        {
-            type : Uint16Array,
-            width : 2,
-            name : 'aTexCoord'
-        },
-        {
-            type : Uint8Array,
-            width : 1,
-            name : 'aOpacity'
-        },
-        {
-            type : Int8Array,
-            width : 2,
-            name : 'aOffset0'
-        },
-        {
-            type : Int8Array,
-            width : 2,
-            name : 'aOffset1'
-        },
-        {
-            type : Int8Array,
-            width : 2,
-            name : 'aOffset2'
-        },
-        {
-            //TODO 更小的类型？
-            type : Float32Array,
-            width : 3,
-            name : 'aRotation'
-        },
-        {
-            type : Uint8Array,
-            width : 1,
-            name : 'aSize'
-        },
-        {
-            type : Uint8Array,
-            width : 3,
-            name : 'aColor'
-        },
-    ];
+function getPackSDFFormat(symbol) {
+    if (symbol['textPlacement'] === 'line') {
+        return [
+            {
+                type : Int16Array,
+                width : 3,
+                name : 'aPosition'
+            },
+            {
+                type : Int16Array,
+                width : 2,
+                name : 'aShape'
+            },
+            {
+                type : Uint16Array,
+                width : 2,
+                name : 'aTexCoord'
+            },
+            {
+                type : Uint8Array,
+                width : 1,
+                name : 'aOpacity'
+            },
+            {
+                type : Int8Array,
+                width : 2,
+                name : 'aOffset0'
+            },
+            {
+                type : Int8Array,
+                width : 2,
+                name : 'aOffset1'
+            },
+            {
+                type : Int8Array,
+                width : 2,
+                name : 'aOffset2'
+            },
+            {
+                //TODO 更小的类型？
+                type : Float32Array,
+                width : 1,
+                name : 'aRotation0'
+            },
+            {
+                type : Float32Array,
+                width : 1,
+                name : 'aRotation1'
+            },
+            {
+                type : Float32Array,
+                width : 1,
+                name : 'aRotation2'
+            },
+            {
+                type : Uint8Array,
+                width : 1,
+                name : 'aSize'
+            },
+            {
+                type : Uint8Array,
+                width : 3,
+                name : 'aColor'
+            },
+        ];
+    } else {
+        return [
+            {
+                type : Int16Array,
+                width : 3,
+                name : 'aPosition'
+            },
+            {
+                type : Int16Array,
+                width : 2,
+                name : 'aShape'
+            },
+            {
+                type : Uint16Array,
+                width : 2,
+                name : 'aTexCoord'
+            },
+            {
+                type : Uint8Array,
+                width : 1,
+                name : 'aOpacity'
+            },
+            {
+                type : Int8Array,
+                width : 2,
+                name : 'aOffset0'
+            },
+            {
+                //TODO 更小的类型？
+                type : Float32Array,
+                width : 1,
+                name : 'aRotation0'
+            },
+            {
+                type : Uint8Array,
+                width : 1,
+                name : 'aSize'
+            },
+            {
+                type : Uint8Array,
+                width : 3,
+                name : 'aColor'
+            },
+        ];
+    }
 }
 
 function getPackMarkerFormat() {
@@ -148,7 +204,7 @@ export default class PointPack extends VectorPack {
 
     getFormat(symbol) {
         const isText = symbol['textName'] !== undefined;
-        return isText ? getPackSDFFormat() : getPackMarkerFormat();
+        return isText ? getPackSDFFormat(symbol) : getPackMarkerFormat();
     }
 
     placeVector(point, scale, formatWidth) {
@@ -225,16 +281,20 @@ export default class PointPack extends VectorPack {
                     opacity
                 );
                 if (isText) {
-                    data.push(
-                        //   minDx         minDy                                         maxDx        maxDy
-                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                        //     minRotation               maxRotation
-                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                    );
+                    if (symbol['textPlacement'] === 'line') {
+                        data.push(
+                            //   minDx         minDy                                         maxDx        maxDy
+                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                            //     minRotation               maxRotation
+                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                        );
+                    } else {
+                        data.push(lineOffset[0], lineOffset[1], rotation);
+                    }
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(dx, dy, rotation);
+                    data.push(lineOffset[0], lineOffset[1], rotation);
                     data.push(size[0], size[1]);
                 }
 
@@ -245,14 +305,18 @@ export default class PointPack extends VectorPack {
                     opacity
                 );
                 if (isText) {
-                    data.push(
-                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                    );
+                    if (symbol['textPlacement'] === 'line') {
+                        data.push(
+                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                        );
+                    } else {
+                        data.push(lineOffset[0], lineOffset[1], rotation);
+                    }
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(dx, dy, rotation);
+                    data.push(lineOffset[0], lineOffset[1], rotation);
                     data.push(size[0], size[1]);
                 }
 
@@ -263,14 +327,18 @@ export default class PointPack extends VectorPack {
                     opacity
                 );
                 if (isText) {
-                    data.push(
-                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                    );
+                    if (symbol['textPlacement'] === 'line') {
+                        data.push(
+                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                        );
+                    } else {
+                        data.push(lineOffset[0], lineOffset[1], rotation);
+                    }
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(dx, dy, rotation);
+                    data.push(lineOffset[0], lineOffset[1], rotation);
                     data.push(size[0], size[1]);
                 }
 
@@ -281,14 +349,18 @@ export default class PointPack extends VectorPack {
                     opacity
                 );
                 if (isText) {
-                    data.push(
-                        lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                        rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                    );
+                    if (symbol['textPlacement'] === 'line') {
+                        data.push(
+                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                        );
+                    } else {
+                        data.push(lineOffset[0], lineOffset[1], rotation);
+                    }
                     data.push(size[0]);
                     data.push(color[0], color[1], color[2]);
                 } else {
-                    data.push(dx, dy, rotation);
+                    data.push(lineOffset[0], lineOffset[1], rotation);
                     data.push(size[0], size[1]);
                 }
 

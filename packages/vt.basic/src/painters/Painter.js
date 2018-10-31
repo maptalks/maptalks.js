@@ -165,8 +165,8 @@ class Painter {
         }
         this.scene.removeMesh(meshes);
         for (let i = 0; i < meshes.length; i++) {
-            const geometry = meshes[i].geometry;
-            geometry.dispose();
+            meshes[i].geometry.dispose();
+            meshes[i].material.dispose();
             meshes[i].dispose();
         }
     }

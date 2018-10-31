@@ -4,14 +4,16 @@ attribute vec2 aTexCoord;
 attribute float aSize;
 attribute float aOpacity;
 attribute vec2 aOffset0;
+attribute float aRotation0;
+#if defined(ALONG_LINE)
 attribute vec2 aOffset1;
 attribute vec2 aOffset2;
-attribute vec3 aRotation;
-
+attribute float aRotation1;
+attribute float aRotation2;
 uniform float tileResolution;
 uniform float resolution;
+#endif
 uniform float cameraToCenterDistance;
-// uniform float uCosPitch;
 uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
 uniform mat3 planeMatrix;
@@ -41,27 +43,32 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float scale = tileResolution / resolution;
-    float interpolation, rotation0, rotation1;
-    vec2 offset0, offset1;
-
-    if (scale <= 1.0) {
-        interpolation = clamp((scale - 0.5) / 0.5, 0.0, 1.0);
-        offset0 = aOffset0;
-        offset1 = aOffset1;
-        rotation0 = aRotation.x;
-        rotation1 = aRotation.y;
-    } else {
-        interpolation = clamp(scale - 1.0, 0.0, 1.0);
-        offset0 = aOffset1;
-        offset1 = aOffset2;
-        rotation0 = aRotation.y;
-        rotation1 = aRotation.z;
-    }
+    #if defined(ALONG_LINE)
+        float interpolation, rotation0, rotation1;
+        vec2 offset0, offset1;
+        float scale = tileResolution / resolution;
+        if (scale <= 1.0) {
+            interpolation = clamp((scale - 0.5) / 0.5, 0.0, 1.0);
+            offset0 = aOffset0;
+            offset1 = aOffset1;
+            rotation0 = aRotation0;
+            rotation1 = aRotation1;
+        } else {
+            interpolation = clamp(scale - 1.0, 0.0, 1.0);
+            offset0 = aOffset1;
+            offset1 = aOffset2;
+            rotation0 = aRotation1;
+            rotation1 = aRotation2;
+        }
+        float textRotation = mix(rotation0, rotation1, interpolation);
+        vec2 offset = mix(offset0, offset1, interpolation);
+    #else
+        float textRotation = aRotation0;
+        vec2 offset = aOffset0;
+    #endif
 
     //计算shape
     //文字的旋转角度
-    float textRotation = mix(rotation0, rotation1, interpolation);
     float pitch = mapPitch * pitchWithMap;
     float rotation = textRotation - mapRotation * rotateWithMap;
     float angleSin = sin(rotation);
@@ -78,7 +85,6 @@ void main() {
     shape = shape / glyphSize * aSize * 2.0 / canvasSize; //乘以2.0
 
     //计算 offset
-    vec2 offset = mix(offset0, offset1, interpolation);
     offset = (planeMatrix * vec3(offset, 0.0)).xy;
     offset = offset * 2.0 / canvasSize;
 

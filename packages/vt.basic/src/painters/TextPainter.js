@@ -92,6 +92,11 @@ class TextPainter extends Painter {
                 castShadow : false,
                 picking : true
             });
+            if (symbol['textPlacement'] === 'line') {
+                mesh.setDefines({
+                    'ALONG_LINE' : 1
+                });
+            }
             mesh.setLocalTransform(transform);
             meshes.push(mesh);
 
@@ -103,6 +108,11 @@ class TextPainter extends Painter {
                     castShadow : false,
                     picking : true
                 });
+                if (symbol['textPlacement'] === 'line') {
+                    mesh.setDefines({
+                        'ALONG_LINE' : 1
+                    });
+                }
                 mesh.setLocalTransform(transform);
                 meshes.push(mesh);
             }
@@ -145,39 +155,41 @@ class TextPainter extends Painter {
             }
         };
 
+        const uniforms = [
+            'cameraToCenterDistance',
+            {
+                name : 'projViewModelMatrix',
+                type : 'function',
+                fn : function (context, props) {
+                    return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                }
+            },
+            'textPerspectiveRatio',
+            'texSize',
+            'canvasSize',
+            'glyphSize',
+            'pitchWithMap',
+            'mapPitch',
+            'texture',
+            'gammaScale',
+            'textFill',
+            'textOpacity',
+            'textHaloRadius',
+            'textHaloFill',
+            'textHaloBlur',
+            'textHaloOpacity',
+            'isHalo',
+            'fadeOpacity',
+            'resolution',
+            'tileResolution',
+            'planeMatrix',
+            'rotateWithMap',
+            'mapRotation'
+        ];
+
         this._shader = new reshader.MeshShader({
             vert, frag,
-            uniforms : [
-                'cameraToCenterDistance',
-                {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                },
-                'textPerspectiveRatio',
-                'texSize',
-                'canvasSize',
-                'glyphSize',
-                'pitchWithMap',
-                'mapPitch',
-                'texture',
-                'gammaScale',
-                'textFill',
-                'textOpacity',
-                'textHaloRadius',
-                'textHaloFill',
-                'textHaloBlur',
-                'textHaloOpacity',
-                'isHalo',
-                'fadeOpacity',
-                'resolution',
-                'tileResolution',
-                'planeMatrix',
-                'rotateWithMap',
-                'mapRotation'
-            ],
+            uniforms,
             extraCommandProps : {
                 viewport, scissor,
                 blend: {
@@ -189,7 +201,8 @@ class TextPainter extends Painter {
                     equation: 'add'
                 },
                 depth: {
-                    enable: false
+                    enable: true,
+                    func : 'always'
                 },
             }
         });
