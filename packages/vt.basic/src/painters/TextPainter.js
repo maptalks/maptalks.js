@@ -1,6 +1,5 @@
 import Painter from './Painter';
-import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { reshader, vec3, mat4 } from '@maptalks/gl';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import frag from './glsl/text.frag';
@@ -35,6 +34,7 @@ class TextPainter extends Painter {
         for (let i = 0; i < packMeshes.length; i++) {
             const geometry = geometries[packMeshes[i].pack];
             const symbol = packMeshes[i].symbol;
+            const isAlongLine = symbol['textPlacement'] === 'line';
             const uniforms = {
                 tileResolution : geometry.properties.res
             };
@@ -75,8 +75,16 @@ class TextPainter extends Painter {
                 uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
             }
 
-            if (symbol['textRotationAlignment'] === 'map' || symbol['textPlacement'] === 'line') {
+            if (symbol['textRotationAlignment'] === 'map' || isAlongLine) {
                 uniforms.rotateWithMap = 1;
+            }
+
+            if (isAlongLine) {
+                const aOffset = geometry.data.aOffset0;
+                uniforms.firstOffset = [aOffset[0], aOffset[1], 0];
+                uniforms.lastOffset = [aOffset[aOffset.length - 2], aOffset[aOffset.length - 1], 0];
+                //TODO 判断是否是vertical 字符
+                uniforms.isVerticalChar = true;
             }
 
             const glyphAtlas = geometry.properties.glyphAtlas;
@@ -86,6 +94,7 @@ class TextPainter extends Painter {
             if (symbol['textPitchAlignment'] === 'map') {
                 uniforms.pitchWithMap = 1;
             }
+            geometry.generateBuffers(this.regl);
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
                 transparent,
@@ -126,6 +135,7 @@ class TextPainter extends Painter {
     }
 
     init() {
+        const map = this.layer.getMap();
         const regl = this.regl;
         const canvas = this.canvas;
 
@@ -155,6 +165,7 @@ class TextPainter extends Painter {
             }
         };
 
+        const firstPoint = [], lastPoint = [];
         const uniforms = [
             'cameraToCenterDistance',
             {
@@ -184,7 +195,48 @@ class TextPainter extends Painter {
             'tileResolution',
             'planeMatrix',
             'rotateWithMap',
-            'mapRotation'
+            'mapRotation',
+            {
+                name : 'isFlip',
+                type : 'function',
+                fn : function (context, props) {
+                    const planeMatrix = props['planeMatrix'];
+                    const first = props['firstOffset'],
+                        last = props['lastOffset'];
+                    vec3.transformMat3(firstPoint, first, planeMatrix);
+                    vec3.transformMat3(lastPoint, last, planeMatrix);
+                    if (props['isVerticalChar']) {
+                        const aspectRatio = map.width / map.height;
+                        const rise = Math.abs(lastPoint[1] - firstPoint[1]);
+                        const run = Math.abs(lastPoint[0] - firstPoint[0]) * aspectRatio;
+                        if (rise > run) {
+                            return firstPoint[1] <= lastPoint[1] ? 1 : 0;
+                        } else {
+                            return firstPoint[0] > lastPoint[0] ? 1 : 0;
+                        }
+                    } else {
+                        return firstPoint[0] > lastPoint[0] ? 1 : 0;
+                    }
+                }
+            },
+            {
+                name : 'isVertical',
+                type : 'function',
+                fn : function (context, props) {
+                    if (!props['isVerticalChar']) {
+                        return 0;
+                    }
+                    const planeMatrix = props['planeMatrix'];
+                    const first = props['firstOffset'],
+                        last = props['lastOffset'];
+                    vec3.transformMat3(firstPoint, first, planeMatrix);
+                    vec3.transformMat3(lastPoint, last, planeMatrix);
+                    const aspectRatio = map.width / map.height;
+                    const rise = Math.abs(lastPoint[1] - firstPoint[1]);
+                    const run = Math.abs(lastPoint[0] - firstPoint[0]) * aspectRatio;
+                    return rise > run ? 1 : 0;
+                }
+            }
         ];
 
         this._shader = new reshader.MeshShader({

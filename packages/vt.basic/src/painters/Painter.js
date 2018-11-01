@@ -78,7 +78,6 @@ class Painter {
                 res,
                 tileRatio : this.layer.options.extent / this.layer.getTileSize().width
             };
-            geometry.generateBuffers(this.regl);
             geometries.push(geometry);
         }
         return geometries;

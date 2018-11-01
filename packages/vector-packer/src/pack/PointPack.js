@@ -23,17 +23,27 @@ function getPackSDFFormat(symbol) {
             {
                 type : Int16Array,
                 width : 2,
-                name : 'aShape'
+                name : 'aShape0'
             },
             {
                 type : Uint16Array,
                 width : 2,
-                name : 'aTexCoord'
+                name : 'aTexCoord0'
             },
             {
                 type : Uint8Array,
                 width : 1,
                 name : 'aOpacity'
+            },
+            {
+                type : Int16Array,
+                width : 2,
+                name : 'aShape1'
+            },
+            {
+                type : Uint16Array,
+                width : 2,
+                name : 'aTexCoord1'
             },
             {
                 type : Int8Array,
@@ -52,17 +62,17 @@ function getPackSDFFormat(symbol) {
             },
             {
                 //TODO 更小的类型？
-                type : Float32Array,
+                type : Int16Array,
                 width : 1,
                 name : 'aRotation0'
             },
             {
-                type : Float32Array,
+                type : Int16Array,
                 width : 1,
                 name : 'aRotation1'
             },
             {
-                type : Float32Array,
+                type : Int16Array,
                 width : 1,
                 name : 'aRotation2'
             },
@@ -87,12 +97,12 @@ function getPackSDFFormat(symbol) {
             {
                 type : Int16Array,
                 width : 2,
-                name : 'aShape'
+                name : 'aShape0'
             },
             {
                 type : Uint16Array,
                 width : 2,
-                name : 'aTexCoord'
+                name : 'aTexCoord0'
             },
             {
                 type : Uint8Array,
@@ -106,7 +116,7 @@ function getPackSDFFormat(symbol) {
             },
             {
                 //TODO 更小的类型？
-                type : Float32Array,
+                type : Int16Array,
                 width : 1,
                 name : 'aRotation0'
             },
@@ -242,7 +252,7 @@ export default class PointPack extends VectorPack {
         } else {
             dx = evaluate(symbol['markerDx'], properties) || 0;
             dy = evaluate(symbol['markerDy'], properties) || 0;
-            rotation = (evaluate(symbol['markerRotation'], properties) || 0) * Math.PI / 180;
+            rotation = evaluate(symbol['markerRotation'], properties) || 0;
             opacity = evaluate(symbol['markerOpacity'], properties);
             if (opacity === undefined) {
                 opacity = 1;
@@ -254,8 +264,10 @@ export default class PointPack extends VectorPack {
         const scales = [scale * 2, scale, scale / 2];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
-            for (let ii = 0; ii < quads.length; ii++) {
+            const l = quads.length;
+            for (let ii = 0; ii < l; ii++) {
                 const quad = quads[ii];
+                const flipQuad = quads[l - 1 - ii];
 
                 if (alongLine) {
                     // debugger
@@ -273,96 +285,50 @@ export default class PointPack extends VectorPack {
                 lineOffset[7] += y;
 
                 const { tl, tr, bl, br, tex } = quad;
+                //char's quad if flipped
+                const tl1 = flipQuad.tl, tr1 = flipQuad.tr,
+                    bl1 = flipQuad.bl, br1 = flipQuad.br, tex1 = flipQuad.tex;
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     tl.x, tl.y,
-                    tex.x, tex.y + tex.h,
-                    opacity
+                    tex.x, tex.y + tex.h
                 );
-                if (isText) {
-                    if (symbol['textPlacement'] === 'line') {
-                        data.push(
-                            //   minDx         minDy                                         maxDx        maxDy
-                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                            //     minRotation               maxRotation
-                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                        );
-                    } else {
-                        data.push(lineOffset[0], lineOffset[1], rotation);
-                    }
-                    data.push(size[0]);
-                    data.push(color[0], color[1], color[2]);
-                } else {
-                    data.push(lineOffset[0], lineOffset[1], rotation);
-                    data.push(size[0], size[1]);
-                }
+                this._fillData(data, opacity, isText, symbol,
+                    tl1.x, tl1.y,
+                    tex1.x, tex1.y + tex1.h,
+                    lineOffset, rotation, size, color);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     tr.x, tr.y,
-                    tex.x + tex.w, tex.y + tex.h,
-                    opacity
+                    tex.x + tex.w, tex.y + tex.h
                 );
-                if (isText) {
-                    if (symbol['textPlacement'] === 'line') {
-                        data.push(
-                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                        );
-                    } else {
-                        data.push(lineOffset[0], lineOffset[1], rotation);
-                    }
-                    data.push(size[0]);
-                    data.push(color[0], color[1], color[2]);
-                } else {
-                    data.push(lineOffset[0], lineOffset[1], rotation);
-                    data.push(size[0], size[1]);
-                }
+                this._fillData(data, opacity, isText, symbol,
+                    tr1.x, tr1.y,
+                    tex1.x + tex1.w, tex1.y + tex1.h,
+                    lineOffset, rotation, size, color);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     bl.x, bl.y,
-                    tex.x, tex.y,
-                    opacity
+                    tex.x, tex.y
                 );
-                if (isText) {
-                    if (symbol['textPlacement'] === 'line') {
-                        data.push(
-                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                        );
-                    } else {
-                        data.push(lineOffset[0], lineOffset[1], rotation);
-                    }
-                    data.push(size[0]);
-                    data.push(color[0], color[1], color[2]);
-                } else {
-                    data.push(lineOffset[0], lineOffset[1], rotation);
-                    data.push(size[0], size[1]);
-                }
+                this._fillData(data, opacity, isText, symbol,
+                    bl1.x, bl1.y,
+                    tex1.x, tex1.y,
+                    lineOffset, rotation, size, color);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     br.x, br.y,
-                    tex.x + tex.w, tex.y,
-                    opacity
+                    tex.x + tex.w, tex.y
                 );
-                if (isText) {
-                    if (symbol['textPlacement'] === 'line') {
-                        data.push(
-                            lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                            rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
-                        );
-                    } else {
-                        data.push(lineOffset[0], lineOffset[1], rotation);
-                    }
-                    data.push(size[0]);
-                    data.push(color[0], color[1], color[2]);
-                } else {
-                    data.push(lineOffset[0], lineOffset[1], rotation);
-                    data.push(size[0], size[1]);
-                }
+                this._fillData(data, opacity, isText, symbol,
+                    br1.x, br1.y,
+                    tex1.x + tex1.w, tex1.y,
+                    lineOffset, rotation, size, color);
+
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
                 this.addElements(currentIdx + 1, currentIdx + 2, currentIdx + 3);
@@ -373,6 +339,43 @@ export default class PointPack extends VectorPack {
                     this.maxPos = max;
                 }
             }
+        }
+    }
+
+    /**
+     *
+     * @param {Number[]} data
+     * @param {Number} opacity
+     * @param {Boolean} isText
+     * @param {Object} symbol
+     * @param {Number} tx - flip quad's x offset
+     * @param {Number} ty - flip quad's y offset
+     * @param {Number} texx - flip quad's tex coord x
+     * @param {Number} texy - flip quad's tex coord y
+     * @param {Number} lineOffset
+     * @param {Number} rotation
+     * @param {Number[]} size
+     * @param {Number[]} color
+     */
+    _fillData(data, opacity, isText, symbol, tx, ty, texx, texy, lineOffset, rotation, size, color) {
+        data.push(opacity);
+        if (isText) {
+            if (symbol['textPlacement'] === 'line') {
+                data.push(
+                    tx, ty, texx, texy,
+                    //   minDx         minDy                                         maxDx        maxDy
+                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
+                    //     minRotation               maxRotation
+                    rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                );
+            } else {
+                data.push(lineOffset[0], lineOffset[1], rotation);
+            }
+            data.push(size[0]);
+            data.push(color[0], color[1], color[2]);
+        } else {
+            data.push(lineOffset[0], lineOffset[1], rotation);
+            data.push(size[0], size[1]);
         }
     }
 

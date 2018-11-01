@@ -47,7 +47,7 @@ class PointPainter extends Painter {
             if (symbol['markerPerspectiveRatio']) {
                 uniforms['markerPerspectiveRatio'] = symbol['markerPerspectiveRatio'];
             }
-
+            geometry.generateBuffers(this.regl);
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
                 transparent,

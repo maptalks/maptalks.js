@@ -77,7 +77,7 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, fontScale, scales
 
         out[i * 3] = Math.round((p.x - anchor.x) / scales[i]);
         out[i * 3 + 1] = -Math.round((p.y - anchor.y) / scales[i]);
-        out[i * 3 + 2] = segmentAngle;
+        out[i * 3 + 2] = Math.round(segmentAngle * 180 / Math.PI);
     }
 
     return out;

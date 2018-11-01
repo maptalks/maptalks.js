@@ -36,7 +36,7 @@ class FillPainter extends Painter {
             if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
                 uniforms.polygonOpacity = symbol['polygonOpacity'];
             }
-
+            geometry.generateBuffers(this.regl);
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
                 castShadow : false,

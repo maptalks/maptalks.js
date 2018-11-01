@@ -1,17 +1,23 @@
+#define RAD 0.0174532925
+
 attribute vec3 aPosition;
-attribute vec2 aShape;
-attribute vec2 aTexCoord;
+attribute vec2 aShape0;
+attribute vec2 aTexCoord0;
 attribute float aSize;
 attribute float aOpacity;
 attribute vec2 aOffset0;
 attribute float aRotation0;
 #if defined(ALONG_LINE)
+attribute vec2 aShape1;
+attribute vec2 aTexCoord1;
 attribute vec2 aOffset1;
 attribute vec2 aOffset2;
 attribute float aRotation1;
 attribute float aRotation2;
 uniform float tileResolution;
 uniform float resolution;
+uniform float isFlip;
+uniform float isVertical;
 #endif
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -62,10 +68,19 @@ void main() {
         }
         float textRotation = mix(rotation0, rotation1, interpolation);
         vec2 offset = mix(offset0, offset1, interpolation);
+
+        vec2 shape = mix(aShape0, aShape1, isFlip);
+        vec2 texCoord = mix(aTexCoord0, aTexCoord1, isFlip);
+
+        textRotation += mix(0.0, 180.0, isFlip);
+        textRotation += mix(0.0, -90.0, isVertical);
     #else
         float textRotation = aRotation0;
         vec2 offset = aOffset0;
+        vec2 shape = aShape0;
+        vec2 texCoord = aTexCoord0;
     #endif
+    textRotation = textRotation * RAD;
 
     //计算shape
     //文字的旋转角度
@@ -80,7 +95,7 @@ void main() {
     mat3 shapeMatrix = mat3(angleCos, -1.0 * angleSin * pitchCos, angleSin * pitchSin,
         angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
         0.0, pitchSin, pitchCos);
-    vec2 shape = aShape;
+
     shape = (shapeMatrix * vec3(shape, 0.0)).xy;
     shape = shape / glyphSize * aSize * 2.0 / canvasSize; //乘以2.0
 
@@ -90,7 +105,7 @@ void main() {
 
     gl_Position.xy += (shape + offset) * perspectiveRatio * gl_Position.w;
 
-    vTexCoord = aTexCoord / texSize;
+    vTexCoord = texCoord / texSize;
     vGammaScale = distance / cameraToCenterDistance;
 
     vSize = aSize;
