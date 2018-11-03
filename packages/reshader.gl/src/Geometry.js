@@ -11,13 +11,6 @@ const defaultDesc = {
 
 export default class Geometry {
     constructor(data, elements, count, desc) {
-        // this.aPosition = data.vertices;
-        // this.aNormal = data.normals;
-        // this.aTexCoord = data.uvs;
-        // this.aColor = data.colors;
-        // this.aTangent = data.tangents;
-        // this.elements = data.elements;
-
         this.data = data;
         this.elements = elements;
         this.desc = extend({}, defaultDesc, desc) || defaultDesc;
@@ -55,6 +48,34 @@ export default class Geometry {
                 //type : 'uint16' // type is inferred from data
             });
         }
+    }
+
+    /**
+     * Replace data or refill attribute data buffer
+     * @param {String} name - data's name
+     * @param {Number[] | Object} data - data to update
+     * @returns this
+     */
+    updateData(name, data) {
+        const buf = this.data[name];
+        if (!buf) {
+            return this;
+        }
+        let buffer;
+        if (Array.isArray(buf) || Array.isArray(buf.data)) {
+            this.data[name] = data;
+        } else if (buf.buffer && buf.buffer.destroy) {
+            buffer = buf;
+            this.data[name] = data;
+        }
+        if (name === this.desc.positionAttribute) {
+            this.updateBoundingBox();
+        }
+        if (buffer) {
+            buffer.buffer(data);
+            this.data[name] = buffer;
+        }
+        return this;
     }
 
     getPrimitive() {
@@ -118,8 +139,13 @@ export default class Geometry {
             bbox = this.boundingBox = new BoundingBox();
         }
         const posAttr = this.desc.positionAttribute;
-        const posArr = this.data[posAttr];
+        let posArr = this.data[posAttr];
+        if (!Array.isArray(posArr)) {
+            // form of object: { usage : 'static', data : [...] }
+            posArr = posArr.data;
+        }
         if (posArr && posArr.length) {
+            //TODO only support size of 3 now
             const min = bbox.min;
             const max = bbox.max;
             vec3.set(min, posArr[0], posArr[1], posArr[2]);
@@ -136,8 +162,8 @@ export default class Geometry {
                 if (y > max[1]) { max[1] = y; }
                 if (z > max[2]) { max[2] = z; }
             }
+            bbox.dirty();
         }
-        bbox.dirty();
     }
 
     _forEachBuffer(fn) {
