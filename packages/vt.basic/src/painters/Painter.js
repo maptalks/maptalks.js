@@ -23,6 +23,8 @@ class Painter {
             this.pickingFBO = layer.getRenderer().pickingFBO;
         }
         this._stencilHelper = new StencilHelper();
+        this.level0Filter = level0Filter;
+        this.levelNFilter = levelNFilter;
         this.init();
     }
 
@@ -108,29 +110,28 @@ class Painter {
         if (this.needStencil) {
             this._stencil(context.quadStencil);
         }
-        // this._shader.filter = mesh => {
-        //     return mesh.uniforms['level'] !== 0;
-        // };
 
         this.regl.clear({
             stencil: 0xFF
         });
         const uniforms = this.getUniformValues(map);
 
-        //1. render current tile level's meshes
-        this._shader.filter = level0Filter;
-        this._renderer.render(this._shader, uniforms, this.scene);
-
-        //2. render background tile level's meshes
-        //stenciled pixels already rendered in step 1
-        this._shader.filter = levelNFilter;
-        this._renderer.render(this._shader, uniforms, this.scene);
-
-        // this._renderer.render(this._shader, uniforms, this.scene);
+        this.callShader(uniforms);
 
         return {
             redraw : false
         };
+    }
+
+    callShader(uniforms) {
+        //1. render current tile level's meshes
+        this._shader.filter = this.level0Filter;
+        this._renderer.render(this._shader, uniforms, this.scene);
+
+        //2. render background tile level's meshes
+        //stenciled pixels already rendered in step 1
+        this._shader.filter = this.levelNFilter;
+        this._renderer.render(this._shader, uniforms, this.scene);
     }
 
     pick(x, y) {

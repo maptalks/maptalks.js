@@ -169,6 +169,7 @@ export default class VectorPack {
         const styles = this.styles;
         const packs = [], meshes = [], buffers = [], saved = {};
 
+        //创建datapack
         function create(key, vector, symbol) {
             let pack;
             if (saved[key] === undefined) {
@@ -211,11 +212,13 @@ export default class VectorPack {
         };
 
         if (this.iconAtlas) {
+            //icon纹理
             vectorPack.data.iconAtlas = serializeAtlas(this.iconAtlas);
             buffers.push(vectorPack.data.iconAtlas.image.data.buffer);
         }
 
         if (this.glyphAtlas) {
+            //文字纹理
             vectorPack.data.glyphAtlas = serializeAtlas(this.glyphAtlas);
             buffers.push(vectorPack.data.glyphAtlas.image.data.buffer);
         }

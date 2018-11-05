@@ -94,6 +94,7 @@ export default class BaseLayerWorker {
 
             const arrCtor = getIndexArrayType(maxIndex);
             data[i] = {
+                //[feature_index, style_index, ...]
                 styledFeatures : new arrCtor(styledFeatures)
             };
             //index of plugin with data
