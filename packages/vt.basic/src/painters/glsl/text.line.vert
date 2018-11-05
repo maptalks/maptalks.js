@@ -13,8 +13,7 @@ attribute vec2 aOffset1;
 attribute vec2 aOffset2;
 attribute float aRotation1;
 attribute float aRotation2;
-// attribute float aNormal;//flip, vertical
-attribute vec2 aNormal;
+attribute float aNormal;//flip * 2 + vertical
 
 uniform float tileResolution;
 uniform float resolution;
@@ -63,10 +62,8 @@ void main() {
         rotation1 = aRotation2;
     }
     float textRotation = mix(rotation0, rotation1, t);
-    // float flip = float(int(aNormal) / 2);
-    // float vertical = mod(aNormal, 2.0);
-    float flip = aNormal.x;
-    float vertical = aNormal.y;
+    float flip = float(int(aNormal) / 2);
+    float vertical = mod(aNormal, 2.0);
     textRotation += mix(0.0, 180.0, flip);
     textRotation += mix(0.0, -90.0, vertical);
     textRotation = textRotation * RAD;

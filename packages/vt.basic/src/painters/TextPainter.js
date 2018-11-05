@@ -66,7 +66,7 @@ class TextPainter extends Painter {
                 //aNormal = [isFlip, isVertical, ...];
                 const aNormal = {
                     usage : 'dynamic',
-                    data : new Uint8Array(aOffset1.length)
+                    data : new Uint8Array(aOffset1.length / 2)
                 };
                 geometry.data.aNormal = geometry.properties.aNormal = aNormal;
                 geometry.properties.aOffset1 = aOffset1;
@@ -225,12 +225,8 @@ class TextPainter extends Painter {
                         }
                     }
                     //更新normal
-                    for (let ii = firstChrIdx; ii < lastChrIdx; ii++) {
-                        if (ii % 2 === 0) {
-                            aNormal.data[ii] = flip;
-                        } else {
-                            aNormal.data[ii] = vertical;
-                        }
+                    for (let ii = firstChrIdx / 2; ii < lastChrIdx / 2; ii++) {
+                        aNormal.data[ii] = 2 * flip + vertical;
                     }
 
                     current = pickingId[i];
