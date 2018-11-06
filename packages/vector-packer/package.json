@@ -8,8 +8,6 @@
   "private": true,
   "scripts": {
     "lint": "eslint src/**/*.js test/**/*.js",
-    "build": "rollup -c rollup.config.js",
-    "dev": "rollup -w -c rollup.config.js",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run"
   },
