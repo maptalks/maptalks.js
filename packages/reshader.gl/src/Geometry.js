@@ -62,11 +62,9 @@ export default class Geometry {
             return this;
         }
         let buffer;
-        if (Array.isArray(buf) || Array.isArray(buf.data)) {
-            this.data[name] = data;
-        } else if (buf.buffer && buf.buffer.destroy) {
+        this.data[name] = data;
+        if (buf.buffer && buf.buffer.destroy) {
             buffer = buf;
-            this.data[name] = data;
         }
         if (name === this.desc.positionAttribute) {
             this.updateBoundingBox();
