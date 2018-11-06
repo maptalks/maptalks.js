@@ -57,9 +57,17 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, fontScale, scales
             currentSegmentDistance = prev.dist(current) / scales[i];
         }
         if (miss) {
-            out[0] = out[3] = glyphOffset;
-            out[1] = out[4] = quad.glyphOffset[1] * fontScale + dy * dir;
-            out[2] = out[5] = 0;
+            if (i === 0) {
+                //如果第一个scale（主级别）就miss，不做任何处理直接返回
+                out[0] = out[3] = glyphOffset;
+                out[1] = out[4] = quad.glyphOffset[1] * fontScale + dy * dir;
+                out[2] = out[5] = 0;
+                return out;
+            }
+            //如果副级别miss，用主级别代替
+            out[i * 3] = out[0];
+            out[i * 3 + 1] = out[1];
+            out[i * 3 + 2] = out[2];
             continue;
         }
         // The point is on the current segment. Interpolate to find it.

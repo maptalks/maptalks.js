@@ -65,7 +65,7 @@ function createPainterPlugin(type, Painter) {
                 }
                 geometry = tileCache.geometry = painter.createGeometry(data, features, tileInfo);
             }
-            if (!geometry) {
+            if (!geometry || Array.isArray(geometry) && !geometry.length) {
                 return {
                     'redraw' : false
                 };

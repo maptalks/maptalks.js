@@ -48,12 +48,12 @@ function getPackSDFFormat(symbol) {
             {
                 type : Int8Array,
                 width : 2,
-                name : 'aOffset0'
+                name : 'aOffset1'
             },
             {
                 type : Int8Array,
                 width : 2,
-                name : 'aOffset1'
+                name : 'aOffset0'
             },
             {
                 type : Int8Array,
@@ -261,7 +261,7 @@ export default class PointPack extends VectorPack {
         }
         opacity = Math.round(opacity * 255);
         let lineOffset = [dx, dy, 0, dx, dy, 0, dx, dy, 0];
-        const scales = [scale * 2, scale, scale / 2];
+        const scales = [scale, scale * 2, scale / 2];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             const l = quads.length;
@@ -269,12 +269,9 @@ export default class PointPack extends VectorPack {
                 const quad = quads[ii];
                 const flipQuad = quads[l - 1 - ii];
 
-                if (alongLine) {
-                    // debugger
+                if (alongLine && isText) {
                     //TODO icon的逻辑还没有实现
-                    if (isText) {
-                        lineOffset = getLineOffset(lineOffset, anchor, quad, dx, dy, false, size[0] / 24, scales);
-                    }
+                    lineOffset = getLineOffset(lineOffset, anchor, quad, dx, dy, false, size[0] / 24, scales);
                 } else {
                     lineOffset[0] = lineOffset[3] = lineOffset[6] = dx;
                     lineOffset[1] = lineOffset[4] = lineOffset[7] = dy;
