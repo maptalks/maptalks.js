@@ -79,9 +79,6 @@ export function getLineOffset(out, anchor, quad, dx, dy, flip, fontScale, scales
         p._add(prevToCurrent._unit()._perp()._mult(dy * dir));
 
         let segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
-        if (segmentAngle > Math.PI) {
-            segmentAngle -= 2 * Math.PI;
-        }
 
         out[i * 3] = Math.round((p.x - anchor.x) / scales[i]);
         out[i * 3 + 1] = -Math.round((p.y - anchor.y) / scales[i]);

@@ -186,48 +186,66 @@ class TextPainter extends Painter {
 
         const aspectRatio = map.width / map.height;
         const meshes = this.scene.getMeshes();
-        for (let i = 0; i < meshes.length; i++) {
-            const mesh = meshes[i];
+        for (let m = 0; m < meshes.length; m++) {
+            const mesh = meshes[m];
             const geometry = mesh.geometry;
-            const aNormal = geometry.properties.aNormal;
+            const geometryProps = geometry.properties;
+            const aNormal = geometryProps.aNormal;
             if (!aNormal) {
                 continue;
             }
+
             const uniforms = mesh.material.uniforms;
-            const offset = geometry.properties.aOffset1,
+            const offset = geometryProps.aOffset1,
                 //pickingId中是feature序号，相同的pickingId对应着相同的feature
-                pickingId = geometry.properties.aPickingId;
+                pickingId = geometryProps.aPickingId;
             let start = 0, current = pickingId[0];
-            for (let i = 1; i < pickingId.length; i++) {
-                //pickingId发生变化时，找到第一个和最后一个文字的offset
-                if (pickingId[i] !== current || i === pickingId.length - 1) {
-                    const firstChrIdx = start * 2,
-                        lastChrIdx = i === pickingId.length - 1 ? pickingId.length * 2 : i * 2;
-                    //first char's offset
-                    vec3.set(firstPoint, offset[firstChrIdx], offset[firstChrIdx + 1], 0);
-                    //last char's offset
-                    vec3.set(lastPoint, offset[lastChrIdx - 2], offset[lastChrIdx - 1], 0);
-                    vec3.transformMat3(firstPoint, firstPoint, planeMatrix);
-                    vec3.transformMat3(lastPoint, lastPoint, planeMatrix);
-                    let vertical, flip;
-                    if (!uniforms['isVerticalChar']) {
-                        vertical = 0;
-                        flip = firstPoint[0] > lastPoint[0] ? 1 : 0;
-                    } else {
-                        const rise = Math.abs(lastPoint[1] - firstPoint[1]);
-                        const run = Math.abs(lastPoint[0] - firstPoint[0]) * aspectRatio;
-                        if (rise > run) {
-                            vertical = 1;
-                            flip = firstPoint[1] <= lastPoint[1] ? 1 : 0;
-                        } else {
+            //每个文字有四个pickingId
+            for (let i = 0; i < pickingId.length; i += 4) {
+                //pickingId发生变化，新的feature出现
+                if (pickingId[i] !== current || i === pickingId.length - 4) {
+                    const feature = geometryProps.features[current];
+                    const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties),
+                        count = text.length;//文字字符数
+                    const ll = i === pickingId.length - 4 ? pickingId.length : i;
+                    //一个feature中包含多个文字的anchor
+                    //1. 遍历anchor
+                    //2. 读取anchor第一个文字和最后一个文字的位置
+                    //3. 计算flip和vertical的值并设置
+                    for (let ii = start; ii < ll; ii += 4 * count) {
+                        //每个anchor在offset中占 4 * count 位
+                        const firstChrIdx = ii * 2, //第一个文字的offset位置
+                            lastChrIdx = (ii + 4 * count) * 2; //最后一个文字的offset位置
+                        vec3.set(firstPoint, offset[firstChrIdx], offset[firstChrIdx + 1], 0);
+                        vec3.set(lastPoint, offset[lastChrIdx - 2], offset[lastChrIdx - 1], 0);
+                        vec3.transformMat3(firstPoint, firstPoint, planeMatrix);
+                        vec3.transformMat3(lastPoint, lastPoint, planeMatrix);
+                        let vertical, flip;
+                        if (!uniforms['isVerticalChar']) {
                             vertical = 0;
                             flip = firstPoint[0] > lastPoint[0] ? 1 : 0;
+                        } else {
+                            const rise = Math.abs(lastPoint[1] - firstPoint[1]);
+                            const run = Math.abs(lastPoint[0] - firstPoint[0]) * aspectRatio;
+                            flip = firstPoint[0] > lastPoint[0] ? 1 : 0;
+                            if (rise > run) {
+                                vertical = 1;
+                                flip = firstPoint[1] < lastPoint[1] ? 1 : 0;
+                            } else {
+                                vertical = 0;
+                            }
+                        }
+
+                        // flip = 0;
+                        // vertical = firstPoint[0] > lastPoint[0] ? 1 : 0;
+                        // vertical = 1;
+
+                        //更新normal
+                        for (let iii = firstChrIdx / 2; iii < lastChrIdx / 2; iii++) {
+                            aNormal.data[iii] = 2 * flip + vertical;
                         }
                     }
-                    //更新normal
-                    for (let ii = firstChrIdx / 2; ii < lastChrIdx / 2; ii++) {
-                        aNormal.data[ii] = 2 * flip + vertical;
-                    }
+
 
                     current = pickingId[i];
                     start = i;
@@ -300,8 +318,13 @@ class TextPainter extends Painter {
             'textHaloOpacity',
             'isHalo',
             'fadeOpacity',
-            'resolution',
-            'tileResolution',
+            {
+                name : 'zoomScale',
+                type : 'function',
+                fn : function (context, props) {
+                    return props['tileResolution'] / props['resolution'];
+                }
+            },
             'planeMatrix',
             'rotateWithMap',
             'mapRotation',
@@ -336,30 +359,11 @@ class TextPainter extends Painter {
         });
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
+                //TODO 需要创建两个picking对象
                 this._renderer,
                 {
                     vert : pickingVert,
-                    uniforms : [
-                        'cameraToCenterDistance',
-                        {
-                            name : 'projViewModelMatrix',
-                            type : 'function',
-                            fn : function (context, props) {
-                                return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                            }
-                        },
-                        'textPerspectiveRatio',
-                        'canvasSize',
-                        'glyphSize',
-                        'pitchWithMap',
-                        'mapPitch',
-                        'resolution',
-                        'tileResolution',
-                        'planeMatrix',
-                        'rotateWithMap',
-                        'mapRotation',
-                        'tileRatio'
-                    ]
+                    uniforms
                 },
                 this.pickingFBO
             );
@@ -403,3 +407,29 @@ class TextPainter extends Painter {
 }
 
 export default TextPainter;
+
+const contentExpRe = /\{([\w_]+)\}/g;
+/**
+ * Replace variables wrapped by square brackets ({foo}) with actual values in props.
+ * @example
+ *     // will returns 'John is awesome'
+ *     const actual = replaceVariable('{foo} is awesome', {'foo' : 'John'});
+ * @param {String} str      - string to replace
+ * @param {Object} props    - variable value properties
+ * @return {String}
+ * @memberOf StringUtil
+ */
+export function resolveText(str, props) {
+    return str.replace(contentExpRe, function (str, key) {
+        if (!props) {
+            return '';
+        }
+        const value = props[key];
+        if (value === null || value === undefined) {
+            return '';
+        } else if (Array.isArray(value)) {
+            return value.join();
+        }
+        return value;
+    });
+}

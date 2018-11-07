@@ -199,14 +199,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 }
                 const symbols = this.layer.getStyle()[i].style;//TODO 读取所有的symbol
                 const feaIndex = pluginData.styledFeatures;
-                const pFeatures = new Array(feaIndex.length / 2);
+                //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
+                //这样featureIndexes中的序号能从pFeatures取得正确的数据
+                const pFeatures = new Array(features.length);
                 //[feature index, style index]
                 for (let i = 1, l = feaIndex.length; i < l; i += 2) {
                     let feature = features[feaIndex[i - 1]];
                     if (this.layer.options['features'] === 'id' && this.layer.getFeature) {
                         feature = this.layer.getFeature(feature);
                     }
-                    pFeatures[(i - 1) / 2] = {
+                    pFeatures[feaIndex[i - 1]] = {
                         feature : feature,
                         symbol : symbols[feaIndex[i]].symbol
                     };

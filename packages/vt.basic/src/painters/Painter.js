@@ -37,9 +37,8 @@ class Painter {
         if (!packs || !packs.length) {
             return [];
         }
-        const map = this.layer.getMap(),
-            //TODO 3857?
-            res = map.getResolution(tile.z);
+        const sr = this.layer.getSpatialReference(),
+            res = sr.getResolution(tile.z);
         const regl = this.regl;
         let iconAtlas, glyphAtlas;
         if (glData.iconAtlas) {

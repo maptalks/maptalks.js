@@ -1,25 +1,26 @@
 #define RAD 0.0174532925
+#define MAX_PITCH 1.0471975512 //60度
 
 attribute vec3 aPosition;
 attribute vec2 aShape0;
+attribute vec2 aShape1;
 attribute vec2 aTexCoord0;
+attribute vec2 aTexCoord1;
 attribute float aSize;
 attribute float aOpacity;
 attribute vec2 aOffset0;
-attribute float aRotation0;
-attribute vec2 aShape1;
-attribute vec2 aTexCoord1;
 attribute vec2 aOffset1;
 attribute vec2 aOffset2;
+attribute float aRotation0;
 attribute float aRotation1;
 attribute float aRotation2;
 attribute float aNormal;//flip * 2 + vertical
 
-uniform float tileResolution;
-uniform float resolution;
+uniform float zoomScale;
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
+uniform float mapPitch;
 
 uniform vec2 texSize;
 uniform vec2 canvasSize;
@@ -43,30 +44,30 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float scale = tileResolution / resolution;
     //t is the interpolation
     float t, rotation0, rotation1;
     vec2 offset0, offset1;
 
-    if (scale <= 1.0) {
-        t = clamp((scale - 0.5) / 0.5, 0.0, 1.0);
+    if (zoomScale <= 1.0) {
+        t = clamp((zoomScale - 0.5) / 0.5, 0.0, 1.0);
         offset0 = aOffset0;
         offset1 = aOffset1;
         rotation0 = aRotation0;
         rotation1 = aRotation1;
     } else {
-        t = clamp(scale - 1.0, 0.0, 1.0);
+        t = clamp(zoomScale - 1.0, 0.0, 1.0);
         offset0 = aOffset1;
         offset1 = aOffset2;
         rotation0 = aRotation1;
         rotation1 = aRotation2;
     }
     float textRotation = mix(rotation0, rotation1, t);
+    // textRotation = 0.0;
     float flip = float(int(aNormal) / 2);
     float vertical = mod(aNormal, 2.0);
     textRotation += mix(0.0, 180.0, flip);
     textRotation += mix(0.0, -90.0, vertical);
-    textRotation = textRotation * RAD;
+    textRotation *= RAD;
 
     float angleSin = sin(textRotation);
     float angleCos = cos(textRotation);
@@ -80,7 +81,9 @@ void main() {
     shape = shape / glyphSize * aSize;
 
     offset = (shape + offset) * vec2(1.0, -1.0);
-    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / scale * vGammaScale * perspectiveRatio, 1.0);
+    float pitchScale = 1.0 + clamp(1.5 * (mapPitch - MAX_PITCH), 0.0, 10.0);
+    //乘以vGammaScale可以抵消相机近大远小的透视效果
+    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * vGammaScale * perspectiveRatio * pitchScale, 1.0);
 
     vTexCoord = texCoord / texSize;
     vSize = aSize;
