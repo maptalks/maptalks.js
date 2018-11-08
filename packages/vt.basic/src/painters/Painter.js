@@ -69,9 +69,6 @@ class Painter {
         const geometries = [];
         for (let i = 0; i < packs.length; i++) {
             const data = extend({}, packs[i].data);
-            if (!data.aPosition.length) {
-                continue;
-            }
             data.aPickingId = data.featureIndexes;
             delete data.featureIndexes;
             const geometry = new reshader.Geometry(data, packs[i].indices);
