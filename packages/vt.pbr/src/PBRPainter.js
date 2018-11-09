@@ -52,19 +52,24 @@ class PBRPainter {
         return geometry;
     }
 
-    addMesh(geometry, transform) {
+    createMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this.material);
         mesh.setLocalTransform(transform);
+
+        return mesh;
+    }
+
+    addMesh(mesh) {
+        const geometry = mesh.geometry;
         this.scene.addMesh(mesh);
         if (this.shadowScene) {
             // 如果shadow mesh已经存在， 则优先用它
             const shadowMesh = geometry.shadow || mesh;
             if (shadowMesh !== mesh) {
-                shadowMesh.forEach(m => m.setLocalTransform(transform));
+                shadowMesh.forEach(m => m.setLocalTransform(mesh.localTransform));
             }
             this.shadowScene.addMesh(shadowMesh);
         }
-        return mesh;
     }
 
     render() {
