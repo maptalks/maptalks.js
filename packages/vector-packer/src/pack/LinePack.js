@@ -103,7 +103,6 @@ export default class LinePack extends VectorPack {
             cap = symbol['lineCap'] || 'butt', //butt, round, square
             miterLimit = 2,
             roundLimit = 1.05;
-        this.offset = this.data.length / this.formatWidth;
         const feature = line.feature,
             isPolygon = feature.type === 3, //POLYGON
             lines = feature.geometry;
@@ -112,6 +111,8 @@ export default class LinePack extends VectorPack {
             this.elements = [];
         }
         for (let i = 0; i < lines.length; i++) {
+            //element offset when calling this.addElements in _addLine
+            this.offset = this.data.length / this.formatWidth;
             this._addLine(lines[i], feature, join, cap, miterLimit, roundLimit);
             if (isPolygon) {
                 this._filterPolygonEdges(elements);
