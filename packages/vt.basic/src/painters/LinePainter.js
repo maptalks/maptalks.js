@@ -150,29 +150,30 @@ class LinePainter extends Painter {
             ],
             extraCommandProps : {
                 viewport, scissor,
-                stencil: {
-                    enable: true,
-                    mask : 0xFF,
-                    func: {
-                        cmp: '<',
-                        ref: (context, props) => {
-                            return props.level;
-                        },
-                        mask: 0xFF
-                    },
-                    opFront: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    },
-                    opBack: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
-                },
+                // stencil: {
+                //     enable: true,
+                //     mask : 0xFF,
+                //     func: {
+                //         cmp: '<',
+                //         ref: (context, props) => {
+                //             return props.level;
+                //         },
+                //         mask: 0xFF
+                //     },
+                //     opFront: {
+                //         fail: 'keep',
+                //         zfail: 'keep',
+                //         zpass: 'replace'
+                //     },
+                //     opBack: {
+                //         fail: 'keep',
+                //         zfail: 'keep',
+                //         zpass: 'replace'
+                //     }
+                // },
                 depth : {
-                    enable : this.sceneConfig.depth === undefined ? true : this.sceneConfig.depth,
+                    enable : true,
+                    func : this.sceneConfig.depthFunc || 'always'
                 },
                 blend: {
                     enable: true,

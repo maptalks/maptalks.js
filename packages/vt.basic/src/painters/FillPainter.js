@@ -98,7 +98,11 @@ class FillPainter extends Painter {
                 },
             ],
             extraCommandProps : {
-                viewport, scissor
+                viewport, scissor,
+                depth : {
+                    enable : true,
+                    func : this.sceneConfig.depthFunc || 'always'
+                }
             }
         });
         if (this.pickingFBO) {

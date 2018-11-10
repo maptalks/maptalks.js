@@ -61,7 +61,6 @@ function getPackSDFFormat(symbol) {
                 name : 'aOffset2'
             },
             {
-                //TODO 更小的类型？
                 type : Int16Array,
                 width : 1,
                 name : 'aRotation0'
@@ -115,7 +114,6 @@ function getPackSDFFormat(symbol) {
                 name : 'aOffset0'
             },
             {
-                //TODO 更小的类型？
                 type : Int16Array,
                 width : 1,
                 name : 'aRotation0'
