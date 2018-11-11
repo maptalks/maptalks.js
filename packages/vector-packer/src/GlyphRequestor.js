@@ -49,7 +49,7 @@ export default class GlyphRequestor {
             } else if (/light/i.test(textWeight)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new TinySDF(24, 3, 12, .24, fontFamily, fontWeight);
+            tinySDF = entry.tinySDF = new TinySDF(24, 3, 8, .25, fontFamily, fontWeight);
         }
 
         return {
@@ -64,7 +64,7 @@ export default class GlyphRequestor {
                 height: 24,
                 left: 0,
                 top: -8,
-                advance: 24
+                advance: 26
             }
         };
     }

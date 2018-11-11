@@ -66,7 +66,7 @@ void main() {
     gl_Position.xy += (shape + offset) * perspectiveRatio * gl_Position.w;
 
     vTexCoord = texCoord / texSize;
-    vGammaScale = distance / cameraToCenterDistance;
+    vGammaScale = distance / cameraToCenterDistance + mapPitch + 0.5;
 
     vSize = aSize;
 }

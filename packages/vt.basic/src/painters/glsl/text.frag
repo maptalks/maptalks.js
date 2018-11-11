@@ -9,9 +9,9 @@ uniform vec4 textFill;
 uniform float textOpacity;
 uniform highp float gammaScale;
 uniform int isHalo;
-uniform float textHaloRadius;
+uniform highp float textHaloRadius;
 uniform vec4 textHaloFill;
-uniform float textHaloBlur;
+uniform highp float textHaloBlur;
 uniform float textHaloOpacity;
 
 uniform float fadeOpacity;
@@ -21,10 +21,7 @@ varying float vSize;
 varying float vGammaScale;
 
 void main() {
-    bool isText = true;
-    float size = vSize;
-
-    float fontScale = isText ? size / 24.0 : size;
+    float fontScale = vSize / 24.0;
 
     lowp vec4 color = textFill;
     highp float gamma = EDGE_GAMMA / (fontScale * gammaScale);
@@ -36,10 +33,10 @@ void main() {
     }
 
     float dist = texture2D(texture, vTexCoord).a;
-    highp float gammaScaled = gamma * vGammaScale; // 0.5 is a magic number, don't ask me
+    highp float gammaScaled = gamma * vGammaScale;
 
-    float alpha = smoothstep(buff - gammaScaled, buff + gammaScaled, dist);
+    float alpha = clamp(smoothstep(buff - gammaScaled, buff + gammaScaled, dist) * 1.2, 0.0, 1.0);
+    // float alpha = smoothstep(buff - gammaScaled, buff + gammaScaled, dist);
     // gl_FragColor = vec4(textFill.rgb, alpha * textFill.a);
     gl_FragColor = color * (alpha * textOpacity * fadeOpacity);
-    //TODO gamma 的值有些过大
 }

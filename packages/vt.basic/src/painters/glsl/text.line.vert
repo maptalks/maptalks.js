@@ -35,7 +35,7 @@ void main() {
     vec4 pos = projViewModelMatrix * vec4(aPosition, 1.0);
     float distance = pos.w;
 
-    vGammaScale = distance / cameraToCenterDistance;
+    float cameraScale = distance / cameraToCenterDistance;
 
     float distanceRatio = (1.0 - cameraToCenterDistance / distance) * textPerspectiveRatio;
     //通过distance动态调整大小
@@ -81,10 +81,11 @@ void main() {
     shape = shape / glyphSize * aSize;
 
     offset = (shape + offset) * vec2(1.0, -1.0);
-    float pitchScale = 1.0 + clamp(1.5 * (mapPitch - MAX_PITCH), 0.0, 10.0);
-    //乘以vGammaScale可以抵消相机近大远小的透视效果
-    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * vGammaScale * perspectiveRatio * pitchScale, 1.0);
 
+    //乘以cameraScale可以抵消相机近大远小的透视效果
+    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+
+    vGammaScale = cameraScale + mapPitch / 2.0 + 0.5;
     vTexCoord = texCoord / texSize;
     vSize = aSize;
 }

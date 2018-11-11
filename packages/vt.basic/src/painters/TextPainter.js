@@ -50,7 +50,7 @@ class TextPainter extends Painter {
         const meshes = [];
         for (let i = 0; i < packMeshes.length; i++) {
             let geometry = geometries[packMeshes[i].pack];
-            if (geometry.data.aPosition.length === 0) {
+            if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
                 continue;
             }
             const symbol = packMeshes[i].symbol;
@@ -99,6 +99,10 @@ class TextPainter extends Painter {
                 }
             }
 
+            if (symbol['textHaloBlur']) {
+                uniforms.textHaloBlur = symbol['textHaloBlur'];
+            }
+
             if (symbol['textHaloRadius']) {
                 uniforms.textHaloRadius = symbol['textHaloRadius'];
                 uniforms.isHalo = 1;
@@ -134,7 +138,7 @@ class TextPainter extends Painter {
             mesh.setLocalTransform(transform);
             meshes.push(mesh);
 
-            if (uniforms.isHalo) {
+            if (symbol['textHaloRadius']) {
                 uniforms.isHalo = 0;
                 const material = new reshader.Material(uniforms, defaultUniforms);
                 const mesh = new reshader.Mesh(geometry, material, {
@@ -336,7 +340,9 @@ class TextPainter extends Painter {
             blend: {
                 enable: true,
                 func: {
-                    src: 'src alpha',
+                    // src: 'src alpha',
+                    // dst: 'one minus src alpha'
+                    src : 'one',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
@@ -399,7 +405,8 @@ class TextPainter extends Painter {
             projViewMatrix,
             cameraToCenterDistance, canvasSize,
             glyphSize : 24,
-            gammaScale : 2,
+            // gammaScale : 0.64,
+            gammaScale : 1.0,
             resolution : map.getResolution(),
             planeMatrix
         };

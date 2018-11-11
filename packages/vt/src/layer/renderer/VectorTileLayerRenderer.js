@@ -82,10 +82,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const attributes = layer.options.glOptions || {
             alpha: true,
             depth: true,
-            antialias: true,
+            // premultipliedAlpha : false
         };
         attributes.preserveDrawingBuffer = true;
-        attributes.stencil = !!layer.options['stencil'];
+        attributes.stencil = true;
         this.glOptions = attributes;
         this.gl = this.gl || this._createGLContext(this.canvas, attributes);
         // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
@@ -210,7 +210,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                     }
                     pFeatures[feaIndex[i - 1]] = {
                         feature : feature,
-                        symbol : symbols[feaIndex[i]].symbol
+                        //TODO 为什么会出现空指针异常？等待王俊的重现代码
+                        symbol : symbols[feaIndex[i]] ? symbols[feaIndex[i]].symbol : null
                     };
                 }
                 delete pluginData.styledFeatures;
