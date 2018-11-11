@@ -60,15 +60,16 @@ function getPackSDFFormat(symbol) {
                 width : 2,
                 name : 'aOffset2'
             },
-            {
-                type : Int16Array,
-                width : 1,
-                name : 'aRotation0'
-            },
+
             {
                 type : Int16Array,
                 width : 1,
                 name : 'aRotation1'
+            },
+            {
+                type : Int16Array,
+                width : 1,
+                name : 'aRotation0'
             },
             {
                 type : Int16Array,
