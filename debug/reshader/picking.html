@@ -10,6 +10,7 @@
   <script src="../../node_modules/maptalks/dist/maptalks.js" type="text/javascript"></script>
   <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
   <body>
+    <div id="info"></div>
     <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
@@ -62,6 +63,9 @@
 
         const renderer = new reshader.Renderer(regl);
 
+        //picking对象所需的顶点着色器代码
+        //它的主要逻辑与绘制renderer中的顶点着色器相同
+        //但需要引入fbo_picking_vert代码后，设置顶点的深度值
         const pickingVert = `
             attribute vec3 aPosition;
             uniform mat4 projViewModelMatrix;
@@ -88,7 +92,6 @@
                             name : 'projViewModelMatrix',
                             type : 'function',
                             fn : function (context, props) {
-                                //model是自动设置的值，来源于mesh的localTransform
                                 return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                             }
                         }
@@ -120,17 +123,25 @@
 
             //渲染picking帧缓冲
             picking.render(scene.getMeshes(), uniforms);
+
+            //点选
+            //meshId 是 mesh 在 meshes 中的序号
+            //pickingId 是 被点击到的片元的 aPickingId 值
+            //point 是命中点的世界坐标值
             const { meshId, pickingId, point } = picking.pick(
-                canvas.width / 2,
-                canvas.height / 2,
-                uniforms,
+                canvas.width / 2,   // 屏幕坐标 x轴的值
+                canvas.height / 2,  // 屏幕坐标 y轴的值
+                uniforms,           // pickingVert中所需的uniforms值
                 {
-                    viewMatrix : viewMatrix,
+                    viewMatrix : viewMatrix,  //viewMatrix和projMatrix用于计算点的世界坐标值
                     projMatrix : projMatrix,
                     returnPoint : true
                 }
             );
-            console.log(meshId, pickingId, point);
+            document.getElementById('info').innerHTML = '屏幕中心点选取物<br>'+
+                'meshId：' + meshId +
+                '<br>pickingId : ' + pickingId +
+                '<br>坐标：' + point;
         }
 
         function getScene() {
