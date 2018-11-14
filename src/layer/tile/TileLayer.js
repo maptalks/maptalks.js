@@ -275,32 +275,32 @@ class TileLayer extends Layer {
     _getTiles(z, containerExtent, maskID) {
         // rendWhenReady = false;
         const map = this.getMap();
-        if (!map || !this.isVisible() || !map.width || !map.height) {
-            return null;
-        }
-        const minZoom = this.getMinZoom(),
-            maxZoom = this.getMaxZoom();
-        if (!isNil(minZoom) && z < minZoom ||
-            !isNil(maxZoom) && z > maxZoom) {
-            return null;
-        }
-        const tileConfig = this._getTileConfig();
-        if (!tileConfig) {
-            return null;
-        }
-
-        const zoom = z,
-            sr = this.getSpatialReference(),
-            mapSR = map.getSpatialReference(),
-            res = sr.getResolution(zoom);
+        const zoom = z;
+        const offset = this._getTileOffset(zoom),
+            hasOffset = offset[0] || offset[1];
         const emptyGrid = {
             'zoom' : zoom,
             'extent' : null,
+            'offset' : offset,
             'tiles' : []
         };
+        const minZoom = this.getMinZoom(),
+            maxZoom = this.getMaxZoom();
+        if (!map || !this.isVisible() || !map.width || !map.height) {
+            return emptyGrid;
+        }
+        if (!isNil(minZoom) && z < minZoom ||
+            !isNil(maxZoom) && z > maxZoom) {
+            return emptyGrid;
+        }
+        const tileConfig = this._getTileConfig();
+        if (!tileConfig) {
+            return emptyGrid;
+        }
 
-        const offset = this._getTileOffset(zoom),
-            hasOffset = offset[0] || offset[1];
+        const sr = this.getSpatialReference(),
+            mapSR = map.getSpatialReference(),
+            res = sr.getResolution(zoom);
 
         const extent2d = containerExtent.convertTo(c => map._containerPointToPoint(c))._add(offset),
             innerExtent2D = this._getInnerExtent(zoom, containerExtent, extent2d);

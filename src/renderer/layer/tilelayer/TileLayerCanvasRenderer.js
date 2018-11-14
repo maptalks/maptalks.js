@@ -146,7 +146,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!loadingCount) {
             if (!loading) {
                 //redraw to remove parent tiles if any left in last paint
-                if (!map.isAnimating() && this._parentTiles.length > 0) {
+                if (!map.isAnimating() && (this._parentTiles.length || this._childTiles.length)) {
                     this._parentTiles = [];
                     this._childTiles = [];
                     this.setToRedraw();
