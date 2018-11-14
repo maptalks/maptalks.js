@@ -1,12 +1,12 @@
 precision mediump float;
 
-varying vec3 worldPos;
+varying vec3 vWorldPos;
 
 uniform samplerCube cubeMap;
 
 void main()
 {
-    vec3 envColor = textureCube(cubeMap, worldPos).rgb;
+    vec3 envColor = textureCube(cubeMap, vWorldPos).rgb;
 
     #ifdef USE_HDR
     envColor = envColor / (envColor + vec3(1.0));

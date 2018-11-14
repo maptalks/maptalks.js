@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Cube</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <script src="../../../node_modules/maptalks/dist/maptalks.js" type="text/javascript"></script>
+  <script src="../../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <script type="module">
+
+        import cubeData from '../common/cube.js';
+        import sphereData from '../common/sphere.js';
+
+        const { createREGL, mat4, reshader } = maptalksgl;
+
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_texture_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod'
+            ]
+        });
+
+        const lightPositions = [
+            [0.7,  0.2,  2.0],
+            [2.3, -3.0, 2.0],
+            [0.0,  5.0, 2.0],
+            [0.0,  0.0, 2.0]
+        ];
+
+        const lightColors = [
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0]
+        ];
+
+        let iblMaps;
+        let shader, meshes, scene;
+
+        const loader = new reshader.ResourceLoader(regl.texture(2));
+        const renderer = new reshader.Renderer(regl);
+        const camPos = [0, 0, 6];
+
+        main();
+
+//----------------------------------------------------------------------------------------------------
+
+        function main() {
+
+            //载入环境光纹理
+            const hdr = new reshader.Texture2D(
+                {
+                    url : './resources/env.hdr',
+                    arrayBuffer : true,
+                    hdr : true,
+                    type : 'float',
+                    format : 'rgba',
+                    flipY : true
+                },
+                loader
+            );
+            if (!hdr.isReady()) {
+                loader.on('complete', function () {
+                    if (hdr.isReady()) {
+                        //环境光纹理载入，重新生成ibl纹理
+                        iblMaps = createMaps(hdr);
+                    }
+                    render();
+                });
+            }
+
+            //生成ibl纹理
+            iblMaps = createMaps(hdr);
+
+            render();
+        }
+
+
+        function render() {
+            //生成相机矩阵
+            const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
+            //绘制球体
+            drawSpheres(viewMatrix, projMatrix);
+            //绘制天空盒
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+        }
+
+
+
+        function drawSpheres(viewMatrix, projMatrix) {
+            if (!shader) {
+                //创建shader
+                shader = new reshader.MeshShader({
+                    vert : reshader.pbr.StandardVert,
+                    frag : reshader.pbr.StandardFrag,
+                    uniforms : [
+                        'camPos',
+                        'dirLightDirections[1]', 'dirLightColors[1]',
+                        'ambientColor', 'ambientIntensity',
+                        'irradianceMap', 'prefilterMap', 'brdfLUT',
+                        {
+                            name : 'projViewModelMatrix',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const projViewModelMatrix = [];
+                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                                return projViewModelMatrix;
+                            }
+                        },
+                        {
+                            name : 'viewModelMatrix',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const viewModelMatrix = [];
+                                mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                                return viewModelMatrix;
+                            }
+                        }
+                    ],
+                    defines : {
+                        // 'NUM_OF_SPOT_LIGHTS' : '(4)',
+                        // 'USE_SPOT_LIGHT' : 1,
+                        'NUM_OF_DIR_LIGHTS' : '(1)',
+                        'USE_DIR_LIGHT' : 1,
+                        'USE_AMBIENT_CUBEMAP' : 1,
+                        'SUPPORT_TEXTURE_LOD' : 1
+                    }
+                });
+            }
+            if (!meshes) {
+                meshes = [];
+                //创建纹理
+                const material = new reshader.pbr.StandardMaterial({
+                    metallic : 1,
+                    roughness : 1,
+                    albedoColor : [1, 1, 1],
+                    albedoMap : new reshader.Texture2D({
+                        url : './resources/rusted_iron/albedo.png'
+                    }, loader),
+                    normalMap : new reshader.Texture2D({
+                        url : './resources/rusted_iron/normal.png'
+                    }, loader),
+                    occulusionRoughnessMetallicMap : new reshader.Texture2D({
+                        url : './resources/rusted_iron/occulusionRoughnessMetallicMap-1024.png'
+                    }, loader)
+                });
+
+
+                const { data, indices } = generateSphereData();
+
+                for (let i = 0; i <= 5; i++) {
+                    for (let j = 0; j <= 5; j++) {
+                        const modelMatrix = mat4.identity([]);
+                        mat4.translate(modelMatrix, modelMatrix, [i - 2.5, j - 2.5, 0]);
+                        mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
+                        const mesh = new reshader.Mesh(new reshader.Geometry(data, indices), material);
+                        mesh.setLocalTransform(modelMatrix);
+                        meshes.push(mesh);
+                    }
+                }
+                scene = new reshader.Scene(meshes);
+            }
+            //shader的全局uniforms
+            renderer.render(
+                shader,
+                {
+                    viewMatrix, projMatrix, camPos,
+
+                    irradianceMap : iblMaps.irradianceMap,
+                    prefilterMap : iblMaps.prefilterMap,
+                    brdfLUT : iblMaps.brdfLUT,
+                    ambientColor : [0.01, 0.01, 0.01],
+                    ambientIntensity : 1,
+                    dirLightDirections : [
+                        reshader.Util.normalize([], [0, 1, 1])
+                    ],
+                    dirLightColors : [
+                        [1, 1, 1]
+                    ],
+                },
+                scene
+            );
+
+        }
+
+        function generateSphereData() {
+            const data = {
+                'aPosition' : sphereData.vertices,
+                'aNormal' : sphereData.normals,
+                'aTexCoord' : sphereData.textures
+            };
+
+            const indices = sphereData.indices;
+            return { data, indices };
+        }
+
+        function createMaps(hdr) {
+            return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+                envTexture : hdr.getREGLTexture(regl)
+            });
+        }
+
+        function getViewProjection(cameraPos, aspect) {
+            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 1, 200);
+            const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            return {
+                viewMatrix,
+                projMatrix
+            };
+        }
+
+
+    </script>
+  </body>
+</html>

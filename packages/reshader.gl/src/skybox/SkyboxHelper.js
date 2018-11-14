@@ -20,7 +20,7 @@ export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameB
     config = config || {
         vert : skyboxVS,
         attributes : {
-            'position' : skyboxData.vertices
+            'aPosition' : skyboxData.vertices
         },
         uniforms : {
             'cubeMap' : regl.prop('cubeMap'),
