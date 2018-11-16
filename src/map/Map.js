@@ -41,6 +41,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
+ * @property {Boolean} [options.fixCenterOnResize=false]        - whether to fix map center when map is resized
  *
  * @property {Number}  [options.maxPitch=80]                    - max pitch
  * @property {Number}  [options.maxVisualPitch=60]              - the max pitch to be visual
@@ -108,6 +109,7 @@ const options = {
     'maxZoom': null,
     'minZoom': null,
     'maxExtent': null,
+    'fixCenterOnResize' : false,
 
     'checkSize': true,
 
@@ -1366,10 +1368,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const center = this.getCenter();
         this._updateMapSize(watched);
-        const resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
-        this._offsetCenterByPixel(resizeOffset);
-        // when size changed, center is updated but panel's offset remains.
-        this._mapViewCoord = this._getPrjCenter();
+
+        if (!this.options['fixCenterOnResize']) {
+            const resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
+            this._offsetCenterByPixel(resizeOffset);
+            // when size changed, center is updated but panel's offset remains.
+            this._mapViewCoord = this._getPrjCenter();
+        }
+
         const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
         if (justStart || hided) {
