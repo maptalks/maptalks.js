@@ -7,13 +7,13 @@ import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 import { evaluate } from '../style/Util';
 import { getGlyphQuads, getIconQuads } from './util/quads';
-import { getLineOffset } from './util/line_offset';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
 
 function getPackSDFFormat(symbol) {
     if (symbol['textPlacement'] === 'line') {
+        //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
         return [
             {
                 type : Int16Array,
@@ -31,11 +31,6 @@ function getPackSDFFormat(symbol) {
                 name : 'aTexCoord0'
             },
             {
-                type : Uint8Array,
-                width : 1,
-                name : 'aOpacity'
-            },
-            {
                 type : Int16Array,
                 width : 2,
                 name : 'aShape1'
@@ -46,35 +41,9 @@ function getPackSDFFormat(symbol) {
                 name : 'aTexCoord1'
             },
             {
-                type : Int8Array,
-                width : 2,
-                name : 'aOffset1'
-            },
-            {
-                type : Int8Array,
-                width : 2,
-                name : 'aOffset0'
-            },
-            {
-                type : Int8Array,
-                width : 2,
-                name : 'aOffset2'
-            },
-
-            {
-                type : Int16Array,
-                width : 1,
-                name : 'aRotation1'
-            },
-            {
-                type : Int16Array,
-                width : 1,
-                name : 'aRotation0'
-            },
-            {
-                type : Int16Array,
-                width : 1,
-                name : 'aRotation2'
+                type : Uint16Array,
+                width : 3,
+                name : 'aSegment'
             },
             {
                 type : Uint8Array,
@@ -86,6 +55,16 @@ function getPackSDFFormat(symbol) {
                 width : 3,
                 name : 'aColor'
             },
+            {
+                type : Int8Array,
+                width : 2,
+                name : 'aOffset'
+            },
+            {
+                type : Int16Array,
+                width : 1,
+                name : 'aRotation'
+            }
         ];
     } else {
         return [
@@ -107,21 +86,6 @@ function getPackSDFFormat(symbol) {
             {
                 type : Uint8Array,
                 width : 1,
-                name : 'aOpacity'
-            },
-            {
-                type : Int8Array,
-                width : 2,
-                name : 'aOffset0'
-            },
-            {
-                type : Int16Array,
-                width : 1,
-                name : 'aRotation0'
-            },
-            {
-                type : Uint8Array,
-                width : 1,
                 name : 'aSize'
             },
             {
@@ -129,6 +93,16 @@ function getPackSDFFormat(symbol) {
                 width : 3,
                 name : 'aColor'
             },
+            {
+                type : Int8Array,
+                width : 2,
+                name : 'aOffset'
+            },
+            {
+                type : Int16Array,
+                width : 1,
+                name : 'aRotation'
+            }
         ];
     }
 }
@@ -151,24 +125,19 @@ function getPackMarkerFormat() {
             name : 'aTexCoord'
         },
         {
+            type : Uint8Array,
+            width : 2,
+            name : 'aSize'
+        },
+        {
             type : Int8Array,
             width : 2,
             name : 'aOffset'
         },
         {
-            type : Uint8Array,
-            width : 1,
-            name : 'aOpacity'
-        },
-        {
             type : Float32Array,
             width : 1,
             name : 'aRotation'
-        },
-        {
-            type : Uint8Array,
-            width : 2,
-            name : 'aSize'
         }
     ];
 }
@@ -216,6 +185,17 @@ export default class PointPack extends VectorPack {
         return isText ? getPackSDFFormat(symbol) : getPackMarkerFormat();
     }
 
+    createDataPack() {
+        this.lineVertex = [];
+        const pack = super.createDataPack.apply(this, arguments);
+        if (!pack) {
+            return null;
+        }
+        pack.lineVertex = new Int16Array(this.lineVertex);
+        pack.buffers.push(pack.lineVertex.buffer);
+        return pack;
+    }
+
     placeVector(point, scale, formatWidth) {
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
         if (!shape) {
@@ -235,50 +215,30 @@ export default class PointPack extends VectorPack {
         const size = point.size;
         const alongLine = point.symbol['textPlacement'] === 'line' || point.symbol['markerPlacement'] === 'line';
         const isText = symbol['textName'] !== undefined;
-        let quads, dx, dy, rotation, opacity, color;
+        let quads, dx, dy, rotation, color;
+
         if (isText) {
             dx = evaluate(symbol['textDx'], properties) || 0;
             dy = evaluate(symbol['textDy'], properties) || 0;
             const textFill = evaluate(symbol['textFill'], properties) || '#000';
             rotation = evaluate(symbol['textRotation'], properties) || 0;
             color = Color(textFill || '#000').array();
-            opacity = evaluate(symbol['textOpacity'], properties);
-            if (opacity === undefined) {
-                opacity = 1;
-            }
             const font = point.getIconAndGlyph().glyph.font;
             quads = getGlyphQuads(shape.horizontal, alongLine, this.glyphAtlas.positions[font]);
         } else {
             dx = evaluate(symbol['markerDx'], properties) || 0;
             dy = evaluate(symbol['markerDy'], properties) || 0;
             rotation = evaluate(symbol['markerRotation'], properties) || 0;
-            opacity = evaluate(symbol['markerOpacity'], properties);
-            if (opacity === undefined) {
-                opacity = 1;
-            }
             quads = getIconQuads(shape);
         }
-        opacity = Math.round(opacity * 255);
-        let lineOffset = [dx, dy, 0, dx, dy, 0, dx, dy, 0];
-        const scales = [scale, scale * 2, scale / 2];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             const l = quads.length;
             for (let ii = 0; ii < l; ii++) {
                 const quad = quads[ii];
                 const flipQuad = quads[l - 1 - ii];
-
-                if (alongLine && isText) {
-                    //TODO icon的逻辑还没有实现
-                    lineOffset = getLineOffset(lineOffset, anchor, quad, dx, dy, false, size[0] / 24, scales);
-                } else {
-                    lineOffset[0] = lineOffset[3] = lineOffset[6] = dx;
-                    lineOffset[1] = lineOffset[4] = lineOffset[7] = dy;
-                }
-                const y = quad.glyphOffset[1];
-                lineOffset[1] += y;
-                lineOffset[4] += y;
-                lineOffset[7] += y;
+                const y = quad.glyphOffset[1] + dy;
+                //把line的端点存到line vertex array里
 
                 const { tl, tr, bl, br, tex } = quad;
                 //char's quad if flipped
@@ -290,40 +250,40 @@ export default class PointPack extends VectorPack {
                     tl.x, tl.y,
                     tex.x, tex.y + tex.h
                 );
-                this._fillData(data, opacity, isText, symbol,
+                this._fillData(data, isText, symbol, dx, y,
                     tl1.x, tl1.y,
                     tex1.x, tex1.y + tex1.h,
-                    lineOffset, rotation, size, color);
+                    rotation, size, color, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     tr.x, tr.y,
                     tex.x + tex.w, tex.y + tex.h
                 );
-                this._fillData(data, opacity, isText, symbol,
+                this._fillData(data, isText, symbol, dx, y,
                     tr1.x, tr1.y,
                     tex1.x + tex1.w, tex1.y + tex1.h,
-                    lineOffset, rotation, size, color);
+                    rotation, size, color, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     bl.x, bl.y,
                     tex.x, tex.y
                 );
-                this._fillData(data, opacity, isText, symbol,
+                this._fillData(data, isText, symbol, dx, y,
                     bl1.x, bl1.y,
                     tex1.x, tex1.y,
-                    lineOffset, rotation, size, color);
+                    rotation, size, color, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     br.x, br.y,
                     tex.x + tex.w, tex.y
                 );
-                this._fillData(data, opacity, isText, symbol,
+                this._fillData(data, isText, symbol, dx, y,
                     br1.x, br1.y,
                     tex1.x + tex1.w, tex1.y,
-                    lineOffset, rotation, size, color);
+                    rotation, size, color, anchor);
 
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
@@ -341,38 +301,33 @@ export default class PointPack extends VectorPack {
     /**
      *
      * @param {Number[]} data
-     * @param {Number} opacity
      * @param {Boolean} isText
      * @param {Object} symbol
+     * @param {Number} dx
+     * @param {Number} dy
      * @param {Number} tx - flip quad's x offset
      * @param {Number} ty - flip quad's y offset
      * @param {Number} texx - flip quad's tex coord x
      * @param {Number} texy - flip quad's tex coord y
-     * @param {Number} lineOffset
      * @param {Number} rotation
      * @param {Number[]} size
      * @param {Number[]} color
      */
-    _fillData(data, opacity, isText, symbol, tx, ty, texx, texy, lineOffset, rotation, size, color) {
-        data.push(opacity);
+    _fillData(data, isText, symbol, dx, dy, tx, ty, texx, texy, rotation, size, color, anchor) {
         if (isText) {
             if (symbol['textPlacement'] === 'line') {
                 data.push(
-                    tx, ty, texx, texy,
-                    //   minDx         minDy                                         maxDx        maxDy
-                    lineOffset[0], lineOffset[1], lineOffset[3], lineOffset[4], lineOffset[6], lineOffset[7],
-                    //     minRotation               maxRotation
-                    rotation + lineOffset[2], rotation + lineOffset[5], rotation + lineOffset[8]
+                    tx, ty, texx, texy
                 );
-            } else {
-                data.push(lineOffset[0], lineOffset[1], rotation);
+                const startIndex = this.lineVertex.length / 3;
+                data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
             }
             data.push(size[0]);
             data.push(color[0], color[1], color[2]);
         } else {
-            data.push(lineOffset[0], lineOffset[1], rotation);
             data.push(size[0], size[1]);
         }
+        data.push(dx, dy, rotation);
     }
 
     _getAnchors(point, shape, scale) {
@@ -410,6 +365,10 @@ export default class PointPack extends VectorPack {
                         EXTENT || Infinity
                     )
                 );
+                for (let ii = 0; ii < lines[i].length; ii++) {
+                    //TODO 0是预留的高度值
+                    this.lineVertex.push(lines[i][ii].x, lines[i][ii].y, 0);
+                }
             }
 
         } else if (type === 3) {

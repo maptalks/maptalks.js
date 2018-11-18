@@ -5,8 +5,8 @@ attribute vec2 aShape0;
 attribute vec2 aTexCoord0;
 attribute float aSize;
 attribute float aOpacity;
-attribute vec2 aOffset0;
-attribute float aRotation0;
+attribute vec2 aOffset;
+attribute float aRotation;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -27,8 +27,8 @@ varying float vSize;
 
 void main() {
 
-    float textRotation = aRotation0;
-    vec2 offset = aOffset0;
+    float textRotation = aRotation;
+    vec2 offset = aOffset;
     vec2 shape = aShape0;
     vec2 texCoord = aTexCoord0;
 

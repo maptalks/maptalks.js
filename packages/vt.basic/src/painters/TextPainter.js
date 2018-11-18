@@ -1,5 +1,6 @@
 import Painter from './Painter';
-import { reshader, vec3, mat4 } from '@maptalks/gl';
+import { reshader, vec2, vec3, mat4 } from '@maptalks/gl';
+import { getLineOffset } from './util/line_offset';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -36,9 +37,23 @@ const defaultUniforms = {
     'textPerspectiveRatio' : 0
 };
 
+// temparary variables used later
+const PROJ_MATRIX = [], ANCHOR = [], GLYPH_OFFSET = [], DXDY = [], SEGMENT = [], LINE_OFFSET = [];
+
 class TextPainter extends Painter {
     needToRedraw() {
         return this._redraw;
+    }
+
+    createGeometry(glData) {
+        const geometries = super.createGeometry.apply(this, arguments);
+        for (let i = 0; i < geometries.length; i++) {
+            if (glData.packs[i].lineVertex) {
+                geometries[i].properties.line = glData.packs[i].lineVertex;
+            }
+        }
+
+        return geometries;
     }
 
     createMesh(geometries, transform, tileData) {
@@ -62,15 +77,32 @@ class TextPainter extends Painter {
 
             const isAlongLine = (symbol['textPlacement'] === 'line');
             if (isAlongLine) {
-                const aOffset1 = geometry.data.aOffset1;
-                //aNormal = [isFlip, isVertical, ...];
-                const aNormal = {
-                    usage : 'dynamic',
-                    data : new Uint8Array(aOffset1.length / 2)
-                };
-                geometry.data.aNormal = geometry.properties.aNormal = aNormal;
-                geometry.properties.aOffset1 = aOffset1;
+                const { aPosition, aGlyphOffset, aOffset, aRotation, aSegment, aSize } = geometry.data;
+
+                geometry.properties.aAnchor = aPosition;
+                geometry.properties.aGlyphOffset = aGlyphOffset;
+                geometry.properties.aDxDy = aOffset;
+                geometry.properties.aTextRotation = aRotation;
+                geometry.properties.aSegment = aSegment;
+                geometry.properties.aSize = aSize;
                 geometry.properties.aPickingId = geometry.data.aPickingId;
+
+                delete geometry.data.aSegment;
+                delete geometry.data.aGlyphOffset;
+
+                geometry.properties.aOffset = geometry.data.aOffset = {
+                    usage : 'dynamic',
+                    data : new aOffset.constructor(aOffset.length)
+                };
+                geometry.properties.aRotation = geometry.data.aRotation = {
+                    usage : 'dynamic',
+                    data : new aRotation.constructor(aRotation.length)
+                };
+                //aNormal = [isFlip * 2 + isVertical, ...];
+                geometry.data.aNormal = geometry.properties.aNormal = {
+                    usage : 'dynamic',
+                    data : new Uint8Array(aOffset.length / 2)
+                };
                 //TODO 增加是否是vertical字符的判断
                 uniforms.isVerticalChar = true;
             }
@@ -153,9 +185,8 @@ class TextPainter extends Painter {
         return meshes;
     }
 
-
     callShader(uniforms) {
-        this._updateFlipData(uniforms);
+        // this._updateLabels(uniforms);
 
         this._shader.filter = shaderFilter0;
         this._renderer.render(this._shader, uniforms, this.scene);
@@ -173,7 +204,11 @@ class TextPainter extends Painter {
     /**
      * update flip and vertical data for each text
      */
-    _updateFlipData() {
+    _updateLabels() {
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
         const map = this.layer.getMap(),
             bearing = -map.getBearing() * Math.PI / 180;
         const angleCos = Math.cos(bearing),
@@ -189,7 +224,16 @@ class TextPainter extends Painter {
         const firstPoint = [0, 0, 0], lastPoint = [0, 0, 0];
 
         const aspectRatio = map.width / map.height;
-        const meshes = this.scene.getMeshes();
+
+
+        //TODO project line
+        const tileMatrix = meshes[0].localTransform,
+            projMatrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, tileMatrix);
+        let line = meshes[0].geometry.properties.line;
+        if (line) {
+            line = projLine(line, );
+        }
+
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
             const geometry = mesh.geometry;
@@ -200,56 +244,16 @@ class TextPainter extends Painter {
             }
 
             const uniforms = mesh.material.uniforms;
-            const offset = geometryProps.aOffset1,
-                //pickingId中是feature序号，相同的pickingId对应着相同的feature
-                pickingId = geometryProps.aPickingId;
+            //pickingId中是feature序号，相同的pickingId对应着相同的feature
+            const pickingId = geometryProps.aPickingId;
             let start = 0, current = pickingId[0];
             //每个文字有四个pickingId
             for (let i = 0; i < pickingId.length; i += 4) {
                 //pickingId发生变化，新的feature出现
                 if (pickingId[i] !== current || i === pickingId.length - 4) {
-                    const feature = geometryProps.features[current];
-                    const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties),
-                        count = text.length;//文字字符数
-                    const ll = i === pickingId.length - 4 ? pickingId.length : i;
-                    //一个feature中包含多个文字的anchor
-                    //1. 遍历anchor
-                    //2. 读取anchor第一个文字和最后一个文字的位置
-                    //3. 计算flip和vertical的值并设置
-                    for (let ii = start; ii < ll; ii += 4 * count) {
-                        //每个anchor在offset中占 4 * count 位
-                        const firstChrIdx = ii * 2, //第一个文字的offset位置
-                            lastChrIdx = (ii + 4 * count) * 2; //最后一个文字的offset位置
-                        vec3.set(firstPoint, offset[firstChrIdx], offset[firstChrIdx + 1], 0);
-                        vec3.set(lastPoint, offset[lastChrIdx - 2], offset[lastChrIdx - 1], 0);
-                        vec3.transformMat3(firstPoint, firstPoint, planeMatrix);
-                        vec3.transformMat3(lastPoint, lastPoint, planeMatrix);
-                        let vertical, flip;
-                        if (!uniforms['isVerticalChar']) {
-                            vertical = 0;
-                            flip = firstPoint[0] > lastPoint[0] ? 1 : 0;
-                        } else {
-                            const rise = Math.abs(lastPoint[1] - firstPoint[1]);
-                            const run = Math.abs(lastPoint[0] - firstPoint[0]) * aspectRatio;
-                            flip = firstPoint[0] > lastPoint[0] ? 1 : 0;
-                            if (rise > run) {
-                                vertical = 1;
-                                flip = firstPoint[1] < lastPoint[1] ? 1 : 0;
-                            } else {
-                                vertical = 0;
-                            }
-                        }
+                    const end = i === pickingId.length - 4 ? pickingId.length : i;
 
-                        // flip = 0;
-                        // vertical = firstPoint[0] > lastPoint[0] ? 1 : 0;
-                        // vertical = 1;
-
-                        //更新normal
-                        for (let iii = firstChrIdx / 2; iii < lastChrIdx / 2; iii++) {
-                            aNormal.data[iii] = 2 * flip + vertical;
-                        }
-                    }
-
+                    this._updateFeature(mesh, current, start, end, geometryProps);
 
                     current = pickingId[i];
                     start = i;
@@ -258,6 +262,72 @@ class TextPainter extends Painter {
             }
             geometry.updateData('aNormal', aNormal);
         }
+    }
+
+    _updateFeature(mesh, pickingId, start, end) {
+        const geometry = mesh.geometry;
+        const properties = geometry.properties;
+        const feature = properties.features[pickingId];
+        const text = feature.textName = feature.textName || resolveText(properties.symbol.textName, feature.feature.properties),
+            count = text.length;//文字字符数
+
+        //一个feature中包含多个文字的anchor
+        //1. 遍历anchor
+        //2. 读取anchor第一个文字和最后一个文字的位置
+        //3. 计算flip和vertical的值并设置
+        for (let ii = start; ii < end; ii += 4 * count) {
+            this._updateOffset(text, );
+            //每个anchor在offset中占 4 * count 位
+            const firstChrIdx = ii * 2, //第一个文字的offset位置
+                lastChrIdx = (ii + 4 * count) * 2; //最后一个文字的offset位置
+            vec3.set(firstPoint, offset[firstChrIdx], offset[firstChrIdx + 1], 0);
+            vec3.set(lastPoint, offset[lastChrIdx - 2], offset[lastChrIdx - 1], 0);
+            vec3.transformMat3(firstPoint, firstPoint, planeMatrix);
+            vec3.transformMat3(lastPoint, lastPoint, planeMatrix);
+            let vertical, flip;
+            if (!uniforms['isVerticalChar']) {
+                vertical = 0;
+                flip = firstPoint[0] > lastPoint[0] ? 1 : 0;
+            } else {
+                const rise = Math.abs(lastPoint[1] - firstPoint[1]);
+                const run = Math.abs(lastPoint[0] - firstPoint[0]) * aspectRatio;
+                flip = firstPoint[0] > lastPoint[0] ? 1 : 0;
+                if (rise > run) {
+                    vertical = 1;
+                    flip = firstPoint[1] < lastPoint[1] ? 1 : 0;
+                } else {
+                    vertical = 0;
+                }
+            }
+
+            // flip = 0;
+            // vertical = firstPoint[0] > lastPoint[0] ? 1 : 0;
+            // vertical = 1;
+
+            //更新normal
+            for (let iii = firstChrIdx / 2; iii < lastChrIdx / 2; iii++) {
+                aNormal.data[iii] = 2 * flip + vertical;
+            }
+        }
+    }
+
+    _updateOffset(mesh, i) {
+        // 遍历每个文字，对每个文字获取: anchor, glyphOffset, dx， dy
+        // 从 aSegment 获取anchor的segment, startIndex 和 lineLength
+        // 调用 line_offset.js 计算文字的 offset 和 angle
+        // 与aDxDy和aTextRotation相加后，写回到 aOffset 和 aRotation 中
+
+        const scale = 1; //TODO 屏幕坐标和tile坐标的比例
+
+        const { aAnchor, aGlyphOffset, aDxDy, aSegment, aSize, line } = mesh.geometry.properties;
+        const anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
+        const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]);
+        const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
+        const segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
+
+        const offset = getLineOffset(LINE_OFFSET, line, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i], scale);
+
+
     }
 
     remove() {

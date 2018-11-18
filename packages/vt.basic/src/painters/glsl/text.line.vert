@@ -7,13 +7,8 @@ attribute vec2 aShape1;
 attribute vec2 aTexCoord0;
 attribute vec2 aTexCoord1;
 attribute float aSize;
-attribute float aOpacity;
-attribute vec2 aOffset0;
-attribute vec2 aOffset1;
-attribute vec2 aOffset2;
-attribute float aRotation0;
-attribute float aRotation1;
-attribute float aRotation2;
+attribute vec2 aOffset;
+attribute float aRotation;
 attribute float aNormal;//flip * 2 + vertical
 
 uniform float zoomScale;
@@ -44,24 +39,7 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    //t is the interpolation
-    float t, rotation0, rotation1;
-    vec2 offset0, offset1;
-
-    if (zoomScale <= 1.0) {
-        t = clamp((zoomScale - 0.5) / 0.5, 0.0, 1.0);
-        offset0 = aOffset0;
-        offset1 = aOffset1;
-        rotation0 = aRotation0;
-        rotation1 = aRotation1;
-    } else {
-        t = clamp(zoomScale - 1.0, 0.0, 1.0);
-        offset0 = aOffset1;
-        offset1 = aOffset2;
-        rotation0 = aRotation1;
-        rotation1 = aRotation2;
-    }
-    float textRotation = mix(rotation0, rotation1, t);
+    float textRotation = aRotation;
     // textRotation = 0.0;
     float flip = float(int(aNormal) / 2);
     float vertical = mod(aNormal, 2.0);
@@ -75,7 +53,7 @@ void main() {
 
     vec2 shape = shapeMatrix * mix(aShape0, aShape1, flip);
 
-    vec2 offset = mix(offset0, offset1, t);
+    vec2 offset = aOffset;
     vec2 texCoord = mix(aTexCoord0, aTexCoord1, flip);
 
     shape = shape / glyphSize * aSize;
