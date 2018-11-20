@@ -390,6 +390,9 @@ class CanvasRenderer extends Class {
             return;
         }
         this.context = this.canvas.getContext('2d');
+        if (!this.context) {
+            return;
+        }
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
         }
