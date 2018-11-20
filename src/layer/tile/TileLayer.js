@@ -302,8 +302,9 @@ class TileLayer extends Layer {
             mapSR = map.getSpatialReference(),
             res = sr.getResolution(zoom);
 
-        const extent2d = containerExtent.convertTo(c => map._containerPointToPoint(c))._add(offset),
-            innerExtent2D = this._getInnerExtent(zoom, containerExtent, extent2d);
+        const extent2d = containerExtent.convertTo(c => map._containerPointToPoint(c)),
+            innerExtent2D = this._getInnerExtent(zoom, containerExtent, extent2d)._add(offset);
+        extent2d._add(offset);
 
         const maskExtent = this._getMask2DExtent();
         if (maskExtent) {
@@ -375,7 +376,7 @@ class TileLayer extends Layer {
                         'extent2d' : tileExtent,
                         'mask' : maskID
                     };
-                if (innerExtent2D.intersects(tileExtent) || !innerExtent2D.equals(extent2d) && this._isTileInExtent(tileInfo, containerExtent)) {
+                if (innerExtent2D.intersects(tileExtent) || !innerExtent2D.equals(extent2d.sub(offset)) && this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
                         tileInfo.point._add(offset);
                         tileInfo.extent2d._add(offset);
