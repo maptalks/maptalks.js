@@ -690,6 +690,9 @@ class Painter extends Class {
             return 0;
         }
         const center = this.geometry.getCenter();
+        if (!center) {
+            return 0;
+        }
         if (Array.isArray(altitude)) {
             this.minAltitude = Number.MAX_VALUE;
             this.maxAltitude = Number.MIN_VALUE;

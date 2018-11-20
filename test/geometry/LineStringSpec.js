@@ -411,7 +411,7 @@ describe('Geometry.LineString', function () {
             layer.addGeometry(polyline).addTo(map);
         });
         it('#animateShow with smoothness', function (done) {
-            layer = new maptalks.VectorLayer('id2');
+            layer = new maptalks.VectorLayer('id2', { enableAltitude: true });
             var polyline = new maptalks.LineString([
                 map.getCenter(),
                 map.getCenter().add(0.01, 0.01),
@@ -419,7 +419,10 @@ describe('Geometry.LineString', function () {
                 map.getCenter().add(0, 0),
             ], {
                 'smoothness' : 0.1,
-                'visible' : false
+                'visible' : false,
+                'properties': {
+                    altitude: 300
+                }
             });
             layer.once('layerload', function () {
                 var geojson = polyline.toGeoJSON();
