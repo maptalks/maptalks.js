@@ -33,12 +33,12 @@ import Geometry from '../geometry/Geometry';
  * @instance
  */
 const options = {
-    'eventsPropagation' : false,
+    'eventsPropagation': false,
     'eventsToStop': null,
     'dx': 0,
     'dy': 0,
     'autoPan': false,
-    'autoPanDuration' : 600,
+    'autoPanDuration': 600,
     'single': true,
     'animation': 'scale',
     'animationOnHide': true,
@@ -408,13 +408,13 @@ class UIComponent extends Eventable(Class) {
         } else if ((containerPoint.x + clientWidth - 35) > mapWidth) {
             left = (mapWidth - (containerPoint.x + clientWidth * 3 / 2));
         }
-        if (containerPoint.y < 0) {
-            top = -containerPoint.y + 50;
+        if (containerPoint.y - clientHeight < 0) {
+            top = -(containerPoint.y - clientHeight) + 50;
         } else if (containerPoint.y > mapHeight) {
             top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
         if (top !== 0 || left !== 0) {
-            map.panBy(new Point(left, top), { 'duration' : this.options['autoPanDuration'] });
+            map.panBy(new Point(left, top), { 'duration': this.options['autoPanDuration'] });
         }
     }
 
@@ -524,7 +524,7 @@ class UIComponent extends Eventable(Class) {
     _getDefaultEvents() {
         return {
             'zooming rotate pitch': this.onEvent,
-            'zoomend' : this.onZoomEnd,
+            'zoomend': this.onZoomEnd,
             'moving': this.onMoving
         };
     }
