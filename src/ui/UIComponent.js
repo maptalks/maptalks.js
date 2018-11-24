@@ -408,8 +408,8 @@ class UIComponent extends Eventable(Class) {
         } else if ((containerPoint.x + clientWidth - 35) > mapWidth) {
             left = (mapWidth - (containerPoint.x + clientWidth * 3 / 2));
         }
-        if (containerPoint.y-clientHeight < 0) {
-            top = -(containerPoint.y-clientHeight) + 50  ;
+        if (containerPoint.y - clientHeight < 0) {
+            top = -(containerPoint.y - clientHeight) + 50;
         } else if (containerPoint.y > mapHeight) {
             top = (mapHeight - containerPoint.y - clientHeight) - 30;
         }
