@@ -252,6 +252,15 @@ class UIComponent extends Eventable(Class) {
         }
         if (!anim.ok) {
             dom.style.display = 'none';
+            /**
+           * hide event.
+           *
+           * @event ui.UIComponent#hide
+           * @type {Object}
+           * @property {String} type - hide
+           * @property {ui.UIComponent} target - UIComponent
+           */
+            this.fire('hide');
         } else {
             /* eslint-disable no-unused-expressions */
             dom.offsetHeight;
@@ -259,6 +268,7 @@ class UIComponent extends Eventable(Class) {
             dom.style[TRANSITION] = anim.transition;
             setTimeout(() => {
                 dom.style.display = 'none';
+                this.fire('hide');
             }, this.options['animationDuration']);
         }
         if (anim.fade) {
@@ -267,16 +277,6 @@ class UIComponent extends Eventable(Class) {
         if (anim.scale) {
             dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
         }
-
-        /**
-         * hide event.
-         *
-         * @event ui.UIComponent#hide
-         * @type {Object}
-         * @property {String} type - hide
-         * @property {ui.UIComponent} target - UIComponent
-         */
-        this.fire('hide');
         return this;
     }
 
