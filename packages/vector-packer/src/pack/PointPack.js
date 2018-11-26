@@ -51,6 +51,11 @@ function getPackSDFFormat(symbol) {
                 name : 'aSize'
             },
             {
+                type : Int16Array,
+                width : 2,
+                name : 'aGlyphOffset'
+            },
+            {
                 type : Uint8Array,
                 width : 3,
                 name : 'aColor'
@@ -253,7 +258,7 @@ export default class PointPack extends VectorPack {
                 this._fillData(data, isText, symbol, dx, y,
                     tl1.x, tl1.y,
                     tex1.x, tex1.y + tex1.h,
-                    rotation, size, color, anchor);
+                    rotation, size, color, quad.glyphOffset, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
@@ -263,7 +268,7 @@ export default class PointPack extends VectorPack {
                 this._fillData(data, isText, symbol, dx, y,
                     tr1.x, tr1.y,
                     tex1.x + tex1.w, tex1.y + tex1.h,
-                    rotation, size, color, anchor);
+                    rotation, size, color, quad.glyphOffset, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
@@ -273,7 +278,7 @@ export default class PointPack extends VectorPack {
                 this._fillData(data, isText, symbol, dx, y,
                     bl1.x, bl1.y,
                     tex1.x, tex1.y,
-                    rotation, size, color, anchor);
+                    rotation, size, color, quad.glyphOffset, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
@@ -283,7 +288,7 @@ export default class PointPack extends VectorPack {
                 this._fillData(data, isText, symbol, dx, y,
                     br1.x, br1.y,
                     tex1.x + tex1.w, tex1.y,
-                    rotation, size, color, anchor);
+                    rotation, size, color, quad.glyphOffset, anchor);
 
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
@@ -313,16 +318,17 @@ export default class PointPack extends VectorPack {
      * @param {Number[]} size
      * @param {Number[]} color
      */
-    _fillData(data, isText, symbol, dx, dy, tx, ty, texx, texy, rotation, size, color, anchor) {
+    _fillData(data, isText, symbol, dx, dy, tx, ty, texx, texy, rotation, size, color, alyphOffset, anchor) {
         if (isText) {
             if (symbol['textPlacement'] === 'line') {
                 data.push(
                     tx, ty, texx, texy
                 );
-                const startIndex = this.lineVertex.length / 3;
+                const startIndex = anchor.startIndex;
                 data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
             }
             data.push(size[0]);
+            data.push(alyphOffset[0], alyphOffset[1]);
             data.push(color[0], color[1], color[2]);
         } else {
             data.push(size[0], size[1]);
@@ -352,18 +358,22 @@ export default class PointPack extends VectorPack {
             }
 
             for (let i = 0; i < lines.length; i++) {
+                const lineAnchors = getAnchors(lines[i],
+                    spacing,
+                    TEXT_MAX_ANGLE,
+                    shape.vertical || shape.horizontal || shape,
+                    null, //shapedIcon,
+                    glyphSize,
+                    textBoxScale,
+                    1, //bucket.overscaling,
+                    EXTENT || Infinity
+                );
+                for (let ii = 0; ii < lineAnchors.length; ii++) {
+                    lineAnchors[ii].startIndex = this.lineVertex.length / 3;
+                }
                 anchors.push.apply(
                     anchors,
-                    getAnchors(lines[i],
-                        spacing,
-                        TEXT_MAX_ANGLE,
-                        shape.vertical || shape.horizontal || shape,
-                        null, //shapedIcon,
-                        glyphSize,
-                        textBoxScale,
-                        1, //bucket.overscaling,
-                        EXTENT || Infinity
-                    )
+                    lineAnchors
                 );
                 for (let ii = 0; ii < lines[i].length; ii++) {
                     //TODO 0是预留的高度值

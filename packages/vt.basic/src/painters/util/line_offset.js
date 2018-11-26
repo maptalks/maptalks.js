@@ -1,11 +1,14 @@
+import Point from '@mapbox/point-geometry';
+
 /**
  * based on placeGlyphAlongLine in projection.js of mapbox-gl-js
- * @param {Point} anchor - quad's anchor
- * @param {Object} quad  - quad object computed in quads.js
+ * @param {Number[]} out -
+ * @param {Number[]} anchor - quad's anchor
+ * @param {}
  * @param {Number} dx - offset x
  * @param {Number} dy - offset y
  */
-export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, scale, flip) {
+export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, flip) {
     const glyphOffsetX = glyphOffset[0] * fontScale;
     const offsetX = flip ?
         glyphOffsetX - dx :
@@ -31,8 +34,8 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
         segment :
         segment + 1;
 
-    let current = anchor;
-    let prev = anchor;
+    let current = Point.convert(anchor);
+    let prev = Point.convert(anchor);
     let distanceToPrev = 0;
     let currentSegmentDistance = 0;
     let miss = false;
@@ -45,15 +48,17 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
             break;
         }
 
-        prev = current;
+        // prev = current;
+        prev.x = current.x;
+        prev.y = current.y;
 
-        current = line[currentIndex];
+        current.x = line[currentIndex * 2];
+        current.y = line[currentIndex * 2 + 1];
 
         distanceToPrev += currentSegmentDistance;
-        currentSegmentDistance = prev.dist(current) / scale;
+        currentSegmentDistance = prev.dist(current);
     }
     if (miss) {
-        //如果第一个scale（主级别）就miss，不做任何处理直接返回
         out[0] = out[3] = glyphOffsetX;
         out[1] = out[4] = glyphOffset[1] * fontScale + dy * dir;
         out[2] = out[5] = 0;
@@ -69,8 +74,8 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
 
     let segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
 
-    out[0] = Math.round((p.x - anchor.x) / scale);
-    out[1] = -Math.round((p.y - anchor.y) / scale);
+    out[0] = Math.round(p.x - anchor[0]);
+    out[1] = Math.round(p.y - anchor[1]);
     out[2] = Math.round(segmentAngle * 180 / Math.PI);
 
     return out;

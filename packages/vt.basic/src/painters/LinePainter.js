@@ -79,6 +79,8 @@ class LinePainter extends Painter {
             //     console.log(vector, tilePos, glPos, ndc);
             // }
 
+            geometry.generateBuffers(this.regl);
+
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
                 castShadow : false,

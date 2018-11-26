@@ -77,6 +77,7 @@ class Painter {
                 iconAtlas,
                 glyphAtlas,
                 res,
+                z : tile.z,
                 tileRatio : this.layer.options.extent / this.layer.getTileSize().width
             };
             geometries.push(geometry);
@@ -115,7 +116,7 @@ class Painter {
         });
         const uniforms = this.getUniformValues(map);
 
-        this.callShader(uniforms);
+        this.callShader(uniforms, context);
 
         return {
             redraw : false
