@@ -36,7 +36,7 @@ module.exports = {
             'format': 'umd',
             'name': 'maptalks',
             banner,
-            outro,
+            // outro,
             'file': pkg.main
         },
         {
