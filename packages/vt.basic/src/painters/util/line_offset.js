@@ -64,11 +64,11 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
     // offset the point from the line to text-offset and icon-offset
     p._add(prevToCurrent._unit()._perp()._mult(dy * dir));
 
-    let segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
+    const segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
 
-    out[0] = Math.round(p.x - anchor[0]);
-    out[1] = Math.round(p.y - anchor[1]);
-    out[2] = Math.round(segmentAngle * 180 / Math.PI);
+    out[0] = p.x - anchor[0];
+    out[1] = p.y - anchor[1];
+    out[2] = segmentAngle * 180 / Math.PI;
 
     return out;
 }

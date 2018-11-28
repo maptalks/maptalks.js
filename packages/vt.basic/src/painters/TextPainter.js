@@ -251,7 +251,7 @@ class TextPainter extends Painter {
                 projMatrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, tileMatrix);
             if (!isPitchWithMap) {
                 //project line to screen coordinates
-                const out = properties.projLine = properties.projLine || new Int16Array(line.length / 3 * 2);
+                const out = properties.projLine = properties.projLine || new Array(line.length / 3 * 2);
                 line = projectLine(out, line, projMatrix, map.width, map.height);
             }
             //pickingId中是feature序号，相同的pickingId对应着相同的feature
@@ -385,12 +385,10 @@ class TextPainter extends Painter {
         const anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
 
         const projAnchor = projectPoint(PROJ_ANCHOR, anchor, projMatrix, map.width, map.height);
-        vec2.round(PROJ_ANCHOR, PROJ_ANCHOR);
 
         const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]);
         const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
         const segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
-
         const offset = getLineOffset(LINE_OFFSET, line, projAnchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i] / 24);
         return offset;
     }
