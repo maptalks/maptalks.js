@@ -38,14 +38,12 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
     let prev = Point.convert(anchor);
     let distanceToPrev = 0;
     let currentSegmentDistance = 0;
-    let miss = false;
     while (distanceToPrev + currentSegmentDistance <= absOffsetX) {
         currentIndex += dir;
 
         // offset does not fit on the projected line
         if (currentIndex < lineStartIndex || currentIndex >= lineEndIndex) {
-            miss = true;
-            break;
+            return null;
         }
 
         // prev = current;
@@ -57,12 +55,6 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
 
         distanceToPrev += currentSegmentDistance;
         currentSegmentDistance = prev.dist(current);
-    }
-    if (miss) {
-        out[0] = out[3] = glyphOffsetX;
-        out[1] = out[4] = glyphOffset[1] * fontScale + dy * dir;
-        out[2] = out[5] = 0;
-        return out;
     }
     // The point is on the current segment. Interpolate to find it.
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
