@@ -1,7 +1,6 @@
 import Painter from './Painter';
-import { reshader, vec2, vec3, mat4 } from '@maptalks/gl';
+import { reshader, vec2, vec3, vec4, mat4 } from '@maptalks/gl';
 import { getLineOffset } from './util/line_offset';
-import { projectLine, projectPoint } from './util/projection';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -79,11 +78,11 @@ class TextPainter extends Painter {
 
             const isAlongLine = (symbol['textPlacement'] === 'line');
             if (isAlongLine) {
-                const { aPosition, aGlyphOffset, aOffset, aRotation, aSegment, aSize } = geometry.data;
+                const { aPosition, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
 
                 geometry.properties.aAnchor = aPosition;
                 geometry.properties.aGlyphOffset = aGlyphOffset;
-                geometry.properties.aDxDy = aOffset;
+                geometry.properties.aDxDy = aDxDy;
                 geometry.properties.aTextRotation = aRotation;
                 geometry.properties.aSegment = aSegment;
                 geometry.properties.aSize = aSize;
@@ -95,12 +94,12 @@ class TextPainter extends Painter {
 
                 if (symbol['textPitchAlignment'] === 'map') {
                     //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
-                    geometry.properties.aOffset = geometry.data.aOffset = new aOffset.constructor(aOffset.length);
+                    geometry.properties.aOffset = geometry.data.aOffset = new aDxDy.constructor(aDxDy.length);
                     geometry.properties.aRotation = geometry.data.aRotation = new aRotation.constructor(aRotation.length);
                 } else {
                     geometry.properties.aOffset = geometry.data.aOffset = {
                         usage : 'dynamic',
-                        data : new aOffset.constructor(aOffset.length)
+                        data : new aDxDy.constructor(aDxDy.length)
                     };
                     geometry.properties.aRotation = geometry.data.aRotation = {
                         usage : 'dynamic',
@@ -111,7 +110,7 @@ class TextPainter extends Painter {
                 //aNormal = [isFlip * 2 + isVertical, ...];
                 geometry.data.aNormal = geometry.properties.aNormal = {
                     usage : 'dynamic',
-                    data : new Uint8Array(aOffset.length / 2)
+                    data : new Uint8Array(aDxDy.length / 2)
                 };
                 //TODO 增加是否是vertical字符的判断
                 uniforms.isVerticalChar = true;
@@ -604,4 +603,44 @@ export function resolveText(str, props) {
         }
         return value;
     });
+}
+
+/**
+ * Project a line from tile coordinate to screen coordinate
+ * @param {Number[]} out - array to receive result
+ * @param {Number[]} line - line's tile coordinate
+ * @param {Number[]} matrix - projection matrix
+ * @param {Number} width - canvas width
+ * @param {Number} height - canvas height
+ */
+function projectLine(out, line, matrix, width, height) {
+    const v = [];
+    for (let i = 0; i < line.length; i += 3) {
+        vec4.set(v, line[i], line[i + 1], line[i + 2], 1);
+        projectPoint(v, v, matrix, width, height);
+        out[i] = v[0];
+        out[i + 1] = v[1];
+        //TODO line[i + 2]的单位？
+        out[i + 2] = line[i + 2];
+    }
+    return out;
+}
+
+const v4 = [];
+
+/**
+ * Project a tile coordinate to screen coordinate
+ * @param {Number[]} out - array to receive result
+ * @param {Number[]} point - tile coordinate
+ * @param {Number[]} matrix - projection matrix
+ * @param {Number} width - canvas width
+ * @param {Number} height - canvas height
+ */
+function projectPoint(out, point, matrix, width, height) {
+    vec4.set(v4, point[0], point[1], point[2], 1);
+    vec4.transformMat4(v4, v4, matrix);
+    vec4.scale(v4, v4, 1 / v4[3]);
+    out[0] = (v4[0] + 1) * width / 2;
+    out[1] = (-v4[1] + 1) * height / 2;
+    return out;
 }

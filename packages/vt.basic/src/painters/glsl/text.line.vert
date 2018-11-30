@@ -7,6 +7,7 @@ attribute vec2 aTexCoord0;
 attribute vec2 aTexCoord1;
 attribute float aSize;
 attribute vec2 aOffset;
+attribute vec2 aDxDy;
 attribute float aRotation;
 attribute float aNormal;//flip * 2 + vertical
 
@@ -70,6 +71,7 @@ void main() {
         vGammaScale = cameraScale + 0.5;
     }
 
+    gl_Position.xy += aDxDy * 2.0 / canvasSize;
 
 
     vTexCoord = texCoord / texSize;

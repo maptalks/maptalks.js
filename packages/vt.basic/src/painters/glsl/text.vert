@@ -4,8 +4,7 @@ attribute vec3 aPosition;
 attribute vec2 aShape0;
 attribute vec2 aTexCoord0;
 attribute float aSize;
-attribute float aOpacity;
-attribute vec2 aOffset;
+attribute vec2 aDxDy;
 attribute float aRotation;
 
 uniform float cameraToCenterDistance;
@@ -21,6 +20,9 @@ uniform float mapPitch;
 uniform float rotateWithMap;
 uniform float mapRotation;
 
+uniform float zoomScale;
+uniform float tileRatio; //EXTENT / tileSize
+
 varying vec2 vTexCoord;
 varying float vGammaScale;
 varying float vSize;
@@ -28,7 +30,6 @@ varying float vSize;
 void main() {
 
     float textRotation = aRotation;
-    vec2 offset = aOffset;
     vec2 shape = aShape0;
     vec2 texCoord = aTexCoord0;
 
@@ -36,6 +37,8 @@ void main() {
 
     gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
     float distance = gl_Position.w;
+
+    float cameraScale = distance / cameraToCenterDistance;
     //预乘w，得到gl_Position在NDC中的坐标值
     // gl_Position /= gl_Position.w;
 
@@ -45,28 +48,31 @@ void main() {
         0.5 + 0.5 * (1.0 - distanceRatio),
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
-    float pitch = mapPitch * pitchWithMap;
+
     float rotation = textRotation - mapRotation * rotateWithMap;
+    if (pitchWithMap == 1.0) {
+        rotation += mapRotation;
+    }
     float angleSin = sin(rotation);
     float angleCos = cos(rotation);
-    // section 3 随视角倾斜
-    // 手动构造3x3旋转矩阵 http://planning.cs.uiuc.edu/node102.html
-    float pitchSin = sin(pitch);
-    float pitchCos = cos(pitch);
-    mat3 shapeMatrix = mat3(angleCos, -1.0 * angleSin * pitchCos, angleSin * pitchSin,
-        angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
-        0.0, pitchSin, pitchCos);
-    shape = (shapeMatrix * vec3(shape, 0.0)).xy;
-    shape = shape / glyphSize * aSize * 2.0 / canvasSize; //乘以2.0
 
-    //计算 offset
-    offset = (planeMatrix * vec3(offset, 0.0)).xy;
-    offset = offset * 2.0 / canvasSize;
+    mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
+    shape = shapeMatrix * shape / glyphSize * aSize;
 
-    gl_Position.xy += (shape + offset) * perspectiveRatio * gl_Position.w;
+    if (pitchWithMap == 0.0) {
+        vec2 offset = shape * 2.0 / canvasSize;
+        gl_Position.xy += offset * perspectiveRatio * distance;
+        vGammaScale = distance / cameraToCenterDistance + 0.5;
+    } else {
+        vec2 offset = shape * vec2(1.0, -1.0);
+        //乘以cameraScale可以抵消相机近大远小的透视效果
+        gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+        vGammaScale = cameraScale + mapPitch / 2.0 + 0.5;
+    }
+    gl_Position.xy += aDxDy * 2.0 / canvasSize;
 
     vTexCoord = texCoord / texSize;
-    vGammaScale = distance / cameraToCenterDistance + mapPitch + 0.5;
+
 
     vSize = aSize;
 }

@@ -46,14 +46,14 @@ function getPackSDFFormat(symbol) {
                 name : 'aSegment'
             },
             {
-                type : Uint8Array,
-                width : 1,
-                name : 'aSize'
-            },
-            {
                 type : Int16Array,
                 width : 2,
                 name : 'aGlyphOffset'
+            },
+            {
+                type : Uint8Array,
+                width : 1,
+                name : 'aSize'
             },
             {
                 type : Uint8Array,
@@ -63,7 +63,7 @@ function getPackSDFFormat(symbol) {
             {
                 type : Int8Array,
                 width : 2,
-                name : 'aOffset'
+                name : 'aDxDy'
             },
             {
                 type : Int16Array,
@@ -89,6 +89,11 @@ function getPackSDFFormat(symbol) {
                 name : 'aTexCoord0'
             },
             {
+                type : Int16Array,
+                width : 2,
+                name : 'aGlyphOffset'
+            },
+            {
                 type : Uint8Array,
                 width : 1,
                 name : 'aSize'
@@ -101,7 +106,7 @@ function getPackSDFFormat(symbol) {
             {
                 type : Int8Array,
                 width : 2,
-                name : 'aOffset'
+                name : 'aDxDy'
             },
             {
                 type : Int16Array,
@@ -137,7 +142,7 @@ function getPackMarkerFormat() {
         {
             type : Int8Array,
             width : 2,
-            name : 'aOffset'
+            name : 'aDxDy'
         },
         {
             type : Float32Array,
@@ -318,7 +323,7 @@ export default class PointPack extends VectorPack {
      * @param {Number[]} size
      * @param {Number[]} color
      */
-    _fillData(data, isText, symbol, dx, dy, tx, ty, texx, texy, rotation, size, color, alyphOffset, anchor) {
+    _fillData(data, isText, symbol, dx, dy, tx, ty, texx, texy, rotation, size, color, glyphOffset, anchor) {
         if (isText) {
             if (symbol['textPlacement'] === 'line') {
                 data.push(
@@ -327,8 +332,8 @@ export default class PointPack extends VectorPack {
                 const startIndex = anchor.startIndex;
                 data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
             }
+            data.push(glyphOffset[0], glyphOffset[1]);
             data.push(size[0]);
-            data.push(alyphOffset[0], alyphOffset[1]);
             data.push(color[0], color[1], color[2]);
         } else {
             data.push(size[0], size[1]);
