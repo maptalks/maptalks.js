@@ -5,9 +5,10 @@ export function projectLine(out, line, matrix, width, height) {
     for (let i = 0; i < line.length; i += 3) {
         vec4.set(v, line[i], line[i + 1], line[i + 2], 1);
         projectPoint(v, v, matrix, width, height);
-        const idx = i / 3 * 2;
-        out[idx] = v[0];
-        out[idx + 1] = v[1];
+        out[i] = v[0];
+        out[i + 1] = v[1];
+        //TODO line[i + 2]的单位？
+        out[i + 2] = line[i + 2];
     }
     return out;
 }

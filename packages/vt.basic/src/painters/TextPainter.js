@@ -245,13 +245,14 @@ class TextPainter extends Painter {
             elements.length = 0;
 
             const uniforms = mesh.material.uniforms;
-            const isPitchWithMap = uniforms['textPitchAlignment'] === 'map';
+            const isPitchWithMap = uniforms['pitchWithMap'] === 1,
+                shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
 
             const tileMatrix = mesh.localTransform,
                 projMatrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, tileMatrix);
             if (!isPitchWithMap) {
                 //project line to screen coordinates
-                const out = properties.projLine = properties.projLine || new Array(line.length / 3 * 2);
+                const out = properties.projLine = properties.projLine || new Array(line.length);
                 line = projectLine(out, line, projMatrix, map.width, map.height);
             }
             //pickingId中是feature序号，相同的pickingId对应着相同的feature
@@ -270,13 +271,17 @@ class TextPainter extends Painter {
                 }
             }
             geometry.updateData('aNormal', aNormal);
-            geometry.updateData('aOffset', aOffset);
-            geometry.updateData('aRotation', aRotation);
+            if (shouldUpdate) {
+                geometry.updateData('aOffset', aOffset);
+                geometry.updateData('aRotation', aRotation);
 
-            geometry.setElements({
-                usage : 'dynamic',
-                data : new geometry.properties.elemCtor(elements)
-            });
+                geometry.setElements({
+                    usage : 'dynamic',
+                    data : new geometry.properties.elemCtor(elements)
+                });
+            }
+            //tag if geometry's aOffset and aRotation is updated
+            geometry.__dataUpdated = true;
         }
     }
     // start and end is the start and end index of feature's line
@@ -288,31 +293,38 @@ class TextPainter extends Painter {
             charCount = text.length;//文字字符数
 
         const uniforms = mesh.material.uniforms;
+        const isPitchWithMap = uniforms['pitchWithMap'] === 1,
+            //should update aOffset / aRotation?
+            shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
         const aOffset = geometry.properties.aOffset,
             aRotation = geometry.properties.aRotation,
             aNormal = geometry.properties.aNormal;
 
         const segElements = [];
+        //if planeMatrix is null, line is in tile coordinates
+        // line = planeMatrix ? line.line : line;
 
         for (let i = start; i < end; i += charCount * 4) {
-            //array to store current text's elements
-            for (let j = i; j < i + charCount * 4; j += 4) {
-                const offset = this._getOffset(mesh, line, j, projMatrix);
-                if (!offset) {
-                    //remove whole text if any char is missed
-                    segElements.length = 0;
-                    break;
+            if (shouldUpdate) {
+                //array to store current text's elements
+                for (let j = i; j < i + charCount * 4; j += 4) {
+                    const offset = this._getOffset(mesh, line, j, projMatrix, !planeMatrix);
+                    if (!offset) {
+                        //remove whole text if any char is missed
+                        segElements.length = 0;
+                        break;
+                    }
+                    for (let ii = 0; ii < 4; ii++) {
+                        aOffset.data[2 * (j + ii)] = offset[0];
+                        aOffset.data[2 * (j + ii) + 1] = offset[1];
+                        aRotation.data[j + ii] = offset[2];
+                    }
+                    //every character has 4 vertice, and 6 indexes
+                    //j, j + 1, j + 2 is the left-top triangle
+                    //j + 1, j + 2, j + 3 is the right-bottom triangle
+                    segElements.push(j, j + 1, j + 2);
+                    segElements.push(j + 1, j + 2, j + 3);
                 }
-                for (let ii = 0; ii < 4; ii++) {
-                    aOffset.data[2 * (j + ii)] = offset[0];
-                    aOffset.data[2 * (j + ii) + 1] = offset[1];
-                    aRotation.data[j + ii] = offset[2];
-                }
-                //every character has 4 vertice, and 6 indexes
-                //j, j + 1, j + 2 is the left-top triangle
-                //j + 1, j + 2, j + 3 is the right-bottom triangle
-                segElements.push(j, j + 1, j + 2);
-                segElements.push(j + 1, j + 2, j + 3);
             }
 
             //updateNormal
@@ -321,9 +333,11 @@ class TextPainter extends Painter {
                 lastChrIdx = i + charCount * 4;
             this._updateNormal(aNormal, aOffset, uniforms['isVerticalChar'], firstChrIdx, lastChrIdx, planeMatrix);
 
-            elements.push(...segElements);
-            //clear segElements
-            segElements.length = 0;
+            if (shouldUpdate) {
+                elements.push(...segElements);
+                //clear segElements
+                segElements.length = 0;
+            }
         }
     }
 
@@ -357,7 +371,12 @@ class TextPainter extends Painter {
             flip = FIRST_POINT[0] > LAST_POINT[0] ? 1 : 0;
             if (rise > run) {
                 vertical = 1;
-                flip = FIRST_POINT[1] < LAST_POINT[1] ? 0 : 1;
+                if (planeMatrix) {
+                    //in tile coordinate system
+                    flip = FIRST_POINT[1] > LAST_POINT[1] ? 0 : 1;
+                } else {
+                    flip = FIRST_POINT[1] < LAST_POINT[1] ? 0 : 1;
+                }
             } else {
                 vertical = 0;
             }
@@ -372,7 +391,8 @@ class TextPainter extends Painter {
         }
     }
 
-    _getOffset(mesh, line, i, projMatrix) {
+    _getOffset(mesh, line, i, projMatrix, isProjected) {
+        const scale = isProjected ? 1 : this.layer.options['extent'] / this.layer.options['tileSize'][0];
         // 遍历每个文字，对每个文字获取: anchor, glyphOffset, dx， dy
         // 计算anchor的屏幕位置
         // 根据地图pitch和cameraDistanceFromCenter计算glyph的perspective ratio
@@ -382,14 +402,15 @@ class TextPainter extends Painter {
         const map = this.layer.getMap();
 
         const { aAnchor, aGlyphOffset, aDxDy, aSegment, aSize } = mesh.geometry.properties;
-        const anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
-
-        const projAnchor = projectPoint(PROJ_ANCHOR, anchor, projMatrix, map.width, map.height);
+        let anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
+        if (isProjected) {
+            anchor = projectPoint(PROJ_ANCHOR, anchor, projMatrix, map.width, map.height);
+        }
 
         const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]);
         const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
         const segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
-        const offset = getLineOffset(LINE_OFFSET, line, projAnchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i] / 24);
+        const offset = getLineOffset(LINE_OFFSET, line, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i] / 24, false, scale);
         return offset;
     }
 

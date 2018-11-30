@@ -8,7 +8,7 @@ import Point from '@mapbox/point-geometry';
  * @param {Number} dx - offset x
  * @param {Number} dy - offset y
  */
-export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, flip) {
+export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, flip, scale) {
     const glyphOffsetX = glyphOffset[0] * fontScale;
     const offsetX = flip ?
         glyphOffsetX - dx :
@@ -50,11 +50,11 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
         prev.x = current.x;
         prev.y = current.y;
 
-        current.x = line[currentIndex * 2];
-        current.y = line[currentIndex * 2 + 1];
+        current.x = line[currentIndex * 3];
+        current.y = line[currentIndex * 3 + 1];
 
         distanceToPrev += currentSegmentDistance;
-        currentSegmentDistance = prev.dist(current);
+        currentSegmentDistance = prev.dist(current) / scale;
     }
     // The point is on the current segment. Interpolate to find it.
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
@@ -66,8 +66,8 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
 
     const segmentAngle = angle + Math.atan2(current.y - prev.y, current.x - prev.x);
 
-    out[0] = p.x - anchor[0];
-    out[1] = p.y - anchor[1];
+    out[0] = (p.x - anchor[0]) / scale;
+    out[1] = (p.y - anchor[1]) / scale;
     out[2] = segmentAngle * 180 / Math.PI;
 
     return out;

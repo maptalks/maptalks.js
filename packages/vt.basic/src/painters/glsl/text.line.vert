@@ -60,7 +60,7 @@ void main() {
     shape = shape / glyphSize * aSize;
 
     if (pitchWithMap == 1.0) {
-        offset = (shape + offset) * vec2(1.0, -1.0);
+        offset = shape * vec2(1.0, -1.0) + offset;
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
         vGammaScale = cameraScale + mapPitch / 2.0 + 0.5;
