@@ -93,14 +93,21 @@ class TextPainter extends Painter {
                 delete geometry.data.aSegment;
                 delete geometry.data.aGlyphOffset;
 
-                geometry.properties.aOffset = geometry.data.aOffset = {
-                    usage : 'dynamic',
-                    data : new aOffset.constructor(aOffset.length)
-                };
-                geometry.properties.aRotation = geometry.data.aRotation = {
-                    usage : 'dynamic',
-                    data : new aRotation.constructor(aRotation.length)
-                };
+                if (symbol['textPitchAlignment'] === 'map') {
+                    //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
+                    geometry.properties.aOffset = geometry.data.aOffset = new aOffset.constructor(aOffset.length);
+                    geometry.properties.aRotation = geometry.data.aRotation = new aRotation.constructor(aRotation.length);
+                } else {
+                    geometry.properties.aOffset = geometry.data.aOffset = {
+                        usage : 'dynamic',
+                        data : new aOffset.constructor(aOffset.length)
+                    };
+                    geometry.properties.aRotation = geometry.data.aRotation = {
+                        usage : 'dynamic',
+                        data : new aRotation.constructor(aRotation.length)
+                    };
+                }
+
                 //aNormal = [isFlip * 2 + isVertical, ...];
                 geometry.data.aNormal = geometry.properties.aNormal = {
                     usage : 'dynamic',
@@ -234,8 +241,13 @@ class TextPainter extends Painter {
             const geometryProps = geometry.properties;
             const { aNormal, aOffset, aRotation } = geometryProps;
             if (!aNormal) {
+                //不是line placement的文字，无需更新
                 continue;
             }
+
+            //pitch不跟随map时，需要根据屏幕位置实时计算各文字的位置和旋转角度并更新aOffset和aRotation
+            //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
+            //aNormal在两种情况都要实时计算更新
 
             const properties = mesh.geometry.properties;
             let line = properties.line;
@@ -296,8 +308,8 @@ class TextPainter extends Painter {
         const isPitchWithMap = uniforms['pitchWithMap'] === 1,
             //should update aOffset / aRotation?
             shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
-        const aOffset = geometry.properties.aOffset,
-            aRotation = geometry.properties.aRotation,
+        const aOffset = geometry.properties.aOffset.data || geometry.properties.aOffset,
+            aRotation = geometry.properties.aRotation.data || geometry.properties.aRotation,
             aNormal = geometry.properties.aNormal;
 
         const segElements = [];
@@ -315,9 +327,9 @@ class TextPainter extends Painter {
                         break;
                     }
                     for (let ii = 0; ii < 4; ii++) {
-                        aOffset.data[2 * (j + ii)] = offset[0];
-                        aOffset.data[2 * (j + ii) + 1] = offset[1];
-                        aRotation.data[j + ii] = offset[2];
+                        aOffset[2 * (j + ii)] = offset[0];
+                        aOffset[2 * (j + ii) + 1] = offset[1];
+                        aRotation[j + ii] = offset[2];
                     }
                     //every character has 4 vertice, and 6 indexes
                     //j, j + 1, j + 2 is the left-top triangle
@@ -354,9 +366,9 @@ class TextPainter extends Painter {
             aspectRatio = map.width / map.height;
 
         //第一个文字的offset位置
-        vec3.set(FIRST_POINT, aOffset.data[firstChrIdx], aOffset.data[firstChrIdx + 1], 0);
+        vec3.set(FIRST_POINT, aOffset[firstChrIdx], aOffset[firstChrIdx + 1], 0);
         //最后一个文字的offset位置
-        vec3.set(LAST_POINT, aOffset.data[lastChrIdx - 2], aOffset.data[lastChrIdx - 1], 0);
+        vec3.set(LAST_POINT, aOffset[lastChrIdx - 2], aOffset[lastChrIdx - 1], 0);
         if (planeMatrix) {
             vec3.transformMat3(FIRST_POINT, FIRST_POINT, planeMatrix);
             vec3.transformMat3(LAST_POINT, LAST_POINT, planeMatrix);

@@ -1,5 +1,4 @@
 #define RAD 0.0174532925
-#define MAX_PITCH 1.0471975512 //60度
 
 attribute vec3 aPosition;
 attribute vec2 aShape0;
