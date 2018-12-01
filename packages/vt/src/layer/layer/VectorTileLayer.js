@@ -14,7 +14,8 @@ const defaultOptions = {
     zoomBackground : true,
     tileSize : [512, 512],
     stencil : false,
-    features : true
+    features : true,
+    cascadeTiles : false
 };
 
 /**
