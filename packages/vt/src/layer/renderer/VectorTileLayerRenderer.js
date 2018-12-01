@@ -149,7 +149,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return result;
     }
 
-    draw(framestamp) {
+    draw(timestamp) {
         this.prepareCanvas();
         if (!this.ready) {
             this.completeRender();
@@ -157,9 +157,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         this._frameTime = maptalks.Util.now();
         this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
-        this._startFrame();
-        super.draw(framestamp);
-        this._endFrame();
+        this._startFrame(timestamp);
+        super.draw(timestamp);
+        this._endFrame(timestamp);
         if (this.layer.options['debug']) {
             const mat = [];
             const projViewMatrix = this.getMap().projViewMatrix;
@@ -172,12 +172,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         // this.completeRender();
     }
 
-    drawOnInteracting(event, framestamp) {
+    drawOnInteracting(event, timestamp) {
         if (!this.ready) {
             this.completeRender();
             return;
         }
-        this.draw(framestamp);
+        this.draw(timestamp);
     }
 
     loadTile(tileInfo) {
@@ -222,7 +222,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return {};
     }
 
-    _startFrame() {
+    _startFrame(timestamp) {
         this.plugins.forEach((plugin, idx) => {
             if (!this.sceneCache[idx]) {
                 this.sceneCache[idx] = {};
@@ -232,12 +232,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 layer : this.layer,
                 gl : this.gl,
                 sceneCache : this.sceneCache[idx],
-                sceneConfig : plugin.config.sceneConfig
+                sceneConfig : plugin.config.sceneConfig,
+                timestamp
             });
         });
     }
 
-    _endFrame() {
+    _endFrame(timestamp) {
         const cameraPosition = this.getMap().cameraPosition;
         this.plugins.forEach((plugin, idx) => {
             const status = plugin.endFrame({
@@ -247,7 +248,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
                 cameraPosition,
-                quadStencil : this._quadStencil
+                quadStencil : this._quadStencil,
+                timestamp
             });
             if (status && status.redraw) {
                 //let plugin to determine when to redraw

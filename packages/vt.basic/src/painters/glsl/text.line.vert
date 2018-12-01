@@ -10,6 +10,7 @@ attribute vec2 aOffset;
 attribute vec2 aDxDy;
 attribute float aRotation;
 attribute float aNormal;//flip * 2 + vertical
+attribute float aOpacity;
 
 uniform float zoomScale;
 uniform float cameraToCenterDistance;
@@ -26,6 +27,7 @@ uniform float tileRatio; //EXTENT / tileSize
 varying vec2 vTexCoord;
 varying float vGammaScale;
 varying float vSize;
+varying float vOpacity;
 
 void main() {
     vec4 pos = projViewModelMatrix * vec4(aPosition, 1.0);
@@ -76,4 +78,5 @@ void main() {
 
     vTexCoord = texCoord / texSize;
     vSize = aSize;
+    vOpacity = aOpacity / 255.0;
 }

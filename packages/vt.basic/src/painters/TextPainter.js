@@ -33,7 +33,6 @@ const defaultUniforms = {
     'textHaloBlur' : 0,
     'textHaloOpacity' : 1,
     'isHalo' : 0,
-    'fadeOpacity' : 1,
     'textPerspectiveRatio' : 0
 };
 
@@ -75,11 +74,21 @@ class TextPainter extends Painter {
                 tileResolution : geometry.properties.res,
                 tileRatio : geometry.properties.tileRatio
             };
+            const { aPosition, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
+
+            //initialize opacity array
+            const aOpacity = new Uint8Array(aSize.length);
+            for (let i = 0; i < aOpacity.length; i++) {
+                aOpacity[i] = 255;
+            }
+            geometry.data.aOpacity = {
+                usage : 'dynamic',
+                data : aOpacity
+            };
+            geometry.properties.aOpacity = aOpacity;
 
             const isAlongLine = (symbol['textPlacement'] === 'line');
             if (isAlongLine) {
-                const { aPosition, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
-
                 geometry.properties.aAnchor = aPosition;
                 geometry.properties.aGlyphOffset = aGlyphOffset;
                 geometry.properties.aDxDy = aDxDy;
@@ -196,8 +205,8 @@ class TextPainter extends Painter {
         return meshes;
     }
 
-    callShader(uniforms) {
-        this._updateLabels();
+    callShader(uniforms, { timestamp }) {
+        this._updateLabels(timestamp);
 
         this._shader.filter = shaderFilter0;
         this._renderer.render(this._shader, uniforms, this.scene);
@@ -215,7 +224,7 @@ class TextPainter extends Painter {
     /**
      * update flip and vertical data for each text
      */
-    _updateLabels() {
+    _updateLabels(/* timestamp */) {
         const meshes = this.scene.getMeshes();
         if (!meshes || !meshes.length) {
             return;
@@ -352,6 +361,29 @@ class TextPainter extends Painter {
         }
     }
 
+    _getOffset(mesh, line, i, projMatrix, isProjected) {
+        const scale = isProjected ? 1 : this.layer.options['extent'] / this.layer.options['tileSize'][0];
+        // 遍历每个文字，对每个文字获取: anchor, glyphOffset, dx， dy
+        // 计算anchor的屏幕位置
+        // 根据地图pitch和cameraDistanceFromCenter计算glyph的perspective ratio
+        // 从 aSegment 获取anchor的segment, startIndex 和 lineLength
+        // 调用 line_offset.js 计算文字的 offset 和 angle
+        // 与aDxDy和aTextRotation相加后，写回到 aOffset 和 aRotation 中
+        const map = this.layer.getMap();
+
+        const { aAnchor, aGlyphOffset, aDxDy, aSegment, aSize } = mesh.geometry.properties;
+        let anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
+        if (isProjected) {
+            anchor = projectPoint(PROJ_ANCHOR, anchor, projMatrix, map.width, map.height);
+        }
+
+        const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]);
+        const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
+        const segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
+        const offset = getLineOffset(LINE_OFFSET, line, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i] / 24, false, scale);
+        return offset;
+    }
+
     _updateNormal(aNormal, aOffset, isVertical, firstChrIdx, lastChrIdx, planeMatrix) {
         //每个position对应了1个aPickingId和2个aOffset，所以需要乘2
         firstChrIdx *= 2;
@@ -400,29 +432,6 @@ class TextPainter extends Painter {
         for (let i = firstChrIdx / 2; i < lastChrIdx / 2; i++) {
             aNormal.data[i] = 2 * flip + vertical;
         }
-    }
-
-    _getOffset(mesh, line, i, projMatrix, isProjected) {
-        const scale = isProjected ? 1 : this.layer.options['extent'] / this.layer.options['tileSize'][0];
-        // 遍历每个文字，对每个文字获取: anchor, glyphOffset, dx， dy
-        // 计算anchor的屏幕位置
-        // 根据地图pitch和cameraDistanceFromCenter计算glyph的perspective ratio
-        // 从 aSegment 获取anchor的segment, startIndex 和 lineLength
-        // 调用 line_offset.js 计算文字的 offset 和 angle
-        // 与aDxDy和aTextRotation相加后，写回到 aOffset 和 aRotation 中
-        const map = this.layer.getMap();
-
-        const { aAnchor, aGlyphOffset, aDxDy, aSegment, aSize } = mesh.geometry.properties;
-        let anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
-        if (isProjected) {
-            anchor = projectPoint(PROJ_ANCHOR, anchor, projMatrix, map.width, map.height);
-        }
-
-        const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]);
-        const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
-        const segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
-        const offset = getLineOffset(LINE_OFFSET, line, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i] / 24, false, scale);
-        return offset;
     }
 
     remove() {
@@ -485,7 +494,6 @@ class TextPainter extends Painter {
             'textHaloBlur',
             'textHaloOpacity',
             'isHalo',
-            'fadeOpacity',
             {
                 name : 'zoomScale',
                 type : 'function',

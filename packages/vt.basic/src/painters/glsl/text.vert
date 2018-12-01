@@ -6,6 +6,8 @@ attribute vec2 aTexCoord0;
 attribute float aSize;
 attribute vec2 aDxDy;
 attribute float aRotation;
+//uint8
+attribute float aOpacity;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -26,6 +28,7 @@ uniform float tileRatio; //EXTENT / tileSize
 varying vec2 vTexCoord;
 varying float vGammaScale;
 varying float vSize;
+varying float vOpacity;
 
 void main() {
 
@@ -75,4 +78,5 @@ void main() {
 
 
     vSize = aSize;
+    vOpacity = aOpacity / 255.0;
 }

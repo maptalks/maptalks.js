@@ -14,11 +14,10 @@ uniform vec4 textHaloFill;
 uniform highp float textHaloBlur;
 uniform float textHaloOpacity;
 
-uniform float fadeOpacity;
-
 varying vec2 vTexCoord;
 varying float vSize;
 varying float vGammaScale;
+varying float vOpacity;
 
 void main() {
     float fontScale = vSize / 24.0;
@@ -38,5 +37,5 @@ void main() {
     float alpha = clamp(smoothstep(buff - gammaScaled, buff + gammaScaled, dist) * 1.2, 0.0, 1.0);
     // float alpha = smoothstep(buff - gammaScaled, buff + gammaScaled, dist);
     // gl_FragColor = vec4(textFill.rgb, alpha * textFill.a);
-    gl_FragColor = color * (alpha * textOpacity * fadeOpacity);
+    gl_FragColor = color * (alpha * textOpacity * vOpacity);
 }
