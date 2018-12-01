@@ -49,5 +49,5 @@ void main() {
     // y is 1 if the normal points up, and -1 if it points down
     vNormal = aNormal;
     vWidth = vec2(outset, inset);
-    vGammaScale = cameraToCenterDistance / distance;
+    vGammaScale = distance / cameraToCenterDistance;
 }

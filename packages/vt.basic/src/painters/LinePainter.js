@@ -156,7 +156,7 @@ class LinePainter extends Painter {
                     enable: true,
                     mask : 0xFF,
                     func: {
-                        cmp: '<',
+                        cmp: '<=',
                         ref: (context, props) => {
                             return props.level;
                         },
