@@ -259,6 +259,27 @@ class TextPainter extends Painter {
         }
     }
 
+    _forEachLabel(mesh, fn) {
+        const geometry = mesh.geometry,
+            geometryProps = geometry.properties;
+        const pickingId = geometryProps.aPickingId;
+        let start = 0, current = pickingId[0];
+        //每个文字有四个pickingId
+        for (let i = 0; i < pickingId.length; i += 4) {
+            //pickingId发生变化，新的feature出现
+            if (pickingId[i] !== current || i === pickingId.length - 4) {
+                const end = i === pickingId.length - 4 ? pickingId.length : i;
+                const feature = geometryProps.features[current];
+                const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
+
+                fn(mesh, text, start, end);
+
+                current = pickingId[i];
+                start = i;
+            }
+        }
+    }
+
     _updateLineLabel(mesh, planeMatrix) {
         const map = this.layer.getMap();
         const geometry = mesh.geometry;
@@ -287,20 +308,11 @@ class TextPainter extends Painter {
             line = projectLine(out, line, projMatrix, map.width, map.height);
         }
         //pickingId中是feature序号，相同的pickingId对应着相同的feature
-        const pickingId = geometryProps.aPickingId;
-        let start = 0, current = pickingId[0];
-        //每个文字有四个pickingId
-        for (let i = 0; i < pickingId.length; i += 4) {
-            //pickingId发生变化，新的feature出现
-            if (pickingId[i] !== current || i === pickingId.length - 4) {
-                const end = i === pickingId.length - 4 ? pickingId.length : i;
 
-                this._updateAttributes(mesh, line, current, start, end, projMatrix, isPitchWithMap ? planeMatrix : null, elements);
+        this._forEachLabel(mesh, (mesh, label, start, end) => {
+            this._updateAttributes(mesh, label, start, end, line, projMatrix, isPitchWithMap ? planeMatrix : null, elements);
+        });
 
-                current = pickingId[i];
-                start = i;
-            }
-        }
         geometry.updateData('aNormal', aNormal);
         if (shouldUpdate) {
             geometry.updateData('aOffset', aOffset);
@@ -317,12 +329,9 @@ class TextPainter extends Painter {
     }
 
     // start and end is the start and end index of feature's line
-    _updateAttributes(mesh, line, pickingId, start, end, projMatrix, planeMatrix, elements) {
+    _updateAttributes(mesh, label, start, end, line, projMatrix, planeMatrix, elements) {
         const geometry = mesh.geometry;
-        const properties = geometry.properties;
-        const feature = properties.features[pickingId];
-        const text = feature.textName = feature.textName || resolveText(properties.symbol.textName, feature.feature.properties),
-            charCount = text.length;//文字字符数
+        const charCount = label.length;
 
         const uniforms = mesh.material.uniforms;
         const isPitchWithMap = uniforms['pitchWithMap'] === 1,
