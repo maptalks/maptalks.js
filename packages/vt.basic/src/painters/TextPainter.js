@@ -1,6 +1,7 @@
 import Painter from './Painter';
 import { reshader, vec2, vec3, vec4, mat4 } from '@maptalks/gl';
 import { getLineOffset } from './util/line_offset';
+import { projectPoint } from './util/projection';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -97,6 +98,7 @@ class TextPainter extends Painter {
                 geometry.properties.aSize = aSize;
                 geometry.properties.aPickingId = geometry.data.aPickingId;
                 geometry.properties.elemCtor = geometry.elements.constructor;
+                geometry.properties.elements = geometry.elements;
 
                 delete geometry.data.aSegment;
                 delete geometry.data.aGlyphOffset;
@@ -205,9 +207,11 @@ class TextPainter extends Painter {
         return meshes;
     }
 
-    callShader(uniforms, { timestamp }) {
+    preparePaint({ timestamp }) {
         this._updateLabels(timestamp);
+    }
 
+    callShader(uniforms) {
         this._shader.filter = shaderFilter0;
         this._renderer.render(this._shader, uniforms, this.scene);
 
@@ -241,71 +245,79 @@ class TextPainter extends Painter {
             0.0, pitchSin, pitchCos
         ];
 
-
-        const elements = [];
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
             const geometry = mesh.geometry;
-            const geometryProps = geometry.properties;
-            const { aNormal, aOffset, aRotation } = geometryProps;
-            if (!aNormal) {
-                //不是line placement的文字，无需更新
-                continue;
-            }
-
-            //pitch不跟随map时，需要根据屏幕位置实时计算各文字的位置和旋转角度并更新aOffset和aRotation
-            //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
-            //aNormal在两种情况都要实时计算更新
-
-            const properties = mesh.geometry.properties;
-            let line = properties.line;
-            if (!line) {
-                continue;
-            }
-            elements.length = 0;
-
-            const uniforms = mesh.material.uniforms;
-            const isPitchWithMap = uniforms['pitchWithMap'] === 1,
-                shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
-
-            const tileMatrix = mesh.localTransform,
-                projMatrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, tileMatrix);
-            if (!isPitchWithMap) {
-                //project line to screen coordinates
-                const out = properties.projLine = properties.projLine || new Array(line.length);
-                line = projectLine(out, line, projMatrix, map.width, map.height);
-            }
-            //pickingId中是feature序号，相同的pickingId对应着相同的feature
-            const pickingId = geometryProps.aPickingId;
-            let start = 0, current = pickingId[0];
-            //每个文字有四个pickingId
-            for (let i = 0; i < pickingId.length; i += 4) {
-                //pickingId发生变化，新的feature出现
-                if (pickingId[i] !== current || i === pickingId.length - 4) {
-                    const end = i === pickingId.length - 4 ? pickingId.length : i;
-
-                    this._updateFeature(mesh, line, current, start, end, projMatrix, isPitchWithMap ? planeMatrix : null, elements);
-
-                    current = pickingId[i];
-                    start = i;
+            if (geometry.properties.aNormal) {
+                if (!geometry.properties.line) {
+                    continue;
                 }
+                this._updateLineLabel(mesh, planeMatrix);
             }
-            geometry.updateData('aNormal', aNormal);
-            if (shouldUpdate) {
-                geometry.updateData('aOffset', aOffset);
-                geometry.updateData('aRotation', aRotation);
+            //TODO 遍历每个label，计算box，并加入到collision index中
 
-                geometry.setElements({
-                    usage : 'dynamic',
-                    data : new geometry.properties.elemCtor(elements)
-                });
-            }
-            //tag if geometry's aOffset and aRotation is updated
-            geometry.__dataUpdated = true;
         }
     }
+
+    _updateLineLabel(mesh, planeMatrix) {
+        const map = this.layer.getMap();
+        const geometry = mesh.geometry;
+        const geometryProps = geometry.properties;
+        const { aNormal, aOffset, aRotation } = geometryProps;
+        //pitch不跟随map时，需要根据屏幕位置实时计算各文字的位置和旋转角度并更新aOffset和aRotation
+        //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
+        //aNormal在两种情况都要实时计算更新
+
+        const properties = mesh.geometry.properties;
+        let line = properties.line;
+        if (!line) {
+            return;
+        }
+        const elements = [];
+
+        const uniforms = mesh.material.uniforms;
+        const isPitchWithMap = uniforms['pitchWithMap'] === 1,
+            shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
+
+        const tileMatrix = mesh.localTransform,
+            projMatrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, tileMatrix);
+        if (!isPitchWithMap) {
+            //project line to screen coordinates
+            const out = properties.projLine = properties.projLine || new Array(line.length);
+            line = projectLine(out, line, projMatrix, map.width, map.height);
+        }
+        //pickingId中是feature序号，相同的pickingId对应着相同的feature
+        const pickingId = geometryProps.aPickingId;
+        let start = 0, current = pickingId[0];
+        //每个文字有四个pickingId
+        for (let i = 0; i < pickingId.length; i += 4) {
+            //pickingId发生变化，新的feature出现
+            if (pickingId[i] !== current || i === pickingId.length - 4) {
+                const end = i === pickingId.length - 4 ? pickingId.length : i;
+
+                this._updateAttributes(mesh, line, current, start, end, projMatrix, isPitchWithMap ? planeMatrix : null, elements);
+
+                current = pickingId[i];
+                start = i;
+            }
+        }
+        geometry.updateData('aNormal', aNormal);
+        if (shouldUpdate) {
+            geometry.updateData('aOffset', aOffset);
+            geometry.updateData('aRotation', aRotation);
+
+            geometry.properties.elements = elements;
+            geometry.setElements({
+                usage : 'dynamic',
+                data : new geometry.properties.elemCtor(elements)
+            });
+        }
+        //tag if geometry's aOffset and aRotation is updated
+        geometry.__dataUpdated = true;
+    }
+
     // start and end is the start and end index of feature's line
-    _updateFeature(mesh, line, pickingId, start, end, projMatrix, planeMatrix, elements) {
+    _updateAttributes(mesh, line, pickingId, start, end, projMatrix, planeMatrix, elements) {
         const geometry = mesh.geometry;
         const properties = geometry.properties;
         const feature = properties.features[pickingId];
@@ -631,24 +643,5 @@ function projectLine(out, line, matrix, width, height) {
         //TODO line[i + 2]的单位？
         out[i + 2] = line[i + 2];
     }
-    return out;
-}
-
-const v4 = [];
-
-/**
- * Project a tile coordinate to screen coordinate
- * @param {Number[]} out - array to receive result
- * @param {Number[]} point - tile coordinate
- * @param {Number[]} matrix - projection matrix
- * @param {Number} width - canvas width
- * @param {Number} height - canvas height
- */
-function projectPoint(out, point, matrix, width, height) {
-    vec4.set(v4, point[0], point[1], point[2], 1);
-    vec4.transformMat4(v4, v4, matrix);
-    vec4.scale(v4, v4, 1 / v4[3]);
-    out[0] = (v4[0] + 1) * width / 2;
-    out[1] = (-v4[1] + 1) * height / 2;
     return out;
 }

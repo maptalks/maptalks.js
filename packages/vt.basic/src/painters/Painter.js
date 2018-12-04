@@ -95,8 +95,11 @@ class Painter {
     }
 
     render(context) {
+        this.preparePaint(context);
         return this.paint(context);
     }
+
+    preparePaint() {}
 
     paint(context) {
         this._redraw = false;

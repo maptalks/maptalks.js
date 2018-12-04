@@ -15,7 +15,9 @@ const defaultOptions = {
     tileSize : [512, 512],
     stencil : false,
     features : true,
-    cascadeTiles : false
+    cascadeTiles : false,
+    //viewport padding for collision index
+    collisionPadding : 100
 };
 
 /**

@@ -52,6 +52,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             if (typeof data === 'string') {
                 data = JSON.parse(data);
             }
+            // debugger
             this.index = geojsonvt(data, this.options.geojsonvt || {
                 maxZoom: 24,  // max zoom to preserve detail on; can't be higher than 24
                 tolerance: 3, // simplification tolerance (higher means simpler)
@@ -77,7 +78,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             cb(null, features);
             return;
         }
-        // debugger
         let feature;
         for (let i = 0, l = tile.features.length; i < l; i++) {
             feature = tile.features[i];

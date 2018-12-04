@@ -1,18 +1,5 @@
 import { vec4 } from '@maptalks/gl';
 
-export function projectLine(out, line, matrix, width, height) {
-    const v = [];
-    for (let i = 0; i < line.length; i += 3) {
-        vec4.set(v, line[i], line[i + 1], line[i + 2], 1);
-        projectPoint(v, v, matrix, width, height);
-        out[i] = v[0];
-        out[i + 1] = v[1];
-        //TODO line[i + 2]的单位？
-        out[i + 2] = line[i + 2];
-    }
-    return out;
-}
-
 const v4 = [];
 
 /**
