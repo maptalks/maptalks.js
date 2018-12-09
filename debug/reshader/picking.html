@@ -108,21 +108,33 @@
             const cameraPos = [0, 8, 8];
             const { viewProjMatrix, viewMatrix, projMatrix } = getViewProjection(cameraPos);
 
-            const scene = getScene();
+            const  { scene1, scene2 } = getScene();
 
-            const uniforms = {
+            const uniforms1 = {
                 'projViewMatrix' : viewProjMatrix,
                 'color' : [0, 1, 0]
             };
-
+            const uniforms2 = {
+                'projViewMatrix' : viewProjMatrix,
+                'color' : [1, 0, 0]
+            };
             renderer.render(
                 shader,
-                uniforms,
-                scene
+                uniforms1,
+                scene1
             );
 
             //渲染picking帧缓冲
-            picking.render(scene.getMeshes(), uniforms);
+            picking.render(scene1.getMeshes(), uniforms1);
+
+            renderer.render(
+                shader,
+                uniforms2,
+                scene2
+            );
+
+            //渲染picking帧缓冲
+            picking.render(scene2.getMeshes(), uniforms2);
 
             //点选
             //meshId 是 mesh 在 meshes 中的序号
@@ -168,8 +180,11 @@
         function getScene() {
             const mesh1 = getMesh(0, [0,0,0]);
             const mesh2 = getMesh(1, [3,0,0]);
-            const scene = new reshader.Scene([mesh1, mesh2]);
-            return scene;
+            //const scene = new reshader.Scene([mesh1, mesh2]);
+            //return scene;
+            const scene1 = new reshader.Scene([mesh1]);
+            const scene2 = new reshader.Scene([mesh2]);
+            return { scene1, scene2 };
         }
         
         function getMesh(id, trans) {
