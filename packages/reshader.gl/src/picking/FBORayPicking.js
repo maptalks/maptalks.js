@@ -294,7 +294,7 @@ export default class FBORayPicking {
 
         // const geometry = mesh.geometry;
         // geometry.setDrawCount(count);
-        // geometry.setOffset(offset);
+        // geometry.setDrawOffset(offset);
 
         this._scene1.setMeshes([mesh]);
         this._clearFbo(fbo1);
@@ -302,7 +302,7 @@ export default class FBORayPicking {
         this._renderer.render(this._depthShader, uniforms, this._scene1, fbo1);
 
         // geometry.setDrawCount(null);
-        // geometry.setOffset(0);
+        // geometry.setDrawOffset(0);
 
         const data = regl.read({
             x, y : fbo1.height - y,

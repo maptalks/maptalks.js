@@ -17,7 +17,7 @@ export default class Geometry {
         const pos = data[this.desc.positionAttribute];
         if (!count) {
             if (elements) {
-                count = elements.length;
+                count = getElementLength(elements);
             } else if (pos && pos.length) {
                 count = pos.length / this.desc.positionSize;
             }
@@ -88,12 +88,19 @@ export default class Geometry {
         return this.elements;
     }
 
-    setElements(elements) {
-        if (this.elements && this.elements.destroy) {
-            this.elements.destroy();
+    setElements(elements, count) {
+        if (!elements) {
+            throw new Error('elements data is invalid');
         }
-        this.elements = elements;
-        this.count = elements.length;
+        const e = this.elements;
+        this.count = count === undefined ? getElementLength(elements) : count;
+
+        if (e.destroy) {
+            const data = extend({}, elements, { primitive : this.getPrimitive() });
+            this.elements = e(data);
+        } else {
+            this.elements = elements;
+        }
         return this;
     }
 
@@ -106,12 +113,12 @@ export default class Geometry {
         return this.count1 || this.count;
     }
 
-    setOffset(offset) {
+    setDrawOffset(offset) {
         this.offset = offset;
         return this;
     }
 
-    getOffset() {
+    getDrawOffset() {
         return this.offset || 0;
     }
 
@@ -176,4 +183,15 @@ export default class Geometry {
             }
         }
     }
+}
+
+function getElementLength(elements) {
+    if (isNumber(elements)) {
+        return elements;
+    } else if (elements.length !== undefined) {
+        return elements.length;
+    } else if (elements.data) {
+        return elements.data.length;
+    }
+    throw new Error('invalid elements length');
 }
