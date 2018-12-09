@@ -1,7 +1,8 @@
 import Painter from './Painter';
-import { reshader, vec2, vec3, vec4, mat4 } from '@maptalks/gl';
+import { reshader, vec2, vec3, mat4 } from '@maptalks/gl';
 import { getLineOffset } from './util/line_offset';
-import { projectPoint } from './util/projection';
+import { projectPoint, projectLine } from './util/projection';
+import { getLabelBox } from './util/get_label_box';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -41,6 +42,8 @@ const defaultUniforms = {
 const PROJ_MATRIX = [], FIRST_POINT = [], LAST_POINT = [],
     ANCHOR = [], PROJ_ANCHOR = [], GLYPH_OFFSET = [], DXDY = [], SEGMENT = [], LINE_OFFSET = [];
 
+const TLBOX = [], BRBOX = [];
+
 class TextPainter extends Painter {
     needToRedraw() {
         return this._redraw;
@@ -71,11 +74,12 @@ class TextPainter extends Painter {
             }
             const symbol = packMeshes[i].symbol;
             geometry.properties.symbol = symbol;
+            const isAlongLine = (symbol['textPlacement'] === 'line');
             const uniforms = {
                 tileResolution : geometry.properties.res,
                 tileRatio : geometry.properties.tileRatio
             };
-            const { aPosition, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
+            const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
 
             //initialize opacity array
             const aOpacity = new Uint8Array(aSize.length);
@@ -86,17 +90,20 @@ class TextPainter extends Painter {
                 usage : 'dynamic',
                 data : aOpacity
             };
-            geometry.properties.aOpacity = aOpacity;
-
-            const isAlongLine = (symbol['textPlacement'] === 'line');
-            if (isAlongLine) {
-                geometry.properties.aAnchor = aPosition;
-                geometry.properties.aGlyphOffset = aGlyphOffset;
-                geometry.properties.aDxDy = aDxDy;
-                geometry.properties.aTextRotation = aRotation;
-                geometry.properties.aSegment = aSegment;
-                geometry.properties.aSize = aSize;
+            if (isAlongLine || true) {
+                //TODO collision是否为true
+                geometry.properties.aOpacity = aOpacity;
                 geometry.properties.aPickingId = geometry.data.aPickingId;
+                geometry.properties.aDxDy = aDxDy;
+                geometry.properties.aSize = aSize;
+                geometry.properties.aRotation = aRotation;
+                geometry.properties.aAnchor = aPosition;
+                geometry.properties.aShape0 = aShape0;
+            }
+
+            if (isAlongLine) {
+                geometry.properties.aGlyphOffset = aGlyphOffset;
+                geometry.properties.aSegment = aSegment;
                 geometry.properties.elemCtor = geometry.elements.constructor;
                 geometry.properties.elements = geometry.elements;
 
@@ -253,30 +260,11 @@ class TextPainter extends Painter {
                     continue;
                 }
                 this._updateLineLabel(mesh, planeMatrix);
+            } else {
+                this._forEachLabel(mesh, this._updateCollision);
             }
             //TODO 遍历每个label，计算box，并加入到collision index中
 
-        }
-    }
-
-    _forEachLabel(mesh, fn) {
-        const geometry = mesh.geometry,
-            geometryProps = geometry.properties;
-        const pickingId = geometryProps.aPickingId;
-        let start = 0, current = pickingId[0];
-        //每个文字有四个pickingId
-        for (let i = 0; i < pickingId.length; i += 4) {
-            //pickingId发生变化，新的feature出现
-            if (pickingId[i] !== current || i === pickingId.length - 4) {
-                const end = i === pickingId.length - 4 ? pickingId.length : i;
-                const feature = geometryProps.features[current];
-                const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
-
-                fn(mesh, text, start, end);
-
-                current = pickingId[i];
-                start = i;
-            }
         }
     }
 
@@ -300,17 +288,17 @@ class TextPainter extends Painter {
         const isPitchWithMap = uniforms['pitchWithMap'] === 1,
             shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
 
-        const tileMatrix = mesh.localTransform,
-            projMatrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, tileMatrix);
         if (!isPitchWithMap) {
+            const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
             //project line to screen coordinates
             const out = properties.projLine = properties.projLine || new Array(line.length);
-            line = projectLine(out, line, projMatrix, map.width, map.height);
+            line = projectLine(out, line, matrix, map.width, map.height);
         }
         //pickingId中是feature序号，相同的pickingId对应着相同的feature
 
-        this._forEachLabel(mesh, (mesh, label, start, end) => {
-            this._updateAttributes(mesh, label, start, end, line, projMatrix, isPitchWithMap ? planeMatrix : null, elements);
+        this._forEachLabel(mesh, (mesh, label, start, end, matrix) => {
+            this._updateAttributes(mesh, label, start, end, line, matrix, isPitchWithMap ? planeMatrix : null, elements);
+            this._updateCollision(mesh, label, start, end, matrix);
         });
 
         geometry.updateData('aNormal', aNormal);
@@ -326,6 +314,29 @@ class TextPainter extends Painter {
         }
         //tag if geometry's aOffset and aRotation is updated
         geometry.__dataUpdated = true;
+    }
+
+    _forEachLabel(mesh, fn) {
+        const map = this.layer.getMap();
+        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
+        const geometry = mesh.geometry,
+            geometryProps = geometry.properties;
+        const pickingId = geometryProps.aPickingId;
+        let start = 0, current = pickingId[0];
+        //每个文字有四个pickingId
+        for (let i = 0; i < pickingId.length; i += 4) {
+            //pickingId发生变化，新的feature出现
+            if (pickingId[i] !== current || i === pickingId.length - 4) {
+                const end = i === pickingId.length - 4 ? pickingId.length : i;
+                const feature = geometryProps.features[current];
+                const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
+
+                fn.call(this, mesh, text, start, end, matrix);
+
+                current = pickingId[i];
+                start = i;
+            }
+        }
     }
 
     // start and end is the start and end index of feature's line
@@ -389,7 +400,7 @@ class TextPainter extends Painter {
         // 根据地图pitch和cameraDistanceFromCenter计算glyph的perspective ratio
         // 从 aSegment 获取anchor的segment, startIndex 和 lineLength
         // 调用 line_offset.js 计算文字的 offset 和 angle
-        // 与aDxDy和aTextRotation相加后，写回到 aOffset 和 aRotation 中
+        // 与aDxDy和aRotation相加后，写回到 aOffset 和 aRotation 中
         const map = this.layer.getMap();
 
         const { aAnchor, aGlyphOffset, aDxDy, aSegment, aSize } = mesh.geometry.properties;
@@ -398,9 +409,10 @@ class TextPainter extends Painter {
             anchor = projectPoint(PROJ_ANCHOR, anchor, projMatrix, map.width, map.height);
         }
 
-        const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]);
-        const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
-        const segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
+        const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]),
+            dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]),
+            segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
+
         const offset = getLineOffset(LINE_OFFSET, line, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i] / 24, false, scale);
         return offset;
     }
@@ -452,6 +464,45 @@ class TextPainter extends Painter {
         //更新normal
         for (let i = firstChrIdx / 2; i < lastChrIdx / 2; i++) {
             aNormal.data[i] = 2 * flip + vertical;
+        }
+    }
+
+    _updateCollision(mesh, text, start, end, matrix) {
+        const map = this.layer.getMap();
+        const geoProps = mesh.geometry.properties,
+            symbol = geoProps.symbol,
+            isAlongLine = (symbol['textPlacement'] === 'line');
+        const charCount = text.length;
+        //iterate feature's labels
+        for (let i = start; i < end; i += charCount * 4) {
+            //TODO
+            //1, 获取每个label的collision boxes
+            //2, 将每个box在collision index中测试
+            //   2.1 如果不冲突，则显示label
+            //   2.2 如果冲突，则隐藏label
+            if (!isAlongLine && mesh.material.uniforms['rotateWithMap'] !== 1) {
+                const firstChrIdx = i,
+                    lastChrIdx = i + charCount * 4 - 4;
+                const tlBox = getLabelBox(TLBOX, mesh, firstChrIdx, matrix, map),
+                    brBox = getLabelBox(BRBOX, mesh, lastChrIdx, matrix, map);
+                const box = mesh.properties._collisionBox = mesh.properties._collisionBox || [];
+                box[0] = Math.min(tlBox[0], brBox[0]);
+                box[1] = Math.min(tlBox[1], brBox[1]);
+                box[2] = Math.max(tlBox[2], brBox[2]);
+                box[3] = Math.max(tlBox[3], brBox[3]);
+                this.layer.fire('hehe', { box });
+            } else {
+                const boxes = [];
+                //insert every character's box into collision index
+                for (let j = i; j < i + charCount * 4; j += 4) {
+                    //use int16array to save some memory
+                    const box = getLabelBox([], mesh, j, matrix, map);
+                    if (boxes.length < 4) {
+                        boxes.push(box);
+                    }
+                }
+                this.layer.fire('hehe', { boxes });
+            }
         }
     }
 
@@ -632,25 +683,4 @@ export function resolveText(str, props) {
         }
         return value;
     });
-}
-
-/**
- * Project a line from tile coordinate to screen coordinate
- * @param {Number[]} out - array to receive result
- * @param {Number[]} line - line's tile coordinate
- * @param {Number[]} matrix - projection matrix
- * @param {Number} width - canvas width
- * @param {Number} height - canvas height
- */
-function projectLine(out, line, matrix, width, height) {
-    const v = [];
-    for (let i = 0; i < line.length; i += 3) {
-        vec4.set(v, line[i], line[i + 1], line[i + 2], 1);
-        projectPoint(v, v, matrix, width, height);
-        out[i] = v[0];
-        out[i + 1] = v[1];
-        //TODO line[i + 2]的单位？
-        out[i + 2] = line[i + 2];
-    }
-    return out;
 }

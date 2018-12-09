@@ -249,7 +249,6 @@ export default class PointPack extends VectorPack {
                 const flipQuad = quads[l - 1 - ii];
                 const y = quad.glyphOffset[1] + dy;
                 //把line的端点存到line vertex array里
-
                 const { tl, tr, bl, br, tex } = quad;
                 //char's quad if flipped
                 const tl1 = flipQuad.tl, tr1 = flipQuad.tr,

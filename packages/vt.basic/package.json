@@ -23,6 +23,9 @@
     "@maptalks/vt-plugin": "^0.1.0",
     "@maptalks/gl": "file:../maptalksgl/packages/gl"
   },
+  "peerDependencies": {
+    "maptalks" : "^0.42.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",

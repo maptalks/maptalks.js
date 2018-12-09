@@ -22,6 +22,7 @@ class CollisionIndex {
         this.viewportPadding = viewportPadding;
     }
 
+    //minx, miny, maxx, maxy
     placeBox(out, x1, y1, x2, y2) {
         vec4.set(VEC, x1, y1, x2, y2);
         if (this._tree.collides(VEC)) {

@@ -52,7 +52,7 @@ module.exports = {
             exclude: 'node_modules/**'
         })
     ].concat(plugins),
-    external : ['@maptalks/vt', '@maptalks/gl'],
+    external : ['@maptalks/vt', '@maptalks/gl', 'maptalks'],
     output: [
         {
             'sourcemap': production ? false : 'inline',
@@ -60,6 +60,7 @@ module.exports = {
             'name': 'maptalks.vt.basic',
             'banner': banner,
             'globals' : {
+                'maptalks' : 'maptalks',
                 '@maptalks/vt' : 'maptalks',
                 '@maptalks/gl' : 'maptalksgl'
             },
