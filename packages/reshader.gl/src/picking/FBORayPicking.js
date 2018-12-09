@@ -184,7 +184,7 @@ export default class FBORayPicking {
             return this;
         }
         const fbo = this._fbo;
-        this._clearFbo(fbo);
+        //this._clearFbo(fbo);
 
         this._scene.setMeshes(meshes);
         const shader = this._getShader(meshes);
