@@ -5,13 +5,14 @@
   <title>Picking</title>
   <style type="text/css">
     html,body{margin:0px;height:100%;width:100%}
-    .container{width:1000px;height:800px}
+    /* .container{width:1000px;height:800px} */
   </style>
   <script src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js" type="text/javascript"></script>
   <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
   <body>
+    <canvas id="canvas" width=500 height=400 class="container" style="border : 1px solid"></canvas>
     <div id="info"></div>
-    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <canvas id="debug" width=500 height=400 class="container" style="border : 1px solid"></canvas>
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import cubeData from './common/cube.js';
@@ -124,6 +125,8 @@
                 scene1
             );
 
+            picking.clear();
+
             //渲染picking帧缓冲
             picking.render(scene1.getMeshes(), uniforms1);
 
@@ -170,6 +173,7 @@
                         returnPoint : true
                     }
                );
+               debugFBO('debug', picking._fbo1);
                document.getElementById('info').innerHTML = '屏幕中心点选取物<br>'+
                 'meshId：' + meshId +
                 '<br>pickingId : ' + pickingId +
@@ -186,7 +190,7 @@
             const scene2 = new reshader.Scene([mesh2]);
             return { scene1, scene2 };
         }
-        
+
         function getMesh(id, trans) {
             const aPickingId = [];
             for (let i = 0; i < cubeData.vertices.length / 3; i++) {
@@ -220,6 +224,47 @@
                 viewMatrix,
                 projMatrix
             };
+        }
+
+        function debugFBO(id, fbo) {
+            const canvas = document.getElementById(id);
+            const width = fbo.width, height = fbo.height;
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const pixels = regl.read({
+                framebuffer : fbo
+            });
+
+            const halfHeight = height / 2 | 0;  // the | 0 keeps the result an int
+            const bytesPerRow = width * 4;
+
+            for (let i = 0; i < pixels.length; i++) {
+                pixels[i] *= 255;
+            }
+
+            // make a temp buffer to hold one row
+            const temp = new Uint8Array(width * 4);
+            for (let y = 0; y < halfHeight; ++y) {
+                const topOffset = y * bytesPerRow;
+                const bottomOffset = (height - y - 1) * bytesPerRow;
+
+                // make copy of a row on the top half
+                temp.set(pixels.subarray(topOffset, topOffset + bytesPerRow));
+
+                // copy a row from the bottom half to the top
+                pixels.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
+
+                // copy the copy of the top half row to the bottom half
+                pixels.set(temp, bottomOffset);
+            }
+
+            // This part is not part of the answer. It's only here
+            // to show the code above worked
+            // copy the pixels in a 2d canvas to show it worked
+            const imgdata = new ImageData(width, height);
+            imgdata.data.set(pixels);
+            ctx.putImageData(imgdata, 0, 0);
         }
 
 

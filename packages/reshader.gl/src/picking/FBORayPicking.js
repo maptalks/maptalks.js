@@ -15,6 +15,7 @@ const unpackFun = `
     }
 `;
 
+// picking id and mesh id, only when mesh's count is < 256
 const frag0 = `
     precision highp float;
 
@@ -29,6 +30,7 @@ const frag0 = `
     }
 `;
 
+// only mesh id
 const frag1 = `
     precision highp float;
 
@@ -42,6 +44,7 @@ const frag1 = `
     }
 `;
 
+// only picking id
 const frag2 = `
     precision highp float;
 
@@ -114,10 +117,12 @@ export default class FBORayPicking {
     constructor(renderer, { vert, uniforms, defines, extraCommandProps }, fbo) {
         this._renderer = renderer;
         this._fbo = fbo;
+        this._clearFbo(fbo);
         this._vert = vert;
         this._uniforms = uniforms;
         this._defines = defines;
         this._extraCommandProps = extraCommandProps;
+        this._currentMeshes = [];
         this._init();
     }
 
@@ -177,22 +182,34 @@ export default class FBORayPicking {
         this._scene1 = new Scene();
     }
 
-    render(meshes, uniforms) {
-        delete this._currentMeshes;
-        delete this._currentShader;
+    /**
+     * Render meshes to fbo for further picking
+     * @param {Mesh[]} meshes - meshes to render
+     * @param {Object} uniforms - uniform values
+     * @param {Boolean} once - if it's an one time rendering which can gain some performance improvement
+     */
+    render(meshes, uniforms, once = false) {
         if (!meshes || !meshes.length) {
             return this;
         }
         const fbo = this._fbo;
-        //this._clearFbo(fbo);
+
+        if (once) {
+            this.clear();
+        }
 
         this._scene.setMeshes(meshes);
-        const shader = this._getShader(meshes);
+        const shader = this._getShader(meshes, once);
+        if (this._currentShader && shader !== this._currentShader) {
+            this.clear();
+        }
         this._currentShader = shader;
-        this._currentMeshes = meshes;
         meshes.forEach((m, idx) => {
-            m.setUniform('fbo_picking_meshId', idx);
+            m.setUniform('fbo_picking_meshId', idx + this._currentMeshes.length);
         });
+        for (let i = 0; i < meshes.length; i++) {
+            this._currentMeshes.push(meshes[i]);
+        }
         this._renderer.render(shader, uniforms, this._scene, fbo);
         return this;
     }
@@ -222,7 +239,7 @@ export default class FBORayPicking {
         });
 
         let { pickingId, meshId } = this._packData(data, shader);
-        if (shader === this._shader1 && meshes[0].geometry.data['aPickingId']) {
+        if (meshId !== null && shader === this._shader1 && meshes[0].geometry.data['aPickingId']) {
             //TODO 再次渲染，获得aPickingId
             pickingId = this._getPickingId(x, y, meshes[meshId], uniforms);
         }
@@ -238,6 +255,15 @@ export default class FBORayPicking {
             meshId,
             point
         };
+    }
+
+    clear() {
+        if (this._fbo) {
+            this._clearFbo(this._fbo);
+        }
+        this._currentMeshes = [];
+        delete this._currentShader;
+        return this;
     }
 
     getMeshAt(idx) {
@@ -345,16 +371,11 @@ export default class FBORayPicking {
         });
     }
 
-    _getShader(meshes) {
-        const mesh = meshes[0];
-        if (!mesh.geometry.data['aPickingId']) {
-            //only fbo_picking_meshId
-            return this._shader1;
-        }
-        if (meshes.length < 256) {
+    _getShader(meshes, once) {
+        if (once && meshes.length < 256) {
             return this._shader0;
         }
-        return this._shader2;
+        return this._shader1;
     }
 
     _getFBO1() {
