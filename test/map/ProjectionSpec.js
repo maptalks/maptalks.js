@@ -195,6 +195,12 @@ describe('Map.Projection', function () {
             expect(map.getProjection().code).to.be.eql('BAIDU');
             expect(map.getCenter()).to.closeTo(center);
         });
+
+        it('baidu projection with Infinity', function () {
+            var baiduProj = maptalks.SpatialReference.getProjectionInstance('baidu');
+            var a = baiduProj.project(new maptalks.Coordinate(Infinity, -Infinity));
+            var b = baiduProj.project(new maptalks.Coordinate(-Infinity, -Infinity));
+        });
     });
 });
 
