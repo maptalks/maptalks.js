@@ -118,8 +118,10 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         return cC;
     },
     getLoop: function (cC, cB, T) {
-        if (!Number.isFinite(cC)) {
-            return cC > 0 ? T : cB;
+        if (cC === Infinity) {
+            return T;
+        } else if (cC === -Infinity) {
+            return cB;
         }
         while (cC > T) {
             cC -= T - cB;
