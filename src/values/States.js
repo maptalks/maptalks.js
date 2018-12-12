@@ -248,7 +248,9 @@ include(GLContext.prototype, {
         if (v[pname] === param) {
             return;
         }
-        v[pname][0] = param;
+        if (v[pname]) {
+            v[pname][0] = param;
+        }
         this._gl.pixelStorei(pname, param);
     },
 

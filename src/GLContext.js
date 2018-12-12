@@ -111,7 +111,24 @@ class GLContext {
      * @returns {GL}
     */
     createVertexArray() {
-        return this._gl.createVertexArray();
+        if (!this._vertexArrayOES) {
+            this._vertexArrayOES = this._gl.getExtension('OES_vertex_array_object');
+        }
+        return this._vertexArrayOES.createVertexArrayOES();
+    }
+
+    deleteVertexArray(arrayObject) {
+        if (!this._vertexArrayOES) {
+            this._vertexArrayOES = this._gl.getExtension('OES_vertex_array_object');
+        }
+        return this._vertexArrayOES.deleteVertexArrayOES(arrayObject);
+    }
+
+    bindVertexArray(arrayObject) {
+        if (!this._vertexArrayOES) {
+            this._vertexArrayOES = this._gl.getExtension('OES_vertex_array_object');
+        }
+        return this._vertexArrayOES.bindVertexArrayOES(arrayObject);
     }
 
     /**
