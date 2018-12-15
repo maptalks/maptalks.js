@@ -35,11 +35,12 @@
         // camera's position
         const cameraPos = [6, 8, 4];
         const cameraProjView = getViewProjection(cameraPos);
+        const scene = getScene();
 
         render();
 
         //主绘制方法
-        function render() {const scene = getScene();
+        function render() {
             renderer.render(
                 // shader
                 shader,
