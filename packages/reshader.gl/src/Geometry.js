@@ -171,6 +171,74 @@ export default class Geometry {
         }
     }
 
+    /**
+     * Create barycentric attribute data
+     * @param {String} name - attribute name for barycentric attribute
+     */
+    createBarycentric(name = 'aBarycentric') {
+        const position = this.data[this.desc.positionAttribute];
+        if (position.destroy) {
+            throw new Error('Position data must be an array to create bary centric data');
+        } else if (this.desc.primitive !== 'triangles') {
+            throw new Error('Primitive must be triangles to create bary centric data');
+        }
+        const bary = new Uint8Array(position.length / this.desc.positionSize * 3);
+        for (let i = 0, l = this.elements.length; i < l;) {
+            for (let j = 0; j < 3; j++) {
+                const ii = this.elements[i++];
+                bary[ii * 3 + j] = 1;
+            }
+        }
+        this.data[name] = bary;
+    }
+
+    /**
+     * Build unique vertex data for each attribute
+     */
+    buildUniqueVertex() {
+        const data = this.data;
+        const indices = this.elements;
+        if (!Array.isArray(indices)) {
+            throw new Error('elements must be array to build unique vertex.');
+        }
+
+        const keys = Object.keys(data);
+        const oldData = {};
+
+        const pos = data[this.desc.positionAttribute];
+        if (pos.destroy) {
+            throw new Error(this.desc.positionAttribute + ' must be array to build unique vertex.');
+        }
+        const vertexCount = pos.length / this.desc.positionSize;
+
+        const l = indices.length;
+        for (let i = 0; i < keys.length; i++) {
+            const name = keys[i];
+            const size = data[name].length / vertexCount;
+            if (data[name].destroy) {
+                throw new Error(name + ' must be array to build unique vertex.');
+            }
+            oldData[name] = data[name];
+            oldData[name].size = size;
+            data[name] = new data[name].constructor(l * size);
+        }
+
+        let cursor = 0;
+        for (let i = 0; i < l; i++) {
+            const idx = indices[i];
+            for (let ii = 0; ii < keys.length; ii++) {
+                const name = keys[ii];
+                const array = data[name];
+                const size = oldData[name].size;
+
+                for (let k = 0; k < size; k++) {
+                    array[cursor * size + k] = oldData[name][idx * size + k];
+                }
+            }
+            indices[i] = cursor++;
+        }
+    }
+
     _forEachBuffer(fn) {
         if (this.elements && this.elements.destroy)  {
             fn(this.elements);

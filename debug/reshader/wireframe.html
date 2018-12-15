@@ -31,16 +31,15 @@
 
         const renderer = new reshader.Renderer(regl);
 
+
+        // camera's position
+        const cameraPos = [6, 8, 4];
+        const cameraProjView = getViewProjection(cameraPos);
+
         render();
 
         //主绘制方法
-        function render() {
-            // camera's position
-            const cameraPos = [0, 8, 8];
-            const cameraProjView = getViewProjection(cameraPos);
-
-            const scene = getScene();
-
+        function render() {const scene = getScene();
             renderer.render(
                 // shader
                 shader,
@@ -48,32 +47,25 @@
                 // 有一个uniform会自动设置：model， 值是mesh的localTransform
                 {
                     'projViewMatrix' : cameraProjView,
-                    'frontColor' : [1, 0, 0],
-                    'backColor' : [1, 0, 0],
-                    'lineWidth' : 1.5,
+                    'frontColor' : [1, 0, 0, 1],
+                    'backColor' : [1, 0, 0, 0.6],
+                    'lineWidth' : 2,
                     'alpha' : 1
                 },
                 scene,
                 null  //最后一个参数是framebuffer，可以指定framebuffer目标
             );
+            // requestAnimationFrame(render);
         }
 
         function getScene() {
-            let data = {
-                vertices : cubeData.vertices,
-            };
-            const uniqueData = buildUniqueVertex(data, cubeData.indices, { vertices : { size : 3 } });
-
-            const aBarycentric = createBarycentric(uniqueData.vertices, cubeData.indices);
-
             const cube = new reshader.Geometry(
                 //geometry的attributes数据
                 //1. 保留的属性： aPosition, aNormal, aTexCoord, aColor, aTangent
                 //2. 支持添加自定义attribute数据, attribute变量名字和glsl中的变量名必须一致，以让regl自动传值
                 //3. 值可以是类型数组，也可以是 regl.buffer(...) 方法创建的 buffer 对象
                 {
-                    aPosition : uniqueData.vertices,
-                    aBarycentric
+                    aPosition : cubeData.vertices
                 },
                 //索引数据
                 //1. elements，可以是类型数组，也可以是 regl.elements(..) 方法创建的 elements 对象
@@ -90,6 +82,12 @@
                     positionSize : 3
                 }
             );
+
+            //重新组织attribute数据，让每个顶点有独立的数据
+            cube.buildUniqueVertex();
+            //创建barycentric属性数据，参数是attribute名字
+            cube.createBarycentric('aBarycentric');
+
             //传入数据为类型数组时，可以调用 generateBuffers 将attributes 和 elements 转化为 regl的 buffer对象
             //方便实际绘制时，不再重复拷贝数据 (bufferData)
             cube.generateBuffers(regl);
@@ -111,46 +109,6 @@
             const viewProjection = mat4.multiply([], projection, view);
             return viewProjection;
         }
-
-        function createBarycentric(position, indices) {
-            const bary = new Uint8Array(position.length);
-            for (let i = 0, l = indices.length; i < l;) {
-                for (let j = 0; j < 3; j++) {
-                    const ii = indices[i++];
-                    bary[ii * 3 + j] = 1;
-                }
-            }
-            return bary;
-        }
-
-        function buildUniqueVertex(data, indices, desc) {
-            const keys = Object.keys(data);
-
-            const oldData = {};
-            const l = indices.length;
-            for (let i = 0; i < keys.length; i++) {
-                const name = keys[i];
-                oldData[name] = data[name];
-                data[name] = new oldData[name].constructor(l * desc[name].size);
-            }
-
-            let cursor = 0;
-            for (let i = 0; i < l; i++) {
-                const idx = indices[i];
-                for (let ii = 0; ii < keys.length; ii++) {
-                    const name = keys[ii];
-                    const array = data[name];
-                    const size = desc[name].size;
-
-                    for (let k = 0; k < size; k++) {
-                        array[cursor * size + k] = oldData[name][idx * size + k];
-                    }
-                }
-                indices[i] = cursor++;
-            }
-
-            return data;
-            }
 
 
     </script>
