@@ -16,14 +16,9 @@ class WireframeShader extends MeshShader {
                 },
                 equation: 'add'
             },
-            // cull : {
-            //     enable : true,
-            //     face: 'back'
-            // },
-            // depth : {
-            //     enable : true,
-            //     func : 'always'
-            // }
+            sample: {
+                alpha: true
+            }
         });
         super({
             vert : wireframeVert,
