@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cube Wireframe</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <script src="../../node_modules/maptalks/dist/maptalks.js" type="text/javascript"></script>
+  <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
+    <script type="module">
+        import cubeData from './common/cube.js';
+
+        const { createREGL, mat4, reshader } = maptalksgl;
+
+
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_standard_derivatives'
+            ],
+        });
+
+
+
+        const shader = new reshader.WireframeShader();
+
+        const renderer = new reshader.Renderer(regl);
+
+        render();
+
+        //主绘制方法
+        function render() {
+            // camera's position
+            const cameraPos = [0, 8, 8];
+            const cameraProjView = getViewProjection(cameraPos);
+
+            const scene = getScene();
+
+            renderer.render(
+                // shader
+                shader,
+                // 手动填入的uniform 值
+                // 有一个uniform会自动设置：model， 值是mesh的localTransform
+                {
+                    'projViewMatrix' : cameraProjView,
+                    'frontColor' : [1, 0, 0],
+                    'backColor' : [1, 0, 0],
+                    'lineWidth' : 1.5,
+                    'alpha' : 1
+                },
+                scene,
+                null  //最后一个参数是framebuffer，可以指定framebuffer目标
+            );
+        }
+
+        function getScene() {
+            let data = {
+                vertices : cubeData.vertices,
+            };
+            const uniqueData = buildUniqueVertex(data, cubeData.indices, { vertices : { size : 3 } });
+
+            const aBarycentric = createBarycentric(uniqueData.vertices, cubeData.indices);
+
+            const cube = new reshader.Geometry(
+                //geometry的attributes数据
+                //1. 保留的属性： aPosition, aNormal, aTexCoord, aColor, aTangent
+                //2. 支持添加自定义attribute数据, attribute变量名字和glsl中的变量名必须一致，以让regl自动传值
+                //3. 值可以是类型数组，也可以是 regl.buffer(...) 方法创建的 buffer 对象
+                {
+                    aPosition : uniqueData.vertices,
+                    aBarycentric
+                },
+                //索引数据
+                //1. elements，可以是类型数组，也可以是 regl.elements(..) 方法创建的 elements 对象
+                //2. count， 数字，如果geometry不是索引类型(drawElements)，这里直接指定绘制的图元数量(同drawArrays中的count参数)
+                cubeData.indices,
+                //绘制的索引个数，为0时，表示全部绘制，可以通过它只绘制一部分顶点
+                0,
+                {
+                    //绘制类型，例如 triangle strip, line等，具体类型请查阅regl
+                    primitive : 'triangles',
+                    //顶点的属性名称，默认为aPosition
+                    positionAttribute : 'aPosition',
+                    //顶点个数，默认为3
+                    positionSize : 3
+                }
+            );
+            //传入数据为类型数组时，可以调用 generateBuffers 将attributes 和 elements 转化为 regl的 buffer对象
+            //方便实际绘制时，不再重复拷贝数据 (bufferData)
+            cube.generateBuffers(regl);
+
+            const cubeMesh = new reshader.Mesh(cube);
+
+            const transformMat = mat4.identity([]);
+            mat4.scale(transformMat, transformMat, [0.5, 0.5, 0.5]);
+            cubeMesh.setLocalTransform(transformMat);
+
+            const scene = new reshader.Scene([cubeMesh]);
+            return scene;
+        }
+
+        function getViewProjection(cameraPos) {
+            const aspect = canvas.width / canvas.height;
+            const projection = mat4.perspective([], 60 * Math.PI / 180, aspect, 1, 20);
+            const view = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            const viewProjection = mat4.multiply([], projection, view);
+            return viewProjection;
+        }
+
+        function createBarycentric(position, indices) {
+            const bary = new Uint8Array(position.length);
+            for (let i = 0, l = indices.length; i < l;) {
+                for (let j = 0; j < 3; j++) {
+                    const ii = indices[i++];
+                    bary[ii * 3 + j] = 1;
+                }
+            }
+            return bary;
+        }
+
+        function buildUniqueVertex(data, indices, desc) {
+            const keys = Object.keys(data);
+
+            const oldData = {};
+            const l = indices.length;
+            for (let i = 0; i < keys.length; i++) {
+                const name = keys[i];
+                oldData[name] = data[name];
+                data[name] = new oldData[name].constructor(l * desc[name].size);
+            }
+
+            let cursor = 0;
+            for (let i = 0; i < l; i++) {
+                const idx = indices[i];
+                for (let ii = 0; ii < keys.length; ii++) {
+                    const name = keys[ii];
+                    const array = data[name];
+                    const size = desc[name].size;
+
+                    for (let k = 0; k < size; k++) {
+                        array[cursor * size + k] = oldData[name][idx * size + k];
+                    }
+                }
+                indices[i] = cursor++;
+            }
+
+            return data;
+            }
+
+
+    </script>
+  </body>
+</html>
