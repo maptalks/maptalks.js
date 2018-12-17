@@ -92,3 +92,17 @@ export function normalize(out, arr) {
 export function interpolate(a, b, t) {
     return (a * (1 - t)) + (b * t);
 }
+
+
+export function isArray(arr) {
+    return Array.isArray(arr) ||
+        (arr instanceof Uint8Array) ||
+        (arr instanceof Int8Array) ||
+        (arr instanceof Uint16Array) ||
+        (arr instanceof Int16Array) ||
+        (arr instanceof Uint32Array) ||
+        (arr instanceof Int32Array) ||
+        (arr instanceof Uint8ClampedArray) ||
+        (arr instanceof Float32Array) ||
+        (arr instanceof Float64Array);
+}

@@ -1,5 +1,5 @@
 import { vec3 } from 'gl-matrix';
-import { isNumber, extend } from './common/Util';
+import { isNumber, extend, isArray } from './common/Util';
 import BoundingBox from './BoundingBox';
 
 const defaultDesc = {
@@ -177,7 +177,7 @@ export default class Geometry {
      */
     createBarycentric(name = 'aBarycentric') {
         const position = this.data[this.desc.positionAttribute];
-        if (position.destroy) {
+        if (!isArray(position)) {
             throw new Error('Position data must be an array to create bary centric data');
         } else if (this.desc.primitive !== 'triangles') {
             throw new Error('Primitive must be triangles to create bary centric data');
@@ -198,7 +198,7 @@ export default class Geometry {
     buildUniqueVertex() {
         const data = this.data;
         const indices = this.elements;
-        if (!Array.isArray(indices)) {
+        if (!isArray(indices)) {
             throw new Error('elements must be array to build unique vertex.');
         }
 
@@ -206,7 +206,7 @@ export default class Geometry {
         const oldData = {};
 
         const pos = data[this.desc.positionAttribute];
-        if (pos.destroy) {
+        if (!isArray(pos)) {
             throw new Error(this.desc.positionAttribute + ' must be array to build unique vertex.');
         }
         const vertexCount = pos.length / this.desc.positionSize;
@@ -215,7 +215,7 @@ export default class Geometry {
         for (let i = 0; i < keys.length; i++) {
             const name = keys[i];
             const size = data[name].length / vertexCount;
-            if (data[name].destroy) {
+            if (!isArray(data[name])) {
                 throw new Error(name + ' must be array to build unique vertex.');
             }
             oldData[name] = data[name];
