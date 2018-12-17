@@ -6,7 +6,10 @@ import { extend } from '../common/Util';
 //http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates/
 class WireframeShader extends MeshShader {
 
-    constructor(extraCommandProps = {}) {
+    constructor(config = {}) {
+        let extraCommandProps = config.extraCommandProps || {};
+        const positionAttribute = config.positionAttribute || 'aPosition',
+            barycentricAttribute = config.barycentricAttribute || 'aBarycentric';
         extraCommandProps = extend({}, extraCommandProps, {
             blend : {
                 enable: true,
@@ -20,8 +23,15 @@ class WireframeShader extends MeshShader {
                 alpha: true
             }
         });
+        let vert = wireframeVert;
+        if (positionAttribute !== 'aPosition') {
+            vert = vert.replace(/aPosition/g, positionAttribute);
+        }
+        if (barycentricAttribute !== 'aBarycentric') {
+            vert = vert.replace(/aBarycentric/g, barycentricAttribute);
+        }
         super({
-            vert : wireframeVert,
+            vert,
             frag : wireframeFrag,
             uniforms : [
                 'frontColor', 'backColor', 'lineWidth', 'alpha',
