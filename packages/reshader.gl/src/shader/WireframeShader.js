@@ -34,7 +34,7 @@ class WireframeShader extends MeshShader {
             vert,
             frag : wireframeFrag,
             uniforms : [
-                'frontColor', 'backColor', 'lineWidth', 'alpha',
+                'frontColor', 'backColor', 'lineWidth', 'alpha', 'fillColor',
                 {
                     name : 'projViewModelMatrix',
                     type : 'function',
