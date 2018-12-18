@@ -28,6 +28,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Number}              [options.maxCacheSize=256]    - maximum number of tiles to cache
  * @property {Boolean}             [options.cascadeTiles=true]      - draw cascaded tiles of different zooms to reduce tiles
  * @property {Number}              [options.minPitchToCascade=35]   - minimum pitch degree to begin tile cascade
+ * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
  * @memberOf TileLayer
  * @instance
  */
@@ -71,6 +72,8 @@ const options = {
 
     'cascadeTiles' : true,
     'minPitchToCascade' : 35,
+
+    'zoomOffset' : 0
 };
 
 const urlPattern = /\{ *([\w_]+) *\}/g;
@@ -275,7 +278,7 @@ class TileLayer extends Layer {
     _getTiles(z, containerExtent, maskID) {
         // rendWhenReady = false;
         const map = this.getMap();
-        const zoom = z;
+        const zoom = z + this.options['zoomOffset'];
         const offset = this._getTileOffset(zoom),
             hasOffset = offset[0] || offset[1];
         const emptyGrid = {
@@ -303,7 +306,7 @@ class TileLayer extends Layer {
             res = sr.getResolution(zoom);
 
         const extent2d = containerExtent.convertTo(c => map._containerPointToPoint(c)),
-            innerExtent2D = this._getInnerExtent(zoom, containerExtent, extent2d)._add(offset);
+            innerExtent2D = this._getInnerExtent(z, containerExtent, extent2d)._add(offset);
         extent2d._add(offset);
 
         const maskExtent = this._getMask2DExtent();
@@ -344,14 +347,14 @@ class TileLayer extends Layer {
             for (let j = -(top); j <= bottom; j++) {
                 const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
                     pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res),
-                    p = map._prjToPoint(this._unproject(pnw), zoom);
+                    p = map._prjToPoint(this._unproject(pnw), z);
                 let width, height;
                 if (sr === mapSR) {
                     width = tileSize.width;
                     height = tileSize.height;
                 } else {
                     const pse = tileConfig.getTilePrjSE(idx.x, idx.y, res),
-                        pp = map._prjToPoint(this._unproject(pse), zoom);
+                        pp = map._prjToPoint(this._unproject(pse), z);
                     width = Math.abs(Math.round(pp.x - p.x));
                     height = Math.abs(Math.round(pp.y - p.y));
                 }
@@ -370,7 +373,7 @@ class TileLayer extends Layer {
                 const tileExtent = new PointExtent(p, p.add(width, height)),
                     tileInfo = {
                         'point': p,
-                        'z': zoom,
+                        'z': z,
                         'x' : idx.x,
                         'y' : idx.y,
                         'extent2d' : tileExtent,
@@ -396,14 +399,14 @@ class TileLayer extends Layer {
         }
 
         //sort tiles according to tile's distance to center
-        const center = map._containerPointToPoint(containerExtent.getCenter(), zoom)._add(offset);
+        const center = map._containerPointToPoint(containerExtent.getCenter(), z)._add(offset);
         tiles.sort(function (a, b) {
             return a.point.distanceTo(center) - b.point.distanceTo(center);
         });
 
         return {
             'offset' : offset,
-            'zoom' : zoom,
+            'zoom' : z,
             'extent' : extent,
             'tiles': tiles
         };
