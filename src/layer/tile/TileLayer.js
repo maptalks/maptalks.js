@@ -278,11 +278,12 @@ class TileLayer extends Layer {
     _getTiles(z, containerExtent, maskID) {
         // rendWhenReady = false;
         const map = this.getMap();
-        const zoom = z + this.options['zoomOffset'];
+        let zoom = z + this.options['zoomOffset'];
+        if (zoom < 0) { zoom = 0; }
         const offset = this._getTileOffset(zoom),
             hasOffset = offset[0] || offset[1];
         const emptyGrid = {
-            'zoom' : zoom,
+            'zoom' : z,
             'extent' : null,
             'offset' : offset,
             'tiles' : []

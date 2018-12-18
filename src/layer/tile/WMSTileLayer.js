@@ -80,8 +80,7 @@ class WMSTileLayer extends TileLayer {
     }
 
     getTileUrl(x, y, z) {
-        const map = this.getMap(),
-            res = map._getResolution(z),
+        const res = this.getSpatialReference().getResolution(z),
             tileConfig = this._getTileConfig(),
             tileExtent = tileConfig.getTilePrjExtent(x, y, res);
         const max = tileExtent.getMax(),

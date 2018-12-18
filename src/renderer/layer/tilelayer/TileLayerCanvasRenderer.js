@@ -509,7 +509,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _findChildTilesAt(children, pmin, pmax, layer, childZoom) {
         const layerId = layer.getId(),
-            res = layer.getSpatialReference().getResolution(childZoom);
+            res = layer.getSpatialReference().getResolution(childZoom + layer.options['zoomOffset']);
+        if (!res) {
+            return;
+        }
         const dmin = layer._getTileConfig().getTileIndex(pmin, res),
             dmax = layer._getTileConfig().getTileIndex(pmax, res);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
@@ -540,7 +543,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             prj = layer._project(map._pointToPrj(center, info.z));
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
-            const res = sr.getResolution(z);
+            const res = sr.getResolution(z + layer.options['zoomOffset']);
+            if (!res) continue;
             const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
             const id = layer._getTileId(tileIndex, z, info.layer);
             if (this.tileCache.has(id)) {
