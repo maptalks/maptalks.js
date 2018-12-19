@@ -87,8 +87,10 @@ describe('Map.Projection', function () {
         it('change center before changing spatial reference', function () {
             var newCenter = new maptalks.Coordinate(100, 0);
             map.setCenter(newCenter);
-            map.setSpatialReference({
-                projection:'EPSG:4326'
+            map.config({
+                spatialReference : {
+                    projection:'EPSG:4326'
+                }
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
             expect(map.getCenter()).to.closeTo(newCenter);
