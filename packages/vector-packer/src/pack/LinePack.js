@@ -28,15 +28,15 @@ const SHARP_CORNER_OFFSET = 15;
 
 
 // The number of bits that is used to store the line distance in the buffer.
-const LINE_DISTANCE_BUFFER_BITS = 15;
+const LINE_DISTANCE_BUFFER_BITS = 16;
 
 // We don't have enough bits for the line distance as we'd like to have, so
 // use this value to scale the line distance (in tile units) down to a smaller
 // value. This lets us store longer distances while sacrificing precision.
-const LINE_DISTANCE_SCALE = 1 / 2;
+const LINE_DISTANCE_SCALE = 1;
 
 // The maximum line distance, in tile units, that fits in the buffer.
-const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
+const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
 
 // aPos_normal
 // point.x,
@@ -108,6 +108,8 @@ export default class LinePack extends VectorPack {
             lines = feature.geometry;
         const elements = this.elements;
         if (isPolygon) {
+            //Polygon时，需要遍历elements，去掉(filter)瓦片范围外的edge
+            //所以this.elements只会存放当前line的elements，方便filter处理
             this.elements = [];
         }
         for (let i = 0; i < lines.length; i++) {
@@ -121,16 +123,6 @@ export default class LinePack extends VectorPack {
         }
         if (isPolygon) {
             this.elements = elements;
-        }
-    }
-
-    getType(symbol) {
-        if (symbol['linePatternFile']) {
-            return 'linePattern';
-        } else if (symbol['lineColor'] && symbol['lineColor']['colorStops']) {
-            return 'lineGradient';
-        } else {
-            return 'line';
         }
     }
 
@@ -418,8 +410,6 @@ export default class LinePack extends VectorPack {
 
             startOfLine = false;
         }
-
-        // this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index);
     }
 
     /**
@@ -472,7 +462,7 @@ export default class LinePack extends VectorPack {
         // When we get close to the distance, reset it to zero and add the vertex again with
         // a distance of zero. The max distance is determined by the number of bits we allocate
         // to `linesofar`.
-        if (distance > MAX_LINE_DISTANCE / 2 && !distancesForScaling) {
+        if (distance > MAX_LINE_DISTANCE && !distancesForScaling) {
             this.distance = 0;
             this.addCurrentVertex(currentVertex, this.distance, normal, endLeft, endRight, round);
         }
@@ -515,20 +505,14 @@ export default class LinePack extends VectorPack {
     addLineVertex(data, point, extrude, round, up, linesofar) {
         linesofar *= LINE_DISTANCE_SCALE;
         data.push(
-            // aPos_normal
             point.x,
             point.y,
-            0,
+            0, //TODO line的端点高度
             round ? 1 : 0,
             up ? 1 : -1,
-            // a_data
-            // add 128 to store a byte in an unsigned byte
             Math.round(EXTRUDE_SCALE * extrude.x) + 128,
             Math.round(EXTRUDE_SCALE * extrude.y) + 128,
-            // lower 8-bit + higher 8 bit
             linesofar
-            // ((linesofar & 0xFF)),
-            // linesofar >> 8
         );
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
@@ -549,7 +533,6 @@ export default class LinePack extends VectorPack {
 
 }
 
-
 /**
  * Calculate the total distance, in tile units, of this tiled line feature
  *
@@ -559,7 +542,7 @@ export default class LinePack extends VectorPack {
  *
  * @private
  */
-function calculateFullDistance(vertices, first, len) {
+export function calculateFullDistance(vertices, first, len) {
     let currentVertex, nextVertex;
     let total = 0;
     for (let i = first; i < len - 1; i++) {

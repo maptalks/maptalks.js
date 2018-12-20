@@ -2,7 +2,7 @@ import { compileStyle } from '@maptalks/feature-filter';
 import { extend, getIndexArrayType } from '../../common/Util';
 import { buildExtrudeFaces, buildWireframe } from '../builder/';
 import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
-import { PolygonPack, LinePack, PointPack } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 
 const KEY_STYLE_IDX = '__style_idx';
@@ -172,6 +172,13 @@ export default class BaseLayerWorker {
                 zoom
             });
             const pack = new LinePack(features, styles, options);
+            return pack.load();
+        } else if (type === 'native-line') {
+            const options = extend({}, dataConfig, {
+                EXTENT : extent,
+                zoom
+            });
+            const pack = new NativeLinePack(features, styles, options);
             return pack.load();
         } else if (type === 'fill') {
             // debugger
