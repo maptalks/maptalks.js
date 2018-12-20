@@ -1,8 +1,9 @@
 import Painter from './Painter';
-import { reshader, vec2, vec3, mat4 } from '@maptalks/gl';
-import { getLineOffset } from './util/line_offset';
-import { projectPoint, projectLine } from './util/projection';
+import { reshader, mat4 } from '@maptalks/gl';
+import { getCharOffset } from './util/get_char_offset';
+import { projectLine } from './util/projection';
 import { getLabelBox } from './util/get_label_box';
+import { getLabelNormal } from './util/get_label_normal';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -39,8 +40,7 @@ const defaultUniforms = {
 };
 
 // temparary variables used later
-const PROJ_MATRIX = [], FIRST_POINT = [], LAST_POINT = [],
-    ANCHOR = [], PROJ_ANCHOR = [], GLYPH_OFFSET = [], DXDY = [], SEGMENT = [], LINE_OFFSET = [];
+const PROJ_MATRIX = [], LINE_OFFSET = [];
 
 const TLBOX = [], BRBOX = [];
 
@@ -76,7 +76,7 @@ class TextPainter extends Painter {
             geometry.properties.symbol = symbol;
             const isAlongLine = (symbol['textPlacement'] === 'line');
             const uniforms = {
-                tileResolution : geometry.properties.res,
+                tileResolution : geometry.properties.tileResolution,
                 tileRatio : geometry.properties.tileRatio
             };
             const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
@@ -256,6 +256,7 @@ class TextPainter extends Painter {
             const mesh = meshes[m];
             const geometry = mesh.geometry;
             if (geometry.properties.aNormal) {
+                //line placement
                 if (!geometry.properties.line) {
                     continue;
                 }
@@ -263,7 +264,7 @@ class TextPainter extends Painter {
             } else {
                 this._forEachLabel(mesh, this._updateCollision);
             }
-            //TODO 遍历每个label，计算box，并加入到collision index中
+            //TODO 遍历每个label，计算 box，并加入到 collision index 中
 
         }
     }
@@ -341,6 +342,7 @@ class TextPainter extends Painter {
 
     // start and end is the start and end index of feature's line
     _updateAttributes(mesh, label, start, end, line, projMatrix, planeMatrix, elements) {
+        const map = this.layer.getMap();
         const geometry = mesh.geometry;
         const charCount = label.length;
 
@@ -360,7 +362,7 @@ class TextPainter extends Painter {
             if (shouldUpdate) {
                 //array to store current text's elements
                 for (let j = i; j < i + charCount * 4; j += 4) {
-                    const offset = this._getOffset(mesh, line, j, projMatrix, !planeMatrix);
+                    const offset = getCharOffset(LINE_OFFSET, mesh, line, j, projMatrix, map.width, map.height, !planeMatrix);
                     if (!offset) {
                         //remove whole text if any char is missed
                         segElements.length = 0;
@@ -393,86 +395,32 @@ class TextPainter extends Painter {
         }
     }
 
-    _getOffset(mesh, line, i, projMatrix, isProjected) {
-        const scale = isProjected ? 1 : this.layer.options['extent'] / this.layer.options['tileSize'][0];
-        // 遍历每个文字，对每个文字获取: anchor, glyphOffset, dx， dy
-        // 计算anchor的屏幕位置
-        // 根据地图pitch和cameraDistanceFromCenter计算glyph的perspective ratio
-        // 从 aSegment 获取anchor的segment, startIndex 和 lineLength
-        // 调用 line_offset.js 计算文字的 offset 和 angle
-        // 与aDxDy和aRotation相加后，写回到 aOffset 和 aRotation 中
-        const map = this.layer.getMap();
-
-        const { aAnchor, aGlyphOffset, aDxDy, aSegment, aSize } = mesh.geometry.properties;
-        let anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
-        if (isProjected) {
-            anchor = projectPoint(PROJ_ANCHOR, anchor, projMatrix, map.width, map.height);
-        }
-
-        const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]),
-            dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]),
-            segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
-
-        const offset = getLineOffset(LINE_OFFSET, line, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], aSize[i] / 24, false, scale);
-        return offset;
-    }
-
     _updateNormal(aNormal, aOffset, isVertical, firstChrIdx, lastChrIdx, planeMatrix) {
-        //每个position对应了1个aPickingId和2个aOffset，所以需要乘2
-        firstChrIdx *= 2;
-        lastChrIdx *= 2;
-
-        //一个feature中包含多个文字的anchor
-        //1. 遍历anchor
-        //2. 读取anchor第一个文字和最后一个文字的位置
-        //3. 计算flip和vertical的值并设置
         const map = this.layer.getMap(),
             aspectRatio = map.width / map.height;
-
-        //第一个文字的offset位置
-        vec3.set(FIRST_POINT, aOffset[firstChrIdx], aOffset[firstChrIdx + 1], 0);
-        //最后一个文字的offset位置
-        vec3.set(LAST_POINT, aOffset[lastChrIdx - 2], aOffset[lastChrIdx - 1], 0);
-        if (planeMatrix) {
-            vec3.transformMat3(FIRST_POINT, FIRST_POINT, planeMatrix);
-            vec3.transformMat3(LAST_POINT, LAST_POINT, planeMatrix);
-        }
-        let vertical, flip;
-        if (!isVertical) {
-            vertical = 0;
-            flip = FIRST_POINT[0] > LAST_POINT[0] ? 1 : 0;
-        } else {
-            const rise = Math.abs(LAST_POINT[1] - FIRST_POINT[1]);
-            const run = Math.abs(LAST_POINT[0] - FIRST_POINT[0]) * aspectRatio;
-            flip = FIRST_POINT[0] > LAST_POINT[0] ? 1 : 0;
-            if (rise > run) {
-                vertical = 1;
-                if (planeMatrix) {
-                    //in tile coordinate system
-                    flip = FIRST_POINT[1] > LAST_POINT[1] ? 0 : 1;
-                } else {
-                    flip = FIRST_POINT[1] < LAST_POINT[1] ? 0 : 1;
-                }
-            } else {
-                vertical = 0;
-            }
-        }
-        // flip = 1;
-        // vertical = FIRST_POINT[0] > LAST_POINT[0] ? 1 : 0;
-        // vertical = 1;
+        const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, isVertical, aspectRatio, planeMatrix);
 
         //更新normal
-        for (let i = firstChrIdx / 2; i < lastChrIdx / 2; i++) {
-            aNormal.data[i] = 2 * flip + vertical;
+        for (let i = firstChrIdx; i < lastChrIdx; i++) {
+            aNormal.data[i] = normal;
         }
     }
 
     _updateCollision(mesh, text, start, end, matrix) {
+        const boxes = this._getLabelBoxes(mesh, text, start, end, matrix);
+        if (!boxes.length) {
+            return;
+        }
+
+    }
+
+    _getLabelBoxes(mesh, text, start, end, matrix) {
         const map = this.layer.getMap();
         const geoProps = mesh.geometry.properties,
             symbol = geoProps.symbol,
             isAlongLine = (symbol['textPlacement'] === 'line');
         const charCount = text.length;
+        const boxes = [];
         //iterate feature's labels
         for (let i = start; i < end; i += charCount * 4) {
             //TODO
@@ -490,9 +438,8 @@ class TextPainter extends Painter {
                 box[1] = Math.min(tlBox[1], brBox[1]);
                 box[2] = Math.max(tlBox[2], brBox[2]);
                 box[3] = Math.max(tlBox[3], brBox[3]);
-                this.layer.fire('hehe', { box });
+                boxes.push(box);
             } else {
-                const boxes = [];
                 //insert every character's box into collision index
                 for (let j = i; j < i + charCount * 4; j += 4) {
                     //use int16array to save some memory
@@ -501,9 +448,10 @@ class TextPainter extends Painter {
                         boxes.push(box);
                     }
                 }
-                this.layer.fire('hehe', { boxes });
             }
         }
+        this.layer.fire('hehe', { boxes });
+        return boxes;
     }
 
     remove() {

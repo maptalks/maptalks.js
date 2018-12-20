@@ -155,7 +155,12 @@ export default class VectorPack {
     }
 
     fetchAtlas(iconReqs, glyphReqs, cb) {
-        return this.options.requestor(iconReqs, glyphReqs, cb);
+        const needFetch = Object.keys(iconReqs).length > 0 || Object.keys(glyphReqs).length > 0;
+        if (!needFetch) {
+            cb();
+            return;
+        }
+        this.options.requestor(iconReqs, glyphReqs, cb);
     }
 
     pack(scale) {
@@ -183,6 +188,7 @@ export default class VectorPack {
                     saved[key] = null;
                 }
             } else {
+                //filterKey相同，即filter相同的pack已经创建过，无需再次创建
                 pack = packs[saved[key]];
             }
             if (!pack) return;

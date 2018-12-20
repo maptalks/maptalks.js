@@ -13,6 +13,7 @@ const defaultOptions = {
     extent : 8192,
     zoomBackground : true,
     tileSize : [512, 512],
+    tileSystem : [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
     stencil : false,
     features : true,
     cascadeTiles : false,

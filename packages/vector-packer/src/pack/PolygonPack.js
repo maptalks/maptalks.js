@@ -113,15 +113,4 @@ export default class PolygonPack extends VectorPack {
         this.maxLineIndex = Math.max(this.maxLineIndex, ...e);
         this.lineElements.push(...e);
     }
-
-    getType(symbol) {
-        if (symbol['polygonPatternFile']) {
-            return 'fillPattern';
-        } else if (symbol['polygonFill'] && symbol['polygonFill']['colorStops']) {
-            return 'fillGradient';
-        } else {
-            return 'fill';
-        }
-    }
 }
-

@@ -99,10 +99,6 @@ class FillPainter extends Painter {
             ],
             extraCommandProps : {
                 viewport, scissor,
-                depth : {
-                    enable : true,
-                    func : this.sceneConfig.depthFunc || 'always'
-                },
                 stencil: {
                     enable: true,
                     mask : 0xFF,
@@ -123,7 +119,19 @@ class FillPainter extends Painter {
                         zfail: 'keep',
                         zpass: 'replace'
                     }
-                }
+                },
+                depth : {
+                    enable : true,
+                    func : this.sceneConfig.depthFunc || 'always'
+                },
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 'src alpha',
+                        dst: 'one minus src alpha'
+                    },
+                    equation: 'add'
+                },
             }
         });
         if (this.pickingFBO) {

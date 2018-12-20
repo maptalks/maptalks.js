@@ -64,6 +64,7 @@ function createPainterPlugin(type, Painter) {
                     }
                 }
                 geometry = tileCache.geometry = painter.createGeometry(data, features, tileInfo);
+                this._fillCommonProps(geometry, context);
             }
             if (!geometry || Array.isArray(geometry) && !geometry.length) {
                 return {
@@ -105,6 +106,24 @@ function createPainterPlugin(type, Painter) {
             return {
                 'redraw' : false
             };
+        },
+
+        _fillCommonProps(geometry, context) {
+            const { layer, tileInfo } = context;
+            const map = layer.getMap(),
+                tileResolution = map.getResolution(tileInfo.z),
+                tileRatio = layer.options.extent / layer.getTileSize().width;
+            if (Array.isArray) {
+                for (let i = 0; i < geometry.length; i++) {
+                    geometry[i].properties.tileResolution = tileResolution;
+                    geometry[i].properties.tileRatio = tileRatio;
+                    geometry[i].properties.z = tileInfo.z;
+                }
+            } else {
+                geometry.properties.tileResolution = tileResolution;
+                geometry.properties.tileRatio = tileRatio;
+                geometry.properties.z = tileInfo.z;
+            }
         },
 
         updateSceneConfig: function (context) {

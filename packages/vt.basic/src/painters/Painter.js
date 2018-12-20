@@ -75,10 +75,7 @@ class Painter {
             geometry.properties = {
                 features,
                 iconAtlas,
-                glyphAtlas,
-                res,
-                z : tile.z,
-                tileRatio : this.layer.options.extent / this.layer.getTileSize().width
+                glyphAtlas
             };
             geometries.push(geometry);
         }

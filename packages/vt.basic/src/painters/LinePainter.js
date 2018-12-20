@@ -35,7 +35,7 @@ class LinePainter extends Painter {
             const geometry = geometries[packMeshes[i].pack];
             const symbol = packMeshes[i].symbol;
             const uniforms = {
-                tileResolution : geometry.properties.res,
+                tileResolution : geometry.properties.tileResolution,
                 tileRatio : geometry.properties.tileRatio
             };
             if (symbol['lineColor']) {
@@ -162,12 +162,7 @@ class LinePainter extends Painter {
                         },
                         mask: 0xFF
                     },
-                    opFront: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    },
-                    opBack: {
+                    op: {
                         fail: 'keep',
                         zfail: 'keep',
                         zpass: 'replace'
