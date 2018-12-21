@@ -29,6 +29,8 @@ const levelNFilter = mesh => {
     return mesh.uniforms['level'] > 0;
 };
 
+const SCALE = [1, 1, 1];
+
 class PhongPainter {
     constructor(regl, layer, sceneConfig) {
         this._layer = layer;
@@ -67,17 +69,36 @@ class PhongPainter {
             castShadow : false,
             picking : true
         });
+        if (this._sceneConfig.animation) {
+            SCALE[2] = 0.01;
+            const mat = [];
+            mat4.fromScaling(mat, SCALE);
+            mat4.multiply(mat, transform, mat);
+            transform = mat;
+        }
         mesh.setLocalTransform(transform);
         return mesh;
     }
 
-    addMesh(mesh) {
+    addMesh(mesh, progress) {
+        if (progress !== null) {
+            const mat = mesh.localTransform;
+            if (progress === 0) {
+                progress = 0.01;
+            }
+            SCALE[2] = progress;
+            mat4.fromScaling(mat, SCALE);
+            mat4.multiply(mat, mesh.properties.tileTransform, mat);
+            mesh.setLocalTransform(mat);
+        } else {
+            mesh.setLocalTransform(mesh.properties.tileTransform);
+        }
+
         this._scene.addMesh(mesh);
         return this;
     }
 
     render(context) {
-        this._redraw = false;
         const layer = this._layer;
         const map = layer.getMap();
         if (!map) {
@@ -154,6 +175,7 @@ class PhongPainter {
     }
 
     clear() {
+        this._redraw = false;
         this._scene.clear();
     }
 

@@ -158,7 +158,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
         this._collisionIndex.clear();
-        this._frameTime = maptalks.Util.now();
+        this._frameTime = timestamp;
         this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this._startFrame(timestamp);
         super.draw(timestamp);
@@ -284,7 +284,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 sceneConfig : plugin.config.sceneConfig,
                 tileCache : tileCache[idx],
                 tileData : tileData[idx],
-                t : this._frameTime - tileData.loadTime,
+                timestamp : this._frameTime,
                 tileInfo,
                 tileZoom : this['_tileZoom']
             };

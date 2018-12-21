@@ -1,6 +1,9 @@
+import easing from 'animation-easings';
 import { createFilter } from '@maptalks/feature-filter';
 import VectorTilePlugin from './VectorTilePlugin';
 import Color from 'color';
+
+const DEFAULT_ANIMATION_DURATION = 800;
 
 /**
  * Create a VT Plugin with a given painter
@@ -43,7 +46,8 @@ function createPainterPlugin(type, Painter) {
                 tileData = context.tileData,
                 tileInfo = context.tileInfo,
                 tileTransform = tileData.transform,
-                tileZoom = context.tileZoom;
+                tileZoom = context.tileZoom,
+                sceneConfig = context.sceneConfig;
             var painter = this.painter;
             if (!painter) {
                 return {
@@ -78,6 +82,11 @@ function createPainterPlugin(type, Painter) {
             var mesh = this._getMesh(key);
             if (!mesh) {
                 mesh = painter.createMesh(geometry, tileTransform, tileData.data);
+                mesh.properties.tileTransform = tileTransform;
+                mesh.properties.createTime = context.timestamp;
+                if (sceneConfig.animation) {
+                    this._animationTime = context.timestamp;
+                }
                 this._meshCache[key] = mesh;
             }
             if (!mesh) {
@@ -97,14 +106,27 @@ function createPainterPlugin(type, Painter) {
                 mesh.properties.tile = tileInfo;
                 mesh.setUniform('level', level);
             }
-
+            let redraw = false;
             if (!this._frameCache[key]) {
-                painter.addMesh(mesh);
+                let progress = null;
+                let animation = sceneConfig.animation;
+                if (animation) {
+                    const duration = context.sceneConfig.animationDuration || DEFAULT_ANIMATION_DURATION;
+                    const t = (context.timestamp - this._animationTime) / duration;
+                    if (this._animationTime - mesh.properties.createTime < duration && t < 1) {
+                        if (animation === true || animation === 1) {
+                            animation = 'linear';
+                        }
+                        progress = animation === 'linear' ? t : easing(animation, t);
+                        redraw = true;
+                    }
+                }
+                painter.addMesh(mesh, progress);
                 this._frameCache[key] = 1;
             }
 
             return {
-                'redraw' : false
+                redraw
             };
         },
 

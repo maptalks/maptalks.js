@@ -4,6 +4,8 @@ import { extend } from './Util';
 import VSMShadowPass from './VSMShadowPass.js';
 import StencilShadowPass from './StencilShadowPass.js';
 
+const SCALE = [1, 1, 1];
+
 class PBRPainter {
     constructor(regl, layer, sceneConfig) {
         this._layer = layer;
@@ -54,12 +56,31 @@ class PBRPainter {
 
     createMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this.material);
+        if (this._sceneConfig.animation) {
+            SCALE[2] = 0.01;
+            const mat = [];
+            mat4.fromScaling(mat, SCALE);
+            mat4.multiply(mat, transform, mat);
+            transform = mat;
+        }
         mesh.setLocalTransform(transform);
 
         return mesh;
     }
 
-    addMesh(mesh) {
+    addMesh(mesh, progress) {
+        if (progress !== null) {
+            const mat = mesh.localTransform;
+            if (progress === 0) {
+                progress = 0.01;
+            }
+            SCALE[2] = progress;
+            mat4.fromScaling(mat, SCALE);
+            mat4.multiply(mat, mesh.properties.tileTransform, mat);
+            mesh.setLocalTransform(mat);
+        } else {
+            mesh.setLocalTransform(mesh.properties.tileTransform);
+        }
         const geometry = mesh.geometry;
         this.scene.addMesh(mesh);
         if (this.shadowScene) {
