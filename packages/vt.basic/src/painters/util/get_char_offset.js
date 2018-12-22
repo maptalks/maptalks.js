@@ -4,8 +4,7 @@ import { projectPoint } from './projection';
 
 const ANCHOR = [], PROJ_ANCHOR = [], GLYPH_OFFSET = [], SEGMENT = [], DXDY = [];
 
-export function getCharOffset(out, mesh, line, i, projMatrix, width, height, isProjected) {
-    const scale = isProjected ? 1 : this.layer.options['extent'] / this.layer.options['tileSize'][0];
+export function getCharOffset(out, mesh, line, i, projMatrix, width, height, isProjected, scale) {
     // 遍历每个文字，对每个文字获取: anchor, glyphOffset, dx， dy
     // 计算anchor的屏幕位置
     // 根据地图pitch和cameraDistanceFromCenter计算glyph的perspective ratio

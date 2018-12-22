@@ -297,9 +297,9 @@ class TextPainter extends Painter {
         }
         //pickingId中是feature序号，相同的pickingId对应着相同的feature
 
-        this._forEachLabel(mesh, (mesh, label, start, end, matrix) => {
-            this._updateAttributes(mesh, label, start, end, line, matrix, isPitchWithMap ? planeMatrix : null, elements);
-            this._updateCollision(mesh, label, start, end, matrix);
+        this._forEachLabel(mesh, (mesh, label, start, end, mvpMatrix) => {
+            this._updateAttributes(mesh, label, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, elements);
+            this._updateCollision(mesh, label, start, end, mvpMatrix);
         });
 
         geometry.updateData('aNormal', aNormal);
@@ -341,7 +341,7 @@ class TextPainter extends Painter {
     }
 
     // start and end is the start and end index of feature's line
-    _updateAttributes(mesh, label, start, end, line, projMatrix, planeMatrix, elements) {
+    _updateAttributes(mesh, label, start, end, line, mvpMatrix, planeMatrix, elements) {
         const map = this.layer.getMap();
         const geometry = mesh.geometry;
         const charCount = label.length;
@@ -354,6 +354,9 @@ class TextPainter extends Painter {
             aRotation = geometry.properties.aRotation.data || geometry.properties.aRotation,
             aNormal = geometry.properties.aNormal;
 
+        const isProjected = !planeMatrix;
+        const scale = isProjected ? 1 : this.layer.options['extent'] / this.layer.options['tileSize'][0];
+
         const segElements = [];
         //if planeMatrix is null, line is in tile coordinates
         // line = planeMatrix ? line.line : line;
@@ -362,7 +365,7 @@ class TextPainter extends Painter {
             if (shouldUpdate) {
                 //array to store current text's elements
                 for (let j = i; j < i + charCount * 4; j += 4) {
-                    const offset = getCharOffset(LINE_OFFSET, mesh, line, j, projMatrix, map.width, map.height, !planeMatrix);
+                    const offset = getCharOffset(LINE_OFFSET, mesh, line, j, mvpMatrix, map.width, map.height, isProjected, scale);
                     if (!offset) {
                         //remove whole text if any char is missed
                         segElements.length = 0;
@@ -406,8 +409,8 @@ class TextPainter extends Painter {
         }
     }
 
-    _updateCollision(mesh, text, start, end, matrix) {
-        const boxes = this._getLabelBoxes(mesh, text, start, end, matrix);
+    _updateCollision(mesh, text, start, end, mvpMatrix) {
+        const boxes = this._getLabelBoxes(mesh, text, start, end, mvpMatrix);
         if (!boxes.length) {
             return;
         }
