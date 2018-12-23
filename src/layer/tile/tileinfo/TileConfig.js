@@ -112,7 +112,9 @@ class TileConfig {
         const ext = this._getTileFullIndex(res);
         if (isRepeatWorld) {
             //caculate tile index to request in url in repeated world.
-            if (x < ext['xmin']) {
+            if (ext['xmax'] === ext['xmin']) {
+                x = ext['xmin'];
+            } else if (x < ext['xmin']) {
                 x = ext['xmax'] - (ext['xmin'] - x) % (ext['xmax'] - ext['xmin']);
                 if (x === ext['xmax']) {
                     x = ext['xmin'];
@@ -121,7 +123,9 @@ class TileConfig {
                 x = ext['xmin'] + (x - ext['xmin']) % (ext['xmax'] - ext['xmin']);
             }
 
-            if (y >= ext['ymax']) {
+            if (ext['ymax'] === ext['ymin']) {
+                y = ext['ymin'];
+            } else if (y >= ext['ymax']) {
                 y = ext['ymin'] + (y - ext['ymin']) % (ext['ymax'] - ext['ymin']);
             } else if (y < ext['ymin']) {
                 y = ext['ymax'] - (ext['ymin'] - y) % (ext['ymax'] - ext['ymin']);

@@ -348,8 +348,11 @@ class TileLayer extends Layer {
         const tiles = [], extent = new PointExtent();
         for (let i = -(left); i <= right; i++) {
             for (let j = -(top); j <= bottom; j++) {
-                const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']),
-                    pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res),
+                const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']);
+                if (idx.out) {
+                    continue;
+                }
+                const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res),
                     p = map._prjToPoint(this._unproject(pnw), z);
                 let width, height;
                 if (sr === mapSR) {

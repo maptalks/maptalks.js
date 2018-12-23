@@ -131,6 +131,26 @@ describe('TileLayer', function () {
             }).addTo(map);
             expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(1);
         });
+
+        it('tiles out of extent', function () {
+            createMap();
+            var p = map.getProjection().project(map.getCenter());
+            var layer = new maptalks.TileLayer('base', {
+                renderer : 'canvas',
+                urlTemplate : '#',
+                repeatWorld :false,
+                spatialReference : {
+                  fullExtent : {
+                    'top': p.y,
+                    'left': p.x,
+                    'bottom': p.y,
+                    'right': p.x
+                  }
+                },
+                'attribution' :  '&copy; <a target="_blank" href="http://map.baidu.com">Baidu</a>'
+            }).addTo(map);
+            expect(layer.getTiles().tileGrids[0].tiles.length).to.be.eql(0);
+        });
     });
 
     describe('Different Projections', function () {

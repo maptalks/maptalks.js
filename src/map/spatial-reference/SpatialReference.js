@@ -113,6 +113,9 @@ export default class SpatialReference {
             return false;
         }
         const f1 = sp1.fullExtent, f2 = sp2.fullExtent;
+        if (f1 && !f2 || !f1 && f2) {
+            return false;
+        }
         if (f1 && f2) {
             if (f1.top !== f2.top || f1.bottom !== f2.bottom || f1.left !== f2.left || f1.right !== f2.right) {
                 return false;
