@@ -94,7 +94,8 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     loadTileImage(tileImage, url) {
         //image must set cors in webgl
-        tileImage.crossOrigin = this.layer.options['crossOrigin'] || '';
+        const crossOrigin = this.layer.options['crossOrigin'];
+        tileImage.crossOrigin = crossOrigin !== null ? crossOrigin : '';
         tileImage.src = url;
         return;
     }
