@@ -56,6 +56,20 @@ class PhongPainter {
             aColor : glData.colors,
             aPickingId : glData.featureIndexes
         };
+        const extrusionOpacity = this._sceneConfig.extrusionOpacity;
+        if (extrusionOpacity) {
+            const aExtrusionOpacity = new Uint8Array(data.aPosition.length / 3);
+            for (let i = 0; i < data.aPosition.length; i += 3) {
+                if (data.aPosition[i + 2] > 0) {
+                    //top
+                    aExtrusionOpacity[i / 3] = 0;
+                } else {
+                    aExtrusionOpacity[i / 3] = 1;
+                }
+            }
+            data.aExtrusionOpacity = aExtrusionOpacity;
+        }
+
         const geometry = new reshader.Geometry(data, glData.indices);
         geometry.properties.features = features;
         geometry.generateBuffers(this._regl);
@@ -346,8 +360,9 @@ class PhongPainter {
             'material.diffuse',
             'material.specular',
             'material.shininess',
+            'material.opacity',
 
-            'material.opacity'
+            'extrusionOpacityRange'
         ];
 
         return uniforms;
@@ -358,9 +373,16 @@ class PhongPainter {
             projMatrix = map.projMatrix,
             camPos = map.cameraPosition;
         const lightUniforms = this._getLightUniformValues();
-        return extend({
+        const uniforms = extend({
             viewMatrix, projMatrix, camPos
         }, lightUniforms);
+        const extrusionOpacity = this._sceneConfig.extrusionOpacity;
+        if (extrusionOpacity) {
+            extend(uniforms, {
+                extrusionOpacityRange : extrusionOpacity.value
+            });
+        }
+        return uniforms;
     }
 
     _getLightUniformValues() {
@@ -388,6 +410,9 @@ class PhongPainter {
         const defines =  {
             'USE_COLOR' : 1
         };
+        if (this._sceneConfig.extrusionOpacity) {
+            defines['USE_EXTRUSION_OPACITY'] = 1;
+        }
         return defines;
     }
 }

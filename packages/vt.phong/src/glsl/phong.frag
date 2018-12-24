@@ -33,6 +33,12 @@ uniform Light light;
 
 uniform float opacity;
 
+#ifdef USE_EXTRUSION_OPACITY
+    uniform vec2 extrusionOpacityRange;
+    uniform float extrusionOpacityStep;
+    varying float vExtrusionOpacity;
+#endif
+
 //光源
 
 void main()
@@ -66,4 +72,13 @@ void main()
     vec3 result = ambient + diffuse + specular;
     gl_FragColor = vec4(result, material.opacity);
     // gl_FragColor = vec4(1.0, 0.0, 0.0, material.opacity);
+
+    #ifdef USE_EXTRUSION_OPACITY
+        float topAlpha = extrusionOpacityRange.x;
+        float bottomAlpha = extrusionOpacityRange.y;
+        float alpha = topAlpha + vExtrusionOpacity * (bottomAlpha - topAlpha);
+        alpha = clamp(alpha, 0.0, 1.0);
+        gl_FragColor *= alpha;
+    #endif
+
 }
