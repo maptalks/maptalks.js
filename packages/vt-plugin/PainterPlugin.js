@@ -82,10 +82,19 @@ function createPainterPlugin(type, Painter) {
             var mesh = this._getMesh(key);
             if (!mesh) {
                 mesh = painter.createMesh(geometry, tileTransform, tileData.data);
-                mesh.properties.tileTransform = tileTransform;
-                mesh.properties.createTime = context.timestamp;
-                if (sceneConfig.animation) {
-                    this._animationTime = context.timestamp;
+                if (mesh) {
+                    if (Array.isArray(mesh)) {
+                        for (let i = 0; i < mesh.length; i++) {
+                            mesh[i].properties.tileTransform = tileTransform;
+                            mesh[i].properties.createTime = context.timestamp;
+                        }
+                    } else {
+                        mesh.properties.tileTransform = tileTransform;
+                        mesh.properties.createTime = context.timestamp;
+                    }
+                    if (sceneConfig.animation) {
+                        this._animationTime = context.timestamp;
+                    }
                 }
                 this._meshCache[key] = mesh;
             }
