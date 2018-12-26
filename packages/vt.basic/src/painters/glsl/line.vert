@@ -34,8 +34,8 @@ void main() {
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
 
-    float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
-    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
+    float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
+    float outset = gapwidth + halfwidth + sign(halfwidth) * ANTIALIASING;
 
     vec2 extrude = aExtrude;
     // Scale the extrusion vector down to a normal and then up by the line width
