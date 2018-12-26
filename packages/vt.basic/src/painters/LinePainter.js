@@ -101,10 +101,40 @@ class LinePainter extends Painter {
         // this.needStencil = true;
 
         const regl = this.regl;
-        const canvas = this.canvas;
 
         this._renderer = new reshader.Renderer(regl);
 
+        this.createShader();
+
+        if (this.pickingFBO) {
+            this.picking = new reshader.FBORayPicking(
+                this._renderer,
+                {
+                    vert : pickingVert,
+                    uniforms : [
+                        'lineWidth',
+                        'lineGapWidth',
+                        {
+                            name : 'projViewModelMatrix',
+                            type : 'function',
+                            fn : function (context, props) {
+                                const projViewModelMatrix = [];
+                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                                return projViewModelMatrix;
+                            }
+                        },
+                        'tileRatio',
+                        'resolution',
+                        'tileResolution'
+                    ]
+                },
+                this.pickingFBO
+            );
+        }
+    }
+
+    createShader() {
+        const canvas = this.canvas;
         const viewport = {
             x : 0,
             y : 0,
@@ -128,7 +158,6 @@ class LinePainter extends Painter {
                 }
             }
         };
-
         this._shader = new reshader.MeshShader({
             vert, frag,
             uniforms : [
@@ -182,32 +211,6 @@ class LinePainter extends Painter {
                 },
             }
         });
-
-        if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
-                this._renderer,
-                {
-                    vert : pickingVert,
-                    uniforms : [
-                        'lineWidth',
-                        'lineGapWidth',
-                        {
-                            name : 'projViewModelMatrix',
-                            type : 'function',
-                            fn : function (context, props) {
-                                const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                                return projViewModelMatrix;
-                            }
-                        },
-                        'tileRatio',
-                        'resolution',
-                        'tileResolution'
-                    ]
-                },
-                this.pickingFBO
-            );
-        }
     }
 
     getUniformValues(map) {

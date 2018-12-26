@@ -9,7 +9,7 @@ import { isClippedEdge } from './util/util';
 // normals for line joins, because the x-value remains 0 for the texture
 // normal array, while the extrude normal actually moves the vertex to create
 // the acute/bevelled line join.
-const EXTRUDE_SCALE = 63;
+const EXTRUDE_SCALE = 127;
 
 /*
  * Sharp corners cause dashed lines to tilt because the distance along the line
@@ -77,13 +77,13 @@ export default class LinePack extends VectorPack {
             },
             //round? + up?
             {
-                type : Int8Array,
-                width : 2,
+                type : Uint8Array,
+                width : 1,
                 name : 'aNormal'
             },
             //当前点距离aPos的凸起方向
             {
-                type : Uint8Array,
+                type : Int8Array,
                 width : 2,
                 name : 'aExtrude'
             },
@@ -507,11 +507,10 @@ export default class LinePack extends VectorPack {
         data.push(
             point.x,
             point.y,
-            0, //TODO line的端点高度
-            round ? 1 : 0,
-            up ? 1 : -1,
-            Math.round(EXTRUDE_SCALE * extrude.x) + 128,
-            Math.round(EXTRUDE_SCALE * extrude.y) + 128,
+            0,
+            (round ? 1 : 0) * 2 + up ? 1 : 0,
+            EXTRUDE_SCALE * extrude.x,
+            EXTRUDE_SCALE * extrude.y,
             linesofar
         );
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));

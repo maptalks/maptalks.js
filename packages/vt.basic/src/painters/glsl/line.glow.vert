@@ -3,19 +3,12 @@
 #define DEVICE_PIXEL_RATIO 1.0
 #define ANTIALIASING 1.0 / DEVICE_PIXEL_RATIO / 2.0
 
-// floor(127 / 2) == 63.0
-// the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
-// stored in a byte (-128..127). we scale regular normals up to length 63, but
-// there are also "special" normals that have a bigger length (of up to 126 in
-// this case).
-// #define scale 63.0
-// EXTRUDE_SCALE = 1 / 127.0
 #define EXTRUDE_SCALE 0.0078740157
 
 attribute vec3 aPosition;
 attribute float aNormal;
 attribute vec2 aExtrude;
-// attribute float aLinesofar;
+attribute float aLinesofar;
 
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
@@ -27,7 +20,12 @@ uniform float tileRatio; //EXTENT / tileSize
 
 varying vec2 vNormal;
 varying vec2 vWidth;
-varying float vGammaScale;
+
+//uniforms needed by trail effect
+uniform float currentTime;
+uniform float trailLength;
+
+varying float vTime;
 
 void main() {
     float gapwidth = lineGapWidth / 2.0;
@@ -51,7 +49,7 @@ void main() {
     float round = float(int(aNormal) / 2);
     float up = mod(aNormal, 2.0);
     vNormal = vec2(round, sign(up - 0.1));
-    // vNormal = aNormal;
     vWidth = vec2(outset, inset);
-    vGammaScale = distance / cameraToCenterDistance;
+
+    vTime = 1.0 - (currentTime - aLinesofar / (tileRatio / scale)) / trailLength;
 }

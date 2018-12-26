@@ -98,7 +98,7 @@ function createPainterPlugin(type, Painter) {
                 }
                 this._meshCache[key] = mesh;
             }
-            if (!mesh) {
+            if (!mesh || Array.isArray(mesh) && !mesh.length) {
                 return {
                     'redraw' : false
                 };
@@ -122,7 +122,8 @@ function createPainterPlugin(type, Painter) {
                 if (animation) {
                     const duration = context.sceneConfig.animationDuration || DEFAULT_ANIMATION_DURATION;
                     const t = (context.timestamp - this._animationTime) / duration;
-                    if (this._animationTime - mesh.properties.createTime < duration && t < 1) {
+                    const createTime = Array.isArray(mesh) ? mesh[0].properties.createTime : mesh.properties.createTime;
+                    if (this._animationTime - createTime < duration && t < 1) {
                         if (animation === true || animation === 1) {
                             animation = 'linear';
                         }

@@ -2,6 +2,7 @@ import * as maptalks from '@maptalks/vt';
 import { createPainterPlugin } from '@maptalks/vt-plugin';
 import FillPainter from './painters/FillPainter';
 import LinePainter from './painters/LinePainter';
+import LineGlowPainter from './painters/LineGlowPainter';
 import IconPainter from './painters/IconPainter';
 import TextPainter from './painters/TextPainter';
 
@@ -17,10 +18,13 @@ IconPlugin.registerAt(maptalks.VectorTileLayer);
 const TextPlugin = createPainterPlugin('text', TextPainter);
 TextPlugin.registerAt(maptalks.VectorTileLayer);
 
+const LineGlowPlugin = createPainterPlugin('line-glow', LineGlowPainter);
+LineGlowPlugin.registerAt(maptalks.VectorTileLayer);
+
 export {
     LinePlugin,
     FillPlugin,
     IconPlugin,
-    TextPlugin
-    // LinePlugin
+    TextPlugin,
+    LineGlowPlugin
 };

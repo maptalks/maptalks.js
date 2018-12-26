@@ -8,9 +8,9 @@ attribute vec3 aPosition;
 attribute float aLinesofar;
 
 uniform mat4 projViewModelMatrix;
+uniform float tileScale;
 uniform float currentTime;
 uniform float trailLength;
-uniform float tileScale;
 
 varying float vTime;
 

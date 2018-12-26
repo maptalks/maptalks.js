@@ -175,6 +175,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         // this.completeRender();
     }
 
+    getFrameTimestamp() {
+        return this._frameTime;
+    }
+
     drawOnInteracting(event, timestamp) {
         if (!this.ready) {
             this.completeRender();
