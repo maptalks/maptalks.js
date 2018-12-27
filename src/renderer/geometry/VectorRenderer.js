@@ -242,7 +242,7 @@ Polygon.include({
         const holePoints = [];
         if (prjHoles && prjHoles.length > 0) {
             //outer ring  simplify result;
-            const _simplified = this._simplified;
+            const simplified = this._simplified;
             for (let i = 0; i < prjHoles.length; i++) {
                 const hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
                 if (Array.isArray(hole) && isSplitted) {
@@ -257,8 +257,9 @@ Polygon.include({
                 }
             }
             // if outer ring  simplify==true , Ignore inner ring  simplify result
-            if (_simplified)
-                this._simplified = _simplified;
+            if (simplified) {
+                this._simplified = simplified;
+            }
         }
         if (!isSplitted) {
             points = [points];
