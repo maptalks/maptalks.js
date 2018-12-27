@@ -23,6 +23,9 @@ function createPainterPlugin(type, Painter) {
             if (!painter) {
                 painter = this.painter = new Painter(regl, layer, sceneConfig);
             }
+            if (!this._meshCache) {
+                this._meshCache = {};
+            }
             var excludes = sceneConfig.excludes;
             if (excludes !== this._excludes) {
                 this._excludesFunc = excludes ? createFilter(excludes) : null;
