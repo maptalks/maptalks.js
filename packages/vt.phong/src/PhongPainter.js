@@ -240,8 +240,20 @@ class PhongPainter {
             extraCommandProps : {
                 //enable cullFace
                 cull : {
-                    enable: true,
-                    face: 'back'
+                    enable: () => {
+                        const cull = this._sceneConfig.cullFace;
+                        if (cull === false) {
+                            return false;
+                        }
+                        return true;
+                    },
+                    face: () => {
+                        let cull = this._sceneConfig.cullFace;
+                        if (cull === true) {
+                            cull = 'back';
+                        }
+                        return cull || 'back';
+                    }
                 },
                 stencil: {
                     enable: true,
@@ -262,6 +274,9 @@ class PhongPainter {
                         zfail: 'keep',
                         zpass: 'keep'
                     }
+                },
+                sample : {
+                    alpha : true
                 },
                 blend: {
                     enable: true,
