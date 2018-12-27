@@ -198,6 +198,9 @@ export default class BaseLayerWorker {
     }
 
     _build3DExtrusion(features, dataConfig, extent, glScale, zScale) {
+        if (dataConfig.top === undefined) {
+            dataConfig.top = true;
+        }
         const {
             altitudeScale,
             altitudeProperty,
@@ -206,7 +209,8 @@ export default class BaseLayerWorker {
             defaultHeight,
             normal, tangent,
             uv, uvSize,
-            shadowVolume, shadowDir
+            shadowVolume, shadowDir,
+            top
         } = dataConfig;
         const faces = buildExtrudeFaces(
             features, extent,
@@ -217,6 +221,7 @@ export default class BaseLayerWorker {
                 defaultHeight : defaultHeight || 0
             },
             {
+                top,
                 uv,
                 uvSize : uvSize || [128, 128],
                 //>> needed by uv computation

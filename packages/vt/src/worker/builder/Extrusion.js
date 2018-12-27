@@ -10,6 +10,7 @@ export function buildExtrudeFaces(
         altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight
     },
     {
+        top,
         uv,
         uvSize,
         glScale,
@@ -25,7 +26,8 @@ export function buildExtrudeFaces(
     const featIndexes = [],
         vertices = [];
     const indices = [];
-    const generateUV = uv;
+    const generateUV = !!uv,
+        generateTop = !!top;
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
 
@@ -47,32 +49,33 @@ export function buildExtrudeFaces(
         }
 
         //just ignore bottom faces never appear in sight
+        if (generateTop) {
+            const triangles = earcut(top, holes, 3); //vertices, holes, dimension(2|3)
+            if (triangles.length === 0) {
+                return offset + count;
+            }
+            //TODO caculate earcut deviation
 
-        const triangles = earcut(top, holes, 3); //vertices, holes, dimension(2|3)
-        if (triangles.length === 0) {
-            return offset + count;
-        }
-        //TODO caculate earcut deviation
+            //switch triangle's i + 1 and i + 2 to make it ccw winding
+            let tmp;
+            for (let i = 2, l = triangles.length; i < l; i += 3) {
+                tmp = triangles[i - 1];
+                triangles[i - 1] = triangles[i] + start / 3;
+                triangles[i] = tmp + start / 3;
+                triangles[i - 2] += start / 3;
+                // clipEdges.push(0, 0, 0);
+            }
 
-        //switch triangle's i + 1 and i + 2 to make it ccw winding
-        let tmp;
-        for (let i = 2, l = triangles.length; i < l; i += 3) {
-            tmp = triangles[i - 1];
-            triangles[i - 1] = triangles[i] + start / 3;
-            triangles[i] = tmp + start / 3;
-            triangles[i - 2] += start / 3;
-            // clipEdges.push(0, 0, 0);
-        }
+            // //cw widing
+            // for (let i = 0, l = triangles.length; i < l; i++) {
+            //     triangles[i] += start / 3;
+            // }
 
-        // //cw widing
-        // for (let i = 0, l = triangles.length; i < l; i++) {
-        //     triangles[i] += start / 3;
-        // }
-
-        //top face indices
-        pushIn(indices, triangles);
-        if (generateUV) {
-            buildFaceUV(uvs, vertices, triangles, [uvSize[0] / glScale, uvSize[1] / glScale]);
+            //top face indices
+            pushIn(indices, triangles);
+            if (generateUV) {
+                buildFaceUV(uvs, vertices, triangles, [uvSize[0] / glScale, uvSize[1] / glScale]);
+            }
         }
 
         //side face indices
