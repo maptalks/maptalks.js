@@ -1,7 +1,7 @@
 import Map from './Map';
 import Point from '../geo/Point';
 import * as mat4 from '../core/util/mat4';
-import { subtract, add, scale, normalize, dot, set } from '../core/util/vec3';
+import { subtract, add, scale, normalize, dot, set, dist as distance } from '../core/util/vec3';
 import { clamp, interpolate, wrap } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
@@ -313,21 +313,40 @@ Map.include(/** @lends Map.prototype */{
             if (Browser.ie9) {
                 return;
             }
+            const sr = this.getSpatialReference();
             const size = this.getSize();
             const w = size.width || 1,
                 h = size.height || 1;
 
             this._glScale = this.getGLScale();
-            // get field of view
-            const fov = this.getFov() * Math.PI / 180;
-            const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
-            const farZ = maxScale * h / 2 / this._getFovRatio() * 1.4;
-            // camera projection matrix
-            const projMatrix = this.projMatrix || createMat4();
-            mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
-            this.projMatrix = projMatrix;
+
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
+
+            const fov = this.getFov() * RADIAN,
+                pitch = this.getPitch() * RADIAN;
+
+            const halfFov = fov / 2;
+            const groundAngle = Math.PI / 2 + pitch;
+            const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
+
+            // Calculate z distance of the farthest fragment that should be rendered.
+            const furthestDistance = Math.cos(Math.PI / 2 - pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
+
+            // const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
+            this.cameraFar = furthestDistance * 10.01; //this._glScale * h / 2 / this._getFovRatio() * 2;
+            if (sr.isEPSG) {
+                // dynamic cameraNear for predefined EPSG* projections
+                // this can help to increase depth resolutions
+                this.cameraNear = Math.max(2 * this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(this.getPitch() * RADIAN), 0.1);
+            } else {
+                this.cameraNear = 0.1;
+            }
+
+            // camera projection matrix
+            const projMatrix = this.projMatrix || createMat4();
+            mat4.perspective(projMatrix, fov, w / h, this.cameraNear, this.cameraFar);
+            this.projMatrix = projMatrix;
             // view matrix
             this.viewMatrix = mat4.invert(m0, worldMatrix);
             // matrix for world point => screen point
@@ -381,6 +400,7 @@ Map.include(/** @lends Map.prototype */{
             const cx = center2D.x + dist * Math.sin(bearing);
             const cy = center2D.y + dist * Math.cos(bearing);
             this.cameraPosition = set(this.cameraPosition || [0, 0, 0], cx, cy, cz);
+            this.cameraToCenterDistance  = distance(this.cameraPosition, this.cameraLookAt);
             // when map rotates, camera's up axis is pointing to bearing from south direction of map
             // default [0,1,0] is the Y axis while the angle of inclination always equal 0
             // if you want to rotate the map after up an incline,please rotateZ like this:
