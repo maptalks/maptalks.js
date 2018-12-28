@@ -10,7 +10,7 @@
 // this case).
 // #define scale 63.0
 // EXTRUDE_SCALE = 1 / 127.0
-#define EXTRUDE_SCALE 0.0078740157
+#define EXTRUDE_SCALE 63.0;//0.0078740157
 
 attribute vec3 aPosition;
 attribute float aNormal;
@@ -40,7 +40,7 @@ void main() {
     vec2 extrude = aExtrude;
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec2 dist = outset * extrude * EXTRUDE_SCALE;
+    vec2 dist = outset * extrude / EXTRUDE_SCALE;
 
     float scale = tileResolution / resolution;
     gl_Position = projViewModelMatrix * vec4(aPosition + vec3(dist, 0.0) * tileRatio / scale, 1.0);
