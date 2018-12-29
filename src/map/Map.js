@@ -78,7 +78,6 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
 =======
  *
- * @property {String} [options.collisionPadding=100]                   - view padding of map scope collision index in px.
  * @property {Boolean} [options.collisionAutoClear=true]               - auto clear collision index at the beggining of every frame.
  *
 >>>>>>> add collision support to map
@@ -1693,6 +1692,23 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return !!this._dragRotating;
     }
 
+    /**
+     * Test if given box is out of current screen
+     * @param {Number[] | PointExtent} box - [minx, miny, maxx, maxy]
+     * @param {Number} padding - test padding
+     * @returns {Boolean}
+     */
+    isOffscreen(box, viewportPadding = 0) {
+        const { width, height } = this;
+        const screenRightBoundary = width + viewportPadding;
+        const screenBottomBoundary = height + viewportPadding;
+        let { xmin, ymin, xmax, ymax } = box;
+        if (Array.isArray(box)) {
+            [xmin, ymin, xmax, ymax] = box;
+        }
+        return xmax < viewportPadding || xmin >= screenRightBoundary || ymax < viewportPadding || ymin > screenBottomBoundary;
+    }
+
     getRenderer() {
         return this._getRenderer();
     }
@@ -1782,7 +1798,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Converts a view point extent to the geographic extent.
      * @param  {PointExtent} extent2D - view points extent
      * @return {Extent}  geographic extent
-     * @protected
+     * @private
      */
     _pointToExtent(extent2D) {
         const min2d = extent2D.getMin(),

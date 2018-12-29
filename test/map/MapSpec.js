@@ -851,4 +851,14 @@ describe('Map.Spec', function () {
         map.coordToContainerPoint(center);
         map.containerPointToCoord(new maptalks.Point(0, 0));
     });
+
+    it('#isOffScreen', function () {
+        expect(map.isOffscreen([0, 0, 10, 10])).not.to.be.ok();
+        expect(map.isOffscreen(new maptalks.PointExtent(0, 0, 10, 10))).not.to.be.ok();
+        expect(map.isOffscreen([100, 0, 110, 10])).to.be.ok();
+        expect(map.isOffscreen(new maptalks.PointExtent(100, 0, 110, 10))).to.be.ok();
+        expect(map.isOffscreen([-100, 0, -30, 10])).to.be.ok();
+        expect(map.isOffscreen([0, 100, 10, 110])).to.be.ok();
+        expect(map.isOffscreen([0, -110, 10, -100])).to.be.ok();
+    });
 });

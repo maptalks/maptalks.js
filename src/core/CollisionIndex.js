@@ -13,10 +13,8 @@ const search = {
  *   2.2 如果没有，如果需要的，insert到collisionIndex中
  */
 class CollisionIndex {
-    constructor(map, viewportPadding = 100) {
+    constructor() {
         this._tree = rbush(9, ['[0]', '[1]', '[2]', '[3]']);
-        this._map = map;
-        this.padding = viewportPadding;
     }
 
     /**
@@ -25,10 +23,7 @@ class CollisionIndex {
      * @returns {Boolean}
      */
     collides(box) {
-        search.minX = box[0];
-        search.minY = box[1];
-        search.maxX = box[2];
-        search.maxY = box[3];
+        [search.minX, search.minY, search.maxX, search.maxY] = box;
         return this._tree.collides(search);
     }
 
@@ -52,19 +47,6 @@ class CollisionIndex {
     bulkInsertBox(boxes) {
         this._tree.load(boxes);
         return this;
-    }
-
-    /**
-     * Test if given box is out of current screen
-     * @param {Number[]} box - [minx, miny, maxx, maxy]
-     * @returns {Boolean}
-     */
-    isOffscreen(box) {
-        const { width, height } = this._map;
-        const viewportPadding = this.padding;
-        const screenRightBoundary = width + viewportPadding;
-        const screenBottomBoundary = height + viewportPadding;
-        return box[2] < viewportPadding || box[0] >= screenRightBoundary || box[3] < viewportPadding || box[1] > screenBottomBoundary;
     }
 
     /**

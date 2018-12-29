@@ -19,7 +19,7 @@ Map.include(/** @lends Map.prototype */ {
      */
     createCollisionIndex() {
         this.clearCollisionIndex();
-        this._collisionIndex = new CollisionIndex(this, this.options['collisionPadding']);
+        this._collisionIndex = new CollisionIndex();
         return this._collisionIndex;
     },
 
@@ -37,6 +37,5 @@ Map.include(/** @lends Map.prototype */ {
 
 
 Map.mergeOptions({
-    'collisionPadding': 100,
     'collisionAutoClear' : true
 });

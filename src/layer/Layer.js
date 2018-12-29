@@ -4,6 +4,7 @@ import Eventable from '../core/Eventable';
 import JSONAble from '../core/JSONAble';
 import Renderable from '../renderer/Renderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
+import CollisionIndex from '../core/CollisionIndex';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
@@ -20,6 +21,8 @@ import CanvasRenderer from '../renderer/layer/CanvasRenderer';
  * @property {Boolean}  [options.forceRenderOnMoving=false]    - force to render layer when map is moving
  * @property {Boolean}  [options.forceRenderOnZooming=false]   - force to render layer when map is zooming
  * @property {Boolean}  [options.forceRenderOnRotating=false]  - force to render layer when map is Rotating
+ *
+ * @property {String}   [options.collisionScope=layer]         - layer's collision scope: layer or map
  * @memberOf Layer
  * @instance
  */
@@ -36,7 +39,8 @@ const options = {
     'cssFilter': null,
     'forceRenderOnMoving' : false,
     'forceRenderOnZooming' : false,
-    'forceRenderOnRotating' : false
+    'forceRenderOnRotating' : false,
+    'collisionScope' : 'layer'
 };
 
 /**
@@ -430,6 +434,24 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return !!this._loaded;
     }
 
+    /**
+     * Get layer's collision index
+     * @returns {CollisionIndex}
+     */
+    getCollisionIndex() {
+        if (this.options['collisionScope'] === 'layer') {
+            if (!this._collisionIndex) {
+                this._collisionIndex = new CollisionIndex();
+            }
+            return this._collisionIndex;
+        }
+        const map = this.getMap();
+        if (!map) {
+            return null;
+        }
+        return map.getCollisionIndex();
+    }
+
     getRenderer() {
         return this._getRenderer();
     }
@@ -505,6 +527,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             delete this._renderer;
         }
         delete this.map;
+        delete this._collisionIndex;
     }
 
     _switchEvents(to, emitter) {
