@@ -15,6 +15,7 @@ export { default as Promise } from './core/Promise';
 export { default as Class } from './core/Class';
 export { default as Eventable } from './core/Eventable';
 export { default as JSONAble } from './core/JSONAble';
+export { default as CollisionIndex } from './core/CollisionIndex';
 
 export { default as Handlerable } from './handler/Handlerable';
 export { default as Handler } from './handler/Handler';

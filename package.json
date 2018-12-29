@@ -43,6 +43,7 @@
   "dependencies": {
     "@maptalks/feature-filter": "^1.0.0",
     "@maptalks/function-type": "^1.1.0",
+    "rbush": "^2.0.2",
     "simplify-js": "^1.2.1",
     "zousan": "^2.3.3"
   },
