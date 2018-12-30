@@ -3,7 +3,6 @@ import { mat4, vec3, createREGL } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
-import CollisionIndex from '../collision/CollisionIndex';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -12,7 +11,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._initPlugins();
         this.ready = false;
         this.sceneCache = {};
-        this._collisionIndex = new CollisionIndex(this.getMap(), layer.options['collisionPadding']);
     }
 
     getWorkerConnection() {
@@ -157,7 +155,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.completeRender();
             return;
         }
-        this._collisionIndex.clear();
+        this.layer.clearCollisionIndex();
+
         this._frameTime = timestamp;
         this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this._startFrame(timestamp);
@@ -475,10 +474,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const imgdata = new ImageData(width, height);
         imgdata.data.set(pixels);
         ctx.putImageData(imgdata, 0, 0);
-    }
-
-    getCollisionIndex() {
-        return this._collisionIndex;
     }
 }
 

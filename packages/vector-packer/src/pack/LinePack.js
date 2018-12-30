@@ -513,7 +513,6 @@ export default class LinePack extends VectorPack {
             EXTRUDE_SCALE * extrude.y,
             linesofar
         );
-        console.log(EXTRUDE_SCALE * extrude.x, EXTRUDE_SCALE * extrude.y);
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
 

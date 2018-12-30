@@ -42,7 +42,8 @@ const defaultUniforms = {
 // temparary variables used later
 const PROJ_MATRIX = [], LINE_OFFSET = [];
 
-const TLBOX = [], BRBOX = [];
+const BOX = [], BOX0 = [], BOX1 = [];
+const EMPTY_ARRAY = [];
 
 class TextPainter extends Painter {
     needToRedraw() {
@@ -54,6 +55,7 @@ class TextPainter extends Painter {
         for (let i = 0; i < geometries.length; i++) {
             if (glData.packs[i].lineVertex) {
                 geometries[i].properties.line = glData.packs[i].lineVertex;
+                geometries[i].properties.line.id = i;
             }
         }
 
@@ -197,6 +199,9 @@ class TextPainter extends Painter {
                 picking : true
             });
             mesh.setLocalTransform(transform);
+            //设置ignoreCollision，此mesh略掉collision检测
+            //halo mesh会进行collision检测，并统一更新elements
+            mesh.properties.ignoreCollision = true;
             meshes.push(mesh);
 
             if (symbol['textHaloRadius']) {
@@ -207,6 +212,7 @@ class TextPainter extends Painter {
                     castShadow : false,
                     picking : true
                 });
+
                 mesh.setLocalTransform(transform);
                 meshes.push(mesh);
             }
@@ -215,6 +221,7 @@ class TextPainter extends Painter {
     }
 
     preparePaint({ timestamp }) {
+        this._projectedLinesCache = {};
         this._updateLabels(timestamp);
     }
 
@@ -251,7 +258,6 @@ class TextPainter extends Painter {
             angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
             0.0, pitchSin, pitchCos
         ];
-
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
             const geometry = mesh.geometry;
@@ -262,10 +268,9 @@ class TextPainter extends Painter {
                 }
                 this._updateLineLabel(mesh, planeMatrix);
             } else {
-                this._forEachLabel(mesh, this._updateCollision);
+                //TODO 非line placement的还没有实现
+                this._forEachLabel(mesh, geometry.properties.elements, this._isLabelVisible);
             }
-            //TODO 遍历每个label，计算 box，并加入到 collision index 中
-
         }
     }
 
@@ -287,54 +292,84 @@ class TextPainter extends Painter {
 
         const uniforms = mesh.material.uniforms;
         const isPitchWithMap = uniforms['pitchWithMap'] === 1,
-            shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
+            shouldUpdate = !isPitchWithMap || !geometry.__offsetRotationUpdated;
 
         if (!isPitchWithMap) {
             const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
             //project line to screen coordinates
-            const out = properties.projLine = properties.projLine || new Array(line.length);
-            line = projectLine(out, line, matrix, map.width, map.height);
+            const out = new Array(line.length);
+            line = this._projectLine(out, line, matrix, map.width, map.height);
         }
         //pickingId中是feature序号，相同的pickingId对应着相同的feature
 
-        this._forEachLabel(mesh, (mesh, label, start, end, mvpMatrix) => {
+        this._forEachLabel(mesh, geometry.properties.elements, (mesh, label, start, end, mvpMatrix) => {
             this._updateAttributes(mesh, label, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, elements);
-            this._updateCollision(mesh, label, start, end, mvpMatrix);
         });
+
+        let visibleElements = elements;
+        if (!mesh.properties.ignoreCollision) {
+            visibleElements = [];
+            this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix) => {
+                // debugger
+                const visible = this._isLabelVisible(mesh, label, start, end, mvpMatrix);
+                if (visible) {
+                    //start end是对应的端点序号，每个文字有4个端点, 而每个文字有6个elements
+                    for (let i = start / 4 * 6; i < end / 4 * 6; i++) {
+                        visibleElements.push(elements[i]);
+                    }
+                }
+            });
+        }
 
         geometry.updateData('aNormal', aNormal);
         if (shouldUpdate) {
             geometry.updateData('aOffset', aOffset);
             geometry.updateData('aRotation', aRotation);
 
-            geometry.properties.elements = elements;
+
+        }
+        if (shouldUpdate || visibleElements.length !== elements.length) {
+            // geometry.properties.elements = elements;
             geometry.setElements({
                 usage : 'dynamic',
-                data : new geometry.properties.elemCtor(elements)
+                data : new geometry.properties.elemCtor(visibleElements)
             });
         }
         //tag if geometry's aOffset and aRotation is updated
-        geometry.__dataUpdated = true;
+        geometry.__offsetRotationUpdated = true;
     }
 
-    _forEachLabel(mesh, fn) {
+    _projectLine(out, line, matrix, width, height) {
+        const id = line.id + '-' + matrix.join();
+        if (this._projectedLinesCache[id]) {
+            return this._projectedLinesCache[id];
+        }
+        const prjLine = projectLine(out, line, matrix, width, height);
+        this._projectedLinesCache[id] = prjLine;
+        return prjLine;
+    }
+
+    _forEachLabel(mesh, elements, fn) {
         const map = this.layer.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         const geometry = mesh.geometry,
             geometryProps = geometry.properties;
         const pickingId = geometryProps.aPickingId;
-        let start = 0, current = pickingId[0];
-        //每个文字有四个pickingId
-        for (let i = 0; i < pickingId.length; i += 4) {
+
+        let idx = elements[0];
+        let start = 0, current = pickingId[idx];
+        //每个文字有6个element
+        for (let i = 0; i < elements.length; i += 6) {
+            idx = elements[i];
             //pickingId发生变化，新的feature出现
-            if (pickingId[i] !== current || i === pickingId.length - 4) {
-                const end = i === pickingId.length - 4 ? pickingId.length : i;
+            if (pickingId[idx] !== current || i === elements.length - 6) {
+                const end = i === elements.length - 6 ? elements.length : i;
                 const feature = geometryProps.features[current];
                 const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
+                //start end是端点序号，每个文字有4个，而element每个文字有6个，所以需要 * 4 / 6
+                fn.call(this, mesh, text, start * 4 / 6, end * 4 / 6, matrix);
 
-                fn.call(this, mesh, text, start, end, matrix);
-
-                current = pickingId[i];
+                current = pickingId[idx];
                 start = i;
             }
         }
@@ -349,7 +384,7 @@ class TextPainter extends Painter {
         const uniforms = mesh.material.uniforms;
         const isPitchWithMap = uniforms['pitchWithMap'] === 1,
             //should update aOffset / aRotation?
-            shouldUpdate = !isPitchWithMap || !geometry.__dataUpdated;
+            shouldUpdate = !isPitchWithMap || !geometry.__offsetRotationUpdated;
         const aOffset = geometry.properties.aOffset.data || geometry.properties.aOffset,
             aRotation = geometry.properties.aRotation.data || geometry.properties.aRotation,
             aNormal = geometry.properties.aNormal;
@@ -409,15 +444,27 @@ class TextPainter extends Painter {
         }
     }
 
-    _updateCollision(mesh, text, start, end, mvpMatrix) {
-        const boxes = this._getLabelBoxes(mesh, text, start, end, mvpMatrix);
-        if (!boxes.length) {
-            return;
+    _isLabelVisible(mesh, text, start, end, mvpMatrix) {
+        const symbol = mesh.geometry.properties.symbol;
+        if (symbol['textIgnorePlacement'] && symbol['textAllowOverlap']) {
+            return true;
         }
-
+        const boxes = this._isLabelCollides(mesh, text, start, end, mvpMatrix);
+        if (!boxes.length && !symbol['textAllowOverlap']) {
+            //boxes为0，说明collides
+            return false;
+        }
+        if (!symbol['textIgnorePlacement']) {
+            const collisionIndex = this.layer.getCollisionIndex();
+            for (let i = 0; i < boxes.length; i++) {
+                collisionIndex.insertBox(boxes[i]);
+            }
+        }
+        return true;
     }
 
-    _getLabelBoxes(mesh, text, start, end, matrix) {
+    _isLabelCollides(mesh, text, start, end, matrix) {
+        const collisionIndex = this.layer.getCollisionIndex();
         const map = this.layer.getMap();
         const geoProps = mesh.geometry.properties,
             symbol = geoProps.symbol,
@@ -431,25 +478,31 @@ class TextPainter extends Painter {
             //2, 将每个box在collision index中测试
             //   2.1 如果不冲突，则显示label
             //   2.2 如果冲突，则隐藏label
-            if (!isAlongLine && mesh.material.uniforms['rotateWithMap'] !== 1) {
+            if (!isAlongLine && mesh.material.uniforms['rotateWithMap'] !== 1 && !symbol['textRotation']) {
+                // 既没有沿线绘制，也没有随地图旋转时，文字本身也没有旋转时
+                // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
                 const firstChrIdx = i,
                     lastChrIdx = i + charCount * 4 - 4;
-                const tlBox = getLabelBox(TLBOX, mesh, firstChrIdx, matrix, map),
-                    brBox = getLabelBox(BRBOX, mesh, lastChrIdx, matrix, map);
-                const box = mesh.properties._collisionBox = mesh.properties._collisionBox || [];
+                const tlBox = getLabelBox(BOX0, mesh, firstChrIdx, matrix, map),
+                    brBox = getLabelBox(BOX1, mesh, lastChrIdx, matrix, map);
+                const box = BOX;
                 box[0] = Math.min(tlBox[0], brBox[0]);
                 box[1] = Math.min(tlBox[1], brBox[1]);
                 box[2] = Math.max(tlBox[2], brBox[2]);
                 box[3] = Math.max(tlBox[3], brBox[3]);
-                boxes.push(box);
+                if (collisionIndex.collides(box)) {
+                    return EMPTY_ARRAY;
+                }
+                boxes.push(box.slice(0));
             } else {
                 //insert every character's box into collision index
                 for (let j = i; j < i + charCount * 4; j += 4) {
                     //use int16array to save some memory
-                    const box = getLabelBox([], mesh, j, matrix, map);
-                    if (boxes.length < 4) {
-                        boxes.push(box);
+                    const box = getLabelBox(BOX, mesh, j, matrix, map);
+                    if (collisionIndex.collides(box)) {
+                        return EMPTY_ARRAY;
                     }
+                    boxes.push(box.slice(0));
                 }
             }
         }
@@ -460,6 +513,7 @@ class TextPainter extends Painter {
     remove() {
         this._shader.dispose();
         this._shaderAlongLine.dispose();
+        delete this._projectedLinesCache;
     }
 
     init() {

@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import { vec2, vec3, vec4, mat2 } from '@maptalks/gl';
 import { projectPoint } from './projection';
 
+//temparary variables
 const ANCHOR = [], PROJ_ANCHOR = [];
 const MAT2 = [];
 const V2_0 = [], V2_1 = [], V2_2 = [], V2_3 = [];

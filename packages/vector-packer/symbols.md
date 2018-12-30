@@ -2,6 +2,7 @@
 * markerPitchAlignment
 * markerSpacing
 * markerAllowOverlap
+* markerIgnorePlacement
 * markerPerspectiveRatio
 * textSpacing
 * textLineHeight
@@ -11,5 +12,6 @@
 * textKeepUpright
 * textPerspectiveRatio
 * textAllowOverlap
+* textIgnorePlacement
 * lineGapWidth
 * lineBlur
