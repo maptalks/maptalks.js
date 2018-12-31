@@ -37,19 +37,7 @@ class DebugPainter {
                 return canvas ? canvas.height : 1;
             }
         };
-        const scissor = {
-            enable: true,
-            box: {
-                x : 0,
-                y : 0,
-                width : () => {
-                    return canvas ? canvas.width : 1;
-                },
-                height : () => {
-                    return canvas ? canvas.height : 1;
-                }
-            }
-        };
+
         this._command = this._regl({
             vert : `
                 attribute vec2 aPosition;

@@ -148,19 +148,6 @@ class NativeLinePainter {
                 return this._canvas ? this._canvas.height : 1;
             }
         };
-        const scissor = {
-            enable: true,
-            box: {
-                x : 0,
-                y : 0,
-                width : () => {
-                    return this._canvas ? this._canvas.width : 1;
-                },
-                height : () => {
-                    return this._canvas ? this._canvas.height : 1;
-                }
-            }
-        };
 
         const config = {
             vert,
@@ -168,7 +155,7 @@ class NativeLinePainter {
             uniforms : this._getUniforms(),
             defines : null,
             extraCommandProps : {
-                viewport, scissor,
+                viewport,
                 stencil: {
                     enable: true,
                     func: {

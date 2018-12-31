@@ -218,19 +218,6 @@ class PhongPainter {
                 return canvas ? canvas.height : 1;
             }
         };
-        const scissor = {
-            enable: true,
-            box: {
-                x : 0,
-                y : 0,
-                width : () => {
-                    return canvas ? canvas.width : 1;
-                },
-                height : () => {
-                    return canvas ? canvas.height : 1;
-                }
-            }
-        };
 
         const config = {
             vert,
@@ -289,7 +276,7 @@ class PhongPainter {
                     equation: 'add',
                     // color: [0, 0, 0, 0]
                 },
-                viewport, scissor,
+                viewport,
                 // polygonOffset: {
                 //     enable: true,
                 //     offset: {

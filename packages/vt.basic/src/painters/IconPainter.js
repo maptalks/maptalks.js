@@ -80,19 +80,6 @@ class PointPainter extends Painter {
                 return canvas ? canvas.height : 1;
             }
         };
-        const scissor = {
-            enable: true,
-            box: {
-                x : 0,
-                y : 0,
-                width : () => {
-                    return canvas ? canvas.width : 1;
-                },
-                height : () => {
-                    return canvas ? canvas.height : 1;
-                }
-            }
-        };
 
         this._shader = new reshader.MeshShader({
             vert, frag,
@@ -113,7 +100,7 @@ class PointPainter extends Painter {
                 'texture'
             ],
             extraCommandProps : {
-                viewport, scissor,
+                viewport,
                 blend: {
                     enable: true,
                     func: {

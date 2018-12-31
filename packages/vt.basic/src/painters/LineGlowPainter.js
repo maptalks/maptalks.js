@@ -21,19 +21,7 @@ class LineGlowPainter extends LinePainter {
                 return canvas ? canvas.height : 1;
             }
         };
-        const scissor = {
-            enable: true,
-            box: {
-                x : 0,
-                y : 0,
-                width : () => {
-                    return canvas ? canvas.width : 1;
-                },
-                height : () => {
-                    return canvas ? canvas.height : 1;
-                }
-            }
-        };
+
         this._shader = new reshader.MeshShader({
             vert, frag,
             uniforms : [
@@ -59,7 +47,7 @@ class LineGlowPainter extends LinePainter {
                 'animation'
             ],
             extraCommandProps : {
-                viewport, scissor,
+                viewport,
                 stencil: {
                     enable: true,
                     mask : 0xFF,
