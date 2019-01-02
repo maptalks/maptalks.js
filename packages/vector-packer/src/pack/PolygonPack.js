@@ -3,7 +3,6 @@ import StyledVector from './StyledVector';
 import classifyRings from './util/classify_rings';
 import earcut from 'earcut';
 import { getIndexArrayType } from './util/array';
-import { evaluate } from '../style/Util';
 
 
 const EARCUT_MAX_RINGS = 500;

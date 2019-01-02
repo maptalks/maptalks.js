@@ -138,12 +138,15 @@ export function log2(x) {
 }
 
 export function exportIndices(indices) {
-    return indices.length <= 256 ? new Uint8Array(indices)  : indices.length <= 65536 ? new Uint16Array(indices) : new Uint32Array(indices);
+    // return indices.length <= 256 ? new Uint8Array(indices)  : indices.length <= 65536 ? new Uint16Array(indices) : new Uint32Array(indices);
+    // Uint8Array performs badly in directx according to ANGLE
+    return indices.length < 65536 ? new Uint16Array(indices) : new Uint32Array(indices);
 }
 
 
 export function getIndexArrayType(max) {
-    if (max < 256) return Uint8Array;
+    // Uint8Array performs badly in directx according to ANGLE
+    // if (max < 256) return Uint8Array;
     if (max < 65536) return Uint16Array;
     return Uint32Array;
 }

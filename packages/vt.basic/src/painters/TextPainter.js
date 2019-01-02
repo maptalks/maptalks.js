@@ -201,7 +201,9 @@ class TextPainter extends Painter {
             mesh.setLocalTransform(transform);
             //设置ignoreCollision，此mesh略掉collision检测
             //halo mesh会进行collision检测，并统一更新elements
-            mesh.properties.ignoreCollision = true;
+            if (symbol['textHaloRadius']) {
+                mesh.properties.ignoreCollision = true;
+            }
             meshes.push(mesh);
 
             if (symbol['textHaloRadius']) {
@@ -288,11 +290,13 @@ class TextPainter extends Painter {
         if (!line) {
             return;
         }
-        const elements = [];
 
         const uniforms = mesh.material.uniforms;
         const isPitchWithMap = uniforms['pitchWithMap'] === 1,
             shouldUpdate = !isPitchWithMap || !geometry.__offsetRotationUpdated;
+
+        //shouldUpdate为真时，创建新的elements数组，在updateAttribtues中更新
+        let elements = shouldUpdate ? [] : geometryProps.elements;
 
         if (!isPitchWithMap) {
             const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
@@ -302,37 +306,42 @@ class TextPainter extends Painter {
         }
         //pickingId中是feature序号，相同的pickingId对应着相同的feature
 
-        this._forEachLabel(mesh, geometry.properties.elements, (mesh, label, start, end, mvpMatrix) => {
-            this._updateAttributes(mesh, label, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, elements);
+        this._forEachLabel(mesh, geometryProps.elements, (mesh, label, start, end, mvpMatrix) => {
+            this._updateAttributes(mesh, geometryProps.elements, label, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, elements);
         });
 
         let visibleElements = elements;
-        if (!mesh.properties.ignoreCollision) {
-            visibleElements = [];
-            this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix) => {
-                // debugger
-                const visible = this._isLabelVisible(mesh, label, start, end, mvpMatrix);
-                if (visible) {
-                    //start end是对应的端点序号，每个文字有4个端点, 而每个文字有6个elements
-                    for (let i = start / 4 * 6; i < end / 4 * 6; i++) {
-                        visibleElements.push(elements[i]);
+
+        if (elements.length) {
+            if (!mesh.properties.ignoreCollision) {
+                visibleElements = [];
+                this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix) => {
+                    // debugger
+                    const visible = this._isLabelVisible(mesh, elements, label, start, end, mvpMatrix);
+                    if (visible) {
+                        //start end是对应的端点序号，每个文字有4个端点, 而每个文字有6个elements
+                        for (let i = start; i < end; i++) {
+                            visibleElements.push(elements[i]);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         geometry.updateData('aNormal', aNormal);
         if (shouldUpdate) {
+            if (isPitchWithMap) {
+                //pitchWithMap 时，elements只需更新一次，替换掉原elements
+                geometryProps.elements = new geometryProps.elemCtor(elements);
+            }
             geometry.updateData('aOffset', aOffset);
             geometry.updateData('aRotation', aRotation);
-
-
         }
         if (shouldUpdate || visibleElements.length !== elements.length) {
             // geometry.properties.elements = elements;
             geometry.setElements({
                 usage : 'dynamic',
-                data : new geometry.properties.elemCtor(visibleElements)
+                data : new geometryProps.elemCtor(visibleElements)
             });
         }
         //tag if geometry's aOffset and aRotation is updated
@@ -359,15 +368,19 @@ class TextPainter extends Painter {
         let idx = elements[0];
         let start = 0, current = pickingId[idx];
         //每个文字有6个element
-        for (let i = 0; i < elements.length; i += 6) {
+        for (let i = 0; i <= elements.length; i += 6) {
             idx = elements[i];
             //pickingId发生变化，新的feature出现
-            if (pickingId[idx] !== current || i === elements.length - 6) {
-                const end = i === elements.length - 6 ? elements.length : i;
+            if (pickingId[idx] !== current || i === elements.length) {
+                const end = i/*  === elements.length - 6 ? elements.length : i */;
                 const feature = geometryProps.features[current];
                 const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
-                //start end是端点序号，每个文字有4个，而element每个文字有6个，所以需要 * 4 / 6
-                fn.call(this, mesh, text, start * 4 / 6, end * 4 / 6, matrix);
+                const charCount = text.length;
+                for (let ii = start; ii < end; ii += charCount * 6) {
+                    //start end是端点序号，每个文字有4个，而element每个文字有6个，所以需要 * 4 / 6
+                    fn.call(this, mesh, text, ii, ii + charCount * 6, matrix);
+                }
+
 
                 current = pickingId[idx];
                 start = i;
@@ -376,7 +389,7 @@ class TextPainter extends Painter {
     }
 
     // start and end is the start and end index of feature's line
-    _updateAttributes(mesh, label, start, end, line, mvpMatrix, planeMatrix, elements) {
+    _updateAttributes(mesh, meshElements, label, start, end, line, mvpMatrix, planeMatrix, elements) {
         const map = this.layer.getMap();
         const geometry = mesh.geometry;
         const charCount = label.length;
@@ -396,33 +409,35 @@ class TextPainter extends Painter {
         //if planeMatrix is null, line is in tile coordinates
         // line = planeMatrix ? line.line : line;
 
-        for (let i = start; i < end; i += charCount * 4) {
+        for (let i = start; i < end; i += charCount * 6) {
             if (shouldUpdate) {
                 //array to store current text's elements
-                for (let j = i; j < i + charCount * 4; j += 4) {
-                    const offset = getCharOffset(LINE_OFFSET, mesh, line, j, mvpMatrix, map.width, map.height, isProjected, scale);
+                for (let j = i; j < i + charCount * 6; j += 6) {
+                    const vertexStart = meshElements[j];
+                    const offset = getCharOffset(LINE_OFFSET, mesh, line, vertexStart, mvpMatrix, map.width, map.height, isProjected, scale);
                     if (!offset) {
                         //remove whole text if any char is missed
                         segElements.length = 0;
                         break;
                     }
                     for (let ii = 0; ii < 4; ii++) {
-                        aOffset[2 * (j + ii)] = offset[0];
-                        aOffset[2 * (j + ii) + 1] = offset[1];
-                        aRotation[j + ii] = offset[2];
+                        aOffset[2 * (vertexStart + ii)] = offset[0];
+                        aOffset[2 * (vertexStart + ii) + 1] = offset[1];
+                        aRotation[vertexStart + ii] = offset[2];
                     }
                     //every character has 4 vertice, and 6 indexes
                     //j, j + 1, j + 2 is the left-top triangle
                     //j + 1, j + 2, j + 3 is the right-bottom triangle
-                    segElements.push(j, j + 1, j + 2);
-                    segElements.push(j + 1, j + 2, j + 3);
+                    segElements.push(meshElements[j], meshElements[j + 1], meshElements[j + 2]);
+                    segElements.push(meshElements[j + 3], meshElements[j + 4], meshElements[j + 5]);
                 }
             }
 
             //updateNormal
             //normal decides whether to flip and vertical
-            const firstChrIdx = i,
-                lastChrIdx = i + charCount * 4;
+            const firstChrIdx = meshElements[i],
+                lastChrIdx = meshElements[i + charCount * 6 - 1];
+            // debugger
             this._updateNormal(aNormal, aOffset, uniforms['isVerticalChar'], firstChrIdx, lastChrIdx, planeMatrix);
 
             if (shouldUpdate) {
@@ -437,77 +452,88 @@ class TextPainter extends Painter {
         const map = this.layer.getMap(),
             aspectRatio = map.width / map.height;
         const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, isVertical, aspectRatio, planeMatrix);
-
+        // console.log(normal);
         //更新normal
-        for (let i = firstChrIdx; i < lastChrIdx; i++) {
+        for (let i = firstChrIdx; i <= lastChrIdx; i++) {
             aNormal.data[i] = normal;
         }
     }
 
-    _isLabelVisible(mesh, text, start, end, mvpMatrix) {
+    _isLabelVisible(mesh, elements, text, start, end, mvpMatrix) {
         const symbol = mesh.geometry.properties.symbol;
         if (symbol['textIgnorePlacement'] && symbol['textAllowOverlap']) {
             return true;
         }
-        const boxes = this._isLabelCollides(mesh, text, start, end, mvpMatrix);
+        const boxes = this._isLabelCollides(mesh, elements, text, start, end, mvpMatrix);
         if (!boxes.length && !symbol['textAllowOverlap']) {
             //boxes为0，说明collides
             return false;
         }
         if (!symbol['textIgnorePlacement']) {
-            const collisionIndex = this.layer.getCollisionIndex();
             for (let i = 0; i < boxes.length; i++) {
-                collisionIndex.insertBox(boxes[i]);
+                this.insertCollisionBox(boxes[i]);
             }
         }
         return true;
     }
 
-    _isLabelCollides(mesh, text, start, end, matrix) {
-        const collisionIndex = this.layer.getCollisionIndex();
+    _isLabelCollides(mesh, elements, text, start, end, matrix) {
         const map = this.layer.getMap();
         const geoProps = mesh.geometry.properties,
             symbol = geoProps.symbol,
-            isAlongLine = (symbol['textPlacement'] === 'line');
+            isAlongLine = (symbol['textPlacement'] === 'line'),
+            debugCollision = this.layer.options['debugCollision'];
+        let hasCollides = false;
         const charCount = text.length;
         const boxes = [];
         //iterate feature's labels
-        for (let i = start; i < end; i += charCount * 4) {
-            //TODO
-            //1, 获取每个label的collision boxes
-            //2, 将每个box在collision index中测试
-            //   2.1 如果不冲突，则显示label
-            //   2.2 如果冲突，则隐藏label
-            if (!isAlongLine && mesh.material.uniforms['rotateWithMap'] !== 1 && !symbol['textRotation']) {
-                // 既没有沿线绘制，也没有随地图旋转时，文字本身也没有旋转时
-                // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
-                const firstChrIdx = i,
-                    lastChrIdx = i + charCount * 4 - 4;
-                const tlBox = getLabelBox(BOX0, mesh, firstChrIdx, matrix, map),
-                    brBox = getLabelBox(BOX1, mesh, lastChrIdx, matrix, map);
-                const box = BOX;
-                box[0] = Math.min(tlBox[0], brBox[0]);
-                box[1] = Math.min(tlBox[1], brBox[1]);
-                box[2] = Math.max(tlBox[2], brBox[2]);
-                box[3] = Math.max(tlBox[3], brBox[3]);
-                if (collisionIndex.collides(box)) {
+        // for (let i = start; i < end; i += charCount * 4) {
+        //TODO
+        //1, 获取每个label的collision boxes
+        //2, 将每个box在collision index中测试
+        //   2.1 如果不冲突，则显示label
+        //   2.2 如果冲突，则隐藏label
+        if (!isAlongLine && mesh.material.uniforms['rotateWithMap'] !== 1 && !symbol['textRotation']) {
+            // 既没有沿线绘制，也没有随地图旋转时，文字本身也没有旋转时
+            // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
+            const firstChrIdx = elements[start],
+                lastChrIdx = elements[start + charCount * 6 - 6];
+            const tlBox = getLabelBox(BOX0, mesh, firstChrIdx, matrix, map),
+                brBox = getLabelBox(BOX1, mesh, lastChrIdx, matrix, map);
+            const box = BOX;
+            box[0] = Math.min(tlBox[0], brBox[0]);
+            box[1] = Math.min(tlBox[1], brBox[1]);
+            box[2] = Math.max(tlBox[2], brBox[2]);
+            box[3] = Math.max(tlBox[3], brBox[3]);
+            if (this.isCollides(box)) {
+                hasCollides = true;
+                if (!debugCollision) {
                     return EMPTY_ARRAY;
                 }
-                boxes.push(box.slice(0));
-            } else {
-                //insert every character's box into collision index
-                for (let j = i; j < i + charCount * 4; j += 4) {
-                    //use int16array to save some memory
-                    const box = getLabelBox(BOX, mesh, j, matrix, map);
-                    if (collisionIndex.collides(box)) {
+            }
+            boxes.push(box.slice(0));
+        } else {
+            //insert every character's box into collision index
+            for (let j = start; j < start + charCount * 6; j += 6) {
+                //use int16array to save some memory
+                const box = getLabelBox(BOX, mesh, elements[j], matrix, map);
+                if (this.isCollides(box)) {
+                    // console.log(box);
+                    hasCollides = true;
+                    if (!debugCollision) {
                         return EMPTY_ARRAY;
                     }
-                    boxes.push(box.slice(0));
                 }
+                boxes.push(box.slice(0));
             }
         }
+        // }
         this.layer.fire('hehe', { boxes });
-        return boxes;
+        if (debugCollision) {
+            this.addCollisionDebugBox(boxes, hasCollides ? 0 : 1);
+            // console.log(hasCollides, text, boxes.join());
+        }
+        return hasCollides ? EMPTY_ARRAY : boxes;
     }
 
     remove() {
@@ -531,19 +557,6 @@ class TextPainter extends Painter {
             },
             height : () => {
                 return canvas ? canvas.height : 1;
-            }
-        };
-        const scissor = {
-            enable: true,
-            box: {
-                x : 0,
-                y : 0,
-                width : () => {
-                    return canvas ? canvas.width : 1;
-                },
-                height : () => {
-                    return canvas ? canvas.height : 1;
-                }
             }
         };
 
@@ -585,7 +598,7 @@ class TextPainter extends Painter {
         ];
 
         const extraCommandProps = {
-            viewport, scissor,
+            viewport,
             blend: {
                 enable: true,
                 func: {

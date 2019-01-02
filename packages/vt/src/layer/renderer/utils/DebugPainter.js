@@ -71,7 +71,7 @@ class DebugPainter {
             stencil : {
                 enable : false
             },
-            viewport, scissor
+            viewport
         });
     }
 }
