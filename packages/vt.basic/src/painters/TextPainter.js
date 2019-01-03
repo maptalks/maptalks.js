@@ -336,21 +336,20 @@ class TextPainter extends Painter {
         });
 
         let visibleElements = elements;
+        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
 
-        if (elements.length) {
-            if (!mesh.properties.ignoreCollision) {
-                visibleElements = [];
-                this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix) => {
-                    // debugger
-                    const visible = this._isLabelVisible(mesh, elements, label, start, end, mvpMatrix);
-                    if (visible) {
-                        //start end是对应的端点序号，每个文字有4个端点, 而每个文字有6个elements
-                        for (let i = start; i < end; i++) {
-                            visibleElements.push(elements[i]);
-                        }
+        if (elements.length && !mesh.properties.ignoreCollision && enableCollision) {
+            visibleElements = [];
+            this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix) => {
+                // debugger
+                const visible = this._isLabelVisible(mesh, elements, label, start, end, mvpMatrix);
+                if (visible) {
+                    //start end是对应的端点序号，每个文字有4个端点, 而每个文字有6个elements
+                    for (let i = start; i < end; i++) {
+                        visibleElements.push(elements[i]);
                     }
-                });
-            }
+                }
+            });
         }
 
         geometry.updateData('aNormal', aNormal);
