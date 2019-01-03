@@ -67,6 +67,8 @@ class TextPainter extends Painter {
             return null;
         }
 
+        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+
         const packMeshes = tileData.meshes;
         const meshes = [];
         for (let i = 0; i < packMeshes.length; i++) {
@@ -106,8 +108,6 @@ class TextPainter extends Painter {
             if (isAlongLine) {
                 geometry.properties.aGlyphOffset = aGlyphOffset;
                 geometry.properties.aSegment = aSegment;
-                geometry.properties.elemCtor = geometry.elements.constructor;
-                geometry.properties.elements = geometry.elements;
 
                 delete geometry.data.aSegment;
                 delete geometry.data.aGlyphOffset;
@@ -134,6 +134,11 @@ class TextPainter extends Painter {
                 };
                 //TODO 增加是否是vertical字符的判断
                 uniforms.isVerticalChar = true;
+            }
+
+            if (isAlongLine || enableCollision) {
+                geometry.properties.elements = geometry.elements;
+                geometry.properties.elemCtor = geometry.elements.constructor;
             }
 
             let transparent = false;
@@ -260,6 +265,17 @@ class TextPainter extends Painter {
             angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
             0.0, pitchSin, pitchCos
         ];
+        const fn = (elements, visibleElements, mesh, label, start, end, mvpMatrix) => {
+            // debugger
+            const visible = this._isLabelVisible(mesh, elements, label, start, end, mvpMatrix);
+            if (visible) {
+                //start end是对应的端点序号，每个文字有4个端点, 而每个文字有6个elements
+                for (let i = start; i < end; i++) {
+                    visibleElements.push(elements[i]);
+                }
+            }
+        };
+        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
             const geometry = mesh.geometry;
@@ -269,9 +285,18 @@ class TextPainter extends Painter {
                     continue;
                 }
                 this._updateLineLabel(mesh, planeMatrix);
-            } else {
-                //TODO 非line placement的还没有实现
-                this._forEachLabel(mesh, geometry.properties.elements, this._isLabelVisible);
+            } else if (enableCollision && !mesh.properties.ignoreCollision) {
+                const elements = geometry.properties.elements;
+                const visibleElements = [];
+                this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix) => {
+                    fn(elements, visibleElements, mesh, label, start, end, mvpMatrix);
+                });
+                if (visibleElements.length !== elements.length) {
+                    geometry.setElements({
+                        usage : 'dynamic',
+                        data : new geometry.properties.elemCtor(visibleElements)
+                    });
+                }
             }
         }
     }

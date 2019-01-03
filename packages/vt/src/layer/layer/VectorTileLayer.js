@@ -17,8 +17,7 @@ const defaultOptions = {
     stencil : false,
     features : true,
     cascadeTiles : false,
-    //viewport padding for collision index
-    collisionPadding : 100
+    collision : true
 };
 
 /**
