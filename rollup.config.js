@@ -26,6 +26,9 @@ export default {
                     'regex' : /^_/,
                     'keep_quoted' : true
                 }
+            },
+            output : {
+                comments : `/^!/`
             }
         })
     ]
