@@ -6,7 +6,8 @@
   "module": "dist/fusiongl.es.js",
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w"
+    "dev": "rollup -c -w",
+    "prepublish" : "npm run build"
   },
   "author": "axmand fuzhenn",
   "license": "UNLICENSED",
