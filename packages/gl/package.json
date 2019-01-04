@@ -7,11 +7,12 @@
   "module": "dist/maptalksgl.es.js",
   "jsnext:main": "dist/maptalksgl.es.js",
   "scripts": {
-    "build": "rollup --environment BUILD:production -c rollup.config.js",
+    "build": "npm run lint && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish" : "npm run build"
+    "prepublish" : "npm run build",
+    "lint" : "eslint src/**/*.js"
   },
   "files" : [
     "dist/maptalksgl.js",
