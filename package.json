@@ -1,46 +1,27 @@
 {
-  "name": "fusion.gl",
-  "version": "0.1.6",
+  "name": "@maptalks-incubator/fusiongl",
+  "version": "0.1.0",
   "description": "",
-  "main": "src/index.js",
-  "module": "src/index.js",
+  "main": "dist/fusiongl.es.js",
+  "module": "dist/fusiongl.es.js",
   "scripts": {
-    "test": "mocha -u tdd --timeout 999999 --colors ./test/**/*.spec.js",
-    "build-dev": "rollup -c",
+    "build": "rollup -c",
     "dev": "rollup -c -w"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/axmand/fusion.gl.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/axmand/fusion.gl/issues"
-  },
+  "author": "axmand fuzhenn",
+  "license": "UNLICENSED",
+  "files": [
+    "dist/fusiongl.es.js"
+  ],
   "homepage": "https://github.com/axmand/fusion.gl#readme",
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-eslint": "^8.2.2",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-env": "^1.7.0",
-    "claygl": "^1.2.3",
-    "eslint": "^4.19.1",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.11.1",
     "eslint-config-maptalks": "^0.3.0",
-    "eslint-plugin-mocha": "^5.0.0",
-    "expect.js": "^0.3.1",
-    "karma": "^2.0.2",
-    "karma-babel-preprocessor": "^7.0.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-expect": "^1.1.3",
-    "karma-mocha": "^1.3.0",
-    "karma-mocha-reporter": "^2.2.5",
-    "mocha": "^5.1.1",
-    "regl": "^1.3.7",
-    "rollup": "^0.64.1",
-    "rollup-plugin-commonjs": "^9.1.6",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "three": "^0.95.0"
+    "rollup": "^1.0.1",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-terser": "^4.0.1"
   },
   "dependencies": {
     "fast-deep-equal": "^2.0.1"
