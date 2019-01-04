@@ -8,4 +8,4 @@ export {
 } from 'gl-matrix';
 export { createREGL, reshader };
 export { default as GroupGLLayer } from './layer/GroupGLLayer';
-export { GLContext } from 'fusion.gl';
+export { GLContext } from '@maptalks-incubator/fusiongl';

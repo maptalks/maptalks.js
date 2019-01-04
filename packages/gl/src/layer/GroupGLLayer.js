@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { GLContext } from 'fusion.gl';
+import { GLContext } from '@maptalks-incubator/fusiongl';
 
 const options = {
     renderer : 'gl',
