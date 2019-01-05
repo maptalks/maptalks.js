@@ -1,5 +1,5 @@
 {
-  "name": "@maptalks-incubator/fusiongl",
+  "name": "@maptalks/fusiongl",
   "version": "0.1.0",
   "description": "",
   "main": "dist/fusiongl.es.js",
@@ -9,12 +9,12 @@
     "dev": "rollup -c -w",
     "prepublish" : "npm run build"
   },
-  "author": "axmand fuzhenn",
+  "author": "axmand",
+  "contributors" : ["fuzhenn"],
   "license": "UNLICENSED",
   "files": [
     "dist/fusiongl.es.js"
   ],
-  "homepage": "https://github.com/axmand/fusion.gl#readme",
   "devDependencies": {
     "babel-eslint": "^10.0.1",
     "eslint": "^5.11.1",
