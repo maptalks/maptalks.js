@@ -7,7 +7,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "prepare" : "npm run build"
+    "prepare" : "npm run lint && npm run build",
+    "lint" : "eslint src/**/*.js test/**/*.js"
   },
   "author": "axmand",
   "contributors" : ["fuzhenn"],
