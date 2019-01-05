@@ -28,7 +28,7 @@ export default {
                 }
             },
             output : {
-                comments : `/^!/`
+                comments : '/^!/'
             }
         })
     ]
