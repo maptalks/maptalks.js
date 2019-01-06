@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/reshader.gl",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A shader centric WebGL engine based on regl",
   "module": "dist/reshadergl.es.js",
   "jsnext:main": "dist/reshadergl.es.js",
@@ -8,10 +8,10 @@
     "build": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare" : "npm run lint && npm run build",
-    "lint" : "eslint src/**/*.js"
+    "prepare": "npm run lint && npm run build",
+    "lint": "eslint src/**/*.js"
   },
-  "files" : [
+  "files": [
     "dist/reshadergl.es.js"
   ],
   "keywords": [
