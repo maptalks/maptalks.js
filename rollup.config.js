@@ -7,6 +7,7 @@ const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}
 
 export default {
     input: './src/index.js',
+    external : ['fast-deep-equal'],
     output: {
         sourcemap : false,
         banner,
