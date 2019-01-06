@@ -58,7 +58,7 @@ module.exports = [
     {
         input: 'src/index.js',
         plugins: configPlugins.concat(production ? [terser({ output : { comments : '/^!/' }})] : []),
-        external : ['maptalks'],
+        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', 'regl', 'gl-matrix'],
         output: {
             'sourcemap': production ? false : 'inline',
             'format': 'es',
