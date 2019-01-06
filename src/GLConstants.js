@@ -1,3 +1,4 @@
+/*eslint-disable camelcase*/
 /**
  * reference https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants
  * reference https://github.com/uber/luma.gl/blob/master/src/webgl-utils/constants.js
@@ -899,3 +900,4 @@ const GLConstants = {
 };
 
 export default GLConstants;
+/*eslint-enable camelcase*/
