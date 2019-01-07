@@ -145,7 +145,7 @@ export default class Geometry {
         }
         const posAttr = this.desc.positionAttribute;
         let posArr = this.data[posAttr];
-        if (!Array.isArray(posArr)) {
+        if (!isArray(posArr)) {
             // form of object: { usage : 'static', data : [...] }
             posArr = posArr.data;
         }
