@@ -103,7 +103,6 @@ class Painter {
     preparePaint() {}
 
     paint(context) {
-        this._redraw = false;
         const layer = this.layer;
         const map = layer.getMap();
         if (!map) {
@@ -125,8 +124,12 @@ class Painter {
         this._renderCollisionBox();
 
         return {
-            redraw : false
+            redraw : this._redraw
         };
+    }
+
+    setToRedraw() {
+        this._redraw = true;
     }
 
     callShader(uniforms) {
@@ -178,6 +181,7 @@ class Painter {
     }
 
     clear() {
+        this._redraw = false;
         this.scene.clear();
     }
 
