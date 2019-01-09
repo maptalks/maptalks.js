@@ -5,6 +5,7 @@ import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
 import { getLabelBox } from './util/get_label_box';
 import { getLabelNormal } from './util/get_label_normal';
+import { clamp } from '../Util';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -47,8 +48,9 @@ const BOX = [], BOX0 = [], BOX1 = [];
 const EMPTY_ARRAY = [];
 
 const DEFAULT_SCENE_CONFIG = {
-    fading : true,
-    collision : true
+    collision : true,
+    fadingDuration : 400,
+    fadingDelay : 200
 };
 
 class TextPainter extends Painter {
@@ -90,34 +92,38 @@ class TextPainter extends Painter {
             }
             const symbol = packMeshes[i].symbol;
             geometry.properties.symbol = symbol;
-            const isAlongLine = (symbol['textPlacement'] === 'line');
+            const isLinePlacement = symbol['textPlacement'] === 'line';
             const uniforms = {
                 tileResolution : geometry.properties.tileResolution,
                 tileRatio : geometry.properties.tileRatio
             };
             const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
 
-            //initialize opacity array
-            const aOpacity = new Uint8Array(aSize.length);
-            for (let i = 0; i < aOpacity.length; i++) {
-                aOpacity[i] = 255;
+            if (enableCollision) {
+                //initialize opacity array
+                //aOpacity用于fading透明度的调整
+                const aOpacity = new Uint8Array(aSize.length);
+                for (let i = 0; i < aOpacity.length; i++) {
+                    aOpacity[i] = 255;
+                }
+                geometry.data.aOpacity = {
+                    usage : 'dynamic',
+                    data : aOpacity
+                };
+                geometry.properties.aOpacity = {
+                    usage : 'dynamic',
+                    data : new Uint8Array(aSize.length)
+                };
             }
-            geometry.data.aOpacity = {
-                usage : 'dynamic',
-                data : aOpacity
-            };
-            if (isAlongLine || true) {
-                //TODO collision是否为true
-                geometry.properties.aOpacity = aOpacity;
-                geometry.properties.aPickingId = geometry.data.aPickingId;
+            geometry.properties.aPickingId = geometry.data.aPickingId;
+
+            if (isLinePlacement) {
                 geometry.properties.aDxDy = aDxDy;
                 geometry.properties.aSize = aSize;
                 geometry.properties.aRotation = aRotation;
                 geometry.properties.aAnchor = aPosition;
                 geometry.properties.aShape0 = aShape0;
-            }
 
-            if (isAlongLine) {
                 geometry.properties.aGlyphOffset = aGlyphOffset;
                 geometry.properties.aSegment = aSegment;
 
@@ -148,7 +154,7 @@ class TextPainter extends Painter {
                 uniforms.isVerticalChar = true;
             }
 
-            if (isAlongLine || enableCollision) {
+            if (isLinePlacement || enableCollision) {
                 geometry.properties.elements = geometry.elements;
                 geometry.properties.elemCtor = geometry.elements.constructor;
             }
@@ -192,7 +198,7 @@ class TextPainter extends Painter {
 
             if (symbol['textPerspectiveRatio']) {
                 uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
-            } else if (isAlongLine) {
+            } else if (isLinePlacement) {
                 uniforms.textPerspectiveRatio = 1;
             }
 
@@ -289,6 +295,7 @@ class TextPainter extends Painter {
             0.0, pitchSin, pitchCos
         ];
         const fn = (elements, visibleElements, mesh, label, start, end, mvpMatrix, index) => {
+            //TODO fading 逻辑还没做
             const key = mesh.properties.tileKey;
             // debugger
             const visible = this._isLabelVisible(mesh, elements, label, start, end, mvpMatrix);
@@ -333,7 +340,8 @@ class TextPainter extends Painter {
         const timestamp = this.layer.getRenderer().getFrameTimestamp(),
             map = this.layer.getMap(),
             geometry = mesh.geometry,
-            geometryProps = geometry.properties;
+            geometryProps = geometry.properties,
+            fadingDuration = this.sceneConfig.fadingDuration;
         const { aNormal, aOffset, aRotation } = geometryProps;
         //pitch不跟随map时，需要根据屏幕位置实时计算各文字的位置和旋转角度并更新aOffset和aRotation
         //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
@@ -370,10 +378,8 @@ class TextPainter extends Painter {
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 //更新 fadingRecords 的时间戳
-                if (!this._fadingRecords[key]) {
-                    this._fadingRecords[key] = {};
-                }
-                this._fadingRecords[key][index] = -timestamp;
+                const stamps = this._getLabelTimestamps(key);
+                stamps[index] = -timestamp;
                 return;
             }
             if (shouldUpdate && isPitchWithMap) {
@@ -386,6 +392,21 @@ class TextPainter extends Painter {
                 return;
             }
             visible = this._isLabelVisible(mesh, allElements, label, start, end, mvpMatrix);
+            const fadingOpacity = this._getLabelFading(visible, this._getLabelTimestamps(key), index);
+            if (fadingOpacity > 0) {
+                visible = true;
+            }
+            const vertexIndexStart = allElements[start],
+                vertexIndexEnd = vertexIndexStart + 4 * label.length;
+            for (let i = vertexIndexStart; i < vertexIndexEnd; i++) {
+                geometryProps.aOpacity.data[i] = fadingOpacity * 255;
+            }
+
+            const labelStamp = this._getLabelTimestamps(key)[index];
+            if ((timestamp - Math.abs(labelStamp)) < fadingDuration) {
+                //fading 动画没结束时，设置重绘
+                this.setToRedraw();
+            }
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(allElements[i]);
@@ -408,6 +429,9 @@ class TextPainter extends Painter {
                 usage : 'dynamic',
                 data : new geometryProps.elemCtor(visibleElements)
             });
+        }
+        if (enableCollision) {
+            geometry.updateData('aOpacity', geometryProps.aOpacity);
         }
         //tag if geometry's aOffset and aRotation is updated
         geometry.__offsetRotationUpdated = true;
@@ -539,7 +563,7 @@ class TextPainter extends Painter {
         const map = this.layer.getMap();
         const geoProps = mesh.geometry.properties,
             symbol = geoProps.symbol,
-            isAlongLine = (symbol['textPlacement'] === 'line'),
+            isLinePlacement = (symbol['textPlacement'] === 'line'),
             debugCollision = this.layer.options['debugCollision'];
         let hasCollides = false;
         const charCount = text.length;
@@ -551,7 +575,7 @@ class TextPainter extends Painter {
         //2, 将每个box在collision index中测试
         //   2.1 如果不冲突，则显示label
         //   2.2 如果冲突，则隐藏label
-        if (!isAlongLine && mesh.material.uniforms['rotateWithMap'] !== 1 && !symbol['textRotation']) {
+        if (!isLinePlacement && mesh.material.uniforms['rotateWithMap'] !== 1 && !symbol['textRotation']) {
             // 既没有沿线绘制，也没有随地图旋转时，文字本身也没有旋转时
             // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
             const firstChrIdx = elements[start],
@@ -731,6 +755,47 @@ class TextPainter extends Painter {
             resolution : map.getResolution(),
             planeMatrix
         };
+    }
+
+    _getLabelFading(visible, stamps, index) {
+        const { fadingDuration, fadingDelay } = this.sceneConfig,
+            timestamp = this.layer.getRenderer().getFrameTimestamp();
+        let labelStamp = stamps[index],
+            fadingOpacity = visible ? 1 : 0;
+
+        if (labelStamp && (timestamp - Math.abs(labelStamp) < fadingDuration)) {
+            //fading过程中，不管visible是否改变，继续计算原有的fadingOpacity
+            if (labelStamp > 0) {
+                //显示fading
+                fadingOpacity = (timestamp - labelStamp) / fadingDuration;
+            } else {
+                //消失fading
+                fadingOpacity = 1 - (timestamp - Math.abs(labelStamp)) / fadingDuration;
+            }
+        } else if (!visible) {
+            //消失fading
+            if (labelStamp > 0) {
+                //消失fading起点，记录时间戳
+                stamps[index] = labelStamp = -(timestamp + fadingDelay);
+            }
+            fadingOpacity = 1 - (timestamp + labelStamp) / fadingDuration;
+        } else {
+            //显示fading
+            if (!labelStamp || labelStamp < 0) {
+                //显示fading起点，记录时间戳
+                stamps[index] = labelStamp = timestamp + fadingDelay;
+            }
+            fadingOpacity = (timestamp - labelStamp) / fadingDuration;
+        }
+        fadingOpacity = clamp(fadingOpacity, 0, 1);
+        return fadingOpacity;
+    }
+
+    _getLabelTimestamps(key) {
+        if (!this._fadingRecords[key]) {
+            this._fadingRecords[key] = {};
+        }
+        return this._fadingRecords[key];
     }
 }
 

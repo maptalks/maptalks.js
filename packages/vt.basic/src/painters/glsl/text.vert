@@ -7,6 +7,7 @@ attribute float aSize;
 attribute vec2 aDxDy;
 attribute float aRotation;
 //uint8
+//TODO collision关闭时，不用载入aOpacity
 attribute float aOpacity;
 
 uniform float cameraToCenterDistance;

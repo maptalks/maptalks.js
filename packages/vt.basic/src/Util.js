@@ -13,3 +13,8 @@ export function extend(dest) { // (Object[, Object, ...]) ->
     }
     return dest;
 }
+
+
+export function clamp(n, min, max) {
+    return Math.min(max, Math.max(min, n));
+}
