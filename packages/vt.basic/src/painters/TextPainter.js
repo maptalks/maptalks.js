@@ -377,9 +377,6 @@ class TextPainter extends Painter {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null);
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
-                //更新 fadingRecords 的时间戳
-                const stamps = this._getLabelTimestamps(key);
-                stamps[index] = -timestamp;
                 return;
             }
             if (shouldUpdate && isPitchWithMap) {
@@ -468,7 +465,6 @@ class TextPainter extends Painter {
                 const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
                 const charCount = text.length;
                 for (let ii = start; ii < end; ii += charCount * 6) {
-                    //start end是端点序号，每个文字有4个，而element每个文字有6个，所以需要 * 4 / 6
                     fn.call(this, mesh, text, ii, ii + charCount * 6, matrix, index++);
                 }
                 current = pickingId[idx];
