@@ -227,6 +227,11 @@ class TextPainter extends Painter {
             if (symbol['textHaloRadius']) {
                 mesh.properties.ignoreCollision = true;
             }
+            if (enableCollision) {
+                mesh.setDefines({
+                    'ENABLE_COLLISION' : 1
+                });
+            }
             meshes.push(mesh);
 
             if (symbol['textHaloRadius']) {
@@ -237,7 +242,11 @@ class TextPainter extends Painter {
                     castShadow : false,
                     picking : true
                 });
-
+                if (enableCollision) {
+                    mesh.setDefines({
+                        'ENABLE_COLLISION' : 1
+                    });
+                }
                 mesh.setLocalTransform(transform);
                 meshes.push(mesh);
             }
@@ -357,7 +366,6 @@ class TextPainter extends Painter {
         const isPitchWithMap = uniforms['pitchWithMap'] === 1,
             shouldUpdate = !isPitchWithMap || !geometry.__offsetRotationUpdated;
 
-        //shouldUpdate为真时
         const allElements = geometryProps.elements;
 
         //pitchWithMap 而且 offset， rotation都更新过了，才能直接用allElements
@@ -379,7 +387,7 @@ class TextPainter extends Painter {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 return;
             }
-            if (shouldUpdate && isPitchWithMap) {
+            if (shouldUpdate && (isPitchWithMap || !enableCollision)) {
                 //只有pitchWithMap，且offset,Rotation没有更新时（第一次运行），才需要更新elements
                 for (let i = start; i < end; i++) {
                     elements.push(allElements[i]);

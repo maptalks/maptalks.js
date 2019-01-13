@@ -7,8 +7,9 @@ attribute float aSize;
 attribute vec2 aDxDy;
 attribute float aRotation;
 //uint8
-//TODO collision关闭时，不用载入aOpacity
+#ifdef ENABLE_COLLISION
 attribute float aOpacity;
+#endif
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -79,5 +80,9 @@ void main() {
 
 
     vSize = aSize;
+    #ifdef ENABLE_COLLISION
     vOpacity = aOpacity / 255.0;
+    #else
+    vOpacity = 1.0;
+    #endif
 }

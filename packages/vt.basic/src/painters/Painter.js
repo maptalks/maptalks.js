@@ -4,7 +4,7 @@ import { StencilHelper } from '@maptalks/vt-plugin';
 import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 
-const mat = [];
+const MAT = [];
 
 const level0Filter = mesh => {
     return mesh.uniforms['level'] === 0;
@@ -200,6 +200,10 @@ class Painter {
     }
 
     isCollides(box) {
+        const map = this.layer.getMap();
+        if (map.isOffscreen(box)) {
+            return true;
+        }
         const collisionIndex = this.layer.getCollisionIndex();
         return collisionIndex.collides(box);
     }
@@ -330,8 +334,8 @@ class Painter {
             const mesh = stencils[i].mesh;
             let id = painted[mesh.properties.tile.dupKey];
             if (id === undefined) {
-                mat4.multiply(mat, projViewMatrix, stencils[i].transform);
-                id = this._stencilHelper.write(quadStencil, mat);
+                mat4.multiply(MAT, projViewMatrix, stencils[i].transform);
+                id = this._stencilHelper.write(quadStencil, MAT);
                 painted[mesh.properties.tile.dupKey] = id;
             }
             // stencil ref value

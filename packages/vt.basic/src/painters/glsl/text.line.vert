@@ -9,8 +9,11 @@ attribute float aSize;
 attribute vec2 aOffset;
 attribute vec2 aDxDy;
 attribute float aRotation;
-attribute float aNormal;//flip * 2 + vertical
+//flip * 2 + vertical
+attribute float aNormal;
+#ifdef ENABLE_COLLISION
 attribute float aOpacity;
+#endif
 
 uniform float zoomScale;
 uniform float cameraToCenterDistance;
@@ -78,5 +81,9 @@ void main() {
 
     vTexCoord = texCoord / texSize;
     vSize = aSize;
+    #ifdef ENABLE_COLLISION
     vOpacity = aOpacity / 255.0;
+    #else
+    vOpacity = 1.0;
+    #endif
 }
