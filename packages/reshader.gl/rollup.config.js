@@ -3,6 +3,8 @@ const commonjs = require('rollup-plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 
+const production = process.env.BUILD === 'production';
+
 function glsl() {
     return {
         transform(code, id) {
@@ -32,6 +34,20 @@ const plugins = [
     commonjs(),
 ];
 
+if (production) {
+    plugins.push(terser({
+        // mangle: {
+        //     properties: {
+        //         'regex' : /^_/,
+        //         'keep_quoted' : true
+        //     }
+        // },
+        output : {
+            comments : '/^!/'
+        }
+    }));
+}
+
 module.exports = [
     {
         input: 'src/index.js',
@@ -49,20 +65,10 @@ module.exports = [
     {
         input: 'src/index.js',
         external : ['gl-matrix'],
-        plugins : plugins.concat([terser({
-            // mangle: {
-            //     properties: {
-            //         'regex' : /^_/,
-            //         'keep_quoted' : true
-            //     }
-            // },
-            output : {
-                comments : '/^!/'
-            }
-        })]),
+        plugins : plugins,
         output: [
             {
-                'sourcemap': false,
+                'sourcemap': production ? false : 'inline',
                 'format': 'es',
                 'banner': banner,
                 'file': pkg.module
