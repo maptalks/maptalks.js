@@ -144,8 +144,8 @@ function parseRGBE(arrayBuffer, exposure) {
     var pixels = new Array(width * height * 4);
     var offset2 = 0;
     for (let y = 0; y < height; y++) {
-        let colorOffset = readColors(scanline, data, offset, width);
-        if (!colorOffset) {
+        offset = readColors(scanline, data, offset, width);
+        if (!offset) {
             return null;
         }
         for (let x = 0; x < width; x++) {
