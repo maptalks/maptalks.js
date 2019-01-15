@@ -23,10 +23,6 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         return options;
     }
 
-    getData() {
-        return this.options.data;
-    }
-
     setData(data) {
         this.options.data = data;
         this._generateIdMap();
@@ -52,7 +48,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     _generateIdMap() {
-        this.features = this.options.data;
+        this.features = JSON.parse(JSON.stringify(this.options.data));
         if (!this.features) {
             return;
         }
@@ -86,6 +82,6 @@ GeoJSONVectorTileLayer.registerJSONType('GeoJSONVectorTileLayer');
 GeoJSONVectorTileLayer.registerRenderer('gl', VectorTileLayerRenderer);
 GeoJSONVectorTileLayer.registerRenderer('canvas', null);
 
-VectorTileLayer.mergeOptions(options);
+GeoJSONVectorTileLayer.mergeOptions(options);
 
 export default GeoJSONVectorTileLayer;

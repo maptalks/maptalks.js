@@ -79,13 +79,19 @@ module.exports = [{
         format: 'umd',
         sourcemap: false,
         intro: `
+var IS_NODE = typeof exports === 'object' && typeof module !== 'undefined';
+var maptalks = maptalks;
+var maptalksgl = gl;
+if (IS_NODE) {
+    maptalks = maptalks || require('maptalks');
+    maptalksgl = maptalksgl || require('@maptalks/gl');
+}
 var workerLoaded;
 function define(_, chunk) {
 if (!workerLoaded) {
     maptalks.registerWorkerAdapter('${pkg.name}', chunk);
     workerLoaded = true;
 } else {
-    var exports = maptalks;
     chunk(exports, maptalks, maptalksgl);
 }
 }`

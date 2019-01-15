@@ -399,7 +399,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _initPlugins() {
         const pluginClazz = this.layer.constructor.getPlugins();
-        const style = this.layer.getStyle();
+        const style = this.layer.getStyle() || [];
         this.plugins = style.map((config, idx) => {
             if (!config.type) {
                 throw new Error('invalid plugin type for style at ' + idx);

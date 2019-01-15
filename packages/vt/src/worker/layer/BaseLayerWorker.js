@@ -1,7 +1,6 @@
 import { compileStyle } from '@maptalks/feature-filter';
 import { extend, getIndexArrayType } from '../../common/Util';
-import { buildExtrudeFaces, buildWireframe } from '../builder/';
-import { buildUniqueVertex, buildFaceNormals, buildShadowVolume } from '../builder/Build';
+import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 
@@ -13,11 +12,11 @@ export default class BaseLayerWorker {
         this.id = id;
         this.options = options;
         this.upload = upload;
-        this._compileStyle(options.style || {});
+        this._compileStyle(options.style || []);
     }
 
     updateStyle(style, cb) {
-        this._compileStyle(style);
+        this._compileStyle(style || []);
         cb();
     }
 
@@ -154,9 +153,9 @@ export default class BaseLayerWorker {
         const tileSize = this.options.tileSize[0];
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
-            return Promise.resolve(this._build3DExtrusion(features, dataConfig, extent, glScale, zScale));
+            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1]));
         } else if (type === '3d-wireframe') {
-            return Promise.resolve(this._buildWireframe(features, dataConfig, extent));
+            return Promise.resolve(buildWireframe(features, dataConfig, extent));
         } else if (type === 'point') {
             const options = extend({}, dataConfig, {
                 EXTENT : extent,
@@ -181,8 +180,6 @@ export default class BaseLayerWorker {
             const pack = new NativeLinePack(features, styles, options);
             return pack.load();
         } else if (type === 'fill') {
-            // debugger
-            // //TODO 需要实现requestor，把数据返回给主线程绘制glyph，获取icon等
             const options = extend({}, dataConfig, {
                 EXTENT : extent,
                 requestor : this.fetchIconGlyphs.bind(this),
@@ -194,87 +191,6 @@ export default class BaseLayerWorker {
         return {
             data : {},
             buffers : null
-        };
-    }
-
-    _build3DExtrusion(features, dataConfig, extent, glScale, zScale) {
-        if (dataConfig.top === undefined) {
-            dataConfig.top = true;
-        }
-        const {
-            altitudeScale,
-            altitudeProperty,
-            defaultAltitude,
-            heightProperty,
-            defaultHeight,
-            normal, tangent,
-            uv, uvSize,
-            shadowVolume, shadowDir,
-            top
-        } = dataConfig;
-        const faces = buildExtrudeFaces(
-            features, extent,
-            {
-                altitudeScale, altitudeProperty,
-                defaultAltitude : defaultAltitude || 0,
-                heightProperty,
-                defaultHeight : defaultHeight || 0
-            },
-            {
-                top,
-                uv,
-                uvSize : uvSize || [128, 128],
-                //>> needed by uv computation
-                glScale,
-                //用于白模侧面的uv坐标v的计算
-                // zScale用于将meter转为gl point值
-                // (extent / this.options['tileSize'][1])用于将gl point转为瓦片内坐标
-                vScale : zScale * (extent / this.options['tileSize'][1])
-                //<<
-            });
-        const buffers = [faces.vertices.buffer, faces.featureIndexes.buffer];
-
-        let oldIndices;
-        if (shadowVolume) {
-            oldIndices = faces.indices;
-        }
-        //in buildUniqueVertex, indices will be updated
-        const l = faces.indices.length;
-        const ctor = getIndexArrayType(l);
-        faces.indices = new ctor(faces.indices);
-        buffers.push(faces.indices.buffer);
-
-        const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
-        faces.vertices = uniqueFaces.vertices;
-        // debugger
-        if (normal || shadowVolume) {
-            const normals = buildFaceNormals(faces.vertices, faces.indices);
-            faces.normals = normals;
-            buffers.push(normals.buffer);
-        }
-        if (tangent) {
-            //TODO caculate tangent
-        }
-        if (uv) {
-            buffers.push(faces.uvs.buffer);
-        }
-        if (shadowVolume) {
-            const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, faces.featureIndexes, shadowDir);
-            faces.shadowVolume = shadowVolume;
-            buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
-        }
-        return {
-            data : faces,
-            buffers
-        };
-    }
-
-    _buildWireframe(features, dataConfig, extent) {
-        const frames = buildWireframe(features, extent, dataConfig);
-        const buffers = [frames.vertices.buffer, frames.indices.buffer, frames.featureIndexes.buffer];
-        return {
-            data : frames,
-            buffers
         };
     }
 

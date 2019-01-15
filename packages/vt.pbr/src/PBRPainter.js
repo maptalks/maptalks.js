@@ -282,7 +282,7 @@ class PBRPainter {
                 stencil: {
                     enable: false
                 },
-                viewport, scissor
+                viewport
                 // polygonOffset: {
                 //     enable: true,
                 //     offset: {
