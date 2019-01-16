@@ -68,7 +68,7 @@ module.exports = [
         plugins : plugins,
         output: [
             {
-                'sourcemap': production ? false : 'inline',
+                'sourcemap': false,
                 'format': 'es',
                 'banner': banner,
                 'file': pkg.module
