@@ -5,7 +5,7 @@ const uglify = require('rollup-plugin-uglify').uglify;
 const pkg = require('../package.json');
 
 const production = process.env.BUILD === 'production';
-const outputFile = production ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
+const outputFile = (production || process.env.BUILD === 'test') ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
 const plugins = production ? [
     uglify({
         mangle: {
@@ -81,7 +81,7 @@ module.exports = [{
         intro: `
 var IS_NODE = typeof exports === 'object' && typeof module !== 'undefined';
 var maptalks = maptalks;
-var maptalksgl = gl;
+var maptalksgl = maptalksgl;
 if (IS_NODE) {
     maptalks = maptalks || require('maptalks');
     maptalksgl = maptalksgl || require('@maptalks/gl');
@@ -92,6 +92,7 @@ if (!workerLoaded) {
     maptalks.registerWorkerAdapter('${pkg.name}', chunk);
     workerLoaded = true;
 } else {
+    var exports = IS_NODE ? exports : maptalks;
     chunk(exports, maptalks, maptalksgl);
 }
 }`

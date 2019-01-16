@@ -1,4 +1,4 @@
-import Painter from './Painter';
+import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Color from 'color';
@@ -17,7 +17,7 @@ const defaultUniforms = {
 };
 
 
-class LinePainter extends Painter {
+class LinePainter extends BasicPainter {
     needToRedraw() {
         return this._redraw;
     }
@@ -92,23 +92,19 @@ class LinePainter extends Painter {
         return meshes;
     }
 
-    remove() {
-        this._shader.dispose();
-    }
-
     init() {
         //tell parent Painter to run stencil when painting
         // this.needStencil = true;
 
         const regl = this.regl;
 
-        this._renderer = new reshader.Renderer(regl);
+        this.renderer = new reshader.Renderer(regl);
 
         this.createShader();
 
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
-                this._renderer,
+                this.renderer,
                 {
                     vert : pickingVert,
                     uniforms : [
@@ -145,7 +141,7 @@ class LinePainter extends Painter {
                 return canvas ? canvas.height : 1;
             }
         };
-        this._shader = new reshader.MeshShader({
+        this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms : [
                 'cameraToCenterDistance',

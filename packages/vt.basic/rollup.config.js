@@ -60,9 +60,9 @@ module.exports = {
             'name': 'maptalks.vt.basic',
             'banner': banner,
             'globals' : {
-                'maptalks' : 'maptalks',
+                '@maptalks/gl' : 'maptalksgl',
                 '@maptalks/vt' : 'maptalks',
-                '@maptalks/gl' : 'maptalksgl'
+                'maptalks' : 'maptalks'
             },
             'file': outputFile
         }/* ,

@@ -1,4 +1,4 @@
-import Painter from './Painter';
+import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Color from 'color';
@@ -11,7 +11,7 @@ const defaultUniforms = {
     'polygonOpacity' : 1
 };
 
-class FillPainter extends Painter {
+class FillPainter extends BasicPainter {
     needToRedraw() {
         return this._redraw;
     }
@@ -48,15 +48,11 @@ class FillPainter extends Painter {
         return meshes;
     }
 
-    remove() {
-        this._shader.dispose();
-    }
-
     init() {
         const regl = this.regl;
         const canvas = this.canvas;
 
-        this._renderer = new reshader.Renderer(regl);
+        this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
             x : 0,
@@ -69,7 +65,7 @@ class FillPainter extends Painter {
             }
         };
 
-        this._shader = new reshader.MeshShader({
+        this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms : [
                 'polygonFill', 'polygonOpacity',
@@ -123,7 +119,7 @@ class FillPainter extends Painter {
         });
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
-                this._renderer,
+                this.renderer,
                 {
                     vert : pickingVert,
                     uniforms : [

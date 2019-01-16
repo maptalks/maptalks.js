@@ -1,8 +1,5 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { extend } from '../Util';
 import { StencilHelper } from '@maptalks/vt-plugin';
-import collisionVert from './glsl/collision.vert';
-import collisionFrag from './glsl/collision.frag';
 
 const MAT = [];
 
@@ -31,55 +28,11 @@ class Painter {
     }
 
     needToRedraw() {
-        throw new Error('not implemented');
+        return this._redraw;
     }
 
-    createGeometry(glData, features) {
-        const packs = glData.packs;
-        if (!packs || !packs.length) {
-            return [];
-        }
-        const regl = this.regl;
-        let iconAtlas, glyphAtlas;
-        if (glData.iconAtlas) {
-            const image = glData.iconAtlas.image;
-            iconAtlas = regl.texture({
-                width : image.width,
-                height : image.height,
-                data : image.data,
-                format : image.format,
-                mag : 'linear', //very important
-                min : 'linear', //very important
-                flipY : false,
-            });
-        }
-        if (glData.glyphAtlas) {
-            const sdf = glData.glyphAtlas.image;
-            glyphAtlas = regl.texture({
-                width : sdf.width,
-                height : sdf.height,
-                data : sdf.data,
-                format : sdf.format,
-                mag : 'linear', //very important
-                min : 'linear', //very important
-                flipY : false,
-            });
-        }
-
-        const geometries = [];
-        for (let i = 0; i < packs.length; i++) {
-            const data = extend({}, packs[i].data);
-            data.aPickingId = data.featureIndexes;
-            delete data.featureIndexes;
-            const geometry = new reshader.Geometry(data, packs[i].indices);
-            geometry.properties = {
-                features,
-                iconAtlas,
-                glyphAtlas
-            };
-            geometries.push(geometry);
-        }
-        return geometries;
+    createGeometry(/* glData, features */) {
+        throw new Error('not implemented');
     }
 
     createMesh(/* geometries, transform */) {
@@ -121,7 +74,7 @@ class Painter {
 
         this.callShader(uniforms, context);
 
-        this._renderCollisionBox();
+        this._pickingRendered = false;
 
         return {
             redraw : this._redraw
@@ -134,22 +87,25 @@ class Painter {
 
     callShader(uniforms) {
         //1. render current tile level's meshes
-        this._shader.filter = this.level0Filter;
-        this._renderer.render(this._shader, uniforms, this.scene);
+        this.shader.filter = this.level0Filter;
+        this.renderer.render(this.shader, uniforms, this.scene);
 
         //2. render background tile level's meshes
         //stenciled pixels already rendered in step 1
-        this._shader.filter = this.levelNFilter;
-        this._renderer.render(this._shader, uniforms, this.scene);
+        this.shader.filter = this.levelNFilter;
+        this.renderer.render(this.shader, uniforms, this.scene);
     }
 
     pick(x, y) {
-        if (!this.pickingFBO) {
+        if (!this.pickingFBO || !this.picking) {
             return null;
         }
         const map = this.layer.getMap();
         const uniforms = this.getUniformValues(map);
-        this.picking.render(this.scene.getMeshes(), uniforms);
+        if (!this._pickingRendered) {
+            this.picking.render(this.scene.getMeshes(), uniforms, true);
+            this._pickingRendered = true;
+        }
         const { meshId, pickingId, point } = this.picking.pick(x, y, uniforms, {
             viewMatrix : map.viewMatrix,
             projMatrix : map.projMatrix,
@@ -187,132 +143,8 @@ class Painter {
 
     resize() {}
 
-    delete(context) {
-        if (this._collisionMesh) {
-            this._collisionMesh.geometry.dispose();
-            this._collisionShader.dispose();
-            this._collisionMesh.dispose();
-            delete this._collisionMesh;
-            delete this._collisionShader;
-            delete this._collisionRenderer;
-        }
-        this.remove(context);
-    }
-
-    isCollides(box) {
-        const map = this.layer.getMap();
-        if (map.isOffscreen(box)) {
-            return true;
-        }
-        const collisionIndex = this.layer.getCollisionIndex();
-        return collisionIndex.collides(box);
-    }
-
-    insertCollisionBox(box) {
-        const collisionIndex = this.layer.getCollisionIndex();
-        collisionIndex.insertBox(box.slice(0));
-    }
-
-    addCollisionDebugBox(boxes, visible) {
-        const allBoxes = this._collisionBoxes = this._collisionBoxes || {
-            aPosition : [],
-            aVisible : [],
-            indices : []
-        };
-        const map = this.layer.getMap();
-        for (let i = 0; i < boxes.length; i++) {
-            const box = boxes[i];
-            if (map.isOffscreen(box)) {
-                continue;
-            }
-            const count = allBoxes.aPosition.length / 2;
-            allBoxes.aPosition.push(
-                box[0], box[1], box[2], box[1],
-                box[2], box[3], box[0], box[3]
-            );
-            allBoxes.aVisible.push(visible, visible, visible, visible);
-            allBoxes.indices.push(
-                count, count + 1,
-                count + 1, count + 2,
-                count + 2,
-                count + 3,
-                count + 3, count
-            );
-        }
-
-    }
-
-    _renderCollisionBox() {
-        if (!this._collisionBoxes || !this.layer.options['debugCollision']) {
-            return;
-        }
-        if (!this._collisionRenderer) {
-            this._initCollisionShader();
-        }
-        const { aPosition, aVisible, indices } = this._collisionBoxes;
-        if (!this._collisionMesh) {
-            const geometry = new reshader.Geometry(
-                {
-                    aPosition : [],
-                    aVisible: []
-                },
-                [],
-                0,
-                {
-                    positionSize : 2,
-                    primitive : 'lines'
-                }
-            );
-
-            this._collisionMesh = new reshader.Mesh(geometry);
-            this._collisionScene = new reshader.Scene();
-            this._collisionScene.addMesh(this._collisionMesh);
-        }
-        // debugger
-        const geometry = this._collisionMesh.geometry;
-        geometry.updateData('aPosition', new Float32Array(aPosition));
-        geometry.updateData('aVisible', new Uint8Array(aVisible));
-        geometry.setElements(indices);
-
-        this._collisionRenderer.render(
-            this._collisionShader,
-            {
-                size : [this.canvas.width, this.canvas.height]
-            },
-            this._collisionScene
-        );
-        delete this._collisionBoxes;
-    }
-
-    _initCollisionShader() {
-        const regl = this.regl;
-
-        this._collisionRenderer = new reshader.Renderer(regl);
-
-        const canvas = this.canvas;
-        const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
-                return canvas ? canvas.width : 1;
-            },
-            height : () => {
-                return canvas ? canvas.height : 1;
-            }
-        };
-        this._collisionShader = new reshader.MeshShader({
-            vert : collisionVert, frag : collisionFrag,
-            uniforms : [
-                'size'
-            ],
-            extraCommandProps : {
-                viewport,
-                depth : {
-                    enable : false,
-                }
-            }
-        });
-
+    delete(/* context */) {
+        this.shader.dispose();
     }
 
     _stencil(quadStencil) {

@@ -17,7 +17,7 @@
     "build-dev": "rollup -c build/rollup.config.js",
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
     "tdd" : "npm run pretest && electron-mocha --interactive --renderer ./test/**/*.spec.js",
-    "pretest": "npm run lint && npm run build-dev"
+    "pretest": "npm run lint && lerna run build-dev"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

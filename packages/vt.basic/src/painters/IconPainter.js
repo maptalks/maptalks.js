@@ -1,4 +1,4 @@
-import Painter from './Painter';
+import CollisionPainter from './CollisionPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import vert from './glsl/marker.vert';
@@ -11,7 +11,7 @@ const defaultUniforms = {
     'markerPerspectiveRatio' : 0
 };
 
-class PointPainter extends Painter {
+class PointPainter extends CollisionPainter {
     needToRedraw() {
         return this._redraw;
     }
@@ -60,15 +60,11 @@ class PointPainter extends Painter {
         return meshes;
     }
 
-    remove() {
-        this._shader.dispose();
-    }
-
     init() {
         const regl = this.regl;
         const canvas = this.canvas;
 
-        this._renderer = new reshader.Renderer(regl);
+        this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
             x : 0,
@@ -81,7 +77,7 @@ class PointPainter extends Painter {
             }
         };
 
-        this._shader = new reshader.MeshShader({
+        this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms : [
                 'cameraToCenterDistance',
@@ -120,7 +116,7 @@ class PointPainter extends Painter {
         });
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
-                this._renderer,
+                this.renderer,
                 {
                     vert : pickingVert,
                     uniforms : [

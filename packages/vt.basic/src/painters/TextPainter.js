@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import Painter from './Painter';
+import CollisionPainter from './CollisionPainter';
 import { reshader, mat4 } from '@maptalks/gl';
 import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
@@ -53,7 +53,7 @@ const DEFAULT_SCENE_CONFIG = {
     fadingDelay : 200
 };
 
-class TextPainter extends Painter {
+class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig) {
         super(regl, layer, sceneConfig);
         this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
@@ -271,17 +271,17 @@ class TextPainter extends Painter {
     }
 
     callShader(uniforms) {
-        this._shader.filter = shaderFilter0;
-        this._renderer.render(this._shader, uniforms, this.scene);
+        this.shader.filter = shaderFilter0;
+        this.renderer.render(this.shader, uniforms, this.scene);
 
-        this._shader.filter = shaderFilterN;
-        this._renderer.render(this._shader, uniforms, this.scene);
+        this.shader.filter = shaderFilterN;
+        this.renderer.render(this.shader, uniforms, this.scene);
 
         this._shaderAlongLine.filter = shaderLineFilter0;
-        this._renderer.render(this._shaderAlongLine, uniforms, this.scene);
+        this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
 
         this._shaderAlongLine.filter = shaderLineFilterN;
-        this._renderer.render(this._shaderAlongLine, uniforms, this.scene);
+        this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
     }
 
     /**
@@ -622,8 +622,8 @@ class TextPainter extends Painter {
         return hasCollides ? EMPTY_ARRAY : boxes;
     }
 
-    remove() {
-        this._shader.dispose();
+    delete() {
+        super.delete();
         this._shaderAlongLine.dispose();
         delete this._projectedLinesCache;
         this._fadingRecords = {};
@@ -634,7 +634,7 @@ class TextPainter extends Painter {
         const regl = this.regl;
         const canvas = this.canvas;
 
-        this._renderer = new reshader.Renderer(regl);
+        this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
             x : 0,
@@ -702,7 +702,7 @@ class TextPainter extends Painter {
             },
         };
 
-        this._shader = new reshader.MeshShader({
+        this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms,
             extraCommandProps
@@ -715,7 +715,7 @@ class TextPainter extends Painter {
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
                 //TODO 需要创建两个picking对象
-                this._renderer,
+                this.renderer,
                 {
                     vert : pickingVert,
                     uniforms

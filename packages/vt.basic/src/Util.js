@@ -18,3 +18,7 @@ export function extend(dest) { // (Object[, Object, ...]) ->
 export function clamp(n, min, max) {
     return Math.min(max, Math.max(min, n));
 }
+
+export function isNil(obj) {
+    return obj === null || obj === undefined;
+}

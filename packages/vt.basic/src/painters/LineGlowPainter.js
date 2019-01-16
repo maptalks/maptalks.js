@@ -6,6 +6,9 @@ import frag from './glsl/line.glow.frag';
 
 class LineGlowPainter extends LinePainter {
     needToRedraw() {
+        if (super.needToRedraw()) {
+            return true;
+        }
         return this.sceneConfig.animation;
     }
 
@@ -22,7 +25,7 @@ class LineGlowPainter extends LinePainter {
             }
         };
 
-        this._shader = new reshader.MeshShader({
+        this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms : [
                 'cameraToCenterDistance',
