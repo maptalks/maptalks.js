@@ -42,7 +42,6 @@ void main() {
     gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
     float distance = gl_Position.w;
 
-    float cameraScale = distance / cameraToCenterDistance;
     //预乘w，得到gl_Position在NDC中的坐标值
     // gl_Position /= gl_Position.w;
 
@@ -68,6 +67,7 @@ void main() {
         gl_Position.xy += offset * perspectiveRatio * distance;
         vGammaScale = distance / cameraToCenterDistance + 0.5;
     } else {
+        float cameraScale = distance / cameraToCenterDistance;
         vec2 offset = shape * vec2(1.0, -1.0);
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);

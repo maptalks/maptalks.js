@@ -90,12 +90,12 @@ function createPainterPlugin(type, Painter) {
                         for (let i = 0; i < mesh.length; i++) {
                             mesh[i].properties.tileTransform = tileTransform;
                             mesh[i].properties.createTime = context.timestamp;
-                            mesh[i].properties.tileKey = key;
+                            mesh[i].properties.meshKey = key + '-' + i;
                         }
                     } else {
                         mesh.properties.tileTransform = tileTransform;
                         mesh.properties.createTime = context.timestamp;
-                        mesh.properties.tileKey = key;
+                        mesh.properties.meshKey = key;
                     }
                     if (sceneConfig.animation) {
                         this._animationTime = context.timestamp;

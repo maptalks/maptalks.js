@@ -1,9 +1,124 @@
+import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
 import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
+import { clamp } from '../Util';
+
+const DEFAULT_SCENE_CONFIG = {
+    collision : true,
+    fadingDuration : 400,
+    fadingDelay : 200
+};
 
 export default class CollisionPainter extends BasicPainter {
+    constructor(regl, layer, sceneConfig) {
+        super(regl, layer, sceneConfig);
+        this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
+        this._fadingRecords = {};
+    }
+
+    updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
+        const timestamp = this.layer.getRenderer().getFrameTimestamp(),
+            geometryProps = mesh.geometry.properties,
+            fadingDuration = this.sceneConfig.fadingDuration;
+        const key = mesh.properties.meshKey;
+        let visible = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix);
+        const fadingOpacity = this._getBoxFading(visible, this._getBoxTimestamps(key), boxIndex);
+        if (fadingOpacity > 0) {
+            visible = true;
+        }
+        const vertexIndexStart = allElements[start],
+            vertexIndexEnd = allElements[end]; //vertexIndexStart + 4 * boxCount;
+        for (let i = vertexIndexStart; i < vertexIndexEnd; i++) {
+            geometryProps.aOpacity.data[i] = fadingOpacity * 255;
+        }
+
+        const labelStamp = this._getBoxTimestamps(key)[boxIndex];
+        if ((timestamp - Math.abs(labelStamp)) < fadingDuration) {
+            //fading 动画没结束时，设置重绘
+            this.setToRedraw();
+        }
+        return visible;
+    }
+
+
+    _isBoxVisible(mesh, elements, boxCount, start, end, mvpMatrix) {
+        const symbol = mesh.geometry.properties.symbol;
+        if (symbol[this.propIgnorePlacement] && symbol[this.propAllowOverlap]) {
+            return true;
+        }
+        const boxes = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix);
+        if ((!boxes || !boxes.length) && !symbol[this.propAllowOverlap]) {
+            //boxes为null或为空数组，说明collides
+            return false;
+        }
+        if (!symbol[this.propIgnorePlacement]) {
+            if (Array.isArray(boxes[0])) {
+                for (let i = 0; i < boxes.length; i++) {
+                    this.insertCollisionBox(boxes[i]);
+                }
+            } else {
+                this.insertCollisionBox(boxes);
+            }
+        }
+        return true;
+    }
+
+    _getBoxFading(visible, stamps, index) {
+        const { fadingDuration, fadingDelay } = this.sceneConfig,
+            timestamp = this.layer.getRenderer().getFrameTimestamp();
+        let boxTimestamp = stamps[index],
+            fadingOpacity = visible ? 1 : 0;
+        if (!boxTimestamp && !visible) {
+            return 0;
+        }
+
+        if (boxTimestamp && (timestamp - Math.abs(boxTimestamp) < fadingDuration)) {
+            //fading过程中，不管visible是否改变，继续计算原有的fadingOpacity
+            if (boxTimestamp > 0) {
+                //显示fading
+                fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
+            } else {
+                //消失fading
+                fadingOpacity = 1 - (timestamp - Math.abs(boxTimestamp)) / fadingDuration;
+            }
+        } else if (!visible) {
+            //消失fading
+            if (boxTimestamp > 0) {
+                //消失fading起点，记录时间戳
+                stamps[index] = boxTimestamp = -(timestamp + fadingDelay);
+            }
+            fadingOpacity = 1 - (timestamp + boxTimestamp) / fadingDuration;
+        } else {
+            //显示fading
+            if (!boxTimestamp || boxTimestamp < 0) {
+                //显示fading起点，记录时间戳
+                stamps[index] = boxTimestamp = timestamp + fadingDelay;
+            }
+            fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
+        }
+        fadingOpacity = clamp(fadingOpacity, 0, 1);
+        return fadingOpacity;
+    }
+
+    _getBoxTimestamps(key) {
+        if (!this._fadingRecords[key]) {
+            this._fadingRecords[key] = {};
+        }
+        return this._fadingRecords[key];
+    }
+
+    deleteMesh(meshes) {
+        if (!meshes) {
+            return;
+        }
+        for (let i = 0; i < meshes.length; i++) {
+            const key = meshes[i].properties.meshKey;
+            delete this._fadingRecords[key];
+        }
+        super.deleteMesh(meshes);
+    }
 
     delete(context) {
         if (this._collisionMesh) {
@@ -37,7 +152,10 @@ export default class CollisionPainter extends BasicPainter {
      * @param {Number} visible - 1 or 0
      */
     addCollisionDebugBox(boxes, visible) {
-        if (Array.isArray(boxes)) {
+        if (!boxes || !boxes.length) {
+            return;
+        }
+        if (Array.isArray(boxes[0])) {
             for (let i = 0; i < boxes.length; i++) {
                 const box = boxes[i];
                 this._addCollisionBox(box, visible);

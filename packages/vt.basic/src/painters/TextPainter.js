@@ -1,11 +1,9 @@
-import * as maptalks from 'maptalks';
 import CollisionPainter from './CollisionPainter';
 import { reshader, mat4 } from '@maptalks/gl';
 import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
 import { getLabelBox } from './util/get_label_box';
 import { getLabelNormal } from './util/get_label_normal';
-import { clamp } from '../Util';
 import Color from 'color';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -47,17 +45,13 @@ const PROJ_MATRIX = [], LINE_OFFSET = [];
 const BOX = [], BOX0 = [], BOX1 = [];
 const EMPTY_ARRAY = [];
 
-const DEFAULT_SCENE_CONFIG = {
-    collision : true,
-    fadingDuration : 400,
-    fadingDelay : 200
-};
+
 
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig) {
         super(regl, layer, sceneConfig);
-        this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
-        this._fadingRecords = {};
+        this.propAllowOverlap = 'textAllowOverlap';
+        this.propIgnorePlacement = 'textIgnorePlacement';
     }
 
     createGeometry(glData) {
@@ -73,14 +67,14 @@ export default class TextPainter extends CollisionPainter {
     }
 
     createMesh(geometries, transform, tileData) {
+        const meshes = [];
         if (!geometries || !geometries.length) {
-            return null;
+            return meshes;
         }
 
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
 
         const packMeshes = tileData.meshes;
-        const meshes = [];
         for (let i = 0; i < packMeshes.length; i++) {
             let geometry = geometries[packMeshes[i].pack];
             if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
@@ -94,6 +88,16 @@ export default class TextPainter extends CollisionPainter {
                 tileRatio : geometry.properties.tileRatio
             };
             const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
+
+            geometry.properties.aPickingId = geometry.data.aPickingId;
+
+            if (enableCollision || isLinePlacement) {
+                geometry.properties.aAnchor = aPosition;
+                geometry.properties.aSize = aSize;
+                geometry.properties.aDxDy = aDxDy;
+                geometry.properties.aShape0 = aShape0;
+                geometry.properties.aRotation = aRotation;
+            }
 
             if (enableCollision) {
                 //initialize opacity array
@@ -111,14 +115,8 @@ export default class TextPainter extends CollisionPainter {
                     data : new Uint8Array(aSize.length)
                 };
             }
-            geometry.properties.aPickingId = geometry.data.aPickingId;
 
             if (isLinePlacement) {
-                geometry.properties.aDxDy = aDxDy;
-                geometry.properties.aSize = aSize;
-                geometry.properties.aRotation = aRotation;
-                geometry.properties.aAnchor = aPosition;
-                geometry.properties.aShape0 = aShape0;
 
                 geometry.properties.aGlyphOffset = aGlyphOffset;
                 geometry.properties.aSegment = aSegment;
@@ -250,17 +248,6 @@ export default class TextPainter extends CollisionPainter {
         return meshes;
     }
 
-    deleteMesh(meshes) {
-        if (!meshes) {
-            return;
-        }
-        for (let i = 0; i < meshes.length; i++) {
-            const key = meshes[i].properties.tileKey;
-            delete this._fadingRecords[key];
-        }
-        super.deleteMesh(meshes);
-    }
-
     preparePaint({ timestamp }) {
         this._projectedLinesCache = {};
         this._updateLabels(timestamp);
@@ -299,9 +286,9 @@ export default class TextPainter extends CollisionPainter {
             angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
             0.0, pitchSin, pitchCos
         ];
-        const fn = (elements, visibleElements, mesh, label, start, end, mvpMatrix, index) => {
+        const fn = (elements, visibleElements, mesh, label, start, end, mvpMatrix, labelIndex) => {
             // debugger
-            const visible = this._updateLabelCollisionFading(mesh, elements, label, start, end, mvpMatrix, index, visibleElements);
+            const visible = this.updateBoxCollisionFading(mesh, elements, label.length, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(elements[i]);
@@ -321,8 +308,8 @@ export default class TextPainter extends CollisionPainter {
             } else if (enableCollision && !mesh.properties.ignoreCollision) {
                 const elements = geometry.properties.elements;
                 const visibleElements = [];
-                this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix) => {
-                    fn(elements, visibleElements, mesh, label, start, end, mvpMatrix);
+                this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix, labelIndex) => {
+                    fn(elements, visibleElements, mesh, label, start, end, mvpMatrix, labelIndex);
                 });
                 if (visibleElements.length !== elements.length) {
                     geometry.setElements({
@@ -367,7 +354,7 @@ export default class TextPainter extends CollisionPainter {
         const enableCollision = !mesh.properties.ignoreCollision && this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         let visibleElements = enableCollision ? [] : elements;
 
-        this._forEachLabel(mesh, allElements, (mesh, label, start, end, mvpMatrix, index) => {
+        this._forEachLabel(mesh, allElements, (mesh, label, start, end, mvpMatrix, labelIndex) => {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null);
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
@@ -382,7 +369,7 @@ export default class TextPainter extends CollisionPainter {
             if (!enableCollision) {
                 return;
             }
-            visible = this._updateLabelCollisionFading(mesh, allElements, label, start, end, mvpMatrix, index, visibleElements);
+            visible = this.updateBoxCollisionFading(mesh, allElements, label.length, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(allElements[i]);
@@ -413,30 +400,6 @@ export default class TextPainter extends CollisionPainter {
         geometry.__offsetRotationUpdated = true;
     }
 
-    _updateLabelCollisionFading(mesh, allElements, label, start, end, mvpMatrix, index) {
-        const timestamp = this.layer.getRenderer().getFrameTimestamp(),
-            geometryProps = mesh.geometry.properties,
-            fadingDuration = this.sceneConfig.fadingDuration;
-        const key = mesh.properties.tileKey;
-        let visible = this._isLabelVisible(mesh, allElements, label, start, end, mvpMatrix);
-        const fadingOpacity = this._getLabelFading(visible, this._getLabelTimestamps(key), index);
-        if (fadingOpacity > 0) {
-            visible = true;
-        }
-        const vertexIndexStart = allElements[start],
-            vertexIndexEnd = vertexIndexStart + 4 * label.length;
-        for (let i = vertexIndexStart; i < vertexIndexEnd; i++) {
-            geometryProps.aOpacity.data[i] = fadingOpacity * 255;
-        }
-
-        const labelStamp = this._getLabelTimestamps(key)[index];
-        if ((timestamp - Math.abs(labelStamp)) < fadingDuration) {
-            //fading 动画没结束时，设置重绘
-            this.setToRedraw();
-        }
-        return visible;
-    }
-
     _projectLine(out, line, matrix, width, height) {
         const id = line.id + '-' + matrix.join();
         if (this._projectedLinesCache[id]) {
@@ -448,6 +411,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     _forEachLabel(mesh, elements, fn) {
+        const BOX_ELEMENT_COUNT = 6;
         const map = this.layer.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         const geometry = mesh.geometry,
@@ -459,7 +423,7 @@ export default class TextPainter extends CollisionPainter {
         let idx = elements[0];
         let start = 0, current = pickingId[idx];
         //每个文字有6个element
-        for (let i = 0; i <= elements.length; i += 6) {
+        for (let i = 0; i <= elements.length; i += BOX_ELEMENT_COUNT) {
             idx = elements[i];
             //pickingId发生变化，新的feature出现
             if (pickingId[idx] !== current || i === elements.length) {
@@ -467,8 +431,8 @@ export default class TextPainter extends CollisionPainter {
                 const feature = geometryProps.features[current];
                 const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
                 const charCount = text.length;
-                for (let ii = start; ii < end; ii += charCount * 6) {
-                    fn.call(this, mesh, text, ii, ii + charCount * 6, matrix, index++);
+                for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
+                    fn.call(this, mesh, text, ii, ii + charCount * BOX_ELEMENT_COUNT, matrix, index++);
                 }
                 current = pickingId[idx];
                 start = i;
@@ -533,43 +497,21 @@ export default class TextPainter extends CollisionPainter {
         const map = this.layer.getMap(),
             aspectRatio = map.width / map.height;
         const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, isVertical, aspectRatio, planeMatrix);
-        // console.log(normal);
         //更新normal
         for (let i = firstChrIdx; i <= lastChrIdx; i++) {
             aNormal.data[i] = normal;
         }
     }
 
-    _isLabelVisible(mesh, elements, text, start, end, mvpMatrix) {
-        const symbol = mesh.geometry.properties.symbol;
-        if (symbol['textIgnorePlacement'] && symbol['textAllowOverlap']) {
-            return true;
-        }
-        const boxes = this._isLabelCollides(mesh, elements, text, start, end, mvpMatrix);
-        if (!boxes.length && !symbol['textAllowOverlap']) {
-            //boxes为0，说明collides
-            return false;
-        }
-        if (!symbol['textIgnorePlacement']) {
-            for (let i = 0; i < boxes.length; i++) {
-                this.insertCollisionBox(boxes[i]);
-            }
-        }
-        return true;
-    }
-
-    _isLabelCollides(mesh, elements, text, start, end, matrix) {
+    isBoxCollides(mesh, elements, boxCount, start, end, matrix) {
         const map = this.layer.getMap();
         const geoProps = mesh.geometry.properties,
             symbol = geoProps.symbol,
             isLinePlacement = (symbol['textPlacement'] === 'line'),
             debugCollision = this.layer.options['debugCollision'];
         let hasCollides = false;
-        const charCount = text.length;
+        const charCount = boxCount;
         const boxes = [];
-        //iterate feature's labels
-        // for (let i = start; i < end; i += charCount * 4) {
-        //TODO
         //1, 获取每个label的collision boxes
         //2, 将每个box在collision index中测试
         //   2.1 如果不冲突，则显示label
@@ -750,47 +692,6 @@ export default class TextPainter extends CollisionPainter {
             resolution : map.getResolution(),
             // planeMatrix
         };
-    }
-
-    _getLabelFading(visible, stamps, index) {
-        const { fadingDuration, fadingDelay } = this.sceneConfig,
-            timestamp = this.layer.getRenderer().getFrameTimestamp();
-        let labelStamp = stamps[index],
-            fadingOpacity = visible ? 1 : 0;
-
-        if (labelStamp && (timestamp - Math.abs(labelStamp) < fadingDuration)) {
-            //fading过程中，不管visible是否改变，继续计算原有的fadingOpacity
-            if (labelStamp > 0) {
-                //显示fading
-                fadingOpacity = (timestamp - labelStamp) / fadingDuration;
-            } else {
-                //消失fading
-                fadingOpacity = 1 - (timestamp - Math.abs(labelStamp)) / fadingDuration;
-            }
-        } else if (!visible) {
-            //消失fading
-            if (labelStamp > 0) {
-                //消失fading起点，记录时间戳
-                stamps[index] = labelStamp = -(timestamp + fadingDelay);
-            }
-            fadingOpacity = 1 - (timestamp + labelStamp) / fadingDuration;
-        } else {
-            //显示fading
-            if (!labelStamp || labelStamp < 0) {
-                //显示fading起点，记录时间戳
-                stamps[index] = labelStamp = timestamp + fadingDelay;
-            }
-            fadingOpacity = (timestamp - labelStamp) / fadingDuration;
-        }
-        fadingOpacity = clamp(fadingOpacity, 0, 1);
-        return fadingOpacity;
-    }
-
-    _getLabelTimestamps(key) {
-        if (!this._fadingRecords[key]) {
-            this._fadingRecords[key] = {};
-        }
-        return this._fadingRecords[key];
     }
 }
 
