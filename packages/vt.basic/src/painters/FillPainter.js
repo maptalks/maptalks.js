@@ -12,9 +12,6 @@ const defaultUniforms = {
 };
 
 class FillPainter extends BasicPainter {
-    needToRedraw() {
-        return this._redraw;
-    }
 
     createMesh(geometries, transform, tileData) {
         if (!geometries || !geometries.length) {

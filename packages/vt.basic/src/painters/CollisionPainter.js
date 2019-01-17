@@ -31,33 +31,48 @@ export default class CollisionPainter extends BasicPainter {
         collisionIndex.insertBox(box.slice(0));
     }
 
+    /**
+     *
+     * @param {Number[] || Number[][]} boxes - boxes to add
+     * @param {Number} visible - 1 or 0
+     */
     addCollisionDebugBox(boxes, visible) {
+        if (Array.isArray(boxes)) {
+            for (let i = 0; i < boxes.length; i++) {
+                const box = boxes[i];
+                this._addCollisionBox(box, visible);
+            }
+        } else {
+            this._addCollisionBox(boxes, visible);
+        }
+    }
+
+    _addCollisionBox(box, visible) {
+        if (!box) {
+            return;
+        }
         const allBoxes = this._collisionBoxes = this._collisionBoxes || {
             aPosition : [],
             aVisible : [],
             indices : []
         };
         const map = this.layer.getMap();
-        for (let i = 0; i < boxes.length; i++) {
-            const box = boxes[i];
-            if (map.isOffscreen(box)) {
-                continue;
-            }
-            const count = allBoxes.aPosition.length / 2;
-            allBoxes.aPosition.push(
-                box[0], box[1], box[2], box[1],
-                box[2], box[3], box[0], box[3]
-            );
-            allBoxes.aVisible.push(visible, visible, visible, visible);
-            allBoxes.indices.push(
-                count, count + 1,
-                count + 1, count + 2,
-                count + 2,
-                count + 3,
-                count + 3, count
-            );
+        if (map.isOffscreen(box)) {
+            return;
         }
-
+        const count = allBoxes.aPosition.length / 2;
+        allBoxes.aPosition.push(
+            box[0], box[1], box[2], box[1],
+            box[2], box[3], box[0], box[3]
+        );
+        allBoxes.aVisible.push(visible, visible, visible, visible);
+        allBoxes.indices.push(
+            count, count + 1,
+            count + 1, count + 2,
+            count + 2,
+            count + 3,
+            count + 3, count
+        );
     }
 
     paint(context) {

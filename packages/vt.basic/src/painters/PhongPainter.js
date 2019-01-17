@@ -103,8 +103,8 @@ class PhongPainter extends Painter {
             this._updateMaterial();
         } else {
             extend(this.sceneConfig, config);
-            this._init();
-            this._redraw = true;
+            this.init();
+            this.setToRedraw();
         }
     }
 

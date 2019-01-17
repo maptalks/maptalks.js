@@ -53,15 +53,11 @@ const DEFAULT_SCENE_CONFIG = {
     fadingDelay : 200
 };
 
-class TextPainter extends CollisionPainter {
+export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig) {
         super(regl, layer, sceneConfig);
         this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
         this._fadingRecords = {};
-    }
-
-    needToRedraw() {
-        return this._redraw;
     }
 
     createGeometry(glData) {
@@ -304,19 +300,12 @@ class TextPainter extends CollisionPainter {
             0.0, pitchSin, pitchCos
         ];
         const fn = (elements, visibleElements, mesh, label, start, end, mvpMatrix, index) => {
-            //TODO fading 逻辑还没做
-            const key = mesh.properties.tileKey;
             // debugger
-            const visible = this._isLabelVisible(mesh, elements, label, start, end, mvpMatrix);
+            const visible = this._updateLabelCollisionFading(mesh, elements, label, start, end, mvpMatrix, index, visibleElements);
             if (visible) {
-                //start end是对应的端点序号，每个文字有4个端点, 而每个文字有6个elements
-                //TODO fading显示
-
                 for (let i = start; i < end; i++) {
                     visibleElements.push(elements[i]);
                 }
-            } else {
-                //TODO fading隐藏
             }
         };
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
@@ -346,11 +335,9 @@ class TextPainter extends CollisionPainter {
     }
 
     _updateLineLabel(mesh, planeMatrix) {
-        const timestamp = this.layer.getRenderer().getFrameTimestamp(),
-            map = this.layer.getMap(),
+        const map = this.layer.getMap(),
             geometry = mesh.geometry,
-            geometryProps = geometry.properties,
-            fadingDuration = this.sceneConfig.fadingDuration;
+            geometryProps = geometry.properties;
         const { aNormal, aOffset, aRotation } = geometryProps;
         //pitch不跟随map时，需要根据屏幕位置实时计算各文字的位置和旋转角度并更新aOffset和aRotation
         //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
@@ -380,7 +367,6 @@ class TextPainter extends CollisionPainter {
         const enableCollision = !mesh.properties.ignoreCollision && this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         let visibleElements = enableCollision ? [] : elements;
 
-        const key = mesh.properties.tileKey;
         this._forEachLabel(mesh, allElements, (mesh, label, start, end, mvpMatrix, index) => {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null);
             if (!visible) {
@@ -396,22 +382,7 @@ class TextPainter extends CollisionPainter {
             if (!enableCollision) {
                 return;
             }
-            visible = this._isLabelVisible(mesh, allElements, label, start, end, mvpMatrix);
-            const fadingOpacity = this._getLabelFading(visible, this._getLabelTimestamps(key), index);
-            if (fadingOpacity > 0) {
-                visible = true;
-            }
-            const vertexIndexStart = allElements[start],
-                vertexIndexEnd = vertexIndexStart + 4 * label.length;
-            for (let i = vertexIndexStart; i < vertexIndexEnd; i++) {
-                geometryProps.aOpacity.data[i] = fadingOpacity * 255;
-            }
-
-            const labelStamp = this._getLabelTimestamps(key)[index];
-            if ((timestamp - Math.abs(labelStamp)) < fadingDuration) {
-                //fading 动画没结束时，设置重绘
-                this.setToRedraw();
-            }
+            visible = this._updateLabelCollisionFading(mesh, allElements, label, start, end, mvpMatrix, index, visibleElements);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(allElements[i]);
@@ -440,6 +411,30 @@ class TextPainter extends CollisionPainter {
         }
         //tag if geometry's aOffset and aRotation is updated
         geometry.__offsetRotationUpdated = true;
+    }
+
+    _updateLabelCollisionFading(mesh, allElements, label, start, end, mvpMatrix, index) {
+        const timestamp = this.layer.getRenderer().getFrameTimestamp(),
+            geometryProps = mesh.geometry.properties,
+            fadingDuration = this.sceneConfig.fadingDuration;
+        const key = mesh.properties.tileKey;
+        let visible = this._isLabelVisible(mesh, allElements, label, start, end, mvpMatrix);
+        const fadingOpacity = this._getLabelFading(visible, this._getLabelTimestamps(key), index);
+        if (fadingOpacity > 0) {
+            visible = true;
+        }
+        const vertexIndexStart = allElements[start],
+            vertexIndexEnd = vertexIndexStart + 4 * label.length;
+        for (let i = vertexIndexStart; i < vertexIndexEnd; i++) {
+            geometryProps.aOpacity.data[i] = fadingOpacity * 255;
+        }
+
+        const labelStamp = this._getLabelTimestamps(key)[index];
+        if ((timestamp - Math.abs(labelStamp)) < fadingDuration) {
+            //fading 动画没结束时，设置重绘
+            this.setToRedraw();
+        }
+        return visible;
     }
 
     _projectLine(out, line, matrix, width, height) {
@@ -613,11 +608,8 @@ class TextPainter extends CollisionPainter {
                 boxes.push(box.slice(0));
             }
         }
-        // }
-        this.layer.fire('hehe', { boxes });
         if (debugCollision) {
             this.addCollisionDebugBox(boxes, hasCollides ? 0 : 1);
-            // console.log(hasCollides, text, boxes.join());
         }
         return hasCollides ? EMPTY_ARRAY : boxes;
     }
@@ -802,8 +794,6 @@ class TextPainter extends CollisionPainter {
         return this._fadingRecords[key];
     }
 }
-
-export default TextPainter;
 
 const contentExpRe = /\{([\w_]+)\}/g;
 /**
