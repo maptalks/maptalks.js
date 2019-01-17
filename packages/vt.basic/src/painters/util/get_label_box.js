@@ -1,6 +1,6 @@
-import * as maptalks from 'maptalks';
 import { vec2, vec3, vec4, mat2 } from '@maptalks/gl';
 import { projectPoint } from './projection';
+import { clamp } from '../../Util';
 
 //temparary variables
 const ANCHOR = [], PROJ_ANCHOR = [];
@@ -31,7 +31,7 @@ export function getLabelBox(out, mesh, i, matrix, map) {
     if (uniforms['textPerspectiveRatio']) {
         const distanceRatio = (1.0 - cameraToCenterDistance / cameraDistance) * uniforms['textPerspectiveRatio'];
         //通过distance动态调整大小
-        perspectiveRatio = maptalks.Util.clamp(
+        perspectiveRatio = clamp(
             0.5 + 0.5 * (1.0 - distanceRatio),
             0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
             4.0);

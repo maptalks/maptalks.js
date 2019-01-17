@@ -670,7 +670,6 @@ export default class TextPainter extends CollisionPainter {
                     return props['tileResolution'] / props['resolution'];
                 }
             },
-            'planeMatrix',
             'rotateWithMap',
             'mapRotation',
             'tileRatio'
@@ -728,17 +727,17 @@ export default class TextPainter extends CollisionPainter {
         // const q = quat.fromEuler([], pitch, 0, bearing);
         // const planeMatrix = mat4.fromRotationTranslation([], q, [0, 0, 0]);
 
-        const pitch = map.getPitch() * Math.PI / 180,
-            bearing = -map.getBearing() * Math.PI / 180;
-        const angleCos = Math.cos(bearing),
-            angleSin = Math.sin(bearing),
-            pitchCos = Math.cos(pitch),
-            pitchSin = Math.sin(pitch);
-        const planeMatrix = [
-            angleCos, -1.0 * angleSin * pitchCos, angleSin * pitchSin,
-            angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
-            0.0, pitchSin, pitchCos
-        ];
+        // const pitch = map.getPitch() * Math.PI / 180,
+        //     bearing = -map.getBearing() * Math.PI / 180;
+        // const angleCos = Math.cos(bearing),
+        //     angleSin = Math.sin(bearing),
+        //     pitchCos = Math.cos(pitch),
+        //     pitchSin = Math.sin(pitch);
+        // const planeMatrix = [
+        //     angleCos, -1.0 * angleSin * pitchCos, angleSin * pitchSin,
+        //     angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
+        //     0.0, pitchSin, pitchCos
+        // ];
 
         return {
             mapPitch : map.getPitch() * Math.PI / 180,
@@ -749,7 +748,7 @@ export default class TextPainter extends CollisionPainter {
             // gammaScale : 0.64,
             gammaScale : 1.0,
             resolution : map.getResolution(),
-            planeMatrix
+            // planeMatrix
         };
     }
 

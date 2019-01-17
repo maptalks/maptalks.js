@@ -14,7 +14,6 @@ attribute float aOpacity;
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
-uniform mat3 planeMatrix;
 
 uniform vec2 texSize;
 uniform vec2 canvasSize;
