@@ -11,6 +11,8 @@ const DEFAULT_SCENE_CONFIG = {
     fadingDelay : 200
 };
 
+const T = new Uint8Array(1);
+
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, sceneConfig) {
         super(regl, layer, sceneConfig);
@@ -19,50 +21,67 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
-        const timestamp = this.layer.getRenderer().getFrameTimestamp(),
-            geometryProps = mesh.geometry.properties,
-            fadingDuration = this.sceneConfig.fadingDuration;
+        const geometryProps = mesh.geometry.properties;
         const key = mesh.properties.meshKey;
-        let visible = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix);
+        let collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
+        let visible = !collision.collides;
+
         const fadingOpacity = this._getBoxFading(visible, this._getBoxTimestamps(key), boxIndex);
         if (fadingOpacity > 0) {
             visible = true;
         }
-        const vertexIndexStart = allElements[start],
-            vertexIndexEnd = allElements[end - 1];
-        for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
-            geometryProps.aOpacity.data[i] = fadingOpacity * 255;
+        let isFading = this.isBoxFading(key, boxIndex);
+        if (isFading) {
+            this.setToRedraw();
         }
 
-        const boxTimestamp = this._getBoxTimestamps(key)[boxIndex];
-        if ((timestamp - Math.abs(boxTimestamp)) < fadingDuration) {
-            //fading 动画没结束时，设置重绘
-            this.setToRedraw();
+        if (visible || isFading) {
+            const symbol = geometryProps.symbol;
+            if (!symbol[this.propIgnorePlacement]) {
+                this._fillCollisionIndex(collision.boxes, mesh);
+            }
+        }
+        if (visible) {
+            const opacity = T[0] = fadingOpacity * 255;
+            const vertexIndexStart = allElements[start];
+            if (geometryProps.aOpacity.data[vertexIndexStart] !== opacity) {
+                const vertexIndexEnd = allElements[end - 1];
+                for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
+                    geometryProps.aOpacity.data[i] = opacity;
+                }
+            }
         }
         return visible;
     }
 
+    isBoxFading(key, boxIndex) {
+        const timestamp = this.layer.getRenderer().getFrameTimestamp(),
+            fadingDuration = this.sceneConfig.fadingDuration;
+        const boxTimestamp = Math.abs(this._getBoxTimestamps(key)[boxIndex]);
+        return timestamp - boxTimestamp < fadingDuration;
+    }
 
-    _isBoxVisible(mesh, elements, boxCount, start, end, mvpMatrix) {
+
+    _isBoxVisible(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex) {
         const symbol = mesh.geometry.properties.symbol;
         if (symbol[this.propIgnorePlacement] && symbol[this.propAllowOverlap]) {
             return true;
         }
-        const boxes = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix);
-        if ((!boxes || !boxes.length) && !symbol[this.propAllowOverlap]) {
-            //boxes为null或为空数组，说明collides
-            return false;
+        const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
+        if (symbol[this.propAllowOverlap]) {
+            collision.collides = false;
         }
-        if (!symbol[this.propIgnorePlacement]) {
-            if (Array.isArray(boxes[0])) {
-                for (let i = 0; i < boxes.length; i++) {
-                    this.insertCollisionBox(boxes[i], mesh.geometry.properties.z);
-                }
-            } else {
-                this.insertCollisionBox(boxes, mesh.geometry.properties.z);
+        return collision;
+    }
+
+    _fillCollisionIndex(boxes, mesh) {
+        if (Array.isArray(boxes[0])) {
+            for (let i = 0; i < boxes.length; i++) {
+                this.insertCollisionBox(boxes[i], mesh.geometry.properties.z);
             }
+        } else {
+            this.insertCollisionBox(boxes, mesh.geometry.properties.z);
         }
-        return true;
     }
 
     _getBoxFading(visible, stamps, index) {
@@ -70,35 +89,56 @@ export default class CollisionPainter extends BasicPainter {
             timestamp = this.layer.getRenderer().getFrameTimestamp();
         let boxTimestamp = stamps[index],
             fadingOpacity = visible ? 1 : 0;
-        if (!boxTimestamp && !visible) {
+        if (!boxTimestamp) {
+            if (visible) {
+                //第一次显示
+                stamps[index] = timestamp + fadingDelay;
+            }
             return 0;
         }
 
-        if (boxTimestamp && (timestamp - Math.abs(boxTimestamp) < fadingDuration)) {
-            //fading过程中，不管visible是否改变，继续计算原有的fadingOpacity
-            if (boxTimestamp > 0) {
-                //显示fading
-                fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
-            } else {
-                //消失fading
-                fadingOpacity = 1 - (timestamp - Math.abs(boxTimestamp)) / fadingDuration;
+        const delaying = timestamp < Math.abs(boxTimestamp);
+
+        if (delaying) {
+            //如果在delay期间，又改回原有的状态，则重置时间戳以退出fading
+            if (!visible && boxTimestamp > 0 || visible && boxTimestamp < 0) {
+                const newStamp = timestamp - fadingDuration;
+                boxTimestamp = visible ? newStamp : -newStamp;
+                stamps[index] = boxTimestamp;
             }
-        } else if (!visible) {
-            //消失fading
-            if (boxTimestamp > 0) {
-                //消失fading起点，记录时间戳
-                stamps[index] = boxTimestamp = -(timestamp + fadingDelay);
-            }
-            fadingOpacity = 1 - (timestamp + boxTimestamp) / fadingDuration;
-        } else {
+        }
+
+        const fading = timestamp - Math.abs(boxTimestamp) < fadingDuration;
+
+        if (visible) {
             //显示fading
-            if (!boxTimestamp || boxTimestamp < 0) {
-                //显示fading起点，记录时间戳
-                stamps[index] = boxTimestamp = timestamp + fadingDelay;
+            if (boxTimestamp < 0) {
+                if (!fading) {
+                    //显示fading起点，记录时间戳
+                    stamps[index] = boxTimestamp = timestamp + fadingDelay;
+                } else {
+                    //在消失fading过程中，延续当前的时间戳
+                    stamps[index] = boxTimestamp = -boxTimestamp;
+                }
             }
             fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
+        } else {
+            //消失fading
+            if (boxTimestamp > 0) {
+                if (!fading) {
+                    //消失fading起点，记录时间戳
+                    stamps[index] = boxTimestamp = -(timestamp + fadingDelay);
+                } else {
+                    //在显示fading过程中，延续当前的时间戳
+                    stamps[index] = boxTimestamp = -boxTimestamp;
+                }
+            }
+            fadingOpacity = 1 - (timestamp + boxTimestamp) / fadingDuration;
         }
-        fadingOpacity = clamp(fadingOpacity, 0, 1);
+
+        if (fadingOpacity < 0 || fadingOpacity > 1) {
+            fadingOpacity = clamp(fadingOpacity, 0, 1);
+        }
         return fadingOpacity;
     }
 
@@ -144,6 +184,8 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     insertCollisionBox(box, meshTileZoom) {
+        // if (this._boxCount === undefined) this._boxCount = 0;
+        // this._boxCount++;
         const layer = this.layer;
         const isBackground = layer.getRenderer().getCurrentTileZoom() !== meshTileZoom;
         const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
@@ -201,7 +243,8 @@ export default class CollisionPainter extends BasicPainter {
         const status = super.paint(context);
 
         this._renderCollisionBox();
-
+        // console.log(this._boxCount);
+        // this._boxCount = 0;
         return status;
     }
 

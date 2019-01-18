@@ -503,12 +503,15 @@ export default class TextPainter extends CollisionPainter {
         }
     }
 
-    isBoxCollides(mesh, elements, boxCount, start, end, matrix) {
+    isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
         const map = this.layer.getMap();
         const geoProps = mesh.geometry.properties,
             symbol = geoProps.symbol,
             isLinePlacement = (symbol['textPlacement'] === 'line'),
             debugCollision = this.layer.options['debugCollision'];
+
+        const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
+
         let hasCollides = false;
         const charCount = boxCount;
         const boxes = [];
@@ -528,32 +531,41 @@ export default class TextPainter extends CollisionPainter {
             box[1] = Math.min(tlBox[1], brBox[1]);
             box[2] = Math.max(tlBox[2], brBox[2]);
             box[3] = Math.max(tlBox[3], brBox[3]);
+            boxes.push(box.slice(0));
             if (this.isCollides(box, geoProps.z)) {
                 hasCollides = true;
-                if (!debugCollision) {
-                    return EMPTY_ARRAY;
+                if (!isFading && !debugCollision) {
+                    return {
+                        collides : true,
+                        boxes
+                    };
                 }
             }
-            boxes.push(box.slice(0));
         } else {
             //insert every character's box into collision index
             for (let j = start; j < start + charCount * 6; j += 6) {
                 //use int16array to save some memory
                 const box = getLabelBox(BOX, mesh, elements[j], matrix, map);
+                boxes.push(box.slice(0));
                 if (this.isCollides(box, geoProps.z)) {
                     // console.log(box);
                     hasCollides = true;
-                    if (!debugCollision) {
-                        return EMPTY_ARRAY;
+                    if (!isFading && !debugCollision) {
+                        return {
+                            collides : true,
+                            boxes
+                        };
                     }
                 }
-                boxes.push(box.slice(0));
             }
         }
         if (debugCollision) {
             this.addCollisionDebugBox(boxes, hasCollides ? 0 : 1);
         }
-        return hasCollides ? EMPTY_ARRAY : boxes;
+        return {
+            collides : hasCollides,
+            boxes
+        };
     }
 
     delete() {

@@ -168,22 +168,18 @@ class IconPainter extends CollisionPainter {
     isBoxCollides(mesh, elements, boxCount, start, end, matrix) {
         const map = this.layer.getMap();
         const debugCollision = this.layer.options['debugCollision'];
-        let hasCollides = false;
 
         const firstBoxIdx = elements[start];
         const box = getIconBox(BOX, mesh, firstBoxIdx, matrix, map);
-        if (this.isCollides(box, mesh.geometry.properties.z)) {
-            hasCollides = true;
-            if (!debugCollision) {
-                return null;
-            }
-        }
+        const hasCollides = this.isCollides(box, mesh.geometry.properties.z);
 
         if (debugCollision) {
             this.addCollisionDebugBox(box, hasCollides ? 0 : 1);
-            // console.log(hasCollides, text, boxes.join());
         }
-        return hasCollides ? null : box;
+        return {
+            collides : hasCollides,
+            boxes : box
+        };
     }
 
     init() {
