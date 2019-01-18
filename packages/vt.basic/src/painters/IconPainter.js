@@ -120,7 +120,7 @@ class IconPainter extends CollisionPainter {
      * 遍历每个icon，判断其是否有碰撞， 如果有，则删除其elements
      * @param {Number} timestamp
      */
-    _updateIconCollision(timestamp) {
+    _updateIconCollision(/* timestamp */) {
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         if (!enableCollision) {
             return;
@@ -131,7 +131,7 @@ class IconPainter extends CollisionPainter {
         }
 
         const fn = (elements, visibleElements, mesh, start, end, mvpMatrix, iconIndex) => {
-            const visible = this.updateBoxCollisionFading(mesh, elements, 1, start, end, mvpMatrix, iconIndex, visibleElements);
+            const visible = this.updateBoxCollisionFading(mesh, elements, 1, start, end, mvpMatrix, iconIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(elements[i]);
@@ -140,19 +140,17 @@ class IconPainter extends CollisionPainter {
         };
 
         for (let m = 0; m < meshes.length; m++) {
-            const mesh = meshes[m];
-            const geometry = mesh.geometry;
-            const elements = geometry.properties.elements;
+            const mesh = meshes[m],
+                geometry = mesh.geometry,
+                elements = geometry.properties.elements;
             const visibleElements = [];
             this._forEachIcon(mesh, elements, (mesh, start, end, mvpMatrix, index) => {
                 fn(elements, visibleElements, mesh, start, end, mvpMatrix, index);
             });
-            if (visibleElements.length !== elements.length) {
-                geometry.setElements({
-                    usage : 'dynamic',
-                    data : new geometry.properties.elemCtor(visibleElements)
-                });
-            }
+            geometry.setElements({
+                usage : 'dynamic',
+                data : new geometry.properties.elemCtor(visibleElements)
+            });
             geometry.updateData('aOpacity', geometry.properties.aOpacity);
         }
     }
@@ -172,10 +170,8 @@ class IconPainter extends CollisionPainter {
         const debugCollision = this.layer.options['debugCollision'];
         let hasCollides = false;
 
-        // 既没有沿线绘制，也没有随地图旋转时，文字本身也没有旋转时
-        // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
-        const firstChrIdx = elements[start];
-        const box = getIconBox(BOX, mesh, firstChrIdx, matrix, map);
+        const firstBoxIdx = elements[start];
+        const box = getIconBox(BOX, mesh, firstBoxIdx, matrix, map);
         if (this.isCollides(box)) {
             hasCollides = true;
             if (!debugCollision) {

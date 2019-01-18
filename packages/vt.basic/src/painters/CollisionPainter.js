@@ -29,13 +29,13 @@ export default class CollisionPainter extends BasicPainter {
             visible = true;
         }
         const vertexIndexStart = allElements[start],
-            vertexIndexEnd = allElements[end]; //vertexIndexStart + 4 * boxCount;
-        for (let i = vertexIndexStart; i < vertexIndexEnd; i++) {
+            vertexIndexEnd = allElements[end - 1];
+        for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
             geometryProps.aOpacity.data[i] = fadingOpacity * 255;
         }
 
-        const labelStamp = this._getBoxTimestamps(key)[boxIndex];
-        if ((timestamp - Math.abs(labelStamp)) < fadingDuration) {
+        const boxTimestamp = this._getBoxTimestamps(key)[boxIndex];
+        if ((timestamp - Math.abs(boxTimestamp)) < fadingDuration) {
             //fading 动画没结束时，设置重绘
             this.setToRedraw();
         }
