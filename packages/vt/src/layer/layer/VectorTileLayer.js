@@ -101,6 +101,28 @@ class VectorTileLayer extends maptalks.TileLayer {
         return renderer.pick(cp.x, cp.y);
     }
 
+    /**
+     * A separate collision index for background tiles
+     * To avoid conflict with current zoom's tiles
+     * @returns {CollisionIndex}
+     */
+    getBackgroundCollisionIndex() {
+        if (!this._bgCollisionIndex) {
+            this._bgCollisionIndex = new maptalks.CollisionIndex();
+        }
+        return this._bgCollisionIndex;
+    }
+
+    /**
+     * Clear layer's background tiles collision index.
+     */
+    clearBackgroundCollisionIndex() {
+        if (this._bgCollisionIndex) {
+            this._bgCollisionIndex.clear();
+        }
+        return this;
+    }
+
     static registerPlugin(Plugin) {
         if (!VectorTileLayer.plugins) {
             VectorTileLayer.plugins = {};

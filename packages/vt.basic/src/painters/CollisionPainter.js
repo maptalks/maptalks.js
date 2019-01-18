@@ -56,10 +56,10 @@ export default class CollisionPainter extends BasicPainter {
         if (!symbol[this.propIgnorePlacement]) {
             if (Array.isArray(boxes[0])) {
                 for (let i = 0; i < boxes.length; i++) {
-                    this.insertCollisionBox(boxes[i]);
+                    this.insertCollisionBox(boxes[i], mesh.geometry.properties.z);
                 }
             } else {
-                this.insertCollisionBox(boxes);
+                this.insertCollisionBox(boxes, mesh.geometry.properties.z);
             }
         }
         return true;
@@ -132,17 +132,21 @@ export default class CollisionPainter extends BasicPainter {
         super.delete(context);
     }
 
-    isCollides(box) {
-        const map = this.layer.getMap();
+    isCollides(box, meshTileZoom) {
+        const layer = this.layer,
+            map = layer.getMap();
         if (map.isOffscreen(box)) {
             return true;
         }
-        const collisionIndex = this.layer.getCollisionIndex();
+        const isBackground = layer.getRenderer().getCurrentTileZoom() !== meshTileZoom;
+        const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
         return collisionIndex.collides(box);
     }
 
-    insertCollisionBox(box) {
-        const collisionIndex = this.layer.getCollisionIndex();
+    insertCollisionBox(box, meshTileZoom) {
+        const layer = this.layer;
+        const isBackground = layer.getRenderer().getCurrentTileZoom() !== meshTileZoom;
+        const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
         collisionIndex.insertBox(box.slice(0));
     }
 

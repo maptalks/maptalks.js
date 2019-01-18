@@ -528,7 +528,7 @@ export default class TextPainter extends CollisionPainter {
             box[1] = Math.min(tlBox[1], brBox[1]);
             box[2] = Math.max(tlBox[2], brBox[2]);
             box[3] = Math.max(tlBox[3], brBox[3]);
-            if (this.isCollides(box)) {
+            if (this.isCollides(box, geoProps.z)) {
                 hasCollides = true;
                 if (!debugCollision) {
                     return EMPTY_ARRAY;
@@ -540,7 +540,7 @@ export default class TextPainter extends CollisionPainter {
             for (let j = start; j < start + charCount * 6; j += 6) {
                 //use int16array to save some memory
                 const box = getLabelBox(BOX, mesh, elements[j], matrix, map);
-                if (this.isCollides(box)) {
+                if (this.isCollides(box, geoProps.z)) {
                     // console.log(box);
                     hasCollides = true;
                     if (!debugCollision) {

@@ -156,14 +156,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.completeRender();
             return;
         }
-        this.layer.clearCollisionIndex();
+        const layer = this.layer;
+        layer.clearCollisionIndex();
+        layer.clearBackgroundCollisionIndex();
 
         this._frameTime = timestamp;
         this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this._startFrame(timestamp);
         super.draw(timestamp);
         this._endFrame(timestamp);
-        if (this.layer.options['debug']) {
+        if (layer.options['debug']) {
             const mat = [];
             const projViewMatrix = this.getMap().projViewMatrix;
             for (const p in this.tilesInView) {
