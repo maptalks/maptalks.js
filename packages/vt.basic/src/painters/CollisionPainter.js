@@ -110,28 +110,27 @@ export default class CollisionPainter extends BasicPainter {
 
         const fading = timestamp - Math.abs(boxTimestamp) < fadingDuration;
 
-        if (visible) {
+        if (fading) {
+            //fading过程中，不管visible是否改变，继续计算原有的fadingOpacity，消除flicker现象
+            if (boxTimestamp > 0) {
+                //显示fading
+                fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
+            } else {
+                //消失fading
+                fadingOpacity = 1 - (timestamp - Math.abs(boxTimestamp)) / fadingDuration;
+            }
+        } else if (visible) {
             //显示fading
             if (boxTimestamp < 0) {
-                if (!fading) {
-                    //显示fading起点，记录时间戳
-                    stamps[index] = boxTimestamp = timestamp + fadingDelay;
-                } else {
-                    //在消失fading过程中，延续当前的时间戳
-                    stamps[index] = boxTimestamp = -boxTimestamp;
-                }
+                //显示fading起点，记录时间戳
+                stamps[index] = boxTimestamp = timestamp + fadingDelay;
             }
             fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
         } else {
             //消失fading
             if (boxTimestamp > 0) {
-                if (!fading) {
-                    //消失fading起点，记录时间戳
-                    stamps[index] = boxTimestamp = -(timestamp + fadingDelay);
-                } else {
-                    //在显示fading过程中，延续当前的时间戳
-                    stamps[index] = boxTimestamp = -boxTimestamp;
-                }
+                //消失fading起点，记录时间戳
+                stamps[index] = boxTimestamp = -(timestamp + fadingDelay);
             }
             fadingOpacity = 1 - (timestamp + boxTimestamp) / fadingDuration;
         }
