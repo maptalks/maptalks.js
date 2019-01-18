@@ -406,6 +406,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         if (tileImage instanceof Image) {
+            tileImage.onerrorTick = tileImage.onerrorTick || 0;
+            const tileRetryCount = this.layer.options['tileRetryCount'];
+            if (tileRetryCount > tileImage.onerrorTick) {
+                tileImage.onerrorTick++;
+                tileImage.src = tileInfo.url;
+                return;
+            }
             this.abortTileLoading(tileImage);
         }
         tileImage.loadTime = 0;
