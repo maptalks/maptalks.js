@@ -8,7 +8,7 @@ import simplify from 'simplify-js';
 
 /**
  * @property {Object} options - configuration options
- * @property {String} [options.smoothness=0]      - line smoothing by quad bezier interporating, 0 by default
+ * @property {Number} [options.smoothness=0]      - line smoothing by quad bezier interporating, 0 by default
  * @property {Boolean} [options.enableSimplify=true] - whether to simplify path before rendering
  * @property {Number}  [options.simplifyTolerance=2] - tolerance to simplify path, the higher the simplify is more intense
  * @property {Boolean} [options.enableClip=true] - whether to clip path with map's current extent
