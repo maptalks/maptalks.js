@@ -247,6 +247,23 @@ export default class CollisionPainter extends BasicPainter {
         return status;
     }
 
+    callShader(uniforms) {
+        //1. render current tile level's meshes
+        this.shader.filter = this.level0Filter;
+        this.renderer.render(this.shader, uniforms, this.scene);
+
+        //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
+        const map = this.layer.getMap();
+        if (map.isInteracting() && !map.isZooming()) {
+            return;
+        }
+
+        //2. render background tile level's meshes
+        //stenciled pixels already rendered in step 1
+        this.shader.filter = this.levelNFilter;
+        this.renderer.render(this.shader, uniforms, this.scene);
+    }
+
     _renderCollisionBox() {
         if (!this._collisionBoxes || !this.layer.options['debugCollision']) {
             return;
