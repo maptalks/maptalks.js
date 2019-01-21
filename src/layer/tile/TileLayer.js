@@ -29,6 +29,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
  * @property {Boolean}             [options.cascadeTiles=true]      - draw cascaded tiles of different zooms to reduce tiles
  * @property {Number}              [options.minPitchToCascade=35]   - minimum pitch degree to begin tile cascade
  * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
+ * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
  * @memberOf TileLayer
  * @instance
  */
@@ -43,6 +44,8 @@ const options = {
     'backgroundZoomDiff' : 6,
 
     'loadingLimitOnInteracting' : 3,
+
+    'tileRetryCount' : 0,
 
     'placeholder' : false,
 
