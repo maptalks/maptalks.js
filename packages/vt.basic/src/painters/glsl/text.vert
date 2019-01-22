@@ -33,11 +33,9 @@ varying float vOpacity;
 
 void main() {
 
-    float textRotation = aRotation;
+    float textRotation = aRotation * RAD;
     vec2 shape = aShape0;
     vec2 texCoord = aTexCoord0;
-
-    textRotation = textRotation * RAD;
 
     gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
     float distance = gl_Position.w;
