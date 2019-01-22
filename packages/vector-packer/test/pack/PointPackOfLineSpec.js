@@ -21,13 +21,8 @@ describe('Point Pack of Line specs', function () {
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const anchors = result.data.packs[0].data.aPosition;
-            expect(anchors.length).to.be(72);
-            expect(anchors[0]).to.be(40);
-            expect(anchors[1]).to.be(0);
-            expect(anchors[12]).to.be(120);
-            expect(anchors[13]).to.be(0);
-            expect(anchors[24]).to.be(200);
-            expect(anchors[25]).to.be(0);
+            expect(anchors.length).to.be(24);
+            expect(anchors).to.be.eql(new Int16Array([125, 0, 0, 125, 0, 0, 125, 0, 0, 125, 0, 0, 375, 0, 0, 375, 0, 0, 375, 0, 0, 375, 0, 0]));
             done();
         }).catch(err => {
             console.error(err);
@@ -47,13 +42,11 @@ describe('Point Pack of Line specs', function () {
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 100 });
+        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 256 });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const anchors = result.data.packs[0].data.aPosition;
-            expect(anchors.length).to.be(12);
-            expect(anchors[0]).to.be(40);
-            expect(anchors[1]).to.be(0);
+            expect(anchors).to.be.eql(new Int8Array([125, 0, 0, 125, 0, 0, 125, 0, 0, 125, 0, 0]));
             done();
         }).catch(err => {
             console.error(err);
@@ -77,9 +70,7 @@ describe('Point Pack of Line specs', function () {
         pack.load(0.5).then(result => {
             // const result = pack.pack(0.5);
             const anchors = result.data.packs[0].data.aPosition;
-            expect(anchors.length).to.be(24);
-            expect(anchors[0]).to.be(20);
-            expect(anchors[1]).to.be(0);
+            expect(anchors).to.be.eql(new Int8Array([63, 0, 0, 63, 0, 0, 63, 0, 0, 63, 0, 0]));
             done();
         }).catch(err => {
             console.error(err);
@@ -100,14 +91,11 @@ describe('Point Pack of Line specs', function () {
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 200 });
+        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 8192 });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const anchors = result.data.packs[0].data.aPosition;
-            expect(anchors).to.be.a(Int8Array);
-            expect(anchors.length).to.be(12);
-            expect(anchors[0]).to.be(40);
-            expect(anchors[1]).to.be(0);
+            expect(anchors.length).to.be(0);
             done();
         }).catch(err => {
             console.error(err);

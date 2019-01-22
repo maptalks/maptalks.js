@@ -145,7 +145,7 @@ function getPackMarkerFormat() {
             name : 'aDxDy'
         },
         {
-            type : Float32Array,
+            type : Int16Array,
             width : 1,
             name : 'aRotation'
         }

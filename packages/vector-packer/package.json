@@ -7,6 +7,7 @@
   "jsnext:main": "src/index.js",
   "private": true,
   "scripts": {
+    "dev" : "rollup -w -c ./rollup.config.js",
     "lint": "eslint src/**/*.js test/**/*.js",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run"

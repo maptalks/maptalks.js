@@ -27,15 +27,15 @@ describe('Line Pack specs', function () {
 
             expect(data.aLinesofar.length).to.be.eql(6);
             expect(data.aLinesofar).to.a(Uint16Array);
-            expect(data.aLinesofar).to.be.eql(new Uint16Array([0, 0, 250, 250, 285, 285]));
+            expect(data.aLinesofar).to.be.eql(new Uint16Array([0, 0, 500, 500, 570, 570]));
 
-            expect(data.aNormal.length).to.be.eql(12);
-            expect(data.aNormal).to.a(Int8Array);
-            expect(data.aNormal).to.be.eql(new Int8Array([0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0, 1]));
+            expect(data.aNormal.length).to.be.eql(6);
+            expect(data.aNormal).to.a(Uint8Array);
+            expect(data.aNormal).to.be.eql(new Uint8Array([0, 1, 0, 1, 0, 1]));
 
             expect(data.aExtrude.length).to.be.eql(12);
-            expect(data.aExtrude).to.a(Uint8Array);
-            expect(data.aExtrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 154, 65, 83, 173, 173, 83]));
+            expect(data.aExtrude).to.a(Int8Array);
+            expect(data.aExtrude).to.be.eql(new Int8Array([0, 63, 0, -63, -26, 63, 26, -63, -44, 44, 44, -44]));
 
             done();
         }).catch(err => {
@@ -67,12 +67,12 @@ describe('Line Pack specs', function () {
             expect(data.aLinesofar.length).to.be.eql(9);
             expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.aNormal.length).to.be.eql(18);
-            expect(data.aNormal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(9);
+            expect(data.aNormal).to.a(Uint8Array);
 
             expect(data.aExtrude.length).to.be.eql(18);
-            expect(data.aExtrude).to.a(Uint8Array);
-            expect(data.aExtrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 128, 65, 152, 70, 102, 191, 173, 83, 83, 173, 173, 83]));
+            expect(data.aExtrude).to.a(Int8Array);
+            expect(data.aExtrude).to.be.eql(new Int8Array([0, 63, 0, -63, -26, 63, 0, -63, 24, -58, -26, 63, 44, -44, -44, 44, 44, -44]));
 
             done();
         }).catch(err => {
@@ -104,19 +104,19 @@ describe('Line Pack specs', function () {
             expect(data.aLinesofar.length).to.be.eql(8);
             expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.aNormal.length).to.be.eql(16);
-            expect(data.aNormal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(8);
+            expect(data.aNormal).to.a(Uint8Array);
 
             expect(pack.indices.length).to.be.eql(18);
 
-            expect(pack.featureIndexes.length).to.be.eql(18);
-            expect(pack.featureIndexes).to.be.a(Uint8Array);
+            expect(data.featureIndexes.length).to.be.eql(8);
+            expect(data.featureIndexes).to.be.a(Uint16Array);
             //18 zeros
-            expect(pack.featureIndexes).to.be.eql(new Uint8Array(18));
+            expect(data.featureIndexes).to.be.eql(new Uint16Array(8));
 
             expect(data.aExtrude.length).to.be.eql(16);
-            expect(data.aExtrude).to.a(Uint8Array);
-            expect(data.aExtrude).to.be.eql(new Uint8Array([128, 191, 128, 65, 102, 191, 128, 65, 102, 191, 173, 83, 83, 173, 173, 83]));
+            expect(data.aExtrude).to.a(Int8Array);
+            expect(data.aExtrude).to.be.eql(new Int8Array([0, 63, 0, -63, -26, 63, 0, -63, -26, 63, 44, -44, -44, 44, 44, -44]));
 
             done();
         }).catch(err => {
@@ -148,11 +148,11 @@ describe('Line Pack specs', function () {
             expect(data.aLinesofar.length).to.be.eql(10);
             expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.aNormal.length).to.be.eql(20);
-            expect(data.aNormal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(10);
+            expect(data.aNormal).to.a(Uint8Array);
 
             expect(data.aExtrude.length).to.be.eql(20);
-            expect(data.aExtrude).to.a(Uint8Array);
+            expect(data.aExtrude).to.a(Int8Array);
 
             done();
         }).catch(err => {
@@ -184,11 +184,11 @@ describe('Line Pack specs', function () {
             expect(data.aLinesofar.length).to.be.eql(6);
             expect(data.aLinesofar).to.a(Uint16Array);
 
-            expect(data.aNormal.length).to.be.eql(12);
-            expect(data.aNormal).to.a(Int8Array);
+            expect(data.aNormal.length).to.be.eql(6);
+            expect(data.aNormal).to.a(Uint8Array);
 
             expect(data.aExtrude.length).to.be.eql(12);
-            expect(data.aExtrude).to.a(Uint8Array);
+            expect(data.aExtrude).to.a(Int8Array);
 
             done();
         }).catch(err => {
