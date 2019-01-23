@@ -75,11 +75,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     validateStyle() {
-        const styles = this.options.style;
+        let styles = this.options.style;
         if (!styles) {
             return;
         }
-        //convert to array is style is an object
+        if (!Array.isArray(styles)) {
+            styles = this.options.style = [styles];
+        }
+        //convert to array if style is an object
         styles.forEach(s => {
             if (!Array.isArray(s.style)) {
                 s.style = [s.style];
