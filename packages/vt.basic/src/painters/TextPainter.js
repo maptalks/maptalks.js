@@ -43,9 +43,6 @@ const defaultUniforms = {
 const PROJ_MATRIX = [], LINE_OFFSET = [];
 
 const BOX = [], BOX0 = [], BOX1 = [];
-const EMPTY_ARRAY = [];
-
-
 
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig) {

@@ -47,7 +47,7 @@ export default class StencilShadowPass {
         return [new reshader.Mesh(shadow)];
     }
 
-    getUniforms(numOfDirLights) {
+    getUniforms(/* numOfDirLights */) {
         return [];
     }
 

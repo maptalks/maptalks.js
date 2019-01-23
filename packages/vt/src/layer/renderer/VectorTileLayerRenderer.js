@@ -375,8 +375,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this.pickingFBO) {
             this.pickingFBO.destroy();
         }
-        this._quadStencil.remove();
-        this._debugPainter.remove();
+        if (this._quadStencil) {
+            this._quadStencil.remove();
+        }
+        if (this._debugPainter) {
+            this._debugPainter.remove();
+        }
         if (super.onRemove) super.onRemove();
         this._clearPlugin();
     }
