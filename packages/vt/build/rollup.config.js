@@ -92,7 +92,7 @@ if (!workerLoaded) {
     maptalks.registerWorkerAdapter('${pkg.name}', chunk);
     workerLoaded = true;
 } else {
-    var exports = IS_NODE ? exports : maptalks;
+    var exports = IS_NODE ? module.exports : maptalks;
     chunk(exports, maptalks, maptalksgl);
 }
 }`
