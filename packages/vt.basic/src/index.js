@@ -51,5 +51,16 @@ export {
     // TrailLinePlugin,
     PBRPlugin,
     PhongPlugin,
-    WireframePlugin
+    WireframePlugin,
+
+    LinePainter,
+    FillPainter,
+    IconPainter,
+    TextPainter,
+    LineGlowPainter,
+    NativeLinePainter,
+    // TrailLinePainter,
+    PBRPainter,
+    PhongPainter,
+    WireframePainter,
 };

@@ -5,10 +5,14 @@
   "main": "dist/maptalks.vt.basic.js",
   "module": "dist/maptalks.vt.basic.es.js",
   "scripts": {
-    "dev": "rollup -w -c rollup.config.js",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "rollup -w -c rollup.config.js",
+    "fixtures": "electron-mocha --require-main ./test/integration/env-fixtures.js --renderer ./test/**/*.spec.js",
+    "lint": "eslint src/**/*.js test/**/*.js",
+    "pretest": "npm run lint && cd ../vt && npm run build-dev && cd ../vt.basic && npm run build-dev",
+    "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
+    "tdd": "npm run pretest && electron-mocha --interactive --renderer ./test/**/*.spec.js"
   },
   "private": true,
   "keywords": [
@@ -18,21 +22,27 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "color": "^3.0.0",
-    "@mapbox/point-geometry" : "^0.1.0",
+    "@mapbox/point-geometry": "^0.1.0",
+    "@maptalks/gl": "^0.1.0",
     "@maptalks/vt-plugin": "^0.1.0",
-    "@maptalks/gl": "^0.1.0"
+    "color": "^3.0.0"
   },
   "peerDependencies": {
-    "maptalks" : "^0.42.1"
+    "maptalks": "<2.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
+    "@maptalks/vt": "^0.1.0",
     "babel-eslint": "^9.0.0",
+    "electron": "^4.0.1",
+    "electron-mocha": "^6.0.4",
     "eslint": "^4.19.1",
     "eslint-config-maptalks": "^0.3.0",
     "eslint-plugin-mocha": "^5.0.0",
+    "maptalks": "<2.0.0",
+    "mocha": "^5.2.0",
+    "pixelmatch": "^4.0.2",
     "rollup": "^1.0.1",
     "rollup-plugin-babel": "^4.2.0",
     "rollup-plugin-commonjs": "^9.2.0",
