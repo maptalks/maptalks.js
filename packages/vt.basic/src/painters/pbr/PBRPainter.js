@@ -60,6 +60,9 @@ class PBRPainter extends Painter {
         } else {
             mesh.setLocalTransform(mesh.properties.tileTransform);
         }
+        if (mesh.material !== this.material) {
+            mesh.material = this.material;
+        }
         const geometry = mesh.geometry;
         this.scene.addMesh(mesh);
         if (this.shadowScene) {
@@ -97,11 +100,16 @@ class PBRPainter extends Painter {
             }
         }
 
+        //记录与阴影合并后的uniforms，super.paint中调用getUniformValues时，直接返回
+        this._mergedUniforms = uniforms;
+
         const status = super.paint(context);
 
         if (this.shadowPass) {
             this.shadowPass.pass2();
         }
+
+        delete this._mergedUniforms;
 
         return status;
     }
@@ -382,6 +390,9 @@ class PBRPainter extends Painter {
     }
 
     getUniformValues(map) {
+        if (this._mergedUniforms) {
+            return this._mergedUniforms;
+        }
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
             camPos = map.cameraPosition;
