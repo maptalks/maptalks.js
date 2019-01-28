@@ -1,6 +1,6 @@
 {
   "name": "maptalks",
-  "version": "0.42.2",
+  "version": "0.43.0",
   "description": "A light JavaScript library to create integrated 2D/3D maps.",
   "license": "BSD-3-Clause",
   "author": "Fu Zhen",
