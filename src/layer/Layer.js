@@ -40,6 +40,7 @@ const options = {
     'forceRenderOnMoving' : false,
     'forceRenderOnZooming' : false,
     'forceRenderOnRotating' : false,
+    'collision' : false,
     'collisionScope' : 'layer'
 };
 
@@ -450,6 +451,18 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             return null;
         }
         return map.getCollisionIndex();
+    }
+
+    /**
+     * Clear layer's collision index.
+     * Will ignore if collisionScope is not layer
+     */
+    clearCollisionIndex() {
+        if (this.options['collisionScope'] === 'layer' &&
+            this._collisionIndex) {
+            this._collisionIndex.clear();
+        }
+        return this;
     }
 
     getRenderer() {
