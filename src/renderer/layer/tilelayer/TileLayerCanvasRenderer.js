@@ -36,6 +36,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
     }
 
+    getCurrentTileZoom() {
+        return this._tileZoom;
+    }
+
     draw() {
         const map = this.getMap();
         if (!this.isDrawable()) {
