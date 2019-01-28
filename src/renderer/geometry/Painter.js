@@ -556,6 +556,11 @@ class Painter extends Class {
             const extent2 = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, maxAltitude / glScale));
             extent._combine(extent2);
         }
+        const layer = this.geometry.getLayer();
+        if (this.geometry.type === 'LineString' && maxAltitude && layer.options['drawAltitude']) {
+            const groundExtent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, 0));
+            extent._combine(groundExtent);
+        }
         if (extent) {
             extent._add(this._fixedExtent);
         }
