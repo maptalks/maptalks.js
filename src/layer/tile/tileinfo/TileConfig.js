@@ -109,6 +109,7 @@ class TileConfig {
         let out = false;
         const idx = x;
         const idy = y;
+
         const ext = this._getTileFullIndex(res);
         if (isRepeatWorld) {
             //caculate tile index to request in url in repeated world.
@@ -152,6 +153,18 @@ class TileConfig {
         const transformation = this.transformation;
         const nwIndex = this._getTileNum(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
         const seIndex = this._getTileNum(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
+
+        const tileSystem = this.tileSystem;
+        //如果x方向为左大右小
+        if (tileSystem['scale']['x'] < 0) {
+            nwIndex.x -= 1;
+            seIndex.x -= 1;
+        }
+        //如果y方向上大下小
+        if (tileSystem['scale']['y'] > 0) {
+            nwIndex.y -= 1;
+            seIndex.y -= 1;
+        }
         return new Extent(nwIndex, seIndex);
     }
 
