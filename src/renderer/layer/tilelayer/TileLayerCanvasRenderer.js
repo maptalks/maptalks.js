@@ -416,7 +416,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileImage.src = tileInfo.url;
             return;
         }
-        if (tileImage instanceof Image) {           
+        if (tileImage instanceof Image) {
             this.abortTileLoading(tileImage);
         }
         tileImage.loadTime = 0;
