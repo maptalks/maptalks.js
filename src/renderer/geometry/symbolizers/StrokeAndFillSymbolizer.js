@@ -154,7 +154,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     }
 
     _createGradient(ctx, points, lineColor) {
-        if (!Array.isArray(points)) {
+        if (!Array.isArray(points) || !points.length) {
             return;
         }
         const len = points.length;
