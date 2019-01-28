@@ -389,7 +389,16 @@ describe('Geometry.LineString', function () {
                 map.getCenter(),
                 map.getCenter().add(0.01, 0.01)
             ], {
-                'visible' : false
+                'visible' : false,
+                'symbol' : {
+                    'lineColor' : '#1bbc9b',
+                    'lineWidth' : 6,
+                    "lineOpacity ": 1,
+                    'textName': 'name',
+                    'textPlacement': 'vertex-last',
+                    'textSize': 14,
+                    'textFill': '#0f0',
+                }
             });
             layer.once('layerload', function () {
                 var geojson = polyline.toGeoJSON();
@@ -422,6 +431,15 @@ describe('Geometry.LineString', function () {
                 'visible' : false,
                 'properties': {
                     altitude: 300
+                },
+                'symbol' : {
+                    'lineColor' : '#1bbc9b',
+                    'lineWidth' : 6,
+                    "lineOpacity ": 1,
+                    'textName': 'name',
+                    'textPlacement': 'vertex-first',
+                    'textSize': 14,
+                    'textFill': '#0f0',
                 }
             });
             layer.once('layerload', function () {
