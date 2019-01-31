@@ -27,7 +27,7 @@ class LinePainter extends BasicPainter {
             return null;
         }
 
-        // const mapUniforms = this.getUniformValues(this.layer.getMap());
+        // const mapUniforms = this.getUniformValues(this.getMap());
 
         const packMeshes = tileData.meshes;
         const meshes = [];

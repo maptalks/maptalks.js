@@ -157,7 +157,7 @@ class IconPainter extends CollisionPainter {
 
     _forEachIcon(mesh, elements, fn) {
         const BOX_ELEMENT_COUNT = 6;
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         let index = 0;
         for (let i = 0; i < elements.length; i += BOX_ELEMENT_COUNT) {
@@ -166,7 +166,7 @@ class IconPainter extends CollisionPainter {
     }
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix) {
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const debugCollision = this.layer.options['debugCollision'];
 
         const firstBoxIdx = elements[start];

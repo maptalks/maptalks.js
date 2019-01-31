@@ -30,7 +30,7 @@ export default class TrailLinePainter extends NativeLinePainter {
     }
 
     init() {
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);

@@ -223,7 +223,7 @@ export default class CollisionPainter extends BasicPainter {
             aVisible : [],
             indices : []
         };
-        const map = this.layer.getMap();
+        const map = this.getMap();
         if (map.isOffscreen(box)) {
             return;
         }
@@ -255,7 +255,7 @@ export default class CollisionPainter extends BasicPainter {
         this.renderer.render(this.shader, uniforms, this.scene);
 
         //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
-        const map = this.layer.getMap();
+        const map = this.getMap();
         if (map.isInteracting() && !map.isZooming()) {
             return;
         }
@@ -264,6 +264,11 @@ export default class CollisionPainter extends BasicPainter {
         //stenciled pixels already rendered in step 1
         this.shader.filter = this.levelNFilter;
         this.renderer.render(this.shader, uniforms, this.scene);
+    }
+
+    startFrame() {
+        // const map = this.getMap();
+        super.startFrame();
     }
 
     _renderCollisionBox() {

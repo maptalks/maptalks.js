@@ -272,7 +272,7 @@ export default class TextPainter extends CollisionPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const bearing = -map.getBearing() * Math.PI / 180;
         const angleCos = Math.cos(bearing),
             angleSin = Math.sin(bearing),
@@ -319,7 +319,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     _updateLineLabel(mesh, planeMatrix) {
-        const map = this.layer.getMap(),
+        const map = this.getMap(),
             geometry = mesh.geometry,
             geometryProps = geometry.properties;
         const { aNormal, aOffset, aRotation } = geometryProps;
@@ -409,7 +409,7 @@ export default class TextPainter extends CollisionPainter {
 
     _forEachLabel(mesh, elements, fn) {
         const BOX_ELEMENT_COUNT = 6;
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         const geometry = mesh.geometry,
             geometryProps = geometry.properties;
@@ -439,7 +439,7 @@ export default class TextPainter extends CollisionPainter {
 
     // start and end is the start and end index of a label
     _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix) {
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const geometry = mesh.geometry;
 
         const uniforms = mesh.material.uniforms;
@@ -491,7 +491,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     _updateNormal(aNormal, aOffset, isVertical, firstChrIdx, lastChrIdx, planeMatrix) {
-        const map = this.layer.getMap(),
+        const map = this.getMap(),
             aspectRatio = map.width / map.height;
         const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, isVertical, aspectRatio, planeMatrix);
         //更新normal
@@ -501,7 +501,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const geoProps = mesh.geometry.properties,
             symbol = geoProps.symbol,
             isLinePlacement = (symbol['textPlacement'] === 'line'),
@@ -588,7 +588,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     init() {
-        // const map = this.layer.getMap();
+        // const map = this.getMap();
         const regl = this.regl;
         const canvas = this.canvas;
 

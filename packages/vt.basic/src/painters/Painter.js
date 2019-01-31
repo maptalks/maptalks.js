@@ -27,6 +27,10 @@ class Painter {
         this.init();
     }
 
+    getMap() {
+        return this.layer ? this.layer.getMap() : null;
+    }
+
     needToRedraw() {
         return this._redraw;
     }
@@ -100,7 +104,7 @@ class Painter {
         if (!this.pickingFBO || !this.picking) {
             return null;
         }
-        const map = this.layer.getMap();
+        const map = this.getMap();
         const uniforms = this.getUniformValues(map);
         if (!this._pickingRendered) {
             this.picking.render(this.scene.getMeshes(), uniforms, true);
@@ -160,7 +164,7 @@ class Painter {
                 mesh
             };
         }).sort(this._compareStencil);
-        const projViewMatrix = this.layer.getMap().projViewMatrix;
+        const projViewMatrix = this.getMap().projViewMatrix;
         this._stencilHelper.start(quadStencil);
         const painted = {};
         for (let i = 0; i < stencils.length; i++) {
