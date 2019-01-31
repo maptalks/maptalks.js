@@ -25,8 +25,8 @@ class PBRPainter extends Painter {
         geometry.properties.features = features;
         geometry.generateBuffers(this.regl);
 
-        if (glData.shadowVolume && this.shadowPass && this.shadowPass.createShadowVolume) {
-            const shadowGeos = this.shadowPass.createShadowVolume(glData.shadowVolume);
+        if (glData.shadowVolume && this._shadowPass && this._shadowPass.createShadowVolume) {
+            const shadowGeos = this._shadowPass.createShadowVolume(glData.shadowVolume);
             geometry.shadow = shadowGeos;
         }
 
@@ -65,13 +65,13 @@ class PBRPainter extends Painter {
         }
         const geometry = mesh.geometry;
         this.scene.addMesh(mesh);
-        if (this.shadowScene) {
+        if (this._shadowScene) {
             // 如果shadow mesh已经存在， 则优先用它
             const shadowMesh = geometry.shadow || mesh;
             if (shadowMesh !== mesh) {
                 shadowMesh.forEach(m => m.setLocalTransform(mesh.localTransform));
             }
-            this.shadowScene.addMesh(shadowMesh);
+            this._shadowScene.addMesh(shadowMesh);
         }
     }
 
@@ -86,13 +86,13 @@ class PBRPainter extends Painter {
 
         const uniforms = this.getUniformValues(map);
 
-        if (this.shadowPass) {
+        if (this._shadowPass) {
             this._transformGround(layer);
-            const { fbo } = this.shadowPass.pass1({
+            const { fbo } = this._shadowPass.pass1({
                 layer,
                 uniforms,
-                scene : this.shadowScene,
-                groundScene : this.groundScene
+                scene : this._shadowScene,
+                groundScene : this._groundScene
             });
             if (this.sceneConfig.shadow.debug) {
                 // this.debugFBO(shadowConfig.debug[0], depthFBO);
@@ -105,8 +105,8 @@ class PBRPainter extends Painter {
 
         const status = super.paint(context);
 
-        if (this.shadowPass) {
-            this.shadowPass.pass2();
+        if (this._shadowPass) {
+            this._shadowPass.pass2();
         }
 
         delete this._mergedUniforms;
@@ -136,23 +136,26 @@ class PBRPainter extends Painter {
         this.scene.removeMesh(mesh);
     }
 
-    clear() {
-        super.clear();
-        if (this.shadowScene) {
-            this.shadowScene.clear();
-            this.shadowScene.addMesh(this.ground);
+    startFrame() {
+        super.startFrame();
+        if (this._shadowScene) {
+            this._shadowScene.clear();
+            this._shadowScene.addMesh(this._ground);
         }
     }
 
     delete() {
         super.delete();
-        this.material.dispose();
-        if (this.ground) {
-            this.ground.geometry.dispose();
-            this.ground.dispose();
+        if (this._shadowScene) {
+            this._shadowScene.clear();
         }
-        if (this.shadowPass) {
-            this.shadowPass.delete();
+        this.material.dispose();
+        if (this._ground) {
+            this._ground.geometry.dispose();
+            this._ground.dispose();
+        }
+        if (this._shadowPass) {
+            this._shadowPass.delete();
         }
     }
 
@@ -162,7 +165,7 @@ class PBRPainter extends Painter {
         // console.log(layer.getRenderer()._getMeterScale());
         const extent = map['_get2DExtent'](map.getGLZoom());
         const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
-        const localTransform = this.ground.localTransform;
+        const localTransform = this._ground.localTransform;
         mat4.identity(localTransform);
         mat4.translate(localTransform, localTransform, map.cameraLookAt);
         mat4.scale(localTransform, localTransform, [scaleX, scaleY, 1]);
@@ -179,15 +182,15 @@ class PBRPainter extends Painter {
         if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
             const planeGeo = new reshader.Plane();
             planeGeo.generateBuffers(regl);
-            this.ground = new reshader.Mesh(planeGeo);
-            this.groundScene = new reshader.Scene([this.ground]);
+            this._ground = new reshader.Mesh(planeGeo);
+            this._groundScene = new reshader.Scene([this._ground]);
 
-            this.shadowScene = new reshader.Scene();
-            this.shadowScene.addMesh(this.ground);
+            this._shadowScene = new reshader.Scene();
+            this._shadowScene.addMesh(this._ground);
             if (this.sceneConfig.shadow.type === 'vsm') {
-                this.shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
+                this._shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
             } else {
-                this.shadowPass = new StencilShadowPass(this.sceneConfig, this.renderer);
+                this._shadowPass = new StencilShadowPass(this.sceneConfig, this.renderer);
             }
         }
 
@@ -373,8 +376,8 @@ class PBRPainter extends Painter {
             const numOfDirLights = lightConfig.dirLights.length;
             uniforms.push(`dirLightDirections[${numOfDirLights}]`);
             uniforms.push(`dirLightColors[${numOfDirLights}]`);
-            if (this.shadowPass) {
-                const shadowUniforms = this.shadowPass.getUniforms(numOfDirLights);
+            if (this._shadowPass) {
+                const shadowUniforms = this._shadowPass.getUniforms(numOfDirLights);
                 shadowUniforms.forEach(u => uniforms.push(u));
             }
         }
@@ -447,8 +450,8 @@ class PBRPainter extends Painter {
         if (lightConfig.ambientCubeLight) {
             defines['USE_AMBIENT_CUBEMAP'] = 1;
         }
-        if (this.shadowPass) {
-            const shadowDefines = this.shadowPass.getDefines();
+        if (this._shadowPass) {
+            const shadowDefines = this._shadowPass.getDefines();
             extend(defines, shadowDefines);
         }
         return defines;

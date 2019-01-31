@@ -32,7 +32,7 @@ function createPainterPlugin(type, Painter) {
                 this._excludes = excludes;
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
-            painter.clear();
+            painter.startFrame();
             this._frameCache = {};
         },
 

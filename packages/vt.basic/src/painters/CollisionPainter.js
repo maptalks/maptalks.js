@@ -189,8 +189,6 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     insertCollisionBox(box, meshTileZoom) {
-        // if (this._boxCount === undefined) this._boxCount = 0;
-        // this._boxCount++;
         const layer = this.layer;
         const isBackground = layer.getRenderer().getCurrentTileZoom() !== meshTileZoom;
         const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
@@ -248,8 +246,6 @@ export default class CollisionPainter extends BasicPainter {
         const status = super.paint(context);
 
         this._renderCollisionBox();
-        // console.log(this._boxCount);
-        // this._boxCount = 0;
         return status;
     }
 

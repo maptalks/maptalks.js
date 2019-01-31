@@ -136,7 +136,7 @@ class Painter {
         }
     }
 
-    clear() {
+    startFrame() {
         this._redraw = false;
         this.scene.clear();
     }
@@ -144,6 +144,7 @@ class Painter {
     resize() {}
 
     delete(/* context */) {
+        this.scene.clear();
         this.shader.dispose();
     }
 
