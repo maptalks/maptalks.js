@@ -539,12 +539,14 @@ export default class TextPainter extends CollisionPainter {
                 }
             }
         } else {
+            let offscreenCount = 0;
             //insert every character's box into collision index
             for (let j = start; j < start + charCount * 6; j += 6) {
                 //use int16array to save some memory
                 const box = getLabelBox(BOX, mesh, elements[j], matrix, map);
                 boxes.push(box.slice(0));
-                if (this.isCollides(box, geoProps.z)) {
+                const collides = this.isCollides(box, geoProps.z);
+                if (collides === 1) {
                     // console.log(box);
                     hasCollides = true;
                     if (!isFading && !debugCollision) {
@@ -553,6 +555,19 @@ export default class TextPainter extends CollisionPainter {
                             boxes
                         };
                     }
+                } else if (collides === -1) {
+                    //offscreen
+                    offscreenCount++;
+                }
+            }
+            if (offscreenCount === charCount) {
+                //所有的文字都offscreen时，可认为存在碰撞
+                hasCollides = true;
+                if (!isFading && !debugCollision) {
+                    return {
+                        collides : true,
+                        boxes
+                    };
                 }
             }
         }

@@ -171,15 +171,21 @@ export default class CollisionPainter extends BasicPainter {
         super.delete(context);
     }
 
+    /**
+     * 判断tile是否存在碰撞
+     * @param {Number[]} box - box
+     * @param {Number} meshTileZoom - mesh's tile zoom
+     * @returns {Number} 1: 存在; 0: 不存在; 0: 在屏幕之外
+     */
     isCollides(box, meshTileZoom) {
         const layer = this.layer,
             map = layer.getMap();
         if (map.isOffscreen(box)) {
-            return true;
+            return -1;
         }
         const isBackground = layer.getRenderer().getCurrentTileZoom() !== meshTileZoom;
         const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
-        return collisionIndex.collides(box);
+        return +collisionIndex.collides(box);
     }
 
     insertCollisionBox(box, meshTileZoom) {
