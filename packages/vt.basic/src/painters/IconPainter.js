@@ -138,12 +138,16 @@ class IconPainter extends CollisionPainter {
                 }
             }
         };
-
+        // const map = this.getMap();
         for (let m = 0; m < meshes.length; m++) {
+            // if (!map.isZooming()) {
+            //     debugger
+            // }
             const mesh = meshes[m],
                 geometry = mesh.geometry,
+                // elements = this.getElementsForCollision(mesh);
                 elements = geometry.properties.elements;
-            const visibleElements = [];
+            const visibleElements = geometry.properties.visibleElements = [];
             this._forEachIcon(mesh, elements, (mesh, start, end, mvpMatrix, index) => {
                 fn(elements, visibleElements, mesh, start, end, mvpMatrix, index);
             });

@@ -32,7 +32,7 @@ function createPainterPlugin(type, Painter) {
                 this._excludes = excludes;
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
-            painter.startFrame();
+            painter.startFrame(context);
             this._frameCache = {};
         },
 
@@ -114,10 +114,12 @@ function createPainterPlugin(type, Painter) {
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
                     m.properties.tile = tileInfo;
+                    m.properties.level = level;
                     m.setUniform('level', level);
                 });
             } else {
                 mesh.properties.tile = tileInfo;
+                mesh.properties.level = level;
                 mesh.setUniform('level', level);
             }
             let redraw = false;

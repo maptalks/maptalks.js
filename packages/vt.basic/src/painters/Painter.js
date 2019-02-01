@@ -89,11 +89,18 @@ class Painter {
         this._redraw = true;
     }
 
-    callShader(uniforms) {
+    callShader(uniforms, context) {
+        this.callCurrentTileShader(uniforms, context);
+        this.callBackgroundTileShader(uniforms, context);
+    }
+
+    callCurrentTileShader(uniforms) {
         //1. render current tile level's meshes
         this.shader.filter = this.level0Filter;
         this.renderer.render(this.shader, uniforms, this.scene);
+    }
 
+    callBackgroundTileShader(uniforms) {
         //2. render background tile level's meshes
         //stenciled pixels already rendered in step 1
         this.shader.filter = this.levelNFilter;

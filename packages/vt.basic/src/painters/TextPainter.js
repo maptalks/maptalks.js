@@ -250,15 +250,18 @@ export default class TextPainter extends CollisionPainter {
         this._updateLabels(timestamp);
     }
 
-    callShader(uniforms) {
+    callCurrentTileShader(uniforms) {
+        //1. render current tile level's meshes
         this.shader.filter = shaderFilter0;
-        this.renderer.render(this.shader, uniforms, this.scene);
-
-        this.shader.filter = shaderFilterN;
         this.renderer.render(this.shader, uniforms, this.scene);
 
         this._shaderAlongLine.filter = shaderLineFilter0;
         this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
+    }
+
+    callBackgroundTileShader(uniforms) {
+        this.shader.filter = shaderFilterN;
+        this.renderer.render(this.shader, uniforms, this.scene);
 
         this._shaderAlongLine.filter = shaderLineFilterN;
         this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
