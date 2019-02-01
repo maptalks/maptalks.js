@@ -45,8 +45,9 @@ class Painter {
 
     addMesh(meshes) {
         // console.log(meshes.map(m => m.properties.tile.id).join());
-        // if (meshes[0].properties.tile.id === 'data_vt__85963__140839__19') {
-        //     this.scene.addMesh(meshes);
+        // if (meshes[0].properties.tile.id === 'data_vt__85960__140839__19') {
+        //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
+        //     this.scene.addMesh(meshes[0]);
         // }
         this.scene.addMesh(meshes);
         return meshes;

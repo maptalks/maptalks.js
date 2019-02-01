@@ -245,6 +245,21 @@ export default class CollisionPainter extends BasicPainter {
         );
     }
 
+    preparePaint(context) {
+        super.preparePaint(context);
+        if (this._zoomFading >= 0 && this._zoomMeshes) {
+            const tileZoom = this.layer.getRenderer().getCurrentTileZoom();
+            for (let i = 0; i < this._zoomMeshes.length; i++) {
+                const mesh = this._zoomMeshes[i];
+                const tileInfo = mesh.properties.tile;
+                const level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
+                mesh.properties.level = level;
+                mesh.setUniform('level', level);
+            }
+            this.scene.addMesh(this._zoomMeshes);
+        }
+    }
+
     paint(context) {
         const status = super.paint(context);
 
@@ -253,9 +268,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     callShader(uniforms) {
-        //1. render current tile level's meshes
-        this.shader.filter = this.level0Filter;
-        this.renderer.render(this.shader, uniforms, this.scene);
+        this.callCurrentTileShader(uniforms);
 
         const map = this.getMap();
         if (map.isInteracting() && !map.isZooming() && this._zoomFading === undefined) {
@@ -263,14 +276,7 @@ export default class CollisionPainter extends BasicPainter {
             //但有zoomFading时
             return;
         }
-
-        if (this._zoomFading >= 0 && this._zoomMeshes) {
-            this.scene.addMesh(this._zoomMeshes);
-        }
-        //2. render background tile level's meshes
-        //stenciled pixels already rendered in step 1
-        this.shader.filter = this.levelNFilter;
-        this.renderer.render(this.shader, uniforms, this.scene);
+        this.callBackgroundTileShader(uniforms);
         if (this._zoomFading >= 0) {
             this.setToRedraw();
         }
@@ -284,17 +290,17 @@ export default class CollisionPainter extends BasicPainter {
             this._zoomEndTimestamp = timestamp;
         }
         this._zooming = zooming;
-        if (zooming) {
-            //记录zooming过程中的meshes
-            this._zoomMeshes = this.scene.getMeshes();
-        }
         const timeElapsed = timestamp - (this._zoomEndTimestamp || 0);
         if (timeElapsed < fadingDuration) {
             //处于zoom结束后的fading中
             this._zoomFading = 1 - timeElapsed / fadingDuration;
-        } else {
+        } else if (this._zoomMeshes) {
             delete this._zoomFading;
             delete this._zoomMeshes;
+        }
+        if (zooming) {
+            //记录zooming过程中的meshes
+            this._zoomMeshes = this.scene.getMeshes();
         }
         super.startFrame();
     }
@@ -325,7 +331,6 @@ export default class CollisionPainter extends BasicPainter {
             this._collisionScene = new reshader.Scene();
             this._collisionScene.addMesh(this._collisionMesh);
         }
-        // debugger
         const geometry = this._collisionMesh.geometry;
         geometry.updateData('aPosition', new Float32Array(aPosition));
         geometry.updateData('aVisible', new Uint8Array(aVisible));

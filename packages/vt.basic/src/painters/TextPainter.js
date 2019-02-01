@@ -245,9 +245,10 @@ export default class TextPainter extends CollisionPainter {
         return meshes;
     }
 
-    preparePaint({ timestamp }) {
+    preparePaint(context) {
+        super.preparePaint(context);
         this._projectedLinesCache = {};
-        this._updateLabels(timestamp);
+        this._updateLabels(context.timestamp);
     }
 
     callCurrentTileShader(uniforms) {
