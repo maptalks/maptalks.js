@@ -2,14 +2,13 @@ const maptalks = require('maptalks');
 // const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
-const { match } = require('../util');
+const { match, readSpecs } = require('./util');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
-require('../../../dist/maptalks.vt.basic-dev');
-const styles = require('./fixtures/');
+require('../../dist/maptalks.vt.basic-dev');
 
 const GENERATE_MODE = process.env.BUILD === 'fixtures';
 
-describe('icon specs', () => {
+describe('vector tile integration specs', () => {
     let map, container;
     before(() => {
         container = document.createElement('div');
@@ -18,7 +17,7 @@ describe('icon specs', () => {
         document.body.appendChild(container);
         map = new maptalks.Map(container, {
             center : [0, 0],
-            zoom : 19
+            zoom : 6
         });
     });
 
@@ -29,9 +28,9 @@ describe('icon specs', () => {
         });
     });
 
-    const runner = p => {
+    const runner = (p, style) => {
         return done => {
-            const layer = new GeoJSONVectorTileLayer('gvt', styles[p]);
+            const layer = new GeoJSONVectorTileLayer('gvt', style);
             let count = 0;
             layer.on('layerload', () => {
                 count++;
@@ -40,14 +39,16 @@ describe('icon specs', () => {
                 }
                 const renderer = layer.getRenderer();
                 const canvas = renderer.canvas;
-                const expectedPath = path.resolve(__dirname, 'fixtures', p, 'expected.png');
+                const expectedPath = style.expected;
                 if (GENERATE_MODE) {
+                    //生成fixtures
                     const dataURL = canvas.toDataURL();
                     // remove Base64 stuff from the Image
                     const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
                     fs.writeFile(expectedPath, base64Data, 'base64', done);
                     done();
                 } else {
+                    //比对测试
                     match(canvas, expectedPath, done);
                 }
             });
@@ -55,9 +56,14 @@ describe('icon specs', () => {
         };
     };
 
-    for (const p in styles) {
-        if (styles.hasOwnProperty(p)) {
-            it(p, runner(p));
+    context('icon specs', () => {
+        const iconSpecs = readSpecs(path.resolve(__dirname, 'fixtures', 'icon'));
+        for (const p in iconSpecs) {
+            if (iconSpecs.hasOwnProperty(p)) {
+                it(p, runner(p, iconSpecs[p]));
+            }
         }
-    }
+    });
+
+
 });

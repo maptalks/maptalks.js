@@ -1,3 +1,4 @@
+const path = require('path');
 const fs = require('fs');
 const pixelmath = require('pixelmatch');
 const expectedCanvas = document.createElement('canvas'),
@@ -23,5 +24,22 @@ module.exports = {
         image.onerror = cb;
         image.src = 'file://' + expectedPath;
         return false;
+    },
+
+    readSpecs(specPath) {
+        /* eslint-disable global-require */
+        const specs = {};
+        const dirs = fs.readdirSync(specPath, { withFileTypes : true });
+        for (let i = 0; i < dirs.length; i++) {
+            const dir = dirs[i];
+            if (!dir.isDirectory()) {
+                continue;
+            }
+            const name = dir.name;
+            specs[name] = require(path.resolve(specPath, name));
+            specs[name].expected = path.resolve(specPath, name, 'expected.png');
+        }
+        return specs;
+        /* eslint-enable global-require */
     }
 };
