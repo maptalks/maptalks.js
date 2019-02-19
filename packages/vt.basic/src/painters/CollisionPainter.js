@@ -7,11 +7,12 @@ import { clamp } from '../Util';
 
 const DEFAULT_SCENE_CONFIG = {
     collision : true,
+    fading : true,
     fadingDuration : 400,
     fadingDelay : 200
 };
 
-const T = new Uint8Array(1);
+const UINT8 = new Uint8Array(1);
 
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, sceneConfig) {
@@ -26,13 +27,17 @@ export default class CollisionPainter extends BasicPainter {
         let collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
         let visible = !collision.collides;
 
-        const fadingOpacity = this._getBoxFading(visible, this._getBoxTimestamps(meshKey), boxIndex, level);
-        if (fadingOpacity > 0) {
-            visible = true;
-        }
-        let isFading = this.isBoxFading(meshKey, boxIndex);
-        if (isFading) {
-            this.setToRedraw();
+        let fadingOpacity = 1;
+        let isFading = false;
+        if (this.sceneConfig.fading) {
+            fadingOpacity = this._getBoxFading(visible, this._getBoxTimestamps(meshKey), boxIndex, level);
+            if (fadingOpacity > 0) {
+                visible = true;
+            }
+            isFading = this.isBoxFading(meshKey, boxIndex);
+            if (isFading) {
+                this.setToRedraw();
+            }
         }
 
         if (visible || isFading) {
@@ -42,7 +47,7 @@ export default class CollisionPainter extends BasicPainter {
             }
         }
         if (visible) {
-            const opacity = T[0] = fadingOpacity * 255;
+            const opacity = UINT8[0] = fadingOpacity * 255;
             const vertexIndexStart = allElements[start];
             if (geometryProps.aOpacity.data[vertexIndexStart] !== opacity) {
                 const vertexIndexEnd = allElements[end - 1];
@@ -155,9 +160,11 @@ export default class CollisionPainter extends BasicPainter {
         if (!meshes) {
             return;
         }
-        for (let i = 0; i < meshes.length; i++) {
-            const key = meshes[i].properties.meshKey;
-            delete this._fadingRecords[key];
+        if (this._fadingRecords) {
+            for (let i = 0; i < meshes.length; i++) {
+                const key = meshes[i].properties.meshKey;
+                delete this._fadingRecords[key];
+            }
         }
         super.deleteMesh(meshes);
     }
