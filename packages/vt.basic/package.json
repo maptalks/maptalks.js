@@ -8,7 +8,7 @@
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",
-    "fixtures": "electron-mocha --require-main ./test/integration/env-fixtures.js --renderer ./test/**/*.spec.js",
+    "fixtures": "npm run pretest && electron-mocha --require-main ./test/integration/env-fixtures.js  -t 10000 --renderer ./test/**/*.spec.js",
     "lint": "eslint src/**/*.js test/**/*.js",
     "pretest": "npm run lint && cd ../vt && npm run build-dev && cd ../vt.basic && npm run build-dev",
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",

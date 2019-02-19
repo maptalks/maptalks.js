@@ -1,3 +1,4 @@
+const remote = require('electron').remote;
 const maptalks = require('maptalks');
 // const assert = require('assert');
 const path = require('path');
@@ -6,7 +7,7 @@ const { match, readSpecs } = require('./util');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
 require('../../dist/maptalks.vt.basic-dev');
 
-const GENERATE_MODE = process.env.BUILD === 'fixtures';
+const GENERATE_MODE = (process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
 
 const DEFAULT_VIEW = {
     center : [0, 0],
