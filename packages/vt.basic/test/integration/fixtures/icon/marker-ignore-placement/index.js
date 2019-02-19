@@ -1,5 +1,12 @@
 const path = require('path');
-const data = require('../../data');
+
+const data = {
+    type : 'FeatureCollection',
+    features : [
+        { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 1 }},
+        { type : 'Feature', geometry : { type : 'Point', coordinates : [0.6, 0.6] }, properties : { type : 2 }}
+    ]
+};
 
 const style = [
     {
@@ -8,7 +15,8 @@ const style = [
             type: 'point'
         },
         sceneConfig: {
-            collision: false
+            collision: false,
+            fading : false
         },
         style: [
             {
@@ -25,5 +33,9 @@ const style = [
 
 module.exports = {
     style,
-    data : data.point
+    data,
+    view : {
+        center : [0, 0],
+        zoom : 6
+    }
 };

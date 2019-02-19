@@ -16,7 +16,9 @@ const style = [
                     markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
                     markerWidth: 30,
                     markerHeight: 30,
-                    markerOpacity: 1
+                    markerOpacity: 1,
+                    markerSpacing : 40,
+                    markerPlacement : 'line'
                 }
             }
         ]
@@ -25,5 +27,9 @@ const style = [
 
 module.exports = {
     style,
-    data : data.point
+    data : data.line,
+    view : {
+        center : [0, 0],
+        zoom : 6
+    }
 };

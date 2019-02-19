@@ -1,6 +1,7 @@
 const path = require('path');
+const data = require('../../data');
 
-module.exports = [
+const style = [
     {
         type: 'icon',
         dataConfig: {
@@ -16,11 +17,19 @@ module.exports = [
                     markerWidth: 30,
                     markerHeight: 30,
                     markerOpacity: 1,
-                    //   markerPitchAlignment : 'map',
-                    markerRotationAlignment: 'map'
+                    markerPitchAlignment : 'map'
                 }
             }
         ]
     }
 ];
 
+module.exports = {
+    style,
+    data : data.point,
+    view : {
+        center : [0, 0],
+        zoom : 6,
+        pitch : 60
+    }
+};

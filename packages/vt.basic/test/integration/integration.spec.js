@@ -8,28 +8,30 @@ require('../../dist/maptalks.vt.basic-dev');
 
 const GENERATE_MODE = process.env.BUILD === 'fixtures';
 
+const DEFAULT_VIEW = {
+    center : [0, 0],
+    zoom : 6,
+    pitch : 0,
+    bearing : 0
+};
+
 describe('vector tile integration specs', () => {
     let map, container;
     before(() => {
         container = document.createElement('div');
-        container.style.width = '300px';
-        container.style.height = '300px';
+        container.style.width = '128px';
+        container.style.height = '128px';
         document.body.appendChild(container);
-        map = new maptalks.Map(container, {
-            center : [0, 0],
-            zoom : 6
-        });
     });
 
     afterEach(() => {
-        const layers = map.getLayers();
-        layers.forEach(layer => {
-            map.removeLayer(layer);
-        });
+        map.remove();
     });
 
     const runner = (p, style) => {
         return done => {
+            const options = style.view || DEFAULT_VIEW;
+            map = new maptalks.Map(container, options);
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             let count = 0;
             layer.on('layerload', () => {
@@ -46,7 +48,6 @@ describe('vector tile integration specs', () => {
                     // remove Base64 stuff from the Image
                     const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
                     fs.writeFile(expectedPath, base64Data, 'base64', done);
-                    done();
                 } else {
                     //比对测试
                     match(canvas, expectedPath, done);
@@ -58,6 +59,15 @@ describe('vector tile integration specs', () => {
 
     context('icon specs', () => {
         const iconSpecs = readSpecs(path.resolve(__dirname, 'fixtures', 'icon'));
+        for (const p in iconSpecs) {
+            if (iconSpecs.hasOwnProperty(p)) {
+                it(p, runner(p, iconSpecs[p]));
+            }
+        }
+    });
+
+    context('text specs', () => {
+        const iconSpecs = readSpecs(path.resolve(__dirname, 'fixtures', 'text'));
         for (const p in iconSpecs) {
             if (iconSpecs.hasOwnProperty(p)) {
                 it(p, runner(p, iconSpecs[p]));
