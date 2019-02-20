@@ -109,10 +109,13 @@ class TileConfig {
         let out = false;
         const idx = x;
         const idy = y;
+
         const ext = this._getTileFullIndex(res);
         if (isRepeatWorld) {
             //caculate tile index to request in url in repeated world.
-            if (x < ext['xmin']) {
+            if (ext['xmax'] === ext['xmin']) {
+                x = ext['xmin'];
+            } else if (x < ext['xmin']) {
                 x = ext['xmax'] - (ext['xmin'] - x) % (ext['xmax'] - ext['xmin']);
                 if (x === ext['xmax']) {
                     x = ext['xmin'];
@@ -121,7 +124,9 @@ class TileConfig {
                 x = ext['xmin'] + (x - ext['xmin']) % (ext['xmax'] - ext['xmin']);
             }
 
-            if (y >= ext['ymax']) {
+            if (ext['ymax'] === ext['ymin']) {
+                y = ext['ymin'];
+            } else if (y >= ext['ymax']) {
                 y = ext['ymin'] + (y - ext['ymin']) % (ext['ymax'] - ext['ymin']);
             } else if (y < ext['ymin']) {
                 y = ext['ymax'] - (ext['ymin'] - y) % (ext['ymax'] - ext['ymin']);
@@ -148,6 +153,18 @@ class TileConfig {
         const transformation = this.transformation;
         const nwIndex = this._getTileNum(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
         const seIndex = this._getTileNum(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
+
+        const tileSystem = this.tileSystem;
+        //如果x方向为左大右小
+        if (tileSystem['scale']['x'] < 0) {
+            nwIndex.x -= 1;
+            seIndex.x -= 1;
+        }
+        //如果y方向上大下小
+        if (tileSystem['scale']['y'] > 0) {
+            nwIndex.y -= 1;
+            seIndex.y -= 1;
+        }
         return new Extent(nwIndex, seIndex);
     }
 

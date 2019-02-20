@@ -142,6 +142,9 @@ const Eventable = Base =>
                         listeners.splice(i, 1);
                     }
                 }
+                if (!listeners.length) {
+                    delete this._eventMap[eventType];
+                }
             }
             return this;
         }
@@ -176,18 +179,28 @@ const Eventable = Base =>
             if (!handlerChain || !handlerChain.length) {
                 return 0;
             }
-            let count = 0;
+            if (!handler) {
+                return handlerChain.length;
+            }
             for (let i = 0, len = handlerChain.length; i < len; i++) {
-                if (handler) {
-                    if (handler === handlerChain[i].handler &&
-                        (isNil(context) || handlerChain[i].context === context)) {
-                        return 1;
-                    }
-                } else {
-                    count++;
+                if (handler === handlerChain[i].handler &&
+                    (isNil(context) || handlerChain[i].context === context)) {
+                    return 1;
                 }
             }
-            return count;
+            return 0;
+        }
+
+        /**
+         * Get all the listening event types
+         *
+         * @returns {String[]} events
+         */
+        getListeningEvents() {
+            if (!this._eventMap) {
+                return [];
+            }
+            return Object.keys(this._eventMap);
         }
 
         /**

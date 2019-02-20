@@ -12,13 +12,13 @@ import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
 
 Geometry.include({
-    _redrawWhenPitch : () => false,
+    _redrawWhenPitch: () => false,
 
     _redrawWhenRotate: () => false
 });
 
 const el = {
-    _redrawWhenPitch : () => true,
+    _redrawWhenPitch: () => true,
 
     _redrawWhenRotate: function () {
         return (this instanceof Ellipse) || (this instanceof Sector);
@@ -77,7 +77,7 @@ Rectangle.include({
 });
 //----------------------------------------------------
 Sector.include(el, {
-    _redrawWhenPitch : () => true,
+    _redrawWhenPitch: () => true,
 
     _getPaintParams() {
         if (this._paintAsPath()) {
@@ -241,6 +241,8 @@ Polygon.include({
         const prjHoles = this._getPrjHoles();
         const holePoints = [];
         if (prjHoles && prjHoles.length > 0) {
+            //outer ring  simplify result;
+            const simplified = this._simplified;
             for (let i = 0; i < prjHoles.length; i++) {
                 const hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
                 if (Array.isArray(hole) && isSplitted) {
@@ -253,7 +255,10 @@ Polygon.include({
                 } else {
                     holePoints.push(hole);
                 }
-
+            }
+            // if outer ring  simplify==true , Ignore inner ring  simplify result
+            if (simplified) {
+                this._simplified = simplified;
             }
         }
         if (!isSplitted) {

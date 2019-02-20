@@ -211,6 +211,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Add hooks for additional codes when map's loading complete, useful for plugin developping.
+     * Note that it can only be called before the map is created.
      * @param {Function} fn
      * @returns {Map}
      * @protected
@@ -289,6 +290,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this._loaded && SpatialReference.equals(oldRef, ref)) {
             return this;
         }
+        this._updateSpatialReference(ref, oldRef);
+        return this;
+    }
+
+    _updateSpatialReference(ref, oldRef) {
         ref = extend({}, ref);
         this._center = this.getCenter();
         this.options['spatialReference'] = ref;
@@ -340,7 +346,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     onConfig(conf) {
         const ref = conf['spatialReference'] || conf['view'];
         if (!isNil(ref)) {
-            this.setSpatialReference(ref);
+            this._updateSpatialReference(ref, null);
         }
         return this;
     }

@@ -87,8 +87,10 @@ describe('Map.Projection', function () {
         it('change center before changing spatial reference', function () {
             var newCenter = new maptalks.Coordinate(100, 0);
             map.setCenter(newCenter);
-            map.setSpatialReference({
-                projection:'EPSG:4326'
+            map.config({
+                spatialReference : {
+                    projection:'EPSG:4326'
+                }
             });
             expect(map.getProjection().code).to.be.eql('EPSG:4326');
             expect(map.getCenter()).to.closeTo(newCenter);
@@ -194,6 +196,12 @@ describe('Map.Projection', function () {
             expect(map.getMinZoom()).to.be.eql(3);
             expect(map.getProjection().code).to.be.eql('BAIDU');
             expect(map.getCenter()).to.closeTo(center);
+        });
+
+        it('baidu projection with Infinity', function () {
+            var baiduProj = maptalks.SpatialReference.getProjectionInstance('baidu');
+            var a = baiduProj.project(new maptalks.Coordinate(Infinity, -Infinity));
+            var b = baiduProj.project(new maptalks.Coordinate(-Infinity, -Infinity));
         });
     });
 });
