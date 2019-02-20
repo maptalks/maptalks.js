@@ -12,6 +12,7 @@ import MapTool from './MapTool';
  * @property {String} [options.mode=null]   - mode of the draw tool
  * @property {Object} [options.symbol=null] - symbol of the geometries drawn
  * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+ * @property {Boolean} [options.enableSketch=true]  - whether enable sketch on mouse moving.
  * @memberOf DrawTool
  * @instance
  */
@@ -23,10 +24,11 @@ const options = {
         'polygonFill': '#fff',
         'polygonOpacity': 0.3
     },
-    'doubleClickZoom' : false,
+    'doubleClickZoom': false,
     'mode': null,
     'once': false,
-    'ignoreMouseleave' : true
+    'ignoreMouseleave': true,
+    'enableSketch': true,
 };
 
 const registeredMode = {};
@@ -407,7 +409,7 @@ class DrawTool extends MapTool {
     _mouseMoveHandler(event) {
         const map = this.getMap();
         const coordinate = event['coordinate'];
-        if (!this._geometry || !map || map.isInteracting()) {
+        if (!this._geometry || !map || map.isInteracting() || !this.options['enableSketch']) {
             return;
         }
         const containerPoint = this._getMouseContainerPoint(event);
