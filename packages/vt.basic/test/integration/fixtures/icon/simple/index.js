@@ -13,10 +13,7 @@ const style = [
         style: [
             {
                 symbol: {
-                    markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
-                    markerWidth: 30,
-                    markerHeight: 30,
-                    markerOpacity: 1
+                    markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png')
                 }
             }
         ]

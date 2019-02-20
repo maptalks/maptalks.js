@@ -58,9 +58,11 @@ export default class StyledPoint {
                 );
             }
         } else if (iconGlyph && iconGlyph.icon) {
-            const markerAnchor = getAnchor(symbol['markerHorizontalAlignment'], symbol['markerVerticalAlignment']),
-                markerOffset = [symbol['markerDx'] || 0, symbol['markerDy'] || 0];
-            shape = shapeIcon(iconAtlas.positions[iconGlyph.icon], markerOffset, markerAnchor);
+            const markerAnchor = getAnchor(symbol['markerHorizontalAlignment'], symbol['markerVerticalAlignment']);
+            shape = shapeIcon(iconAtlas.positions[iconGlyph.icon], markerAnchor);
+            if (!this.size) {
+                this.size = shape.image.displaySize;
+            }
         }
         this._shape = shape;
         return shape;

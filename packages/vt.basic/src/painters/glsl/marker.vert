@@ -2,6 +2,7 @@
 
 attribute vec3 aPosition;
 attribute vec2 aShape;
+attribute vec2 aSize;
 attribute vec2 aTexCoord;
 attribute float aRotation;
 attribute vec2 aDxDy;
@@ -16,6 +17,7 @@ uniform float markerPerspectiveRatio;
 
 //TODO markerRotation
 
+uniform vec2 iconSize;
 uniform vec2 texSize;
 uniform vec2 canvasSize;
 uniform float pitchWithMap;
@@ -49,6 +51,7 @@ void main() {
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
     vec2 shape = shapeMatrix * aShape;
+    shape = shape / iconSize * aSize;
 
     if (pitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;

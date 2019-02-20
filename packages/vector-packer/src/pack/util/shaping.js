@@ -422,15 +422,23 @@ function align(positionedGlyphs, //: Array<PositionedGlyph>,
 // };
 
 function shapeIcon(image, //: ImagePosition,
-    iconOffset, //: [number, number],
+    // iconOffset, //: [number, number],
     iconAnchor//: SymbolAnchor
 ) {
     const { horizontalAlign, verticalAlign } = getAnchorAlignment(iconAnchor);
-    const dx = iconOffset[0];
-    const dy = iconOffset[1];
-    const x1 = dx - image.displaySize[0] * horizontalAlign;
-    const x2 = x1 + image.displaySize[0];
-    const y1 = dy - image.displaySize[1] * verticalAlign;
-    const y2 = y1 + image.displaySize[1];
+    // const dx = iconOffset[0];
+    // const dy = iconOffset[1];
+    // const dx = 0;
+    // const dy = 0;
+    // const x1 = dx - image.displaySize[0] * horizontalAlign;
+    // const x2 = x1 + image.displaySize[0];
+    // const y1 = dy - image.displaySize[1] * verticalAlign;
+    // const y2 = y1 + image.displaySize[1];
+
+    const width = 24, height = 24;
+    const x1 = -width * horizontalAlign;
+    const x2 = x1 + width;
+    const y1 = -height * verticalAlign;
+    const y2 = y1 + height;
     return { image, top: y1, bottom: y2, left: x1, right: x2 };
 }

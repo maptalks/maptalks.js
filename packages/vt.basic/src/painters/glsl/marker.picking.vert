@@ -1,11 +1,13 @@
 attribute vec3 aPosition;
 attribute vec2 aShape;
+attribute vec2 aSize;
 attribute float aRotation;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float markerPerspectiveRatio;
 
+uniform vec2 iconSize;
 uniform vec2 canvasSize;
 uniform float pitchWithMap;
 uniform float mapPitch;
@@ -24,6 +26,7 @@ void main() {
         4.0);
 
     vec2 shape = aShape * 2.0 / canvasSize; //乘以2.0
+    shape = shape / iconSize * aSize;
 
     //图标的旋转角度
     float angleSin = sin(aRotation);

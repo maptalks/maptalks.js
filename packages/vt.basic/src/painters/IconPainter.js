@@ -212,6 +212,7 @@ class IconPainter extends CollisionPainter {
                 },
                 'texSize',
                 'canvasSize',
+                'iconSize',
                 'pitchWithMap',
                 'mapPitch',
                 'markerPerspectiveRatio',
@@ -261,6 +262,7 @@ class IconPainter extends CollisionPainter {
                             }
                         },
                         'canvasSize',
+                        'iconSize',
                         'pitchWithMap',
                         'mapPitch',
                         'markerPerspectiveRatio',
@@ -291,6 +293,7 @@ class IconPainter extends CollisionPainter {
             projViewMatrix,
             cameraToCenterDistance,
             canvasSize,
+            iconSize : [24, 24],
             resolution : map.getResolution(),
         };
     }

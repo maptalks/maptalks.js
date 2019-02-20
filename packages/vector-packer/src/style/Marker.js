@@ -110,6 +110,9 @@ function translateToSVGStyles(s) {
 }
 
 export function evaluateIconSize(symbol, properties, zoom) {
+    if (isNil(symbol.markerWidth) || isNil(symbol.markerHeight)) {
+        return null;
+    }
     let width = isNil(symbol.markerWidth) ? symbol.textSize : symbol.markerWidth,
         height = symbol.markerHeight;
     if (symbol['__fn_markerWidth'] || symbol['__fn_textSize']) {
