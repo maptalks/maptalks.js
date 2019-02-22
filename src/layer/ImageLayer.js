@@ -70,7 +70,7 @@ class ImageLayer extends Layer {
         }
         this._imageData = images.map(img => {
             return extend({}, img, {
-                extent : new Extent(img.extent),
+                extent: new Extent(img.extent),
             });
         });
         this._images = images;
@@ -217,6 +217,8 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         if (!extent2d) {
             extent2d = extent.__imagelayerposition = extent.convertTo(c => map.coordToPoint(c, map.getGLZoom()));
         }
+        // delete image.texture;
+        delete image.glBuffer;
         this.drawGLImage(image, extent2d.xmin, extent2d.ymin, extent2d.getWidth(), extent2d.getHeight(), opacity);
     }
 
