@@ -71,10 +71,16 @@ const ImageGLRenderable = Base => {
             mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
-            if (!image.glBuffer)  {
+
+            const { glBuffer } = image;
+            if (glBuffer && (glBuffer.width !== w || glBuffer.height !== h)) {
+                this.saveImageBuffer(glBuffer);
+                delete image.glBuffer;
+            }
+            if (!image.glBuffer) {
                 image.glBuffer = this.bufferTileData(0, 0, w, h);
             } else {
-                gl.bindBuffer(gl.ARRAY_BUFFER, image.glBuffer);
+                gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer);
             }
 
             v2[0] = 'a_position';
@@ -88,11 +94,14 @@ const ImageGLRenderable = Base => {
             const x2 = x + w;
             const y1 = y;
             const y2 = y + h;
-            return this.loadImageBuffer(this.set12(
+            const glBuffer = this.loadImageBuffer(this.set12(
                 x1, y1, 0,
                 x1, y2, 0,
                 x2, y1, 0,
                 x2, y2, 0), buffer);
+            glBuffer.width = w;
+            glBuffer.height = h;
+            return glBuffer;
         }
 
         /**

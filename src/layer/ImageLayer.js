@@ -217,8 +217,6 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
         if (!extent2d) {
             extent2d = extent.__imagelayerposition = extent.convertTo(c => map.coordToPoint(c, map.getGLZoom()));
         }
-        // delete image.texture;
-        delete image.glBuffer;
         this.drawGLImage(image, extent2d.xmin, extent2d.ymin, extent2d.getWidth(), extent2d.getHeight(), opacity);
     }
 

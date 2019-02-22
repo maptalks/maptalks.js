@@ -158,6 +158,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     onRemove() {
+        super.onRemove();
         this.removeGLCanvas();
     }
 }
