@@ -70,7 +70,7 @@ class ImageLayer extends Layer {
         }
         this._imageData = images.map(img => {
             return extend({}, img, {
-                extent : new Extent(img.extent),
+                extent: new Extent(img.extent),
             });
         });
         this._images = images;
