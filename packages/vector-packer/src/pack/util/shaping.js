@@ -315,7 +315,7 @@ function shapeLines(shaping, //: Shaping,
     spacing, //: number,
     verticalHeight) {
     // the y offset *should* be part of the font metadata
-    const yOffset = -17;
+    const yOffset = 8;//-24 + lineHeight;
 
     let x = 0;
     let y = yOffset;
@@ -332,7 +332,7 @@ function shapeLines(shaping, //: Shaping,
         line = line.trim();
 
         if (!line.length) {
-            y += lineHeight; // Still need a line feed after empty line
+            y -= lineHeight; // Still need a line feed after empty line
             continue;
         }
 
@@ -361,7 +361,7 @@ function shapeLines(shaping, //: Shaping,
         }
 
         x = 0;
-        y += lineHeight;
+        y -= lineHeight;
     }
 
     const { horizontalAlign, verticalAlign } = getAnchorAlignment(textAnchor);
@@ -405,7 +405,7 @@ function align(positionedGlyphs, //: Array<PositionedGlyph>,
     lineCount//: number
 ) {
     const shiftX = (justify - horizontalAlign) * maxLineLength;
-    const shiftY = (-verticalAlign * lineCount + 0.5) * lineHeight;
+    const shiftY = -(-verticalAlign * lineCount + 0.5) * lineHeight;
 
     for (let j = 0; j < positionedGlyphs.length; j++) {
         positionedGlyphs[j].x += shiftX;

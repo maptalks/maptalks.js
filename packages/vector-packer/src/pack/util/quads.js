@@ -29,12 +29,12 @@ export function getIconQuads(
     return [{ tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0] }];
 }
 
+const GLYPH_PBF_BORDER = 3;
+const glyphPadding = 1.0;
+
 export function getGlyphQuads(shaping,
     alongLine,
     positions) {
-    const GLYPH_PBF_BORDER = 3;
-    const glyphPadding = 1.0;
-
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
 
@@ -51,18 +51,17 @@ export function getGlyphQuads(shaping,
         const rectBuffer = GLYPH_PBF_BORDER + glyphPadding;
 
         const halfAdvance = glyph.metrics.advance / 2;
-        //fuzhen builtInOffset 被统一为了positionedGlyph.y，否则placement为line时，文字会偏上
         const glyphOffset = alongLine ?
             [positionedGlyph.x + halfAdvance, 0] :
             [0, 0];
 
         const builtInOffset = alongLine ?
-            [0, positionedGlyph.y] :
-            [positionedGlyph.x + halfAdvance, positionedGlyph.y];
+            [0, positionedGlyph.y - halfAdvance] :
+            [positionedGlyph.x + halfAdvance, positionedGlyph.y - halfAdvance];
 
 
         const x1 = glyph.metrics.left - rectBuffer - halfAdvance + builtInOffset[0];
-        const y1 = -glyph.metrics.top - rectBuffer + builtInOffset[1];
+        const y1 = glyph.metrics.top - rectBuffer + builtInOffset[1];
         const x2 = x1 + rect.w;
         const y2 = y1 + rect.h;
 
