@@ -24,6 +24,9 @@ uniform mat4 projViewModelMatrix;
 uniform float tileResolution;
 uniform float resolution;
 uniform float tileRatio; //EXTENT / tileSize
+uniform float lineDx;
+uniform float lineDy;
+uniform vec2 canvasSize;
 
 varying vec2 vNormal;
 varying vec2 vWidth;
@@ -46,6 +49,8 @@ void main() {
     gl_Position = projViewModelMatrix * vec4(aPosition + vec3(dist, 0.0) * tileRatio / scale, 1.0);
 
     float distance = gl_Position.w;
+    gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
+
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
     float round = float(int(aNormal) / 2);

@@ -12,10 +12,8 @@ const style = [
         style: [
             {
                 symbol: {
-                    textName : 'A',
-                    // textSize : 24,
-                    textSpacing : 20,
-                    textPlacement : 'line'
+                    textName : '未来',
+                    textPitchAlignment : 'map'
                 }
             }
         ]
@@ -24,5 +22,10 @@ const style = [
 
 module.exports = {
     style,
-    data : data.line
+    data : data.point,
+    view : {
+        center : [0, 0],
+        zoom : 6,
+        pitch : 50
+    }
 };

@@ -61,6 +61,14 @@ class LinePainter extends BasicPainter {
                 uniforms.lineBlur = symbol['lineBlur'];
             }
 
+            if (symbol['lineDx'] || symbol['lineDx'] === 0) {
+                uniforms.lineDx = symbol['lineDx'];
+            }
+
+            if (symbol['lineDy'] || symbol['lineDy'] === 0) {
+                uniforms.lineDy = symbol['lineDy'];
+            }
+
             //TODO lineDx, lineDy
             // const indices = geometries[i].elements;
             // const projViewMatrix = mat4.multiply([], mapUniforms.projMatrix, mapUniforms.viewMatrix);
@@ -108,6 +116,7 @@ class LinePainter extends BasicPainter {
                 {
                     vert : pickingVert,
                     uniforms : [
+                        'cameraToCenterDistance',
                         'lineWidth',
                         'lineGapWidth',
                         {
@@ -121,7 +130,10 @@ class LinePainter extends BasicPainter {
                         },
                         'tileRatio',
                         'resolution',
-                        'tileResolution'
+                        'tileResolution',
+                        'lineDx',
+                        'lineDy',
+                        'canvasSize'
                     ]
                 },
                 this.pickingFBO
@@ -147,7 +159,7 @@ class LinePainter extends BasicPainter {
                 'cameraToCenterDistance',
                 'lineWidth',
                 'lineGapWidth',
-                'blur',
+                'lineBlur',
                 'lineOpacity',
                 {
                     name : 'projViewModelMatrix',
@@ -161,6 +173,9 @@ class LinePainter extends BasicPainter {
                 'tileRatio',
                 'resolution',
                 'tileResolution',
+                'lineDx',
+                'lineDy',
+                'canvasSize'
             ],
             extraCommandProps : {
                 viewport,
@@ -201,9 +216,10 @@ class LinePainter extends BasicPainter {
             projViewMatrix = map.projViewMatrix,
             uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
             cameraToCenterDistance = map.cameraToCenterDistance,
-            resolution = map.getResolution();
+            resolution = map.getResolution(),
+            canvasSize = [map.width, map.height];
         return {
-            uMatrix, projViewMatrix, cameraToCenterDistance, resolution
+            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize
         };
     }
 }

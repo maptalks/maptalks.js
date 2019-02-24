@@ -11,7 +11,7 @@ module.exports = {
     'line' : {
         type : 'FeatureCollection',
         features : [
-            { type : 'Feature', geometry : { type : 'LineString', coordinates : [[-3, 0.5], [3, 0.5]] }, properties : { type : 1 }}
+            { type : 'Feature', geometry : { type : 'LineString', coordinates : [[-2, 0.5], [2, 0.5]] }, properties : { type : 1 }}
         ]
     }
 };

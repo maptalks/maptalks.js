@@ -1,5 +1,3 @@
-const data = require('../../data');
-
 const style = [
     {
         type: 'text',
@@ -12,10 +10,7 @@ const style = [
         style: [
             {
                 symbol: {
-                    textName : 'A',
-                    // textSize : 24,
-                    textSpacing : 20,
-                    textPlacement : 'line'
+                    textName : '{name}'
                 }
             }
         ]
@@ -24,5 +19,10 @@ const style = [
 
 module.exports = {
     style,
-    data : data.line
+    data : {
+        type : 'FeatureCollection',
+        features : [
+            { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { name : '茕茕' }}
+        ]
+    }
 };

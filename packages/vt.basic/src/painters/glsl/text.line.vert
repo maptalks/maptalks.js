@@ -76,7 +76,7 @@ void main() {
         vGammaScale = cameraScale + 0.5;
     }
 
-    gl_Position.xy += aDxDy * 2.0 / canvasSize;
+    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
 
 
     vTexCoord = texCoord / texSize;

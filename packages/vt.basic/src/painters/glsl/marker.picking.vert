@@ -2,6 +2,7 @@ attribute vec3 aPosition;
 attribute vec2 aShape;
 attribute vec2 aSize;
 attribute float aRotation;
+attribute vec2 aDxDy;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -43,6 +44,7 @@ void main() {
         angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
         0.0, pitchSin, pitchCos);
     gl_Position.xy += (rotationMatrix * vec3(shape, 0.0)).xy * perspectiveRatio * gl_Position.w;
+    gl_Position.xy += aDxDy * 2.0 / canvasSize * gl_Position.w;
 
     fbo_picking_setData(gl_Position.w);
 }

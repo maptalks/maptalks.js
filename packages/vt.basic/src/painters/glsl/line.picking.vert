@@ -12,37 +12,41 @@
 #define EXTRUDE_SCALE 0.015873016
 
 attribute vec3 aPosition;
+attribute float aNormal;
 attribute vec2 aExtrude;
 // attribute float aLinesofar;
 
+uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
 uniform float lineWidth;
-uniform vec2 canvasSize;
 uniform mat4 projViewModelMatrix;
-uniform mat4 uMatrix;
+uniform float tileResolution;
+uniform float resolution;
+uniform float tileRatio; //EXTENT / tileSize
+uniform float lineDx;
+uniform float lineDy;
+uniform vec2 canvasSize;
 
 #include <fbo_picking_vert>
 
 void main() {
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
-    float distance = gl_Position.w;
-    //预乘w，得到gl_Position在NDC中的坐标值
-    // gl_Position /= gl_Position.w;
-
     float gapwidth = lineGapWidth / 2.0;
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
 
-    float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
-    float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
+    float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
+    float outset = gapwidth + halfwidth + sign(halfwidth) * ANTIALIASING;
 
-    vec2 extrude = aExtrude - 128.0;
+    vec2 extrude = aExtrude;
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec2 dist = outset * extrude * EXTRUDE_SCALE;
-    dist /= canvasSize;
+    vec2 dist = outset * extrude / EXTRUDE_SCALE;
 
-    gl_Position.xy += (uMatrix * vec4(dist, aPosition.z, 1.0)).xy * gl_Position.w;
+    float scale = tileResolution / resolution;
+    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(dist, 0.0) * tileRatio / scale, 1.0);
 
-    fbo_picking_setData(gl_Position.w);
+    float distance = gl_Position.w;
+    gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
+
+    fbo_picking_setData(distance);
 }

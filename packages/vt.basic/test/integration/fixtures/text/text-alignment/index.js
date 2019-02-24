@@ -1,9 +1,6 @@
-const path = require('path');
-const data = require('../../data');
-
 const style = [
     {
-        type: 'icon',
+        type: 'text',
         dataConfig: {
             type: 'point'
         },
@@ -14,20 +11,16 @@ const style = [
             {
                 filter : ['==', 'type', 1],
                 symbol: {
-                    markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
-                    markerWidth: 30,
-                    markerHeight: 30,
-                    markerOpacity: 1,
-                    markerDx : 20,
-                    markerDy : -50
+                    textName : '貔貅',
+                    textSize : 30,
+                    textHorizontalAlignment : 'right',
+                    textVerticalAlignment : 'top'
                 }
             },
             {
                 symbol: {
-                    markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
-                    markerWidth: 30,
-                    markerHeight: 30,
-                    markerOpacity: 1
+                    textName : '貔貅',
+                    textSize : 30
                 }
             }
         ]
@@ -42,9 +35,5 @@ module.exports = {
             { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 1 }},
             { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 2 }}
         ]
-    },
-    view : {
-        center : [0, 0],
-        zoom : 6
     }
 };

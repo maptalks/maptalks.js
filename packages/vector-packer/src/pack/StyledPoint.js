@@ -39,14 +39,13 @@ export default class StyledPoint {
                 textOffset = [symbol['textDx'] / fontScale || 0, symbol['textDy'] / fontScale || 0],
                 textWrapWidth = (symbol['textWrapWidth'] || 10 * oneEm) / fontScale;
             shape = {};
-
             shape.horizontal = shapeText(
                 text,
                 glyphs,
                 textWrapWidth, //默认为10个字符
                 lineHeight,
                 textAnchor,
-                symbol['textAlign'] || 'center',
+                'center',
                 textLetterSpacing,
                 textOffset,
                 oneEm, //verticalHeight
@@ -54,7 +53,7 @@ export default class StyledPoint {
             );
             if (isAllowLetterSpacing && textAlongLine && keepUpright) {
                 shape.vertical = shapeText(text, glyphs, textWrapWidth, lineHeight,
-                    textAnchor, symbol['textAlign'], textLetterSpacing, textOffset, oneEm, WritingMode.vertical
+                    textAnchor, 'center', textLetterSpacing, textOffset, oneEm, WritingMode.vertical
                 );
             }
         } else if (iconGlyph && iconGlyph.icon) {
@@ -136,9 +135,7 @@ function getAnchor(h, v) {
     if (!h || h === 'middle') {
         h = 'center';
     }
-    let vv = '';
-    if (v !== 'center') {
-        vv = v + '-';
-    }
-    return vv + h;
+    let vv = v !== 'center' ? v : '';
+    vv += h !== 'center' ? '-' + h : '';
+    return vv;
 }

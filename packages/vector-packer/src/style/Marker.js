@@ -138,8 +138,14 @@ export function evaluateIconSize(symbol, properties, zoom) {
     return size;
 }
 
+const DEFAULT_TEXT_SIZE = 16;
+
 export function evaluateTextSize(symbol, properties, zoom) {
     let textSize = symbol.textSize;
+    if (isNil(textSize)) {
+        //default text size of marker
+        return [DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SIZE];
+    }
     if (symbol['__fn_textSize']) {
         textSize = symbol['__fn_textSize'];
     }

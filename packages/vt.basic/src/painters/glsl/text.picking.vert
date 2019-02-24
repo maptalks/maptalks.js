@@ -6,6 +6,7 @@ attribute vec2 aTexCoord0;
 attribute float aSize;
 attribute vec2 aOffset;
 attribute float aRotation;
+attribute vec2 aDxDy;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -60,7 +61,8 @@ void main() {
     offset = (planeMatrix * vec3(offset, 0.0)).xy;
     offset = offset * 2.0 / canvasSize;
 
-    gl_Position.xy += (shape + offset) * perspectiveRatio * gl_Position.w;
+    gl_Position.xy += (shape + offset) * perspectiveRatio * distance;
+    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
 
     fbo_picking_setData(gl_Position.w);
 }

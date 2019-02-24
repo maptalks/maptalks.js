@@ -1,5 +1,12 @@
 const path = require('path');
-const data = require('../../data');
+
+const data = {
+    type : 'FeatureCollection',
+    features : [
+        { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 1 }},
+        { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 2 }}
+    ]
+};
 
 const style = [
     {
@@ -8,7 +15,8 @@ const style = [
             type: 'point'
         },
         sceneConfig: {
-            collision: false
+            collision: false,
+            fading : false
         },
         style: [
             {
@@ -18,8 +26,7 @@ const style = [
                     markerWidth: 30,
                     markerHeight: 30,
                     markerOpacity: 1,
-                    markerDx : 20,
-                    markerDy : -50
+                    markerVerticalAlignment : 'top'
                 }
             },
             {
@@ -36,13 +43,7 @@ const style = [
 
 module.exports = {
     style,
-    data : {
-        type : 'FeatureCollection',
-        features : [
-            { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 1 }},
-            { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 2 }}
-        ]
-    },
+    data,
     view : {
         center : [0, 0],
         zoom : 6

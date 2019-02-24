@@ -3,26 +3,33 @@ const fs = require('fs');
 const pixelmath = require('pixelmatch');
 const expectedCanvas = document.createElement('canvas'),
     ctx = expectedCanvas.getContext('2d');
+const image0 = new Image();
+const image1 = new Image();
 module.exports = {
     match(canvas, expectedPath, cb) {
-        const image = new Image();
-        image.onload = () => {
-            const width = expectedCanvas.width = image.width;
-            const height = expectedCanvas.height = image.height;
+        image0.onload = () => {
+            const width = expectedCanvas.width = image0.width;
+            const height = expectedCanvas.height = image0.height;
 
-            ctx.drawImage(image, 0, 0);
+            ctx.drawImage(image0, 0, 0);
             const expected = new Uint8Array(ctx.getImageData(0, 0, width, height).data);
 
-            ctx.drawImage(canvas, 0, 0);
-            const actual = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            image1.onload = () => {
+                ctx.clearRect(0, 0, width, height);
+                ctx.drawImage(image1, 0, 0);
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const actual = imageData.data;
 
-            const output = new Uint8Array(width * height * 4);
-            const count = pixelmath(expected, actual, output, width, height);
+                const output = new Uint8Array(width * height * 4);
+                const diffCount = pixelmath(expected, actual, output, width, height);
+                // console.log(diffCount);
 
-            cb(null, { diffImage : output, count });
+                cb(null, { diffImage : output, diffCount, width, height });
+            };
+            image1.src = canvas.toDataURL();
         };
-        image.onerror = cb;
-        image.src = 'file://' + expectedPath;
+        image0.onerror = cb;
+        image0.src = 'file://' + expectedPath;
         return false;
     },
 

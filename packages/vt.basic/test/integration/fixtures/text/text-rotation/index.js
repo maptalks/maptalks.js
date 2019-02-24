@@ -12,10 +12,8 @@ const style = [
         style: [
             {
                 symbol: {
-                    textName : 'A',
-                    // textSize : 24,
-                    textSpacing : 20,
-                    textPlacement : 'line'
+                    textName : '无为',
+                    textRotation : 90
                 }
             }
         ]
@@ -24,5 +22,5 @@ const style = [
 
 module.exports = {
     style,
-    data : data.line
+    data : data.point
 };
