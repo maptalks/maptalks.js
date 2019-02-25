@@ -508,7 +508,7 @@ export default class LinePack extends VectorPack {
             point.x,
             point.y,
             0,
-            (round ? 1 : 0) * 2 + up ? 1 : 0,
+            (round ? 1 : 0) * 2 + (up ? 1 : 0),
             EXTRUDE_SCALE * extrude.x,
             EXTRUDE_SCALE * extrude.y,
             linesofar

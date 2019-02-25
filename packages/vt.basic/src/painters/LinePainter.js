@@ -175,7 +175,8 @@ class LinePainter extends BasicPainter {
                 'tileResolution',
                 'lineDx',
                 'lineDy',
-                'canvasSize'
+                'canvasSize',
+                'maxExtent'
             ],
             extraCommandProps : {
                 viewport,
@@ -219,7 +220,8 @@ class LinePainter extends BasicPainter {
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
         return {
-            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize
+            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
+            maxExtent : this.layer.options['extent']
         };
     }
 }
