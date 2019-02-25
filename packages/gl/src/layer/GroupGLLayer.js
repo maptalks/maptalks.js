@@ -294,7 +294,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const attributes = layer.options['glOptions'] || {
             alpha: true,
             depth: true,
-            antialias: true,
+            antialias: false,
             stencil : true
         };
         attributes.preserveDrawingBuffer = true;
