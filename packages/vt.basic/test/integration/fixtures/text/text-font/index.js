@@ -10,13 +10,13 @@ const style = [
         style: [
             {
                 symbol: {
-                    textName : 'Aa',
+                    textName : '貔貅',
                     textFaceName : 'Arial',
                     textWeight : 'bold',
                     textStyle : 'italic',
-                    textSize : 40,
+                    textSize : 30,
                     textFill : '#f00',
-                    textOpacity : 0.5
+                    textOpacity : 1
                 }
             }
         ]

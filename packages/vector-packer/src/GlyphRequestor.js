@@ -38,6 +38,10 @@ export default class GlyphRequestor {
             textFaceName = fonts.slice(3).join(' ');
         const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
+        const buffer = 3;
+        // if (fonts[0] !== 'normal') {
+        //     buffer = 3;
+        // }
         if (!tinySDF) {
             let fontWeight = '400';
             if (/bolder/i.test(textWeight)) {
@@ -49,22 +53,40 @@ export default class GlyphRequestor {
             } else if (/light/i.test(textWeight)) {
                 fontWeight = '200';
             }
-            tinySDF = entry.tinySDF = new TinySDF(24, 3, 8, .25, fontFamily, fontWeight);
+            tinySDF = entry.tinySDF = new TinySDF(24, buffer, 8, .25, fontFamily, fontWeight);
+            //fix missing text style
+            tinySDF.ctx.font = fonts[0] + ' ' + tinySDF.ctx.font;
         }
+
+        // return {
+        //     charCode,
+        //     bitmap: {
+        //         width : 30,
+        //         height : 30,
+        //         data : tinySDF.draw(String.fromCharCode(charCode))
+        //     },
+        //     metrics: {
+        //         width: 24,
+        //         height: 24,
+        //         left: 0,
+        //         top: -8,
+        //         advance: 26
+        //     }
+        // };
 
         return {
             charCode,
             bitmap: {
-                width : 30,
-                height : 30,
+                width : 24 + buffer * 2,
+                height : 24 + buffer * 2,
                 data : tinySDF.draw(String.fromCharCode(charCode))
             },
             metrics: {
                 width: 24,
                 height: 24,
                 left: 0,
-                top: -8,
-                advance: 26
+                top: -8 - (buffer - 3),
+                advance: 24 + buffer - 1
             }
         };
     }
