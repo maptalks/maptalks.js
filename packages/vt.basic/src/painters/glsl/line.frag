@@ -13,7 +13,7 @@ varying vec2 vWidth;
 varying float vGammaScale;
 
 void main() {
-    if (vXy.x < -1.0 || vXy.x > 8193.0 || vXy.y < -1.0 || vXy.y > 8193.0) {
+    if (vXy.x < -1.0 || vXy.x > maxExtent + 1.0 || vXy.y < -1.0 || vXy.y > maxExtent + 1.0) {
         discard;
         return;
     }
