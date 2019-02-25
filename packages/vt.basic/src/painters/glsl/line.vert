@@ -61,5 +61,5 @@ void main() {
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
 
-    vXy = aPosition.xy;
+    vXy = aPosition.xy + dist * tileRatio;
 }
