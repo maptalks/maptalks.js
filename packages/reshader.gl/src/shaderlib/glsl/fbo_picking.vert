@@ -19,13 +19,15 @@ attribute float aPickingId;
 varying float vPickingId;
 #endif
 varying float vFbo_picking_viewZ;
+varying float vFbo_picking_visible;
 #endif
 
-void fbo_picking_setData(float viewPosZ) {
+void fbo_picking_setData(float viewPosZ, bool visible) {
     #ifdef ENABLE_PICKING
     #ifdef USE_PICKING_ID
         vPickingId = aPickingId;
     #endif
         vFbo_picking_viewZ = viewPosZ;
     #endif
+    vFbo_picking_visible = visible ? 1.0 : 0.0;
 }

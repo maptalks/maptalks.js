@@ -20,12 +20,17 @@ const frag0 = `
     precision highp float;
 
     varying float vPickingId;
+    varying float vFbo_picking_visible;
 
     uniform float fbo_picking_meshId;
 
     ${unpackFun}
 
     void main() {
+        if (vFbo_picking_visible == 0.0) {
+            discard;
+            return;
+        }
         gl_FragColor = vec4(unpack(vPickingId), fbo_picking_meshId / 255.0);
     }
 `;
@@ -35,10 +40,15 @@ const frag1 = `
     precision highp float;
 
     uniform int fbo_picking_meshId;
+    varying float vFbo_picking_visible;
 
     ${unpackFun}
 
     void main() {
+        if (vFbo_picking_visible == 0.0) {
+            discard;
+            return;
+        }
         gl_FragColor = vec4(unpack(float(fbo_picking_meshId)), 1.0);
         // gl_FragColor = vec4(unpack(float(35)), 1.0);
     }
@@ -49,10 +59,15 @@ const frag2 = `
     precision highp float;
 
     varying float vPickingId;
+    varying float vFbo_picking_visible;
 
     ${unpackFun}
 
     void main() {
+        if (vFbo_picking_visible == 0.0) {
+            discard;
+            return;
+        }
         gl_FragColor = vec4(unpack(vPickingId), 1.0);
     }
 `;
@@ -182,6 +197,10 @@ export default class FBORayPicking {
         this._scene1 = new Scene();
     }
 
+    filter() {
+        return true;
+    }
+
     /**
      * Render meshes to fbo for further picking
      * @param {Mesh[]} meshes - meshes to render
@@ -200,6 +219,7 @@ export default class FBORayPicking {
 
         this._scene.setMeshes(meshes);
         const shader = this._getShader(meshes, once);
+        shader.filter = this.filter;
         if (this._currentShader && shader !== this._currentShader) {
             this.clear();
         }
@@ -271,6 +291,10 @@ export default class FBORayPicking {
             return null;
         }
         return this._currentMeshes[idx];
+    }
+
+    getRenderedMeshes() {
+        return this._currentMeshes;
     }
 
     _getWorldPos(x, y, depth, viewMatrix, projMatrix) {
