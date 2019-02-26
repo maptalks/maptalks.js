@@ -15,8 +15,6 @@ uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float markerPerspectiveRatio;
 
-//TODO markerRotation
-
 uniform vec2 iconSize;
 uniform vec2 texSize;
 uniform vec2 canvasSize;

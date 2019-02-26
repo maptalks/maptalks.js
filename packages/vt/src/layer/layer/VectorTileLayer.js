@@ -100,7 +100,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!map || !renderer) {
             return [];
         }
-        const cp = map.coordToContainerPoint(coordinate);
+        const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
         return renderer.pick(cp.x, cp.y);
     }
 

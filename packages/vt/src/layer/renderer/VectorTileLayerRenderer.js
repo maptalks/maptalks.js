@@ -416,6 +416,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             const p = new P();
             p.config = config;
+            if (!p.config.sceneConfig) {
+                p.config.sceneConfig = {};
+            }
             return p;
         });
     }

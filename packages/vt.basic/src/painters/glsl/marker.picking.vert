@@ -1,17 +1,30 @@
+#define RAD 0.0174532925
+
 attribute vec3 aPosition;
 attribute vec2 aShape;
 attribute vec2 aSize;
+attribute vec2 aTexCoord;
 attribute float aRotation;
 attribute vec2 aDxDy;
+//uint8
+#ifdef ENABLE_COLLISION
+attribute float aOpacity;
+#endif
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float markerPerspectiveRatio;
 
 uniform vec2 iconSize;
+uniform vec2 texSize;
 uniform vec2 canvasSize;
 uniform float pitchWithMap;
 uniform float mapPitch;
+uniform float rotateWithMap;
+uniform float mapRotation;
+
+uniform float zoomScale;
+uniform float tileRatio; //EXTENT / tileSize
 
 #include <fbo_picking_vert>
 
@@ -26,25 +39,34 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    vec2 shape = aShape * 2.0 / canvasSize; //乘以2.0
+    float rotation = aRotation * RAD - mapRotation * rotateWithMap;
+    if (pitchWithMap == 1.0) {
+        rotation += mapRotation;
+    }
+    float angleSin = sin(rotation);
+    float angleCos = cos(rotation);
+
+    mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
+    vec2 shape = shapeMatrix * aShape;
     shape = shape / iconSize * aSize;
 
-    //图标的旋转角度
-    float angleSin = sin(aRotation);
-    float angleCos = cos(aRotation);
+    if (pitchWithMap == 0.0) {
+        vec2 offset = shape * 2.0 / canvasSize;
+        gl_Position.xy += offset * perspectiveRatio * distance;
+    } else {
+        float cameraScale = distance / cameraToCenterDistance;
+        vec2 offset = shape * vec2(1.0, -1.0);
+        //乘以cameraScale可以抵消相机近大远小的透视效果
+        gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+    }
 
-    // section 3 随视角倾斜
-    // 手动构造3x3旋转矩阵
-    float pitch = mapPitch * pitchWithMap;
-    // section 3 随视角倾斜
-    // 手动构造3x3旋转矩阵 http://planning.cs.uiuc.edu/node102.html
-    float pitchSin = sin(pitch);
-    float pitchCos = cos(pitch);
-    mat3 rotationMatrix = mat3(angleCos, -1.0 * angleSin * pitchCos, angleSin * pitchSin,
-        angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
-        0.0, pitchSin, pitchCos);
-    gl_Position.xy += (rotationMatrix * vec3(shape, 0.0)).xy * perspectiveRatio * gl_Position.w;
-    gl_Position.xy += aDxDy * 2.0 / canvasSize * gl_Position.w;
+    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
 
-    fbo_picking_setData(gl_Position.w);
+    #ifdef ENABLE_COLLISION
+        bool visible = aOpacity == 255.0;
+    #else
+        bool visible = true;
+    #endif
+
+    fbo_picking_setData(gl_Position.w, visible);
 }

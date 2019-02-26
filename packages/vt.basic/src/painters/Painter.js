@@ -18,7 +18,7 @@ class Painter {
         this.canvas = layer.getRenderer().canvas;
         this.sceneConfig = sceneConfig || {};
         this.scene = new reshader.Scene();
-        if (sceneConfig.picking !== false) {
+        if (this.sceneConfig.picking !== false) {
             this.pickingFBO = layer.getRenderer().pickingFBO;
         }
         this._stencilHelper = new StencilHelper();
@@ -118,11 +118,15 @@ class Painter {
             this.picking.render(this.scene.getMeshes(), uniforms, true);
             this._pickingRendered = true;
         }
-        const { meshId, pickingId, point } = this.picking.pick(x, y, uniforms, {
-            viewMatrix : map.viewMatrix,
-            projMatrix : map.projMatrix,
-            returnPoint : true
-        });
+        let picked = {};
+        if (this.picking.getRenderedMeshes().length) {
+            picked = this.picking.pick(x, y, uniforms, {
+                viewMatrix : map.viewMatrix,
+                projMatrix : map.projMatrix,
+                returnPoint : true
+            });
+        }
+        const { meshId, pickingId, point } = picked;
         const mesh = (meshId === 0 || meshId) && this.picking.getMeshAt(meshId);
         if (!mesh) {
             return null;
@@ -158,6 +162,9 @@ class Painter {
     delete(/* context */) {
         this.scene.clear();
         this.shader.dispose();
+        if (this.picking) {
+            this.picking.dispose();
+        }
     }
 
     _stencil(quadStencil) {
