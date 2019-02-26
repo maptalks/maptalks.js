@@ -1,7 +1,7 @@
 const path = require('path');
 const assert = require('assert');
 const data = require('../integration/fixtures/data');
-const maptalks = require('../common/maptalks');
+const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
 require('../../dist/maptalks.vt.basic-dev');
 
@@ -29,6 +29,9 @@ describe('picking specs', () => {
 
     const runner = (options, coord, expected, ignoreSymbol, done) => {
         map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+        map.on('click', e => {
+            console.log(e.coordinate);
+        });
         const layer = new GeoJSONVectorTileLayer('gvt', options);
         let count = 0;
         layer.on('layerload', () => {
@@ -42,7 +45,12 @@ describe('picking specs', () => {
                     delete result[i].feature.symbol;
                 }
             }
-            assert.deepEqual(result, expected, JSON.stringify(result));
+            if (typeof expected === 'object') {
+                assert.deepEqual(result, expected, JSON.stringify(result));
+            } else if (typeof expected === 'number') {
+                assert.ok(result.length === expected, 'actual result length: ' + result.length);
+            }
+
             done();
         });
         layer.addTo(map);
@@ -58,8 +66,8 @@ describe('picking specs', () => {
                         dataConfig: {
                             type: 'point'
                         },
-                        sceneConfig : {
-                            collision : false
+                        sceneConfig: {
+                            collision: false
                         },
                         style: [
                             {
@@ -85,9 +93,9 @@ describe('picking specs', () => {
                         dataConfig: {
                             type: 'point'
                         },
-                        sceneConfig : {
-                            collision : true,
-                            fading : false
+                        sceneConfig: {
+                            collision: true,
+                            fading: false
                         },
                         style: [
                             {
@@ -106,7 +114,7 @@ describe('picking specs', () => {
                 }
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'feature': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, }, 'point': [361.20911646267484, -370.47862625122036, -4.833766723333952], 'type': 'icon' }];
+            const expected = 1;
             runner(options, coord, expected, true, done);
         });
 
@@ -119,8 +127,8 @@ describe('picking specs', () => {
                         dataConfig: {
                             type: 'point'
                         },
-                        sceneConfig : {
-                            collision : false
+                        sceneConfig: {
+                            collision: false
                         },
                         style: [
                             {
@@ -140,7 +148,7 @@ describe('picking specs', () => {
                 }
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'feature': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, }, 'point': [366.73117714902435, -371.1556777954098, -7.649648145847891], 'type': 'icon' }];
+            const expected = 1;
             runner(options, coord, expected, true, done);
         });
 
@@ -153,9 +161,9 @@ describe('picking specs', () => {
                         dataConfig: {
                             type: 'point'
                         },
-                        sceneConfig : {
-                            collision : true,
-                            fading : true
+                        sceneConfig: {
+                            collision: true,
+                            fading: true
                         },
                         style: [
                             {
@@ -184,8 +192,8 @@ describe('picking specs', () => {
                         dataConfig: {
                             type: 'point'
                         },
-                        sceneConfig : {
-                            collision : false
+                        sceneConfig: {
+                            collision: false
                         },
                         style: [
                             {
@@ -204,7 +212,7 @@ describe('picking specs', () => {
                 }
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'feature': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, 'symbol': { 'textName': '未来' }}, 'point': [361.20911646267484, -370.47862625122036, -4.833766723333952], 'type': 'text' }];
+            const expected = 1;
             runner(options, coord, expected, false, done);
         });
 
@@ -217,9 +225,9 @@ describe('picking specs', () => {
                         dataConfig: {
                             type: 'point'
                         },
-                        sceneConfig : {
-                            collision : true,
-                            fading : false
+                        sceneConfig: {
+                            collision: true,
+                            fading: false
                         },
                         style: [
                             {
@@ -239,7 +247,78 @@ describe('picking specs', () => {
                 }
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'feature': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, 'symbol': { 'textName': '未来', 'textPitchAlignment': 'map' }, 'textName': '未来' }, 'point': [366.74511569700024, -371.1573867797848, -7.656755872570102], 'type': 'text' }];
+            const expected = 1;
+            runner(options, coord, expected, false, done);
+        });
+
+        it('should pick a text with line placement', done => {
+            const options = {
+                data: data.line,
+                style: [
+                    {
+                        type: 'text',
+                        dataConfig: {
+                            type: 'point'
+                        },
+                        sceneConfig: {
+                            collision: true,
+                            fading: false
+                        },
+                        style: [
+                            {
+                                symbol: {
+                                    textName: '未来',
+                                    textPlacement: 'line'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                view: {
+                    center: [0, 0],
+                    zoom: 6,
+                    pitch: 60,
+                    bearing: 90
+                }
+            };
+            const coord = [-0.43976, 0.55968];
+            const expected = 1;
+            runner(options, coord, expected, false, done);
+        });
+
+        it('should pick a text with pitch alignment and line placement', done => {
+            const options = {
+                data: data.line,
+                style: [
+                    {
+                        type: 'text',
+                        dataConfig: {
+                            type: 'point'
+                        },
+                        sceneConfig: {
+                            collision: true,
+                            fading: false
+                        },
+                        style: [
+                            {
+                                symbol: {
+                                    textName: '未来',
+                                    textPitchAlignment: 'map',
+                                    textPlacement: 'line'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                view: {
+                    center: [0, 0],
+                    zoom: 6,
+                    pitch: 60,
+                    bearing: 90
+                }
+            };
+            const coord = [-0.9541270, 0.54773];
+            const expected = 1;
             runner(options, coord, expected, false, done);
         });
     });

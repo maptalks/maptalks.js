@@ -1,5 +1,5 @@
 const remote = require('electron').remote;
-const maptalks = require('../common/maptalks');
+const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
