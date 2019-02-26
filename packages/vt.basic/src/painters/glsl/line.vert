@@ -28,7 +28,6 @@ uniform float lineDx;
 uniform float lineDy;
 uniform vec2 canvasSize;
 
-varying vec2 vXy;
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
@@ -60,6 +59,4 @@ void main() {
     // vNormal = aNormal;
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
-
-    vXy = aPosition.xy + dist * tileRatio;
 }

@@ -5,18 +5,12 @@ precision mediump float;
 uniform lowp float lineBlur;
 uniform lowp float lineOpacity;
 uniform lowp vec4 lineColor;
-uniform float maxExtent;
 
-varying vec2 vXy;
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
 
 void main() {
-    if (vXy.x < -1.0 || vXy.x > maxExtent + 1.0 || vXy.y < -1.0 || vXy.y > maxExtent + 1.0) {
-        discard;
-        return;
-    }
     float dist = length(vNormal) * vWidth.s;//outset
 
     float blur2 = (lineBlur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;

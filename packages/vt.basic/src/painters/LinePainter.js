@@ -206,6 +206,12 @@ class LinePainter extends BasicPainter {
                         src: 'src alpha',
                         dst: 'one minus src alpha'
                     },
+                    // func : {
+                    //     srcRGB: 'src alpha',
+                    //     srcAlpha: 'src alpha',
+                    //     dstRGB: 'one minus src alpha',
+                    //     dstAlpha: 1
+                    // },
                     equation: 'add'
                 },
             }
@@ -220,8 +226,7 @@ class LinePainter extends BasicPainter {
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
         return {
-            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
-            maxExtent : this.layer.options['extent']
+            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize
         };
     }
 }
