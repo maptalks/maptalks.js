@@ -3,7 +3,7 @@ precision mediump float;
 varying vec3 vBC;
 
 uniform float lineWidth;
-uniform float alpha;
+uniform float opacity;
 uniform vec4 frontColor;
 uniform vec4 backColor;
 uniform vec4 fillColor;
@@ -18,8 +18,8 @@ float edgeFactor() {
 
 void main() {
     if(gl_FrontFacing) {
-        gl_FragColor = (fillColor * edgeFactor() + frontColor * (1.0 - edgeFactor())) * alpha;
+        gl_FragColor = (fillColor * edgeFactor() + frontColor * (1.0 - edgeFactor())) * opacity;
     } else {
-        gl_FragColor = (fillColor * edgeFactor() + backColor * (1.0 - edgeFactor())) * alpha;
+        gl_FragColor = (fillColor * edgeFactor() + backColor * (1.0 - edgeFactor())) * opacity;
     }
 }
