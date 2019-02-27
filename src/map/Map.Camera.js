@@ -338,7 +338,8 @@ Map.include(/** @lends Map.prototype */{
             if (sr.isEPSG) {
                 // dynamic cameraNear for predefined EPSG* projections
                 // this can help to increase depth resolutions
-                this.cameraNear = Math.max(2 * this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(this.getPitch() * RADIAN), 0.1);
+                //TODO cameraNear会出现过大，而导致图形不显示的问题
+                this.cameraNear = Math.max(this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(this.getPitch() * RADIAN), 0.1);
             } else {
                 this.cameraNear = 0.1;
             }
