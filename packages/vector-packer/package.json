@@ -1,11 +1,13 @@
 {
   "name": "@maptalks/vector-packer",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Packer to pack simple vector graphics for gl",
   "main": "dist/vector-packer.js",
   "module": "src/index.js",
   "jsnext:main": "src/index.js",
-  "private": true,
+  "files" : [
+    "src/index.js"
+  ],
   "scripts": {
     "dev" : "rollup -w -c ./rollup.config.js",
     "lint": "eslint src/**/*.js test/**/*.js",
