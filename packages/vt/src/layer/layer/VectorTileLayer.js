@@ -10,7 +10,6 @@ const defaultOptions = {
     forceRenderOnMoving : true,
     forceRenderOnRotating : true,
     clipByPitch : false,
-    extent : 8192,
     zoomBackground : true,
     tileSize : [512, 512],
     tileSystem : [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
@@ -34,13 +33,14 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     constructor(id, options) {
         super(id, options);
-        const tileSize = this.getTileSize();
-        this.zoomOffset = -log2(tileSize.width / 256);
+        // const tileSize = this.getTileSize();
+        // this.zoomOffset = -log2(tileSize.width / 256);
         this.validateStyle();
     }
 
     getTileUrl(x, y, z) {
-        return super.getTileUrl(x, y, this.zoomOffset + z);
+        const res = this.getMap().getResolution(z);
+        return super.getTileUrl(x, y, getMapBoxZoom(res));
     }
 
     getWorkerOptions() {
@@ -50,7 +50,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             tileSize : this.options['tileSize'],
             baseRes : map.getResolution(map.getGLZoom()),
             style : this.options.style,
-            extent : this.options.extent,
             features : this.options.features
         };
     }
@@ -146,3 +145,8 @@ VectorTileLayer.registerRenderer('gl', VectorTileLayerRenderer);
 VectorTileLayer.registerRenderer('canvas', null);
 
 export default VectorTileLayer;
+
+const MAX_RES = 2 * 6378137 * Math.PI / (256 * Math.pow(2, 20));
+function getMapBoxZoom(res) {
+    return 19 - Math.log(res / MAX_RES) / Math.LN2;
+}

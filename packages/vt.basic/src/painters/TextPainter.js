@@ -462,7 +462,7 @@ export default class TextPainter extends CollisionPainter {
             aNormal = geometry.properties.aNormal;
 
         const isProjected = !planeMatrix;
-        const scale = isProjected ? 1 : this.layer.options['extent'] / this.layer.options['tileSize'][0];
+        const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'][0];
 
         let visible = true;
         //if planeMatrix is null, line is in tile coordinates

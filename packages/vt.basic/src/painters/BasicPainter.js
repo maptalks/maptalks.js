@@ -40,7 +40,7 @@ export default class BasicPainter extends Painter {
             const data = extend({}, packs[i].data);
             data.aPickingId = data.featureIndexes;
             delete data.featureIndexes;
-            const geometry = new reshader.Geometry(data, packs[i].indices);
+            const geometry = new reshader.Geometry(data, packs[i].indices, 0, { positionSize : 3 });
             geometry.properties = {
                 features,
                 iconAtlas,

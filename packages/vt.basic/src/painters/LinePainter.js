@@ -175,8 +175,7 @@ class LinePainter extends BasicPainter {
                 'tileResolution',
                 'lineDx',
                 'lineDy',
-                'canvasSize',
-                'maxExtent'
+                'canvasSize'
             ],
             extraCommandProps : {
                 viewport,

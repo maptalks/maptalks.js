@@ -47,6 +47,13 @@ export default class BaseLayerWorker {
     }
 
     _createTileData(features, { glScale, zScale, tileInfo }) {
+        if (!features.length) {
+            return Promise.resolve({
+                data : null,
+                buffers : []
+            });
+        }
+        const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
             data = [],
             dataIndexes = [],
@@ -99,8 +106,7 @@ export default class BaseLayerWorker {
             //index of plugin with data
             dataIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
-            // const tileData = plugin.createTileDataInWorker(filteredFeas, this.options.extent);
-            const promise = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, styles, { extent : options.extent, glScale, zScale, zoom });
+            const promise = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, styles, { extent : EXTENT, glScale, zScale, zoom });
             promises.push(promise);
         }
 
@@ -141,6 +147,7 @@ export default class BaseLayerWorker {
             return {
                 data : {
                     data,
+                    extent : EXTENT,
                     features : JSON.stringify(allFeas)
                 },
                 buffers

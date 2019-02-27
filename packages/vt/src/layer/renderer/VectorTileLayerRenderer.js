@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import { mat4, vec3, createREGL } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
-import { EXTENT, EMPTY_VECTOR_TILE } from '../core/Constant';
+import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
@@ -61,22 +61,20 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     createContext() {
-        const layer = this.layer;
         this._prepareWorker();
-        const EXTENT = layer.options['extent'];
 
         if (this.canvas.gl && this.canvas.gl.wrap) {
             this.gl = this.canvas.gl.wrap();
         }
         this._createREGLContext();
         this.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Uint16Array([
-            0, EXTENT, 0,
-            0, 0, 0,
-            EXTENT, EXTENT, 0,
-            EXTENT, 0, 0
-        ]), layer.options['stencil'] === 'debug');
-        this._debugPainter = new DebugPainter(this.regl, this.canvas, EXTENT);
+        // this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Uint16Array([
+        //     0, EXTENT, 0,
+        //     0, 0, 0,
+        //     EXTENT, EXTENT, 0,
+        //     EXTENT, 0, 0
+        // ]), layer.options['stencil'] === 'debug');
+        this._debugPainter = new DebugPainter(this.regl, this.canvas);
     }
 
     _createREGLContext() {
@@ -173,7 +171,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const projViewMatrix = this.getMap().projViewMatrix;
             for (const p in this.tilesInView) {
                 const transform = this.tilesInView[p].info.transform;
-                if (transform) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform));
+                const extent = this.tilesInView[p].image.extent;
+                if (transform && extent) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform), extent);
             }
         }
         // TODO: shoule be called in parent
@@ -229,7 +228,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 delete pluginData.styledFeatures;
                 pluginData.features = pFeatures;
             }
-            this.onTileLoad(data.data, tileInfo);
+            delete data.features;
+            this.onTileLoad(data, tileInfo);
         });
         return {};
     }
@@ -276,15 +276,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo, tileData.extent);
+        const pluginData = tileData.data;
         this.plugins.forEach((plugin, idx) => {
-            if (!tileData[idx]) {
+            if (!pluginData[idx]) {
                 return;
             }
             if (!tileCache[idx]) {
                 tileCache[idx] = {};
             }
-            tileData[idx].transform = tileTransform;
+            pluginData[idx].transform = tileTransform;
             const context = {
                 regl : this.regl,
                 layer : this.layer,
@@ -292,7 +293,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
                 tileCache : tileCache[idx],
-                tileData : tileData[idx],
+                tileData : pluginData[idx],
+                tileExtent : tileData.extent,
                 timestamp : this._frameTime,
                 tileInfo,
                 tileZoom : this['_tileZoom']
@@ -494,7 +496,7 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
     const v0 = new Array(3);
     const v1 = new Array(3);
     const v2 = new Array(3);
-    return function (tileInfo) {
+    return function (tileInfo, EXTENT) {
         const map = this.getMap();
         const glScale = map.getGLScale(tileInfo.z);
         const tilePos = tileInfo.point;

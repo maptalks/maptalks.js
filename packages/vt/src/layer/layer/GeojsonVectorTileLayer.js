@@ -6,7 +6,8 @@ const options = {
     //feature data to return from worker
     //for geojson layer, only need to return id of features
     features : 'id',
-    tileBuffer : 64
+    tileBuffer : 64,
+    extent : 8192
 };
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {
@@ -20,6 +21,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         const options = super.getWorkerOptions();
         options.data = this.options.data;
         options.tileBuffer = this.options.tileBuffer;
+        options.extent = this.options.extent;
         return options;
     }
 

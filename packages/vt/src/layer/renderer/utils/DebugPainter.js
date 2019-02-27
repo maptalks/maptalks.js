@@ -1,27 +1,32 @@
 //TODO draw tile's xyz
 class DebugPainter {
-    constructor(regl, canvas, EXTENT, color) {
+    constructor(regl, canvas, color) {
         this._regl = regl;
         this._canvas = canvas;
-        this._data = regl.buffer(new Uint16Array([
-            0, 0,
-            0, EXTENT,
-            EXTENT, EXTENT,
-            EXTENT, 0,
-        ]));
         this._color = color || [0, 1, 0];
         //LINE_LOOP
         this._init();
     }
 
-    draw(transform) {
+    draw(transform, extent) {
+        if (!this._data) {
+            this._data = this._regl.buffer(new Uint16Array([
+                0, 0,
+                0, extent,
+                extent, extent,
+                extent, 0,
+            ]));
+        }
         this._command({
-            transform
+            transform,
+            data : this._data
         });
     }
 
     remove() {
-        this._data.destroy();
+        if (this._data) {
+            this._data.destroy();
+        }
         //this._command.destroy();
     }
 
@@ -56,7 +61,7 @@ class DebugPainter {
                 }
             `,
             attributes : {
-                aPosition : this._data
+                aPosition : this._regl.prop('data')
             },
             uniforms : {
                 transform : this._regl.prop('transform'),

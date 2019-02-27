@@ -151,17 +151,19 @@ function createPainterPlugin(type, Painter) {
             const { layer, tileInfo } = context;
             const map = layer.getMap(),
                 tileResolution = map.getResolution(tileInfo.z),
-                tileRatio = layer.options.extent / layer.getTileSize().width;
+                tileRatio = context.tileExtent / layer.getTileSize().width;
             if (Array.isArray) {
                 for (let i = 0; i < geometry.length; i++) {
                     geometry[i].properties.tileResolution = tileResolution;
                     geometry[i].properties.tileRatio = tileRatio;
                     geometry[i].properties.z = tileInfo.z;
+                    geometry[i].properties.tileExtent = context.tileExtent;
                 }
             } else {
                 geometry.properties.tileResolution = tileResolution;
                 geometry.properties.tileRatio = tileRatio;
                 geometry.properties.z = tileInfo.z;
+                geometry.properties.tileExtent = context.tileExtent;
             }
         },
 
