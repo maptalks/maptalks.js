@@ -1,5 +1,4 @@
 const path = require('path');
-const data = require('../../data');
 
 const style = [
     {
