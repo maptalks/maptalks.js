@@ -1,14 +1,14 @@
 {
   "name": "@maptalks/vector-packer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Packer to pack simple vector graphics for gl",
   "module": "src/index.js",
   "jsnext:main": "src/index.js",
-  "files" : [
+  "files": [
     "src/index.js"
   ],
   "scripts": {
-    "dev" : "rollup -w -c ./rollup.config.js",
+    "dev": "rollup -w -c ./rollup.config.js",
     "lint": "eslint src/**/*.js test/**/*.js",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run"
@@ -19,12 +19,12 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@mapbox/point-geometry" : "^0.1.0",
+    "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/shelf-pack": "^3.1.0",
-    "@mapbox/tiny-sdf" : "^1.1.0",
+    "@mapbox/tiny-sdf": "^1.1.0",
     "@maptalks/feature-filter": "^1.0.0",
-    "color" : "^3.0.0",
-    "earcut" : "^2.1.3",
+    "color": "^3.0.0",
+    "earcut": "^2.1.3",
     "gl-matrix": "^2.6.1",
     "quickselect": "^1.0.0",
     "tinyqueue": "^1.1.0",
@@ -35,14 +35,14 @@
     "eslint": "^4.19.1",
     "eslint-config-maptalks": "^0.3.0",
     "eslint-plugin-mocha": "^5.0.0",
-    "mocha" : "^5.2.0",
-    "expect.js" : "^0.3.1",
+    "mocha": "^5.2.0",
+    "expect.js": "^0.3.1",
     "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-expect": "^1.1.3",
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.5",
-    "maptalks" : "<2.0.0",
+    "maptalks": "<2.0.0",
     "rollup": "^1.0.1",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0"
