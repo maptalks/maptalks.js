@@ -23,8 +23,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (err) throw new Error(err);
                 this.clear();
                 this._clearPlugin();
+                this._initPlugins();
                 this.setToRedraw();
             });
+        } else {
+            this._initPlugins();
         }
     }
 
