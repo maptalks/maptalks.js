@@ -6,7 +6,7 @@
  * @name DomUtil
  */
 
-import Browser from  '../Browser';
+import Browser from '../Browser';
 import { IS_NODE } from './env';
 import { isString, isNil } from './common';
 import { splitWords } from './strings';
@@ -398,6 +398,24 @@ export function addClass(el, name) {
     } else {
         const className = getClass(el);
         setClass(el, (className ? className + ' ' : '') + name);
+    }
+    return this;
+}
+
+/**
+ * remove css class from dom element
+ * @param {HTMLElement} el HTML Element
+ * @param {String} name css class
+ * @memberOf DomUtil
+ */
+export function removeClass(el, name) {
+    if (el.classList !== undefined && hasClass(el, name)) {
+        const classes = splitWords(name);
+        for (let i = 0, len = classes.length; i < len; i++) {
+            el.classList.remove(classes[i]);
+        }
+    } else {
+        el.className = ele.className.replace(new RegExp('(\\s|^)' + cls + '(\\s|$)'), ' ');
     }
     return this;
 }
