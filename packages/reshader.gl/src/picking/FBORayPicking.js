@@ -297,6 +297,25 @@ export default class FBORayPicking {
         return this._currentMeshes;
     }
 
+    dispose() {
+        this.clear();
+        if (this._shader0) {
+            this._shader0.dispose();
+        }
+        if (this._shader1) {
+            this._shader1.dispose();
+        }
+        if (this._shader2) {
+            this._shader2.dispose();
+        }
+        if (this._scene) {
+            this._scene.clear();
+        }
+        if (this._scene1) {
+            this._scene1.clear();
+        }
+    }
+
     _getWorldPos(x, y, depth, viewMatrix, projMatrix) {
         const fbo = this._fbo;
         const mat = [];
