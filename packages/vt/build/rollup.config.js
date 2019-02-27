@@ -5,7 +5,7 @@ const uglify = require('rollup-plugin-uglify').uglify;
 const pkg = require('../package.json');
 
 const production = process.env.BUILD === 'production';
-const outputFile = (production || process.env.BUILD === 'test') ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
+const outputFile = 'dist/maptalks.vt.js';//(production || process.env.BUILD === 'test') ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
 const plugins = production ? [
     uglify({
         mangle: {

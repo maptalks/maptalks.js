@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { match, readSpecs } = require('./util');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
-require('../../dist/maptalks.vt.basic-dev');
+require('../../dist/maptalks.vt.basic');
 
 const GENERATE_MODE = (process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
 

@@ -3,7 +3,7 @@ const assert = require('assert');
 const data = require('../integration/fixtures/data');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
-require('../../dist/maptalks.vt.basic-dev');
+require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
     center: [0, 0],

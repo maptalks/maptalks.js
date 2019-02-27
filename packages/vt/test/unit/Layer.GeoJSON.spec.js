@@ -1,6 +1,6 @@
 const maptalks = require('maptalks');
 const assert = require('assert');
-const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt-dev.js');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 // const deepEqual = require('fast-deep-equal');
 
 const points = {

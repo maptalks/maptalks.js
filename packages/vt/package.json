@@ -2,13 +2,10 @@
   "name": "@maptalks/vt",
   "version": "0.1.0",
   "description": "The vector-tile plugin for maptalks.js",
-  "main": "dist/maptalks.vt-dev.js",
+  "main": "dist/maptalks.vt.js",
   "browser": "dist/maptalks.vt.js",
-  "module": "dist/maptalks.vt.es.js",
-  "jsnext:main": "dist/maptalks.vt.es.js",
-  "private": true,
   "files": [
-    "dist"
+    "dist/maptalks.vt.js"
   ],
   "scripts": {
     "lint": "eslint src/**/*.js test/**/*.js",
@@ -16,8 +13,9 @@
     "build": "rollup --environment BUILD:production -c build/rollup.config.js",
     "build-dev": "rollup -c build/rollup.config.js",
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
-    "tdd" : "npm run pretest && electron-mocha --interactive --renderer ./test/**/*.spec.js",
-    "pretest": "npm run lint && npm run build-dev"
+    "tdd" : "npm run build-dev && electron-mocha --interactive --renderer ./test/**/*.spec.js",
+    "pretest": "npm run lint && npm run build",
+    "prepare": "npm test && npm run build"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
