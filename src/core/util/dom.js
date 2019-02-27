@@ -415,7 +415,7 @@ export function removeClass(el, name) {
             el.classList.remove(classes[i]);
         }
     } else {
-        el.className = ele.className.replace(new RegExp('(\\s|^)' + cls + '(\\s|$)'), ' ');
+        el.className = el.className.replace(new RegExp('(\\s|^)' + name + '(\\s|$)'), ' ');
     }
     return this;
 }
