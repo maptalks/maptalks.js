@@ -1,3 +1,5 @@
+import * as maptalks from 'maptalks';
+
 /**
  * Merges the properties of sources into destination object.
  * @param  {Object} dest   - object to extend
@@ -21,4 +23,16 @@ export function clamp(n, min, max) {
 
 export function isNil(obj) {
     return obj === null || obj === undefined;
+}
+
+export function evaluate(prop, properties, zoom) {
+    if (maptalks.Util.isFunction(prop)) {
+        if (zoom !== undefined) {
+            return prop(zoom, properties);
+        } else {
+            return prop(null, properties);
+        }
+    } else {
+        return prop;
+    }
 }

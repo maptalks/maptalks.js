@@ -25,8 +25,8 @@ const defaultUniforms = {
 const SCALE = [1, 1, 1];
 
 class PhongPainter extends Painter {
-    constructor(regl, layer, sceneConfig) {
-        super(regl, layer, sceneConfig);
+    constructor(regl, layer, sceneConfig, pluginIndex) {
+        super(regl, layer, sceneConfig, pluginIndex);
         if (!this.sceneConfig.lights) {
             this.sceneConfig.lights = {};
         }

@@ -18,8 +18,8 @@ const BOX = [];
 const PROJ_MATRIX = [];
 
 class IconPainter extends CollisionPainter {
-    constructor(regl, layer, sceneConfig) {
-        super(regl, layer, sceneConfig);
+    constructor(regl, layer, sceneConfig, pluginIndex) {
+        super(regl, layer, sceneConfig, pluginIndex);
 
         this.propAllowOverlap = 'markerAllowOverlap';
         this.propIgnorePlacement = 'markerIgnorePlacement';
@@ -39,7 +39,7 @@ class IconPainter extends CollisionPainter {
             if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
                 continue;
             }
-            const symbol = packMeshes[i].symbol;
+            const symbol = this.getPackSymbol(packMeshes[i].symbol);
             geometry.properties.symbol = symbol;
             const uniforms = {
                 tileResolution : geometry.properties.tileResolution,

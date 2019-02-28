@@ -46,8 +46,8 @@ const PROJ_MATRIX = [], LINE_OFFSET = [];
 const BOX = [], BOX0 = [], BOX1 = [];
 
 export default class TextPainter extends CollisionPainter {
-    constructor(regl, layer, sceneConfig) {
-        super(regl, layer, sceneConfig);
+    constructor(regl, layer, sceneConfig, pluginIndex) {
+        super(regl, layer, sceneConfig, pluginIndex);
         this.propAllowOverlap = 'textAllowOverlap';
         this.propIgnorePlacement = 'textIgnorePlacement';
     }
@@ -78,7 +78,7 @@ export default class TextPainter extends CollisionPainter {
             if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
                 continue;
             }
-            const symbol = packMeshes[i].symbol;
+            const symbol = this.getPackSymbol(packMeshes[i].symbol);
             geometry.properties.symbol = symbol;
             const isLinePlacement = symbol['textPlacement'] === 'line';
             //tags for picking

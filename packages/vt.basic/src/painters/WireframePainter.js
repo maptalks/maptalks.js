@@ -35,8 +35,8 @@ const frag = `
 const SCALE = [1, 1, 1];
 
 class WireframePainter extends Painter {
-    constructor(regl, layer, sceneConfig) {
-        super(regl, layer, sceneConfig);
+    constructor(regl, layer, sceneConfig, pluginIndex) {
+        super(regl, layer, sceneConfig, pluginIndex);
         this.colorSymbol = 'lineColor';
     }
 

@@ -44,6 +44,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setToRedraw();
     }
 
+    updateSymbol(idx, styleIdx) {
+        const plugins = this.plugins;
+        if (!plugins) {
+            return;
+        }
+        const plugin = plugins[idx];
+        plugin.updateSymbol(styleIdx);
+        this.setToRedraw();
+    }
+
     //always redraw when map is interacting
     needToRedraw() {
         const redraw = super.needToRedraw();
@@ -175,8 +185,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (transform && extent) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform), extent);
             }
         }
-        // TODO: shoule be called in parent
-        // this.completeRender();
     }
 
     getFrameTimestamp() {
@@ -245,6 +253,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 gl : this.gl,
                 sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
+                pluginIndex : idx,
                 timestamp
             });
         });
@@ -259,6 +268,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 gl : this.gl,
                 sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
+                pluginIndex : idx,
                 cameraPosition,
                 quadStencil : this._quadStencil,
                 timestamp
@@ -292,6 +302,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 gl : this.gl,
                 sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
+                pluginIndex : idx,
                 tileCache : tileCache[idx],
                 tileData : pluginData[idx],
                 tileExtent : tileData.extent,

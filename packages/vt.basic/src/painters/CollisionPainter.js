@@ -15,8 +15,8 @@ const DEFAULT_SCENE_CONFIG = {
 const UINT8 = new Uint8Array(1);
 
 export default class CollisionPainter extends BasicPainter {
-    constructor(regl, layer, sceneConfig) {
-        super(regl, layer, sceneConfig);
+    constructor(regl, layer, sceneConfig, pluginIndex) {
+        super(regl, layer, sceneConfig, pluginIndex);
         this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
         this._fadingRecords = {};
     }

@@ -33,7 +33,8 @@ class LinePainter extends BasicPainter {
         const meshes = [];
         for (let i = 0; i < packMeshes.length; i++) {
             const geometry = geometries[packMeshes[i].pack];
-            const symbol = packMeshes[i].symbol;
+            //TODO 如果uniforms属性是动态symbol，则改为functin方式
+            const symbol = this.getPackSymbol(packMeshes[i].symbol);
             const uniforms = {
                 tileResolution : geometry.properties.tileResolution,
                 tileRatio : geometry.properties.tileRatio

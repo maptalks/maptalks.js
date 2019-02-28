@@ -1,5 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
+import { evaluate } from '../Util';
 
 const MAT = [];
 
@@ -12,11 +13,13 @@ const levelNFilter = mesh => {
 };
 
 class Painter {
-    constructor(regl, layer, sceneConfig) {
+    constructor(regl, layer, sceneConfig, pluginIndex) {
         this.regl = regl;
         this.layer = layer;
         this.canvas = layer.getRenderer().canvas;
         this.sceneConfig = sceneConfig || {};
+        //插件的序号，也是style的序号
+        this.pluginIndex = pluginIndex;
         this.scene = new reshader.Scene();
         if (this.sceneConfig.picking !== false) {
             this.pickingFBO = layer.getRenderer().pickingFBO;
@@ -140,15 +143,25 @@ class Painter {
     updateSceneConfig(/* config */) {
     }
 
-    deleteMesh(meshes) {
+    deleteMesh(meshes, keepGeometry) {
         if (!meshes) {
             return;
         }
         this.scene.removeMesh(meshes);
-        for (let i = 0; i < meshes.length; i++) {
-            meshes[i].geometry.dispose();
-            meshes[i].material.dispose();
-            meshes[i].dispose();
+        if (Array.isArray(meshes)) {
+            for (let i = 0; i < meshes.length; i++) {
+                if (!keepGeometry) {
+                    meshes[i].geometry.dispose();
+                }
+                meshes[i].material.dispose();
+                meshes[i].dispose();
+            }
+        } else {
+            if (!keepGeometry) {
+                meshes.geometry.dispose();
+            }
+            meshes.material.dispose();
+            meshes.dispose();
         }
     }
 
@@ -165,6 +178,20 @@ class Painter {
         if (this.picking) {
             this.picking.dispose();
         }
+    }
+
+    getPackSymbol(symbolIdx) {
+        const styles = this.layer._getCompiledStyle();
+        let symbol = styles[this.pluginIndex].style[symbolIdx[0]].symbol;
+        if (Array.isArray(symbol)) {
+            symbol = symbol[symbolIdx[1]];
+        }
+        const z = this.layer.getMap().getZoom();
+        const result = {};
+        for (const p in symbol) {
+            result[p] = evaluate(symbol[p], null, z);
+        }
+        return result;
     }
 
     _stencil(quadStencil) {

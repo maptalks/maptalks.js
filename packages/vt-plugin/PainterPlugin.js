@@ -21,7 +21,8 @@ function createPainterPlugin(type, Painter) {
                 sceneConfig = context.sceneConfig;
             var painter = this.painter;
             if (!painter) {
-                painter = this.painter = new Painter(regl, layer, sceneConfig);
+                var pluginIndex = context.pluginIndex;
+                painter = this.painter = new Painter(regl, layer, sceneConfig, pluginIndex);
             }
             if (!this._meshCache) {
                 this._meshCache = {};
@@ -172,6 +173,16 @@ function createPainterPlugin(type, Painter) {
             if (painter) {
                 painter.updateSceneConfig(context.sceneConfig);
             }
+        },
+
+        updateSymbol: function (/* idx */) {
+            var painter = this.painter;
+            if (painter) {
+                for (var key in this._meshCache) {
+                    painter.deleteMesh(this._meshCache[key], true);
+                }
+            }
+            delete this._meshCache;
         },
 
         pick: function (x, y) {

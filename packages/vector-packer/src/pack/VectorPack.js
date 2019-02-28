@@ -175,7 +175,7 @@ export default class VectorPack {
         const packs = [], meshes = [], buffers = [], saved = {};
 
         //创建datapack
-        function create(key, vector, symbol) {
+        function create(key, vector, i, ii) {
             let pack;
             if (saved[key] === undefined) {
                 pack = me.createDataPack(vector, scale);
@@ -191,11 +191,12 @@ export default class VectorPack {
                 //filterKey相同，即filter相同的pack已经创建过，无需再次创建
                 pack = packs[saved[key]];
             }
-            if (!pack) return;
+            if (!pack) return null;
             meshes.push({
                 pack : saved[key],
-                symbol
+                symbol : [i, ii]
             });
+            return pack;
         }
 
         for (let i = 0; i < this.styles.length; i++) {
@@ -206,10 +207,10 @@ export default class VectorPack {
             if (Array.isArray(symbol)) {
                 for (let ii = 0; ii < symbol.length; ii++) {
                     if (!vectors[ii] || !vectors[ii].length) continue;
-                    create(key, vectors[ii], symbol[ii]);
+                    create(key, vectors[ii], i, ii);
                 }
             } else {
-                create(key, vectors, symbol, key);
+                create(key, vectors, i, 0);
             }
         }
 

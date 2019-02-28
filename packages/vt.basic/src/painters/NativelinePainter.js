@@ -11,8 +11,8 @@ const defaultUniforms = {
 };
 
 class NativeLinePainter extends Painter {
-    constructor(regl, layer, sceneConfig) {
-        super(regl, layer, sceneConfig);
+    constructor(regl, layer, sceneConfig, pluginIndex) {
+        super(regl, layer, sceneConfig, pluginIndex);
         this.colorSymbol = 'lineColor';
     }
 
@@ -41,7 +41,7 @@ class NativeLinePainter extends Painter {
         const meshes = [];
         for (let i = 0; i < packMeshes.length; i++) {
             const geometry = geometries[packMeshes[i].pack];
-            const symbol = packMeshes[i].symbol;
+            const symbol = this.getPackSymbol(packMeshes[i].symbol);
             const uniforms = this.getMeshUniforms(geometry, symbol);
             geometry.generateBuffers(this.regl);
             const material = new reshader.Material(uniforms, defaultUniforms);

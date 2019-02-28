@@ -21,7 +21,7 @@ class FillPainter extends BasicPainter {
         const meshes = [];
         for (let i = 0; i < packMeshes.length; i++) {
             const geometry = geometries[packMeshes[i].pack];
-            const symbol = packMeshes[i].symbol;
+            const symbol = this.getPackSymbol(packMeshes[i].symbol);
             const uniforms = {};
             if (symbol['polygonFill']) {
                 const color = Color(symbol['polygonFill']);

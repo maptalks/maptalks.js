@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { extend } from '../../common/Util';
+import { compileStyle } from '@maptalks/feature-filter';
 
 const defaultOptions = {
     renderer: 'gl',
@@ -36,6 +37,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         // const tileSize = this.getTileSize();
         // this.zoomOffset = -log2(tileSize.width / 256);
         this.validateStyle();
+        this._compileStyle();
     }
 
     getTileUrl(x, y, z) {
@@ -57,6 +59,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     setStyle(style) {
         this.config('style', style);
         this.validateStyle();
+        this._compileStyle();
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setStyle();
@@ -69,6 +72,38 @@ class VectorTileLayer extends maptalks.TileLayer {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.updateSceneConfig(idx, sceneConfig);
+        }
+        return this;
+    }
+
+    updateSymbol(idx, styleIdx, symbol) {
+        const style = this.options.style[idx].style[styleIdx];
+        if (!style) {
+            throw new Error(`No symbol defined at plugin at ${idx} and style at ${styleIdx}`);
+        }
+        const target = style.symbol;
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            //layer还没有渲染，直接更新style并返回
+            extend(target, symbol);
+            this._compileStyle();
+            return this;
+        }
+        const props = Object.keys(symbol);
+        let needRefresh = false;
+        for (let i = 0; i < props.length; i++) {
+            const key = props[i];
+            if (isPropFunction(target[key]) || isPropFunction(symbol[key])) {
+                needRefresh = true;
+                break;
+            }
+        }
+        extend(target, symbol);
+        if (needRefresh) {
+            this.setStyle(this.options.style);
+        } else {
+            this._compileStyle();
+            renderer.updateSymbol(idx, styleIdx);
         }
         return this;
     }
@@ -125,6 +160,24 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
+
+    _compileStyle() {
+        const style = this.options['style'];
+        if (!style) {
+            return;
+        }
+        this._compiledStyles = style.map(s => {
+            const style = extend({}, s, {
+                style : compileStyle(s.style)
+            });
+            return style;
+        });
+    }
+
+    _getCompiledStyle() {
+        return this._compiledStyles || [];
+    }
+
     static registerPlugin(Plugin) {
         if (!VectorTileLayer.plugins) {
             VectorTileLayer.plugins = {};
@@ -149,4 +202,8 @@ export default VectorTileLayer;
 const MAX_RES = 2 * 6378137 * Math.PI / (256 * Math.pow(2, 20));
 function getMapBoxZoom(res) {
     return 19 - Math.log(res / MAX_RES) / Math.LN2;
+}
+
+function isPropFunction(v) {
+    return !!(v && v.properties);
 }
