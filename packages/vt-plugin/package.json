@@ -1,12 +1,12 @@
 {
     "name": "@maptalks/vt-plugin",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "The base plugin for maptalks vectortile layer",
     "module": "index.js",
     "jsnext:main": "index.js",
     "scripts": {},
     "files": [
-      "index.js"
+        "index.js"
     ],
     "keywords": [
         "maptalks",
@@ -15,7 +15,7 @@
     "author": "fuzhenn",
     "license": "UNLICENSED",
     "dependencies": {
-      "color": "^3.0.0",
-      "animation-easings" : "^0.1.0"
+        "animation-easings": "^0.1.0",
+        "color": "^3.0.0"
     }
 }
