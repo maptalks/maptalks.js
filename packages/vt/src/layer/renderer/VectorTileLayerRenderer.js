@@ -77,7 +77,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.gl = this.canvas.gl.wrap();
         }
         this._createREGLContext();
-        this.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
+        const map = this.getMap();
+        if (!map.pickingFBO) {
+            map.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
+            map.pickingFBO.refCount = 0;
+        }
+        this.pickingFBO = map.pickingFBO;
+        this.pickingFBO.refCount++;
         // this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Uint16Array([
         //     0, EXTENT, 0,
         //     0, 0, 0,
@@ -363,14 +369,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
-        if (this.pickingFBO) {
-            this.pickingFBO.resize(this.canvas.width, this.canvas.height);
+        const canvas = this.canvas;
+        if (this.pickingFBO && (this.pickingFBO.width !== canvas.width || this.pickingFBO.height !== canvas.height)) {
+            this.pickingFBO.resize(canvas.width, canvas.height);
         }
         let cache = this.sceneCache;
         if (!cache) {
             cache = this.sceneCache = {};
         }
-        const size = new maptalks.Size(this.canvas.width, this.canvas.height);
+        const size = new maptalks.Size(canvas.width, canvas.height);
         this.plugins.forEach((plugin, idx) => {
             if (!cache[idx]) {
                 cache[idx] = {};
@@ -389,7 +396,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             delete this._workerConn;
         }
         if (this.pickingFBO) {
-            this.pickingFBO.destroy();
+            this.pickingFBO.refCount--;
+            if (!this.pickingFBO.refCount) {
+                //pickingFBO的引用计数为0，不再有图层引用，则销毁
+                const map = this.getMap();
+                this.pickingFBO.destroy();
+                delete map.pickingFBO;
+            }
+            delete this.pickingFBO;
         }
         if (this._quadStencil) {
             this._quadStencil.remove();
