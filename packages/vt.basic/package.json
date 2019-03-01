@@ -52,5 +52,6 @@
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-terser": "^4.0.1",
     "rollup-plugin-uglify": "^4.0.0"
-  }
+  },
+  "gitHead": "36a6954658f5a3aff0fe84dd79964ee7f1317b06"
 }

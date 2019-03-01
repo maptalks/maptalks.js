@@ -54,5 +54,6 @@
     "quickselect": "^1.0.0",
     "rbush": "^2.0.2",
     "vt-pbf": "^3.1.0"
-  }
+  },
+  "gitHead": "36a6954658f5a3aff0fe84dd79964ee7f1317b06"
 }
