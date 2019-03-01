@@ -181,7 +181,7 @@ class Painter {
     }
 
     getPackSymbol(symbolIdx) {
-        const styles = this.layer._getCompiledStyle();
+        const styles = this.layer.getCompiledStyle();
         let symbol = styles[this.pluginIndex].style[symbolIdx[0]].symbol;
         if (Array.isArray(symbol)) {
             symbol = symbol[symbolIdx[1]];

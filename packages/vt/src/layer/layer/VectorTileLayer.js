@@ -128,6 +128,10 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this.options.style;
     }
 
+    getCompiledStyle() {
+        return this._compiledStyles || [];
+    }
+
     identify(coordinate) {
         const map = this.getMap();
         const renderer = this.getRenderer();
@@ -172,10 +176,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             });
             return style;
         });
-    }
-
-    _getCompiledStyle() {
-        return this._compiledStyles || [];
     }
 
     static registerPlugin(Plugin) {
