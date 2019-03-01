@@ -3,6 +3,7 @@ import { GLContext } from '@maptalks/fusiongl';
 
 const options = {
     renderer : 'gl',
+    antialias : true,
     extensions : [
         // 'ANGLE_instanced_arrays',
         'OES_texture_float',
@@ -294,10 +295,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const attributes = layer.options['glOptions'] || {
             alpha: true,
             depth: true,
-            antialias: false,
             stencil : true
         };
         attributes.preserveDrawingBuffer = true;
+        attributes.antialias = layer.options['antialias'];
         this.glOptions = attributes;
         const gl = this.gl = this._createGLContext(this.canvas, attributes);        // this.gl = gl;
         this._initGL(gl);
