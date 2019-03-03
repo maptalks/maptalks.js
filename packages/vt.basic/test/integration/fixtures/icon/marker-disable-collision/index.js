@@ -10,25 +10,23 @@ const data = {
 
 const style = [
     {
-        type: 'icon',
-        dataConfig: {
-            type: 'point'
-        },
-        sceneConfig: {
-            collision: true,
-            fading : false
-        },
-        style: [
-            {
-                symbol: {
-                    markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
-                    markerWidth: 30,
-                    markerHeight: 30,
-                    markerOpacity: 1,
-                    markerIgnorePlacement : true
-                }
+        renderPlugin : {
+            type: 'icon',
+            dataConfig: {
+                type: 'point'
+            },
+            sceneConfig: {
+                collision: true,
+                fading : false
             }
-        ]
+        },
+        symbol: {
+            markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
+            markerWidth: 30,
+            markerHeight: 30,
+            markerOpacity: 1,
+            markerIgnorePlacement : true
+        }
     }
 ];
 
