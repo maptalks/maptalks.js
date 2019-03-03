@@ -10,10 +10,10 @@ require('../../dist/maptalks.vt.basic');
 const GENERATE_MODE = (process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
 
 const DEFAULT_VIEW = {
-    center : [0, 0],
-    zoom : 6,
-    pitch : 0,
-    bearing : 0
+    center: [0, 0],
+    zoom: 6,
+    pitch: 0,
+    bearing: 0
 };
 
 describe('vector tile integration specs', () => {

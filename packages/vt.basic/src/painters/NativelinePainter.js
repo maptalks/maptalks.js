@@ -6,8 +6,8 @@ import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
 
 const defaultUniforms = {
-    lineColor : [0, 0, 0],
-    lineOpacity : 1
+    lineColor: [0, 0, 0],
+    lineOpacity: 1
 };
 
 class NativeLinePainter extends Painter {
@@ -26,7 +26,7 @@ class NativeLinePainter extends Painter {
             const data = extend({}, packs[i].data);
             // data.aPickingId = data.featureIndexes;
             // delete data.featureIndexes;
-            const geometry = new reshader.Geometry(data, packs[i].indices, 0, { primitive : 'lines' });
+            const geometry = new reshader.Geometry(data, packs[i].indices, 0, { primitive: 'lines' });
             geometries.push(geometry);
         }
         return geometries;
@@ -38,8 +38,8 @@ class NativeLinePainter extends Painter {
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, defaultUniforms);
         const mesh = new reshader.Mesh(geometry, material, {
-            castShadow : false,
-            picking : true
+            castShadow: false,
+            picking: true
         });
         mesh.setLocalTransform(transform);
         return mesh;
@@ -76,12 +76,12 @@ class NativeLinePainter extends Painter {
         this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return this.canvas ? this.canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
@@ -89,19 +89,19 @@ class NativeLinePainter extends Painter {
         const config = {
             vert,
             frag,
-            uniforms : [
+            uniforms: [
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
                     }
                 }
             ],
-            defines : null,
-            extraCommandProps : {
+            defines: null,
+            extraCommandProps: {
                 viewport,
                 stencil: {
                     enable: true,
@@ -117,9 +117,9 @@ class NativeLinePainter extends Painter {
                         zpass: 'replace'
                     }
                 },
-                depth : {
-                    enable : true,
-                    func : this.sceneConfig.depthFunc || 'less'
+                depth: {
+                    enable: true,
+                    func: this.sceneConfig.depthFunc || 'less'
                 },
                 blend: {
                     enable: true,

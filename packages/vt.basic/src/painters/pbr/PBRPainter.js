@@ -15,11 +15,11 @@ class PBRPainter extends Painter {
 
     createGeometry(glData, features) {
         const data = {
-            aPosition : glData.vertices,
-            aTexCoord : glData.uvs,
-            aNormal : glData.normals,
-            aColor : glData.colors,
-            aPickingId : glData.featureIndexes
+            aPosition: glData.vertices,
+            aTexCoord: glData.uvs,
+            aNormal: glData.normals,
+            aColor: glData.colors,
+            aPickingId: glData.featureIndexes
         };
         const geometry = new reshader.Geometry(data, glData.indices);
         geometry.properties.features = features;
@@ -80,7 +80,7 @@ class PBRPainter extends Painter {
         const map = layer.getMap();
         if (!map) {
             return {
-                redraw : false
+                redraw: false
             };
         }
 
@@ -91,8 +91,8 @@ class PBRPainter extends Painter {
             const { fbo } = this._shadowPass.pass1({
                 layer,
                 uniforms,
-                scene : this._shadowScene,
-                groundScene : this._groundScene
+                scene: this._shadowScene,
+                groundScene: this._groundScene
             });
             if (this.sceneConfig.shadow.debug) {
                 // this.debugFBO(shadowConfig.debug[0], depthFBO);
@@ -195,24 +195,24 @@ class PBRPainter extends Painter {
         }
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return this.canvas ? this.canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
 
         const config = {
-            vert : reshader.pbr.StandardVert,
-            frag : reshader.pbr.StandardFrag,
-            uniforms : this._getUniforms(),
-            defines : this._getDefines(),
-            extraCommandProps : {
+            vert: reshader.pbr.StandardVert,
+            frag: reshader.pbr.StandardFrag,
+            uniforms: this._getUniforms(),
+            defines: this._getDefines(),
+            extraCommandProps: {
                 //enable cullFace
-                cull : {
+                cull: {
                     enable: true,
                     face: 'back'
                 },
@@ -279,7 +279,7 @@ class PBRPainter extends Painter {
     _createIBLMaps(hdr) {
         const regl = this.regl;
         return reshader.pbr.PBRHelper.createIBLMaps(regl, {
-            envTexture : hdr.getREGLTexture(regl),
+            envTexture: hdr.getREGLTexture(regl),
             // prefilterCubeSize : 256
         });
     }
@@ -295,8 +295,8 @@ class PBRPainter extends Painter {
                 if (p.indexOf('Map') > 0) {
                     //a texture image
                     material[p] = new reshader.Texture2D({
-                        url : materialConfig[p],
-                        wrapS : 'repeat', wrapT : 'repeat'
+                        url: materialConfig[p],
+                        wrapS: 'repeat', wrapT: 'repeat'
                     }, this._loader);
                 } else {
                     material[p] = materialConfig[p];
@@ -313,12 +313,12 @@ class PBRPainter extends Painter {
                 throw new Error('Must provide url or data(ArrayBuffer) for ambientCubeLight');
             }
             const props = {
-                url : cubeLightConfig.url,
-                arrayBuffer : true,
-                hdr : true,
-                type : 'float',
-                format : 'rgba',
-                flipY : true
+                url: cubeLightConfig.url,
+                arrayBuffer: true,
+                hdr: true,
+                type: 'float',
+                format: 'rgba',
+                flipY: true
             };
             this._isIBLRecreated = !!cubeLightConfig.data;
             if (cubeLightConfig.data) {
@@ -350,9 +350,9 @@ class PBRPainter extends Painter {
             'ambientIntensity',
             'ambientColor',
             {
-                name : 'projViewModelMatrix',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
                     const projViewModelMatrix = [];
                     mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                     mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
@@ -360,9 +360,9 @@ class PBRPainter extends Painter {
                 }
             },
             {
-                name : 'viewModelMatrix',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'viewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
                     const viewModel = [];
                     mat4.multiply(viewModel, props['viewMatrix'], props['modelMatrix']);
                     return viewModel;
@@ -412,7 +412,7 @@ class PBRPainter extends Painter {
         const aoIntensity = lightConfig.ambientIntensity;
         const uniforms = {
             ambientColor,
-            ambientIntensity : aoIntensity === 0 ? 0 : (aoIntensity || 1)
+            ambientIntensity: aoIntensity === 0 ? 0 : (aoIntensity || 1)
         };
 
         if (lightConfig.dirLights) {
@@ -434,7 +434,7 @@ class PBRPainter extends Painter {
 
     _getDefines() {
         const defines =  {
-            'USE_COLOR' : 1
+            'USE_COLOR': 1
         };
 
         const lightConfig = this.sceneConfig.lights;
@@ -464,7 +464,7 @@ class PBRPainter extends Painter {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         const pixels = this.regl.read({
-            framebuffer : fbo
+            framebuffer: fbo
         });
 
         const halfHeight = height / 2 | 0;  // the | 0 keeps the result an int

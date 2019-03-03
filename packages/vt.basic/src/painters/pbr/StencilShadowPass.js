@@ -9,7 +9,7 @@ export default class StencilShadowPass {
 
     _init() {
         this.debugShader = new reshader.MeshShader({
-            vert : `
+            vert: `
                 attribute vec4 aPosition;
                 uniform mat4 projViewModelMatrix;
 
@@ -17,16 +17,16 @@ export default class StencilShadowPass {
                     gl_Position = projViewModelMatrix * aPosition;
                 }
             `,
-            frag : `
+            frag: `
                 void main() {
                     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
                 }
             `,
-            uniforms : [
+            uniforms: [
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                         mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
@@ -40,7 +40,7 @@ export default class StencilShadowPass {
     createShadowVolume(data) {
 
         const shadow = new reshader.Geometry({
-            aPosition : data.vertices
+            aPosition: data.vertices
         }, data.indices);
         shadow.generateBuffers(this.renderer.regl);
 
@@ -60,11 +60,11 @@ export default class StencilShadowPass {
         uniforms
     }) {
         if (!scene.meshes.length) {
-            return { fbo : null };
+            return { fbo: null };
         }
         // console.log(scene.getMeshes());
         this.renderer.render(this.debugShader, uniforms, scene);
-        return { fbo : null };
+        return { fbo: null };
     }
 
     pass2() {}

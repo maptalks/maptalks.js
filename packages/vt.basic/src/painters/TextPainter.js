@@ -28,16 +28,16 @@ const shaderLineFilterN = mesh => {
 };
 
 const defaultUniforms = {
-    'textFill' : [0, 0, 0, 1],
-    'textOpacity' : 1,
-    'pitchWithMap' : 0,
-    'rotateWithMap' : 0,
-    'textHaloRadius' : 0,
-    'textHaloFill' : [1, 1, 1, 1],
-    'textHaloBlur' : 0,
-    'textHaloOpacity' : 1,
-    'isHalo' : 0,
-    'textPerspectiveRatio' : 0
+    'textFill': [0, 0, 0, 1],
+    'textOpacity': 1,
+    'pitchWithMap': 0,
+    'rotateWithMap': 0,
+    'textHaloRadius': 0,
+    'textHaloFill': [1, 1, 1, 1],
+    'textHaloBlur': 0,
+    'textHaloOpacity': 1,
+    'isHalo': 0,
+    'textPerspectiveRatio': 0
 };
 
 // temparary variables used later
@@ -81,8 +81,8 @@ export default class TextPainter extends CollisionPainter {
             this._hasNormalText = true;
         }
         const uniforms = {
-            tileResolution : geometry.properties.tileResolution,
-            tileRatio : geometry.properties.tileRatio
+            tileResolution: geometry.properties.tileResolution,
+            tileRatio: geometry.properties.tileRatio
         };
         const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
 
@@ -104,12 +104,12 @@ export default class TextPainter extends CollisionPainter {
                 aOpacity[i] = 255;
             }
             geometry.data.aOpacity = {
-                usage : 'dynamic',
-                data : aOpacity
+                usage: 'dynamic',
+                data: aOpacity
             };
             geometry.properties.aOpacity = {
-                usage : 'dynamic',
-                data : new Uint8Array(aSize.length)
+                usage: 'dynamic',
+                data: new Uint8Array(aSize.length)
             };
         }
 
@@ -127,19 +127,19 @@ export default class TextPainter extends CollisionPainter {
                 geometry.properties.aRotation = geometry.data.aRotation = new aRotation.constructor(aRotation.length);
             } else {
                 geometry.properties.aOffset = geometry.data.aOffset = {
-                    usage : 'dynamic',
-                    data : new aDxDy.constructor(aDxDy.length)
+                    usage: 'dynamic',
+                    data: new aDxDy.constructor(aDxDy.length)
                 };
                 geometry.properties.aRotation = geometry.data.aRotation = {
-                    usage : 'dynamic',
-                    data : new aRotation.constructor(aRotation.length)
+                    usage: 'dynamic',
+                    data: new aRotation.constructor(aRotation.length)
                 };
             }
 
             //aNormal = [isFlip * 2 + isVertical, ...];
             geometry.data.aNormal = geometry.properties.aNormal = {
-                usage : 'dynamic',
-                data : new Uint8Array(aDxDy.length / 2)
+                usage: 'dynamic',
+                data: new Uint8Array(aDxDy.length / 2)
             };
             //TODO 增加是否是vertical字符的判断
             uniforms.isVerticalChar = true;
@@ -209,8 +209,8 @@ export default class TextPainter extends CollisionPainter {
         const material = new reshader.Material(uniforms, defaultUniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             transparent,
-            castShadow : false,
-            picking : true
+            castShadow: false,
+            picking: true
         });
         mesh.setLocalTransform(transform);
         //设置ignoreCollision，此mesh略掉collision检测
@@ -220,7 +220,7 @@ export default class TextPainter extends CollisionPainter {
         }
         if (enableCollision) {
             mesh.setDefines({
-                'ENABLE_COLLISION' : 1
+                'ENABLE_COLLISION': 1
             });
         }
         meshes.push(mesh);
@@ -230,12 +230,12 @@ export default class TextPainter extends CollisionPainter {
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
                 transparent,
-                castShadow : false,
-                picking : true
+                castShadow: false,
+                picking: true
             });
             if (enableCollision) {
                 mesh.setDefines({
-                    'ENABLE_COLLISION' : 1
+                    'ENABLE_COLLISION': 1
                 });
             }
             mesh.setLocalTransform(transform);
@@ -313,8 +313,8 @@ export default class TextPainter extends CollisionPainter {
                 });
                 if (visibleElements.length !== elements.length) {
                     geometry.setElements({
-                        usage : 'dynamic',
-                        data : new geometry.properties.elemCtor(visibleElements)
+                        usage: 'dynamic',
+                        data: new geometry.properties.elemCtor(visibleElements)
                     });
                 }
             }
@@ -389,8 +389,8 @@ export default class TextPainter extends CollisionPainter {
         if (shouldUpdate || visibleElements.length !== elements.length) {
             // geometry.properties.elements = elements;
             geometry.setElements({
-                usage : 'dynamic',
-                data : new geometryProps.elemCtor(visibleElements)
+                usage: 'dynamic',
+                data: new geometryProps.elemCtor(visibleElements)
             });
         }
         if (enableCollision) {
@@ -537,7 +537,7 @@ export default class TextPainter extends CollisionPainter {
                 hasCollides = true;
                 if (!isFading && !debugCollision) {
                     return {
-                        collides : true,
+                        collides: true,
                         boxes
                     };
                 }
@@ -555,7 +555,7 @@ export default class TextPainter extends CollisionPainter {
                     hasCollides = true;
                     if (!isFading && !debugCollision) {
                         return {
-                            collides : true,
+                            collides: true,
                             boxes
                         };
                     }
@@ -569,7 +569,7 @@ export default class TextPainter extends CollisionPainter {
                 hasCollides = true;
                 if (!isFading && !debugCollision) {
                     return {
-                        collides : true,
+                        collides: true,
                         boxes
                     };
                 }
@@ -579,7 +579,7 @@ export default class TextPainter extends CollisionPainter {
             this.addCollisionDebugBox(boxes, hasCollides ? 0 : 1);
         }
         return {
-            collides : hasCollides,
+            collides: hasCollides,
             boxes
         };
     }
@@ -602,12 +602,12 @@ export default class TextPainter extends CollisionPainter {
         this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
@@ -615,9 +615,9 @@ export default class TextPainter extends CollisionPainter {
         const uniforms = [
             'cameraToCenterDistance',
             {
-                name : 'projViewModelMatrix',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
                     return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                 }
             },
@@ -637,9 +637,9 @@ export default class TextPainter extends CollisionPainter {
             'textHaloOpacity',
             'isHalo',
             {
-                name : 'zoomScale',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'zoomScale',
+                type: 'function',
+                fn: function (context, props) {
                     return props['tileResolution'] / props['resolution'];
                 }
             },
@@ -655,14 +655,14 @@ export default class TextPainter extends CollisionPainter {
                 func: {
                     // src: 'src alpha',
                     // dst: 'one minus src alpha'
-                    src : 'one',
+                    src: 'one',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
             },
             depth: {
                 enable: true,
-                func : 'always'
+                func: 'always'
             },
         };
 
@@ -672,7 +672,7 @@ export default class TextPainter extends CollisionPainter {
             extraCommandProps
         });
         this._shaderAlongLine = new reshader.MeshShader({
-            vert : vertAlongLine, frag,
+            vert: vertAlongLine, frag,
             uniforms,
             extraCommandProps
         });
@@ -680,7 +680,7 @@ export default class TextPainter extends CollisionPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : pickingVert,
+                    vert: pickingVert,
                     uniforms
                 },
                 this.pickingFBO
@@ -692,7 +692,7 @@ export default class TextPainter extends CollisionPainter {
             this._linePicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : linePickingVert,
+                    vert: linePickingVert,
                     uniforms
                 },
                 this.pickingFBO
@@ -724,9 +724,9 @@ export default class TextPainter extends CollisionPainter {
         let picked = {};
         if (this.picking.getRenderedMeshes().length) {
             picked = this.picking.pick(x, y, uniforms, {
-                viewMatrix : map.viewMatrix,
-                projMatrix : map.projMatrix,
-                returnPoint : true
+                viewMatrix: map.viewMatrix,
+                projMatrix: map.projMatrix,
+                returnPoint: true
             });
         }
 
@@ -735,9 +735,9 @@ export default class TextPainter extends CollisionPainter {
             this._linePicking.render(this.scene.getMeshes(), uniforms, true);
             if (this._linePicking.getRenderedMeshes().length) {
                 picked = this._linePicking.pick(x, y, uniforms, {
-                    viewMatrix : map.viewMatrix,
-                    projMatrix : map.projMatrix,
-                    returnPoint : true
+                    viewMatrix: map.viewMatrix,
+                    projMatrix: map.projMatrix,
+                    returnPoint: true
                 });
             }
         }
@@ -748,7 +748,7 @@ export default class TextPainter extends CollisionPainter {
             return null;
         }
         return {
-            feature : mesh.geometry.properties.features[pickingId],
+            feature: mesh.geometry.properties.features[pickingId],
             point
         };
     }
@@ -777,14 +777,14 @@ export default class TextPainter extends CollisionPainter {
         // ];
 
         return {
-            mapPitch : map.getPitch() * Math.PI / 180,
-            mapRotation : map.getBearing() * Math.PI / 180,
+            mapPitch: map.getPitch() * Math.PI / 180,
+            mapRotation: map.getBearing() * Math.PI / 180,
             projViewMatrix,
             cameraToCenterDistance, canvasSize,
-            glyphSize : 24,
+            glyphSize: 24,
             // gammaScale : 0.64,
-            gammaScale : 1.0,
-            resolution : map.getResolution(),
+            gammaScale: 1.0,
+            resolution: map.getResolution(),
             // planeMatrix
         };
     }

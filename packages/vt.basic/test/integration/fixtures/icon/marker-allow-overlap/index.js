@@ -1,23 +1,23 @@
 const path = require('path');
 
 const data = {
-    type : 'FeatureCollection',
-    features : [
-        { type : 'Feature', geometry : { type : 'Point', coordinates : [0.5, 0.5] }, properties : { type : 1 }},
-        { type : 'Feature', geometry : { type : 'Point', coordinates : [0.6, 0.6] }, properties : { type : 2 }}
+    type: 'FeatureCollection',
+    features: [
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } },
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.6, 0.6] }, properties: { type: 2 } }
     ]
 };
 
 const style = [
     {
-        renderPlugin : {
+        renderPlugin: {
             type: 'icon',
             dataConfig: {
                 type: 'point'
             },
             sceneConfig: {
                 collision: false,
-                fading : false
+                fading: false
             }
         },
         symbol: {
@@ -32,8 +32,8 @@ const style = [
 module.exports = {
     style,
     data,
-    view : {
-        center : [0, 0],
-        zoom : 6
+    view: {
+        center: [0, 0],
+        zoom: 6
     }
 };

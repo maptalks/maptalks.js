@@ -7,10 +7,10 @@ import pickingVert from './glsl/marker.picking.vert';
 import { getIconBox } from './util/get_icon_box';
 
 const defaultUniforms = {
-    'markerOpacity' : 1,
-    'pitchWithMap' : 0,
-    'markerPerspectiveRatio' : 0,
-    'rotateWithMap' : 0,
+    'markerOpacity': 1,
+    'pitchWithMap': 0,
+    'markerPerspectiveRatio': 0,
+    'rotateWithMap': 0,
 };
 
 //temparary variables
@@ -35,8 +35,8 @@ class IconPainter extends CollisionPainter {
         const symbol = this.getSymbol();
         geometry.properties.symbol = symbol;
         const uniforms = {
-            tileResolution : geometry.properties.tileResolution,
-            tileRatio : geometry.properties.tileRatio
+            tileResolution: geometry.properties.tileResolution,
+            tileRatio: geometry.properties.tileRatio
         };
 
         const { aPosition, aShape, aDxDy, aRotation } = geometry.data;
@@ -50,12 +50,12 @@ class IconPainter extends CollisionPainter {
                 aOpacity[i] = 255;
             }
             geometry.data.aOpacity = {
-                usage : 'dynamic',
-                data : aOpacity
+                usage: 'dynamic',
+                data: aOpacity
             };
             geometry.properties.aOpacity = {
-                usage : 'dynamic',
-                data : new Uint8Array(vertexCount)
+                usage: 'dynamic',
+                data: new Uint8Array(vertexCount)
             };
 
             geometry.properties.aAnchor = aPosition;
@@ -90,13 +90,13 @@ class IconPainter extends CollisionPainter {
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, defaultUniforms);
         const mesh = new reshader.Mesh(geometry, material, {
-            transparent : true,
-            castShadow : false,
-            picking : true
+            transparent: true,
+            castShadow: false,
+            picking: true
         });
         if (enableCollision) {
             mesh.setDefines({
-                'ENABLE_COLLISION' : 1
+                'ENABLE_COLLISION': 1
             });
         }
         mesh.setLocalTransform(transform);
@@ -140,8 +140,8 @@ class IconPainter extends CollisionPainter {
                 fn(elements, visibleElements, mesh, start, end, mvpMatrix, index);
             });
             geometry.setElements({
-                usage : 'dynamic',
-                data : new geometry.properties.elemCtor(visibleElements)
+                usage: 'dynamic',
+                data: new geometry.properties.elemCtor(visibleElements)
             });
             geometry.updateData('aOpacity', geometry.properties.aOpacity);
         }
@@ -169,8 +169,8 @@ class IconPainter extends CollisionPainter {
             this.addCollisionDebugBox(box, hasCollides ? 0 : 1);
         }
         return {
-            collides : hasCollides,
-            boxes : box
+            collides: hasCollides,
+            boxes: box
         };
     }
 
@@ -181,24 +181,24 @@ class IconPainter extends CollisionPainter {
         this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
 
         this.shader = new reshader.MeshShader({
             vert, frag,
-            uniforms : [
+            uniforms: [
                 'cameraToCenterDistance',
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 },
@@ -213,14 +213,14 @@ class IconPainter extends CollisionPainter {
                 'mapRotation',
                 'tileRatio',
                 {
-                    name : 'zoomScale',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'zoomScale',
+                    type: 'function',
+                    fn: function (context, props) {
                         return props['tileResolution'] / props['resolution'];
                     }
                 }
             ],
-            extraCommandProps : {
+            extraCommandProps: {
                 viewport,
                 blend: {
                     enable: true,
@@ -235,7 +235,7 @@ class IconPainter extends CollisionPainter {
                 },
                 depth: {
                     enable: true,
-                    func : 'always'
+                    func: 'always'
                 },
             }
         });
@@ -243,13 +243,13 @@ class IconPainter extends CollisionPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : pickingVert,
-                    uniforms : [
+                    vert: pickingVert,
+                    uniforms: [
                         'cameraToCenterDistance',
                         {
-                            name : 'projViewModelMatrix',
-                            type : 'function',
-                            fn : function (context, props) {
+                            name: 'projViewModelMatrix',
+                            type: 'function',
+                            fn: function (context, props) {
                                 return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                             }
                         },
@@ -262,9 +262,9 @@ class IconPainter extends CollisionPainter {
                         'mapRotation',
                         'tileRatio',
                         {
-                            name : 'zoomScale',
-                            type : 'function',
-                            fn : function (context, props) {
+                            name: 'zoomScale',
+                            type: 'function',
+                            fn: function (context, props) {
                                 return props['tileResolution'] / props['resolution'];
                             }
                         }
@@ -280,13 +280,13 @@ class IconPainter extends CollisionPainter {
             cameraToCenterDistance = map.cameraToCenterDistance,
             canvasSize = [this.canvas.width, this.canvas.height];
         return {
-            mapPitch : map.getPitch() * Math.PI / 180,
-            mapRotation : map.getBearing() * Math.PI / 180,
+            mapPitch: map.getPitch() * Math.PI / 180,
+            mapRotation: map.getBearing() * Math.PI / 180,
             projViewMatrix,
             cameraToCenterDistance,
             canvasSize,
-            iconSize : [24, 24],
-            resolution : map.getResolution(),
+            iconSize: [24, 24],
+            resolution: map.getResolution(),
         };
     }
 }

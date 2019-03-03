@@ -68,7 +68,7 @@ class Painter {
         const map = layer.getMap();
         if (!map) {
             return {
-                redraw : false
+                redraw: false
             };
         }
         if (this.needStencil) {
@@ -85,7 +85,7 @@ class Painter {
         this._pickingRendered = false;
 
         return {
-            redraw : this._redraw
+            redraw: this._redraw
         };
     }
 
@@ -124,9 +124,9 @@ class Painter {
         let picked = {};
         if (this.picking.getRenderedMeshes().length) {
             picked = this.picking.pick(x, y, uniforms, {
-                viewMatrix : map.viewMatrix,
-                projMatrix : map.projMatrix,
-                returnPoint : true
+                viewMatrix: map.viewMatrix,
+                projMatrix: map.projMatrix,
+                returnPoint: true
             });
         }
         const { meshId, pickingId, point } = picked;
@@ -135,7 +135,7 @@ class Painter {
             return null;
         }
         return {
-            feature : mesh.geometry.properties.features[pickingId],
+            feature: mesh.geometry.properties.features[pickingId],
             point
         };
     }
@@ -198,8 +198,8 @@ class Painter {
         }
         const stencils = meshes.map(mesh => {
             return {
-                transform : mesh.localTransform,
-                level : mesh.getUniform('level'),
+                transform: mesh.localTransform,
+                level: mesh.getUniform('level'),
                 mesh
             };
         }).sort(this._compareStencil);

@@ -7,8 +7,8 @@ import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
 
 const defaultUniforms = {
-    'polygonFill' : [255, 255, 255],
-    'polygonOpacity' : 1
+    'polygonFill': [255, 255, 255],
+    'polygonOpacity': 1
 };
 
 class FillPainter extends BasicPainter {
@@ -29,8 +29,8 @@ class FillPainter extends BasicPainter {
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, defaultUniforms);
         const mesh = new reshader.Mesh(geometry, material, {
-            castShadow : false,
-            picking : true
+            castShadow: false,
+            picking: true
         });
         mesh.setLocalTransform(transform);
         return mesh;
@@ -43,24 +43,24 @@ class FillPainter extends BasicPainter {
         this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
 
         this.shader = new reshader.MeshShader({
             vert, frag,
-            uniforms : [
+            uniforms: [
                 'polygonFill', 'polygonOpacity',
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                         mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
@@ -68,11 +68,11 @@ class FillPainter extends BasicPainter {
                     }
                 },
             ],
-            extraCommandProps : {
+            extraCommandProps: {
                 viewport,
                 stencil: {
                     enable: true,
-                    mask : 0xFF,
+                    mask: 0xFF,
                     func: {
                         cmp: '<',
                         ref: (context, props) => {
@@ -91,9 +91,9 @@ class FillPainter extends BasicPainter {
                         zpass: 'replace'
                     }
                 },
-                depth : {
-                    enable : true,
-                    func : this.sceneConfig.depthFunc || 'always'
+                depth: {
+                    enable: true,
+                    func: this.sceneConfig.depthFunc || 'always'
                 },
                 blend: {
                     enable: true,
@@ -109,12 +109,12 @@ class FillPainter extends BasicPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : pickingVert,
-                    uniforms : [
+                    vert: pickingVert,
+                    uniforms: [
                         {
-                            name : 'projViewModelMatrix',
-                            type : 'function',
-                            fn : function (context, props) {
+                            name: 'projViewModelMatrix',
+                            type: 'function',
+                            fn: function (context, props) {
                                 const projViewModelMatrix = [];
                                 mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                                 mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);

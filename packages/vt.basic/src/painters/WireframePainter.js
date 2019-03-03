@@ -42,10 +42,10 @@ class WireframePainter extends Painter {
 
     createGeometry(glData) {
         const data = {
-            aPosition : glData.vertices,
-            aColor : glData.colors
+            aPosition: glData.vertices,
+            aColor: glData.colors
         };
-        const geometry = new reshader.Geometry(data, glData.indices, 0, { 'primitive' : 'lines' });
+        const geometry = new reshader.Geometry(data, glData.indices, 0, { 'primitive': 'lines' });
         geometry.generateBuffers(this.regl);
 
         return geometry;
@@ -99,12 +99,12 @@ class WireframePainter extends Painter {
         this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return this.canvas ? this.canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
@@ -112,11 +112,11 @@ class WireframePainter extends Painter {
         const config = {
             vert,
             frag,
-            uniforms : [
+            uniforms: [
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
@@ -124,7 +124,7 @@ class WireframePainter extends Painter {
                 },
                 'opacity'
             ],
-            extraCommandProps : {
+            extraCommandProps: {
                 stencil: {
                     enable: true,
                     func: {

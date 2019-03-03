@@ -62,7 +62,7 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'icon',
                             dataConfig: {
                                 type: 'point'
@@ -87,7 +87,7 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'icon',
                             dataConfig: {
                                 type: 'point'
@@ -119,7 +119,7 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'icon',
                             dataConfig: {
                                 type: 'point'
@@ -151,7 +151,7 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'icon',
                             dataConfig: {
                                 type: 'point'
@@ -180,7 +180,7 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'text',
                             dataConfig: {
                                 type: 'point'
@@ -211,7 +211,7 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'text',
                             dataConfig: {
                                 type: 'point'
@@ -244,7 +244,7 @@ describe('picking specs', () => {
                 data: data.line,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'text',
                             dataConfig: {
                                 type: 'point'
@@ -277,7 +277,7 @@ describe('picking specs', () => {
                 data: data.line,
                 style: [
                     {
-                        renderPlugin : {
+                        renderPlugin: {
                             type: 'text',
                             dataConfig: {
                                 type: 'point'

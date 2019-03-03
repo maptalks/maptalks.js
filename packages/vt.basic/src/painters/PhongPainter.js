@@ -6,19 +6,19 @@ import vert from './glsl/phong.vert';
 import frag from './glsl/phong.frag';
 
 const defaultUniforms = {
-    light : {
-        'direction' : [1, 1, -1],
-        'ambient' : [0.08, 0.08, 0.08],
+    light: {
+        'direction': [1, 1, -1],
+        'ambient': [0.08, 0.08, 0.08],
         'diffuse': [0.5, 0.5, 0.5],
-        'specular' : [1, 1, 1],
+        'specular': [1, 1, 1],
     },
 
-    material : {
-        'ambient' : [1.0, 0.5, 0.31],
-        'diffuse' : [1.0, 0.5, 0.31],
+    material: {
+        'ambient': [1.0, 0.5, 0.31],
+        'diffuse': [1.0, 0.5, 0.31],
         'specular': [0.5, 0.5, 0.5],
-        'shininess' : 32,
-        'opacity' : 1
+        'shininess': 32,
+        'opacity': 1
     }
 };
 
@@ -35,10 +35,10 @@ class PhongPainter extends Painter {
 
     createGeometry(glData, features) {
         const data = {
-            aPosition : glData.vertices,
-            aNormal : glData.normals,
-            aColor : glData.colors,
-            aPickingId : glData.featureIndexes
+            aPosition: glData.vertices,
+            aNormal: glData.normals,
+            aColor: glData.colors,
+            aPickingId: glData.featureIndexes
         };
         const extrusionOpacity = this.sceneConfig.extrusionOpacity;
         if (extrusionOpacity) {
@@ -63,9 +63,9 @@ class PhongPainter extends Painter {
 
     createMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry, this._material, {
-            transparent : true,
-            castShadow : false,
-            picking : true
+            transparent: true,
+            castShadow: false,
+            picking: true
         });
         if (this.sceneConfig.animation) {
             SCALE[2] = 0.01;
@@ -130,12 +130,12 @@ class PhongPainter extends Painter {
 
         const canvas = this.canvas;
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
@@ -143,11 +143,11 @@ class PhongPainter extends Painter {
         const config = {
             vert,
             frag,
-            uniforms : this._getUniforms(),
-            defines : this._getDefines(),
-            extraCommandProps : {
+            uniforms: this._getUniforms(),
+            defines: this._getDefines(),
+            extraCommandProps: {
                 //enable cullFace
-                cull : {
+                cull: {
                     enable: () => {
                         const cull = this.sceneConfig.cullFace;
                         if (cull === false) {
@@ -183,8 +183,8 @@ class PhongPainter extends Painter {
                         zpass: 'keep'
                     }
                 },
-                sample : {
-                    alpha : true
+                sample: {
+                    alpha: true
                 },
                 blend: {
                     enable: true,
@@ -255,9 +255,9 @@ class PhongPainter extends Painter {
             'modelMatrix',
             'camPos',
             {
-                name : 'projViewModelMatrix',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
                     const projViewModelMatrix = [];
                     mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                     mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
@@ -265,9 +265,9 @@ class PhongPainter extends Painter {
                 }
             },
             {
-                name : 'normalMatrix',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'normalMatrix',
+                type: 'function',
+                fn: function (context, props) {
                     const normalMatrix = [];
                     mat4.transpose(normalMatrix, mat4.invert(normalMatrix, props['modelMatrix']));
                     return mat3.fromMat4([], normalMatrix);
@@ -301,7 +301,7 @@ class PhongPainter extends Painter {
         const extrusionOpacity = this.sceneConfig.extrusionOpacity;
         if (extrusionOpacity) {
             extend(uniforms, {
-                extrusionOpacityRange : extrusionOpacity.value
+                extrusionOpacityRange: extrusionOpacity.value
             });
         }
         return uniforms;
@@ -312,8 +312,8 @@ class PhongPainter extends Painter {
         const materialConfig = this.sceneConfig.material;
 
         const uniforms = {
-            light : extend({}, defaultUniforms.light, lightConfig),
-            material : extend({}, defaultUniforms.material, materialConfig),
+            light: extend({}, defaultUniforms.light, lightConfig),
+            material: extend({}, defaultUniforms.material, materialConfig),
             // 'light.ambient' : lightConfig.ambient,
             // 'light.diffuse' : lightConfig.diffuse,
             // 'light.specular' : lightConfig.specular,
@@ -330,7 +330,7 @@ class PhongPainter extends Painter {
 
     _getDefines() {
         const defines =  {
-            'USE_COLOR' : 1
+            'USE_COLOR': 1
         };
         if (this.sceneConfig.extrusionOpacity) {
             defines['USE_EXTRUSION_OPACITY'] = 1;

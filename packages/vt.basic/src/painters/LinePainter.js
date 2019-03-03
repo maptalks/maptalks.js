@@ -7,13 +7,13 @@ import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.picking.vert';
 
 const defaultUniforms = {
-    'lineColor' : [0, 0, 0, 1],
-    'lineOpacity' : 1,
-    'lineWidth' : 1,
-    'lineGapWidth' : 0,
-    'lineDx'   : 0,
-    'lineDy'   : 0,
-    'lineBlur' : 1
+    'lineColor': [0, 0, 0, 1],
+    'lineOpacity': 1,
+    'lineWidth': 1,
+    'lineGapWidth': 0,
+    'lineDx': 0,
+    'lineDy': 0,
+    'lineBlur': 1
 };
 
 
@@ -26,8 +26,8 @@ class LinePainter extends BasicPainter {
         //TODO 如果uniforms属性是动态symbol，则改为functin方式
         const symbol = this.getSymbol();
         const uniforms = {
-            tileResolution : geometry.properties.tileResolution,
-            tileRatio : geometry.properties.tileRatio
+            tileResolution: geometry.properties.tileResolution,
+            tileRatio: geometry.properties.tileRatio
         };
         if (symbol['lineColor']) {
             const color = Color(symbol['lineColor']);
@@ -82,8 +82,8 @@ class LinePainter extends BasicPainter {
 
         const material = new reshader.Material(uniforms, defaultUniforms);
         const mesh = new reshader.Mesh(geometry, material, {
-            castShadow : false,
-            picking : true
+            castShadow: false,
+            picking: true
         });
         mesh.setLocalTransform(transform);
         return mesh;
@@ -103,15 +103,15 @@ class LinePainter extends BasicPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : pickingVert,
-                    uniforms : [
+                    vert: pickingVert,
+                    uniforms: [
                         'cameraToCenterDistance',
                         'lineWidth',
                         'lineGapWidth',
                         {
-                            name : 'projViewModelMatrix',
-                            type : 'function',
-                            fn : function (context, props) {
+                            name: 'projViewModelMatrix',
+                            type: 'function',
+                            fn: function (context, props) {
                                 const projViewModelMatrix = [];
                                 mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                                 return projViewModelMatrix;
@@ -133,27 +133,27 @@ class LinePainter extends BasicPainter {
     createShader() {
         const canvas = this.canvas;
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
         this.shader = new reshader.MeshShader({
             vert, frag,
-            uniforms : [
+            uniforms: [
                 'cameraToCenterDistance',
                 'lineWidth',
                 'lineGapWidth',
                 'lineBlur',
                 'lineOpacity',
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
@@ -166,11 +166,11 @@ class LinePainter extends BasicPainter {
                 'lineDy',
                 'canvasSize'
             ],
-            extraCommandProps : {
+            extraCommandProps: {
                 viewport,
                 stencil: {
                     enable: true,
-                    mask : 0xFF,
+                    mask: 0xFF,
                     func: {
                         cmp: '<=',
                         ref: (context, props) => {
@@ -184,9 +184,9 @@ class LinePainter extends BasicPainter {
                         zpass: 'replace'
                     }
                 },
-                depth : {
-                    enable : true,
-                    func : this.sceneConfig.depthFunc || 'always'
+                depth: {
+                    enable: true,
+                    func: this.sceneConfig.depthFunc || 'always'
                 },
                 blend: {
                     enable: true,
