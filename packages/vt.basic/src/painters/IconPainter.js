@@ -25,91 +25,83 @@ class IconPainter extends CollisionPainter {
         this.propIgnorePlacement = 'markerIgnorePlacement';
     }
 
-    createMesh(geometries, transform, tileData) {
-        const meshes = [];
-        if (!geometries || !geometries.length) {
-            return meshes;
-        }
+    createMesh(geometry, transform) {
 
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
 
-        const packMeshes = tileData.meshes;
-        for (let i = 0; i < packMeshes.length; i++) {
-            const geometry = geometries[packMeshes[i].pack];
-            if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
-                continue;
+        if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
+            return null;
+        }
+        const symbol = this.getSymbol();
+        geometry.properties.symbol = symbol;
+        const uniforms = {
+            tileResolution : geometry.properties.tileResolution,
+            tileRatio : geometry.properties.tileRatio
+        };
+
+        const { aPosition, aShape, aDxDy, aRotation } = geometry.data;
+
+        if (enableCollision) {
+            const vertexCount = geometry.data.aPosition.length / 3;
+            //initialize opacity array
+            //aOpacity用于fading透明度的调整
+            const aOpacity = new Uint8Array(vertexCount);
+            for (let i = 0; i < aOpacity.length; i++) {
+                aOpacity[i] = 255;
             }
-            const symbol = this.getPackSymbol(packMeshes[i].symbol);
-            geometry.properties.symbol = symbol;
-            const uniforms = {
-                tileResolution : geometry.properties.tileResolution,
-                tileRatio : geometry.properties.tileRatio
+            geometry.data.aOpacity = {
+                usage : 'dynamic',
+                data : aOpacity
+            };
+            geometry.properties.aOpacity = {
+                usage : 'dynamic',
+                data : new Uint8Array(vertexCount)
             };
 
-            const { aPosition, aShape, aDxDy, aRotation } = geometry.data;
-
-            if (enableCollision) {
-                const vertexCount = geometry.data.aPosition.length / 3;
-                //initialize opacity array
-                //aOpacity用于fading透明度的调整
-                const aOpacity = new Uint8Array(vertexCount);
-                for (let i = 0; i < aOpacity.length; i++) {
-                    aOpacity[i] = 255;
-                }
-                geometry.data.aOpacity = {
-                    usage : 'dynamic',
-                    data : aOpacity
-                };
-                geometry.properties.aOpacity = {
-                    usage : 'dynamic',
-                    data : new Uint8Array(vertexCount)
-                };
-
-                geometry.properties.aAnchor = aPosition;
-                geometry.properties.aDxDy = aDxDy;
-                geometry.properties.aShape = aShape;
-                geometry.properties.aRotation = aRotation;
-                //保存elements，隐藏icon时，从elements中删除icon的索引数据
-                geometry.properties.elements = geometry.elements;
-                geometry.properties.elemCtor = geometry.elements.constructor;
-            }
-
-            // let transparent = false;
-            if (symbol['markerOpacity'] || symbol['markerOpacity'] === 0) {
-                uniforms.markerOpacity = symbol['markerOpacity'];
-            }
-
-            const iconAtlas = geometry.properties.iconAtlas;
-            uniforms['texture'] = iconAtlas;
-            uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
-
-            if (symbol['markerPitchAlignment'] === 'map') {
-                uniforms['pitchWithMap'] = 1;
-            }
-
-            if (symbol['markerRotationAlignment'] === 'map') {
-                uniforms.rotateWithMap = 1;
-            }
-
-            if (symbol['markerPerspectiveRatio']) {
-                uniforms['markerPerspectiveRatio'] = symbol['markerPerspectiveRatio'];
-            }
-            geometry.generateBuffers(this.regl);
-            const material = new reshader.Material(uniforms, defaultUniforms);
-            const mesh = new reshader.Mesh(geometry, material, {
-                transparent : true,
-                castShadow : false,
-                picking : true
-            });
-            if (enableCollision) {
-                mesh.setDefines({
-                    'ENABLE_COLLISION' : 1
-                });
-            }
-            mesh.setLocalTransform(transform);
-            meshes.push(mesh);
+            geometry.properties.aAnchor = aPosition;
+            geometry.properties.aDxDy = aDxDy;
+            geometry.properties.aShape = aShape;
+            geometry.properties.aRotation = aRotation;
+            //保存elements，隐藏icon时，从elements中删除icon的索引数据
+            geometry.properties.elements = geometry.elements;
+            geometry.properties.elemCtor = geometry.elements.constructor;
         }
-        return meshes;
+
+        // let transparent = false;
+        if (symbol['markerOpacity'] || symbol['markerOpacity'] === 0) {
+            uniforms.markerOpacity = symbol['markerOpacity'];
+        }
+
+        const iconAtlas = geometry.properties.iconAtlas;
+        uniforms['texture'] = iconAtlas;
+        uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
+
+        if (symbol['markerPitchAlignment'] === 'map') {
+            uniforms['pitchWithMap'] = 1;
+        }
+
+        if (symbol['markerRotationAlignment'] === 'map') {
+            uniforms.rotateWithMap = 1;
+        }
+
+        if (symbol['markerPerspectiveRatio']) {
+            uniforms['markerPerspectiveRatio'] = symbol['markerPerspectiveRatio'];
+        }
+        geometry.generateBuffers(this.regl);
+        const material = new reshader.Material(uniforms, defaultUniforms);
+        const mesh = new reshader.Mesh(geometry, material, {
+            transparent : true,
+            castShadow : false,
+            picking : true
+        });
+        if (enableCollision) {
+            mesh.setDefines({
+                'ENABLE_COLLISION' : 1
+            });
+        }
+        mesh.setLocalTransform(transform);
+
+        return mesh;
     }
 
     preparePaint(context) {

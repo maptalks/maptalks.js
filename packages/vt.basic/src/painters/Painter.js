@@ -180,12 +180,9 @@ class Painter {
         }
     }
 
-    getPackSymbol(symbolIdx) {
+    getSymbol() {
         const styles = this.layer.getCompiledStyle();
-        let symbol = styles[this.pluginIndex].style[symbolIdx[0]].symbol;
-        if (Array.isArray(symbol)) {
-            symbol = symbol[symbolIdx[1]];
-        }
+        const symbol = styles[this.pluginIndex].symbol;
         const z = this.layer.getMap().getZoom();
         const result = {};
         for (const p in symbol) {

@@ -32,27 +32,17 @@ class NativeLinePainter extends Painter {
         return geometries;
     }
 
-    createMesh(geometries, transform, tileData) {
-        if (!geometries || !geometries.length) {
-            return null;
-        }
-
-        const packMeshes = tileData.meshes;
-        const meshes = [];
-        for (let i = 0; i < packMeshes.length; i++) {
-            const geometry = geometries[packMeshes[i].pack];
-            const symbol = this.getPackSymbol(packMeshes[i].symbol);
-            const uniforms = this.getMeshUniforms(geometry, symbol);
-            geometry.generateBuffers(this.regl);
-            const material = new reshader.Material(uniforms, defaultUniforms);
-            const mesh = new reshader.Mesh(geometry, material, {
-                castShadow : false,
-                picking : true
-            });
-            mesh.setLocalTransform(transform);
-            meshes.push(mesh);
-        }
-        return meshes;
+    createMesh(geometry, transform) {
+        const symbol = this.getSymbol();
+        const uniforms = this.getMeshUniforms(geometry, symbol);
+        geometry.generateBuffers(this.regl);
+        const material = new reshader.Material(uniforms, defaultUniforms);
+        const mesh = new reshader.Mesh(geometry, material, {
+            castShadow : false,
+            picking : true
+        });
+        mesh.setLocalTransform(transform);
+        return mesh;
     }
 
     getMeshUniforms(geometry, symbol) {

@@ -76,10 +76,10 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    updateSymbol(idx, styleIdx, symbol) {
-        const style = this.options.style[idx].style[styleIdx];
+    updateSymbol(idx, symbol) {
+        const style = this.options.style[idx];
         if (!style) {
-            throw new Error(`No symbol defined at plugin at ${idx} and style at ${styleIdx}`);
+            throw new Error(`No style defined at ${idx}`);
         }
         const target = style.symbol;
         const renderer = this.getRenderer();
@@ -103,7 +103,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             this.setStyle(this.options.style);
         } else {
             this._compileStyle();
-            renderer.updateSymbol(idx, styleIdx);
+            renderer.updateSymbol(idx);
         }
         return this;
     }
@@ -116,14 +116,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!Array.isArray(styles)) {
             styles = this.options.style = [styles];
         }
-        //convert to array if style is an object
-        styles.forEach(s => {
-            if (!Array.isArray(s.style)) {
-                s.style = [s.style];
-            }
-        });
     }
-
     getStyle() {
         return this.options.style;
     }
@@ -170,12 +163,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!style) {
             return;
         }
-        this._compiledStyles = style.map(s => {
-            const style = extend({}, s, {
-                style : compileStyle(s.style)
-            });
-            return style;
-        });
+        this._compiledStyles = compileStyle(style);
     }
 
     static registerPlugin(Plugin) {

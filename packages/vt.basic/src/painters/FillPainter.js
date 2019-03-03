@@ -13,36 +13,27 @@ const defaultUniforms = {
 
 class FillPainter extends BasicPainter {
 
-    createMesh(geometries, transform, tileData) {
-        if (!geometries || !geometries.length) {
-            return null;
-        }
-        const packMeshes = tileData.meshes;
-        const meshes = [];
-        for (let i = 0; i < packMeshes.length; i++) {
-            const geometry = geometries[packMeshes[i].pack];
-            const symbol = this.getPackSymbol(packMeshes[i].symbol);
-            const uniforms = {};
-            if (symbol['polygonFill']) {
-                const color = Color(symbol['polygonFill']);
-                uniforms.polygonFill = color.unitArray();
-                if (uniforms.polygonFill.length === 3) {
-                    uniforms.polygonFill.push(1);
-                }
+    createMesh(geometry, transform) {
+        const symbol = this.getSymbol();
+        const uniforms = {};
+        if (symbol['polygonFill']) {
+            const color = Color(symbol['polygonFill']);
+            uniforms.polygonFill = color.unitArray();
+            if (uniforms.polygonFill.length === 3) {
+                uniforms.polygonFill.push(1);
             }
-            if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
-                uniforms.polygonOpacity = symbol['polygonOpacity'];
-            }
-            geometry.generateBuffers(this.regl);
-            const material = new reshader.Material(uniforms, defaultUniforms);
-            const mesh = new reshader.Mesh(geometry, material, {
-                castShadow : false,
-                picking : true
-            });
-            mesh.setLocalTransform(transform);
-            meshes.push(mesh);
         }
-        return meshes;
+        if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
+            uniforms.polygonOpacity = symbol['polygonOpacity'];
+        }
+        geometry.generateBuffers(this.regl);
+        const material = new reshader.Material(uniforms, defaultUniforms);
+        const mesh = new reshader.Mesh(geometry, material, {
+            castShadow : false,
+            picking : true
+        });
+        mesh.setLocalTransform(transform);
+        return mesh;
     }
 
     init() {

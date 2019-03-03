@@ -44,13 +44,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setToRedraw();
     }
 
-    updateSymbol(idx, styleIdx) {
+    updateSymbol(idx) {
         const plugins = this.plugins;
         if (!plugins) {
             return;
         }
         const plugin = plugins[idx];
-        plugin.updateSymbol(styleIdx);
+        plugin.updateSymbol();
         this.setToRedraw();
     }
 
@@ -77,7 +77,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.gl = this.canvas.gl.wrap();
         }
         this._createREGLContext();
-        this.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
+        const map = this.getMap();
+        if (!map.pickingFBO) {
+            map.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
+            map.pickingFBO.refCount = 0;
+        }
+        this.pickingFBO = map.pickingFBO;
+        this.pickingFBO.refCount++;
         // this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Uint16Array([
         //     0, EXTENT, 0,
         //     0, 0, 0,
@@ -216,21 +222,20 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (!pluginData) {
                     continue;
                 }
-                const symbols = this.layer.getStyle()[i].style;//TODO 读取所有的symbol
-                const feaIndex = pluginData.styledFeatures;
+                const symbol = this.layer.getStyle()[i].symbol;
+                const feaIndexes = pluginData.styledFeatures;
                 //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
                 //这样featureIndexes中的序号能从pFeatures取得正确的数据
                 const pFeatures = new Array(features.length);
                 //[feature index, style index]
-                for (let i = 1, l = feaIndex.length; i < l; i += 2) {
-                    let feature = features[feaIndex[i - 1]];
+                for (let i = 0, l = feaIndexes.length; i < l; i++) {
+                    let feature = features[feaIndexes[i]];
                     if (this.layer.options['features'] === 'id' && this.layer.getFeature) {
                         feature = this.layer.getFeature(feature);
                     }
-                    pFeatures[feaIndex[i - 1]] = {
-                        feature : feature,
-                        //TODO 为什么会出现空指针异常？等待王俊的重现代码
-                        symbol : symbols[feaIndex[i]] ? symbols[feaIndex[i]].symbol : null
+                    pFeatures[feaIndexes[i]] = {
+                        feature,
+                        symbol
                     };
                 }
                 delete pluginData.styledFeatures;
@@ -363,14 +368,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
-        if (this.pickingFBO) {
-            this.pickingFBO.resize(this.canvas.width, this.canvas.height);
+        const canvas = this.canvas;
+        if (this.pickingFBO && (this.pickingFBO.width !== canvas.width || this.pickingFBO.height !== canvas.height)) {
+            this.pickingFBO.resize(canvas.width, canvas.height);
         }
         let cache = this.sceneCache;
         if (!cache) {
             cache = this.sceneCache = {};
         }
-        const size = new maptalks.Size(this.canvas.width, this.canvas.height);
+        const size = new maptalks.Size(canvas.width, canvas.height);
         this.plugins.forEach((plugin, idx) => {
             if (!cache[idx]) {
                 cache[idx] = {};
@@ -389,7 +395,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             delete this._workerConn;
         }
         if (this.pickingFBO) {
-            this.pickingFBO.destroy();
+            this.pickingFBO.refCount--;
+            if (!this.pickingFBO.refCount) {
+                //pickingFBO的引用计数为0，不再有图层引用，则销毁
+                const map = this.getMap();
+                this.pickingFBO.destroy();
+                delete map.pickingFBO;
+            }
+            delete this.pickingFBO;
         }
         if (this._quadStencil) {
             this._quadStencil.remove();
@@ -421,8 +434,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _initPlugins() {
         const pluginClazz = this.layer.constructor.getPlugins();
-        const style = this.layer.getStyle() || [];
-        this.plugins = style.map((config, idx) => {
+        const styles = this.layer.getStyle() || [];
+        this.plugins = styles.map((style, idx) => {
+            const config = style.renderPlugin;
             if (!config.type) {
                 throw new Error('invalid plugin type for style at ' + idx);
             }
