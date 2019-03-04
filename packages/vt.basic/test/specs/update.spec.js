@@ -32,13 +32,32 @@ describe('update style specs', () => {
     });
 
     afterEach(() => {
-        map.remove();
+
     });
 
     it('should can setStyle', done => {
-        assertChangeStyle(done, layer => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
             layer.setStyle([
                 {
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                }
+            ]);
+        });
+    });
+
+    it('should can setStyle with missed filter', done => {
+        assertChangeStyle(done, [0, 0, 0, 0], layer => {
+            layer.setStyle([
+                {
+                    filter: {
+                        title: '所有数据',
+                        value: ['==', 'missingCondition', 1]
+                    },
                     renderPlugin: {
                         type: 'line',
                         dataConfig: { type: 'line' },
@@ -50,16 +69,20 @@ describe('update style specs', () => {
     });
 
     it('should can updateSymbol', done => {
-        assertChangeStyle(done, layer => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
             layer.updateSymbol(0, {
                 lineColor: '#0f0'
             });
         });
     });
 
-    function assertChangeStyle(done, changeFun) {
+    function assertChangeStyle(done, expectedColor, changeFun) {
         const style = [
             {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
                 renderPlugin: {
                     type: 'line',
                     dataConfig: { type: 'line' },
@@ -84,7 +107,8 @@ describe('update style specs', () => {
             } else if (count === 3) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
-                assert.deepEqual(pixel, [0, 255, 0, 255]);
+                assert.deepEqual(pixel, expectedColor);
+                map.remove();
                 done();
             }
         });

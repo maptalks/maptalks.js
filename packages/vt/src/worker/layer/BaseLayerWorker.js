@@ -1,5 +1,4 @@
-import { compileStyle } from '@maptalks/feature-filter';
-import { extend, getIndexArrayType } from '../../common/Util';
+import { extend, getIndexArrayType, compileStyle } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
@@ -201,7 +200,7 @@ export default class BaseLayerWorker {
         this.pluginConfig = compileStyle(layerStyle);
         for (let i = 0; i < layerStyle.length; i++) {
             if (this.pluginConfig[i].filter) {
-                this.pluginConfig[i].filter.def = layerStyle[i].filter;
+                this.pluginConfig[i].filter.def = layerStyle.filter ? layerStyle[i].filter.value || layerStyle[i].filter : undefined;
             }
         }
     }

@@ -12,6 +12,8 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         const mapId = layer.getMap().id;
         this._layer = layer;
         this._mapId = mapId;
+        const type = layer.getJSONType();
+        this._isDedicated = dedicatedLayers.indexOf(type) >= 0;
         this._dedicatedVTWorkers = {};
         this._iconRequestor = new IconRequestor();
         this._glyphRequestor = new GlyphRequestor();
@@ -34,8 +36,8 @@ export default class WorkerConnection extends maptalks.worker.Actor {
                 options : options
             }
         };
-        if (dedicatedLayers.indexOf(type) >= 0) {
-            if (!this._dedicatedVTWorkers[layerId]) {
+        if (this._isDedicated) {
+            if (this._dedicatedVTWorkers[layerId] === undefined) {
                 this._dedicatedVTWorkers[layerId] = this.getDedicatedWorker();
             }
             this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
@@ -51,8 +53,10 @@ export default class WorkerConnection extends maptalks.worker.Actor {
             layerId,
             command : 'removeLayer'
         };
-        if (this._dedicatedVTWorkers[layerId]) {
-            this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+        if (this._isDedicated) {
+            if (this._dedicatedVTWorkers[layerId] !== undefined) {
+                this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+            }
             delete this._dedicatedVTWorkers[layerId];
         } else {
             this.broadcast(data, null, cb);
@@ -67,8 +71,10 @@ export default class WorkerConnection extends maptalks.worker.Actor {
             command : 'updateStyle',
             params : style
         };
-        if (this._dedicatedVTWorkers[layerId]) {
-            this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+        if (this._isDedicated) {
+            if (this._dedicatedVTWorkers[layerId] !== undefined) {
+                this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+            }
         } else {
             this.broadcast(data, null, cb);
         }
@@ -92,7 +98,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
 
     remove() {
         super.remove();
-        this._dedicatedVTWorkers = [];
+        this._dedicatedVTWorkers = {};
     }
 
     fetchIconGlyphs({ icons, glyphs }, cb) {

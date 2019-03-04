@@ -1,3 +1,5 @@
+import { compileStyle as compile } from '@maptalks/feature-filter';
+
 let id = 0;
 export function uid() {
     return id++;
@@ -158,3 +160,13 @@ export function getPosArrayType(max) {
     return Int32Array;
 }
 
+export function compileStyle(styles) {
+    styles = styles.map(s => {
+        const style = extend({}, s);
+        if (style.filter && style.filter.value) {
+            style.filter = style.filter.value;
+        }
+        return style;
+    });
+    return compile(styles);
+}

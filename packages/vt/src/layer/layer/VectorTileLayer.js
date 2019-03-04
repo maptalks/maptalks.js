@@ -1,7 +1,6 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend } from '../../common/Util';
-import { compileStyle } from '@maptalks/feature-filter';
+import { extend, compileStyle } from '../../common/Util';
 
 const defaultOptions = {
     renderer: 'gl',
@@ -159,11 +158,11 @@ class VectorTileLayer extends maptalks.TileLayer {
 
 
     _compileStyle() {
-        const style = this.options['style'];
-        if (!style) {
+        const styles = this.options.style;
+        if (!styles) {
             return;
         }
-        this._compiledStyles = compileStyle(style);
+        this._compiledStyles = compileStyle(styles);
     }
 
     static registerPlugin(Plugin) {
