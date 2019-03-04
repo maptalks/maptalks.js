@@ -32,7 +32,7 @@ describe('update style specs', () => {
     });
 
     afterEach(() => {
-
+        map.remove();
     });
 
     it('should can setStyle', done => {
@@ -108,7 +108,6 @@ describe('update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);
-                map.remove();
                 done();
             }
         });

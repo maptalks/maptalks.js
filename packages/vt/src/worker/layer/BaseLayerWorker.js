@@ -200,7 +200,7 @@ export default class BaseLayerWorker {
         this.pluginConfig = compileStyle(layerStyle);
         for (let i = 0; i < layerStyle.length; i++) {
             if (this.pluginConfig[i].filter) {
-                this.pluginConfig[i].filter.def = layerStyle.filter ? layerStyle[i].filter.value || layerStyle[i].filter : undefined;
+                this.pluginConfig[i].filter.def = layerStyle[i].filter ? (layerStyle[i].filter.value || layerStyle[i].filter) : undefined;
             }
         }
     }
