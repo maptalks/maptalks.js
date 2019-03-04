@@ -24,7 +24,7 @@ module.exports = {
                 const diffCount = pixelmath(expected, actual, output, width, height);
                 // console.log(diffCount);
 
-                cb(null, { diffImage : output, diffCount, width, height });
+                cb(null, { diffImage: output, diffCount, width, height });
             };
             image1.src = canvas.toDataURL();
         };
@@ -36,7 +36,7 @@ module.exports = {
     readSpecs(specPath) {
         /* eslint-disable global-require */
         const specs = {};
-        const dirs = fs.readdirSync(specPath, { withFileTypes : true });
+        const dirs = fs.readdirSync(specPath, { withFileTypes: true });
         for (let i = 0; i < dirs.length; i++) {
             const dir = dirs[i];
             if (!dir.isDirectory()) {

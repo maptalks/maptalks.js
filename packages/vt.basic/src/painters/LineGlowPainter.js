@@ -15,28 +15,28 @@ class LineGlowPainter extends LinePainter {
     createShader() {
         const canvas = this.canvas;
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
 
         this.shader = new reshader.MeshShader({
             vert, frag,
-            uniforms : [
+            uniforms: [
                 'cameraToCenterDistance',
                 'lineWidth',
                 'lineGapWidth',
                 'blur',
                 'lineOpacity',
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
@@ -49,11 +49,11 @@ class LineGlowPainter extends LinePainter {
                 'trailLength',
                 'animation'
             ],
-            extraCommandProps : {
+            extraCommandProps: {
                 viewport,
                 stencil: {
                     enable: true,
-                    mask : 0xFF,
+                    mask: 0xFF,
                     func: {
                         cmp: '<=',
                         ref: (context, props) => {
@@ -67,9 +67,9 @@ class LineGlowPainter extends LinePainter {
                         zpass: 'replace'
                     }
                 },
-                depth : {
-                    enable : true,
-                    func : this.sceneConfig.depthFunc || 'always'
+                depth: {
+                    enable: true,
+                    func: this.sceneConfig.depthFunc || 'always'
                 },
                 blend: {
                     enable: true,

@@ -4,7 +4,6 @@ import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 
-const KEY_STYLE_IDX = '__style_idx';
 const KEY_IDX = '__fea_idx';
 
 export default class BaseLayerWorker {
@@ -62,51 +61,21 @@ export default class BaseLayerWorker {
         const promises = [];
         for (let i = 0; i < this.pluginConfig.length; i++) {
             const pluginConfig = this.pluginConfig[i];
-            const styles = pluginConfig.style;
-            let all = true;
-            //iterate plugin's styles and mark feature's style index
-            for (let ii = 0, ll = styles.length; ii < ll; ii++) {
-                all = this._filterFeatures(styles[ii].filter, features, i, ii);
-                if (all) {
-                    //all features are filtered
-                    break;
-                }
-            }
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.filter, features, i);
 
-            const filteredFeas = [];
-            //only save feature's indexes, and restore features in renderer
-            //[feature index, style index, feature index, style index, ....]
-            const styledFeatures = [];
-            let maxIndex = 0;
-            let feature;
-            for (let ii = 0, ll = features.length; ii < ll; ii++) {
-                feature = features[ii];
-                delete feature[KEY_STYLE_IDX];
-                if (feature.styleMark && feature.styleMark[i] !== undefined) {
-                    const styleIdx = feature.styleMark[i];
-                    //vector-packer 中会读取 style_idx，能省略掉 style 遍历逻辑
-                    //KEY_STYLE_IDX中的值会在下次循环被替换掉，必须保证createTileGeometry不是在异步逻辑中读取的KEY_STYLE_IDX
-                    feature[KEY_STYLE_IDX] = styleIdx;
-                    feature[KEY_IDX] = ii;
-                    filteredFeas.push(feature);
-                    styledFeatures.push(ii, styleIdx);
-                    maxIndex = Math.max(ii, styleIdx, maxIndex);
-                }
-            }
-
-            if (filteredFeas.length === 0) {
+            if (!tileFeatures.length) {
                 continue;
             }
-
+            const maxIndex = tileFeaIndexes[tileFeaIndexes.length - 1];
             const arrCtor = getIndexArrayType(maxIndex);
             data[i] = {
                 //[feature_index, style_index, ...]
-                styledFeatures : new arrCtor(styledFeatures)
+                styledFeatures : new arrCtor(tileFeaIndexes)
             };
             //index of plugin with data
             dataIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
-            const promise = this._createTileGeometry(filteredFeas, pluginConfig.dataConfig, styles, { extent : EXTENT, glScale, zScale, zoom });
+            const promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent : EXTENT, glScale, zScale, zoom });
             promises.push(promise);
         }
 
@@ -129,17 +98,17 @@ export default class BaseLayerWorker {
                 for (let i = 0, l = features.length; i < l; i++) {
                     feature = features[i];
                     //reset feature's marks
-                    if (feature && feature.styleMark) {
+                    if (feature && feature[KEY_IDX] !== undefined) {
                         if (options.features === 'id') {
                             allFeas.push(feature.id);
                         } else {
                             allFeas.push(feature);
                         }
-                        delete feature.styleMark;
-                        delete feature[KEY_STYLE_IDX];
                         delete feature[KEY_IDX];
+                        delete feature._styleMark;
                     } else {
-                        allFeas.push(null);
+                        //use 0 instead of null, to reduce feature string size
+                        allFeas.push(0);
                     }
                 }
             }
@@ -156,8 +125,10 @@ export default class BaseLayerWorker {
 
     }
 
-    _createTileGeometry(features, dataConfig = {}, styles, { extent, glScale, zScale, zoom }) {
+    _createTileGeometry(features, pluginConfig, { extent, glScale, zScale, zoom }) {
         const tileSize = this.options.tileSize[0];
+        const dataConfig = pluginConfig.renderPlugin.dataConfig;
+        const symbol = pluginConfig.symbol;
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
             return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1]));
@@ -169,7 +140,7 @@ export default class BaseLayerWorker {
                 requestor : this.fetchIconGlyphs.bind(this),
                 zoom
             });
-            const pack = new PointPack(features, styles, options);
+            const pack = new PointPack(features, symbol, options);
             return pack.load(extent / tileSize);
         } else if (type === 'line') {
             const options = extend({}, dataConfig, {
@@ -177,14 +148,14 @@ export default class BaseLayerWorker {
                 requestor : this.fetchIconGlyphs.bind(this),
                 zoom
             });
-            const pack = new LinePack(features, styles, options);
+            const pack = new LinePack(features, symbol, options);
             return pack.load();
         } else if (type === 'native-line') {
             const options = extend({}, dataConfig, {
                 EXTENT : extent,
                 zoom
             });
-            const pack = new NativeLinePack(features, styles, options);
+            const pack = new NativeLinePack(features, symbol, options);
             return pack.load();
         } else if (type === 'fill') {
             const options = extend({}, dataConfig, {
@@ -192,7 +163,7 @@ export default class BaseLayerWorker {
                 requestor : this.fetchIconGlyphs.bind(this),
                 zoom
             });
-            const pack = new PolygonPack(features, styles, options);
+            const pack = new PolygonPack(features, symbol, options);
             return pack.load();
         }
         return {
@@ -206,36 +177,33 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(filter, features, type, styleIdx) {
-        //if all the features are filtered by the plugin
-        let feature, count = 0;
+    _filterFeatures(filter, features) {
+        const indexes = [];
+        const filtered = [];
         const l = features.length;
         for (let i = 0; i < l; i++) {
-            feature = features[i];
-            // a feature can only be painted once by one plugin
-            if ((feature.styleMark === undefined || feature.styleMark[type] === undefined) && (!filter || filter(feature))) {
-                if (!feature.styleMark) {
-                    feature.styleMark = {};
-                }
-                feature.styleMark[type] = styleIdx;
-            }
-            if (feature.styleMark && feature.styleMark[type]) {
-                count++;
+            //如果没定义filter，或者filter定义为true，则只在数据没有被其他filter style时，才做绘制
+            if (!Array.isArray(filter.def) && !features[i]._styleMark ||
+                Array.isArray(filter.def) && filter(features[i])) {
+                features[i][KEY_IDX] = i;
+                features[i]._styleMark = 1;
+                filtered.push(features[i]);
+                indexes.push(i);
             }
         }
-        return count === l;
+        return {
+            tileFeatures : filtered,
+            tileFeaIndexes : indexes
+        };
     }
 
     _compileStyle(layerStyle) {
-        this.pluginConfig = layerStyle.map(s => {
-            const style = extend({}, s, {
-                style : compileStyle(s.style)
-            });
-            for (let i = 0; i < style.style.length; i++) {
-                style.style[i].filterKey = Array.isArray(s.style[i].filter) ? s.style[i].filter.join() : 'default';
+        this.pluginConfig = compileStyle(layerStyle);
+        for (let i = 0; i < layerStyle.length; i++) {
+            if (this.pluginConfig[i].filter) {
+                this.pluginConfig[i].filter.def = layerStyle[i].filter;
             }
-            return style;
-        });
+        }
     }
 }
 

@@ -7,42 +7,33 @@ import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
 
 const defaultUniforms = {
-    'polygonFill' : [255, 255, 255],
-    'polygonOpacity' : 1
+    'polygonFill': [255, 255, 255],
+    'polygonOpacity': 1
 };
 
 class FillPainter extends BasicPainter {
 
-    createMesh(geometries, transform, tileData) {
-        if (!geometries || !geometries.length) {
-            return null;
-        }
-        const packMeshes = tileData.meshes;
-        const meshes = [];
-        for (let i = 0; i < packMeshes.length; i++) {
-            const geometry = geometries[packMeshes[i].pack];
-            const symbol = this.getPackSymbol(packMeshes[i].symbol);
-            const uniforms = {};
-            if (symbol['polygonFill']) {
-                const color = Color(symbol['polygonFill']);
-                uniforms.polygonFill = color.unitArray();
-                if (uniforms.polygonFill.length === 3) {
-                    uniforms.polygonFill.push(1);
-                }
+    createMesh(geometry, transform) {
+        const symbol = this.getSymbol();
+        const uniforms = {};
+        if (symbol['polygonFill']) {
+            const color = Color(symbol['polygonFill']);
+            uniforms.polygonFill = color.unitArray();
+            if (uniforms.polygonFill.length === 3) {
+                uniforms.polygonFill.push(1);
             }
-            if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
-                uniforms.polygonOpacity = symbol['polygonOpacity'];
-            }
-            geometry.generateBuffers(this.regl);
-            const material = new reshader.Material(uniforms, defaultUniforms);
-            const mesh = new reshader.Mesh(geometry, material, {
-                castShadow : false,
-                picking : true
-            });
-            mesh.setLocalTransform(transform);
-            meshes.push(mesh);
         }
-        return meshes;
+        if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
+            uniforms.polygonOpacity = symbol['polygonOpacity'];
+        }
+        geometry.generateBuffers(this.regl);
+        const material = new reshader.Material(uniforms, defaultUniforms);
+        const mesh = new reshader.Mesh(geometry, material, {
+            castShadow: false,
+            picking: true
+        });
+        mesh.setLocalTransform(transform);
+        return mesh;
     }
 
     init() {
@@ -52,24 +43,24 @@ class FillPainter extends BasicPainter {
         this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
 
         this.shader = new reshader.MeshShader({
             vert, frag,
-            uniforms : [
+            uniforms: [
                 'polygonFill', 'polygonOpacity',
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : function (context, props) {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
                         const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                         mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
@@ -77,11 +68,11 @@ class FillPainter extends BasicPainter {
                     }
                 },
             ],
-            extraCommandProps : {
+            extraCommandProps: {
                 viewport,
                 stencil: {
                     enable: true,
-                    mask : 0xFF,
+                    mask: 0xFF,
                     func: {
                         cmp: '<',
                         ref: (context, props) => {
@@ -100,9 +91,9 @@ class FillPainter extends BasicPainter {
                         zpass: 'replace'
                     }
                 },
-                depth : {
-                    enable : true,
-                    func : this.sceneConfig.depthFunc || 'always'
+                depth: {
+                    enable: true,
+                    func: this.sceneConfig.depthFunc || 'always'
                 },
                 blend: {
                     enable: true,
@@ -118,12 +109,12 @@ class FillPainter extends BasicPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : pickingVert,
-                    uniforms : [
+                    vert: pickingVert,
+                    uniforms: [
                         {
-                            name : 'projViewModelMatrix',
-                            type : 'function',
-                            fn : function (context, props) {
+                            name: 'projViewModelMatrix',
+                            type: 'function',
+                            fn: function (context, props) {
                                 const projViewModelMatrix = [];
                                 mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                                 mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);

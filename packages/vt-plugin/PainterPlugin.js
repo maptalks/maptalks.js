@@ -71,10 +71,10 @@ function createPainterPlugin(type, Painter) {
                         data.colors = colors;
                     }
                 }
-                geometry = tileCache.geometry = painter.createGeometry(data, features, tileInfo);
+                geometry = tileCache.geometry = painter.createGeometry(data, features);
                 this._fillCommonProps(geometry, context);
             }
-            if (!geometry || Array.isArray(geometry) && !geometry.length) {
+            if (!geometry) {
                 return {
                     'redraw' : false
                 };
@@ -85,7 +85,7 @@ function createPainterPlugin(type, Painter) {
             }
             var mesh = this._getMesh(key);
             if (!mesh) {
-                mesh = painter.createMesh(geometry, tileTransform, tileData.data);
+                mesh = painter.createMesh(geometry, tileTransform);
                 if (mesh) {
                     if (Array.isArray(mesh)) {
                         for (let i = 0; i < mesh.length; i++) {
@@ -153,19 +153,11 @@ function createPainterPlugin(type, Painter) {
             const map = layer.getMap(),
                 tileResolution = map.getResolution(tileInfo.z),
                 tileRatio = context.tileExtent / layer.getTileSize().width;
-            if (Array.isArray) {
-                for (let i = 0; i < geometry.length; i++) {
-                    geometry[i].properties.tileResolution = tileResolution;
-                    geometry[i].properties.tileRatio = tileRatio;
-                    geometry[i].properties.z = tileInfo.z;
-                    geometry[i].properties.tileExtent = context.tileExtent;
-                }
-            } else {
-                geometry.properties.tileResolution = tileResolution;
-                geometry.properties.tileRatio = tileRatio;
-                geometry.properties.z = tileInfo.z;
-                geometry.properties.tileExtent = context.tileExtent;
-            }
+            geometry.properties.tileResolution = tileResolution;
+            geometry.properties.tileRatio = tileRatio;
+            geometry.properties.z = tileInfo.z;
+            geometry.properties.tileExtent = context.tileExtent;
+
         },
 
         updateSceneConfig: function (context) {
@@ -175,7 +167,7 @@ function createPainterPlugin(type, Painter) {
             }
         },
 
-        updateSymbol: function (/* idx */) {
+        updateSymbol: function () {
             var painter = this.painter;
             if (painter) {
                 for (var key in this._meshCache) {

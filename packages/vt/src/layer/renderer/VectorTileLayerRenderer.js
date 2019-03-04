@@ -44,13 +44,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setToRedraw();
     }
 
-    updateSymbol(idx, styleIdx) {
+    updateSymbol(idx) {
         const plugins = this.plugins;
         if (!plugins) {
             return;
         }
         const plugin = plugins[idx];
-        plugin.updateSymbol(styleIdx);
+        plugin.updateSymbol();
         this.setToRedraw();
     }
 
@@ -222,21 +222,20 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (!pluginData) {
                     continue;
                 }
-                const symbols = this.layer.getStyle()[i].style;//TODO 读取所有的symbol
-                const feaIndex = pluginData.styledFeatures;
+                const symbol = this.layer.getStyle()[i].symbol;
+                const feaIndexes = pluginData.styledFeatures;
                 //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
                 //这样featureIndexes中的序号能从pFeatures取得正确的数据
                 const pFeatures = new Array(features.length);
                 //[feature index, style index]
-                for (let i = 1, l = feaIndex.length; i < l; i += 2) {
-                    let feature = features[feaIndex[i - 1]];
+                for (let i = 0, l = feaIndexes.length; i < l; i++) {
+                    let feature = features[feaIndexes[i]];
                     if (this.layer.options['features'] === 'id' && this.layer.getFeature) {
                         feature = this.layer.getFeature(feature);
                     }
-                    pFeatures[feaIndex[i - 1]] = {
-                        feature : feature,
-                        //TODO 为什么会出现空指针异常？等待王俊的重现代码
-                        symbol : symbols[feaIndex[i]] ? symbols[feaIndex[i]].symbol : null
+                    pFeatures[feaIndexes[i]] = {
+                        feature,
+                        symbol
                     };
                 }
                 delete pluginData.styledFeatures;
@@ -435,8 +434,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _initPlugins() {
         const pluginClazz = this.layer.constructor.getPlugins();
-        const style = this.layer.getStyle() || [];
-        this.plugins = style.map((config, idx) => {
+        const styles = this.layer.getStyle() || [];
+        this.plugins = styles.map((style, idx) => {
+            const config = style.renderPlugin;
             if (!config.type) {
                 throw new Error('invalid plugin type for style at ' + idx);
             }

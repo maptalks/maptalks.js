@@ -62,20 +62,18 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        type: 'icon',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: false
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    markerFile: ICON_PATH
-                                }
+                        renderPlugin: {
+                            type: 'icon',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: false
                             }
-                        ]
+                        },
+                        symbol: {
+                            markerFile: ICON_PATH
+                        }
                     }
                 ]
             };
@@ -89,21 +87,19 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        type: 'icon',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: true,
-                            fading: false
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    markerFile: ICON_PATH
-                                }
+                        renderPlugin: {
+                            type: 'icon',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: true,
+                                fading: false
                             }
-                        ]
+                        },
+                        symbol: {
+                            markerFile: ICON_PATH
+                        }
                     }
                 ],
                 view: {
@@ -123,21 +119,19 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        type: 'icon',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: false
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    markerFile: ICON_PATH,
-                                    markerPitchAlignment: 'map'
-                                }
+                        renderPlugin: {
+                            type: 'icon',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: false
                             }
-                        ]
+                        },
+                        symbol: {
+                            markerFile: ICON_PATH,
+                            markerPitchAlignment: 'map'
+                        }
                     }
                 ],
                 view: {
@@ -157,21 +151,19 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        type: 'icon',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: true,
-                            fading: true
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    markerFile: ICON_PATH
-                                }
+                        renderPlugin: {
+                            type: 'icon',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: true,
+                                fading: true
                             }
-                        ]
+                        },
+                        symbol: {
+                            markerFile: ICON_PATH
+                        }
                     }
                 ]
             };
@@ -188,20 +180,18 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        type: 'text',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: false
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    textName: '未来'
-                                }
+                        renderPlugin: {
+                            type: 'text',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: false
                             }
-                        ]
+                        },
+                        symbol: {
+                            textName: '未来'
+                        }
                     }
                 ],
                 view: {
@@ -221,22 +211,20 @@ describe('picking specs', () => {
                 data: data.point,
                 style: [
                     {
-                        type: 'text',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: true,
-                            fading: false
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    textName: '未来',
-                                    textPitchAlignment: 'map'
-                                }
+                        renderPlugin: {
+                            type: 'text',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: true,
+                                fading: false
                             }
-                        ]
+                        },
+                        symbol: {
+                            textName: '未来',
+                            textPitchAlignment: 'map'
+                        }
                     }
                 ],
                 view: {
@@ -256,22 +244,20 @@ describe('picking specs', () => {
                 data: data.line,
                 style: [
                     {
-                        type: 'text',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: true,
-                            fading: false
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    textName: '未来',
-                                    textPlacement: 'line'
-                                }
+                        renderPlugin: {
+                            type: 'text',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: true,
+                                fading: false
                             }
-                        ]
+                        },
+                        symbol: {
+                            textName: '未来',
+                            textPlacement: 'line'
+                        }
                     }
                 ],
                 view: {
@@ -291,23 +277,21 @@ describe('picking specs', () => {
                 data: data.line,
                 style: [
                     {
-                        type: 'text',
-                        dataConfig: {
-                            type: 'point'
-                        },
-                        sceneConfig: {
-                            collision: true,
-                            fading: false
-                        },
-                        style: [
-                            {
-                                symbol: {
-                                    textName: '未来',
-                                    textPitchAlignment: 'map',
-                                    textPlacement: 'line'
-                                }
+                        renderPlugin: {
+                            type: 'text',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: true,
+                                fading: false
                             }
-                        ]
+                        },
+                        symbol: {
+                            textName: '未来',
+                            textPitchAlignment: 'map',
+                            textPlacement: 'line'
+                        }
                     }
                 ],
                 view: {
@@ -322,4 +306,6 @@ describe('picking specs', () => {
             runner(options, coord, expected, false, done);
         });
     });
+
+    //TODO line 和 Polygon 的picking 测试
 });

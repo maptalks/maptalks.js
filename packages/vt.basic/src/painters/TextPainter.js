@@ -28,16 +28,16 @@ const shaderLineFilterN = mesh => {
 };
 
 const defaultUniforms = {
-    'textFill' : [0, 0, 0, 1],
-    'textOpacity' : 1,
-    'pitchWithMap' : 0,
-    'rotateWithMap' : 0,
-    'textHaloRadius' : 0,
-    'textHaloFill' : [1, 1, 1, 1],
-    'textHaloBlur' : 0,
-    'textHaloOpacity' : 1,
-    'isHalo' : 0,
-    'textPerspectiveRatio' : 0
+    'textFill': [0, 0, 0, 1],
+    'textOpacity': 1,
+    'pitchWithMap': 0,
+    'rotateWithMap': 0,
+    'textHaloRadius': 0,
+    'textHaloFill': [1, 1, 1, 1],
+    'textHaloBlur': 0,
+    'textHaloOpacity': 1,
+    'isHalo': 0,
+    'textPerspectiveRatio': 0
 };
 
 // temparary variables used later
@@ -53,201 +53,193 @@ export default class TextPainter extends CollisionPainter {
     }
 
     createGeometry(glData) {
-        const geometries = super.createGeometry.apply(this, arguments);
-        for (let i = 0; i < geometries.length; i++) {
-            if (glData.packs[i].lineVertex) {
-                geometries[i].properties.line = glData.packs[i].lineVertex;
-                geometries[i].properties.line.id = i;
-            }
+        const geometry = super.createGeometry.apply(this, arguments);
+        if (glData.lineVertex) {
+            geometry.properties.line = glData.lineVertex;
+            //原先createGeometry返回的geometry有多个，line.id用来区分是第几个geometry
+            //现在geometry只会有一个，所以统一为0
+            geometry.properties.line.id = 0;
         }
-
-        return geometries;
+        return geometry;
     }
 
-    createMesh(geometries, transform, tileData) {
+    createMesh(geometry, transform) {
         const meshes = [];
-        if (!geometries || !geometries.length) {
+        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+
+        if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
             return meshes;
         }
 
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        const symbol = this.getSymbol();
+        geometry.properties.symbol = symbol;
+        const isLinePlacement = symbol['textPlacement'] === 'line';
+        //tags for picking
+        if (isLinePlacement) {
+            this._hasLineText = true;
+        } else {
+            this._hasNormalText = true;
+        }
+        const uniforms = {
+            tileResolution: geometry.properties.tileResolution,
+            tileRatio: geometry.properties.tileRatio
+        };
+        const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
 
-        const packMeshes = tileData.meshes;
-        for (let i = 0; i < packMeshes.length; i++) {
-            let geometry = geometries[packMeshes[i].pack];
-            if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
-                continue;
+        geometry.properties.aPickingId = geometry.data.aPickingId;
+
+        if (enableCollision || isLinePlacement) {
+            geometry.properties.aAnchor = aPosition;
+            geometry.properties.aSize = aSize;
+            geometry.properties.aDxDy = aDxDy;
+            geometry.properties.aShape0 = aShape0;
+            geometry.properties.aRotation = aRotation;
+        }
+
+        if (enableCollision) {
+            //initialize opacity array
+            //aOpacity用于fading透明度的调整
+            const aOpacity = new Uint8Array(aSize.length);
+            for (let i = 0; i < aOpacity.length; i++) {
+                aOpacity[i] = 255;
             }
-            const symbol = this.getPackSymbol(packMeshes[i].symbol);
-            geometry.properties.symbol = symbol;
-            const isLinePlacement = symbol['textPlacement'] === 'line';
-            //tags for picking
-            if (isLinePlacement) {
-                this._hasLineText = true;
-            } else {
-                this._hasNormalText = true;
-            }
-            const uniforms = {
-                tileResolution : geometry.properties.tileResolution,
-                tileRatio : geometry.properties.tileRatio
+            geometry.data.aOpacity = {
+                usage: 'dynamic',
+                data: aOpacity
             };
-            const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
+            geometry.properties.aOpacity = {
+                usage: 'dynamic',
+                data: new Uint8Array(aSize.length)
+            };
+        }
 
-            geometry.properties.aPickingId = geometry.data.aPickingId;
+        if (isLinePlacement) {
 
-            if (enableCollision || isLinePlacement) {
-                geometry.properties.aAnchor = aPosition;
-                geometry.properties.aSize = aSize;
-                geometry.properties.aDxDy = aDxDy;
-                geometry.properties.aShape0 = aShape0;
-                geometry.properties.aRotation = aRotation;
-            }
+            geometry.properties.aGlyphOffset = aGlyphOffset;
+            geometry.properties.aSegment = aSegment;
 
-            if (enableCollision) {
-                //initialize opacity array
-                //aOpacity用于fading透明度的调整
-                const aOpacity = new Uint8Array(aSize.length);
-                for (let i = 0; i < aOpacity.length; i++) {
-                    aOpacity[i] = 255;
-                }
-                geometry.data.aOpacity = {
-                    usage : 'dynamic',
-                    data : aOpacity
-                };
-                geometry.properties.aOpacity = {
-                    usage : 'dynamic',
-                    data : new Uint8Array(aSize.length)
-                };
-            }
-
-            if (isLinePlacement) {
-
-                geometry.properties.aGlyphOffset = aGlyphOffset;
-                geometry.properties.aSegment = aSegment;
-
-                delete geometry.data.aSegment;
-                delete geometry.data.aGlyphOffset;
-
-                if (symbol['textPitchAlignment'] === 'map') {
-                    //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
-                    geometry.properties.aOffset = geometry.data.aOffset = new aDxDy.constructor(aDxDy.length);
-                    geometry.properties.aRotation = geometry.data.aRotation = new aRotation.constructor(aRotation.length);
-                } else {
-                    geometry.properties.aOffset = geometry.data.aOffset = {
-                        usage : 'dynamic',
-                        data : new aDxDy.constructor(aDxDy.length)
-                    };
-                    geometry.properties.aRotation = geometry.data.aRotation = {
-                        usage : 'dynamic',
-                        data : new aRotation.constructor(aRotation.length)
-                    };
-                }
-
-                //aNormal = [isFlip * 2 + isVertical, ...];
-                geometry.data.aNormal = geometry.properties.aNormal = {
-                    usage : 'dynamic',
-                    data : new Uint8Array(aDxDy.length / 2)
-                };
-                //TODO 增加是否是vertical字符的判断
-                uniforms.isVerticalChar = true;
-            }
-
-            if (isLinePlacement || enableCollision) {
-                geometry.properties.elements = geometry.elements;
-                geometry.properties.elemCtor = geometry.elements.constructor;
-            }
-
-            let transparent = false;
-            if (symbol['textOpacity'] || symbol['textOpacity'] === 0) {
-                uniforms.textOpacity = symbol['textOpacity'];
-                if (symbol['textOpacity'] < 1) {
-                    transparent = true;
-                }
-            }
-
-            if (symbol['textFill']) {
-                const color = Color(symbol['textFill']);
-                uniforms.textFill = color.unitArray();
-                if (uniforms.textFill.length === 3) {
-                    uniforms.textFill.push(1);
-                }
-            }
-
-            if (symbol['textHaloFill']) {
-                const color = Color(symbol['textHaloFill']);
-                uniforms.textHaloFill = color.unitArray();
-                if (uniforms.textHaloFill.length === 3) {
-                    uniforms.textHaloFill.push(1);
-                }
-            }
-
-            if (symbol['textHaloBlur']) {
-                uniforms.textHaloBlur = symbol['textHaloBlur'];
-            }
-
-            if (symbol['textHaloRadius']) {
-                uniforms.textHaloRadius = symbol['textHaloRadius'];
-                uniforms.isHalo = 1;
-            }
-
-            if (symbol['textHaloOpacity']) {
-                uniforms.textHaloOpacity = symbol['textHaloOpacity'];
-            }
-
-            if (symbol['textPerspectiveRatio']) {
-                uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
-            } else if (isLinePlacement) {
-                uniforms.textPerspectiveRatio = 1;
-            }
-
-            if (symbol['textRotationAlignment'] === 'map') {
-                uniforms.rotateWithMap = 1;
-            }
+            delete geometry.data.aSegment;
+            delete geometry.data.aGlyphOffset;
 
             if (symbol['textPitchAlignment'] === 'map') {
-                uniforms.pitchWithMap = 1;
+                //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
+                geometry.properties.aOffset = geometry.data.aOffset = new aDxDy.constructor(aDxDy.length);
+                geometry.properties.aRotation = geometry.data.aRotation = new aRotation.constructor(aRotation.length);
+            } else {
+                geometry.properties.aOffset = geometry.data.aOffset = {
+                    usage: 'dynamic',
+                    data: new aDxDy.constructor(aDxDy.length)
+                };
+                geometry.properties.aRotation = geometry.data.aRotation = {
+                    usage: 'dynamic',
+                    data: new aRotation.constructor(aRotation.length)
+                };
             }
 
-            const glyphAtlas = geometry.properties.glyphAtlas;
-            uniforms['texture'] = glyphAtlas;
-            uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
+            //aNormal = [isFlip * 2 + isVertical, ...];
+            geometry.data.aNormal = geometry.properties.aNormal = {
+                usage: 'dynamic',
+                data: new Uint8Array(aDxDy.length / 2)
+            };
+            //TODO 增加是否是vertical字符的判断
+            uniforms.isVerticalChar = true;
+        }
 
-            geometry.generateBuffers(this.regl);
+        if (isLinePlacement || enableCollision) {
+            geometry.properties.elements = geometry.elements;
+            geometry.properties.elemCtor = geometry.elements.constructor;
+        }
+
+        let transparent = false;
+        if (symbol['textOpacity'] || symbol['textOpacity'] === 0) {
+            uniforms.textOpacity = symbol['textOpacity'];
+            if (symbol['textOpacity'] < 1) {
+                transparent = true;
+            }
+        }
+
+        if (symbol['textFill']) {
+            const color = Color(symbol['textFill']);
+            uniforms.textFill = color.unitArray();
+            if (uniforms.textFill.length === 3) {
+                uniforms.textFill.push(1);
+            }
+        }
+
+        if (symbol['textHaloFill']) {
+            const color = Color(symbol['textHaloFill']);
+            uniforms.textHaloFill = color.unitArray();
+            if (uniforms.textHaloFill.length === 3) {
+                uniforms.textHaloFill.push(1);
+            }
+        }
+
+        if (symbol['textHaloBlur']) {
+            uniforms.textHaloBlur = symbol['textHaloBlur'];
+        }
+
+        if (symbol['textHaloRadius']) {
+            uniforms.textHaloRadius = symbol['textHaloRadius'];
+            uniforms.isHalo = 1;
+        }
+
+        if (symbol['textHaloOpacity']) {
+            uniforms.textHaloOpacity = symbol['textHaloOpacity'];
+        }
+
+        if (symbol['textPerspectiveRatio']) {
+            uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
+        } else if (isLinePlacement) {
+            uniforms.textPerspectiveRatio = 1;
+        }
+
+        if (symbol['textRotationAlignment'] === 'map') {
+            uniforms.rotateWithMap = 1;
+        }
+
+        if (symbol['textPitchAlignment'] === 'map') {
+            uniforms.pitchWithMap = 1;
+        }
+
+        const glyphAtlas = geometry.properties.glyphAtlas;
+        uniforms['texture'] = glyphAtlas;
+        uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
+
+        geometry.generateBuffers(this.regl);
+        const material = new reshader.Material(uniforms, defaultUniforms);
+        const mesh = new reshader.Mesh(geometry, material, {
+            transparent,
+            castShadow: false,
+            picking: true
+        });
+        mesh.setLocalTransform(transform);
+        //设置ignoreCollision，此mesh略掉collision检测
+        //halo mesh会进行collision检测，并统一更新elements
+        if (symbol['textHaloRadius']) {
+            mesh.properties.ignoreCollision = true;
+        }
+        if (enableCollision) {
+            mesh.setDefines({
+                'ENABLE_COLLISION': 1
+            });
+        }
+        meshes.push(mesh);
+
+        if (symbol['textHaloRadius']) {
+            uniforms.isHalo = 0;
             const material = new reshader.Material(uniforms, defaultUniforms);
             const mesh = new reshader.Mesh(geometry, material, {
                 transparent,
-                castShadow : false,
-                picking : true
+                castShadow: false,
+                picking: true
             });
-            mesh.setLocalTransform(transform);
-            //设置ignoreCollision，此mesh略掉collision检测
-            //halo mesh会进行collision检测，并统一更新elements
-            if (symbol['textHaloRadius']) {
-                mesh.properties.ignoreCollision = true;
-            }
             if (enableCollision) {
                 mesh.setDefines({
-                    'ENABLE_COLLISION' : 1
+                    'ENABLE_COLLISION': 1
                 });
             }
+            mesh.setLocalTransform(transform);
             meshes.push(mesh);
-
-            if (symbol['textHaloRadius']) {
-                uniforms.isHalo = 0;
-                const material = new reshader.Material(uniforms, defaultUniforms);
-                const mesh = new reshader.Mesh(geometry, material, {
-                    transparent,
-                    castShadow : false,
-                    picking : true
-                });
-                if (enableCollision) {
-                    mesh.setDefines({
-                        'ENABLE_COLLISION' : 1
-                    });
-                }
-                mesh.setLocalTransform(transform);
-                meshes.push(mesh);
-            }
         }
         return meshes;
     }
@@ -321,8 +313,8 @@ export default class TextPainter extends CollisionPainter {
                 });
                 if (visibleElements.length !== elements.length) {
                     geometry.setElements({
-                        usage : 'dynamic',
-                        data : new geometry.properties.elemCtor(visibleElements)
+                        usage: 'dynamic',
+                        data: new geometry.properties.elemCtor(visibleElements)
                     });
                 }
             }
@@ -397,8 +389,8 @@ export default class TextPainter extends CollisionPainter {
         if (shouldUpdate || visibleElements.length !== elements.length) {
             // geometry.properties.elements = elements;
             geometry.setElements({
-                usage : 'dynamic',
-                data : new geometryProps.elemCtor(visibleElements)
+                usage: 'dynamic',
+                data: new geometryProps.elemCtor(visibleElements)
             });
         }
         if (enableCollision) {
@@ -409,6 +401,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     _projectLine(out, line, matrix, width, height) {
+        //line.id都为0，但不同的tile, matrix是不同的，故可以用matrix作为hash id
         const id = line.id + '-' + matrix.join();
         if (this._projectedLinesCache[id]) {
             return this._projectedLinesCache[id];
@@ -544,7 +537,7 @@ export default class TextPainter extends CollisionPainter {
                 hasCollides = true;
                 if (!isFading && !debugCollision) {
                     return {
-                        collides : true,
+                        collides: true,
                         boxes
                     };
                 }
@@ -562,7 +555,7 @@ export default class TextPainter extends CollisionPainter {
                     hasCollides = true;
                     if (!isFading && !debugCollision) {
                         return {
-                            collides : true,
+                            collides: true,
                             boxes
                         };
                     }
@@ -576,7 +569,7 @@ export default class TextPainter extends CollisionPainter {
                 hasCollides = true;
                 if (!isFading && !debugCollision) {
                     return {
-                        collides : true,
+                        collides: true,
                         boxes
                     };
                 }
@@ -586,7 +579,7 @@ export default class TextPainter extends CollisionPainter {
             this.addCollisionDebugBox(boxes, hasCollides ? 0 : 1);
         }
         return {
-            collides : hasCollides,
+            collides: hasCollides,
             boxes
         };
     }
@@ -609,12 +602,12 @@ export default class TextPainter extends CollisionPainter {
         this.renderer = new reshader.Renderer(regl);
 
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
@@ -622,9 +615,9 @@ export default class TextPainter extends CollisionPainter {
         const uniforms = [
             'cameraToCenterDistance',
             {
-                name : 'projViewModelMatrix',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
                     return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                 }
             },
@@ -644,9 +637,9 @@ export default class TextPainter extends CollisionPainter {
             'textHaloOpacity',
             'isHalo',
             {
-                name : 'zoomScale',
-                type : 'function',
-                fn : function (context, props) {
+                name: 'zoomScale',
+                type: 'function',
+                fn: function (context, props) {
                     return props['tileResolution'] / props['resolution'];
                 }
             },
@@ -662,14 +655,14 @@ export default class TextPainter extends CollisionPainter {
                 func: {
                     // src: 'src alpha',
                     // dst: 'one minus src alpha'
-                    src : 'one',
+                    src: 'one',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
             },
             depth: {
                 enable: true,
-                func : 'always'
+                func: 'always'
             },
         };
 
@@ -679,7 +672,7 @@ export default class TextPainter extends CollisionPainter {
             extraCommandProps
         });
         this._shaderAlongLine = new reshader.MeshShader({
-            vert : vertAlongLine, frag,
+            vert: vertAlongLine, frag,
             uniforms,
             extraCommandProps
         });
@@ -687,7 +680,7 @@ export default class TextPainter extends CollisionPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : pickingVert,
+                    vert: pickingVert,
                     uniforms
                 },
                 this.pickingFBO
@@ -699,7 +692,7 @@ export default class TextPainter extends CollisionPainter {
             this._linePicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert : linePickingVert,
+                    vert: linePickingVert,
                     uniforms
                 },
                 this.pickingFBO
@@ -731,9 +724,9 @@ export default class TextPainter extends CollisionPainter {
         let picked = {};
         if (this.picking.getRenderedMeshes().length) {
             picked = this.picking.pick(x, y, uniforms, {
-                viewMatrix : map.viewMatrix,
-                projMatrix : map.projMatrix,
-                returnPoint : true
+                viewMatrix: map.viewMatrix,
+                projMatrix: map.projMatrix,
+                returnPoint: true
             });
         }
 
@@ -742,9 +735,9 @@ export default class TextPainter extends CollisionPainter {
             this._linePicking.render(this.scene.getMeshes(), uniforms, true);
             if (this._linePicking.getRenderedMeshes().length) {
                 picked = this._linePicking.pick(x, y, uniforms, {
-                    viewMatrix : map.viewMatrix,
-                    projMatrix : map.projMatrix,
-                    returnPoint : true
+                    viewMatrix: map.viewMatrix,
+                    projMatrix: map.projMatrix,
+                    returnPoint: true
                 });
             }
         }
@@ -755,7 +748,7 @@ export default class TextPainter extends CollisionPainter {
             return null;
         }
         return {
-            feature : mesh.geometry.properties.features[pickingId],
+            feature: mesh.geometry.properties.features[pickingId],
             point
         };
     }
@@ -784,14 +777,14 @@ export default class TextPainter extends CollisionPainter {
         // ];
 
         return {
-            mapPitch : map.getPitch() * Math.PI / 180,
-            mapRotation : map.getBearing() * Math.PI / 180,
+            mapPitch: map.getPitch() * Math.PI / 180,
+            mapRotation: map.getBearing() * Math.PI / 180,
             projViewMatrix,
             cameraToCenterDistance, canvasSize,
-            glyphSize : 24,
+            glyphSize: 24,
             // gammaScale : 0.64,
-            gammaScale : 1.0,
-            resolution : map.getResolution(),
+            gammaScale: 1.0,
+            resolution: map.getResolution(),
             // planeMatrix
         };
     }

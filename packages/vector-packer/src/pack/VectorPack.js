@@ -17,14 +17,12 @@ const STLYE_IDX = '__style_idx';
  * abstract class for all vector packs
  */
 export default class VectorPack {
-    constructor(features, styles, options) {
+    constructor(features, symbol, options) {
         //TODO 预先把altitude传到pack里来？
-        this._checkStyles(styles);
         this.features = this._check(features);
-        this.styles = styles;
+        this.symbol = symbol;
         this.options = options;
         this.styledVectors = [];
-        // this.featureGroup = [];
     }
 
     _check(features) {
@@ -64,56 +62,20 @@ export default class VectorPack {
         return checked;
     }
 
-    _checkStyles(styles) {
-        for (let i = 0; i < styles.length; i++) {
-            const s = styles[i];
-            if (!s['symbol']) throw new Error(`Invalid symbol at ${i}.`);
-        }
-    }
-
     load(scale = 1) {
-        const styledVectors = this.styledVectors = [];
-        // const featureGroup = this.featureGroup = [];
+        const vectors = this.styledVectors;
         this.count = 0;
         const features = this.features;
         if (!features || !features.length) return Promise.resolve();
-        const styles = this.styles;
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom : this.options.zoom };
+        const symbol = this.symbol;
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
-            let styleIdx = feature[STLYE_IDX];
-            if (styleIdx === undefined) {
-                for (let ii = 0; ii < styles.length; ii++) {
-                    if (styles[ii].filter(feature)) {
-                        styleIdx = ii;
-                        break;
-                    }
-                }
-            }
-            const style = styles[styleIdx];
-            if (!style) {
-                continue;
-            }
-            const vectors = styledVectors[styleIdx] = styledVectors[styleIdx] || [];
-            // const feas = featureGroup[styleIdx] = featureGroup[styleIdx] || [];
-            // feas.push(i);
-            const symbol = style.symbol;
-            if (Array.isArray(symbol)) {
-                for (let ii = 0; ii < symbol.length; ii++) {
-                    this.count++;
-                    vectors[ii] = vectors[ii] || [];
-                    const styledVector = this.createStyledVector(feature, symbol[ii], options, iconReqs, glyphReqs);
-                    //KEY_IDX是feature在数组中的序号，在BaseLayerWorker中设置
-                    styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
-                    vectors[ii].push(styledVector);
-                }
-            } else {
-                this.count++;
-                const styledVector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
-                styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
-                vectors.push(styledVector);
-            }
+            this.count++;
+            const styledVector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
+            styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+            vectors.push(styledVector);
         }
 
         return new Promise((resolve, reject) => {
@@ -170,52 +132,11 @@ export default class VectorPack {
         if (scale === undefined || scale === null) {
             throw new Error('layout scale is undefined');
         }
-        const me = this;
-        const styles = this.styles;
-        const packs = [], meshes = [], buffers = [], saved = {};
-
-        //创建datapack
-        function create(key, vector, i, ii) {
-            let pack;
-            if (saved[key] === undefined) {
-                pack = me.createDataPack(vector, scale);
-                if (pack) {
-                    saved[key] = packs.length;
-                    packs.push(pack);
-                    buffers.push(...pack.buffers);
-                    delete pack.buffers;
-                } else {
-                    saved[key] = null;
-                }
-            } else {
-                //filterKey相同，即filter相同的pack已经创建过，无需再次创建
-                pack = packs[saved[key]];
-            }
-            if (!pack) return null;
-            meshes.push({
-                pack : saved[key],
-                symbol : [i, ii]
-            });
-            return pack;
-        }
-
-        for (let i = 0; i < this.styles.length; i++) {
-            const symbol = styles[i].symbol;
-            const key = styles[i].filterKey;
-            const vectors = this.styledVectors[i];
-            if (!vectors || !vectors.length) continue;
-            if (Array.isArray(symbol)) {
-                for (let ii = 0; ii < symbol.length; ii++) {
-                    if (!vectors[ii] || !vectors[ii].length) continue;
-                    create(key, vectors[ii], i, ii);
-                }
-            } else {
-                create(key, vectors, i, 0);
-            }
-        }
-
+        const pack = this.createDataPack(this.styledVectors, scale);
+        const buffers = pack.buffers;
+        delete pack.buffers;
         const vectorPack = {
-            data : { packs, meshes }, buffers,
+            data : pack, buffers,
         };
 
         if (this.iconAtlas) {
@@ -246,6 +167,7 @@ export default class VectorPack {
         const format = this.getFormat(vectors[0].symbol);
         const formatWidth = this.formatWidth = getFormatWidth(format);
 
+        //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
         let maxFeaIndex = 0;
         for (let i = 0, l = vectors.length; i < l; i++) {

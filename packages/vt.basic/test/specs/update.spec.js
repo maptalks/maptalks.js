@@ -12,9 +12,9 @@ const DEFAULT_VIEW = {
 };
 
 const line = {
-    type : 'FeatureCollection',
-    features : [
-        { type : 'Feature', geometry : { type : 'LineString', coordinates : [[-1, 0], [1, 0]] }, properties : { type : 1 }}
+    type: 'FeatureCollection',
+    features: [
+        { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-1, 0], [1, 0]] }, properties: { type: 1 } }
     ]
 };
 
@@ -39,9 +39,11 @@ describe('update style specs', () => {
         assertChangeStyle(done, layer => {
             layer.setStyle([
                 {
-                    type : 'line',
-                    dataConfig : { type : 'line' },
-                    style : [{ symbol : { lineColor : '#0f0', lineWidth : 8, lineOpacity : 1 }}]
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
                 }
             ]);
         });
@@ -49,8 +51,8 @@ describe('update style specs', () => {
 
     it('should can updateSymbol', done => {
         assertChangeStyle(done, layer => {
-            layer.updateSymbol(0, 0, {
-                lineColor : '#0f0'
+            layer.updateSymbol(0, {
+                lineColor: '#0f0'
             });
         });
     });
@@ -58,13 +60,15 @@ describe('update style specs', () => {
     function assertChangeStyle(done, changeFun) {
         const style = [
             {
-                type : 'line',
-                dataConfig : { type : 'line' },
-                style : [{ symbol : { lineColor : '#f00', lineWidth : 8, lineOpacity : 1 }}]
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
             }
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
-            data : line,
+            data: line,
             style
         });
         let count = 0;

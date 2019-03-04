@@ -6,10 +6,10 @@ import BasicPainter from './BasicPainter';
 import { clamp } from '../Util';
 
 const DEFAULT_SCENE_CONFIG = {
-    collision : true,
-    fading : true,
-    fadingDuration : 400,
-    fadingDelay : 200
+    collision: true,
+    fading: true,
+    fadingDuration: 400,
+    fadingDelay: 200
 };
 
 const UINT8 = new Uint8Array(1);
@@ -229,9 +229,9 @@ export default class CollisionPainter extends BasicPainter {
             return;
         }
         const allBoxes = this._collisionBoxes = this._collisionBoxes || {
-            aPosition : [],
-            aVisible : [],
-            indices : []
+            aPosition: [],
+            aVisible: [],
+            indices: []
         };
         const map = this.getMap();
         if (map.isOffscreen(box)) {
@@ -323,14 +323,14 @@ export default class CollisionPainter extends BasicPainter {
         if (!this._collisionMesh) {
             const geometry = new reshader.Geometry(
                 {
-                    aPosition : [],
+                    aPosition: [],
                     aVisible: []
                 },
                 [],
                 0,
                 {
-                    positionSize : 2,
-                    primitive : 'lines'
+                    positionSize: 2,
+                    primitive: 'lines'
                 }
             );
 
@@ -346,7 +346,7 @@ export default class CollisionPainter extends BasicPainter {
         this._collisionRenderer.render(
             this._collisionShader,
             {
-                size : [this.canvas.width, this.canvas.height]
+                size: [this.canvas.width, this.canvas.height]
             },
             this._collisionScene
         );
@@ -360,24 +360,24 @@ export default class CollisionPainter extends BasicPainter {
 
         const canvas = this.canvas;
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
         this._collisionShader = new reshader.MeshShader({
-            vert : collisionVert, frag : collisionFrag,
-            uniforms : [
+            vert: collisionVert, frag: collisionFrag,
+            uniforms: [
                 'size'
             ],
-            extraCommandProps : {
+            extraCommandProps: {
                 viewport,
-                depth : {
-                    enable : false,
+                depth: {
+                    enable: false,
                 }
             }
         });
