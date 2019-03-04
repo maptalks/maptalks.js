@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vt.basic",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Basic rendering plugin for maptalks VectorTileLayer",
   "main": "dist/maptalks.vt.basic.js",
   "browser": "dist/maptalks.vt.basic.js",
@@ -10,7 +10,7 @@
     "dev": "rollup -w -c rollup.config.js",
     "fixtures": "npm run pretest && electron-mocha --require-main ./test/integration/env-fixtures.js  -t 10000 --renderer ./test/**/*.spec.js",
     "lint": "eslint src/**/*.js test/**/*.js",
-    "pretest": "npm run lint && cd ../vt && npm run build && cd ../vt.basic && npm run build",
+    "pretest": "echo pretest",
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
     "tdd": "cd ../vt && npm run build-dev && cd ../vt.basic && npm run build-dev && electron-mocha --interactive --renderer ./test/**/*.spec.js",
     "prepare": "npm test && npm run build"
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "@maptalks/vt": "^0.1.3",
+    "@maptalks/vt": "^0.1.4",
     "babel-eslint": "^9.0.0",
     "electron": "^4.0.1",
     "electron-mocha": "^6.0.4",
