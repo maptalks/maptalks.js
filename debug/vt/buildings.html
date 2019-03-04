@@ -14,7 +14,7 @@
   <script src="http://localhost/maptalks/dist/maptalks.js"></script>
   <script src="http://localhost/maptalksgl/dist/maptalksgl-dev.js"></script>
   <script src="buildings.js"></script>
-  <script src="../../packages/vt/dist/maptalks.vt-dev.js"></script>
+  <script src="../../packages/vt/dist/maptalks.vt.js"></script>
   <script src="../../packages/vt.basic/dist/maptalks.vt.basic.js"></script>
   <script src="js/stats.min.js"></script>
 </head>
@@ -89,8 +89,7 @@
 
     console.log(data.features.length);
 
-    const style = [
-      {
+    const renderPlugin = {
         type : 'pbr',
         dataConfig : {
           type : '3d-extrusion',
@@ -136,34 +135,102 @@
               }
             ]
           }
-        },
+        }
+      };
 
-        style : [
-          {
-            filter : ['==', 'levels', 5],
-            symbol: {
-              polygonOpacity: 1,
-              polygonFill: '#f00'
-            }
-          },
-          {
-            filter : ['==', 'levels', 3],
-            symbol: {
-              polygonOpacity: 1,
-              // polygonFill: '#fff',
-              polygonFill: '#fff700'
-            }
-          },
-          {
-            symbol: {
-              polygonOpacity: 1,
-              polygonFill: '#fff',
-              // polygonFill: '#fff700'
-            }
+    const style =  [
+      {
+        filter : true,
+        renderPlugin,
+        symbol: {
+          polygonOpacity: 1,
+          polygonFill: {
+            property : 'levels',
+            stops : [
+              [5, '#f00'],
+              [3, '#fff700'],
+              [1, '#fff']
+            ]
           }
-        ]
+        }
       }
     ];
+
+    // const style = [
+    //   {
+    //     type : 'pbr',
+    //     dataConfig : {
+    //       type : '3d-extrusion',
+    //       altitudeProperty : 'levels',
+    //       altitudeScale : 5,
+    //       defaultAltitude : 1,
+    //       normal : true,
+    //       uv : true,
+    //       uvSize : [128 / 50, 128 / 50],
+    //       // shadowVolume : true,
+    //       // shadowDir : [-1, -1, 0]
+    //     },
+    //     sceneConfig : {
+    //       animation : 'easeOutBounce',
+    //       material : {
+    //         roughness : 0.0,
+    //         metallic : 1.0,
+    //         albedoColor : [1, 1, 1],
+    //         // occulusionRoughnessMetallicMap : 'resources/occulusionRoughnessMetallicMap.png',
+    //         // albedoMap : 'resources/brickwall.jpg',
+    //         // normalMap : 'resources/Rock_01_local.jpg'
+    //       },
+    //       shadow : {
+    //         type : 'vsm',
+    //         // type : 'stencil',
+    //         enable : true,
+    //         quality : 'medium',
+    //         opacity : 0.5,
+    //         color : [0, 0, 0],
+    //         blurOffset : 1,
+    //         // debug : ['shadow', 'shadow2']
+    //       },
+    //       lights : {
+    //         ambientCubeLight : {
+    //           url : 'resources/venice_sunset_2k.hdr'
+    //         },
+    //         ambientColor : [0.2, 0.2, 0.2],
+    //         ambientIntensity : 1,
+    //         dirLights : [
+    //           {
+    //             color : [1, 1, 1],
+    //             direction : [0, 1, 1]
+    //           }
+    //         ]
+    //       }
+    //     },
+
+    //     style : [
+    //       {
+    //         filter : ['==', 'levels', 5],
+    //         symbol: {
+    //           polygonOpacity: 1,
+    //           polygonFill: '#f00'
+    //         }
+    //       },
+    //       {
+    //         filter : ['==', 'levels', 3],
+    //         symbol: {
+    //           polygonOpacity: 1,
+    //           // polygonFill: '#fff',
+    //           polygonFill: '#fff700'
+    //         }
+    //       },
+    //       {
+    //         symbol: {
+    //           polygonOpacity: 1,
+    //           polygonFill: '#fff',
+    //           // polygonFill: '#fff700'
+    //         }
+    //       }
+    //     ]
+    //   }
+    // ];
 
     // test tile clipping mask
     var layer1 = new maptalks.GeoJSONVectorTileLayer('polygon1', {
