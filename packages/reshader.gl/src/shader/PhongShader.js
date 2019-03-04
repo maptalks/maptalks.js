@@ -20,19 +20,13 @@ class PhongShader extends MeshShader {
                 'lightAmbient',
                 'lightDiffuse',
                 'lightSpecular',
-                'materialAmbient',
-                'materialDiffuse',
-                'materialSpecular',
+                'ambientStrength',
+                'specularStrength',
                 'materialShininess',
                 'opacity',
-                {
-                    name : 'lightPosition',
-                    type : 'function',
-                    fn : function (context, props) {
-                        const anchor = props['anchor'];
-                        return [anchor[0], anchor[1], 50];
-                    }
-                },
+                'sample',
+                'lightPosition',
+
                 {
                     name : 'normalMatrix',
                     type : 'function',

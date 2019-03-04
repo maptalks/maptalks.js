@@ -1,13 +1,13 @@
 import Material from './Material.js';
 
 const defaultUniforms = {
+    'lightPosition' : [0.0, 0.0, 50.0],
     'lightAmbient' : [0.5, 0.5, 0.5],
-    'lightDiffuse' : [0.2, 0.2, 0.2],
+    'lightDiffuse' : [0.8, 0.8, 0.8],
     'lightSpecular' : [1.0, 1.0, 1.0],
-    'materialAmbient': [1.0, 0.5, 0.31],
-    'materialDiffuse': [1.0, 0.5, 0.31],
-    'materialSpecular' : [0.5, 0.5, 0.5],
     'materialShininess' : 32.0,
+    'ambientStrength' : 0.5,
+    'specularStrength' : 0.8,
     'opacity' : 1.0
 };
 
