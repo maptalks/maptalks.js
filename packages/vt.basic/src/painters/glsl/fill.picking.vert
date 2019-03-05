@@ -7,5 +7,5 @@ uniform mat4 projViewModelMatrix;
 void main() {
     gl_Position = projViewModelMatrix * vec4(aPosition, 1);
 
-    fbo_picking_setData(gl_Position.w);
+    fbo_picking_setData(gl_Position.w, true);
 }

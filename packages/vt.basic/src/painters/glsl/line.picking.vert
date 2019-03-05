@@ -48,5 +48,5 @@ void main() {
     float distance = gl_Position.w;
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
 
-    fbo_picking_setData(distance);
+    fbo_picking_setData(distance, true);
 }

@@ -244,7 +244,7 @@ class PBRPainter extends Painter {
             void main() {
                 vec4 pos = vec4(aPosition, 1.0);
                 gl_Position = projViewModelMatrix * pos;
-                fbo_picking_setData(gl_Position.w);
+                fbo_picking_setData(gl_Position.w, true);
             }
         `;
         let u;

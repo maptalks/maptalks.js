@@ -135,7 +135,7 @@ class Painter {
             return null;
         }
         return {
-            feature: mesh.geometry.properties.features[pickingId],
+            data: mesh.geometry.properties.features[pickingId],
             point
         };
     }
