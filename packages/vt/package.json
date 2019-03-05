@@ -15,7 +15,8 @@
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
     "tdd": "npm run build-dev && electron-mocha --interactive --renderer ./test/**/*.spec.js",
     "pretest": "npm run lint && npm run build",
-    "prepare": "npm test && npm run build"
+    "prepare": "npm test && npm run build",
+    "preversion" : "npm test"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

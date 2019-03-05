@@ -10,7 +10,8 @@
     "dev": "rollup -w -c rollup.config.js",
     "fixtures": "npm run pretest && electron-mocha --require-main ./test/integration/env-fixtures.js  -t 10000 --renderer ./test/**/*.spec.js",
     "lint": "eslint src/**/*.js test/**/*.js",
-    "pretest": "echo pretest",
+    "pretest": "npm run lint && cd ../vt && npm run build && cd ../vt.basic && npm run build",
+    "preversion" : "npm test",
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
     "tdd": "cd ../vt && npm run build-dev && cd ../vt.basic && npm run build-dev && electron-mocha --interactive --renderer ./test/**/*.spec.js",
     "prepare": "npm test && npm run build"
