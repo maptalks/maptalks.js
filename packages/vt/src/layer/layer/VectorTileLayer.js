@@ -16,7 +16,10 @@ const defaultOptions = {
     stencil : false,
     features : true,
     cascadeTiles : false,
-    collision : true
+    collision : true,
+    picking : true,
+    pickingPoint : false,
+    pickingGeometry : false
 };
 
 /**
@@ -39,6 +42,8 @@ class VectorTileLayer extends maptalks.TileLayer {
         this._compileStyle();
     }
 
+    //TODO 实现onConfig，如果修改了features或者pickingGeometry就重新生成瓦片
+
     getTileUrl(x, y, z) {
         const res = this.getMap().getResolution(z);
         return super.getTileUrl(x, y, getMapBoxZoom(res));
@@ -51,7 +56,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             tileSize : this.options['tileSize'],
             baseRes : map.getResolution(map.getGLZoom()),
             style : this.options.style,
-            features : this.options.features
+            features : this.options.features,
+            pickingGeometry : this.options['pickingGeometry']
         };
     }
 

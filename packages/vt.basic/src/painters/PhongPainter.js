@@ -33,7 +33,7 @@ class PhongPainter extends Painter {
         this.colorSymbol = 'polygonFill';
     }
 
-    createGeometry(glData, features) {
+    createGeometry(glData) {
         const data = {
             aPosition: glData.vertices,
             aNormal: glData.normals,
@@ -55,7 +55,6 @@ class PhongPainter extends Painter {
         }
 
         const geometry = new reshader.Geometry(data, glData.indices);
-        geometry.properties.features = features;
         geometry.generateBuffers(this.regl);
 
         return geometry;

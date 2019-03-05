@@ -6,7 +6,7 @@ import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
 
-const defaultUniforms = {
+const DEFAULT_UNIFORMS = {
     'polygonFill': [255, 255, 255],
     'polygonOpacity': 1
 };
@@ -27,7 +27,7 @@ class FillPainter extends BasicPainter {
             uniforms.polygonOpacity = symbol['polygonOpacity'];
         }
         geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms, defaultUniforms);
+        const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true

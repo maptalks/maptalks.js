@@ -21,9 +21,7 @@ class Painter {
         //插件的序号，也是style的序号
         this.pluginIndex = pluginIndex;
         this.scene = new reshader.Scene();
-        if (this.sceneConfig.picking !== false) {
-            this.pickingFBO = layer.getRenderer().pickingFBO;
-        }
+        this.pickingFBO = layer.getRenderer().pickingFBO;
         this._stencilHelper = new StencilHelper();
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
@@ -82,7 +80,9 @@ class Painter {
 
         this.callShader(uniforms, context);
 
-        this._pickingRendered = false;
+        if (this.pickingFBO && this.pickingFBO._renderer === this.picking) {
+            delete this.pickingFBO._renderer;
+        }
 
         return {
             redraw: this._redraw
@@ -112,21 +112,24 @@ class Painter {
     }
 
     pick(x, y) {
+        if (!this.layer.options['picking'] || !this.sceneConfig.picking === false) {
+            return null;
+        }
         if (!this.pickingFBO || !this.picking) {
             return null;
         }
         const map = this.getMap();
         const uniforms = this.getUniformValues(map);
-        if (!this._pickingRendered) {
+        if (this.pickingFBO._renderer !== this.picking) {
             this.picking.render(this.scene.getMeshes(), uniforms, true);
-            this._pickingRendered = true;
+            this.pickingFBO = this.picking;
         }
         let picked = {};
         if (this.picking.getRenderedMeshes().length) {
             picked = this.picking.pick(x, y, uniforms, {
                 viewMatrix: map.viewMatrix,
                 projMatrix: map.projMatrix,
-                returnPoint: true
+                returnPoint: this.layer.options['pickingPoint'] && this.sceneConfig.pickingPoint !== false
             });
         }
         const { meshId, pickingId, point } = picked;

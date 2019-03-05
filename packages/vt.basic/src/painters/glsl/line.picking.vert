@@ -9,7 +9,7 @@
 // there are also "special" normals that have a bigger length (of up to 126 in
 // this case).
 // #define scale 63.0
-#define EXTRUDE_SCALE 0.015873016
+#define EXTRUDE_SCALE 63.0;//0.0078740157
 
 attribute vec3 aPosition;
 attribute float aNormal;

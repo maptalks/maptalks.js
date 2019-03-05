@@ -55,7 +55,7 @@ function createPainterPlugin(type, Painter) {
             var painter = this.painter;
             if (!painter) {
                 return {
-                    redraw : false
+                    redraw: false
                 };
             }
             var key = tileInfo.dupKey;
@@ -72,11 +72,12 @@ function createPainterPlugin(type, Painter) {
                     }
                 }
                 geometry = tileCache.geometry = painter.createGeometry(data, features);
+                geometry.properties.features = features;
                 this._fillCommonProps(geometry, context);
             }
             if (!geometry) {
                 return {
-                    'redraw' : false
+                    'redraw': false
                 };
             }
             if (tileCache.excludes !== this._excludes) {
@@ -106,7 +107,7 @@ function createPainterPlugin(type, Painter) {
             }
             if (!mesh || Array.isArray(mesh) && !mesh.length) {
                 return {
-                    'redraw' : false
+                    'redraw': false
                 };
             }
             //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
