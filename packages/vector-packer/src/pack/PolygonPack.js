@@ -25,9 +25,9 @@ export default class PolygonPack extends VectorPack {
     getFormat() {
         return [
             {
-                type : Int32Array,
-                width : 3,
-                name : 'aPosition'
+                type: Int32Array,
+                width: 3,
+                name: 'aPosition'
             }
             //TODO 动态color
         ];
@@ -49,7 +49,7 @@ export default class PolygonPack extends VectorPack {
     }
 
     placeVector(polygon, scale) {
-        const symbol = polygon.symbol;
+        // const symbol = polygon.symbol;
 
         const feature = polygon.feature,
             geometry = feature.geometry;

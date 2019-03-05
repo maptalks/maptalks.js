@@ -1,7 +1,7 @@
 describe('Point Pack of texts specs', function () {
     let features;
     beforeEach(() => {
-        features = [{ type : 'Feature', geometry : { type : 'Point', coordinates : [0, 0] }, properties : {}}];
+        features = [{ type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: {} }];
     });
 
     it('load atlas and layout', function (done) {
@@ -9,12 +9,12 @@ describe('Point Pack of texts specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    textName : 'hihi',
-                    textSize : 30
+                    textName: 'hihi',
+                    textSize: 30
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(() => {
             const glyphImage = pack.glyphAtlas.image;
             expect(pack.iconAltlas).not.to.be.ok();
@@ -33,14 +33,14 @@ describe('Point Pack of texts specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    textName : 'hihi',
-                    textSize : 30,
-                    textDx : 10,
-                    textDy : 5
+                    textName: 'hihi',
+                    textSize: 30,
+                    textDx: 10,
+                    textDy: 5
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -57,9 +57,9 @@ describe('Point Pack of texts specs', function () {
             expect(result.data.glyphAtlas.image.height).to.be(32);
             expect(result.data.glyphAtlas.positions['normal normal 30px  monospace']).to.be.eql({
                 '104': { rect: { x: 0, y: 0, w: 32, h: 32, id: 1 },
-                    metrics: { width: 24, height: 24, left: 0, top: -8, advance: 26 }},
+                    metrics: { width: 24, height: 24, left: 0, top: -8, advance: 26 } },
                 '105': { rect: { x: 32, y: 0, w: 32, h: 32, id: 2 },
-                    metrics: { width: 24, height: 24, left: 0, top: -8, advance: 26 }}});
+                    metrics: { width: 24, height: 24, left: 0, top: -8, advance: 26 } } });
 
             done();
         }).catch(err => {
@@ -73,14 +73,14 @@ describe('Point Pack of texts specs', function () {
             {
                 'filter': true,
                 'symbol': maptalks.MapboxUtil.loadFunctionTypes({
-                    textName : 'hihi',
-                    textSize : { stops: [[7, 5], [14, 200]] }
+                    textName: 'hihi',
+                    textSize: { stops: [[7, 5], [14, 200]] }
                 }, () => {
 
                 })
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -102,14 +102,14 @@ describe('Point Pack of texts specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    textName : 'hi',
-                    textSize : 40,
-                    textHorizontalAlignment : 'left',
-                    textVerticalAlignment : 'bottom',
+                    textName: 'hi',
+                    textSize: 40,
+                    textHorizontalAlignment: 'left',
+                    textVerticalAlignment: 'bottom',
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -127,13 +127,13 @@ describe('Point Pack of texts specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    textName : 'hi',
-                    textSize : 40,
-                    textFill : '#123'
+                    textName: 'hi',
+                    textSize: 40,
+                    textFill: '#123'
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -151,15 +151,15 @@ describe('Point Pack of texts specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    textName : 'hi',
-                    textSize : 40,
-                    textHorizontalAlignment : 'left',
-                    textVerticalAlignment : 'bottom',
-                    textRotation : 60
+                    textName: 'hi',
+                    textSize: 40,
+                    textHorizontalAlignment: 'left',
+                    textVerticalAlignment: 'bottom',
+                    textRotation: 60
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -203,14 +203,14 @@ describe('Point Pack of texts specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    textName : '中yin混合',
-                    textSize : 30,
-                    textHorizontalAlignment : 'left',
-                    textVerticalAlignment : 'bottom'
+                    textName: '中yin混合',
+                    textSize: 30,
+                    textHorizontalAlignment: 'left',
+                    textVerticalAlignment: 'bottom'
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
 

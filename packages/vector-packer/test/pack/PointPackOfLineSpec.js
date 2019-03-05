@@ -2,7 +2,7 @@ describe('Point Pack of Line specs', function () {
 
     let features;
     beforeEach(() => {
-        features = [{ type : 'Feature', geometry : { type : 'LineString', coordinates : [[0, 0], [500, 0]] }, properties : {}}];
+        features = [{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[0, 0], [500, 0]] }, properties: {} }];
     });
 
     it('anchors', function (done) {
@@ -10,14 +10,14 @@ describe('Point Pack of Line specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 30,
-                    markerHeight : 30,
-                    markerPlacement : 'line'
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 30,
+                    markerHeight: 30,
+                    markerPlacement: 'line'
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const anchors = result.data.packs[0].data.aPosition;
@@ -35,14 +35,14 @@ describe('Point Pack of Line specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 30,
-                    markerHeight : 30,
-                    markerPlacement : 'line'
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 30,
+                    markerHeight: 30,
+                    markerPlacement: 'line'
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 256 });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR, EXTENT: 256 });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const anchors = result.data.packs[0].data.aPosition;
@@ -59,14 +59,14 @@ describe('Point Pack of Line specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 30,
-                    markerHeight : 30,
-                    markerPlacement : 'line'
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 30,
+                    markerHeight: 30,
+                    markerPlacement: 'line'
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 100 });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR, EXTENT: 100 });
         pack.load(0.5).then(result => {
             // const result = pack.pack(0.5);
             const anchors = result.data.packs[0].data.aPosition;
@@ -79,19 +79,19 @@ describe('Point Pack of Line specs', function () {
     });
 
     it('no anchors at big angle', function (done) {
-        features = [{ type : 'Feature', geometry : { type : 'LineString', coordinates : [[0, 0], [121, 0], [121, 30]] }, properties : {}}];
+        features = [{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[0, 0], [121, 0], [121, 30]] }, properties: {} }];
         const styles = maptalks.MapboxUtil.compileStyle([
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 30,
-                    markerHeight : 30,
-                    markerPlacement : 'line'
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 30,
+                    markerHeight: 30,
+                    markerPlacement: 'line'
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR, EXTENT : 8192 });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR, EXTENT: 8192 });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const anchors = result.data.packs[0].data.aPosition;

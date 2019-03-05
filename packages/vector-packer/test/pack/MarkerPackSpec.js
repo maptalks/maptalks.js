@@ -1,7 +1,7 @@
 describe('Point Pack of markers specs', function () {
     let features;
     beforeEach(() => {
-        features = [{ type : 'Feature', geometry : { type : 'Point', coordinates : [0, 0] }, properties : {}}];
+        features = [{ type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: {} }];
     });
 
     it('load atlas and layout', function (done) {
@@ -9,13 +9,13 @@ describe('Point Pack of markers specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 30,
-                    markerHeight : 30
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 30,
+                    markerHeight: 30
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(() => {
             const iconImage = pack.iconAtlas.image;
             expect(iconImage.width).to.be.above(0);
@@ -34,15 +34,15 @@ describe('Point Pack of markers specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 40,
-                    markerHeight : 30,
-                    markerDx : 10,
-                    markerDy : 5
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 40,
+                    markerHeight: 30,
+                    markerDx: 10,
+                    markerDy: 5
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const p = result.data.packs[0];
@@ -66,7 +66,7 @@ describe('Point Pack of markers specs', function () {
             expect(result.data.iconAtlas.image.data.length).to.be.eql(4096);
             expect(result.data.iconAtlas.image.width).to.be(32);
             expect(result.data.iconAtlas.image.height).to.be(32);
-            expect(result.data.iconAtlas.positions['resources/plane-min.png']).to.be.eql({ tl : [1, 1], br : [31, 31], displaySize : [30, 30] });
+            expect(result.data.iconAtlas.positions['resources/plane-min.png']).to.be.eql({ tl: [1, 1], br: [31, 31], displaySize: [30, 30] });
 
             expect(result.buffers[result.buffers.length - 1].byteLength).to.be(4096); //32 * 32 * 4
 
@@ -82,15 +82,15 @@ describe('Point Pack of markers specs', function () {
             {
                 'filter': true,
                 'symbol': maptalks.MapboxUtil.loadFunctionTypes({
-                    markerFile : 'resources/plane-min.png',
-                    'markerWidth'  : { stops: [[7, 5], [14, 200]] },
-                    'markerHeight' : { stops: [[7, 5], [14, 200]] },
+                    markerFile: 'resources/plane-min.png',
+                    'markerWidth': { stops: [[7, 5], [14, 200]] },
+                    'markerHeight': { stops: [[7, 5], [14, 200]] },
                 }, () => {
 
                 })
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -115,15 +115,15 @@ describe('Point Pack of markers specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 400,
-                    markerHeight : 300,
-                    markerHorizontalAlignment : 'left',
-                    markerVerticalAlignment : 'bottom',
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 400,
+                    markerHeight: 300,
+                    markerHorizontalAlignment: 'left',
+                    markerVerticalAlignment: 'bottom',
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             const data = result.data.packs[0].data;
             expect(data.aShape.length).to.be(8);
@@ -140,16 +140,16 @@ describe('Point Pack of markers specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    markerFile : 'resources/plane-min.png',
-                    markerWidth : 400,
-                    markerHeight : 300,
-                    markerHorizontalAlignment : 'left',
-                    markerVerticalAlignment : 'bottom',
-                    markerRotation : 60
+                    markerFile: 'resources/plane-min.png',
+                    markerWidth: 400,
+                    markerHeight: 300,
+                    markerHorizontalAlignment: 'left',
+                    markerVerticalAlignment: 'bottom',
+                    markerRotation: 60
                 }
             }
         ]);
-        const pack = new packer.PointPack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.PointPack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;

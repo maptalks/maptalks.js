@@ -71,27 +71,27 @@ export default class LinePack extends VectorPack {
     getFormat() {
         return [
             {
-                type : Int16Array,
-                width : 3,
-                name : 'aPosition'
+                type: Int16Array,
+                width: 3,
+                name: 'aPosition'
             },
             //round? + up?
             {
-                type : Uint8Array,
-                width : 1,
-                name : 'aNormal'
+                type: Uint8Array,
+                width: 1,
+                name: 'aNormal'
             },
             //当前点距离aPos的凸起方向
             {
-                type : Int8Array,
-                width : 2,
-                name : 'aExtrude'
+                type: Int8Array,
+                width: 2,
+                name: 'aExtrude'
             },
             //当前点距离起点的距离
             {
-                type : Uint16Array,
-                width : 1,
-                name : 'aLinesofar'
+                type: Uint16Array,
+                width: 1,
+                name: 'aLinesofar'
             }
             //TODO 动态color和width
         ];

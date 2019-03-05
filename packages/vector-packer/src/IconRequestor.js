@@ -8,7 +8,7 @@ export default class IconRequestor {
 
     getIcons(icons, cb) {
         if (!icons || !Object.keys(icons).length) {
-            cb(null, { icons : null });
+            cb(null, { icons: null });
             return;
         }
         const urls = Object.keys(icons);
@@ -26,13 +26,13 @@ export default class IconRequestor {
                 ctx.drawImage(this, 0, 0);
                 const data = ctx.getImageData(0, 0, width, height).data;
                 buffers.push(data.buffer);
-                images[this.url] = { data : { data, width, height }, url : this.src };
+                images[this.url] = { data: { data, width, height }, url: this.src };
             } catch (err) {
                 //tainted canvas
                 console.warn(err);
             }
             if (current === count) {
-                cb(null, { icons : images, buffers });
+                cb(null, { icons: images, buffers });
             }
         }
         function onerror() {
@@ -42,7 +42,7 @@ export default class IconRequestor {
             } else {
                 current++;
                 if (current === count) {
-                    cb(null, { icons : images, buffers });
+                    cb(null, { icons: images, buffers });
                 }
             }
         }

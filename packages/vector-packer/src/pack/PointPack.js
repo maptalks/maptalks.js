@@ -2,7 +2,7 @@ import Color from 'color';
 import VectorPack from './VectorPack';
 import StyledPoint from './StyledPoint';
 import clipLine from './util/clip_line';
-import  { getAnchors } from './util/get_anchors';
+import { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 import { evaluate } from '../style/Util';
@@ -16,102 +16,102 @@ function getPackSDFFormat(symbol) {
         //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
         return [
             {
-                type : Int16Array,
-                width : 3,
-                name : 'aPosition'
+                type: Int16Array,
+                width: 3,
+                name: 'aPosition'
             },
             {
-                type : Int16Array,
-                width : 2,
-                name : 'aShape0'
+                type: Int16Array,
+                width: 2,
+                name: 'aShape0'
             },
             {
-                type : Uint16Array,
-                width : 2,
-                name : 'aTexCoord0'
+                type: Uint16Array,
+                width: 2,
+                name: 'aTexCoord0'
             },
             {
-                type : Int16Array,
-                width : 2,
-                name : 'aShape1'
+                type: Int16Array,
+                width: 2,
+                name: 'aShape1'
             },
             {
-                type : Uint16Array,
-                width : 2,
-                name : 'aTexCoord1'
+                type: Uint16Array,
+                width: 2,
+                name: 'aTexCoord1'
             },
             {
-                type : Uint16Array,
-                width : 3,
-                name : 'aSegment'
+                type: Uint16Array,
+                width: 3,
+                name: 'aSegment'
             },
             {
-                type : Int16Array,
-                width : 2,
-                name : 'aGlyphOffset'
+                type: Int16Array,
+                width: 2,
+                name: 'aGlyphOffset'
             },
             {
-                type : Uint8Array,
-                width : 1,
-                name : 'aSize'
+                type: Uint8Array,
+                width: 1,
+                name: 'aSize'
             },
             {
-                type : Uint8Array,
-                width : 3,
-                name : 'aColor'
+                type: Uint8Array,
+                width: 3,
+                name: 'aColor'
             },
             {
-                type : Int8Array,
-                width : 2,
-                name : 'aDxDy'
+                type: Int8Array,
+                width: 2,
+                name: 'aDxDy'
             },
             {
-                type : Int16Array,
-                width : 1,
-                name : 'aRotation'
+                type: Int16Array,
+                width: 1,
+                name: 'aRotation'
             }
         ];
     } else {
         return [
             {
-                type : Int16Array,
-                width : 3,
-                name : 'aPosition'
+                type: Int16Array,
+                width: 3,
+                name: 'aPosition'
             },
             {
-                type : Int16Array,
-                width : 2,
-                name : 'aShape0'
+                type: Int16Array,
+                width: 2,
+                name: 'aShape0'
             },
             {
-                type : Uint16Array,
-                width : 2,
-                name : 'aTexCoord0'
+                type: Uint16Array,
+                width: 2,
+                name: 'aTexCoord0'
             },
             {
-                type : Int16Array,
-                width : 2,
-                name : 'aGlyphOffset'
+                type: Int16Array,
+                width: 2,
+                name: 'aGlyphOffset'
             },
             {
-                type : Uint8Array,
-                width : 1,
-                name : 'aSize'
+                type: Uint8Array,
+                width: 1,
+                name: 'aSize'
             },
             {
-                type : Uint8Array,
-                width : 3,
-                name : 'aColor'
+                type: Uint8Array,
+                width: 3,
+                name: 'aColor'
             },
             {
-                type : Int8Array,
-                width : 2,
-                name : 'aDxDy'
+                type: Int8Array,
+                width: 2,
+                name: 'aDxDy'
             },
             {
-                type : Int16Array,
-                width : 1,
-                name : 'aRotation'
+                type: Int16Array,
+                width: 1,
+                name: 'aRotation'
             }
         ];
     }
@@ -120,37 +120,39 @@ function getPackSDFFormat(symbol) {
 function getPackMarkerFormat() {
     return [
         {
-            type : Int16Array,
-            width : 3,
-            name : 'aPosition'
+            type: Int16Array,
+            width: 3,
+            name: 'aPosition'
         },
         {
-            type : Int16Array,
-            width : 2,
-            name : 'aShape'
+            type: Int16Array,
+            width: 2,
+            name: 'aShape'
         },
         {
-            type : Uint16Array,
-            width : 2,
-            name : 'aTexCoord'
+            type: Uint16Array,
+            width: 2,
+            name: 'aTexCoord'
         },
         {
-            type : Uint8Array,
-            width : 2,
-            name : 'aSize'
+            type: Uint8Array,
+            width: 2,
+            name: 'aSize'
         },
         {
-            type : Int8Array,
-            width : 2,
-            name : 'aDxDy'
+            type: Int8Array,
+            width: 2,
+            name: 'aDxDy'
         },
         {
-            type : Int16Array,
-            width : 1,
-            name : 'aRotation'
+            type: Int16Array,
+            width: 1,
+            name: 'aRotation'
         }
     ];
 }
+
+const DEFAULT_COLOR = [0, 0, 0];
 
 
 /**
@@ -225,9 +227,9 @@ export default class PointPack extends VectorPack {
         if (isText) {
             dx = evaluate(symbol['textDx'], properties) || 0;
             dy = evaluate(symbol['textDy'], properties) || 0;
-            const textFill = evaluate(symbol['textFill'], properties) || '#000';
             rotation = evaluate(symbol['textRotation'], properties) || 0;
-            color = Color(textFill || '#000').array();
+            const textFill = evaluate(symbol['textFill'], properties);
+            color = textFill ? Color(textFill).array() : DEFAULT_COLOR;
             const font = point.getIconAndGlyph().glyph.font;
             quads = getGlyphQuads(shape.horizontal, alongLine, this.glyphAtlas.positions[font]);
         } else {

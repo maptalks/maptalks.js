@@ -68,7 +68,7 @@ export default class VectorPack {
         const features = this.features;
         if (!features || !features.length) return Promise.resolve();
         const iconReqs = {}, glyphReqs = {};
-        const options = { zoom : this.options.zoom };
+        const options = { zoom: this.options.zoom };
         const symbol = this.symbol;
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
@@ -136,7 +136,7 @@ export default class VectorPack {
         const buffers = pack.buffers;
         delete pack.buffers;
         const vectorPack = {
-            data : pack, buffers,
+            data: pack, buffers,
         };
 
         if (this.iconAtlas) {
@@ -198,9 +198,9 @@ export default class VectorPack {
         elements = new ElementType(elements);
         buffers.push(elements.buffer);
         return {
-            data : arrays,
+            data: arrays,
             // format,
-            indices : elements,
+            indices: elements,
             buffers
         };
     }
@@ -219,21 +219,21 @@ function serializeAtlas(atlas) {
         for (const p in atlas.positions) {
             const pos = atlas.positions[p];
             positions[p] = {
-                tl : pos.tl,
-                br : pos.br,
-                displaySize : pos.displaySize
+                tl: pos.tl,
+                br: pos.br,
+                displaySize: pos.displaySize
             };
         }
         format = 'rgba';
     }
     const image = atlas.image;
     return {
-        image : {
-            width : image.width,
-            height : image.height,
-            data : image.data,
+        image: {
+            width: image.width,
+            height: image.height,
+            data: image.data,
             format
         },
-        positions : positions
+        positions: positions
     };
 }

@@ -1,12 +1,12 @@
 import Point from '@mapbox/point-geometry';
 
 const TYPES = {
-    'Point' : 1,
-    'LineString' : 2,
-    'Polygon' : 3,
-    'MultiPoint' : 4,
-    'MultiLineString' : 5,
-    'MultiPolygon' : 6
+    'Point': 1,
+    'LineString': 2,
+    'Polygon': 3,
+    'MultiPoint': 4,
+    'MultiLineString': 5,
+    'MultiPolygon': 6
 };
 
 export default function convert(data, options = {}) {

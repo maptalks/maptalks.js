@@ -31,15 +31,15 @@ export default class NativeLinePack extends VectorPack {
     getFormat() {
         return [
             {
-                type : Int16Array,
-                width : 3,
-                name : 'aPosition'
+                type: Int16Array,
+                width: 3,
+                name: 'aPosition'
             },
             //当前点距离起点的距离
             {
-                type : Uint16Array,
-                width : 1,
-                name : 'aLinesofar'
+                type: Uint16Array,
+                width: 1,
+                name: 'aLinesofar'
             }
             //TODO 动态color
         ];

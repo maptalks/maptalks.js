@@ -2,7 +2,7 @@ describe('Line Pack specs', function () {
 
     let features;
     beforeEach(() => {
-        features = [{ type : 'Feature', geometry : { type : 'LineString', coordinates : [[0, 0], [500, 0], [550, 50]] }, properties : {}}];
+        features = [{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[0, 0], [500, 0], [550, 50]] }, properties: {} }];
     });
 
     it('pack data', function (done) {
@@ -10,13 +10,13 @@ describe('Line Pack specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    lineWidth : 2,
-                    lineOpacity : 0.6,
-                    lineColor : '#f00'
+                    lineWidth: 2,
+                    lineOpacity: 0.6,
+                    lineColor: '#f00'
                 }
             }
         ]);
-        const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.LinePack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -49,14 +49,14 @@ describe('Line Pack specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    lineWidth : 2,
-                    lineOpacity : 0.6,
-                    lineColor : '#f00',
-                    lineJoin : 'round'
+                    lineWidth: 2,
+                    lineOpacity: 0.6,
+                    lineColor: '#f00',
+                    lineJoin: 'round'
                 }
             }
         ]);
-        const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.LinePack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -86,14 +86,14 @@ describe('Line Pack specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    lineWidth : 2,
-                    lineOpacity : 0.6,
-                    lineColor : '#f00',
-                    lineJoin : 'bevel'
+                    lineWidth: 2,
+                    lineOpacity: 0.6,
+                    lineColor: '#f00',
+                    lineJoin: 'bevel'
                 }
             }
         ]);
-        const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.LinePack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             const pack = result.data.packs[0];
             const data = result.data.packs[0].data;
@@ -130,14 +130,14 @@ describe('Line Pack specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    lineWidth : 2,
-                    lineOpacity : 0.6,
-                    lineColor : '#f00',
-                    lineCap : 'round'
+                    lineWidth: 2,
+                    lineOpacity: 0.6,
+                    lineColor: '#f00',
+                    lineCap: 'round'
                 }
             }
         ]);
-        const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.LinePack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;
@@ -166,14 +166,14 @@ describe('Line Pack specs', function () {
             {
                 'filter': true,
                 'symbol': {
-                    lineWidth : 2,
-                    lineOpacity : 0.6,
-                    lineColor : '#f00',
-                    lineCap : 'square'
+                    lineWidth: 2,
+                    lineOpacity: 0.6,
+                    lineColor: '#f00',
+                    lineCap: 'square'
                 }
             }
         ]);
-        const pack = new packer.LinePack(features, styles, { minZoom : 1, maxZoom : 22, requestor : REQUESTOR });
+        const pack = new packer.LinePack(features, styles, { minZoom: 1, maxZoom: 22, requestor: REQUESTOR });
         pack.load(1).then(result => {
             // const result = pack.pack(1);
             const data = result.data.packs[0].data;

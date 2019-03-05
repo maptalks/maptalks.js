@@ -8,7 +8,7 @@ export default class GlyphRequestor {
 
     getGlyphs(glyphs) {
         if (!glyphs || !Object.keys(glyphs).length) {
-            return { glyphs : null };
+            return { glyphs: null };
         }
         const glyphSdfs = {};
         const buffers = [];
@@ -24,7 +24,7 @@ export default class GlyphRequestor {
             }
         }
 
-        return { glyphs : glyphSdfs, buffers };
+        return { glyphs: glyphSdfs, buffers };
     }
 
     _tinySDF(entry, font, charCode) {
@@ -77,9 +77,9 @@ export default class GlyphRequestor {
         return {
             charCode,
             bitmap: {
-                width : 24 + buffer * 2,
-                height : 24 + buffer * 2,
-                data : tinySDF.draw(String.fromCharCode(charCode))
+                width: 24 + buffer * 2,
+                height: 24 + buffer * 2,
+                data: tinySDF.draw(String.fromCharCode(charCode))
             },
             metrics: {
                 width: 24,
