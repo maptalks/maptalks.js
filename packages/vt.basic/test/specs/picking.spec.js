@@ -42,7 +42,7 @@ describe('picking specs', () => {
             const result = layer.identify(coord);
             if (ignoreSymbol) {
                 for (let i = 0; i < result.length; i++) {
-                    delete result[i].feature.symbol;
+                    delete result[i].data.symbol;
                 }
             }
             if (typeof expected === 'object') {
@@ -75,10 +75,12 @@ describe('picking specs', () => {
                             markerFile: ICON_PATH
                         }
                     }
-                ]
+                ],
+                pickingGeometry: true,
+                pickingPoint: true
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'feature': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, }, 'point': [368, -368, 0], 'type': 'icon' }];
+            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, }, 'point': [368, -368, 0], 'type': 'icon' }];
             runner(options, coord, expected, true, done);
         });
 
@@ -304,6 +306,78 @@ describe('picking specs', () => {
             const coord = [-0.9541270, 0.54773];
             const expected = 1;
             runner(options, coord, expected, false, done);
+        });
+    });
+
+    context('native-point', () => {
+        it('should pick native points', done => {
+            const options = {
+                data: {
+                    type: 'FeatureCollection',
+                    features: [
+                        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } },
+                        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.6, 0.6] }, properties: { type: 2 } }
+                    ]
+                },
+                style: [
+                    {
+                        filter: ['==', 'type', 1],
+                        renderPlugin: {
+                            type: 'native-point',
+                            dataConfig: {
+                                type: 'native-point'
+                            }
+                        },
+                        symbol: {
+                            markerSize: 30,
+                            markerFill: '#f00',
+                            markerOpacity: 0.5
+                        }
+                    },
+                    {
+                        renderPlugin: {
+                            type: 'native-point',
+                            dataConfig: {
+                                type: 'native-point'
+                            }
+                        },
+                        symbol: {
+                            markerType: 'square',
+                            markerSize: 20,
+                            markerFill: '#ff0',
+                            markerOpacity: 0.5
+                        }
+                    }
+                ],
+                view: {
+                    center: [0.5, 0.5],
+                    zoom: 8
+                }
+            };
+
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            let count = 0;
+            layer.on('layerload', () => {
+                count++;
+                if (count <= 1 || count > 2) {
+                    return;
+                }
+                const yellowPoint = layer.identify([0.6, 0.6]);
+                const redPoint = layer.identify([0.5, 0.5]);
+                assert.ok(yellowPoint.length === 1);
+                assert.ok(redPoint.length === 1);
+                assert.notDeepEqual(yellowPoint, redPoint);
+
+                const expected = {
+                    'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, 'symbol': { 'markerSize': 30, 'markerFill': '#f00', 'markerOpacity': 0.5 }
+                };
+                assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
+
+                done();
+            });
+            layer.addTo(map);
         });
     });
 

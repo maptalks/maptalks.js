@@ -1,54 +1,54 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import Painter from './Painter';
-import Color from 'color';
-import vert from './glsl/native-line.vert';
-import frag from './glsl/native-line.frag';
+import vert from './glsl/native-point.vert';
+import frag from './glsl/native-point.frag';
+import pickingVert from './glsl/native-point.picking.vert';
 
-const defaultUniforms = {
-    lineColor: [0, 0, 0],
-    lineOpacity: 1
+const DEFAULT_UNIFORMS = {
+    markerFill: [0, 0, 0],
+    markerOpacity: 1,
+    markerSize: 10
 };
 
-class NativeLinePainter extends Painter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
-        this.colorSymbol = 'lineColor';
-    }
+class NativePointPainter extends Painter {
 
     createGeometry(glData) {
         const data = extend({}, glData.data);
-        // data.aPickingId = data.featureIndexes;
-        // delete data.featureIndexes;
-        const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: 'lines' });
+        data.aPickingId = data.featureIndexes;
+        delete data.featureIndexes;
+        const geometry = new reshader.Geometry(data, null, 0, { primitive: 'points' });
         return geometry;
-
     }
 
     createMesh(geometry, transform) {
         const symbol = this.getSymbol();
         const uniforms = this.getMeshUniforms(geometry, symbol);
         geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms, defaultUniforms);
+
+        const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
+        material.createDefines = () => {
+            if (symbol.markerType !== 'square') {
+                return {
+                    'USE_CIRCLE': 1
+                };
+            }
+            return null;
+        };
+
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true
         });
+
         mesh.setLocalTransform(transform);
         return mesh;
     }
 
     getMeshUniforms(geometry, symbol) {
         const uniforms = {};
-        if (symbol['lineColor']) {
-            const color = Color(symbol['lineColor']);
-            uniforms.lineColor = color.unitArray();
-            if (uniforms.lineColor.length === 3) {
-                uniforms.lineColor.push(1);
-            }
-        }
-        if (symbol['lineOpacity'] || symbol['lineOpacity'] === 0) {
-            uniforms.lineOpacity = symbol['lineOpacity'];
+        if (symbol['markerOpacity'] || symbol['markerOpacity'] === 0) {
+            uniforms.markerOpacity = symbol['markerOpacity'];
         }
         return uniforms;
     }
@@ -112,7 +112,7 @@ class NativeLinePainter extends Painter {
                 },
                 depth: {
                     enable: true,
-                    func: this.sceneConfig.depthFunc || 'less'
+                    func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
                     enable: true,
@@ -126,6 +126,27 @@ class NativeLinePainter extends Painter {
         };
 
         this.shader = new reshader.MeshShader(config);
+
+        if (this.pickingFBO) {
+            this.picking = new reshader.FBORayPicking(
+                this.renderer,
+                {
+                    vert: pickingVert,
+                    uniforms: [
+                        {
+                            name: 'projViewModelMatrix',
+                            type: 'function',
+                            fn: function (context, props) {
+                                const projViewModelMatrix = [];
+                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                                return projViewModelMatrix;
+                            }
+                        }
+                    ]
+                },
+                this.pickingFBO
+            );
+        }
     }
 
     getUniformValues(map) {
@@ -136,4 +157,4 @@ class NativeLinePainter extends Painter {
     }
 }
 
-export default NativeLinePainter;
+export default NativePointPainter;

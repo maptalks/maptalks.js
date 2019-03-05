@@ -1,6 +1,6 @@
 import { extend, getIndexArrayType, compileStyle } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 
 const KEY_IDX = '__fea_idx';
@@ -98,16 +98,21 @@ export default class BaseLayerWorker {
                     feature = features[i];
                     //reset feature's marks
                     if (feature && feature[KEY_IDX] !== undefined) {
+                        delete feature[KEY_IDX];
+                        delete feature._styleMark;
                         if (options.features === 'id') {
                             allFeas.push(feature.id);
                         } else {
-                            allFeas.push(feature);
+                            const o = extend({}, feature);
+                            if (!options.pickingGeometry) {
+                                delete o.geometry;
+                            }
+                            delete o.extent;
+                            allFeas.push(o);
                         }
-                        delete feature[KEY_IDX];
-                        delete feature._styleMark;
                     } else {
-                        //use 0 instead of null, to reduce feature string size
-                        allFeas.push(0);
+                        //use '' instead of null, to reduce feature string size
+                        allFeas.push('');
                     }
                 }
             }
@@ -140,6 +145,13 @@ export default class BaseLayerWorker {
                 zoom
             });
             const pack = new PointPack(features, symbol, options);
+            return pack.load(extent / tileSize);
+        } else if (type === 'native-point') {
+            const options = extend({}, dataConfig, {
+                EXTENT : extent,
+                zoom
+            });
+            const pack = new NativePointPack(features, symbol, options);
             return pack.load(extent / tileSize);
         } else if (type === 'line') {
             const options = extend({}, dataConfig, {
@@ -181,9 +193,9 @@ export default class BaseLayerWorker {
         const filtered = [];
         const l = features.length;
         for (let i = 0; i < l; i++) {
-            //如果没定义filter，或者filter定义为true，则只在数据没有被其他filter style时，才做绘制
-            if (!Array.isArray(filter.def) && !features[i]._styleMark ||
-                Array.isArray(filter.def) && filter(features[i])) {
+            //filter.def没有定义，或者为default时，说明其实默认样式，feature之前没有其他样式时的应用样式
+            if ((!filter.def || filter.def === 'default') && !features[i]._styleMark ||
+                (filter.def === true || Array.isArray(filter.def) && filter(features[i]))) {
                 features[i][KEY_IDX] = i;
                 features[i]._styleMark = 1;
                 filtered.push(features[i]);

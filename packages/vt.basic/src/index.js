@@ -5,6 +5,7 @@ import LinePainter from './painters/LinePainter';
 import LineGlowPainter from './painters/LineGlowPainter';
 import IconPainter from './painters/IconPainter';
 import TextPainter from './painters/TextPainter';
+import NativePointPainter from './painters/NativePointPainter';
 import NativeLinePainter from './painters/NativelinePainter';
 // import TrailLinePainter from './painters/TrailLinePainter';
 import PBRPainter from './painters/pbr/PBRPainter';
@@ -28,6 +29,9 @@ LineGlowPlugin.registerAt(VectorTileLayer);
 
 const NativeLinePlugin = createPainterPlugin('native-line', NativeLinePainter);
 NativeLinePlugin.registerAt(VectorTileLayer);
+
+const NativePointPlugin = createPainterPlugin('native-point', NativePointPainter);
+NativePointPlugin.registerAt(VectorTileLayer);
 
 // const TrailLinePlugin = createPainterPlugin('native-trail-line', TrailLinePainter);
 // TrailLinePlugin.registerAt(VectorTileLayer);
@@ -59,6 +63,7 @@ export {
     TextPainter,
     LineGlowPainter,
     NativeLinePainter,
+    NativePointPainter,
     // TrailLinePainter,
     PBRPainter,
     PhongPainter,

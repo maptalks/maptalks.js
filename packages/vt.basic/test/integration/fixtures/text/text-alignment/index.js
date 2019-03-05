@@ -1,5 +1,6 @@
 const style = [
     {
+        filter: ['==', 'type', 1],
         renderPlugin: {
             type: 'text',
             dataConfig: {
@@ -9,7 +10,6 @@ const style = [
                 collision: false
             }
         },
-        filter: ['==', 'type', 1],
         symbol: {
             textName: '貔貅',
             textSize: 30,
@@ -18,6 +18,7 @@ const style = [
         }
     },
     {
+        filter: 'default',
         renderPlugin: {
             type: 'text',
             dataConfig: {
