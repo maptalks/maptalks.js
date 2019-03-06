@@ -1,6 +1,9 @@
 attribute vec3 aPosition;
-//attribute vec2 TEXCOORD_0;
-//varying vec2 TexCoords;
+#ifdef USE_BASECOLORTEXTURE
+attribute vec2 TEXCOORD_0;
+varying vec2 TexCoords;
+#endif
+
 attribute vec3 NORMAL;
 
 varying vec4 vFragPos;
@@ -14,5 +17,8 @@ void main()
 {
     vFragPos = modelMatrix * vec4(aPosition, 1.0);
     vNormal = normalize(vec3(normalMatrix * vec4(NORMAL, 1.0)));
+    #ifdef USE_BASECOLORTEXTURE
+    TexCoords = TEXCOORD_0;
+    #endif
     gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
 }
