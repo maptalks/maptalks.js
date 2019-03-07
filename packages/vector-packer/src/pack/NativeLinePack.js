@@ -1,7 +1,6 @@
 // import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
-import { isClippedEdge } from './util/util';
 
 // The number of bits that is used to store the line distance in the buffer.
 const LINE_DISTANCE_BUFFER_BITS = 16;
@@ -36,34 +35,22 @@ export default class NativeLinePack extends VectorPack {
                 name: 'aPosition'
             },
             //当前点距离起点的距离
-            {
-                type: Uint16Array,
-                width: 1,
-                name: 'aLinesofar'
-            }
+            // {
+            //     type: Uint16Array,
+            //     width: 1,
+            //     name: 'aLinesofar'
+            // }
             //TODO 动态color
         ];
     }
 
     placeVector(line) {
         const feature = line.feature,
-            isPolygon = feature.type === 3, //POLYGON
             lines = feature.geometry;
-        const elements = this.elements;
-        if (isPolygon) {
-            this.elements = [];
-        }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
             this._addLine(lines[i], feature);
-            if (isPolygon) {
-                this._filterPolygonEdges(elements);
-                this.elements = [];
-            }
-        }
-        if (isPolygon) {
-            this.elements = elements;
         }
     }
 
@@ -143,30 +130,19 @@ export default class NativeLinePack extends VectorPack {
         }
     }
 
-    addLineVertex(data, point, linesofar) {
-        linesofar *= LINE_DISTANCE_SCALE;
+    addLineVertex(data, point) {
+        // linesofar *= LINE_DISTANCE_SCALE;
         data.push(
             point.x,
             point.y,
             0,
-            linesofar
+            // linesofar
         );
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
 
     addElements(e1, e2) {
         super.addElements(this.offset + e1, this.offset + e2);
-    }
-
-    _filterPolygonEdges(elements) {
-        const EXTENT = this.options['EXTENT'],
-            edges = this.elements;
-        for (let i = 0; i < edges.length; i += 3) {
-            if (!isClippedEdge(this.data, edges[i], edges[i + 1], this.formatWidth, EXTENT) &&
-                !isClippedEdge(this.data, edges[i + 1], edges[i + 2], this.formatWidth, EXTENT)) {
-                elements.push(edges[i], edges[i + 1], edges[i + 2]);
-            }
-        }
     }
 
 }
