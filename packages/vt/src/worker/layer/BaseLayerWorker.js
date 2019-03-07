@@ -2,6 +2,8 @@ import { extend, getIndexArrayType, compileStyle } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
+import distinctColors from '../../common/Colors';
+import { createFilter } from '@maptalks/feature-filter';
 
 const KEY_IDX = '__fea_idx';
 
@@ -24,7 +26,7 @@ export default class BaseLayerWorker {
      * @param {Function} cb - callback function when finished
      */
     loadTile(context, cb) {
-        this.getTileFeatures(context.tileInfo, (err, features) => {
+        this.getTileFeatures(context.tileInfo, (err, features, layers) => {
             if (err) {
                 cb(err);
                 return;
@@ -33,7 +35,7 @@ export default class BaseLayerWorker {
                 cb();
                 return;
             }
-            this._createTileData(features, context).then(data => {
+            this._createTileData(layers, features, context).then(data => {
                 cb(null, data.data, data.buffers);
             });
         });
@@ -44,13 +46,20 @@ export default class BaseLayerWorker {
         this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
     }
 
-    _createTileData(features, { glScale, zScale, tileInfo }) {
+    _createTileData(layers, features, { glScale, zScale, tileInfo }) {
         if (!features.length) {
             return Promise.resolve({
-                data : null,
-                buffers : []
+                data: null,
+                buffers: []
             });
         }
+        const useDefault = !this.options.style.length;
+        let pluginConfigs = this.pluginConfig;
+        if (useDefault) {
+            //图层没有定义任何style，通过数据动态生成pluginConfig
+            pluginConfigs = this._updateLayerPluginConfig(layers);
+        }
+
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
             data = [],
@@ -58,8 +67,8 @@ export default class BaseLayerWorker {
             options = this.options,
             buffers = [];
         const promises = [];
-        for (let i = 0; i < this.pluginConfig.length; i++) {
-            const pluginConfig = this.pluginConfig[i];
+        for (let i = 0; i < pluginConfigs.length; i++) {
+            const pluginConfig = pluginConfigs[i];
             const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.filter, features, i);
 
             if (!tileFeatures.length) {
@@ -69,12 +78,18 @@ export default class BaseLayerWorker {
             const arrCtor = getIndexArrayType(maxIndex);
             data[i] = {
                 //[feature_index, style_index, ...]
-                styledFeatures : new arrCtor(tileFeaIndexes)
+                styledFeatures: new arrCtor(tileFeaIndexes)
             };
             //index of plugin with data
             dataIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
-            const promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent : EXTENT, glScale, zScale, zoom });
+            let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, glScale, zScale, zoom });
+            if (useDefault) {
+                promise = promise.then(tileData => {
+                    tileData.data.layer = tileFeatures[0].layer;
+                    return tileData;
+                });
+            }
             promises.push(promise);
         }
 
@@ -118,10 +133,10 @@ export default class BaseLayerWorker {
             }
 
             return {
-                data : {
+                data: {
                     data,
-                    extent : EXTENT,
-                    features : JSON.stringify(allFeas)
+                    extent: EXTENT,
+                    features: allFeas
                 },
                 buffers
             };
@@ -129,10 +144,20 @@ export default class BaseLayerWorker {
 
     }
 
-    _createTileGeometry(features, pluginConfig, { extent, glScale, zScale, zoom }) {
+    _createTileGeometry(features, pluginConfig, context) {
+        const dataConfig = pluginConfig.renderPlugin ? pluginConfig.renderPlugin.dataConfig : getDefaultRenderConfig(features[0].type).dataConfig;
+        const symbol = pluginConfig.renderPlugin ? pluginConfig.symbol : getDefaultSymbol(features[0].type);
+        const type = dataConfig.type;
+
+        return this._createTilePromise(features, dataConfig, symbol, context).then(tileData => {
+            tileData.data.type = type;
+            return tileData;
+        });
+    }
+
+    _createTilePromise(features, dataConfig, symbol, context) {
         const tileSize = this.options.tileSize[0];
-        const dataConfig = pluginConfig.renderPlugin.dataConfig;
-        const symbol = pluginConfig.symbol;
+        const { extent, glScale, zScale, zoom } = context;
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
             return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1]));
@@ -140,47 +165,47 @@ export default class BaseLayerWorker {
             return Promise.resolve(buildWireframe(features, dataConfig, extent));
         } else if (type === 'point') {
             const options = extend({}, dataConfig, {
-                EXTENT : extent,
-                requestor : this.fetchIconGlyphs.bind(this),
+                EXTENT: extent,
+                requestor: this.fetchIconGlyphs.bind(this),
                 zoom
             });
             const pack = new PointPack(features, symbol, options);
             return pack.load(extent / tileSize);
         } else if (type === 'native-point') {
             const options = extend({}, dataConfig, {
-                EXTENT : extent,
+                EXTENT: extent,
                 zoom
             });
             const pack = new NativePointPack(features, symbol, options);
             return pack.load(extent / tileSize);
         } else if (type === 'line') {
             const options = extend({}, dataConfig, {
-                EXTENT : extent,
-                requestor : this.fetchIconGlyphs.bind(this),
+                EXTENT: extent,
+                requestor: this.fetchIconGlyphs.bind(this),
                 zoom
             });
             const pack = new LinePack(features, symbol, options);
             return pack.load();
         } else if (type === 'native-line') {
             const options = extend({}, dataConfig, {
-                EXTENT : extent,
+                EXTENT: extent,
                 zoom
             });
             const pack = new NativeLinePack(features, symbol, options);
             return pack.load();
         } else if (type === 'fill') {
             const options = extend({}, dataConfig, {
-                EXTENT : extent,
-                requestor : this.fetchIconGlyphs.bind(this),
+                EXTENT: extent,
+                requestor: this.fetchIconGlyphs.bind(this),
                 zoom
             });
             const pack = new PolygonPack(features, symbol, options);
             return pack.load();
         }
-        return {
-            data : {},
-            buffers : null
-        };
+        return Promise.resolve({
+            data: {},
+            buffers: null
+        });
     }
 
     /**
@@ -203,8 +228,8 @@ export default class BaseLayerWorker {
             }
         }
         return {
-            tileFeatures : filtered,
-            tileFeaIndexes : indexes
+            tileFeatures: filtered,
+            tileFeaIndexes: indexes
         };
     }
 
@@ -215,6 +240,26 @@ export default class BaseLayerWorker {
                 this.pluginConfig[i].filter.def = layerStyle[i].filter ? (layerStyle[i].filter.value || layerStyle[i].filter) : undefined;
             }
         }
+    }
+
+    _updateLayerPluginConfig(layers) {
+        let plugins = this._layerPlugins;
+        if (!this._layerPlugins) {
+            plugins = this._layerPlugins = {};
+        }
+        for (let i = 0; i < layers.length; i++) {
+            const { layer, type } = layers[i];
+            if (!plugins[layer]) {
+                const def = ['==', '$layer', layer];
+                plugins[layer] = {
+                    filter: createFilter(def),
+                    renderConfig: getDefaultRenderConfig(type),
+                    symbol: getDefaultSymbol(type)
+                };
+                plugins[layer].filter.def = def;
+            }
+        }
+        return layers.map(layer => plugins[layer.layer]);
     }
 }
 
@@ -239,3 +284,53 @@ export default class BaseLayerWorker {
 //         return mat4.copy(m1, tileMatrix);
 //     };
 // }();
+
+function getDefaultRenderConfig(type) {
+    switch (type) {
+    case 1:
+        return {
+            type: 'native-point',
+            dataConfig: {
+                type: 'native-point'
+            }
+        };
+    case 2:
+        return {
+            type: 'native-line',
+            dataConfig: {
+                type: 'native-line'
+            }
+        };
+    case 3:
+        return {
+            type: 'fill',
+            dataConfig: {
+                type: 'fill'
+            }
+        };
+    }
+    return null;
+}
+
+let COLOR_INCRE = 0;
+
+function getDefaultSymbol(type) {
+    const length = distinctColors.length;
+    const color = distinctColors[COLOR_INCRE++ % length];
+    switch (type) {
+    case 1:
+        return {
+            markerFill: color,
+            markerSize: 10
+        };
+    case 2:
+        return {
+            lineColor: color
+        };
+    case 3:
+        return {
+            polygonFill: color
+        };
+    }
+    return null;
+}

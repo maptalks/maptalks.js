@@ -5,8 +5,7 @@ precision mediump float;
 #endif
 #endif
 
-varying vec3 vColor;
-
+uniform vec3 markerFill;
 uniform float markerOpacity;
 
 void main() {
@@ -22,5 +21,5 @@ void main() {
         #endif
     #endif
 
-    gl_FragColor = vec4(vColor, 1.0) * markerOpacity * alpha;
+    gl_FragColor = vec4(markerFill, 1.0) * markerOpacity * alpha;
 }

@@ -3,6 +3,7 @@ import { mat4, vec3, createREGL } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
+import distinctColors from '../../common/Colors';
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -10,7 +11,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         super(layer);
         this._initPlugins();
         this.ready = false;
-        this.sceneCache = {};
     }
 
     getWorkerConnection() {
@@ -58,13 +58,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     needToRedraw() {
         const redraw = super.needToRedraw();
         if (!redraw) {
-            for (let i = 0; i < this.plugins.length; i++) {
-                const cache = this.sceneCache[i];
-                if (cache) {
-                    if (this.plugins[i].needToRedraw(cache)) {
-                        return true;
-                    }
+            const plugins = this._getFramePlugins();
+            for (let i = 0; i < plugins.length; i++) {
+                if (plugins[i] && plugins[i].needToRedraw()) {
+                    return true;
                 }
+
             }
         }
         return redraw;
@@ -207,6 +206,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     loadTile(tileInfo) {
         const map = this.getMap();
+        const layer = this.layer;
+        const useDefault = layer.isDefaultRender();
+
         const glScale = map.getGLScale(tileInfo.z);
         this._workerConn.loadTile({ tileInfo, glScale, zScale : this._zScale }, (err, data) => {
             if (err) this.onTileError(EMPTY_VECTOR_TILE, tileInfo);
@@ -214,50 +216,117 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this.onTileLoad({ _empty : true }, tileInfo);
                 return;
             }
+            let needCompile = false;
             //restore features for plugin data
-            const features = JSON.parse(data.features);
+            const features = data.features;
+            const layers = [];
             //iterate plugins
             for (let i = 0; i < data.data.length; i++) {
                 const pluginData = data.data[i]; // { data, featureIndex }
-                if (!pluginData) {
+                if (!pluginData || !pluginData.styledFeatures.length) {
                     continue;
                 }
-                const symbol = this.layer.getStyle()[i].symbol;
+                const { style, isUpdated } = this._updatePluginIfNecessary(i, pluginData);
+                if (isUpdated) { needCompile = true; }
+
+                if (useDefault) {
+                    layers.push(pluginData.data.layer);
+                }
+
+                const symbol = style.symbol;
                 const feaIndexes = pluginData.styledFeatures;
                 //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
                 //这样featureIndexes中的序号能从pFeatures取得正确的数据
                 const pFeatures = new Array(features.length);
-                //[feature index, style index]
-                for (let i = 0, l = feaIndexes.length; i < l; i++) {
-                    let feature = features[feaIndexes[i]];
-                    if (this.layer.options['features'] === 'id' && this.layer.getFeature) {
-                        feature = this.layer.getFeature(feature);
+                if (features.length) {
+                    //[feature index, style index]
+                    for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
+                        let feature = features[feaIndexes[ii]];
+                        if (layer.options['features'] === 'id' && layer.getFeature) {
+                            feature = layer.getFeature(feature);
+                            feature.layer = i;
+                        }
+                        pFeatures[feaIndexes[ii]] = {
+                            feature,
+                            symbol
+                        };
                     }
-                    pFeatures[feaIndexes[i]] = {
-                        feature,
-                        symbol
-                    };
                 }
                 delete pluginData.styledFeatures;
                 pluginData.features = pFeatures;
             }
+            if (needCompile) {
+                layer._compileStyle();
+            }
             delete data.features;
+            data.layers = layers;
             this.onTileLoad(data, tileInfo);
         });
         return {};
     }
 
+    _updatePluginIfNecessary(i, pluginData) {
+        const layer = this.layer;
+        let isUpdated = false;
+        let style;
+        const layerStyles = layer.getStyle();
+        const useDefault = layer.isDefaultRender();
+        if (useDefault) {
+            //没有定义任何图层，采用图层默认的plugin渲染
+            const layerId = pluginData.data.layer;
+            const { updated, symbol, renderPlugin } = this._updateLayerRenderer(pluginData.data.type, layerId);
+            if (updated) {
+                style = {
+                    filter: ['==', '$layer', layerId],
+                    symbol,
+                    renderPlugin
+                };
+                layerStyles.push(style);
+                isUpdated = true;
+            } else {
+                for (let i = 0; i < layerStyles.length; i++) {
+                    if (layerStyles[i].filter[2] === layerId) {
+                        style = layerStyles[i];
+                        break;
+                    }
+                }
+            }
+        } else {
+            style = layerStyles[i];
+            if (!style.symbol) {
+                isUpdated = true;
+                const { plugin, symbol, renderPlugin } = this._getDefaultRenderPlugin(pluginData.data.type);
+                this.plugins[i] = plugin;
+                style.symbol = symbol;
+                style.renderPlugin = renderPlugin;
+            }
+        }
+        return { style, isUpdated };
+    }
+
+    _getFramePlugins(tileData) {
+        let plugins = this.plugins;
+        if (this.layer.isDefaultRender() && this._layerPlugins) {
+            if (tileData) {
+                plugins = tileData.layers.map(layer => this._layerPlugins[layer].plugin);
+            } else {
+                plugins = Object.values(this._layerPlugins).map(config => config.plugin);
+            }
+        }
+        return plugins;
+    }
+
     _startFrame(timestamp) {
-        this.plugins.forEach((plugin, idx) => {
-            if (!this.sceneCache[idx]) {
-                this.sceneCache[idx] = {};
+        const plugins = this._getFramePlugins();
+        plugins.forEach((plugin, idx) => {
+            if (!plugin) {
+                return;
             }
             plugin.startFrame({
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
-                sceneCache : this.sceneCache[idx],
-                sceneConfig : plugin.config.sceneConfig,
+                sceneConfig : plugin.config ? plugin.config.sceneConfig : null,
                 pluginIndex : idx,
                 timestamp
             });
@@ -266,12 +335,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _endFrame(timestamp) {
         const cameraPosition = this.getMap().cameraPosition;
-        this.plugins.forEach((plugin, idx) => {
+        const plugins = this._getFramePlugins();
+        plugins.forEach((plugin, idx) => {
+            if (!plugin) {
+                return;
+            }
             const status = plugin.endFrame({
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
-                sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
                 pluginIndex : idx,
                 cameraPosition,
@@ -293,8 +365,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo, tileData.extent);
         const pluginData = tileData.data;
-        this.plugins.forEach((plugin, idx) => {
-            if (!pluginData[idx]) {
+
+        const plugins = this._getFramePlugins(tileData);
+
+        plugins.forEach((plugin, idx) => {
+            if (!pluginData[idx] || !plugin) {
                 return;
             }
             if (!tileCache[idx]) {
@@ -305,7 +380,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 regl : this.regl,
                 layer : this.layer,
                 gl : this.gl,
-                sceneCache : this.sceneCache[idx],
                 sceneConfig : plugin.config.sceneConfig,
                 pluginIndex : idx,
                 tileCache : tileCache[idx],
@@ -330,7 +404,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             y *= 2;
         }
         const hits = [];
-        this.plugins.forEach(plugin => {
+        const plugins = this._getFramePlugins();
+        plugins.forEach(plugin => {
             const picked = plugin.pick(x, y);
             if (picked) {
                 picked.type = plugin.getType();
@@ -345,12 +420,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
         if (tile.image && !tile.image._empty) {
-            this.plugins.forEach((plugin, idx) => {
+            const plugins = this._getFramePlugins();
+            plugins.forEach((plugin, idx) => {
                 plugin.deleteTile({
                     regl : this.regl,
                     layer : this.layer,
                     gl : this.gl,
-                    sceneCache : this.sceneCache[idx],
                     tileCache : tile.image.cache ? tile.image.cache[idx] : {},
                     tileInfo : tile.info,
                     tileData : tile.image
@@ -369,17 +444,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
         const canvas = this.canvas;
+        if (!canvas) {
+            return;
+        }
         if (this.pickingFBO && (this.pickingFBO.width !== canvas.width || this.pickingFBO.height !== canvas.height)) {
             this.pickingFBO.resize(canvas.width, canvas.height);
         }
-        let cache = this.sceneCache;
-        if (!cache) {
-            cache = this.sceneCache = {};
-        }
         const size = new maptalks.Size(canvas.width, canvas.height);
-        this.plugins.forEach((plugin, idx) => {
-            if (!cache[idx]) {
-                cache[idx] = {};
+        this._getFramePlugins().forEach(plugin => {
+            if (!plugin) {
+                return;
             }
             plugin.resize(size);
         });
@@ -415,10 +489,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _clearPlugin() {
-        this.plugins.forEach((plugin, idx) => {
-            plugin.remove({ sceneCache : this.sceneCache[idx] });
+        this._getFramePlugins().forEach(plugin => {
+            plugin.remove();
         });
-        delete this.sceneCache;
     }
 
     hitDetect(point) {
@@ -433,24 +506,31 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _initPlugins() {
-        const pluginClazz = this.layer.constructor.getPlugins();
         const styles = this.layer.getStyle() || [];
         this.plugins = styles.map((style, idx) => {
             const config = style.renderPlugin;
+            if (!config) {
+                return null;
+            }
             if (!config.type) {
                 throw new Error('invalid plugin type for style at ' + idx);
             }
-            const P = pluginClazz[config.type];
-            if (!P) {
-                throw new Error(`Plugin for (${config.type}) is not loaded.`);
-            }
-            const p = new P();
-            p.config = config;
-            if (!p.config.sceneConfig) {
-                p.config.sceneConfig = {};
-            }
-            return p;
+            return this._createRenderPlugin(config);
         });
+    }
+
+    _createRenderPlugin(config) {
+        const pluginClazz = this.layer.constructor.getPlugins();
+        const P = pluginClazz[config.type];
+        if (!P) {
+            throw new Error(`Plugin for (${config.type}) is not loaded.`);
+        }
+        const p = new P();
+        p.config = config;
+        if (!p.config.sceneConfig) {
+            p.config.sceneConfig = {};
+        }
+        return p;
     }
 
     _createGLContext(canvas, options) {
@@ -515,6 +595,56 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         imgdata.data.set(pixels);
         ctx.putImageData(imgdata, 0, 0);
     }
+
+    _updateLayerRenderer(type, layer) {
+        let layerPlugins = this._layerPlugins;
+        if (!layerPlugins) {
+            layerPlugins = this._layerPlugins = {};
+        }
+        let updated = false;
+        if (!layerPlugins[layer]) {
+            layerPlugins[layer] = this._getDefaultRenderPlugin(type);
+            updated = true;
+        }
+        const { plugin, symbol, renderPlugin } = layerPlugins[layer];
+        return {
+            updated,
+            plugin,
+            symbol,
+            renderPlugin
+        };
+    }
+
+    _getDefaultRenderPlugin(type) {
+        let renderConfig;
+        switch (type) {
+        case 'native-line':
+            renderConfig = {
+                type: 'native-line',
+                dataConfig: { type: 'native-line' }
+            };
+            break;
+        case 'native-point':
+            renderConfig = {
+                type: 'native-point',
+                dataConfig: { type: 'native-point' }
+            };
+            break;
+        case 'fill':
+            renderConfig = {
+                type: 'fill',
+                dataConfig: { type: 'fill' }
+            };
+            break;
+        default:
+            renderConfig = null;
+        }
+        const symbol = getDefaultSymbol(type);
+        const plugin = this._createRenderPlugin(renderConfig);
+        return {
+            plugin, symbol, renderPlugin: renderConfig
+        };
+    }
 }
 
 VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
@@ -537,3 +667,26 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
 }();
 
 export default VectorTileLayerRenderer;
+
+let COLOR_INCRE = 0;
+
+function getDefaultSymbol(type) {
+    const length = distinctColors.length;
+    const color = distinctColors[COLOR_INCRE++ % length];
+    switch (type) {
+    case 'native-point':
+        return {
+            markerFill: color,
+            markerSize: 10
+        };
+    case 'native-line':
+        return {
+            lineColor: color
+        };
+    case 'fill':
+        return {
+            polygonFill: color
+        };
+    }
+    return null;
+}

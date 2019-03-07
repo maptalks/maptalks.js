@@ -1,3 +1,4 @@
+import Color from 'color';
 import { reshader, mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import Painter from './Painter';
@@ -49,6 +50,12 @@ class NativePointPainter extends Painter {
         const uniforms = {};
         if (symbol['markerOpacity'] || symbol['markerOpacity'] === 0) {
             uniforms.markerOpacity = symbol['markerOpacity'];
+        }
+        if (symbol['markerFill']) {
+            uniforms.markerFill = Color(symbol['markerFill']).array();
+        }
+        if (symbol['markerSize']) {
+            uniforms.markerSize = symbol['markerSize'];
         }
         return uniforms;
     }

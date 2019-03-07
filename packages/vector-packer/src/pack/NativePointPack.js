@@ -1,8 +1,5 @@
-import Color from 'color';
 import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
-import { evaluate } from '../style/Util';
-
 
 function getPackFormat() {
     return [
@@ -10,21 +7,9 @@ function getPackFormat() {
             type: Int16Array,
             width: 3,
             name: 'aPosition'
-        },
-        {
-            type: Uint8Array,
-            width: 3,
-            name: 'aColor'
-        },
-        {
-            type: Uint8Array,
-            width: 1,
-            name: 'aSize'
-        },
+        }
     ];
 }
-
-const DEFAULT_COLOR = [0, 0, 0];
 
 /**
  * Native点类型数据
@@ -42,7 +27,6 @@ export default class NativePointPack extends VectorPack {
     placeVector(point) {
         const feature = point.feature;
         const type = point.feature.type;
-        const symbol = point.symbol;
         if (type !== 1) {
             //只适用于点类型数据
             return;
@@ -57,11 +41,6 @@ export default class NativePointPack extends VectorPack {
                 if (max > this.maxPos) {
                     this.maxPos = max;
                 }
-                const markerFill = evaluate(symbol['markerFill'], feature.properties);
-                const color = markerFill ? Color(markerFill).array() : DEFAULT_COLOR;
-                this.data.push(...color);
-                const markerSize = evaluate(symbol['markerSize'], feature.properties);
-                this.data.push(markerSize);
             }
         }
     }

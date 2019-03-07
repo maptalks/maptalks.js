@@ -24,24 +24,30 @@ export default class VectorLayerWorker extends LayerWorker {
             const tile = new VectorTile(new Pbf(response.data));
             const features = [];
             if (!tile.layers) {
-                cb(null, features);
+                cb(null, features, []);
                 return;
             }
+            const types = {};
             let feature;
             for (const layer in tile.layers) {
-                for (let i = 0, l = tile.layers[layer].length; i < l; i++) {
-                    feature = tile.layers[layer].feature(i);
-                    features.push({
-                        type : feature.type,
-                        layer : layer,
-                        geometry : feature.loadGeometry(),
-                        properties : feature.properties,
-                        extent : feature.extent
-                    });
+                if (tile.layers.hasOwnProperty(layer)) {
+                    for (let i = 0, l = tile.layers[layer].length; i < l; i++) {
+                        feature = tile.layers[layer].feature(i);
+                        types[layer] = feature.type;
+                        features.push({
+                            type : feature.type,
+                            layer : layer,
+                            geometry : feature.loadGeometry(),
+                            properties : feature.properties,
+                            extent : feature.extent
+                        });
+                    }
                 }
             }
-
-            cb(null, features);
+            const layers = Object.keys(tile.layers);
+            cb(null, features, layers.map(l => {
+                return { 'layer': l, 'type': types[l] };
+            }));
         });
     }
 

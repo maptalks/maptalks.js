@@ -80,7 +80,7 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, }, 'point': [368, -368, 0], 'type': 'icon' }];
+            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, -368, 0], 'type': 'icon' }];
             runner(options, coord, expected, true, done);
         });
 
@@ -371,7 +371,7 @@ describe('picking specs', () => {
                 assert.notDeepEqual(yellowPoint, redPoint);
 
                 const expected = {
-                    'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0 }, 'symbol': { 'markerSize': 30, 'markerFill': '#f00', 'markerOpacity': 0.5 }
+                    'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, 'symbol': { 'markerSize': 30, 'markerFill': '#f00', 'markerOpacity': 0.5 }
                 };
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
 

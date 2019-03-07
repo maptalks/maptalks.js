@@ -113,13 +113,32 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
+    isDefaultRender() {
+        return !!this._isDefaultRender;
+    }
+
     validateStyle() {
+        this._isDefaultRender = false;
         let styles = this.options.style;
-        if (!styles) {
-            return;
+        if (!styles || Array.isArray(styles) && !styles.length) {
+            this._isDefaultRender = true;
+            styles = this.options.style = [];
         }
         if (!Array.isArray(styles)) {
             styles = this.options.style = [styles];
+        }
+        for (let i = 0; i < styles.length; i++) {
+            let filter = styles[i].filter;
+            if (filter && filter.value) {
+                filter = filter.value;
+            }
+            if (filter !== undefined &&
+                filter !== 'default' &&
+                filter !== true &&
+                !Array.isArray(filter)) {
+                throw new Error(`Invalid filter at ${i} : ${JSON.stringify(filter)}`);
+            }
+            //TODO 如果定义了renderPlugin就必须定义symbol
         }
     }
     getStyle() {

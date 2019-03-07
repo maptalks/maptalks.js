@@ -10,8 +10,6 @@ import { extend } from '../style/Util';
 
 //feature index defined in BaseLayerWorker
 const KEY_IDX = '__fea_idx';
-//style index defined in BaseLayerWorker
-const STLYE_IDX = '__style_idx';
 
 /**
  * abstract class for all vector packs
@@ -53,7 +51,6 @@ export default class VectorPack {
                 const feas = convert(feature);
                 for (let ii = 0; ii < feas.length; ii++) {
                     const fea = feas[ii];
-                    fea[STLYE_IDX] = feature[STLYE_IDX];
                     fea[KEY_IDX] = feature[KEY_IDX];
                     checked.push(fea);
                 }
