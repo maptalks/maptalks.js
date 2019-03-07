@@ -23,6 +23,9 @@ export default class Geometry {
             }
         }
         this.count = count;
+        if (!this.elements) {
+            this.elements = count;
+        }
         this.properties = {};
         this.updateBoundingBox();
     }

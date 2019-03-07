@@ -1,4 +1,4 @@
-import { extend, isString, isFunction } from '../common/Util.js';
+import { extend, isString, isFunction, isNumber } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
 const UNIFORM_TYPE = {
@@ -146,7 +146,7 @@ class Shader {
         const command = {
             vert, frag, uniforms, attributes
         };
-        if (elements) {
+        if (elements && !isNumber(elements)) {
             command.elements = regl.prop('elements');
         }
         command.count = regl.prop('count');
