@@ -448,9 +448,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         super.deleteTile(tile);
     }
 
-    abortTileLoading() {
-        //TODO 实现矢量瓦片的中止请求: 在 worker 中 xhr.abort
-        super.abortTileLoading();
+    abortTileLoading(tileImage, tileInfo) {
+        if (this._workerConn && tileInfo && tileInfo.url) {
+            this._workerConn.abortTile(tileInfo.url);
+        }
+        super.abortTileLoading(tileImage, tileInfo);
     }
 
     resizeCanvas(canvasSize) {

@@ -77,7 +77,7 @@ const Ajax = {
             }
         }
         client.send(null);
-        return this;
+        return client;
     },
 
     _wrapCallback: function (client, cb) {

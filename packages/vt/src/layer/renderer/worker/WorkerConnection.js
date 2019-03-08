@@ -46,6 +46,27 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         }
     }
 
+    abortTile(url, cb) {
+        const layer = this._layer;
+        const layerId = layer.getId();
+        const data = {
+            mapId : this._mapId,
+            layerId,
+            command : 'abortTile',
+            params : {
+                url
+            }
+        };
+        if (this._isDedicated) {
+            if (this._dedicatedVTWorkers[layerId] === undefined) {
+                this._dedicatedVTWorkers[layerId] = this.getDedicatedWorker();
+            }
+            this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+        } else {
+            this.broadcast(data, null, cb);
+        }
+    }
+
     removeLayer(cb) {
         const layerId = this._layer.getId();
         const data = {

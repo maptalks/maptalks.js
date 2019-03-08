@@ -7,6 +7,7 @@ export default class VectorLayerWorker extends LayerWorker {
     constructor(id, options, uploader, callback) {
         super(id, options, uploader);
         options = options || {};
+        this._requests = {};
         callback();
     }
 
@@ -16,7 +17,9 @@ export default class VectorLayerWorker extends LayerWorker {
      * @param {Function} cb      - callback function when finished
      */
     getTileFeatures(tileInfo, cb) {
-        Ajax.getArrayBuffer(tileInfo.url, (err, response) => {
+        const url = tileInfo.url;
+        this._requests[url] = Ajax.getArrayBuffer(url, (err, response) => {
+            delete this._requests[url];
             if (err) {
                 cb(err);
                 return;
@@ -51,6 +54,18 @@ export default class VectorLayerWorker extends LayerWorker {
         });
     }
 
+    abortTile(url, cb) {
+        if (url && this._requests[url]) {
+            this._requests[url].abort();
+            delete this._requests[url];
+        }
+        cb();
+    }
+
     onRemove() {
+        for (const url in this._requests) {
+            this._requests[url].abort();
+        }
+        this._requests = {};
     }
 }

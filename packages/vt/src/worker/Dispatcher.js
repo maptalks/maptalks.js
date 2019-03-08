@@ -64,6 +64,13 @@ export default class Dispatcher {
         }
     }
 
+    abortTile({ mapId, layerId, params }, callback) {
+        const layer = this._getLayerById(mapId, layerId);
+        if (layer && layer.abortTile) {
+            layer.abortTile(params.url, callback);
+        }
+    }
+
     /**
      * Remove a tile from the worker
      * @param {String} mapId    - map id
