@@ -1,6 +1,7 @@
 // import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
+import { isClippedEdge } from './util/util';
 
 // The number of bits that is used to store the line distance in the buffer.
 const LINE_DISTANCE_BUFFER_BITS = 16;
@@ -33,7 +34,7 @@ export default class NativeLinePack extends VectorPack {
                 type: Int16Array,
                 width: 3,
                 name: 'aPosition'
-            },
+            }
             //当前点距离起点的距离
             // {
             //     type: Uint16Array,
@@ -45,12 +46,26 @@ export default class NativeLinePack extends VectorPack {
     }
 
     placeVector(line) {
+        // debugger
         const feature = line.feature,
+            isPolygon = feature.type === 3, //POLYGON
             lines = feature.geometry;
+        const elements = this.elements;
+        if (isPolygon) {
+            this.elements = [];
+        }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
             this._addLine(lines[i], feature);
+            if (isPolygon) {
+                //去掉polygon在瓦片范围外的边
+                this._filterPolygonEdges(elements);
+                this.elements = [];
+            }
+        }
+        if (isPolygon) {
+            this.elements = elements;
         }
     }
 
@@ -143,6 +158,16 @@ export default class NativeLinePack extends VectorPack {
 
     addElements(e1, e2) {
         super.addElements(this.offset + e1, this.offset + e2);
+    }
+
+    _filterPolygonEdges(elements) {
+        const EXTENT = this.options['EXTENT'],
+            edges = this.elements;
+        for (let i = 0; i < edges.length; i += 2) {
+            if (!isClippedEdge(this.data, edges[i], edges[i + 1], this.formatWidth, EXTENT)) {
+                elements.push(edges[i], edges[i + 1]);
+            }
+        }
     }
 
 }

@@ -259,6 +259,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 layer._compileStyle();
             }
             delete data.features;
+            if (useDefault && data.data.length !== layers.length) {
+                //因为默认绘制时，renderPlugin是以tileData中的图层顺序初始化的
+                //当某个图层data为空时，需要将它从tileData中剔除，否则layer的renderPlugin就无法对应到数据
+                const oldData = data.data;
+                data.data = [];
+                for (let i = 0; i < oldData.length; i++) {
+                    if (!oldData[i] || !oldData[i].features) {
+                        continue;
+                    }
+                    data.data.push(oldData[i]);
+                }
+            }
             data.layers = layers;
             this.onTileLoad(data, tileInfo);
         });
@@ -616,33 +628,33 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _getDefaultRenderPlugin(type) {
-        let renderConfig;
+        let renderPlugin;
         switch (type) {
         case 'native-line':
-            renderConfig = {
+            renderPlugin = {
                 type: 'native-line',
                 dataConfig: { type: 'native-line' }
             };
             break;
         case 'native-point':
-            renderConfig = {
+            renderPlugin = {
                 type: 'native-point',
                 dataConfig: { type: 'native-point' }
             };
             break;
         case 'fill':
-            renderConfig = {
+            renderPlugin = {
                 type: 'fill',
                 dataConfig: { type: 'fill' }
             };
             break;
         default:
-            renderConfig = null;
+            renderPlugin = null;
         }
         const symbol = getDefaultSymbol(type);
-        const plugin = this._createRenderPlugin(renderConfig);
+        const plugin = this._createRenderPlugin(renderPlugin);
         return {
-            plugin, symbol, renderPlugin: renderConfig
+            plugin, symbol, renderPlugin
         };
     }
 }
@@ -681,11 +693,13 @@ function getDefaultSymbol(type) {
         };
     case 'native-line':
         return {
-            lineColor: color
+            lineColor: color,
+            lineOpacity: 0.7
         };
     case 'fill':
         return {
-            polygonFill: color
+            polygonFill: color,
+            polygonOpacity: 0.7
         };
     }
     return null;

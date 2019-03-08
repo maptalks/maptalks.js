@@ -112,7 +112,7 @@ class NativeLinePainter extends Painter {
                 },
                 depth: {
                     enable: true,
-                    func: this.sceneConfig.depthFunc || 'less'
+                    func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
                     enable: true,

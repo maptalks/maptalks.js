@@ -63,7 +63,7 @@ export default class BaseLayerWorker {
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
             data = [],
-            dataIndexes = [],
+            pluginIndexes = [],
             options = this.options,
             buffers = [];
         const promises = [];
@@ -81,7 +81,7 @@ export default class BaseLayerWorker {
                 styledFeatures: new arrCtor(tileFeaIndexes)
             };
             //index of plugin with data
-            dataIndexes.push(i);
+            pluginIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
             let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, glScale, zScale, zoom });
             if (useDefault) {
@@ -98,14 +98,15 @@ export default class BaseLayerWorker {
                 if (!tileDatas[i]) {
                     continue;
                 }
-                data[dataIndexes[i]].data = tileDatas[i].data;
+                tileDatas[i].data.type = pluginConfigs[pluginIndexes[i]].renderPlugin.dataConfig.type;
+                data[pluginIndexes[i]].data = tileDatas[i].data;
+
                 if (tileDatas[i].buffers && tileDatas[i].buffers.length) {
                     for (let ii = 0, ll = tileDatas[i].buffers.length; ii < ll; ii++) {
                         buffers.push(tileDatas[i].buffers[ii]);
                     }
                 }
             }
-
             const allFeas = [];
             if (options.features) {
                 let feature;
@@ -145,17 +146,10 @@ export default class BaseLayerWorker {
     }
 
     _createTileGeometry(features, pluginConfig, context) {
-        const dataConfig = pluginConfig.renderPlugin ? pluginConfig.renderPlugin.dataConfig : getDefaultRenderConfig(features[0].type).dataConfig;
-        const symbol = pluginConfig.renderPlugin ? pluginConfig.symbol : getDefaultSymbol(features[0].type);
-        const type = dataConfig.type;
 
-        return this._createTilePromise(features, dataConfig, symbol, context).then(tileData => {
-            tileData.data.type = type;
-            return tileData;
-        });
-    }
+        const dataConfig = pluginConfig.renderPlugin.dataConfig;
+        const symbol = pluginConfig.symbol;
 
-    _createTilePromise(features, dataConfig, symbol, context) {
         const tileSize = this.options.tileSize[0];
         const { extent, glScale, zScale, zoom } = context;
         const type = dataConfig.type;
@@ -253,7 +247,7 @@ export default class BaseLayerWorker {
                 const def = ['==', '$layer', layer];
                 plugins[layer] = {
                     filter: createFilter(def),
-                    renderConfig: getDefaultRenderConfig(type),
+                    renderPlugin: getDefaultRenderPlugin(type),
                     symbol: getDefaultSymbol(type)
                 };
                 plugins[layer].filter.def = def;
@@ -285,7 +279,7 @@ export default class BaseLayerWorker {
 //     };
 // }();
 
-function getDefaultRenderConfig(type) {
+function getDefaultRenderPlugin(type) {
     switch (type) {
     case 1:
         return {
