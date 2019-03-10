@@ -258,6 +258,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (needCompile) {
                 layer._compileStyle();
             }
+
+            const tileZoom = tileInfo.z;
+            const schema = this.layer.getDataSchema(tileZoom);
+            this._updateSchema(schema, data.schema);
+
             delete data.features;
             if (useDefault && data.data.length !== layers.length) {
                 //因为默认绘制时，renderPlugin是以tileData中的图层顺序初始化的
@@ -275,6 +280,30 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.onTileLoad(data, tileInfo);
         });
         return {};
+    }
+
+    _updateSchema(target, source) {
+        const useDefault = this.layer.isDefaultRender();
+        for (const layer in source) {
+            if (!target[layer]) {
+                target[layer] = {
+                    types: source[layer].types,
+                    properties: {}
+                };
+                if (useDefault && this._layerPlugins) {
+                    target[layer].symbol = this._layerPlugins[layer].symbol;
+                }
+            }
+            const srcProps = source[layer].properties;
+            const targetProps = target[layer].properties;
+            for (const type in srcProps) {
+                if (!targetProps[type] ||
+                    //之前的瓦片里，target[layer][type]的值是null或undefined时，类型被判断为object
+                    targetProps[type] && srcProps[type] !== 'object' && targetProps[type] === 'object') {
+                    targetProps[type] = srcProps[type];
+                }
+            }
+        }
     }
 
     _updatePluginIfNecessary(i, pluginData) {

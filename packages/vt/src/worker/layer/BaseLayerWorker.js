@@ -1,4 +1,4 @@
-import { extend, getIndexArrayType, compileStyle } from '../../common/Util';
+import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
@@ -108,33 +108,40 @@ export default class BaseLayerWorker {
                 }
             }
             const allFeas = [];
-            if (options.features) {
+            const schema = layers;
+            if (options.features || options.schema) {
                 let feature;
                 for (let i = 0, l = features.length; i < l; i++) {
                     feature = features[i];
-                    //reset feature's marks
-                    if (feature && feature[KEY_IDX] !== undefined) {
-                        delete feature[KEY_IDX];
-                        delete feature._styleMark;
-                        if (options.features === 'id') {
-                            allFeas.push(feature.id);
-                        } else {
-                            const o = extend({}, feature);
-                            if (!options.pickingGeometry) {
-                                delete o.geometry;
+                    if (!schema[feature.layer].properties) {
+                        schema[feature.layer].properties = getPropTypes(feature.properties);
+                    }
+
+                    if (options.features) {
+                        //reset feature's marks
+                        if (feature && feature[KEY_IDX] !== undefined) {
+                            delete feature[KEY_IDX];
+                            delete feature._styleMark;
+                            if (options.features === 'id') {
+                                allFeas.push(feature.id);
+                            } else {
+                                const o = extend({}, feature);
+                                if (!options.pickingGeometry) {
+                                    delete o.geometry;
+                                }
+                                delete o.extent;
+                                allFeas.push(o);
                             }
-                            delete o.extent;
-                            allFeas.push(o);
+                        } else {
+                            //use '' instead of null, to reduce feature string size
+                            allFeas.push('');
                         }
-                    } else {
-                        //use '' instead of null, to reduce feature string size
-                        allFeas.push('');
                     }
                 }
             }
-
             return {
                 data: {
+                    schema,
                     data,
                     extent: EXTENT,
                     features: allFeas
@@ -241,8 +248,10 @@ export default class BaseLayerWorker {
         if (!this._layerPlugins) {
             plugins = this._layerPlugins = {};
         }
-        for (let i = 0; i < layers.length; i++) {
-            const { layer, type } = layers[i];
+        const framePlugins = [];
+        for (const p in layers) {
+            const layer = p;
+            const type = Math.min(...layers[p].types);
             if (!plugins[layer]) {
                 const def = ['==', '$layer', layer];
                 plugins[layer] = {
@@ -252,8 +261,9 @@ export default class BaseLayerWorker {
                 };
                 plugins[layer].filter.def = def;
             }
+            framePlugins.push(plugins[layer]);
         }
-        return layers.map(layer => plugins[layer.layer]);
+        return framePlugins;
     }
 }
 
@@ -327,4 +337,26 @@ function getDefaultSymbol(type) {
         };
     }
     return null;
+}
+
+function getPropTypes(properties) {
+    if (Array.isArray(properties) || !isObject(properties)) {
+        return {};
+    }
+    const types = {};
+    for (const p in properties) {
+        const v = properties[p];
+        if (isString(v)) {
+            types[p] = 'string';
+        } else if (isNumber(v)) {
+            types[p] = 'number';
+        } else if (v === true || v === false) {
+            types[p] = 'boolean';
+        } else if (Array.isArray(v)) {
+            types[p] = 'array';
+        } else {
+            types[p] = 'object';
+        }
+    }
+    return types;
 }

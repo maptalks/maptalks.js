@@ -30,13 +30,19 @@ export default class VectorLayerWorker extends LayerWorker {
                 cb(null, features, []);
                 return;
             }
-            const types = {};
+            const layers = {};
             let feature;
             for (const layer in tile.layers) {
                 if (tile.layers.hasOwnProperty(layer)) {
+                    layers[layer] = {
+                        types: {}
+                    };
+                    const types = layers[layer].types;
                     for (let i = 0, l = tile.layers[layer].length; i < l; i++) {
                         feature = tile.layers[layer].feature(i);
-                        types[layer] = feature.type;
+
+                        types[feature.type] = 1;
+
                         features.push({
                             type : feature.type,
                             layer : layer,
@@ -47,10 +53,12 @@ export default class VectorLayerWorker extends LayerWorker {
                     }
                 }
             }
-            const layers = Object.keys(tile.layers);
-            cb(null, features, layers.map(l => {
-                return { 'layer': l, 'type': types[l] };
-            }));
+
+            for (const p in layers) {
+                layers[p].types = Object.keys(layers[p].types).map(t => +t);
+            }
+
+            cb(null, features, layers);
         });
     }
 

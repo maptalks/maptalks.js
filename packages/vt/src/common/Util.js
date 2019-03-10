@@ -59,6 +59,16 @@ export function isFunction(obj) {
     return typeof obj === 'function' || (obj.constructor !== null && obj.constructor === Function);
 }
 
+/**
+ * Whether the obj is a javascript object.
+ * @param  {Object}  obj  - object
+ * @return {Boolean}
+ * @memberOf Util
+ */
+export function isObject(obj) {
+    return typeof obj === 'object' && !!obj;
+}
+
 export function isNil(obj) {
     return obj == null;
 }

@@ -1,25 +1,26 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend, compileStyle } from '../../common/Util';
+import { extend, compileStyle, isNil } from '../../common/Util';
 
 const defaultOptions = {
     renderer: 'gl',
-    fadeAnimation : false,
-    altitudeProperty : 'altitude',
-    forceRenderOnZooming : true,
-    forceRenderOnMoving : true,
-    forceRenderOnRotating : true,
-    clipByPitch : false,
-    zoomBackground : true,
-    tileSize : [512, 512],
-    tileSystem : [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
-    stencil : false,
-    features : true,
-    cascadeTiles : false,
-    collision : true,
-    picking : true,
-    pickingPoint : false,
-    pickingGeometry : false
+    fadeAnimation: false,
+    altitudeProperty: 'altitude',
+    forceRenderOnZooming: true,
+    forceRenderOnMoving: true,
+    forceRenderOnRotating: true,
+    clipByPitch: false,
+    zoomBackground: true,
+    tileSize: [512, 512],
+    tileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
+    stencil: false,
+    features: true,
+    schema: false,
+    cascadeTiles: false,
+    collision: true,
+    picking: true,
+    pickingPoint: false,
+    pickingGeometry: false
 };
 
 /**
@@ -52,12 +53,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     getWorkerOptions() {
         const map = this.getMap();
         return {
-            altitudeProperty : this.options['altitudeProperty'],
-            tileSize : this.options['tileSize'],
-            baseRes : map.getResolution(map.getGLZoom()),
-            style : this.options.style,
-            features : this.options.features,
-            pickingGeometry : this.options['pickingGeometry']
+            altitudeProperty: this.options['altitudeProperty'],
+            tileSize: this.options['tileSize'],
+            baseRes: map.getResolution(map.getGLZoom()),
+            style: this.options.style,
+            features: this.options.features,
+            schema: this.options.schema,
+            pickingGeometry: this.options['pickingGeometry']
         };
     }
 
@@ -179,6 +181,25 @@ class VectorTileLayer extends maptalks.TileLayer {
             this._bgCollisionIndex.clear();
         }
         return this;
+    }
+
+    /**
+     * Return vector tile data's schema, including layers, properties, data types
+     * Will return all zoom's schema if z is undefined
+     * @param {Number} [z=undefined] - tile's zoom, optional
+     * @returns {Object} data schema
+     */
+    getDataSchema(z) {
+        if (!this._schema) {
+            this._schema = {};
+        }
+        if (!isNil(z) && !this._schema[z]) {
+            this._schema[z] = {};
+        }
+        if (isNil(z)) {
+            return this._schema;
+        }
+        return this._schema[z];
     }
 
 

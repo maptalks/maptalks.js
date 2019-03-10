@@ -79,30 +79,36 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             return;
         }
         const layers = [];
-        const types = {};
+
         for (let i = 0, l = tile.features.length; i < l; i++) {
             const feature = tile.features[i];
 
             let layerId = feature.layer;
             if (layerId === undefined) {
-                layerId = 0;
+                layerId = '0';
             }
-            types[layerId] = feature.type;
-            layers.push(layerId);
+            layers[layerId] = {
+                types: {}
+            };
+            const types = layers[layerId].types;
+            types[feature.type] = 1;
 
             features.push({
-                type : feature.type,
-                layer : layerId,
-                id : feature.id,
-                geometry : feature.geometry,
-                properties : feature.tags,
-                extent : this.options.extent
+                type: feature.type,
+                layer: layerId,
+                id: feature.id,
+                geometry: feature.geometry,
+                properties: feature.tags,
+                extent: this.options.extent
             });
         }
+
+        for (const p in layers) {
+            layers[p].types = Object.keys(layers[p].types).map(t => +t);
+        }
+
         //TODO 增加geojson-vt的多图层支持
-        cb(null, features, layers.map(l => {
-            return { 'layer': l, 'type': types[l] };
-        }));
+        cb(null, features, layers);
     }
 
     onRemove() {
