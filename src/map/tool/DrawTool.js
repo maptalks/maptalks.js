@@ -12,6 +12,8 @@ import MapTool from './MapTool';
  * @property {String} [options.mode=null]   - mode of the draw tool
  * @property {Object} [options.symbol=null] - symbol of the geometries drawn
  * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+ * @property {Boolean} [options.edgeJudge=false]  - Whether to make edge judgement or not.
+ * @property {Number} [options.edgeDistance=30]  - Edge Detection Distance(Units are pixels).
  * @memberOf DrawTool
  * @instance
  */
@@ -23,10 +25,12 @@ const options = {
         'polygonFill': '#fff',
         'polygonOpacity': 0.3
     },
-    'doubleClickZoom' : false,
+    'doubleClickZoom': false,
     'mode': null,
     'once': false,
-    'ignoreMouseleave' : true
+    'edgeJudge': false,
+    'edgeDistance': 30,
+    'ignoreMouseleave': true
 };
 
 const registeredMode = {};
@@ -88,6 +92,8 @@ class DrawTool extends MapTool {
      * @param {String} [options.mode=null]   - mode of the draw tool
      * @param {Object} [options.symbol=null] - symbol of the geometries drawn
      * @param {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+     * @param {Boolean} [options.edgeJudge=false]  - Whether to make edge judgement or not.
+     * @param {Number} [options.edgeDistance=30]  - Edge Detection Distance(Units are pixels).
      */
     constructor(options) {
         super(options);
@@ -399,12 +405,49 @@ class DrawTool extends MapTool {
         }
     }
 
+
+    /**
+     *Judging whether a map needs translation
+     * @param {*} event 
+     * @private
+     */
+    _mapEdgeJudge(event) {
+        const { edgeJudge, edgeDistance } = this.options;
+        if (!edgeJudge) {
+            return;
+        }
+        const { containerPoint } = event;
+        const map = this.getMap();
+        const containerExtent = map.getContainerExtent();
+        if (containerExtent) {
+            const { x, y } = containerPoint;
+            const { xmax, ymax } = containerExtent;
+            let p;
+            if (x < edgeDistance) {
+                p = [Math.abs(x - edgeDistance), 0];
+            }
+            if (y < edgeDistance) {
+                p = [0, Math.abs(y - edgeDistance)];
+            }
+            if ((x + edgeDistance) > xmax) {
+                p = [-Math.abs((x + edgeDistance) - xmax), 0];
+            }
+            if ((y + edgeDistance) > ymax) {
+                p = [0, -Math.abs((y + edgeDistance) - ymax)];
+            }
+            if (p) {
+                map.panBy(p, { duration: 1 });
+            }
+        }
+    }
+
     /**
      * handle mouse move event
      * @param event
      * @private
      */
     _mouseMoveHandler(event) {
+        this._mapEdgeJudge(event);
         const map = this.getMap();
         const coordinate = event['coordinate'];
         if (!this._geometry || !map || map.isInteracting()) {

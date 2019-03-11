@@ -140,7 +140,7 @@ DrawTool.registerMode('freeHandRectangle', {
 
 DrawTool.registerMode('point', {
     'clickLimit': 1,
-    'action': ['click'],
+    'action': ['click', 'mousemove'],
     'create': function (coordinate) {
         return new Marker(coordinate[0]);
     },
@@ -303,8 +303,8 @@ DrawTool.registerMode('boxZoom', {
         const coords = map.containerPointToCoordinate(new Coordinate(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)));
         geometry.setCoordinates(coords)
             .updateSymbol({
-                markerWidth  : Math.abs(p1.x - p2.x),
-                markerHeight : Math.abs(p1.y - p2.y)
+                markerWidth: Math.abs(p1.x - p2.x),
+                markerHeight: Math.abs(p1.y - p2.y)
             });
     },
     'generate': function (geometry) {
