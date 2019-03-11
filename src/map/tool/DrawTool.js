@@ -407,8 +407,8 @@ class DrawTool extends MapTool {
 
 
     /**
-     *Judging whether a map needs translation
-     * @param {*} event 
+     * Judging whether a map needs translation
+     * @param {Object} event
      * @private
      */
     _mapEdgeJudge(event) {
