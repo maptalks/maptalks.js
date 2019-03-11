@@ -140,7 +140,7 @@ DrawTool.registerMode('freeHandRectangle', {
 
 DrawTool.registerMode('point', {
     'clickLimit': 1,
-    'action': ['click', 'mousemove'],
+    'action': ['click'],
     'create': function (coordinate) {
         return new Marker(coordinate[0]);
     },
