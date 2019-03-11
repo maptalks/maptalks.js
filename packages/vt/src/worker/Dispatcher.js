@@ -92,6 +92,13 @@ export default class Dispatcher {
         }
     }
 
+    updateOptions({ mapId, layerId, params }, callback) {
+        const layer = this._getLayerById(mapId, layerId);
+        if (layer) {
+            layer.updateOptions(params, callback);
+        }
+    }
+
     setData({ mapId, layerId, params }, callback) {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {

@@ -101,6 +101,23 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         }
     }
 
+    updateOptions(options, cb) {
+        const layerId = this._layer.getId();
+        const data = {
+            mapId : this._mapId,
+            layerId,
+            command : 'updateOptions',
+            params : options
+        };
+        if (this._isDedicated) {
+            if (this._dedicatedVTWorkers[layerId] !== undefined) {
+                this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+            }
+        } else {
+            this.broadcast(data, null, cb);
+        }
+    }
+
     //send(layerId, command, data, buffers, callback, workerId)
     loadTile(context, cb) {
         const layerId = this._layer.getId();

@@ -43,7 +43,12 @@ class VectorTileLayer extends maptalks.TileLayer {
         this._compileStyle();
     }
 
-    //TODO 实现onConfig，如果修改了features或者pickingGeometry就重新生成瓦片
+    onConfig(conf) {
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.updateOptions(conf);
+        }
+    }
 
     getTileUrl(x, y, z) {
         const res = this.getMap().getResolution(z);
@@ -56,7 +61,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             altitudeProperty: this.options['altitudeProperty'],
             tileSize: this.options['tileSize'],
             baseRes: map.getResolution(map.getGLZoom()),
-            style: this.options.style,
+            //default render时，this.options.style有可能被default render设值
+            style: this.isDefaultRender() ? [] : this.options.style,
             features: this.options.features,
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry']

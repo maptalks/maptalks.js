@@ -381,5 +381,52 @@ describe('picking specs', () => {
         });
     });
 
+    it('should let options.features control picking result', done => {
+        const options = {
+            data: {
+                type: 'FeatureCollection',
+                features: [
+                    { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } }
+                ]
+            },
+            style: {
+                renderPlugin: {
+                    type: 'native-point',
+                    dataConfig: {
+                        type: 'native-point'
+                    }
+                },
+                symbol: {
+                    markerType: 'square',
+                    markerSize: 20,
+                    markerFill: '#ff0',
+                    markerOpacity: 0.5
+                }
+            },
+            features: false,
+            view: {
+                center: [0.5, 0.5],
+                zoom: 8
+            }
+        };
+        map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+
+        const layer = new GeoJSONVectorTileLayer('gvt', options);
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const picked = layer.identify([0.5, 0.5]);
+                assert.ok(!picked[0].data);
+                layer.config('features', true);
+            } else if (count === 3) {
+                const picked = layer.identify([0.5, 0.5]);
+                assert.ok(!!picked[0].data.feature);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
     //TODO line 和 Polygon 的picking 测试
 });

@@ -20,6 +20,11 @@ export default class BaseLayerWorker {
         cb();
     }
 
+    updateOptions(options, cb) {
+        this.options = extend(this.options, options);
+        cb();
+    }
+
     /**
      * Load a tile, paint and return gl directives
      * @param {Object} tileInfo  - tileInfo, xyz, res, extent, etc

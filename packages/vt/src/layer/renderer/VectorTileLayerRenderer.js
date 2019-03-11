@@ -31,6 +31,21 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
+    updateOptions(conf) {
+        if (this._workerConn) {
+            this._workerConn.updateOptions(this.layer.getWorkerOptions(), err => {
+                if (err) throw new Error(err);
+                //需要重新生成瓦片的设置
+                if (conf['features'] || conf['pickingGeometry'] || conf['altitudeProperty']) {
+                    this.clear();
+                    this._clearPlugin();
+                    this._initPlugins();
+                }
+                this.setToRedraw();
+            });
+        }
+    }
+
     updateSceneConfig(idx, sceneConfig) {
         const plugins = this.plugins;
         if (!plugins) {
