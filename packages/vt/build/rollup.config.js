@@ -10,8 +10,8 @@ const plugins = production ? [
     uglify({
         mangle: {
             properties: {
-                'regex' : /^_/,
-                'keep_quoted' : true
+                'regex': /^_/,
+                'keep_quoted': true
             }
         }
     })] : [];
@@ -20,9 +20,9 @@ module.exports = [{
     input: 'src/worker/index.js',
     plugins: [
         resolve({
-            module : true,
-            jsnext : true,
-            main : true
+            module: true,
+            jsnext: true,
+            main: true
         }),
         commonjs(),
         babel()
@@ -30,10 +30,10 @@ module.exports = [{
     output: {
         format: 'amd',
         name: 'maptalks',
-        globals : {
-            'maptalks' : 'maptalks'
+        globals: {
+            'maptalks': 'maptalks'
         },
-        extend : true,
+        extend: true,
         file: 'build/worker.js'
     },
     // watch: {
@@ -45,20 +45,20 @@ module.exports = [{
     external: ['maptalks', '@maptalks/gl'],
     plugins: [
         resolve({
-            module : true,
-            jsnext : true,
-            main : true
+            module: true,
+            jsnext: true,
+            main: true
         }),
         commonjs()
     ],
     output: {
         format: 'amd',
         name: 'maptalks',
-        globals : {
-            'maptalks' : 'maptalks',
-            '@maptalks/gl' : 'maptalksgl'
+        globals: {
+            'maptalks': 'maptalks',
+            '@maptalks/gl': 'maptalksgl'
         },
-        extend :true,
+        extend: true,
         file: 'build/layer.js'
     },
     // watch: {
@@ -69,11 +69,11 @@ module.exports = [{
     input: './build/index.js',
     external: ['maptalks', '@maptalks/gl'],
     output: {
-        globals : {
-            'maptalks' : 'maptalks',
-            '@maptalks/gl' : 'maptalksgl'
+        globals: {
+            'maptalks': 'maptalks',
+            '@maptalks/gl': 'maptalksgl'
         },
-        extend : true,
+        extend: true,
         name: 'maptalks',
         file: outputFile,
         format: 'umd',
@@ -97,7 +97,7 @@ if (!workerLoaded) {
 }
 }`
     },
-    plugins : [
+    plugins: [
         babel()
     ].concat(plugins),
     watch: {

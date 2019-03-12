@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { extend, compileStyle, isNil } from '../../common/Util';
+import { compress, uncompress } from './Compress';
 
 const defaultOptions = {
     renderer: 'gl',
@@ -27,9 +28,9 @@ const defaultOptions = {
  * Style:
  * [
  *  {
- *     type : 'plugin-foo',
+ *     renderPlugin : { ... },
  *     filter : [],
- *     symbol : ...
+ *     symbol : { ... }
  *  }
  * ]
  */
@@ -39,8 +40,9 @@ class VectorTileLayer extends maptalks.TileLayer {
         super(id, options);
         // const tileSize = this.getTileSize();
         // this.zoomOffset = -log2(tileSize.width / 256);
-        this.validateStyle();
-        this._compileStyle();
+        if (options && options.style) {
+            this.setStyle(options.style);
+        }
     }
 
     onConfig(conf) {
@@ -70,6 +72,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     setStyle(style) {
+        style = uncompress(style);
         this.config('style', style);
         this.validateStyle();
         this._compileStyle();
@@ -227,6 +230,15 @@ class VectorTileLayer extends maptalks.TileLayer {
     static getPlugins() {
         return VectorTileLayer.plugins || {};
     }
+
+    static compressStyleJSON(json) {
+        if (!Array.isArray(json) || !json.length) {
+            return json;
+        }
+
+        return compress(json);
+    }
+
 }
 
 VectorTileLayer.registerJSONType('VectorTileLayer');

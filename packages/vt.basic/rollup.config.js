@@ -10,8 +10,8 @@ const plugins = production ? [
     uglify({
         mangle: {
             properties: {
-                'regex' : /^_/,
-                'keep_quoted' : true
+                'regex': /^_/,
+                'keep_quoted': true
             }
         }
     })] : [];
@@ -43,26 +43,26 @@ module.exports = {
     plugins: [
         glsl(),
         resolve({
-            module : true,
-            jsnext : true,
-            main : true
+            module: true,
+            jsnext: true,
+            main: true
         }),
         commonjs(),
         babel({
             exclude: 'node_modules/**'
         })
     ].concat(plugins),
-    external : ['@maptalks/vt', '@maptalks/gl', 'maptalks'],
+    external: ['@maptalks/vt', '@maptalks/gl', 'maptalks'],
     output: [
         {
             'sourcemap': production ? false : 'inline',
             'format': 'umd',
             'name': 'maptalks.vt.basic',
             'banner': banner,
-            'globals' : {
-                '@maptalks/gl' : 'maptalksgl',
-                '@maptalks/vt' : 'maptalks',
-                'maptalks' : 'maptalks'
+            'globals': {
+                '@maptalks/gl': 'maptalksgl',
+                '@maptalks/vt': 'maptalks',
+                'maptalks': 'maptalks'
             },
             'file': outputFile
         }/* ,

@@ -50,6 +50,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     _generateIdMap() {
+        if (!this.options.data) {
+            return;
+        }
         this.features = JSON.parse(JSON.stringify(this.options.data));
         if (!this.features) {
             return;
