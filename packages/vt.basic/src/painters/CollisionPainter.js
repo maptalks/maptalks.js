@@ -156,7 +156,7 @@ export default class CollisionPainter extends BasicPainter {
         return this._fadingRecords[key];
     }
 
-    deleteMesh(meshes) {
+    deleteMesh(meshes, keepGeometry) {
         if (!meshes) {
             return;
         }
@@ -166,7 +166,7 @@ export default class CollisionPainter extends BasicPainter {
                 delete this._fadingRecords[key];
             }
         }
-        super.deleteMesh(meshes);
+        super.deleteMesh(meshes, keepGeometry);
     }
 
     delete(context) {

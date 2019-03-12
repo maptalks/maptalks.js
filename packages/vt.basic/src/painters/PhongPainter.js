@@ -107,16 +107,6 @@ class PhongPainter extends Painter {
         }
     }
 
-    deleteMesh(mesh) {
-        if (!mesh) {
-            return;
-        }
-        const geometry = mesh.geometry;
-        geometry.dispose();
-        mesh.dispose();
-        this.scene.removeMesh(mesh);
-    }
-
     delete(context) {
         super.delete(context);
         this._material.dispose();

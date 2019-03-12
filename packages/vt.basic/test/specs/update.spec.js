@@ -18,6 +18,13 @@ const line = {
     ]
 };
 
+const point = {
+    type: 'FeatureCollection',
+    features: [
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1 } }
+    ]
+};
+
 describe('update style specs', () => {
     let container, map;
     before(() => {
@@ -74,6 +81,45 @@ describe('update style specs', () => {
                 lineColor: '#0f0'
             });
         });
+    });
+
+    it('should can update textFill', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 30, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.updateSymbol(0, { textFill: '#0f0' });
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //变成绿色
+                assert.deepEqual(pixel, [0, 255, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
     });
 
     function assertChangeStyle(done, expectedColor, changeFun) {

@@ -53,16 +53,6 @@ class NativeLinePainter extends Painter {
         return uniforms;
     }
 
-    deleteMesh(mesh) {
-        if (!mesh) {
-            return;
-        }
-        const geometry = mesh.geometry;
-        geometry.dispose();
-        mesh.dispose();
-        this.scene.removeMesh(mesh);
-    }
-
     init() {
         const regl = this.regl;
 

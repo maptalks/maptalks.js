@@ -125,16 +125,6 @@ class PBRPainter extends Painter {
         }
     }
 
-    deleteMesh(mesh) {
-        if (!mesh) {
-            return;
-        }
-        const geometry = mesh.geometry;
-        geometry.dispose();
-        mesh.dispose();
-        this.scene.removeMesh(mesh);
-    }
-
     startFrame() {
         super.startFrame();
         if (this._shadowScene) {

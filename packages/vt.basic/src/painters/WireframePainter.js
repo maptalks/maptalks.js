@@ -81,16 +81,6 @@ class WireframePainter extends Painter {
         return this;
     }
 
-    deleteMesh(mesh) {
-        if (!mesh) {
-            return;
-        }
-        const geometry = mesh.geometry;
-        geometry.dispose();
-        mesh.dispose();
-        this.scene.removeMesh(mesh);
-    }
-
     init() {
         const regl = this.regl;
 
