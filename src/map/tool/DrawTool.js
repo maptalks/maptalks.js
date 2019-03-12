@@ -188,9 +188,12 @@ class DrawTool extends MapTool {
         this._drawToolLayer = this._getDrawLayer();
         this._clearStage();
         this._loadResources();
-        if(this.options['autoPanAtEdge']){
+        if (this.options['autoPanAtEdge']) {
             const map = this.getMap();
-            map.config({ autoPanAtEdge: true });
+            this._mapAutoPanAtEdge = map.options['autoPanAtEdge'];
+            if (!this._mapAutoPanAtEdge) {
+                map.config({ autoPanAtEdge: true });
+            }
         }
         return this;
     }
@@ -201,9 +204,12 @@ class DrawTool extends MapTool {
         this.endDraw();
         if (this._map) {
             map.removeLayer(this._getDrawLayer());
-            map.config({ autoPanAtEdge: false });
+            if (this.options['autoPanAtEdge']) {
+                if (!this._mapAutoPanAtEdge) {
+                    map.config({ autoPanAtEdge: false });
+                }
+            }
         }
-
         return this;
     }
 
