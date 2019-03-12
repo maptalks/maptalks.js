@@ -12,6 +12,7 @@ import MapTool from './MapTool';
  * @property {String} [options.mode=null]   - mode of the draw tool
  * @property {Object} [options.symbol=null] - symbol of the geometries drawn
  * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+ * @property {Boolean} [options.autoPanAtEdge=false]  - Whether to make edge judgement or not.
  * @memberOf DrawTool
  * @instance
  */
@@ -23,10 +24,11 @@ const options = {
         'polygonFill': '#fff',
         'polygonOpacity': 0.3
     },
-    'doubleClickZoom' : false,
+    'doubleClickZoom': false,
     'mode': null,
     'once': false,
-    'ignoreMouseleave' : true
+    'autoPanAtEdge': false,
+    'ignoreMouseleave': true
 };
 
 const registeredMode = {};
@@ -88,6 +90,7 @@ class DrawTool extends MapTool {
      * @param {String} [options.mode=null]   - mode of the draw tool
      * @param {Object} [options.symbol=null] - symbol of the geometries drawn
      * @param {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
+     * @param {Boolean} [options.autoPanAtEdge=false]  - Whether to make edge judgement or not.
      */
     constructor(options) {
         super(options);
@@ -185,6 +188,13 @@ class DrawTool extends MapTool {
         this._drawToolLayer = this._getDrawLayer();
         this._clearStage();
         this._loadResources();
+        if (this.options['autoPanAtEdge']) {
+            const map = this.getMap();
+            this._mapAutoPanAtEdge = map.options['autoPanAtEdge'];
+            if (!this._mapAutoPanAtEdge) {
+                map.config({ autoPanAtEdge: true });
+            }
+        }
         return this;
     }
 
@@ -194,6 +204,11 @@ class DrawTool extends MapTool {
         this.endDraw();
         if (this._map) {
             map.removeLayer(this._getDrawLayer());
+            if (this.options['autoPanAtEdge']) {
+                if (!this._mapAutoPanAtEdge) {
+                    map.config({ autoPanAtEdge: false });
+                }
+            }
         }
         return this;
     }
@@ -398,6 +413,7 @@ class DrawTool extends MapTool {
             this.endDraw(event);
         }
     }
+
 
     /**
      * handle mouse move event
