@@ -11,6 +11,9 @@ const defaultUniforms = {
     'pitchWithMap': 0,
     'markerPerspectiveRatio': 0,
     'rotateWithMap': 0,
+    'markerDx': 0,
+    'markerDy': 0,
+    'markerRotation': 0
 };
 
 //temparary variables
@@ -39,7 +42,7 @@ class IconPainter extends CollisionPainter {
             tileRatio: geometry.properties.tileRatio
         };
 
-        const { aPosition, aShape, aDxDy, aRotation } = geometry.data;
+        const { aPosition, aShape } = geometry.data;
 
         if (enableCollision) {
             const vertexCount = geometry.data.aPosition.length / 3;
@@ -59,9 +62,7 @@ class IconPainter extends CollisionPainter {
             };
 
             geometry.properties.aAnchor = aPosition;
-            geometry.properties.aDxDy = aDxDy;
             geometry.properties.aShape = aShape;
-            geometry.properties.aRotation = aRotation;
             //保存elements，隐藏icon时，从elements中删除icon的索引数据
             geometry.properties.elements = geometry.elements;
             geometry.properties.elemCtor = geometry.elements.constructor;
@@ -86,6 +87,15 @@ class IconPainter extends CollisionPainter {
 
         if (symbol['markerPerspectiveRatio']) {
             uniforms['markerPerspectiveRatio'] = symbol['markerPerspectiveRatio'];
+        }
+        if (symbol['markerDx']) {
+            uniforms['markerDx'] = symbol['markerDx'];
+        }
+        if (symbol['markerDy']) {
+            uniforms['markerDy'] = symbol['markerDy'];
+        }
+        if (symbol['markerRotation']) {
+            uniforms['markerRotation'] = symbol['markerRotation'] * Math.PI / 180;
         }
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, defaultUniforms);
@@ -194,6 +204,9 @@ class IconPainter extends CollisionPainter {
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
+                'markerDx',
+                'markerDy',
+                'markerRotation',
                 'cameraToCenterDistance',
                 {
                     name: 'projViewModelMatrix',
@@ -245,6 +258,9 @@ class IconPainter extends CollisionPainter {
                 {
                     vert: pickingVert,
                     uniforms: [
+                        'markerDx',
+                        'markerDy',
+                        'markerRotation',
                         'cameraToCenterDistance',
                         {
                             name: 'projViewModelMatrix',

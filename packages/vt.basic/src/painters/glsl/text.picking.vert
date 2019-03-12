@@ -4,11 +4,13 @@ attribute vec3 aPosition;
 attribute vec2 aShape0;
 attribute vec2 aTexCoord0;
 attribute float aSize;
-attribute vec2 aDxDy;
-attribute float aRotation;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
+
+uniform float textDx;
+uniform float textDy;
+uniform float textRotation;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -28,8 +30,6 @@ uniform float tileRatio; //EXTENT / tileSize
 #include <fbo_picking_vert>
 
 void main() {
-
-    float textRotation = aRotation * RAD;
     vec2 shape = aShape0;
     vec2 texCoord = aTexCoord0;
 
@@ -65,7 +65,7 @@ void main() {
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }
-    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
 
     #ifdef ENABLE_COLLISION
         bool visible = aOpacity == 255.0;

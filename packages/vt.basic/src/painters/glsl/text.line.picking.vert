@@ -7,13 +7,15 @@ attribute vec2 aTexCoord0;
 attribute vec2 aTexCoord1;
 attribute float aSize;
 attribute vec2 aOffset;
-attribute vec2 aDxDy;
-attribute float aRotation;
 //flip * 2 + vertical
 attribute float aNormal;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
+
+uniform float textDx;
+uniform float textDy;
+uniform float textRotation;
 
 uniform float zoomScale;
 uniform float cameraToCenterDistance;
@@ -42,16 +44,16 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float textRotation = aRotation;
+    float rotation = textRotation;
     // textRotation = 0.0;
     float flip = float(int(aNormal) / 2);
     float vertical = mod(aNormal, 2.0);
-    textRotation += mix(0.0, 180.0, flip);
-    textRotation += mix(0.0, -90.0, vertical);
-    textRotation *= RAD;
+    rotation += mix(0.0, 180.0, flip);
+    rotation += mix(0.0, -90.0, vertical);
+    rotation *= RAD;
 
-    float angleSin = sin(textRotation);
-    float angleCos = cos(textRotation);
+    float angleSin = sin(rotation);
+    float angleCos = cos(rotation);
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
 
     vec2 shape = shapeMatrix * mix(aShape0, aShape1, flip);
@@ -71,7 +73,7 @@ void main() {
         gl_Position = pos;
     }
 
-    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
 
     #ifdef ENABLE_COLLISION
         bool visible = aOpacity == 255.0;

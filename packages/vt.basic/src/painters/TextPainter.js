@@ -37,7 +37,10 @@ const defaultUniforms = {
     'textHaloBlur': 0,
     'textHaloOpacity': 1,
     'isHalo': 0,
-    'textPerspectiveRatio': 0
+    'textPerspectiveRatio': 0,
+    'textDx': 0,
+    'textDy': 0,
+    'textRotation': 0
 };
 
 // temparary variables used later
@@ -84,16 +87,14 @@ export default class TextPainter extends CollisionPainter {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio
         };
-        const { aPosition, aShape0, aGlyphOffset, aDxDy, aRotation, aSegment, aSize } = geometry.data;
+        const { aPosition, aShape0, aGlyphOffset, aSegment, aSize } = geometry.data;
 
         geometry.properties.aPickingId = geometry.data.aPickingId;
 
         if (enableCollision || isLinePlacement) {
             geometry.properties.aAnchor = aPosition;
             geometry.properties.aSize = aSize;
-            geometry.properties.aDxDy = aDxDy;
             geometry.properties.aShape0 = aShape0;
-            geometry.properties.aRotation = aRotation;
         }
 
         if (enableCollision) {
@@ -123,23 +124,23 @@ export default class TextPainter extends CollisionPainter {
 
             if (symbol['textPitchAlignment'] === 'map') {
                 //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
-                geometry.properties.aOffset = geometry.data.aOffset = new aDxDy.constructor(aDxDy.length);
-                geometry.properties.aRotation = geometry.data.aRotation = new aRotation.constructor(aRotation.length);
+                geometry.properties.aOffset = geometry.data.aOffset = new Int8Array(aGlyphOffset.length);
+                geometry.properties.aRotation = geometry.data.aRotation = new Int16Array(aSize.length);
             } else {
                 geometry.properties.aOffset = geometry.data.aOffset = {
                     usage: 'dynamic',
-                    data: new aDxDy.constructor(aDxDy.length)
+                    data: new Int8Array(aGlyphOffset.length)
                 };
                 geometry.properties.aRotation = geometry.data.aRotation = {
                     usage: 'dynamic',
-                    data: new aRotation.constructor(aRotation.length)
+                    data: new Int16Array(aSize.length)
                 };
             }
 
             //aNormal = [isFlip * 2 + isVertical, ...];
             geometry.data.aNormal = geometry.properties.aNormal = {
                 usage: 'dynamic',
-                data: new Uint8Array(aDxDy.length / 2)
+                data: new Uint8Array(aGlyphOffset.length / 2)
             };
             //TODO 增加是否是vertical字符的判断
             uniforms.isVerticalChar = true;
@@ -199,6 +200,18 @@ export default class TextPainter extends CollisionPainter {
 
         if (symbol['textPitchAlignment'] === 'map') {
             uniforms.pitchWithMap = 1;
+        }
+
+        if (symbol['textDx']) {
+            uniforms.textDx = symbol['textDx'];
+        }
+
+        if (symbol['textDy']) {
+            uniforms.textDy = symbol['textDy'];
+        }
+
+        if (symbol['textRotation']) {
+            uniforms.textRotation = symbol['textRotation'] * Math.PI / 180;
         }
 
         const glyphAtlas = geometry.properties.glyphAtlas;
@@ -613,6 +626,9 @@ export default class TextPainter extends CollisionPainter {
         };
 
         const uniforms = [
+            'textDx',
+            'textDy',
+            'textRotation',
             'cameraToCenterDistance',
             {
                 name: 'projViewModelMatrix',

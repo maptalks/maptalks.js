@@ -37,9 +37,12 @@ export function getLabelBox(out, mesh, i, matrix, map) {
             4.0);
     }
 
-    const { aShape0, aRotation, aDxDy, aSize } = geoProps;
+    // const { aShape0, aRotation, aDxDy, aSize } = geoProps;
+    // const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
+    const { aShape0, aRotation, aSize } = geoProps;
+    const dxdy = vec2.set(DXDY, symbol['markerDx'] || 0, symbol['markerDy'] || 0);
+
     const textSize = aSize[i];
-    const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
 
     let tl = vec2.set(V2_0, aShape0[i * 2], aShape0[i * 2 + 1]),
         tr = vec2.set(V2_1, aShape0[i * 2 + 2], aShape0[i * 2 + 3]),
@@ -51,7 +54,7 @@ export function getLabelBox(out, mesh, i, matrix, map) {
     vec2.scale(bl, bl, textSize / glyphSize);
     vec2.scale(br, br, textSize / glyphSize);
 
-    let textRotation = aRotation[i];
+    let textRotation = (aRotation ? aRotation[i] : 0) + (symbol['textRotation'] || 0);
 
     if (!isAlongLine) {
         //1. 获得shape的tl, tr, bl, 和br

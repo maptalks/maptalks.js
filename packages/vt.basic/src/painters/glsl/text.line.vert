@@ -1,4 +1,5 @@
-#define RAD 0.0174532925
+#define RAD 0.017453292519943
+#define PI  3.141592653589793
 
 attribute vec3 aPosition;
 attribute vec2 aShape0;
@@ -7,13 +8,16 @@ attribute vec2 aTexCoord0;
 attribute vec2 aTexCoord1;
 attribute float aSize;
 attribute vec2 aOffset;
-attribute vec2 aDxDy;
-attribute float aRotation;
+attribute float aRotation; //rotation in degree
 //flip * 2 + vertical
 attribute float aNormal;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
+
+uniform float textDx;
+uniform float textDy;
+uniform float textRotation;
 
 uniform float zoomScale;
 uniform float cameraToCenterDistance;
@@ -45,16 +49,15 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float textRotation = aRotation;
+    float rotation = aRotation * RAD + textRotation;
     // textRotation = 0.0;
     float flip = float(int(aNormal) / 2);
     float vertical = mod(aNormal, 2.0);
-    textRotation += mix(0.0, 180.0, flip);
-    textRotation += mix(0.0, -90.0, vertical);
-    textRotation *= RAD;
+    rotation += mix(0.0, PI, flip); //180 degree
+    rotation += mix(0.0, -PI / 2.0, vertical); //-90 degree
 
-    float angleSin = sin(textRotation);
-    float angleCos = cos(textRotation);
+    float angleSin = sin(rotation);
+    float angleCos = cos(rotation);
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
 
     vec2 shape = shapeMatrix * mix(aShape0, aShape1, flip);
@@ -76,7 +79,7 @@ void main() {
         vGammaScale = cameraScale + 0.5;
     }
 
-    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
 
 
     vTexCoord = texCoord / texSize;

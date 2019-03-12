@@ -1,11 +1,9 @@
-import Color from 'color';
 import VectorPack from './VectorPack';
 import StyledPoint from './StyledPoint';
 import clipLine from './util/clip_line';
 import { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
-import { evaluate } from '../style/Util';
 import { getGlyphQuads, getIconQuads } from './util/quads';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
@@ -54,21 +52,6 @@ function getPackSDFFormat(symbol) {
                 type: Uint8Array,
                 width: 1,
                 name: 'aSize'
-            },
-            {
-                type: Uint8Array,
-                width: 3,
-                name: 'aColor'
-            },
-            {
-                type: Int8Array,
-                width: 2,
-                name: 'aDxDy'
-            },
-            {
-                type: Int16Array,
-                width: 1,
-                name: 'aRotation'
             }
         ];
     } else {
@@ -97,21 +80,6 @@ function getPackSDFFormat(symbol) {
                 type: Uint8Array,
                 width: 1,
                 name: 'aSize'
-            },
-            {
-                type: Uint8Array,
-                width: 3,
-                name: 'aColor'
-            },
-            {
-                type: Int8Array,
-                width: 2,
-                name: 'aDxDy'
-            },
-            {
-                type: Int16Array,
-                width: 1,
-                name: 'aRotation'
             }
         ];
     }
@@ -138,21 +106,9 @@ function getPackMarkerFormat() {
             type: Uint8Array,
             width: 2,
             name: 'aSize'
-        },
-        {
-            type: Int8Array,
-            width: 2,
-            name: 'aDxDy'
-        },
-        {
-            type: Int16Array,
-            width: 1,
-            name: 'aRotation'
         }
     ];
 }
-
-const DEFAULT_COLOR = [0, 0, 0];
 
 
 /**
@@ -217,25 +173,16 @@ export default class PointPack extends VectorPack {
         let currentIdx = data.length / formatWidth;
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
-        const symbol = point.symbol,
-            properties = point.feature.properties;
+        const symbol = point.symbol;
         const size = point.size;
         const alongLine = point.symbol['textPlacement'] === 'line' || point.symbol['markerPlacement'] === 'line';
         const isText = symbol['textName'] !== undefined;
-        let quads, dx, dy, rotation, color;
+        let quads;
 
         if (isText) {
-            dx = evaluate(symbol['textDx'], properties) || 0;
-            dy = evaluate(symbol['textDy'], properties) || 0;
-            rotation = evaluate(symbol['textRotation'], properties) || 0;
-            const textFill = evaluate(symbol['textFill'], properties);
-            color = textFill ? Color(textFill).array() : DEFAULT_COLOR;
             const font = point.getIconAndGlyph().glyph.font;
             quads = getGlyphQuads(shape.horizontal, alongLine, this.glyphAtlas.positions[font]);
         } else {
-            dx = evaluate(symbol['markerDx'], properties) || 0;
-            dy = evaluate(symbol['markerDy'], properties) || 0;
-            rotation = evaluate(symbol['markerRotation'], properties) || 0;
             quads = getIconQuads(shape);
         }
         for (let i = 0; i < anchors.length; i++) {
@@ -244,7 +191,7 @@ export default class PointPack extends VectorPack {
             for (let ii = 0; ii < l; ii++) {
                 const quad = quads[ii];
                 const flipQuad = quads[l - 1 - ii];
-                const y = quad.glyphOffset[1] + dy;
+                // const y = quad.glyphOffset[1];
                 //把line的端点存到line vertex array里
                 const { tl, tr, bl, br, tex } = quad;
                 //char's quad if flipped
@@ -256,40 +203,40 @@ export default class PointPack extends VectorPack {
                     tl.x, tl.y,
                     tex.x, tex.y + tex.h
                 );
-                this._fillData(data, isText, symbol, dx, y,
+                this._fillData(data, isText, symbol,
                     tl1.x, tl1.y,
                     tex1.x, tex1.y + tex1.h,
-                    rotation, size, color, quad.glyphOffset, anchor);
+                    size, quad.glyphOffset, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     tr.x, tr.y,
                     tex.x + tex.w, tex.y + tex.h
                 );
-                this._fillData(data, isText, symbol, dx, y,
+                this._fillData(data, isText, symbol,
                     tr1.x, tr1.y,
                     tex1.x + tex1.w, tex1.y + tex1.h,
-                    rotation, size, color, quad.glyphOffset, anchor);
+                    size, quad.glyphOffset, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     bl.x, bl.y,
                     tex.x, tex.y
                 );
-                this._fillData(data, isText, symbol, dx, y,
+                this._fillData(data, isText, symbol,
                     bl1.x, bl1.y,
                     tex1.x, tex1.y,
-                    rotation, size, color, quad.glyphOffset, anchor);
+                    size, quad.glyphOffset, anchor);
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     br.x, br.y,
                     tex.x + tex.w, tex.y
                 );
-                this._fillData(data, isText, symbol, dx, y,
+                this._fillData(data, isText, symbol,
                     br1.x, br1.y,
                     tex1.x + tex1.w, tex1.y,
-                    rotation, size, color, quad.glyphOffset, anchor);
+                    size, quad.glyphOffset, anchor);
 
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
@@ -309,17 +256,13 @@ export default class PointPack extends VectorPack {
      * @param {Number[]} data
      * @param {Boolean} isText
      * @param {Object} symbol
-     * @param {Number} dx
-     * @param {Number} dy
      * @param {Number} tx - flip quad's x offset
      * @param {Number} ty - flip quad's y offset
      * @param {Number} texx - flip quad's tex coord x
      * @param {Number} texy - flip quad's tex coord y
-     * @param {Number} rotation
      * @param {Number[]} size
-     * @param {Number[]} color
      */
-    _fillData(data, isText, symbol, dx, dy, tx, ty, texx, texy, rotation, size, color, glyphOffset, anchor) {
+    _fillData(data, isText, symbol, tx, ty, texx, texy, size, glyphOffset, anchor) {
         if (isText) {
             if (symbol['textPlacement'] === 'line') {
                 data.push(
@@ -330,11 +273,9 @@ export default class PointPack extends VectorPack {
             }
             data.push(glyphOffset[0], glyphOffset[1]);
             data.push(size[0]);
-            data.push(color[0], color[1], color[2]);
         } else {
             data.push(size[0], size[1]);
         }
-        data.push(dx, dy, rotation);
     }
 
     _getAnchors(point, shape, scale) {

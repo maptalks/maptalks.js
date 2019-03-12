@@ -4,12 +4,14 @@ attribute vec3 aPosition;
 attribute vec2 aShape;
 attribute vec2 aSize;
 attribute vec2 aTexCoord;
-attribute float aRotation;
-attribute vec2 aDxDy;
 //uint8
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
+
+uniform float markerDx;
+uniform float markerDy;
+uniform float markerRotation;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -39,7 +41,7 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float rotation = aRotation * RAD - mapRotation * rotateWithMap;
+    float rotation = markerRotation - mapRotation * rotateWithMap;
     if (pitchWithMap == 1.0) {
         rotation += mapRotation;
     }
@@ -60,7 +62,7 @@ void main() {
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }
 
-    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(markerDx, markerDy) * 2.0 / canvasSize * distance;
 
     #ifdef ENABLE_COLLISION
         bool visible = aOpacity == 255.0;

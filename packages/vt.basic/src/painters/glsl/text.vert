@@ -4,12 +4,14 @@ attribute vec3 aPosition;
 attribute vec2 aShape0;
 attribute vec2 aTexCoord0;
 attribute float aSize;
-attribute vec2 aDxDy;
-attribute float aRotation;
 //uint8
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
+
+uniform float textDx;
+uniform float textDy;
+uniform float textRotation;
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -33,7 +35,6 @@ varying float vOpacity;
 
 void main() {
 
-    float textRotation = aRotation * RAD;
     vec2 shape = aShape0;
     vec2 texCoord = aTexCoord0;
 
@@ -71,7 +72,7 @@ void main() {
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
         vGammaScale = cameraScale + mapPitch / 2.0 + 0.5;
     }
-    gl_Position.xy += aDxDy * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
     // gl_Position.xy += vec2(1.0, 10.0);
 
     vTexCoord = texCoord / texSize;
