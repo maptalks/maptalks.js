@@ -46,9 +46,10 @@ Map.include(/** @lends Map.prototype */ {
             step = options;
             options = {};
         }
-        offset = new Point(offset).multi(-1);
+        offset = new Point(offset);
         this.onMoveStart();
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
+            offset = offset.multi(-1);
             const target = this.locateByPoint(this.getCenter(), offset.x, offset.y);
             this._panAnimation(target, options['duration'], step);
         } else {
@@ -60,9 +61,9 @@ Map.include(/** @lends Map.prototype */ {
 
     _panAnimation: function (target, t, cb) {
         return this.animateTo({
-            'center' : target
+            'center': target
         }, {
-            'duration' : t || this.options['panAnimationDuration'],
-        }, cb);
+                'duration': t || this.options['panAnimationDuration'],
+            }, cb);
     }
 });
