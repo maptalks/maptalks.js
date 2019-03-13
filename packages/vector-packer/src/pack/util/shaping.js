@@ -407,6 +407,10 @@ function align(positionedGlyphs, //: Array<PositionedGlyph>,
     const shiftX = (justify - horizontalAlign) * maxLineLength;
     const shiftY = -(-verticalAlign * lineCount + 0.5) * lineHeight;
 
+    if (!shiftX && !shiftY) {
+        return;
+    }
+
     for (let j = 0; j < positionedGlyphs.length; j++) {
         positionedGlyphs[j].x += shiftX;
         positionedGlyphs[j].y += shiftY;

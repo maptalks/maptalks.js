@@ -51,13 +51,14 @@ export function getGlyphQuads(shaping,
         const rectBuffer = GLYPH_PBF_BORDER + glyphPadding;
 
         const halfAdvance = glyph.metrics.advance / 2;
+        const halfHeight = glyph.metrics.height / 2;
         const glyphOffset = alongLine ?
             [positionedGlyph.x + halfAdvance, 0] :
             [0, 0];
 
         const builtInOffset = alongLine ?
-            [0, positionedGlyph.y - halfAdvance] :
-            [positionedGlyph.x + halfAdvance, positionedGlyph.y - halfAdvance];
+            [0, positionedGlyph.y - halfHeight] :
+            [positionedGlyph.x + halfAdvance, positionedGlyph.y - halfHeight];
 
 
         const x1 = glyph.metrics.left - rectBuffer - halfAdvance + builtInOffset[0];

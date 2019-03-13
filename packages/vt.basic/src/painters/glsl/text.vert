@@ -64,7 +64,7 @@ void main() {
     if (pitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;
         gl_Position.xy += offset * perspectiveRatio * distance;
-        vGammaScale = distance / cameraToCenterDistance + 0.5;
+        vGammaScale = 1.0;//distance / cameraToCenterDistance + 0.5;
     } else {
         float cameraScale = distance / cameraToCenterDistance;
         vec2 offset = shape * vec2(1.0, -1.0);
