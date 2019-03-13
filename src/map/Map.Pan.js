@@ -63,7 +63,7 @@ Map.include(/** @lends Map.prototype */ {
         return this.animateTo({
             'center': target
         }, {
-                'duration': t || this.options['panAnimationDuration'],
-            }, cb);
+            'duration': t || this.options['panAnimationDuration'],
+        }, cb);
     }
 });
