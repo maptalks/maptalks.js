@@ -30,7 +30,7 @@ export function getLabelNormal(aOffset, firstChrIdx, lastChrIdx, aVertical, aspe
         const rise = Math.abs(LAST_POINT[1] - FIRST_POINT[1]);
         const run = Math.abs(LAST_POINT[0] - FIRST_POINT[0]) * aspectRatio;
         flip = FIRST_POINT[0] > LAST_POINT[0] ? 1 : 0;
-        if (rise > run) {
+        if (rise >= run) {
             vertical = 1;
             if (planeMatrix) {
                 //in tile coordinate system
