@@ -390,6 +390,10 @@ function justifyLine(positionedGlyphs, //: Array<PositionedGlyph>,
         const lastAdvance = glyph.metrics.advance;
         const lineIndent = (positionedGlyphs[end].x + lastAdvance) * justify;
 
+        if (!lineIndent) {
+            return;
+        }
+
         for (let j = start; j <= end; j++) {
             positionedGlyphs[j].x -= lineIndent;
         }

@@ -1,4 +1,5 @@
 import TinySDF from './pack/atlas/TinySDF';
+import { charHasUprightVerticalOrientation } from './pack/util/script_detection';
 
 export default class GlyphRequestor {
     constructor() {
@@ -39,9 +40,10 @@ export default class GlyphRequestor {
             textFaceName = fonts.slice(3).join(' ');
         const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
-        let buffer = 1;
-        if (fonts[0] !== 'normal') {
-            buffer = 3;
+        const buffer = 3;
+        let advBuffer = 1;
+        if (fonts[0] === 'normal' && !charHasUprightVerticalOrientation(charCode)) {
+            advBuffer = 3;
         }
         if (!tinySDF) {
             let fontWeight = '400';
@@ -92,7 +94,7 @@ export default class GlyphRequestor {
                 left: 0,
                 top: -8 - (buffer - 3),
                 // top: -buffer,
-                advance: width + buffer - 1
+                advance: width + buffer - advBuffer
             }
         };
     }

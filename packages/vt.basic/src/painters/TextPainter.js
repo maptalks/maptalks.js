@@ -87,7 +87,7 @@ export default class TextPainter extends CollisionPainter {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio
         };
-        const { aPosition, aShape0, aGlyphOffset, aSegment, aSize } = geometry.data;
+        const { aPosition, aShape0, aSize } = geometry.data;
 
         geometry.properties.aPickingId = geometry.data.aPickingId;
 
@@ -115,21 +115,25 @@ export default class TextPainter extends CollisionPainter {
         }
 
         if (isLinePlacement) {
-
-            geometry.properties.aGlyphOffset = aGlyphOffset;
+            const { aVertical, aSegment, aGlyphOffset0, aGlyphOffset1 } = geometry.data;
+            geometry.properties.aGlyphOffset0 = aGlyphOffset0;
+            geometry.properties.aGlyphOffset1 = aGlyphOffset1;
             geometry.properties.aSegment = aSegment;
+            geometry.properties.aVertical = aVertical;
 
             delete geometry.data.aSegment;
-            delete geometry.data.aGlyphOffset;
+            delete geometry.data.aVertical;
+            delete geometry.data.aGlyphOffset0;
+            delete geometry.data.aGlyphOffset1;
 
             if (symbol['textPitchAlignment'] === 'map') {
                 //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
-                geometry.properties.aOffset = geometry.data.aOffset = new Int8Array(aGlyphOffset.length);
+                geometry.properties.aOffset = geometry.data.aOffset = new Int8Array(aGlyphOffset0.length);
                 geometry.properties.aRotation = geometry.data.aRotation = new Int16Array(aSize.length);
             } else {
                 geometry.properties.aOffset = geometry.data.aOffset = {
                     usage: 'dynamic',
-                    data: new Int8Array(aGlyphOffset.length)
+                    data: new Int8Array(aGlyphOffset0.length)
                 };
                 geometry.properties.aRotation = geometry.data.aRotation = {
                     usage: 'dynamic',
@@ -140,10 +144,8 @@ export default class TextPainter extends CollisionPainter {
             //aNormal = [isFlip * 2 + isVertical, ...];
             geometry.data.aNormal = geometry.properties.aNormal = {
                 usage: 'dynamic',
-                data: new Uint8Array(aGlyphOffset.length / 2)
+                data: new Uint8Array(aVertical.length)
             };
-            //TODO 增加是否是vertical字符的判断
-            uniforms.isVerticalChar = true;
         }
 
         if (isLinePlacement || enableCollision) {
@@ -465,12 +467,22 @@ export default class TextPainter extends CollisionPainter {
             shouldUpdate = !isPitchWithMap || !geometry.__offsetRotationUpdated;
         const aOffset = geometry.properties.aOffset.data || geometry.properties.aOffset,
             aRotation = geometry.properties.aRotation.data || geometry.properties.aRotation,
-            aNormal = geometry.properties.aNormal;
+            { aVertical, aNormal } = geometry.properties;
 
         const isProjected = !planeMatrix;
         const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'][0];
 
         let visible = true;
+
+        if (visible) {
+            //updateNormal
+            //normal decides whether to flip and vertical
+            const firstChrIdx = meshElements[start],
+                lastChrIdx = meshElements[end - 1];
+            // debugger
+            this._updateNormal(aNormal, aOffset, aVertical, firstChrIdx, lastChrIdx, planeMatrix);
+        }
+
         //if planeMatrix is null, line is in tile coordinates
         // line = planeMatrix ? line.line : line;
         if (shouldUpdate) {
@@ -495,22 +507,15 @@ export default class TextPainter extends CollisionPainter {
                 // labelElements.push(meshElements[j + 3], meshElements[j + 4], meshElements[j + 5]);
             }
         }
-        if (visible) {
-            //updateNormal
-            //normal decides whether to flip and vertical
-            const firstChrIdx = meshElements[start],
-                lastChrIdx = meshElements[end - 1];
-            // debugger
-            this._updateNormal(aNormal, aOffset, uniforms['isVerticalChar'], firstChrIdx, lastChrIdx, planeMatrix);
-        }
+
 
         return visible;
     }
 
-    _updateNormal(aNormal, aOffset, isVertical, firstChrIdx, lastChrIdx, planeMatrix) {
+    _updateNormal(aNormal, aOffset, aVertical, firstChrIdx, lastChrIdx, planeMatrix) {
         const map = this.getMap(),
             aspectRatio = map.width / map.height;
-        const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, isVertical, aspectRatio, planeMatrix);
+        const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, aVertical, aspectRatio, planeMatrix);
         //更新normal
         for (let i = firstChrIdx; i <= lastChrIdx; i++) {
             aNormal.data[i] = normal;

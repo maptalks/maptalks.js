@@ -1,5 +1,5 @@
 /*!
- * revised from @mapbox/tiny-sdf
+ * based on @mapbox/tiny-sdf
  * https://github.com/fuzhenn/tiny-sdf
  * @License BSD 2-Clause
  */

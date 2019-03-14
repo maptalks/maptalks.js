@@ -2,7 +2,9 @@ import { vec3 } from '@maptalks/gl';
 
 const FIRST_POINT = [], LAST_POINT = [];
 
-export function getLabelNormal(aOffset, firstChrIdx, lastChrIdx, isVertical, aspectRatio, planeMatrix) {
+export function getLabelNormal(aOffset, firstChrIdx, lastChrIdx, aVertical, aspectRatio, planeMatrix) {
+    const isVertical = aVertical[firstChrIdx];
+
     //每个position对应了1个aPickingId和2个aOffset，所以需要乘2
     firstChrIdx *= 2;
     lastChrIdx *= 2;

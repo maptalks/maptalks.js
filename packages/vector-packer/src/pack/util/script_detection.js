@@ -13,11 +13,21 @@ export function allowsIdeographicBreaking(chars) {
 }
 
 export function allowsVerticalWritingMode(chars) {
+    const LIMIT = 1;
+    let count = 0;
     for (let i = 0; i < chars.length; i++) {
         const char = chars.charAt(i);
-        if (charHasUprightVerticalOrientation(char.charCodeAt(0))) return true;
+        //不支持竖写模式的文字连续多于limit时，才判定为不支持竖写模式
+        if (!charHasUprightVerticalOrientation(char.charCodeAt(0))) {
+            count++;
+            if (count >= LIMIT) {
+                return false;
+            }
+        } else {
+            count = 0;
+        }
     }
-    return false;
+    return true;
 }
 
 export function allowsLetterSpacing(chars) {
