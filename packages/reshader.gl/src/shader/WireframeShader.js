@@ -24,6 +24,7 @@ class WireframeShader extends MeshShader {
             }
         });
         let vert = wireframeVert;
+        //将着色器代码中的aPosition替换成指定的变量名
         if (positionAttribute !== 'aPosition') {
             vert = vert.replace(/aPosition/g, positionAttribute);
         }
@@ -34,7 +35,22 @@ class WireframeShader extends MeshShader {
             vert,
             frag : wireframeFrag,
             uniforms : [
-                'frontColor', 'backColor', 'lineWidth', 'alpha', 'fillColor',
+                'time',
+                'fill',
+                'stroke',
+                'dualStroke',
+                'seeThrough',
+                'insideAltColor',
+                'thickness',
+                'secondThickness',
+                'dashEnabled',
+                'dashRepeats',
+                'dashOverlap',
+                'dashLength',
+                'dashAnimate',
+                'squeeze',
+                'squeezeMin',
+                'squeezeMax',
                 {
                     name : 'projViewModelMatrix',
                     type : 'function',
