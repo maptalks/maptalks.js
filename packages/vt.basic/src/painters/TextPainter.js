@@ -326,7 +326,8 @@ export default class TextPainter extends CollisionPainter {
                 this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix, labelIndex) => {
                     fn(elements, visibleElements, mesh, label, start, end, mvpMatrix, labelIndex);
                 });
-                if (visibleElements.length !== elements.length) {
+                const allVisilbe = visibleElements.length === elements.length && geometry.count === elements.length;
+                if (!allVisilbe) {
                     geometry.setElements({
                         usage: 'dynamic',
                         data: new geometry.properties.elemCtor(visibleElements)
