@@ -69,13 +69,15 @@ class Painter {
                 redraw: false
             };
         }
-        if (this.needStencil) {
-            this._stencil(context.quadStencil);
-        }
+        // if (this.needStencil) {
+        //     this._stencil(context.quadStencil);
+        // }
 
-        this.regl.clear({
-            stencil: 0xFF
-        });
+        if (this.scene.getMeshes().length) {
+            this.regl.clear({
+                stencil: 0xFF
+            });
+        }
         const uniforms = this.getUniformValues(map);
 
         this.callShader(uniforms, context);
