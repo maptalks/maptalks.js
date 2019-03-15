@@ -43,6 +43,9 @@ const defaultUniforms = {
     'textRotation': 0
 };
 
+//label box 或 icon box 对应的element数量
+const BOX_ELEMENT_COUNT = 6;
+
 // temparary variables used later
 const PROJ_MATRIX = [], LINE_OFFSET = [];
 
@@ -90,6 +93,8 @@ export default class TextPainter extends CollisionPainter {
         const { aPosition, aShape0, aSize } = geometry.data;
 
         geometry.properties.aPickingId = geometry.data.aPickingId;
+        geometry.properties.aCount = geometry.data.aCount;
+        delete geometry.data.aCount;
 
         if (enableCollision || isLinePlacement) {
             geometry.properties.aAnchor = aPosition;
@@ -301,9 +306,10 @@ export default class TextPainter extends CollisionPainter {
             angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
             0.0, pitchSin, pitchCos
         ];
-        const fn = (elements, visibleElements, mesh, label, start, end, mvpMatrix, labelIndex) => {
+        const fn = (elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex) => {
             // debugger
-            const visible = this.updateBoxCollisionFading(mesh, elements, label.length, start, end, mvpMatrix, labelIndex);
+            const boxCount = (end - start) / 6;
+            const visible = this.updateBoxCollisionFading(mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(elements[i]);
@@ -311,9 +317,14 @@ export default class TextPainter extends CollisionPainter {
             }
         };
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        // console.log(`meshes数量: ${meshes.length}`);
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
             const geometry = mesh.geometry;
+
+            // const idx = geometry.properties.aPickingId[0];
+            // console.log(`图层:${geometry.properties.features[idx].feature.layer},数据数量：${geometry.count / BOX_ELEMENT_COUNT}`);
+
             if (geometry.properties.aNormal) {
                 //line placement
                 if (!geometry.properties.line) {
@@ -323,9 +334,12 @@ export default class TextPainter extends CollisionPainter {
             } else if (enableCollision && !mesh.properties.ignoreCollision) {
                 const elements = geometry.properties.elements;
                 const visibleElements = [];
-                this._forEachLabel(mesh, elements, (mesh, label, start, end, mvpMatrix, labelIndex) => {
-                    fn(elements, visibleElements, mesh, label, start, end, mvpMatrix, labelIndex);
+                this._forEachLabel(mesh, elements, (mesh, start, end, mvpMatrix, labelIndex) => {
+                    fn(elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex);
                 });
+                if (enableCollision) {
+                    geometry.updateData('aOpacity', geometry.properties.aOpacity);
+                }
                 const allVisilbe = visibleElements.length === elements.length && geometry.count === elements.length;
                 if (!allVisilbe) {
                     geometry.setElements({
@@ -370,7 +384,7 @@ export default class TextPainter extends CollisionPainter {
         const enableCollision = !mesh.properties.ignoreCollision && this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         let visibleElements = enableCollision ? [] : elements;
 
-        this._forEachLabel(mesh, allElements, (mesh, label, start, end, mvpMatrix, labelIndex) => {
+        this._forEachLabel(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null);
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
@@ -385,7 +399,8 @@ export default class TextPainter extends CollisionPainter {
             if (!enableCollision) {
                 return;
             }
-            visible = this.updateBoxCollisionFading(mesh, allElements, label.length, start, end, mvpMatrix, labelIndex);
+            const boxCount = (end - start) / 6;
+            visible = this.updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(allElements[i]);
@@ -428,7 +443,6 @@ export default class TextPainter extends CollisionPainter {
     }
 
     _forEachLabel(mesh, elements, fn) {
-        const BOX_ELEMENT_COUNT = 6;
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         const geometry = mesh.geometry,
@@ -445,11 +459,9 @@ export default class TextPainter extends CollisionPainter {
             //pickingId发生变化，新的feature出现
             if (pickingId[idx] !== current || i === elements.length) {
                 const end = i/*  === elements.length - 6 ? elements.length : i */;
-                const feature = geometryProps.features[current];
-                const text = feature.textName = feature.textName || resolveText(geometryProps.symbol.textName, feature.feature.properties);
-                const charCount = text.length;
+                const charCount = geometryProps.aCount[elements[start]];
                 for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
-                    fn.call(this, mesh, text, ii, ii + charCount * BOX_ELEMENT_COUNT, matrix, index++);
+                    fn.call(this, mesh, ii, ii + charCount * BOX_ELEMENT_COUNT, matrix, index++);
                 }
                 current = pickingId[idx];
                 start = i;
@@ -570,7 +582,6 @@ export default class TextPainter extends CollisionPainter {
                 boxes.push(box.slice(0));
                 const collides = this.isCollides(box, geoProps.z);
                 if (collides === 1) {
-                    // console.log(box);
                     hasCollides = true;
                     if (!isFading && !debugCollision) {
                         return {

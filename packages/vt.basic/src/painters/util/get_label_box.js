@@ -64,7 +64,6 @@ export function getLabelBox(out, mesh, i, matrix, map) {
         //   3.2 如果pitchWidthMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
         //4. 将最终计算结果与dxdy相加
         const mapRotation = map.getBearing() * Math.PI / 180;
-        textRotation *= Math.PI / 180;
 
         const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
         tl = vec2.transformMat2(tl, tl, shapeMatrix);
@@ -72,12 +71,11 @@ export function getLabelBox(out, mesh, i, matrix, map) {
         bl = vec2.transformMat2(bl, bl, shapeMatrix);
         br = vec2.transformMat2(br, br, shapeMatrix);
 
-        vec2.multiply(tl, tl, AXIS_FACTOR);
-        vec2.multiply(tr, tr, AXIS_FACTOR);
-        vec2.multiply(bl, bl, AXIS_FACTOR);
-        vec2.multiply(br, br, AXIS_FACTOR);
-
         if (uniforms['pitchWithMap'] === 1) {
+            vec2.multiply(tl, tl, AXIS_FACTOR);
+            vec2.multiply(tr, tr, AXIS_FACTOR);
+            vec2.multiply(bl, bl, AXIS_FACTOR);
+            vec2.multiply(br, br, AXIS_FACTOR);
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
         } else {
             getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);

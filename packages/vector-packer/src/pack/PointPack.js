@@ -1,4 +1,3 @@
-import Point from '@mapbox/point-geometry';
 import VectorPack from './VectorPack';
 import StyledPoint from './StyledPoint';
 import clipLine from './util/clip_line';
@@ -29,6 +28,11 @@ function getPackSDFFormat(symbol) {
                 type: Uint16Array,
                 width: 2,
                 name: 'aTexCoord0'
+            },
+            {
+                type: Uint8Array,
+                width: 1,
+                name: 'aCount'
             },
             {
                 type: Int16Array,
@@ -83,6 +87,11 @@ function getPackSDFFormat(symbol) {
                 type: Uint16Array,
                 width: 2,
                 name: 'aTexCoord0'
+            },
+            {
+                type: Uint8Array,
+                width: 1,
+                name: 'aCount'
             },
             {
                 type: Int16Array,
@@ -199,6 +208,7 @@ export default class PointPack extends VectorPack {
         } else {
             quads = getIconQuads(shape);
         }
+        const textCount = quads.length;
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             const l = quads.length;
@@ -217,7 +227,7 @@ export default class PointPack extends VectorPack {
                     tl.x, tl.y,
                     tex.x, tex.y + tex.h
                 );
-                this._fillData(data, isText, alongLine,
+                this._fillData(data, isText, alongLine, textCount,
                     tl1.x, tl1.y,
                     tex1.x, tex1.y + tex1.h,
                     size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
@@ -227,7 +237,7 @@ export default class PointPack extends VectorPack {
                     tr.x, tr.y,
                     tex.x + tex.w, tex.y + tex.h
                 );
-                this._fillData(data, isText, alongLine,
+                this._fillData(data, isText, alongLine, textCount,
                     tr1.x, tr1.y,
                     tex1.x + tex1.w, tex1.y + tex1.h,
                     size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
@@ -237,7 +247,7 @@ export default class PointPack extends VectorPack {
                     bl.x, bl.y,
                     tex.x, tex.y
                 );
-                this._fillData(data, isText, alongLine,
+                this._fillData(data, isText, alongLine, textCount,
                     bl1.x, bl1.y,
                     tex1.x, tex1.y,
                     size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
@@ -247,7 +257,7 @@ export default class PointPack extends VectorPack {
                     br.x, br.y,
                     tex.x + tex.w, tex.y
                 );
-                this._fillData(data, isText, alongLine,
+                this._fillData(data, isText, alongLine, textCount,
                     br1.x, br1.y,
                     tex1.x + tex1.w, tex1.y,
                     size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
@@ -276,8 +286,9 @@ export default class PointPack extends VectorPack {
      * @param {Number} texy - flip quad's tex coord y
      * @param {Number[]} size
      */
-    _fillData(data, isText, alongLine, tx, ty, texx, texy, size, glyphOffset, flipGlyphOffset, anchor, vertical) {
+    _fillData(data, isText, alongLine, textCount, tx, ty, texx, texy, size, glyphOffset, flipGlyphOffset, anchor, vertical) {
         if (isText) {
+            data.push(textCount);
             data.push(glyphOffset[0], glyphOffset[1]);
             data.push(size[0]);
             if (alongLine) {

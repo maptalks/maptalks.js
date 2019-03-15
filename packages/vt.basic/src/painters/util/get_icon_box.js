@@ -57,7 +57,6 @@ export function getIconBox(out, mesh, i, matrix, map) {
     //   3.2 如果pitchWidthMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
     //4. 将最终计算结果与dxdy相加
     const mapRotation = map.getBearing() * Math.PI / 180;
-    rotation *= Math.PI / 180;
     const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
 
     tl = vec2.transformMat2(tl, tl, shapeMatrix);
