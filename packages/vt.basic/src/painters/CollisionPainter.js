@@ -22,8 +22,11 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
-        const geometryProps = mesh.geometry.properties;
         const { level, meshKey } = mesh.properties;
+        if (!this.getMap().isZooming() && this._zoomFading === undefined && level > 0) {
+            return false;
+        }
+        const geometryProps = mesh.geometry.properties;
         let collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
         let visible = !collision.collides;
 
@@ -90,12 +93,15 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _getBoxFading(visible, stamps, index, level) {
-        const { fadingDuration, fadingDelay } = this.sceneConfig,
-            timestamp = this.layer.getRenderer().getFrameTimestamp();
-        let boxTimestamp = stamps[index],
-            fadingOpacity = visible ? 1 : 0;
+        //level大于0，不fading
+        const { fadingDuration, fadingDelay } = this.sceneConfig;
+        const timestamp = this.layer.getRenderer().getFrameTimestamp();
+        let boxTimestamp = stamps[index];
+        let fadingOpacity = visible ? 1 : 0;
         if (!boxTimestamp) {
-            if (visible && !(level === 0 && this._zoomFading >= 0)) {
+            const zooming = this.getMap().isZooming();
+            // if (visible && level === 0 && this._zoomFading === undefined) {
+            if (visible && level === 0 && !zooming) {
                 //第一次显示
                 stamps[index] = timestamp + fadingDelay;
             }
@@ -108,8 +114,7 @@ export default class CollisionPainter extends BasicPainter {
             //如果在delay期间，又改回原有的状态，则重置时间戳以退出fading
             if (!visible && boxTimestamp > 0 || visible && boxTimestamp < 0) {
                 const newStamp = timestamp - fadingDuration;
-                boxTimestamp = visible ? newStamp : -newStamp;
-                stamps[index] = boxTimestamp;
+                stamps[index] = boxTimestamp = visible ? newStamp : -newStamp;
             }
         }
 
@@ -122,17 +127,17 @@ export default class CollisionPainter extends BasicPainter {
                 fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
             } else {
                 //消失fading
-                fadingOpacity = 1 - (timestamp - Math.abs(boxTimestamp)) / fadingDuration;
+                fadingOpacity = 1 - (timestamp + boxTimestamp) / fadingDuration;
             }
         } else if (visible) {
-            //显示fading
+            //显示fading开始
             if (boxTimestamp < 0) {
                 //显示fading起点，记录时间戳
                 stamps[index] = boxTimestamp = timestamp + fadingDelay;
             }
             fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
         } else {
-            //消失fading
+            //消失fading开始
             if (boxTimestamp > 0) {
                 //消失fading起点，记录时间戳
                 stamps[index] = boxTimestamp = -(timestamp + fadingDelay);
@@ -253,18 +258,11 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     preparePaint(context) {
-        super.preparePaint(context);
         if (this._zoomFading >= 0 && this._zoomMeshes) {
-            const tileZoom = this.layer.getRenderer().getCurrentTileZoom();
-            for (let i = 0; i < this._zoomMeshes.length; i++) {
-                const mesh = this._zoomMeshes[i];
-                const tileInfo = mesh.properties.tile;
-                const level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
-                mesh.properties.level = level;
-                mesh.setUniform('level', level);
-            }
+            this._updateZoomMeshesLevel();
             this.scene.addMesh(this._zoomMeshes);
         }
+        super.preparePaint(context);
     }
 
     paint(context) {
@@ -278,7 +276,7 @@ export default class CollisionPainter extends BasicPainter {
         this.callCurrentTileShader(uniforms);
 
         const map = this.getMap();
-        if (map.isInteracting() && !map.isZooming() && this._zoomFading === undefined) {
+        if (!map.isZooming() && this._zoomFading === undefined) {
             //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
             //但有zoomFading时
             return;
@@ -290,20 +288,24 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     startFrame({ timestamp }) {
-        const fadingDuration = this.sceneConfig.fadingDuration;
+        const { fadingDuration } = this.sceneConfig;
         const zooming = this.getMap().isZooming();
         if (!zooming && this._zooming) {
             //记录zoom结束的时间戳
             this._zoomEndTimestamp = timestamp;
+            // console.log('zoom end frame');
         }
         this._zooming = zooming;
         const timeElapsed = timestamp - (this._zoomEndTimestamp || 0);
         if (timeElapsed < fadingDuration) {
             //处于zoom结束后的fading中
             this._zoomFading = 1 - timeElapsed / fadingDuration;
-        } else if (this._zoomMeshes) {
+            // console.log('fading');
+        } else if (this._zoomEndTimestamp) {
             delete this._zoomFading;
             delete this._zoomMeshes;
+            delete this._zoomEndTimestamp;
+            // console.log('fading ended');
         }
         if (zooming) {
             //记录zooming过程中的meshes
@@ -382,5 +384,17 @@ export default class CollisionPainter extends BasicPainter {
             }
         });
 
+    }
+
+    _updateZoomMeshesLevel() {
+        const tileZoom = this.layer.getRenderer().getCurrentTileZoom();
+        for (let i = 0; i < this._zoomMeshes.length; i++) {
+            const mesh = this._zoomMeshes[i];
+            const tileInfo = mesh.properties.tile;
+            //需要更新zoom meshes 的level，让他们改为在background阶段绘制
+            const level = (tileInfo.z - tileZoom) > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
+            mesh.properties.level = level;
+            mesh.setUniform('level', level);
+        }
     }
 }

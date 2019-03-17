@@ -313,14 +313,14 @@ export default class PointPack extends VectorPack {
             placement = this._getPlacement(symbol);
 
         let anchors = [];
-        const glyphSize = 24,
-            fontScale = size[0] / glyphSize,
-            textBoxScale = scale * fontScale,
-            // textMaxBoxScale = scale * textMaxSize / glyphSize,
-            // textMaxBoxScale = 1, //TODO 可能的最大的 textMaxSize / glyphSize
-            spacing = (symbol['markerSpacing'] || symbol['textSpacing'] || DEFAULT_SPACING) * scale;
+        const glyphSize = 24;
+        const fontScale = size[0] / glyphSize;
+        const textBoxScale = scale * fontScale;
+        // textMaxBoxScale = scale * textMaxSize / glyphSize,
+        // textMaxBoxScale = 1, //TODO 可能的最大的 textMaxSize / glyphSize
+        const spacing = (symbol['markerSpacing'] || symbol['textSpacing'] || DEFAULT_SPACING) * scale;
+        const EXTENT = this.options.EXTENT;
         if (placement === 'line') {
-            const EXTENT = this.options.EXTENT;
             let lines = feature.geometry;
             if (EXTENT) {
                 lines = clipLine(feature.geometry, 0, 0, EXTENT, EXTENT);
@@ -369,7 +369,9 @@ export default class PointPack extends VectorPack {
                 const points = feature.geometry[i];
                 for (let ii = 0; ii < points.length; ii++) {
                     const point = points[ii];
-                    anchors.push(point);
+                    if (!isOut(point, EXTENT)) {
+                        anchors.push(point);
+                    }
                 }
             }
         }
@@ -382,3 +384,6 @@ export default class PointPack extends VectorPack {
     }
 }
 
+function isOut(point, extent) {
+    return point.x < 0 || point.x > extent || point.y < 0 || point.y > extent;
+}
