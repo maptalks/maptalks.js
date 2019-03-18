@@ -40,11 +40,6 @@ function getPackSDFFormat(symbol) {
                 name: 'aGlyphOffset0'
             },
             {
-                type: Uint8Array,
-                width: 1,
-                name: 'aSize'
-            },
-            {
                 type: Int16Array,
                 width: 2,
                 name: 'aShape1'
@@ -97,11 +92,6 @@ function getPackSDFFormat(symbol) {
                 type: Int16Array,
                 width: 2,
                 name: 'aGlyphOffset0'
-            },
-            {
-                type: Uint8Array,
-                width: 1,
-                name: 'aSize'
             }
         ];
     }
@@ -123,11 +113,6 @@ function getPackMarkerFormat() {
             type: Uint16Array,
             width: 2,
             name: 'aTexCoord'
-        },
-        {
-            type: Uint8Array,
-            width: 2,
-            name: 'aSize'
         }
     ];
 }
@@ -196,7 +181,7 @@ export default class PointPack extends VectorPack {
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;
-        const size = point.size;
+        // const size = point.size;
         const alongLine = point.symbol['textPlacement'] === 'line' || point.symbol['markerPlacement'] === 'line';
         const isText = symbol['textName'] !== undefined;
         const isVertical = isText && alongLine && allowsVerticalWritingMode(point.getIconAndGlyph().glyph.text) ? 1 : 0;
@@ -227,40 +212,48 @@ export default class PointPack extends VectorPack {
                     tl.x, tl.y,
                     tex.x, tex.y + tex.h
                 );
-                this._fillData(data, isText, alongLine, textCount,
-                    tl1.x, tl1.y,
-                    tex1.x, tex1.y + tex1.h,
-                    size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                if (isText) {
+                    this._fillData(data, alongLine, textCount,
+                        tl1.x, tl1.y,
+                        tex1.x, tex1.y + tex1.h,
+                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                }
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     tr.x, tr.y,
                     tex.x + tex.w, tex.y + tex.h
                 );
-                this._fillData(data, isText, alongLine, textCount,
-                    tr1.x, tr1.y,
-                    tex1.x + tex1.w, tex1.y + tex1.h,
-                    size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                if (isText) {
+                    this._fillData(data, alongLine, textCount,
+                        tr1.x, tr1.y,
+                        tex1.x + tex1.w, tex1.y + tex1.h,
+                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                }
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     bl.x, bl.y,
                     tex.x, tex.y
                 );
-                this._fillData(data, isText, alongLine, textCount,
-                    bl1.x, bl1.y,
-                    tex1.x, tex1.y,
-                    size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                if (isText) {
+                    this._fillData(data, alongLine, textCount,
+                        bl1.x, bl1.y,
+                        tex1.x, tex1.y,
+                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                }
 
                 data.push(
                     anchor.x, anchor.y, 0,
                     br.x, br.y,
                     tex.x + tex.w, tex.y
                 );
-                this._fillData(data, isText, alongLine, textCount,
-                    br1.x, br1.y,
-                    tex1.x + tex1.w, tex1.y,
-                    size, quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                if (isText) {
+                    this._fillData(data, alongLine, textCount,
+                        br1.x, br1.y,
+                        tex1.x + tex1.w, tex1.y,
+                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                }
 
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
@@ -284,24 +277,18 @@ export default class PointPack extends VectorPack {
      * @param {Number} ty - flip quad's y offset
      * @param {Number} texx - flip quad's tex coord x
      * @param {Number} texy - flip quad's tex coord y
-     * @param {Number[]} size
      */
-    _fillData(data, isText, alongLine, textCount, tx, ty, texx, texy, size, glyphOffset, flipGlyphOffset, anchor, vertical) {
-        if (isText) {
-            data.push(textCount);
-            data.push(glyphOffset[0], glyphOffset[1]);
-            data.push(size[0]);
-            if (alongLine) {
-                data.push(
-                    tx, ty, texx, texy
-                );
-                data.push(-flipGlyphOffset[0], flipGlyphOffset[1]);
-                const startIndex = anchor.startIndex;
-                data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
-                data.push(vertical);
-            }
-        } else {
-            data.push(size[0], size[1]);
+    _fillData(data, alongLine, textCount, tx, ty, texx, texy, glyphOffset, flipGlyphOffset, anchor, vertical) {
+        data.push(textCount);
+        data.push(glyphOffset[0], glyphOffset[1]);
+        if (alongLine) {
+            data.push(
+                tx, ty, texx, texy
+            );
+            data.push(-flipGlyphOffset[0], flipGlyphOffset[1]);
+            const startIndex = anchor.startIndex;
+            data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
+            data.push(vertical);
         }
     }
 

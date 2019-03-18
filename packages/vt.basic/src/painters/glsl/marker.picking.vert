@@ -2,13 +2,14 @@
 
 attribute vec3 aPosition;
 attribute vec2 aShape;
-attribute vec2 aSize;
 attribute vec2 aTexCoord;
 //uint8
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
 
+uniform float markerWidth;
+uniform float markerHeight;
 uniform float markerDx;
 uniform float markerDy;
 uniform float markerRotation;
@@ -50,7 +51,7 @@ void main() {
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
     vec2 shape = shapeMatrix * aShape;
-    shape = shape / iconSize * aSize;
+    shape = shape / iconSize * vec2(markerWidth, markerHeight);
 
     if (pitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;

@@ -1,4 +1,5 @@
 import CollisionPainter from './CollisionPainter';
+import { isNil, evaluate } from '../Util';
 import { reshader, mat4 } from '@maptalks/gl';
 import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
@@ -27,7 +28,7 @@ const shaderLineFilterN = mesh => {
     return mesh.uniforms['level'] > 0 && mesh.geometry.properties.aNormal;
 };
 
-const defaultUniforms = {
+const DEFAULT_UNIFORMS = {
     'textFill': [0, 0, 0, 1],
     'textOpacity': 1,
     'pitchWithMap': 0,
@@ -38,6 +39,7 @@ const defaultUniforms = {
     'textHaloOpacity': 1,
     'isHalo': 0,
     'textPerspectiveRatio': 0,
+    'textSize': 14,
     'textDx': 0,
     'textDy': 0,
     'textRotation': 0
@@ -78,6 +80,9 @@ export default class TextPainter extends CollisionPainter {
         }
 
         const symbol = this.getSymbol();
+        if (symbol['textSize'] === 0 || symbol['textOpacity'] === 0) {
+            return meshes;
+        }
         geometry.properties.symbol = symbol;
         const isLinePlacement = symbol['textPlacement'] === 'line';
         //tags for picking
@@ -90,72 +95,74 @@ export default class TextPainter extends CollisionPainter {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio
         };
-        const { aPosition, aShape0, aSize } = geometry.data;
 
-        geometry.properties.aPickingId = geometry.data.aPickingId;
-        geometry.properties.aCount = geometry.data.aCount;
-        delete geometry.data.aCount;
+        if (!geometry.properties.aAnchor) {
+            const { aPosition, aShape0 } = geometry.data;
+            const vertexCount = aPosition.length / 3;
+            geometry.properties.aPickingId = geometry.data.aPickingId;
+            geometry.properties.aCount = geometry.data.aCount;
+            delete geometry.data.aCount;
 
-        if (enableCollision || isLinePlacement) {
-            geometry.properties.aAnchor = aPosition;
-            geometry.properties.aSize = aSize;
-            geometry.properties.aShape0 = aShape0;
-        }
-
-        if (enableCollision) {
-            //initialize opacity array
-            //aOpacity用于fading透明度的调整
-            const aOpacity = new Uint8Array(aSize.length);
-            for (let i = 0; i < aOpacity.length; i++) {
-                aOpacity[i] = 255;
+            if ((enableCollision || isLinePlacement)) {
+                geometry.properties.aAnchor = aPosition;
+                geometry.properties.aShape0 = aShape0;
             }
-            geometry.data.aOpacity = {
-                usage: 'dynamic',
-                data: aOpacity
-            };
-            geometry.properties.aOpacity = {
-                usage: 'dynamic',
-                data: new Uint8Array(aSize.length)
-            };
-        }
 
-        if (isLinePlacement) {
-            const { aVertical, aSegment, aGlyphOffset0, aGlyphOffset1 } = geometry.data;
-            geometry.properties.aGlyphOffset0 = aGlyphOffset0;
-            geometry.properties.aGlyphOffset1 = aGlyphOffset1;
-            geometry.properties.aSegment = aSegment;
-            geometry.properties.aVertical = aVertical;
-
-            delete geometry.data.aSegment;
-            delete geometry.data.aVertical;
-            delete geometry.data.aGlyphOffset0;
-            delete geometry.data.aGlyphOffset1;
-
-            if (symbol['textPitchAlignment'] === 'map') {
-                //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
-                geometry.properties.aOffset = geometry.data.aOffset = new Int8Array(aGlyphOffset0.length);
-                geometry.properties.aRotation = geometry.data.aRotation = new Int16Array(aSize.length);
-            } else {
-                geometry.properties.aOffset = geometry.data.aOffset = {
+            if (enableCollision) {
+                //initialize opacity array
+                //aOpacity用于fading透明度的调整
+                const aOpacity = new Uint8Array(vertexCount);
+                for (let i = 0; i < aOpacity.length; i++) {
+                    aOpacity[i] = 255;
+                }
+                geometry.data.aOpacity = {
                     usage: 'dynamic',
-                    data: new Int8Array(aGlyphOffset0.length)
+                    data: aOpacity
                 };
-                geometry.properties.aRotation = geometry.data.aRotation = {
+                geometry.properties.aOpacity = {
                     usage: 'dynamic',
-                    data: new Int16Array(aSize.length)
+                    data: new Uint8Array(vertexCount)
                 };
             }
 
-            //aNormal = [isFlip * 2 + isVertical, ...];
-            geometry.data.aNormal = geometry.properties.aNormal = {
-                usage: 'dynamic',
-                data: new Uint8Array(aVertical.length)
-            };
-        }
+            if (isLinePlacement) {
+                const { aVertical, aSegment, aGlyphOffset0, aGlyphOffset1 } = geometry.data;
+                geometry.properties.aGlyphOffset0 = aGlyphOffset0;
+                geometry.properties.aGlyphOffset1 = aGlyphOffset1;
+                geometry.properties.aSegment = aSegment;
+                geometry.properties.aVertical = aVertical;
 
-        if (isLinePlacement || enableCollision) {
-            geometry.properties.elements = geometry.elements;
-            geometry.properties.elemCtor = geometry.elements.constructor;
+                delete geometry.data.aSegment;
+                delete geometry.data.aVertical;
+                delete geometry.data.aGlyphOffset0;
+                delete geometry.data.aGlyphOffset1;
+
+                if (symbol['textPitchAlignment'] === 'map') {
+                    //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
+                    geometry.properties.aOffset = geometry.data.aOffset = new Int8Array(aGlyphOffset0.length);
+                    geometry.properties.aRotation = geometry.data.aRotation = new Int16Array(vertexCount);
+                } else {
+                    geometry.properties.aOffset = geometry.data.aOffset = {
+                        usage: 'dynamic',
+                        data: new Int8Array(aGlyphOffset0.length)
+                    };
+                    geometry.properties.aRotation = geometry.data.aRotation = {
+                        usage: 'dynamic',
+                        data: new Int16Array(vertexCount)
+                    };
+                }
+
+                //aNormal = [isFlip * 2 + isVertical, ...];
+                geometry.data.aNormal = geometry.properties.aNormal = {
+                    usage: 'dynamic',
+                    data: new Uint8Array(aVertical.length)
+                };
+            }
+
+            if (isLinePlacement || enableCollision) {
+                geometry.properties.elements = geometry.elements;
+                geometry.properties.elemCtor = geometry.elements.constructor;
+            }
         }
 
         let transparent = false;
@@ -209,6 +216,10 @@ export default class TextPainter extends CollisionPainter {
             uniforms.pitchWithMap = 1;
         }
 
+        if (symbol['textSize']) {
+            uniforms.textSize = symbol['textSize'];
+        }
+
         if (symbol['textDx']) {
             uniforms.textDx = symbol['textDx'];
         }
@@ -226,7 +237,7 @@ export default class TextPainter extends CollisionPainter {
         uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
 
         geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms, defaultUniforms);
+        const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
             transparent,
             castShadow: false,
@@ -247,7 +258,7 @@ export default class TextPainter extends CollisionPainter {
 
         if (symbol['textHaloRadius']) {
             uniforms.isHalo = 0;
-            const material = new reshader.Material(uniforms, defaultUniforms);
+            const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
             const mesh = new reshader.Mesh(geometry, material, {
                 transparent,
                 castShadow: false,
@@ -499,10 +510,12 @@ export default class TextPainter extends CollisionPainter {
         //if planeMatrix is null, line is in tile coordinates
         // line = planeMatrix ? line.line : line;
         if (shouldUpdate) {
+            const symbol = geometry.properties.symbol;
+            const textSize = !isNil(symbol['textSize']) ? evaluate(symbol['textSize'], null, map.getZoom()) : DEFAULT_UNIFORMS['textSize'];
             //array to store current text's elements
-            for (let j = start; j < end; j += 6) {
+            for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
                 const vertexStart = meshElements[j];
-                const offset = getCharOffset(LINE_OFFSET, mesh, line, vertexStart, mvpMatrix, map.width, map.height, isProjected, scale);
+                const offset = getCharOffset(LINE_OFFSET, mesh, textSize, line, vertexStart, mvpMatrix, map.width, map.height, isProjected, scale);
                 if (!offset) {
                     //remove whole text if any char is missed
                     visible = false;
@@ -537,10 +550,11 @@ export default class TextPainter extends CollisionPainter {
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
         const map = this.getMap();
-        const geoProps = mesh.geometry.properties,
-            symbol = geoProps.symbol,
-            isLinePlacement = (symbol['textPlacement'] === 'line'),
-            debugCollision = this.layer.options['debugCollision'];
+        const geoProps = mesh.geometry.properties;
+        const symbol = geoProps.symbol;
+        const textSize = !isNil(symbol['textSize']) ? evaluate(symbol['textSize'], null, map.getZoom()) : DEFAULT_UNIFORMS['textSize'];
+        const isLinePlacement = (symbol['textPlacement'] === 'line');
+        const debugCollision = this.layer.options['debugCollision'];
 
         const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
 
@@ -556,8 +570,8 @@ export default class TextPainter extends CollisionPainter {
             // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
             const firstChrIdx = elements[start],
                 lastChrIdx = elements[start + charCount * 6 - 6];
-            const tlBox = getLabelBox(BOX0, mesh, firstChrIdx, matrix, map),
-                brBox = getLabelBox(BOX1, mesh, lastChrIdx, matrix, map);
+            const tlBox = getLabelBox(BOX0, mesh, textSize, firstChrIdx, matrix, map),
+                brBox = getLabelBox(BOX1, mesh, textSize, lastChrIdx, matrix, map);
             const box = BOX;
             box[0] = Math.min(tlBox[0], brBox[0]);
             box[1] = Math.min(tlBox[1], brBox[1]);
@@ -578,7 +592,7 @@ export default class TextPainter extends CollisionPainter {
             //insert every character's box into collision index
             for (let j = start; j < start + charCount * 6; j += 6) {
                 //use int16array to save some memory
-                const box = getLabelBox(BOX, mesh, elements[j], matrix, map);
+                const box = getLabelBox(BOX, mesh, textSize, elements[j], matrix, map);
                 boxes.push(box.slice(0));
                 const collides = this.isCollides(box, geoProps.z);
                 if (collides === 1) {
@@ -614,6 +628,23 @@ export default class TextPainter extends CollisionPainter {
         };
     }
 
+    deleteMesh(meshes, keepGeometry) {
+        if (meshes) {
+            return;
+        }
+        if (keepGeometry) {
+            //keepGeometry时，文字纹理应该保留
+            if (Array.isArray(meshes)) {
+                meshes.forEach(m => {
+                    delete m.material.uniforms.texture;
+                });
+            } else {
+                delete meshes.material.uniforms.texture;
+            }
+        }
+        super.deleteMesh(meshes, keepGeometry);
+    }
+
     delete() {
         super.delete();
         this._shaderAlongLine.dispose();
@@ -643,6 +674,7 @@ export default class TextPainter extends CollisionPainter {
         };
 
         const uniforms = [
+            'textSize',
             'textDx',
             'textDy',
             'textRotation',

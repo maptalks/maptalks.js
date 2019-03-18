@@ -12,7 +12,7 @@ const DXDY = [], OFFSET = [];
 
 const AXIS_FACTOR = [1, -1];
 
-export function getLabelBox(out, mesh, i, matrix, map) {
+export function getLabelBox(out, mesh, textSize, i, matrix, map) {
     const uniforms = mesh.material.uniforms;
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties,
@@ -37,12 +37,10 @@ export function getLabelBox(out, mesh, i, matrix, map) {
             4.0);
     }
 
-    // const { aShape0, aRotation, aDxDy, aSize } = geoProps;
+    // const { aShape0, aRotation, aDxDy } = geoProps;
     // const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
-    const { aShape0, aRotation, aSize } = geoProps;
+    const { aShape0, aRotation } = geoProps;
     const dxdy = vec2.set(DXDY, symbol['markerDx'] || 0, symbol['markerDy'] || 0);
-
-    const textSize = aSize[i];
 
     let tl = vec2.set(V2_0, aShape0[i * 2], aShape0[i * 2 + 1]),
         tr = vec2.set(V2_1, aShape0[i * 2 + 2], aShape0[i * 2 + 3]),

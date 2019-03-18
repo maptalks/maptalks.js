@@ -5,7 +5,6 @@ attribute vec2 aShape0;
 attribute vec2 aShape1;
 attribute vec2 aTexCoord0;
 attribute vec2 aTexCoord1;
-attribute float aSize;
 attribute vec2 aOffset;
 //flip * 2 + vertical
 attribute float aNormal;
@@ -13,6 +12,7 @@ attribute float aNormal;
 attribute float aOpacity;
 #endif
 
+uniform float textSize;
 uniform float textDx;
 uniform float textDy;
 uniform float textRotation;
@@ -61,7 +61,7 @@ void main() {
     vec2 offset = aOffset;
     vec2 texCoord = mix(aTexCoord0, aTexCoord1, flip);
 
-    shape = shape / glyphSize * aSize;
+    shape = shape / glyphSize * textSize;
 
     if (pitchWithMap == 1.0) {
         offset = shape * vec2(1.0, -1.0) + offset;

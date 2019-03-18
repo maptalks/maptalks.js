@@ -3,11 +3,11 @@
 attribute vec3 aPosition;
 attribute vec2 aShape0;
 attribute vec2 aTexCoord0;
-attribute float aSize;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
 
+uniform float textSize;
 uniform float textDx;
 uniform float textDy;
 uniform float textRotation;
@@ -54,7 +54,7 @@ void main() {
     float angleCos = cos(rotation);
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    shape = shapeMatrix * shape / glyphSize * aSize;
+    shape = shapeMatrix * shape / glyphSize * textSize;
 
     if (pitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;

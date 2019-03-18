@@ -11,6 +11,8 @@ const defaultUniforms = {
     'pitchWithMap': 0,
     'markerPerspectiveRatio': 0,
     'rotateWithMap': 0,
+    'markerWidth': 15,
+    'markerHeight': 15,
     'markerDx': 0,
     'markerDy': 0,
     'markerRotation': 0
@@ -87,6 +89,12 @@ class IconPainter extends CollisionPainter {
 
         if (symbol['markerPerspectiveRatio']) {
             uniforms['markerPerspectiveRatio'] = symbol['markerPerspectiveRatio'];
+        }
+        if (symbol['markerWidth']) {
+            uniforms['markerWidth'] = symbol['markerWidth'];
+        }
+        if (symbol['markerHeight']) {
+            uniforms['markerHeight'] = symbol['markerHeight'];
         }
         if (symbol['markerDx']) {
             uniforms['markerDx'] = symbol['markerDx'];
@@ -184,6 +192,23 @@ class IconPainter extends CollisionPainter {
         };
     }
 
+    deleteMesh(meshes, keepGeometry) {
+        if (meshes) {
+            return;
+        }
+        if (keepGeometry) {
+            //keepGeometry时，文字纹理应该保留
+            if (Array.isArray(meshes)) {
+                meshes.forEach(m => {
+                    delete m.material.uniforms.texture;
+                });
+            } else {
+                delete meshes.material.uniforms.texture;
+            }
+        }
+        super.deleteMesh(meshes, keepGeometry);
+    }
+
     init() {
         const regl = this.regl;
         const canvas = this.canvas;
@@ -204,6 +229,8 @@ class IconPainter extends CollisionPainter {
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
+                'markerWidth',
+                'markerHeight',
                 'markerDx',
                 'markerDy',
                 'markerRotation',
@@ -258,6 +285,8 @@ class IconPainter extends CollisionPainter {
                 {
                     vert: pickingVert,
                     uniforms: [
+                        'markerWidth',
+                        'markerHeight',
                         'markerDx',
                         'markerDy',
                         'markerRotation',
