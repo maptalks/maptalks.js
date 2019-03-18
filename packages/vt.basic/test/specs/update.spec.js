@@ -83,6 +83,14 @@ describe('update style specs', () => {
         });
     });
 
+    it('should hide by setting visible to false', done => {
+        assertChangeStyle(done, [0, 0, 0, 0], layer => {
+            layer.updateSymbol(0, {
+                visible: false
+            });
+        });
+    });
+
     it('should can update textFill', done => {
         const style = [
             {

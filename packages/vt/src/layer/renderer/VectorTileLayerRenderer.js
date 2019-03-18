@@ -375,7 +375,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     _startFrame(timestamp) {
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
-            if (!plugin) {
+            const visible = this._isVisible(idx);
+            if (!plugin || !visible) {
                 return;
             }
             plugin.startFrame({
@@ -393,7 +394,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
-            if (!plugin) {
+            const visible = this._isVisible(idx);
+            if (!plugin || !visible) {
                 return;
             }
             const status = plugin.endFrame({
@@ -425,7 +427,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const plugins = this._getFramePlugins(tileData);
 
         plugins.forEach((plugin, idx) => {
-            if (!pluginData[idx] || !plugin) {
+            const visible = this._isVisible(idx);
+            if (!pluginData[idx] || !plugin || !visible) {
                 return;
             }
             if (!tileCache[idx]) {
@@ -461,7 +464,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const hits = [];
         const plugins = this._getFramePlugins();
-        plugins.forEach(plugin => {
+        plugins.forEach((plugin, idx) => {
+            const visible = this._isVisible(idx);
+            if (!visible) {
+                return;
+            }
             const picked = plugin.pick(x, y);
             if (picked) {
                 picked.type = plugin.getType();
@@ -703,6 +710,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             plugin, symbol, renderPlugin
         };
     }
+
+    _isVisible(idx) {
+        const styles = this.layer.getCompiledStyle();
+        if (!styles[idx]) return true;
+        const symbol = styles[idx].symbol;
+        if (!symbol) return true;
+        const z = this.layer.getMap().getZoom();
+        const v = evaluate(symbol['visible'], null, z);
+        return v !== false;
+    }
 }
 
 VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
@@ -749,4 +766,16 @@ function getDefaultSymbol(type) {
         };
     }
     return null;
+}
+
+export function evaluate(prop, properties, zoom) {
+    if (maptalks.Util.isFunction(prop)) {
+        if (zoom !== undefined) {
+            return prop(zoom, properties);
+        } else {
+            return prop(null, properties);
+        }
+    } else {
+        return prop;
+    }
 }

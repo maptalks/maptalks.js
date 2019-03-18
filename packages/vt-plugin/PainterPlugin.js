@@ -171,7 +171,7 @@ function createPainterPlugin(type, Painter) {
 
         updateSymbol: function () {
             var painter = this.painter;
-            if (painter) {
+            if (painter && this._meshCache) {
                 for (var key in this._meshCache) {
                     painter.deleteMesh(this._meshCache[key], true);
                 }
@@ -187,6 +187,9 @@ function createPainterPlugin(type, Painter) {
         },
 
         deleteTile: function (context) {
+            if (!this._meshCache) {
+                return;
+            }
             var tileInfo = context.tileInfo;
             var key = tileInfo.dupKey;
             var mesh = this._meshCache[key];
@@ -199,7 +202,7 @@ function createPainterPlugin(type, Painter) {
 
         remove: function () {
             var painter = this.painter;
-            if (painter) {
+            if (painter && this._meshCache) {
                 for (var key in this._meshCache) {
                     painter.deleteMesh(this._meshCache[key]);
                 }
