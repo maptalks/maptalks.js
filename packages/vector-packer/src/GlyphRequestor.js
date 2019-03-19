@@ -1,10 +1,19 @@
+import { LRUCache } from 'maptalks';
+import { extend } from './style/Util';
 import TinySDF from './pack/atlas/TinySDF';
 import { charHasUprightVerticalOrientation } from './pack/util/script_detection';
+
+let DEBUG_COUNTER = 0;
+
+// const chars = {};
+// let count = 0;
+// let time = 0;
 
 export default class GlyphRequestor {
     constructor() {
         this.entries = {};
         this._cachedFont = {};
+        this._cache = new LRUCache(2048, function () {});
     }
 
     getGlyphs(glyphs) {
@@ -15,16 +24,31 @@ export default class GlyphRequestor {
         const buffers = [];
         const entries = this.entries;
 
+        // const now = performance.now();
+
         for (const font in glyphs) {
             entries[font] = entries[font] || {};
             glyphSdfs[font] = {};
             for (const charCode in glyphs[font]) {
-                const sdf = this._tinySDF(entries[font], font, charCode);
+                const key = font + ':' + charCode;
+                let sdf;
+                if (this._cache.has(key)) {
+                    sdf = this._cache.get(key);
+                } else {
+                    sdf = this._tinySDF(entries[font], font, charCode);
+                    // count++;
+                    this._cache.add(key, sdf);
+                }
+                sdf = cloneSDF(sdf);
                 glyphSdfs[font][charCode] = sdf;
                 buffers.push(sdf.bitmap.data.buffer);
+                // chars[charCode] = 1;
             }
         }
+        // time += (performance.now() - now);
 
+        // console.log(`(${Math.round(time)}ms)渲染了${count}个, 实际${Object.keys(chars).length}个字符.`)
+        // count = 0;
         return { glyphs: glyphSdfs, buffers };
     }
 
@@ -43,7 +67,7 @@ export default class GlyphRequestor {
         const buffer = 3;
         let advBuffer = 1;
         if (fonts[0] === 'normal' && !charHasUprightVerticalOrientation(charCode)) {
-            advBuffer = 3;
+            advBuffer = 2;
         }
         if (!tinySDF) {
             let fontWeight = '400';
@@ -61,8 +85,18 @@ export default class GlyphRequestor {
         }
         const chr = String.fromCharCode(charCode);
         const metrics = tinySDF.ctx.measureText(chr);
-        const width = Math.ceil(metrics.width);
+        const width = Math.round(metrics.width);
         const data = tinySDF.draw(String.fromCharCode(charCode), width + buffer * 2, 24 + buffer * 2);
+
+        if (DEBUG_COUNTER < 4) {
+            const sdfDebug = document.getElementById('sdf-debug-' + DEBUG_COUNTER++);
+            if (sdfDebug) {
+                sdfDebug.width = width + buffer * 2;
+                sdfDebug.height = tinySDF.canvas.height;
+                const ctx = sdfDebug.getContext('2d');
+                ctx.drawImage(tinySDF.canvas, 0, 0);
+            }
+        }
 
         // console.log(chr, Math.ceil(metrics.width));
         // return {
@@ -116,3 +150,16 @@ export default class GlyphRequestor {
     document.body.removeChild(span);
     return family;
 } */
+
+function cloneSDF(sdf) {
+    const bitmap = {
+        width: sdf.bitmap.width,
+        height: sdf.bitmap.height,
+        data: new Uint8ClampedArray(sdf.bitmap.data),
+    };
+    return {
+        charCode: sdf.charCode,
+        bitmap,
+        metrics: extend({}, sdf.metrics)
+    };
+}
