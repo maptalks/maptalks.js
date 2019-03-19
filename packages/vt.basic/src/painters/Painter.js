@@ -139,8 +139,9 @@ class Painter {
         if (!mesh) {
             return null;
         }
+        const props = mesh.geometry.properties;
         return {
-            data: mesh.geometry.properties.features[pickingId],
+            data: props && props.features && props.features[pickingId],
             point
         };
     }

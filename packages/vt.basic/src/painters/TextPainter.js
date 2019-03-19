@@ -812,8 +812,9 @@ export default class TextPainter extends CollisionPainter {
         if (!mesh) {
             return null;
         }
+        const props = mesh.geometry.properties;
         return {
-            feature: mesh.geometry.properties.features[pickingId],
+            data: props && props.features && props.features[pickingId],
             point
         };
     }
