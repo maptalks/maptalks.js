@@ -69,11 +69,13 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
         bl = vec2.transformMat2(bl, bl, shapeMatrix);
         br = vec2.transformMat2(br, br, shapeMatrix);
 
+
+        vec2.multiply(tl, tl, AXIS_FACTOR);
+        vec2.multiply(tr, tr, AXIS_FACTOR);
+        vec2.multiply(bl, bl, AXIS_FACTOR);
+        vec2.multiply(br, br, AXIS_FACTOR);
+
         if (uniforms['pitchWithMap'] === 1) {
-            vec2.multiply(tl, tl, AXIS_FACTOR);
-            vec2.multiply(tr, tr, AXIS_FACTOR);
-            vec2.multiply(bl, bl, AXIS_FACTOR);
-            vec2.multiply(br, br, AXIS_FACTOR);
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
         } else {
             getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);

@@ -68,7 +68,7 @@ void main() {
         //当textPerspective:
         //值为1.0时: vGammaScale用cameraScale动态计算
         //值为0.0时: vGammaScale固定为1.2
-        vGammaScale = mix(cameraScale, 1.0, textPerspectiveRatio) + 0.2;
+        vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio) + 0.2;
     } else {
         vec2 offset = shape * vec2(1.0, -1.0);
         //乘以cameraScale可以抵消相机近大远小的透视效果
