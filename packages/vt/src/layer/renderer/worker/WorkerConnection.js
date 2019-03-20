@@ -141,17 +141,22 @@ export default class WorkerConnection extends maptalks.worker.Actor {
 
     fetchIconGlyphs({ icons, glyphs }, cb) {
         //error, data, buffers
-        const glyphData = this._glyphRequestor.getGlyphs(glyphs);
-        const dataBuffers = glyphData.buffers || [];
-        this._iconRequestor.getIcons(icons, (err, data) => {
+        this._glyphRequestor.getGlyphs(glyphs, (err, glyphData) => {
             if (err) {
                 throw err;
             }
-            if (data.buffers) {
-                dataBuffers.push(...data.buffers);
-            }
-            cb(null, { icons : data.icons, glyphs : glyphData.glyphs }, dataBuffers);
+            const dataBuffers = glyphData.buffers || [];
+            this._iconRequestor.getIcons(icons, (err, data) => {
+                if (err) {
+                    throw err;
+                }
+                if (data.buffers) {
+                    dataBuffers.push(...data.buffers);
+                }
+                cb(null, { icons : data.icons, glyphs : glyphData.glyphs }, dataBuffers);
+            });
         });
+
         //error, data, buffers
 
     }

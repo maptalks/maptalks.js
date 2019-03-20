@@ -1,11 +1,14 @@
 import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack } from '@maptalks/vector-packer';
+// import { GlyphRequestor } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 import distinctColors from '../../common/Colors';
 import { createFilter } from '@maptalks/feature-filter';
+// import Browser from '../util/Browser';
 
 const KEY_IDX = '__fea_idx';
+// let FONT_CANVAS;
 
 export default class BaseLayerWorker {
     constructor(id, options, upload) {
@@ -47,8 +50,14 @@ export default class BaseLayerWorker {
     }
 
     fetchIconGlyphs(icons, glyphs, cb) {
+        //2019-03-20 win10 chrome 74 64位，OffscreenCanvas fillText性能只有主线程的10%，还不可用
+        // if (glyphs && Browser.offscreenCanvas) {
+        //     this._glyphRequestor = new GlyphRequestor();
+        //     this._glyphRequestor.getGlyphs(glyphs, cb);
+        // } else {
         //command, params, buffers and callback
         this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
+        // }
     }
 
     _createTileData(layers, features, { glScale, zScale, tileInfo }) {

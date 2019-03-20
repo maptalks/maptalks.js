@@ -1,4 +1,4 @@
-import { LRUCache } from 'maptalks';
+import LRUCache from './LRUCache';
 import { extend } from './style/Util';
 import TinySDF from './pack/atlas/TinySDF';
 import { charHasUprightVerticalOrientation } from './pack/util/script_detection';
@@ -16,7 +16,7 @@ export default class GlyphRequestor {
         this._cache = new LRUCache(2048, function () {});
     }
 
-    getGlyphs(glyphs) {
+    getGlyphs(glyphs, cb) {
         if (!glyphs || !Object.keys(glyphs).length) {
             return { glyphs: null };
         }
@@ -47,9 +47,9 @@ export default class GlyphRequestor {
         }
         // time += (performance.now() - now);
 
-        // console.log(`(${Math.round(time)}ms)渲染了${count}个, 实际${Object.keys(chars).length}个字符.`)
+        // console.log(`(${Math.round((performance.now() - now))}ms)渲染了${count}个, 实际${Object.keys(chars).length}个字符.`);
         // count = 0;
-        return { glyphs: glyphSdfs, buffers };
+        return cb(null, { glyphs: glyphSdfs, buffers });
     }
 
     _tinySDF(entry, font, charCode) {
@@ -89,7 +89,7 @@ export default class GlyphRequestor {
         const data = tinySDF.draw(String.fromCharCode(charCode), width + buffer * 2, 24 + buffer * 2);
 
         if (DEBUG_COUNTER < 4) {
-            const sdfDebug = document.getElementById('sdf-debug-' + DEBUG_COUNTER++);
+            const sdfDebug = typeof document !== 'undefined' && document.getElementById('sdf-debug-' + DEBUG_COUNTER++);
             if (sdfDebug) {
                 sdfDebug.width = width + buffer * 2;
                 sdfDebug.height = tinySDF.canvas.height;

@@ -1,6 +1,6 @@
 /*!
  * based on @mapbox/tiny-sdf
- * https://github.com/fuzhenn/tiny-sdf
+ * https://github.com/mapbox/tiny-sdf
  * @License BSD 2-Clause
  */
 
@@ -16,7 +16,7 @@ export default function TinySDF(fontSize, buffer, radius, cutoff, fontFamily, fo
     this.radius = radius || 8;
     var size = this.size = this.fontSize + this.buffer * 2;
 
-    this.canvas = document.createElement('canvas');
+    this.canvas = typeof document === 'undefined' ? new OffscreenCanvas(size, size) : document.createElement('canvas');
     this.canvas.width = this.canvas.height = size;
 
     this.ctx = this.canvas.getContext('2d');
