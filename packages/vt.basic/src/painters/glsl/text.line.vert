@@ -76,7 +76,7 @@ void main() {
         offset = (shape + offset * vec2(1.0, -1.0)) * 2.0 / canvasSize;
         pos.xy += offset * perspectiveRatio * pos.w;
         gl_Position = pos;
-        vGammaScale = 1.0;
+        vGammaScale = cameraScale + 0.5;
     }
 
     gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;

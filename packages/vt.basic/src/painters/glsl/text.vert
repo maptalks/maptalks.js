@@ -61,12 +61,12 @@ void main() {
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
     shape = shapeMatrix * shape / glyphSize * textSize;
 
+    float cameraScale = distance / cameraToCenterDistance;
     if (pitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;
         gl_Position.xy += offset * perspectiveRatio * distance;
-        vGammaScale = 1.0;//distance / cameraToCenterDistance + 0.5;
+        vGammaScale = cameraScale + 0.5;;
     } else {
-        float cameraScale = distance / cameraToCenterDistance;
         vec2 offset = shape * vec2(1.0, -1.0);
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
