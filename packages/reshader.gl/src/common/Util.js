@@ -31,17 +31,35 @@ export function isFunction(obj) {
     return typeof obj === 'function' || (obj.constructor !== null && obj.constructor === Function);
 }
 
+const supportAssign = typeof Object.assign === 'function';
+
 /**
  * Merges the properties of sources into destination object.
  * @param  {Object} dest   - object to extend
  * @param  {...Object} src - sources
  * @return {Object}
  */
-export function extend(dest) {
-    for (let i = 1; i < arguments.length; i++) {
-        const src = arguments[i];
+export function extend(dest, ...source) {
+    if (supportAssign) {
+        Object.assign(dest, ...source);
+    } else {
+        for (let i = 0; i < source.length; i++) {
+            const src = source[i];
+            for (const k in src) {
+                dest[k] = src[k];
+            }
+        }
+    }
+    return dest;
+}
+
+export function extend2(dest, ...source) {
+    for (let i = 0; i < source.length; i++) {
+        const src = source[i];
         for (const k in src) {
-            dest[k] = src[k];
+            if (dest[k] === undefined) {
+                dest[k] = src[k];
+            }
         }
     }
     return dest;

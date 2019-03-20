@@ -8,6 +8,9 @@ class MeshShader extends Shader {
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
             if (!meshes[i].isValid()) {
+                if (i === l - 1 && preCommand && props.length) {
+                    preCommand(props);
+                }
                 continue;
             }
             if (!meshes[i].geometry.count || !this.filter(meshes[i])) {
@@ -29,7 +32,7 @@ class MeshShader extends Shader {
                 props.length = 0;
             }
             const meshProps = meshes[i].getREGLProps();
-            props.push(extend({}, this.getUniforms(meshProps), meshProps));
+            props.push(extend(this.getUniforms(meshProps), meshProps));
             if (i < l - 1) {
                 preCommand = command;
             } else if (i === l - 1) {

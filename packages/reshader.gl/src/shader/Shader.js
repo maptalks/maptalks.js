@@ -1,4 +1,4 @@
-import { extend, isString, isFunction, isNumber } from '../common/Util.js';
+import { extend, extend2, isString, isFunction, isNumber } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
 const UNIFORM_TYPE = {
@@ -60,7 +60,7 @@ class Shader {
      */
     getUniforms(meshUniforms) {
         const context = this.context;
-        const props = extend({}, context, meshUniforms);
+        const props = extend2(meshUniforms, context);
         const uniforms = {};
         const desc = this.contextDesc;
         for (const p in desc) {
