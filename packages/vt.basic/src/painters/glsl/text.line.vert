@@ -76,7 +76,10 @@ void main() {
         offset = (shape + offset * vec2(1.0, -1.0)) * 2.0 / canvasSize;
         pos.xy += offset * perspectiveRatio * pos.w;
         gl_Position = pos;
-        vGammaScale = cameraScale + 0.5;
+        //当textPerspective:
+        //值为1.0时: vGammaScale用cameraScale动态计算
+        //值为0.0时: vGammaScale固定为1.2
+        vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio) + 0.2;
     }
 
     gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
