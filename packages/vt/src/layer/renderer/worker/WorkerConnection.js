@@ -16,7 +16,9 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         this._isDedicated = dedicatedLayers.indexOf(type) >= 0;
         this._dedicatedVTWorkers = {};
         this._iconRequestor = new IconRequestor();
-        this._glyphRequestor = new GlyphRequestor();
+        this._glyphRequestor = new GlyphRequestor(fn => {
+            layer.getMap().getRenderer().callInNextFrame(fn);
+        }, layer.options['glyphSdfLimitPerFrame']);
     }
 
     initialize(cb) {

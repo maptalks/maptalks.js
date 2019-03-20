@@ -4,52 +4,70 @@ import TinySDF from './pack/atlas/TinySDF';
 import { charHasUprightVerticalOrientation } from './pack/util/script_detection';
 
 let DEBUG_COUNTER = 0;
-
-// const chars = {};
-// let count = 0;
-// let time = 0;
+let LIMIT_PER_FRAME = 15;
 
 export default class GlyphRequestor {
-    constructor() {
+    constructor(framer, limit = LIMIT_PER_FRAME) {
         this.entries = {};
         this._cachedFont = {};
         this._cache = new LRUCache(2048, function () {});
+        this._framer = framer;
+        this._limit = limit;
     }
 
     getGlyphs(glyphs, cb) {
         if (!glyphs || !Object.keys(glyphs).length) {
-            return { glyphs: null };
+            cb(null, { glyphs: null });
+            return;
         }
-        const glyphSdfs = {};
-        const buffers = [];
         const entries = this.entries;
 
-        // const now = performance.now();
+        const run = (startStep, glyphSdfs, buffers) => {
+            let drawCount = 0;
+            let step = 0;
+            // const now = performance.now();
 
-        for (const font in glyphs) {
-            entries[font] = entries[font] || {};
-            glyphSdfs[font] = {};
-            for (const charCode in glyphs[font]) {
-                const key = font + ':' + charCode;
-                let sdf;
-                if (this._cache.has(key)) {
-                    sdf = this._cache.get(key);
-                } else {
-                    sdf = this._tinySDF(entries[font], font, charCode);
-                    // count++;
-                    this._cache.add(key, sdf);
+            for (const font in glyphs) {
+                entries[font] = entries[font] || {};
+                glyphSdfs[font] = glyphSdfs[font] || {};
+                for (const charCode in glyphs[font]) {
+                    step++;
+                    if (step <= startStep) {
+                        continue;
+                    }
+                    const key = font + ':' + charCode;
+                    let sdf;
+                    if (this._cache.has(key)) {
+                        sdf = this._cache.get(key);
+                    } else {
+                        sdf = this._tinySDF(entries[font], font, charCode);
+                        // count++;
+                        this._cache.add(key, sdf);
+                        drawCount++;
+                    }
+                    sdf = cloneSDF(sdf);
+                    glyphSdfs[font][charCode] = sdf;
+                    buffers.push(sdf.bitmap.data.buffer);
+                    if (drawCount > this._limit) {
+                        // console.log(`(下一帧)(${Math.round((performance.now() - now))}ms)渲染了${drawCount}个字符.`);
+                        this._framer(closure(step, glyphSdfs, buffers));
+                        return;
+                    }
+                    // chars[charCode] = 1;
                 }
-                sdf = cloneSDF(sdf);
-                glyphSdfs[font][charCode] = sdf;
-                buffers.push(sdf.bitmap.data.buffer);
-                // chars[charCode] = 1;
             }
-        }
-        // time += (performance.now() - now);
+            // console.log(`(结束)(${Math.round((performance.now() - now))}ms)渲染了${drawCount}个字符.`);
+            cb(null, { glyphs: glyphSdfs, buffers });
+        };
 
-        // console.log(`(${Math.round((performance.now() - now))}ms)渲染了${count}个, 实际${Object.keys(chars).length}个字符.`);
-        // count = 0;
-        return cb(null, { glyphs: glyphSdfs, buffers });
+        run(0, {}, []);
+
+        function closure(step, glyphSdfs, buffers) {
+            return () => {
+                run(step, glyphSdfs, buffers);
+            };
+        }
+
     }
 
     _tinySDF(entry, font, charCode) {
@@ -57,7 +75,6 @@ export default class GlyphRequestor {
         // if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
         //     return;
         // }
-        // const fontFamily = this._getFontFamliy(font);
         const fonts = font.split(' ');
         const textStyle = fonts[0],
             textWeight = fonts[1],
@@ -132,24 +149,7 @@ export default class GlyphRequestor {
             }
         };
     }
-
-    // _getFontFamliy(font) {
-    //     if (!this._cachedFont[font]) {
-    //         this._cachedFont[font] = extractFontFamily(font);
-    //     }
-    //     return this._cachedFont[font];
-    // }
 }
-
-/* function extractFontFamily(font) {
-    const span = document.createElement('span');
-    document.body.appendChild(span);
-    span.style.font = font;
-    const computedStyle = window.getComputedStyle(span);
-    const family = computedStyle.getPropertyValue('font-family');
-    document.body.removeChild(span);
-    return family;
-} */
 
 function cloneSDF(sdf) {
     const bitmap = {
@@ -163,3 +163,5 @@ function cloneSDF(sdf) {
         metrics: extend({}, sdf.metrics)
     };
 }
+
+
