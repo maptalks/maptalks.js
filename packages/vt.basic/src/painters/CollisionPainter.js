@@ -24,8 +24,12 @@ export default class CollisionPainter extends BasicPainter {
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
         const { level, meshKey } = mesh.properties;
         const map = this.getMap();
-        if (!map.isZooming() && this._zoomFading === undefined && level > 0 ||
-            (map.isZooming() || this._zoomFading !== undefined) && boxIndex > this.layer.options['boxLimitOnZooming']) {
+        //没有缩放，且没在fading时，禁止父级瓦片的绘制，避免不正常的闪烁现象
+        if (!map.isZooming() && this._zoomFading === undefined && level > 0) {
+            return false;
+        }
+        //地图缩小时限制绘制的box数量，避免大量的box绘制，提升缩放的性能
+        if ((this._zoomingOut && (map.isZooming() || this._zoomEndTimestamp !== undefined)) && boxIndex > this.layer.options['boxLimitOnZoomout']) {
             return false;
         }
         const geometryProps = mesh.geometry.properties;
@@ -290,12 +294,16 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     startFrame({ timestamp }) {
+        const map = this.getMap();
         const { fadingDuration } = this.sceneConfig;
-        const zooming = this.getMap().isZooming();
+        const zooming = map.isZooming();
         if (!zooming && this._zooming) {
             //记录zoom结束的时间戳
             this._zoomEndTimestamp = timestamp;
             // console.log('zoom end frame');
+        } else if (zooming && !this._zooming) {
+            // debugger
+            this._preRes = map.getResolution();
         }
         this._zooming = zooming;
         const timeElapsed = timestamp - (this._zoomEndTimestamp || 0);
@@ -307,11 +315,15 @@ export default class CollisionPainter extends BasicPainter {
             delete this._zoomFading;
             delete this._zoomMeshes;
             delete this._zoomEndTimestamp;
+            delete this._preRes;
+            delete this._zoomingOut;
             // console.log('fading ended');
         }
         if (zooming) {
             //记录zooming过程中的meshes
             this._zoomMeshes = this.scene.getMeshes();
+
+            this._zoomingOut = this._preRes && map.getResolution() > this._preRes;
         }
         super.startFrame();
     }
