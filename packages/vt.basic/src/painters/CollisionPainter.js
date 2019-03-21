@@ -28,8 +28,8 @@ export default class CollisionPainter extends BasicPainter {
         if (!map.isZooming() && this._zoomFading === undefined && level > 0) {
             return false;
         }
-        //地图缩小时限制绘制的box数量，避免大量的box绘制，提升缩放的性能
-        if ((this._zoomingOut && (map.isZooming() || this._zoomEndTimestamp !== undefined)) && boxIndex > this.layer.options['boxLimitOnZoomout']) {
+        //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
+        if ((this._zoomingOut && (map.isZooming() || this._zoomEndTimestamp !== undefined && level > 0)) && boxIndex > this.layer.options['boxLimitOnZoomout']) {
             return false;
         }
         const geometryProps = mesh.geometry.properties;
