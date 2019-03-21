@@ -5,6 +5,8 @@ export function uid() {
     return id++;
 }
 
+const supportAssign = typeof Object.assign === 'function';
+
 /**
  * Merges the properties of sources into destination object.
  * @param  {Object} dest   - object to extend
@@ -12,9 +14,13 @@ export function uid() {
  * @return {Object}
  * @memberOf Util
  */
-export function extend(dest) { // (Object[, Object, ...]) ->
-    for (let i = 1; i < arguments.length; i++) {
-        const src = arguments[i];
+export function extend(dest, ...source) { // (Object[, Object, ...]) ->
+    if (supportAssign) {
+        Object.assign(dest, ...source);
+        return dest;
+    }
+    for (let i = 0; i < source.length; i++) {
+        const src = source[i];
         for (const k in src) {
             dest[k] = src[k];
         }

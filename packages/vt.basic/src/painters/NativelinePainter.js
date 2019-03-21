@@ -4,6 +4,7 @@ import Painter from './Painter';
 import Color from 'color';
 import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
+import pickingVert from './glsl/native-line.picking.vert';
 
 const defaultUniforms = {
     lineColor: [0, 0, 0],
@@ -18,8 +19,8 @@ class NativeLinePainter extends Painter {
 
     createGeometry(glData) {
         const data = extend({}, glData.data);
-        // data.aPickingId = data.featureIndexes;
-        // delete data.featureIndexes;
+        data.aPickingId = data.featureIndexes;
+        delete data.featureIndexes;
         const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: 'lines' });
         return geometry;
 
@@ -69,20 +70,22 @@ class NativeLinePainter extends Painter {
             }
         };
 
+        const uniforms = [
+            {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
+                    const projViewModelMatrix = [];
+                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                    return projViewModelMatrix;
+                }
+            }
+        ];
+
         const config = {
             vert,
             frag,
-            uniforms: [
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        const projViewModelMatrix = [];
-                        mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                        return projViewModelMatrix;
-                    }
-                }
-            ],
+            uniforms,
             defines: null,
             extraCommandProps: {
                 viewport,
@@ -116,6 +119,17 @@ class NativeLinePainter extends Painter {
         };
 
         this.shader = new reshader.MeshShader(config);
+
+        if (this.pickingFBO) {
+            this.picking = new reshader.FBORayPicking(
+                this.renderer,
+                {
+                    vert: pickingVert,
+                    uniforms
+                },
+                this.pickingFBO
+            );
+        }
     }
 
     getUniformValues(map) {

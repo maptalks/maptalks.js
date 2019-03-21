@@ -381,6 +381,66 @@ describe('picking specs', () => {
         });
     });
 
+    context('native-line', () => {
+        it('should pick native lines', done => {
+            const options = {
+                data: {
+                    type: 'FeatureCollection',
+                    features: [
+                        {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: [
+                                    [13.41706531630723, 52.529564627058534],
+                                    [13.417135053741617, 52.52956625878565],
+                                    [13.417226248848124, 52.52954504632825],
+                                    [13.417290621864481, 52.52956625878565],
+                                    [13.417635229170008, 52.529564137540376]
+                                ]
+                            }
+                        }
+                    ]
+                },
+                style: [
+                    {
+                        renderPlugin: {
+                            type: 'native-line',
+                            dataConfig: {
+                                type: 'native-line'
+                            }
+                        },
+                        symbol: {
+                            lineColor: '#f00'
+                        }
+                    }
+                ],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            let count = 0;
+            layer.on('layerload', () => {
+                count++;
+                if (count <= 1 || count > 2) {
+                    return;
+                }
+                const redPoint = layer.identify([13.417226248848124, 52.52954504632825]);
+
+                const expected = { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [[13.41706531630723, 52.529564627058534], [13.417135053741617, 52.52956625878565], [13.417226248848124, 52.52954504632825], [13.417290621864481, 52.52956625878565], [13.417635229170008, 52.529564137540376]] }, 'id': 0, 'layer': 0 }, 'symbol': { 'lineColor': '#f00' } };
+                assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
+
+                done();
+            });
+            layer.addTo(map);
+        });
+    });
+
     it('should let options.features control picking result', done => {
         const options = {
             data: {
