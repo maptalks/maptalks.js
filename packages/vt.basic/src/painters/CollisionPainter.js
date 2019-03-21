@@ -23,7 +23,9 @@ export default class CollisionPainter extends BasicPainter {
 
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
         const { level, meshKey } = mesh.properties;
-        if (!this.getMap().isZooming() && this._zoomFading === undefined && level > 0) {
+        const map = this.getMap();
+        if (!map.isZooming() && this._zoomFading === undefined && level > 0 ||
+            (map.isZooming() || this._zoomFading !== undefined) && boxIndex > this.layer.options['boxLimitOnZooming']) {
             return false;
         }
         const geometryProps = mesh.geometry.properties;
