@@ -849,7 +849,7 @@ export default class TextPainter extends CollisionPainter {
             cameraToCenterDistance, canvasSize,
             glyphSize: 24,
             // gammaScale : 0.64,
-            gammaScale: 1.0,
+            gammaScale: 0.79,
             resolution: map.getResolution(),
             // planeMatrix
         };

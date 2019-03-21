@@ -29,7 +29,7 @@ void main() {
         color = textHaloFill;
         gamma = (textHaloBlur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * gammaScale);
         buff = (6.0 - textHaloRadius / fontScale) / SDF_PX;
-        color *= textHaloOpacity;
+        color *= textHaloOpacity * 1.25;
     }
 
     float dist = texture2D(texture, vTexCoord).a;

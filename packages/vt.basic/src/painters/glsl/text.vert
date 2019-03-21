@@ -68,18 +68,18 @@ void main() {
         //当textPerspective:
         //值为1.0时: vGammaScale用cameraScale动态计算
         //值为0.0时: vGammaScale固定为1.2
-        vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio) + 0.2;
+        vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio);
     } else {
         vec2 offset = shape * vec2(1.0, -1.0);
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
-        vGammaScale = cameraScale + mapPitch / 2.0;
+        vGammaScale = cameraScale + mapPitch / 4.0;
     }
     gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
     // gl_Position.xy += vec2(1.0, 10.0);
 
     vTexCoord = texCoord / texSize;
-
+    vGammaScale = clamp(vGammaScale, 0.0, 1.3);
 
     vSize = textSize;
     #ifdef ENABLE_COLLISION
