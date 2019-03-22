@@ -78,32 +78,34 @@ export function buildExtrudeFaces(
             }
         }
 
-        //side face indices
-        const s = indices.length;
-        const startIdx = start / 3;
-        const vertexCount = count / 3;
-        let ringStartIdx = startIdx, current, next, isClipped;
-        for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
-            current = i;
-            if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
-                next = ringStartIdx;
-                if (i < l - 1) {
-                    ringStartIdx = i + 1;
+        if (height > 0) {
+            //side face indices
+            const s = indices.length;
+            const startIdx = start / 3;
+            const vertexCount = count / 3;
+            let ringStartIdx = startIdx, current, next, isClipped;
+            for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
+                current = i;
+                if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
+                    next = ringStartIdx;
+                    if (i < l - 1) {
+                        ringStartIdx = i + 1;
+                    }
+                } else if (i < l - 1) {
+                    next = i + 1;
                 }
-            } else if (i < l - 1) {
-                next = i + 1;
+                isClipped = isClippedEdge(vertices, current, next, EXTENT);
+                if (isClipped) {
+                    continue;
+                }
+                //top[i], bottom[i], top[i + 1]
+                indices.push(current + vertexCount, current, next);
+                //bottom[i + 1], top[i + 1], bottom[i]
+                indices.push(next, next + vertexCount, current + vertexCount);
             }
-            isClipped = isClippedEdge(vertices, current, next, EXTENT);
-            if (isClipped) {
-                continue;
+            if (generateUV) {
+                buildSideUV(uvs, vertices, indices.slice(s, indices.length), [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
             }
-            //top[i], bottom[i], top[i + 1]
-            indices.push(current + vertexCount, current, next);
-            //bottom[i + 1], top[i + 1], bottom[i]
-            indices.push(next, next + vertexCount, current + vertexCount);
-        }
-        if (generateUV) {
-            buildSideUV(uvs, vertices, indices.slice(s, indices.length), [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
         }
         return offset + count;
     }
