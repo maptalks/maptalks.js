@@ -417,7 +417,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         if (tileImage instanceof Image) {
-            this.abortTileLoading(tileImage);
+            this.abortTileLoading(tileImage, tileInfo);
         }
         tileImage.loadTime = 0;
         delete this.tilesLoading[tileInfo['id']];
@@ -581,7 +581,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const tilesLoading = this.tilesLoading;
             if (tilesLoading && tilesLoading[tileId]) {
                 tilesLoading[tileId].current = false;
-                this.abortTileLoading(tilesLoading[tileId]);
+                const { image, info } = tilesLoading[tileId];
+                this.abortTileLoading(image, info);
                 delete tilesLoading[tileId];
             }
         } else {
@@ -636,7 +637,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (force || !tile.current) {
                 // abort loading tiles
                 if (tile.image) {
-                    this.abortTileLoading(tile.image);
+                    this.abortTileLoading(tile.image, tile.info);
                 }
                 this.deleteTile(tile);
                 delete this.tilesLoading[i];
