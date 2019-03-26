@@ -394,7 +394,7 @@ class TileLayer extends Layer {
                         tileInfo.extent2d._add(offset);
                     }
                     tileInfo['size'] = [width, height];
-                    tileInfo['dupKey'] = p.round().toArray().join() + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
+                    tileInfo['dupKey'] = z + ',' + p.round().toArray().join() + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
                     tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
                     tileInfo['layer'] = layerId;
                     if (!renderer || !renderer.isTileCachedOrLoading(tileInfo.id)) {
