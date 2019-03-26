@@ -112,6 +112,7 @@ const options = {
     'fixCenterOnResize' : false,
 
     'checkSize': true,
+    'checkSizeInterval' : 1000,
 
     'renderer': 'canvas'
 };

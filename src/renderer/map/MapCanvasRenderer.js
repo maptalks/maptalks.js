@@ -752,7 +752,7 @@ class MapCanvasRenderer extends MapRenderer {
         const map = this.map;
 
         if (map.options['checkSize'] && !IS_NODE && (typeof window !== 'undefined')) {
-            this._setCheckSizeInterval(1000);
+            this._setCheckSizeInterval(map.options['checkSizeInterval']);
         }
         if (!Browser.mobile) {
             map.on('_mousemove', this._onMapMouseMove, this);
