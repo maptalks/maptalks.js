@@ -27,20 +27,35 @@ export default class Geometry {
             this.elements = count;
         }
         this.properties = {};
+        this._buffers = {};
         this.updateBoundingBox();
     }
 
     generateBuffers(regl) {
         //generate regl buffers beforehand to avoid repeated bufferData
+        const allocatedBuffers = this._buffers;
+        for (const p in allocatedBuffers) {
+            allocatedBuffers[p].buffer = regl.buffer(allocatedBuffers[p].data);
+            delete allocatedBuffers[p].data;
+        }
         const data = this.data;
         const buffers = {};
-        for (const p in data) {
-            if (!data[p]) {
+        for (const key in data) {
+            if (!data[key]) {
                 continue;
             }
-            buffers[p] = data[p].buffer && data[p].buffer.destroy ? data[p] : {
-                buffer : regl.buffer(data[p])
-            };
+            if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
+                if (data[key].buffer.destroy) {
+                    buffers[key] = data[key];
+                } else if (allocatedBuffers[data[key].buffer]) {
+                    buffers[key] = extend({}, data[key]);
+                    buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
+                }
+            } else {
+                buffers[key] = {
+                    buffer : regl.buffer(data[key])
+                };
+            }
         }
         this.data = buffers;
 
@@ -51,6 +66,26 @@ export default class Geometry {
                 //type : 'uint16' // type is inferred from data
             });
         }
+    }
+
+    addBuffer(key, data) {
+        this._buffers[key] = {
+            data
+        };
+        return this;
+    }
+
+    updateBuffer(key, data) {
+        if (!this._buffers[key]) {
+            throw new Error(`invalid buffer ${key} in geometry`);
+        }
+        // this._buffers[key].data = data;
+        if (this._buffers[key].buffer) {
+            this._buffers[key].buffer(data);
+        } else {
+            this._buffers[key].data = data;
+        }
+        return this;
     }
 
     /**
@@ -127,10 +162,15 @@ export default class Geometry {
 
     dispose() {
         this._forEachBuffer(buffer => {
-            buffer.destroy();
+            if (!buffer['__reshader_disposed']) {
+                buffer['__reshader_disposed'] = true;
+                buffer.destroy();
+            }
         });
-        delete this.elements;
-        delete this.data;
+        this.data = {};
+        this._buffers = {};
+        this.count = 0;
+        this.elements = [];
         this._disposed = true;
     }
 
@@ -242,6 +282,21 @@ export default class Geometry {
         }
     }
 
+    getMemorySize() {
+        let size = 0;
+        for (const p in this.data) {
+            if (this.data.hasOwnProperty(p)) {
+                const buffer = this.data[p];
+                if (buffer.data) {
+                    size += buffer.data.length * buffer.data.BYTES_PER_ELEMENT;
+                } else {
+                    size += buffer.length * buffer.BYTES_PER_ELEMENT;
+                }
+            }
+        }
+        return size;
+    }
+
     _forEachBuffer(fn) {
         if (this.elements && this.elements.destroy)  {
             fn(this.elements);
@@ -250,6 +305,14 @@ export default class Geometry {
             if (this.data.hasOwnProperty(p)) {
                 if (this.data[p] && this.data[p].buffer && this.data[p].buffer.destroy) {
                     fn(this.data[p].buffer);
+                }
+            }
+        }
+
+        for (const p in this._buffers) {
+            if (this._buffers.hasOwnProperty(p)) {
+                if (this._buffers[p] && this._buffers[p].buffer && this._buffers[p].buffer.destroy) {
+                    fn(this._buffers[p].buffer);
                 }
             }
         }
