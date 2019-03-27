@@ -96,6 +96,7 @@ export default class TextPainter extends CollisionPainter {
             tileRatio: geometry.properties.tileRatio
         };
 
+        //避免重复创建属性数据
         if (!geometry.properties.aAnchor) {
             const { aPosition, aShape0 } = geometry.data;
             const vertexCount = aPosition.length / 3;
@@ -108,21 +109,14 @@ export default class TextPainter extends CollisionPainter {
                 geometry.properties.aShape0 = aShape0;
             }
 
+            let aOpacity;
             if (enableCollision) {
                 //initialize opacity array
                 //aOpacity用于fading透明度的调整
-                const aOpacity = new Uint8Array(vertexCount);
+                aOpacity = geometry.properties.aOpacity = new Uint8Array(vertexCount);
                 for (let i = 0; i < aOpacity.length; i++) {
                     aOpacity[i] = 255;
                 }
-                geometry.data.aOpacity = {
-                    usage: 'dynamic',
-                    data: aOpacity
-                };
-                geometry.properties.aOpacity = {
-                    usage: 'dynamic',
-                    data: new Uint8Array(vertexCount)
-                };
             }
 
             if (isLinePlacement) {
@@ -137,25 +131,82 @@ export default class TextPainter extends CollisionPainter {
                 delete geometry.data.aGlyphOffset0;
                 delete geometry.data.aGlyphOffset1;
 
+                geometry.properties.aOffset = new Int8Array(vertexCount * 2);
+                geometry.properties.aRotation = new Int16Array(vertexCount);
+                //aNormal = [isFlip * 2 + isVertical, ...];
+                geometry.properties.aNormal = new Uint8Array(vertexCount);
+                let stride = 0;
+                const attributes = {};
+                //TODO 给regl增加type支持，而不是统一为一种类型
                 if (symbol['textPitchAlignment'] === 'map') {
+                    const shapeBuffer = new Uint8Array(vertexCount * 3);
+                    geometry.properties.pitchShape = shapeBuffer;
+                    geometry.addBuffer('pitchShape', shapeBuffer);
                     //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
-                    geometry.properties.aOffset = geometry.data.aOffset = new Int8Array(aGlyphOffset0.length);
-                    geometry.properties.aRotation = geometry.data.aRotation = new Int16Array(vertexCount);
-                } else {
-                    geometry.properties.aOffset = geometry.data.aOffset = {
-                        usage: 'dynamic',
-                        data: new Int8Array(aGlyphOffset0.length)
+                    geometry.data.aOffset = {
+                        offset: 0,
+                        size: 2,
+                        stride: 3,
+                        buffer: 'pitchShape'
                     };
-                    geometry.properties.aRotation = geometry.data.aRotation = {
-                        usage: 'dynamic',
-                        data: new Int16Array(vertexCount)
+                    geometry.data.aRotation = {
+                        offset: 2,
+                        size: 1,
+                        stride: 3,
+                        buffer: 'pitchShape'
+                    };
+                    attributes.aNormal = {
+                        offset: stride++,
+                        size: 1,
+                        buffer: 'mutable'
+                    };
+                } else {
+                    attributes.aOffset = {
+                        offset: stride,
+                        size: 2,
+                        buffer: 'mutable'
+                    };
+                    stride += 2;
+                    attributes.aRotation = {
+                        offset: stride++,
+                        size: 1,
+                        buffer: 'mutable'
+                    };
+                    attributes.aNormal = {
+                        offset: stride++,
+                        size: 1,
+                        buffer: 'mutable'
                     };
                 }
 
-                //aNormal = [isFlip * 2 + isVertical, ...];
-                geometry.data.aNormal = geometry.properties.aNormal = {
+                if (enableCollision) {
+                    //非line placement时
+                    attributes.aOpacity = {
+                        offset: stride++,
+                        size: 1,
+                        buffer: 'mutable'
+                    };
+                }
+
+                for (const p in attributes) {
+                    geometry.data[p] = attributes[p];
+                    geometry.data[p].stride = stride;
+                }
+
+                const mutable = new Uint8Array(vertexCount * stride);
+
+                geometry.addBuffer('mutable', {
                     usage: 'dynamic',
-                    data: new Uint8Array(aVertical.length)
+                    data: mutable
+                });
+                geometry.properties.mutable = mutable;
+
+
+            } else if (enableCollision) {
+                //非line placement时
+                geometry.data.aOpacity = {
+                    usage: 'dynamic',
+                    data: new Uint8Array(aOpacity.length)
                 };
             }
 
@@ -236,6 +287,7 @@ export default class TextPainter extends CollisionPainter {
         uniforms['texture'] = glyphAtlas;
         uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
 
+        geometry.properties.memory = geometry.getMemorySize();
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
@@ -247,7 +299,7 @@ export default class TextPainter extends CollisionPainter {
         //设置ignoreCollision，此mesh略掉collision检测
         //halo mesh会进行collision检测，并统一更新elements
         if (symbol['textHaloRadius']) {
-            mesh.properties.ignoreCollision = true;
+            mesh.properties.isHalo = true;
         }
         if (enableCollision) {
             mesh.setDefines({
@@ -282,6 +334,15 @@ export default class TextPainter extends CollisionPainter {
     }
 
     callCurrentTileShader(uniforms) {
+        // let size = 0;
+        // const meshes = this.scene.getMeshes();
+        // for (let i = 0; i < meshes.length; i++) {
+        //     if (meshes[i].geometry.properties.memory) {
+        //         size += meshes[i].geometry.properties.memory;
+        //     }
+        // }
+        // console.log('Buffer内存总大小', size);
+
         //1. render current tile level's meshes
         this.shader.filter = shaderFilter0;
         this.renderer.render(this.shader, uniforms, this.scene);
@@ -331,6 +392,10 @@ export default class TextPainter extends CollisionPainter {
         // console.log(`meshes数量: ${meshes.length}`);
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
+            if (mesh.properties.isHalo) {
+                //halo和正文共享的同一个geometry，无需更新
+                continue;
+            }
             const geometry = mesh.geometry;
 
             // const idx = geometry.properties.aPickingId[0];
@@ -342,15 +407,14 @@ export default class TextPainter extends CollisionPainter {
                     continue;
                 }
                 this._updateLineLabel(mesh, planeMatrix);
-            } else if (enableCollision && !mesh.properties.ignoreCollision) {
+            } else if (enableCollision) {
                 const elements = geometry.properties.elements;
                 const visibleElements = [];
                 this._forEachLabel(mesh, elements, (mesh, start, end, mvpMatrix, labelIndex) => {
                     fn(elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex);
                 });
-                if (enableCollision) {
-                    geometry.updateData('aOpacity', geometry.properties.aOpacity);
-                }
+                geometry.updateData('aOpacity', { data: geometry.properties.aOpacity, usage: 'dynamic' });
+
                 const allVisilbe = visibleElements.length === elements.length && geometry.count === elements.length;
                 if (!allVisilbe) {
                     geometry.setElements({
@@ -392,7 +456,7 @@ export default class TextPainter extends CollisionPainter {
             const out = new Array(line.length);
             line = this._projectLine(out, line, matrix, map.width, map.height);
         }
-        const enableCollision = !mesh.properties.ignoreCollision && this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         let visibleElements = enableCollision ? [] : elements;
 
         this._forEachLabel(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
@@ -419,24 +483,43 @@ export default class TextPainter extends CollisionPainter {
             }
         });
 
-        geometry.updateData('aNormal', aNormal);
-        if (shouldUpdate) {
-            if (isPitchWithMap) {
-                //pitchWithMap 时，elements只需更新一次，替换掉原elements
-                geometryProps.elements = new geometryProps.elemCtor(elements);
+        if (shouldUpdate && isPitchWithMap) {
+            //pitchWithMap 时，elements只需更新一次，替换掉原elements
+            geometryProps.elements = new geometryProps.elemCtor(elements);
+
+            //pitchWithMap 时，aOffset和aRotation只需要更新一次
+            const pitchShape = geometry.properties.pitchShape;
+            const stride = 3;
+            for (let i = 0; i < aRotation.length; i++) {
+                pitchShape[i * stride] = aOffset[i * 2] + 127;
+                pitchShape[i * stride + 1] = aOffset[i * 2 + 1] + 127;
+                //把旋转角封装到一个字节里
+                pitchShape[i * stride + 2] = (aRotation[i] !== 360 ? aRotation[i] < 0 ? aRotation[i] + 360 : aRotation[i] : 0) * 255 / 360;
             }
-            geometry.updateData('aOffset', aOffset);
-            geometry.updateData('aRotation', aRotation);
+            geometry.updateBuffer('pitchShape', pitchShape);
         }
-        if (shouldUpdate || visibleElements.length !== elements.length) {
+        const mutable = geometry.properties.mutable;
+        const stride = mutable.length / aNormal.length;
+        for (let i = 0; i < aNormal.length; i++) {
+            let offset = 0;
+            if (!isPitchWithMap) {
+                mutable[i * stride + offset++] = aOffset[i * 2] + 127;
+                mutable[i * stride + offset++] = aOffset[i * 2 + 1] + 127;
+                //把旋转角封装到一个字节里
+                mutable[i * stride + offset++] = (aRotation[i] !== 360 ? aRotation[i] < 0 ? aRotation[i] + 360 : aRotation[i] : 0) * 255 / 360;
+            }
+            mutable[i * stride + offset++] = aNormal[i];
+            if (enableCollision) {
+                mutable[i * stride + offset] = geometryProps.aOpacity[i];
+            }
+        }
+        geometry.updateBuffer('mutable', { usage: 'dynamic', data: geometry.properties.mutable });
+        if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
             // geometry.properties.elements = elements;
             geometry.setElements({
                 usage: 'dynamic',
                 data: new geometryProps.elemCtor(visibleElements)
             });
-        }
-        if (enableCollision) {
-            geometry.updateData('aOpacity', geometryProps.aOpacity);
         }
         //tag if geometry's aOffset and aRotation is updated
         geometry.__offsetRotationUpdated = true;
@@ -544,7 +627,7 @@ export default class TextPainter extends CollisionPainter {
         const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, aVertical, aspectRatio, planeMatrix);
         //更新normal
         for (let i = firstChrIdx; i <= lastChrIdx; i++) {
-            aNormal.data[i] = normal;
+            aNormal[i] = normal;
         }
     }
 

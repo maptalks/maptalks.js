@@ -49,7 +49,7 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float rotation = aRotation * RAD + textRotation;
+    float rotation = (aRotation * 360.0 / 255.0) * RAD + textRotation;
     // textRotation = 0.0;
     float flip = float(int(aNormal) / 2);
     float vertical = mod(aNormal, 2.0);
@@ -62,7 +62,7 @@ void main() {
 
     vec2 shape = shapeMatrix * mix(aShape0, aShape1, flip);
 
-    vec2 offset = aOffset;
+    vec2 offset = aOffset - 127.0;
     vec2 texCoord = mix(aTexCoord0, aTexCoord1, flip);
 
     shape = shape / glyphSize * textSize;

@@ -58,10 +58,10 @@ export default class CollisionPainter extends BasicPainter {
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
             const vertexIndexStart = allElements[start];
-            if (geometryProps.aOpacity.data[vertexIndexStart] !== opacity) {
+            if (geometryProps.aOpacity[vertexIndexStart] !== opacity) {
                 const vertexIndexEnd = allElements[end - 1];
                 for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
-                    geometryProps.aOpacity.data[i] = opacity;
+                    geometryProps.aOpacity[i] = opacity;
                 }
             }
         }

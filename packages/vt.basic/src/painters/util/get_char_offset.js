@@ -17,7 +17,7 @@ export function getCharOffset(out, mesh, textSize, line, i, projMatrix, width, h
 
     const { aAnchor, aGlyphOffset0, aGlyphOffset1, aSegment, symbol, aNormal } = mesh.geometry.properties;
     const dxdy = vec2.set(DXDY, symbol['textDx'] || 0, symbol['textDy'] || 0);
-    const isFlipped = Math.floor(aNormal.data[i] / 2);
+    const isFlipped = Math.floor(aNormal[i] / 2);
 
     let anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
     if (isProjected) {
