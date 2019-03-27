@@ -372,6 +372,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return plugins;
     }
 
+    _getAllPlugins() {
+        if (this.layer.isDefaultRender() && this._layerPlugins) {
+            return Object.values(this._layerPlugins).map(config => config.plugin);
+        }
+        return this.plugins;
+    }
+
     _startFrame(timestamp) {
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
@@ -483,7 +490,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
         if (tile.image && !tile.image._empty) {
-            const plugins = this._getFramePlugins();
+            const plugins = this._getAllPlugins();
             plugins.forEach((plugin, idx) => {
                 plugin.deleteTile({
                     regl : this.regl,

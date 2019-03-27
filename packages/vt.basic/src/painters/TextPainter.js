@@ -131,7 +131,7 @@ export default class TextPainter extends CollisionPainter {
                 delete geometry.data.aGlyphOffset0;
                 delete geometry.data.aGlyphOffset1;
 
-                geometry.properties.aOffset = new Int8Array(vertexCount * 2);
+                geometry.properties.aOffset = new Int16Array(vertexCount * 2);
                 geometry.properties.aRotation = new Int16Array(vertexCount);
                 //aNormal = [isFlip * 2 + isVertical, ...];
                 geometry.properties.aNormal = new Uint8Array(vertexCount);
@@ -139,42 +139,48 @@ export default class TextPainter extends CollisionPainter {
                 const attributes = {};
                 //TODO 给regl增加type支持，而不是统一为一种类型
                 if (symbol['textPitchAlignment'] === 'map') {
-                    const shapeBuffer = new Uint8Array(vertexCount * 3);
+                    const shapeBuffer = new ArrayBuffer(vertexCount * 6);
                     geometry.properties.pitchShape = shapeBuffer;
                     geometry.addBuffer('pitchShape', shapeBuffer);
                     //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
                     geometry.data.aOffset = {
                         offset: 0,
                         size: 2,
-                        stride: 3,
+                        stride: 6,
+                        type: 'int16',
                         buffer: 'pitchShape'
                     };
                     geometry.data.aRotation = {
-                        offset: 2,
+                        offset: 4,
                         size: 1,
-                        stride: 3,
+                        stride: 6,
+                        type: 'uint8',
                         buffer: 'pitchShape'
                     };
                     attributes.aNormal = {
                         offset: stride++,
                         size: 1,
+                        type: 'uint8',
                         buffer: 'mutable'
                     };
                 } else {
                     attributes.aOffset = {
                         offset: stride,
                         size: 2,
+                        type: 'int16',
                         buffer: 'mutable'
                     };
-                    stride += 2;
+                    stride += 2 * 2;
                     attributes.aRotation = {
                         offset: stride++,
                         size: 1,
+                        type: 'uint8',
                         buffer: 'mutable'
                     };
                     attributes.aNormal = {
                         offset: stride++,
                         size: 1,
+                        type: 'uint8',
                         buffer: 'mutable'
                     };
                 }
@@ -184,16 +190,19 @@ export default class TextPainter extends CollisionPainter {
                     attributes.aOpacity = {
                         offset: stride++,
                         size: 1,
+                        type: 'uint8',
                         buffer: 'mutable'
                     };
                 }
+
+                stride = bytesAlign(attributes);
 
                 for (const p in attributes) {
                     geometry.data[p] = attributes[p];
                     geometry.data[p].stride = stride;
                 }
 
-                const mutable = new Uint8Array(vertexCount * stride);
+                const mutable = new ArrayBuffer(vertexCount * stride);
 
                 geometry.addBuffer('mutable', {
                     usage: 'dynamic',
@@ -489,31 +498,36 @@ export default class TextPainter extends CollisionPainter {
 
             //pitchWithMap 时，aOffset和aRotation只需要更新一次
             const pitchShape = geometry.properties.pitchShape;
-            const stride = 3;
+            const view = new DataView(pitchShape);
+            const stride = pitchShape.byteLength / aRotation.length;
             for (let i = 0; i < aRotation.length; i++) {
-                pitchShape[i * stride] = aOffset[i * 2] + 127;
-                pitchShape[i * stride + 1] = aOffset[i * 2 + 1] + 127;
+                view.setInt16(i * stride, aOffset[i * 2], true);
+                view.setInt16(i * stride + 2, aOffset[i * 2 + 1], true);
                 //把旋转角封装到一个字节里
-                pitchShape[i * stride + 2] = (aRotation[i] !== 360 ? aRotation[i] < 0 ? aRotation[i] + 360 : aRotation[i] : 0) * 255 / 360;
+                view.setUint8(i * stride + 4, (aRotation[i] !== 360 ? aRotation[i] < 0 ? aRotation[i] + 360 : aRotation[i] : 0) * 255 / 360);
             }
             geometry.updateBuffer('pitchShape', pitchShape);
         }
         const mutable = geometry.properties.mutable;
-        const stride = mutable.length / aNormal.length;
+        const view = new DataView(mutable);
+        const stride = mutable.byteLength / aNormal.length;
         for (let i = 0; i < aNormal.length; i++) {
             let offset = 0;
             if (!isPitchWithMap) {
-                mutable[i * stride + offset++] = aOffset[i * 2] + 127;
-                mutable[i * stride + offset++] = aOffset[i * 2 + 1] + 127;
+                //TODO x86上是小端序，有可能别的平台上会是大端序
+                view.setInt16(i * stride + offset, aOffset[i * 2], true);
+                offset += 2;
+                view.setInt16(i * stride + offset, aOffset[i * 2 + 1], true);
+                offset += 2;
                 //把旋转角封装到一个字节里
-                mutable[i * stride + offset++] = (aRotation[i] !== 360 ? aRotation[i] < 0 ? aRotation[i] + 360 : aRotation[i] : 0) * 255 / 360;
+                view.setUint8(i * stride + offset++, (aRotation[i] !== 360 ? aRotation[i] < 0 ? aRotation[i] + 360 : aRotation[i] : 0) * 255 / 360);
             }
-            mutable[i * stride + offset++] = aNormal[i];
+            view.setUint8(i * stride + offset++, aNormal[i]);
             if (enableCollision) {
-                mutable[i * stride + offset] = geometryProps.aOpacity[i];
+                view.setUint8(i * stride + offset, geometryProps.aOpacity[i]);
             }
         }
-        geometry.updateBuffer('mutable', { usage: 'dynamic', data: geometry.properties.mutable });
+        geometry.updateBuffer('mutable', { usage: 'dynamic', data: mutable });
         if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
             // geometry.properties.elements = elements;
             geometry.setElements({
@@ -712,7 +726,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     deleteMesh(meshes, keepGeometry) {
-        if (meshes) {
+        if (!meshes) {
             return;
         }
         if (keepGeometry) {
@@ -963,4 +977,31 @@ export function resolveText(str, props) {
         }
         return value;
     });
+}
+
+const TYPE_BYTES = {
+    'int8': 1,
+    'int16': 2,
+    'int32': 4,
+    'uint8': 1,
+    'uint16': 2,
+    'uint32': 4,
+    'float': 4,
+    'float32': 4
+};
+
+function bytesAlign(attributes) {
+    let max = 0;
+    let stride = 0;
+    for (const p in attributes) {
+        const type = attributes[p].type;
+        if (TYPE_BYTES[type] > max) {
+            max = TYPE_BYTES[type];
+        }
+        stride += TYPE_BYTES[type] * attributes[p].size || 1;
+    }
+    if (stride % max > 0) {
+        stride += (max - stride % max);
+    }
+    return stride;
 }

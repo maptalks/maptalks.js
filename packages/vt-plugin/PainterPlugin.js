@@ -58,8 +58,7 @@ function createPainterPlugin(type, Painter) {
                     redraw: false
                 };
             }
-            //v0.43.0及之前的maptalks中dupKey只能保证在同一级别中不会有重复，手动加上级别后就能保证跨级别key也不会重复
-            var key = tileInfo.z + ',' + tileInfo.dupKey;
+            var key = tileInfo.dupKey;
             let geometry = tileCache.geometry;
             var features = tileData.features;
             if (!geometry) {

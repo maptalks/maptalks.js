@@ -62,7 +62,7 @@ void main() {
 
     vec2 shape = shapeMatrix * mix(aShape0, aShape1, flip);
 
-    vec2 offset = aOffset - 127.0;
+    vec2 offset = aOffset;
     vec2 texCoord = mix(aTexCoord0, aTexCoord1, flip);
 
     shape = shape / glyphSize * textSize;
