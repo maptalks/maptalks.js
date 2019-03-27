@@ -59,7 +59,7 @@ function createFunction(parameters, defaultType) {
             fun.isZoomConstant = false;
         } else {
             fun = function (zoom, feature) {
-                return innerFun(parameters, feature[parameters.property]);
+                return innerFun(parameters, feature ? feature[parameters.property] : null);
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = true;
