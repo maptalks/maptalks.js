@@ -7,7 +7,7 @@ attribute vec2 aShape1;
 attribute vec2 aTexCoord0;
 attribute vec2 aTexCoord1;
 attribute vec2 aOffset;
-attribute float aRotation; //rotation in degree
+attribute highp float aRotation; //rotation in degree
 //flip * 2 + vertical
 attribute float aNormal;
 #ifdef ENABLE_COLLISION
@@ -49,7 +49,7 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float rotation = aRotation * RAD + textRotation;
+    float rotation = aRotation / 91.0 * RAD + textRotation;
     // textRotation = 0.0;
     float flip = float(int(aNormal) / 2);
     float vertical = mod(aNormal, 2.0);
@@ -58,7 +58,7 @@ void main() {
 
     float angleSin = sin(rotation);
     float angleCos = cos(rotation);
-    mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
+    mat2 shapeMatrix = mat2(angleCos, -angleSin, angleSin, angleCos);
 
     vec2 shape = shapeMatrix * mix(aShape0, aShape1, flip);
 

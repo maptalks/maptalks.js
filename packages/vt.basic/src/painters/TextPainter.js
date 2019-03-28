@@ -63,6 +63,16 @@ export default class TextPainter extends CollisionPainter {
         super(regl, layer, sceneConfig, pluginIndex);
         this.propAllowOverlap = 'textAllowOverlap';
         this.propIgnorePlacement = 'textIgnorePlacement';
+        this.layer.getRenderer().canvas.addEventListener('webglcontextlost', () => {
+            // console.log(JSON.stringify(layer.getMap().getView()));
+            // // const arr = new Int16Array(this._buffer);
+            // // const rotations = new Int16Array(arr.length / 4);
+            // // for (let i = 0; i < rotations.length; i++) {
+            // //     rotations[i] = arr[i * 4 + 2] / 91;
+            // // }
+            // console.log(this._rotations.join());
+
+        }, false);
     }
 
     createGeometry(glData) {
@@ -171,11 +181,12 @@ export default class TextPainter extends CollisionPainter {
                     };
                     stride += 2;
                     attributes.aNormal = {
-                        offset: stride++,
+                        offset: stride,
                         size: 1,
                         type: 'uint8',
                         buffer: 'mutable'
                     };
+                    stride += 1;
                 }
 
                 if (enableCollision) {
@@ -183,7 +194,7 @@ export default class TextPainter extends CollisionPainter {
                     attributes.aOpacity = {
                         offset: stride++,
                         size: 1,
-                        type: 'uint8',
+                        type: 'int16',
                         buffer: 'mutable'
                     };
                 }
@@ -200,12 +211,12 @@ export default class TextPainter extends CollisionPainter {
 
                 const buffer = symbol['textPitchAlignment'] === 'map' ? geometry.properties.pitchShape : mutable;
 
-                geometry.properties.aOffset = new DataAccessor(buffer, 'int16', geometry.data['aOffset']);
-                geometry.properties.aRotation = new DataAccessor(buffer, 'int16', geometry.data['aRotation']);
+                geometry.properties.aOffset = new DataAccessor(buffer, geometry.data['aOffset']);
+                geometry.properties.aRotation = new DataAccessor(buffer, geometry.data['aRotation']);
                 //aNormal = [isFlip * 2 + isVertical, ...];
-                geometry.properties.aNormal = new DataAccessor(mutable, 'uint8', geometry.data['aNormal']);
+                geometry.properties.aNormal = new DataAccessor(mutable, geometry.data['aNormal']);
                 if (enableCollision) {
-                    geometry.properties.aOpacity = new DataAccessor(mutable, 'uint8', geometry.data['aOpacity']);
+                    geometry.properties.aOpacity = new DataAccessor(mutable, geometry.data['aOpacity']);
                 }
 
                 geometry.addBuffer('mutable', {
@@ -510,10 +521,14 @@ export default class TextPainter extends CollisionPainter {
             geometry.updateBuffer('pitchShape', pitchShape);
         }
         const mutable = geometry.properties.mutable;
+        // console.log(mutable.byteLength);
+        // console.log(JSON.stringify(map.getView()));
+        this._buffer = mutable;
         geometry.updateBuffer('mutable', mutable);
         if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
             // geometry.properties.elements = elements;
             geometry.setElements(new geometryProps.elemCtor(visibleElements));
+            // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
         }
         //tag if geometry's aOffset and aRotation is updated
         geometry.__offsetRotationUpdated = true;
@@ -610,9 +625,12 @@ export default class TextPainter extends CollisionPainter {
                     break;
                 }
                 for (let ii = 0; ii < 4; ii++) {
+                    // aOffset.set(2 * (vertexStart + ii), offset[0]);
+                    // aOffset.set(2 * (vertexStart + ii) + 1, offset[1]);
+                    // aRotation.set(vertexStart + ii, offset[2]);
                     aOffset.set(2 * (vertexStart + ii), offset[0]);
                     aOffset.set(2 * (vertexStart + ii) + 1, offset[1]);
-                    aRotation.set(vertexStart + ii, offset[2]);
+                    aRotation.set(vertexStart + ii, offset[2] * 91);
                 }
                 //every character has 4 vertice, and 6 indexes
                 //j, j + 1, j + 2 is the left-top triangle
