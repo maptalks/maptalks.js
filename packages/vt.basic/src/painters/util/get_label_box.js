@@ -52,7 +52,7 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
     vec2.scale(bl, bl, textSize / glyphSize);
     vec2.scale(br, br, textSize / glyphSize);
 
-    let textRotation = (aRotation ? aRotation[i] : 0) + (symbol['textRotation'] || 0);
+    let textRotation = (aRotation ? aRotation.get(i) : 0) + (symbol['textRotation'] || 0);
 
     if (!isAlongLine) {
         //1. 获得shape的tl, tr, bl, 和br
@@ -91,8 +91,8 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
         //5. 将最终计算结果与dxdy相加
 
         //TODO 根据flip和vertical翻转文字和换成aShape1
-        const aOffset = geoProps.aOffset.data || geoProps.aOffset;
-        const offset = vec2.set(OFFSET, aOffset[i * 2], aOffset[i * 2 + 1]);
+        const aOffset = geoProps.aOffset;
+        const offset = vec2.set(OFFSET, aOffset.get(i * 2), aOffset.get(i * 2 + 1));
         if (uniforms['pitchWithMap'] === 1) {
             vec2.add(tl, tl, offset);
             vec2.add(tr, tr, offset);

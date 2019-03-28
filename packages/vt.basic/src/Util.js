@@ -36,3 +36,14 @@ export function evaluate(prop, properties, zoom) {
         return prop;
     }
 }
+
+export const TYPE_BYTES = {
+    'int8': 1,
+    'int16': 2,
+    'int32': 4,
+    'uint8': 1,
+    'uint16': 2,
+    'uint32': 4,
+    'float': 4,
+    'float32': 4
+};
