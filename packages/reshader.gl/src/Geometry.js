@@ -81,7 +81,7 @@ export default class Geometry {
         }
         // this._buffers[key].data = data;
         if (this._buffers[key].buffer) {
-            this._buffers[key].buffer(data);
+            this._buffers[key].buffer.subdata(data);
         } else {
             this._buffers[key].data = data;
         }
@@ -108,7 +108,7 @@ export default class Geometry {
             this.updateBoundingBox();
         }
         if (buffer) {
-            buffer.buffer(data);
+            buffer.buffer.subdata(data);
             this.data[name] = buffer;
         }
         return this;
@@ -134,8 +134,7 @@ export default class Geometry {
         this.count = count === undefined ? getElementLength(elements) : count;
 
         if (e.destroy) {
-            const data = extend({}, elements, { primitive : this.getPrimitive() });
-            this.elements = e(data);
+            this.elements = e.subdata(elements);
         } else {
             this.elements = elements;
         }

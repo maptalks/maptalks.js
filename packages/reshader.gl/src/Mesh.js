@@ -118,8 +118,7 @@ class Mesh {
     dispose() {
         delete this.geometry;
         delete this.material;
-        delete this.uniforms;
-        delete this.localTransform;
+        this.uniforms = {};
         return this;
     }
 

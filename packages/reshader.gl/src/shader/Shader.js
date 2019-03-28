@@ -56,12 +56,13 @@ class Shader {
 
     /**
      * Get shader's context uniforms values
-     * @param {Object} meshUniforms - mesh uniforms
+     * @param {Object} meshProps - mesh uniforms
      */
-    getUniforms(meshUniforms) {
+    appendUniforms(meshProps) {
+        //append but not extend to save unnecessary object copies
         const context = this.context;
-        const props = extend2(meshUniforms, context);
-        const uniforms = {};
+        const props = extend2(meshProps, context);
+        const uniforms = props;
         const desc = this.contextDesc;
         for (const p in desc) {
             if (desc[p] && desc[p].type === 'array') {
@@ -85,13 +86,6 @@ class Shader {
                 for (let i = 0; i < len; i++) {
                     uniforms[name][`${i}`] = values[i];
                 }
-            } else {
-                uniforms[p] = context[p];
-            }
-        }
-        for (const p in context) {
-            if (!uniforms[p]) {
-                uniforms[p] = context[p];
             }
         }
         return uniforms;

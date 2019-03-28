@@ -39,12 +39,12 @@ const supportAssign = typeof Object.assign === 'function';
  * @param  {...Object} src - sources
  * @return {Object}
  */
-export function extend(dest, ...source) {
+export function extend(dest) {
     if (supportAssign) {
-        Object.assign(dest, ...source);
+        Object.assign.apply(Object, arguments);
     } else {
-        for (let i = 0; i < source.length; i++) {
-            const src = source[i];
+        for (let i = 1; i < arguments.length; i++) {
+            const src = arguments[i];
             for (const k in src) {
                 dest[k] = src[k];
             }
@@ -53,9 +53,9 @@ export function extend(dest, ...source) {
     return dest;
 }
 
-export function extend2(dest, ...source) {
-    for (let i = 0; i < source.length; i++) {
-        const src = source[i];
+export function extend2(dest) {
+    for (let i = 1; i < arguments.length; i++) {
+        const src = arguments[i];
         for (const k in src) {
             if (dest[k] === undefined) {
                 dest[k] = src[k];
