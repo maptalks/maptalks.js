@@ -25,7 +25,7 @@ export default class CollisionPainter extends BasicPainter {
         const { level, meshKey } = mesh.properties;
         const map = this.getMap();
         //没有缩放，且没在fading时，禁止父级瓦片的绘制，避免不正常的闪烁现象
-        if (!map.isZooming() && this._zoomFading === undefined && level > 0) {
+        if (this.shouldIgnoreBgTiles() && level > 0) {
             return false;
         }
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
@@ -282,8 +282,7 @@ export default class CollisionPainter extends BasicPainter {
     callShader(uniforms) {
         this.callCurrentTileShader(uniforms);
 
-        const map = this.getMap();
-        if (!map.isZooming() && this._zoomFading === undefined) {
+        if (this.shouldIgnoreBgTiles()) {
             //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
             //但有zoomFading时
             return;
@@ -292,6 +291,11 @@ export default class CollisionPainter extends BasicPainter {
         if (this._zoomFading >= 0) {
             this.setToRedraw();
         }
+    }
+
+    shouldIgnoreBgTiles() {
+        const map = this.getMap();
+        return !map.isZooming() && this._zoomFading === undefined;
     }
 
     startFrame({ timestamp }) {
