@@ -1,10 +1,7 @@
 #define RAD 0.0174532925
 
 attribute vec3 aPosition;
-attribute vec2 aShape0;
-attribute vec2 aShape1;
-attribute vec2 aTexCoord0;
-attribute vec2 aTexCoord1;
+attribute vec2 aShape;
 attribute vec2 aOffset;
 //flip * 2 + vertical
 attribute float aNormal;
@@ -44,22 +41,20 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    float rotation = textRotation;
-    // textRotation = 0.0;
+    //精度修正：js中用int16存放旋转角，会丢失小数点，乘以64能在int16范围内尽量保留小数点后尽量多的位数
+    float rotation = aRotation / 64.0 * RAD + textRotation;
     float flip = float(int(aNormal) / 2);
     float vertical = mod(aNormal, 2.0);
-    rotation += mix(0.0, 180.0, flip);
-    rotation += mix(0.0, -90.0, vertical);
-    rotation *= RAD;
+    rotation += mix(0.0, -PI / 2.0, vertical); //-90 degree
 
     float angleSin = sin(rotation);
     float angleCos = cos(rotation);
-    mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
+    mat2 shapeMatrix = mat2(angleCos, -angleSin, angleSin, angleCos);
 
-    vec2 shape = shapeMatrix * mix(aShape0, aShape1, flip);
+    vec2 shape = shapeMatrix * aShape;
 
-    vec2 offset = aOffset;
-    vec2 texCoord = mix(aTexCoord0, aTexCoord1, flip);
+    vec2 offset = aOffset / 10.0; //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
+
 
     shape = shape / glyphSize * textSize;
 

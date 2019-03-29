@@ -22,12 +22,12 @@ function getPackSDFFormat(symbol) {
             {
                 type: Int16Array,
                 width: 2,
-                name: 'aShape0'
+                name: 'aShape'
             },
             {
                 type: Uint16Array,
                 width: 2,
-                name: 'aTexCoord0'
+                name: 'aTexCoord'
             },
             {
                 type: Uint8Array,
@@ -37,22 +37,7 @@ function getPackSDFFormat(symbol) {
             {
                 type: Int16Array,
                 width: 2,
-                name: 'aGlyphOffset0'
-            },
-            {
-                type: Int16Array,
-                width: 2,
-                name: 'aShape1'
-            },
-            {
-                type: Uint16Array,
-                width: 2,
-                name: 'aTexCoord1'
-            },
-            {
-                type: Int16Array,
-                width: 2,
-                name: 'aGlyphOffset1'
+                name: 'aGlyphOffset'
             },
             //aSegment存放了anchor在line的片段序号
             {
@@ -76,12 +61,12 @@ function getPackSDFFormat(symbol) {
             {
                 type: Int16Array,
                 width: 2,
-                name: 'aShape0'
+                name: 'aShape'
             },
             {
                 type: Uint16Array,
                 width: 2,
-                name: 'aTexCoord0'
+                name: 'aTexCoord'
             },
             {
                 type: Uint8Array,
@@ -91,7 +76,7 @@ function getPackSDFFormat(symbol) {
             {
                 type: Int16Array,
                 width: 2,
-                name: 'aGlyphOffset0'
+                name: 'aGlyphOffset'
             }
         ];
     }
@@ -199,12 +184,9 @@ export default class PointPack extends VectorPack {
             const l = quads.length;
             for (let ii = 0; ii < l; ii++) {
                 const quad = quads[ii];
-                const flipQuad = quads[l - 1 - ii];
                 // const y = quad.glyphOffset[1];
                 //把line的端点存到line vertex array里
                 const { tl, tr, bl, br, tex } = quad;
-                const tl1 = flipQuad.tl, tr1 = flipQuad.tr,
-                    bl1 = flipQuad.bl, br1 = flipQuad.br, tex1 = flipQuad.tex;
                 //char's quad if flipped
 
                 data.push(
@@ -213,10 +195,7 @@ export default class PointPack extends VectorPack {
                     tex.x, tex.y + tex.h
                 );
                 if (isText) {
-                    this._fillData(data, alongLine, textCount,
-                        tl1.x, tl1.y,
-                        tex1.x, tex1.y + tex1.h,
-                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
 
                 data.push(
@@ -225,10 +204,7 @@ export default class PointPack extends VectorPack {
                     tex.x + tex.w, tex.y + tex.h
                 );
                 if (isText) {
-                    this._fillData(data, alongLine, textCount,
-                        tr1.x, tr1.y,
-                        tex1.x + tex1.w, tex1.y + tex1.h,
-                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
 
                 data.push(
@@ -237,10 +213,7 @@ export default class PointPack extends VectorPack {
                     tex.x, tex.y
                 );
                 if (isText) {
-                    this._fillData(data, alongLine, textCount,
-                        bl1.x, bl1.y,
-                        tex1.x, tex1.y,
-                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
 
                 data.push(
@@ -249,10 +222,7 @@ export default class PointPack extends VectorPack {
                     tex.x + tex.w, tex.y
                 );
                 if (isText) {
-                    this._fillData(data, alongLine, textCount,
-                        br1.x, br1.y,
-                        tex1.x + tex1.w, tex1.y,
-                        quad.glyphOffset, flipQuad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
 
 
@@ -278,14 +248,10 @@ export default class PointPack extends VectorPack {
      * @param {Number} texx - flip quad's tex coord x
      * @param {Number} texy - flip quad's tex coord y
      */
-    _fillData(data, alongLine, textCount, tx, ty, texx, texy, glyphOffset, flipGlyphOffset, anchor, vertical) {
+    _fillData(data, alongLine, textCount, glyphOffset, anchor, vertical) {
         data.push(textCount);
         data.push(glyphOffset[0], glyphOffset[1]);
         if (alongLine) {
-            data.push(
-                tx, ty, texx, texy
-            );
-            data.push(-flipGlyphOffset[0], flipGlyphOffset[1]);
             const startIndex = anchor.startIndex;
             data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
             data.push(vertical);

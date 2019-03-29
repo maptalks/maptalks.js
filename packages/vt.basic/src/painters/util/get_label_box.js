@@ -37,22 +37,29 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
             4.0);
     }
 
-    // const { aShape0, aRotation, aDxDy } = geoProps;
+    // const { aShape, aRotation, aDxDy } = geoProps;
     // const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
-    const { aShape0, aRotation } = geoProps;
+    const { aShape, aRotation } = geoProps;
     const dxdy = vec2.set(DXDY, symbol['markerDx'] || 0, symbol['markerDy'] || 0);
 
-    let tl = vec2.set(V2_0, aShape0[i * 2], aShape0[i * 2 + 1]),
-        tr = vec2.set(V2_1, aShape0[i * 2 + 2], aShape0[i * 2 + 3]),
-        bl = vec2.set(V2_2, aShape0[i * 2 + 4], aShape0[i * 2 + 5]),
-        br = vec2.set(V2_3, aShape0[i * 2 + 6], aShape0[i * 2 + 7]);
+    let tl = vec2.set(V2_0, aShape[i * 2], aShape[i * 2 + 1]),
+        tr = vec2.set(V2_1, aShape[i * 2 + 2], aShape[i * 2 + 3]),
+        bl = vec2.set(V2_2, aShape[i * 2 + 4], aShape[i * 2 + 5]),
+        br = vec2.set(V2_3, aShape[i * 2 + 6], aShape[i * 2 + 7]);
 
     vec2.scale(tl, tl, textSize / glyphSize);
     vec2.scale(tr, tr, textSize / glyphSize);
     vec2.scale(bl, bl, textSize / glyphSize);
     vec2.scale(br, br, textSize / glyphSize);
 
-    let textRotation = (aRotation ? aRotation.get(i) : 0) + (symbol['textRotation'] || 0);
+    let textRotation = (aRotation ? aRotation.get(i) / 90 * Math.PI / 180 : 0) + (symbol['textRotation'] || 0);
+
+    const mapRotation = !isAlongLine ? map.getBearing() * Math.PI / 180 : 0;
+    const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+    tl = vec2.transformMat2(tl, tl, shapeMatrix);
+    tr = vec2.transformMat2(tr, tr, shapeMatrix);
+    bl = vec2.transformMat2(bl, bl, shapeMatrix);
+    br = vec2.transformMat2(br, br, shapeMatrix);
 
     if (!isAlongLine) {
         //1. 获得shape的tl, tr, bl, 和br
@@ -61,14 +68,6 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
         //   3.1 如果没有pitchWithMap，值是 shapeMatrix * shape
         //   3.2 如果pitchWidthMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
         //4. 将最终计算结果与dxdy相加
-        const mapRotation = map.getBearing() * Math.PI / 180;
-
-        const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
-        tl = vec2.transformMat2(tl, tl, shapeMatrix);
-        tr = vec2.transformMat2(tr, tr, shapeMatrix);
-        bl = vec2.transformMat2(bl, bl, shapeMatrix);
-        br = vec2.transformMat2(br, br, shapeMatrix);
-
 
         vec2.multiply(tl, tl, AXIS_FACTOR);
         vec2.multiply(tr, tr, AXIS_FACTOR);
@@ -90,9 +89,9 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
         //   4.2 如果pitchWidthMap，offset是shapeMatrix * shape * (1.0, -1.0) + offset，和pos相加后，projectPoint后的计算结果
         //5. 将最终计算结果与dxdy相加
 
-        //TODO 根据flip和vertical翻转文字和换成aShape1
         const aOffset = geoProps.aOffset;
-        const offset = vec2.set(OFFSET, aOffset.get(i * 2), aOffset.get(i * 2 + 1));
+        //除以10是因为赋值时, aOffset有精度修正
+        const offset = vec2.set(OFFSET, aOffset.get(i * 2) / 10, aOffset.get(i * 2 + 1) / 10);
         if (uniforms['pitchWithMap'] === 1) {
             vec2.add(tl, tl, offset);
             vec2.add(tr, tr, offset);

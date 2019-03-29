@@ -1,23 +1,19 @@
 import { vec3 } from '@maptalks/gl';
+import { getCharOffset } from './get_char_offset';
 
 const FIRST_POINT = [], LAST_POINT = [];
 
-export function getLabelNormal(aOffset, firstChrIdx, lastChrIdx, aVertical, aspectRatio, planeMatrix) {
+export function getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, aspectRatio, planeMatrix) {
+    const { aVertical } = mesh.geometry.properties;
     const isVertical = aVertical[firstChrIdx];
-
-    //每个position对应了1个aPickingId和2个aOffset，所以需要乘2
-    firstChrIdx *= 2;
-    lastChrIdx *= 2;
 
     //一个feature中包含多个文字的anchor
     //1. 遍历anchor
     //2. 读取anchor第一个文字和最后一个文字的位置
     //3. 计算flip和vertical的值并设置
 
-    //第一个文字的offset位置
-    vec3.set(FIRST_POINT, aOffset.get(firstChrIdx), aOffset.get(firstChrIdx + 1), 0);
-    //最后一个文字的offset位置
-    vec3.set(LAST_POINT, aOffset.get(lastChrIdx - 2), aOffset.get(lastChrIdx - 1), 0);
+    getCharOffset(FIRST_POINT, mesh, textSize, line, firstChrIdx, labelAnchor, scale, false);
+    getCharOffset(LAST_POINT, mesh, textSize, line, lastChrIdx, labelAnchor, scale, false);
     if (planeMatrix) {
         vec3.transformMat3(FIRST_POINT, FIRST_POINT, planeMatrix);
         vec3.transformMat3(LAST_POINT, LAST_POINT, planeMatrix);

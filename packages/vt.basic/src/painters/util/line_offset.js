@@ -68,7 +68,7 @@ export function getLineOffset(out, line, anchor, glyphOffset, dx, dy, segment, l
 
     out[0] = (p.x - anchor[0]) / scale;
     out[1] = (p.y - anchor[1]) / scale;
-    out[2] = segmentAngle * 180 / Math.PI;
+    out[2] = segmentAngle;
 
     return out;
 }

@@ -52,7 +52,7 @@ const DEFAULT_UNIFORMS = {
 const BOX_ELEMENT_COUNT = 6;
 
 // temparary variables used later
-const PROJ_MATRIX = [], LINE_OFFSET = [];
+const PROJ_MATRIX = [], CHAR_OFFSET = [];
 
 const BOX = [], BOX0 = [], BOX1 = [];
 
@@ -113,7 +113,7 @@ export default class TextPainter extends CollisionPainter {
 
         //避免重复创建属性数据
         if (!geometry.properties.aAnchor) {
-            const { aPosition, aShape0 } = geometry.data;
+            const { aPosition, aShape } = geometry.data;
             const vertexCount = aPosition.length / 3;
             geometry.properties.aPickingId = geometry.data.aPickingId;
             geometry.properties.aCount = geometry.data.aCount;
@@ -121,80 +121,51 @@ export default class TextPainter extends CollisionPainter {
 
             if ((enableCollision || isLinePlacement)) {
                 geometry.properties.aAnchor = aPosition;
-                geometry.properties.aShape0 = aShape0;
+                geometry.properties.aShape = aShape;
             }
 
             if (isLinePlacement) {
-                const { aVertical, aSegment, aGlyphOffset0, aGlyphOffset1 } = geometry.data;
-                geometry.properties.aGlyphOffset0 = aGlyphOffset0;
-                geometry.properties.aGlyphOffset1 = aGlyphOffset1;
+                const { aVertical, aSegment, aGlyphOffset } = geometry.data;
+                geometry.properties.aGlyphOffset = aGlyphOffset;
                 geometry.properties.aSegment = aSegment;
                 geometry.properties.aVertical = aVertical;
 
                 delete geometry.data.aSegment;
                 delete geometry.data.aVertical;
-                delete geometry.data.aGlyphOffset0;
-                delete geometry.data.aGlyphOffset1;
+                delete geometry.data.aGlyphOffset;
 
                 let stride = 0;
                 const attributes = {};
                 //TODO 给regl增加type支持，而不是统一为一种类型
                 //https://github.com/regl-project/regl/pull/530
-                if (symbol['textPitchAlignment'] === 'map') {
-                    const shapeBuffer = new ArrayBuffer(vertexCount * 6);
-                    geometry.properties.pitchShape = shapeBuffer;
-                    geometry.addBuffer('pitchShape', shapeBuffer);
-                    //pitch跟随map时，aOffset和aRotation不需要实时计算更新，只需要一次即可
-                    geometry.data.aOffset = {
-                        offset: 0,
-                        size: 2,
-                        stride: 6,
-                        type: 'int16',
-                        buffer: 'pitchShape'
-                    };
-                    geometry.data.aRotation = {
-                        offset: 4,
-                        size: 1,
-                        stride: 6,
-                        type: 'int16',
-                        buffer: 'pitchShape'
-                    };
-                    attributes.aNormal = {
-                        offset: stride++,
-                        size: 1,
-                        type: 'uint8',
-                        buffer: 'mutable'
-                    };
-                } else {
-                    attributes.aOffset = {
-                        offset: stride,
-                        size: 2,
-                        type: 'int16',
-                        buffer: 'mutable'
-                    };
-                    stride += 2 * 2;
-                    attributes.aRotation = {
-                        offset: stride,
-                        size: 1,
-                        type: 'int16',
-                        buffer: 'mutable'
-                    };
-                    stride += 2;
-                    attributes.aNormal = {
-                        offset: stride,
-                        size: 1,
-                        type: 'uint8',
-                        buffer: 'mutable'
-                    };
-                    stride += 1;
-                }
+                attributes.aOffset = {
+                    offset: stride,
+                    size: 2,
+                    type: 'int16',
+                    buffer: 'mutable'
+                };
+                stride += 2 * 2;
+                attributes.aRotation = {
+                    offset: stride,
+                    size: 1,
+                    type: 'int16',
+                    buffer: 'mutable'
+                };
+                stride += 2;
+                attributes.aNormal = {
+                    offset: stride,
+                    size: 1,
+                    type: 'uint8',
+                    buffer: 'mutable'
+                };
+                stride += 1;
 
                 if (enableCollision) {
                     //非line placement时
                     attributes.aOpacity = {
                         offset: stride++,
                         size: 1,
-                        type: 'int16',
+                        type: 'uint8',
                         buffer: 'mutable'
                     };
                 }
@@ -209,7 +180,7 @@ export default class TextPainter extends CollisionPainter {
 
                 const mutable = new ArrayBuffer(vertexCount * stride);
 
-                const buffer = symbol['textPitchAlignment'] === 'map' ? geometry.properties.pitchShape : mutable;
+                const buffer = mutable;
 
                 geometry.properties.aOffset = new DataAccessor(buffer, geometry.data['aOffset']);
                 geometry.properties.aRotation = new DataAccessor(buffer, geometry.data['aRotation']);
@@ -471,13 +442,11 @@ export default class TextPainter extends CollisionPainter {
         }
 
         const uniforms = mesh.material.uniforms;
-        const isPitchWithMap = uniforms['pitchWithMap'] === 1,
-            shouldUpdate = !isPitchWithMap || !geometry.__offsetRotationUpdated;
+        const isPitchWithMap = uniforms['pitchWithMap'] === 1;
 
         const allElements = geometryProps.elements;
 
         //pitchWithMap 而且 offset， rotation都更新过了，才能直接用allElements
-        const elements = shouldUpdate ? [] : allElements;
 
         if (!isPitchWithMap) {
             const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
@@ -486,19 +455,13 @@ export default class TextPainter extends CollisionPainter {
             line = this._projectLine(out, line, matrix, map.width, map.height);
         }
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
-        let visibleElements = enableCollision ? [] : elements;
+        let visibleElements = enableCollision ? [] : allElements;
 
         this._forEachLabel(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null);
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 return;
-            }
-            if (shouldUpdate && (isPitchWithMap || !enableCollision)) {
-                //只有pitchWithMap，且offset,Rotation没有更新时（第一次运行），才需要更新elements
-                for (let i = start; i < end; i++) {
-                    elements.push(allElements[i]);
-                }
             }
             if (!enableCollision) {
                 return;
@@ -512,26 +475,12 @@ export default class TextPainter extends CollisionPainter {
             }
         });
 
-        if (shouldUpdate && isPitchWithMap) {
-            //pitchWithMap 时，elements只需更新一次，替换掉原elements
-            geometryProps.elements = new geometryProps.elemCtor(elements);
-
-            //pitchWithMap 时，aOffset和aRotation只需要更新一次
-            const pitchShape = geometry.properties.pitchShape;
-            geometry.updateBuffer('pitchShape', pitchShape);
-        }
         const mutable = geometry.properties.mutable;
-        // console.log(mutable.byteLength);
-        // console.log(JSON.stringify(map.getView()));
-        this._buffer = mutable;
         geometry.updateBuffer('mutable', mutable);
         if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
-            // geometry.properties.elements = elements;
             geometry.setElements(new geometryProps.elemCtor(visibleElements));
             // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
         }
-        //tag if geometry's aOffset and aRotation is updated
-        geometry.__offsetRotationUpdated = true;
     }
 
     _projectLine(out, line, matrix, width, height) {
@@ -577,77 +526,64 @@ export default class TextPainter extends CollisionPainter {
         const map = this.getMap();
         const geometry = mesh.geometry;
 
-        const uniforms = mesh.material.uniforms;
-        const isPitchWithMap = uniforms['pitchWithMap'] === 1,
-            //should update aOffset / aRotation?
-            shouldUpdate = !isPitchWithMap || !geometry.__offsetRotationUpdated;
-        const aOffset = geometry.properties.aOffset,
-            aRotation = geometry.properties.aRotation,
-            aAnchor = geometry.properties.aAnchor,
-            { aVertical, aNormal } = geometry.properties;
+        const { aOffset, aRotation, aAnchor, aNormal } = geometry.properties;
 
         const isProjected = !planeMatrix;
         const idx = meshElements[start] * 3;
         let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
+        const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
+        vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1], projLabelAnchor[0], projLabelAnchor[1]);
+        if (map.isOffscreen(ANCHOR_BOX, (end - start) / BOX_ELEMENT_COUNT * 6)) {
+            //如果anchor在屏幕外，则直接不可见，省略掉后续逻辑
+            return false;
+        }
         if (isProjected) {
-            labelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
-            vec4.set(ANCHOR_BOX, labelAnchor[0], labelAnchor[1], labelAnchor[0], labelAnchor[1]);
-            if (map.isOffscreen(ANCHOR_BOX)) {
-                // debugger
-                return false;
-            }
+            labelAnchor = projLabelAnchor;
         }
 
         const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'][0];
 
         let visible = true;
 
-        if (visible) {
-            //updateNormal
-            //normal decides whether to flip and vertical
-            const firstChrIdx = meshElements[start],
-                lastChrIdx = meshElements[end - 1];
-            // debugger
-            this._updateNormal(aNormal, aOffset, aVertical, firstChrIdx, lastChrIdx, planeMatrix);
-        }
+        const textSize = mesh.properties.textSize;
+
+        //updateNormal
+        //normal decides whether to flip and vertical
+        const firstChrIdx = meshElements[start],
+            lastChrIdx = meshElements[end - 1];
+        // debugger
+        this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix);
 
         //if planeMatrix is null, line is in tile coordinates
         // line = planeMatrix ? line.line : line;
-        if (shouldUpdate) {
-            const textSize = mesh.properties.textSize;
-            //array to store current text's elements
-            for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
-                const vertexStart = meshElements[j];
-                const offset = getCharOffset(LINE_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale);
-                if (!offset) {
-                    //remove whole text if any char is missed
-                    visible = false;
-                    break;
-                }
-                for (let ii = 0; ii < 4; ii++) {
-                    // aOffset.set(2 * (vertexStart + ii), offset[0]);
-                    // aOffset.set(2 * (vertexStart + ii) + 1, offset[1]);
-                    // aRotation.set(vertexStart + ii, offset[2]);
-                    aOffset.set(2 * (vertexStart + ii), offset[0]);
-                    aOffset.set(2 * (vertexStart + ii) + 1, offset[1]);
-                    aRotation.set(vertexStart + ii, offset[2] * 91);
-                }
-                //every character has 4 vertice, and 6 indexes
-                //j, j + 1, j + 2 is the left-top triangle
-                //j + 1, j + 2, j + 3 is the right-bottom triangle
-                // labelElements.push(meshElements[j], meshElements[j + 1], meshElements[j + 2]);
-                // labelElements.push(meshElements[j + 3], meshElements[j + 4], meshElements[j + 5]);
+        const flip = Math.floor(aNormal.get(meshElements[start]) / 2);
+        //array to store current text's elements
+        for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
+            //every character has 4 vertice, and 6 indexes
+            const vertexStart = meshElements[j];
+            const offset = getCharOffset(CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
+            if (!offset) {
+                //remove whole text if any char is missed
+                visible = false;
+                break;
+            }
+            for (let ii = 0; ii < 4; ii++) {
+                //*10 是为了保留小数点做的精度修正
+                aOffset.set(2 * (vertexStart + ii), offset[0] * 10);
+                aOffset.set(2 * (vertexStart + ii) + 1, offset[1] * 10);
+                //*64 是为了提升旋转角的精度
+                aRotation.set(vertexStart + ii, offset[2] * 180 / Math.PI * 64);
             }
         }
-
 
         return visible;
     }
 
-    _updateNormal(aNormal, aOffset, aVertical, firstChrIdx, lastChrIdx, planeMatrix) {
-        const map = this.getMap(),
-            aspectRatio = map.width / map.height;
-        const normal = getLabelNormal(aOffset, firstChrIdx, lastChrIdx, aVertical, aspectRatio, planeMatrix);
+    _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix) {
+        const { aNormal } = mesh.geometry.properties;
+        const onlyOne = lastChrIdx - firstChrIdx <= 3;
+        const map = this.getMap();
+        const normal = onlyOne ? 0 : getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, map.width / map.height, planeMatrix);
         //更新normal
         for (let i = firstChrIdx; i <= lastChrIdx; i++) {
             aNormal.set(i, normal);

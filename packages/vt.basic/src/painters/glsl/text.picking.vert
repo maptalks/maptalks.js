@@ -1,8 +1,8 @@
 #define RAD 0.0174532925
 
 attribute vec3 aPosition;
-attribute vec2 aShape0;
-attribute vec2 aTexCoord0;
+attribute vec2 aShape;
+attribute vec2 aTexCoord;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
@@ -30,8 +30,8 @@ uniform float tileRatio; //EXTENT / tileSize
 #include <fbo_picking_vert>
 
 void main() {
-    vec2 shape = aShape0;
-    vec2 texCoord = aTexCoord0;
+    vec2 shape = aShape;
+    vec2 texCoord = aTexCoord;
 
     gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
     float distance = gl_Position.w;
