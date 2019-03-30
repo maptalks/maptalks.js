@@ -36,7 +36,7 @@ const SETTERS = {
 
 export default class DataAccessor {
     constructor(arraybuffer, { type, size, offset, stride }) {
-        this._buffer = arraybuffer;
+        this.arraybuffer = arraybuffer;
         this._byteLength = TYPE_BYTES[type];
         this._size = size;
         this._offset = offset;

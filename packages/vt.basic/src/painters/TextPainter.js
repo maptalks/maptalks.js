@@ -1,4 +1,4 @@
-import { vec3, vec4 } from '@maptalks/gl';
+import { vec2, vec3, vec4 } from '@maptalks/gl';
 import CollisionPainter from './CollisionPainter';
 import { TYPE_BYTES, isNil, evaluate } from '../Util';
 import { reshader, mat4 } from '@maptalks/gl';
@@ -14,21 +14,22 @@ import pickingVert from './glsl/text.picking.vert';
 import linePickingVert from './glsl/text.line.picking.vert';
 import DataAccessor from './util/DataAccessor';
 import { projectPoint } from './util/projection';
+import { getShapeMatrix } from './util/box_util';
 
 const shaderFilter0 = mesh => {
-    return mesh.uniforms['level'] === 0 && !mesh.geometry.properties.aNormal;
+    return mesh.uniforms['level'] === 0 && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
 };
 
 const shaderFilterN = mesh => {
-    return mesh.uniforms['level'] > 0 && !mesh.geometry.properties.aNormal;
+    return mesh.uniforms['level'] > 0 && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
 };
 
 const shaderLineFilter0 = mesh => {
-    return mesh.uniforms['level'] === 0 && mesh.geometry.properties.aNormal;
+    return mesh.uniforms['level'] === 0 && mesh.geometry.properties.symbol['textPlacement'] === 'line';
 };
 
 const shaderLineFilterN = mesh => {
-    return mesh.uniforms['level'] > 0 && mesh.geometry.properties.aNormal;
+    return mesh.uniforms['level'] > 0 && mesh.geometry.properties.symbol['textPlacement'] === 'line';
 };
 
 const DEFAULT_UNIFORMS = {
@@ -58,19 +59,31 @@ const BOX = [], BOX0 = [], BOX1 = [];
 
 const ANCHOR = [], PROJ_ANCHOR = [], ANCHOR_BOX = [];
 
+const MAT2 = [];
+
+const SHAPE = [], OFFSET = [], AXIS_FACTOR = [1, -1];
+
+const INT160 = new Int8Array(1), INT161 = new Int8Array(1);
+
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
         super(regl, layer, sceneConfig, pluginIndex);
         this.propAllowOverlap = 'textAllowOverlap';
         this.propIgnorePlacement = 'textIgnorePlacement';
-        this.layer.getRenderer().canvas.addEventListener('webglcontextlost', () => {
+        this.layer.getRenderer().canvas.addEventListener('webglcontextlost', e => {
             // console.log(JSON.stringify(layer.getMap().getView()));
-            // // const arr = new Int16Array(this._buffer);
+            // const arr = new Int16Array(this._buffer);
+            // const arr2 = [];
+            // for (let i = 0; i < arr.length; i += 2) {
+            //     arr2.push('[' + arr[i] + ',' + arr[i + 1] + ']');
+            // }
+            // console.log(arr2.join());
             // // const rotations = new Int16Array(arr.length / 4);
             // // for (let i = 0; i < rotations.length; i++) {
             // //     rotations[i] = arr[i * 4 + 2] / 91;
             // // }
             // console.log(this._rotations.join());
+            e.preventDefault();
 
         }, false);
     }
@@ -145,20 +158,6 @@ export default class TextPainter extends CollisionPainter {
                     buffer: 'mutable'
                 };
                 stride += 2 * 2;
-                attributes.aRotation = {
-                    offset: stride,
-                    size: 1,
-                    type: 'int16',
-                    buffer: 'mutable'
-                };
-                stride += 2;
-                attributes.aNormal = {
-                    offset: stride,
-                    size: 1,
-                    type: 'uint8',
-                    buffer: 'mutable'
-                };
-                stride += 1;
 
                 if (enableCollision) {
                     //非line placement时
@@ -176,16 +175,13 @@ export default class TextPainter extends CollisionPainter {
                     geometry.data[p] = attributes[p];
                     geometry.data[p].stride = stride;
                 }
-                // geometry.properties.aOffset = geometry.data.aOffset = new Uint8Array(vertexCount * 2);
 
                 const mutable = new ArrayBuffer(vertexCount * stride);
+                mutable._dirty = true;
 
                 const buffer = mutable;
 
                 geometry.properties.aOffset = new DataAccessor(buffer, geometry.data['aOffset']);
-                geometry.properties.aRotation = new DataAccessor(buffer, geometry.data['aRotation']);
-                //aNormal = [isFlip * 2 + isVertical, ...];
-                geometry.properties.aNormal = new DataAccessor(mutable, geometry.data['aNormal']);
                 if (enableCollision) {
                     geometry.properties.aOpacity = new DataAccessor(mutable, geometry.data['aOpacity']);
                 }
@@ -358,6 +354,18 @@ export default class TextPainter extends CollisionPainter {
         this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
     }
 
+    startFrame(...args) {
+        super.startFrame(...args);
+        this._counter = 0;
+    }
+
+    render(...args) {
+        super.render(...args);
+        // if (this._counter > 0) {
+        //     console.log('一共更新了', this._counter);
+        // }
+    }
+
     /**
      * update flip and vertical data for each text
      */
@@ -392,8 +400,20 @@ export default class TextPainter extends CollisionPainter {
         // console.log('meshes数量', meshes.length, '字符数量', meshes.reduce((v, mesh) => {
         //     return v + mesh.geometry.count / BOX_ELEMENT_COUNT;
         // }, 0));
+        // console.log(meshes.map(m => m.properties.meshKey));
+        const keys =  [
+            // "16,-3447296,-2084864,512,512,vt-0", "16,-3447296,-2085376,512,512,vt-0", "16,-3446784,-2084864,512,512,vt-0",
+            // "16,-3447808,-2084864,512,512,vt-0",
+
+            // "16,-3446784,-2085376,512,512,vt-0",
+            "16,-3447808,-2085376,512,512,vt-0",
+
+        ];
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
+            // if (keys.indexOf(mesh.properties.meshKey) === -1) {
+            //     continue;
+            // }
             if (mesh.properties.isHalo || !mesh.isValid() || mesh.properties.level > 0 && this.shouldIgnoreBgTiles()) {
                 //halo和正文共享的同一个geometry，无需更新
                 continue;
@@ -405,7 +425,7 @@ export default class TextPainter extends CollisionPainter {
             // const idx = geometry.properties.aPickingId[0];
             // console.log(`图层:${geometry.properties.features[idx].feature.layer},数据数量：${geometry.count / BOX_ELEMENT_COUNT}`);
 
-            if (geometry.properties.aNormal) {
+            if (geometry.properties.symbol['textPlacement'] === 'line') {
                 //line placement
                 if (!geometry.properties.line) {
                     continue;
@@ -441,6 +461,8 @@ export default class TextPainter extends CollisionPainter {
             return;
         }
 
+        // this._counter++;
+
         const uniforms = mesh.material.uniforms;
         const isPitchWithMap = uniforms['pitchWithMap'] === 1;
 
@@ -458,6 +480,9 @@ export default class TextPainter extends CollisionPainter {
         let visibleElements = enableCollision ? [] : allElements;
 
         this._forEachLabel(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
+            // if (labelIndex < 10) { //4
+            //     return;
+            // }
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null);
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
@@ -476,7 +501,12 @@ export default class TextPainter extends CollisionPainter {
         });
 
         const mutable = geometry.properties.mutable;
+        this._buffer = mutable;
+        // if (mutable._dirty && !geometry.isDisposed()) {
+        // this._counter += mutable.byteLength;
         geometry.updateBuffer('mutable', mutable);
+        // mutable._dirty = false;
+        // }
         if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
             geometry.setElements(new geometryProps.elemCtor(visibleElements));
             // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
@@ -523,17 +553,22 @@ export default class TextPainter extends CollisionPainter {
 
     // start and end is the start and end index of a label
     _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix) {
+        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         const map = this.getMap();
         const geometry = mesh.geometry;
 
-        const { aOffset, aRotation, aAnchor, aNormal } = geometry.properties;
+        const { aShape, aOffset, aAnchor } = geometry.properties;
 
         const isProjected = !planeMatrix;
         const idx = meshElements[start] * 3;
         let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
         const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
         vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1], projLabelAnchor[0], projLabelAnchor[1]);
-        if (map.isOffscreen(ANCHOR_BOX, (end - start) / BOX_ELEMENT_COUNT * 6)) {
+        if (map.isOffscreen(ANCHOR_BOX)) {
+            if (!enableCollision) {
+                resetOffset(aOffset, meshElements, start, end);
+            }
+
             //如果anchor在屏幕外，则直接不可见，省略掉后续逻辑
             return false;
         }
@@ -546,17 +581,73 @@ export default class TextPainter extends CollisionPainter {
         let visible = true;
 
         const textSize = mesh.properties.textSize;
+        const glyphSize = 24;
 
         //updateNormal
         //normal decides whether to flip and vertical
         const firstChrIdx = meshElements[start],
             lastChrIdx = meshElements[end - 1];
         // debugger
-        this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix);
+        const normal = this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix);
 
+        const uniforms = mesh.material.uniforms;
+        const isPitchWithMap = uniforms['pitchWithMap'] === 1;
+        // const canvasSize = [1 / map.width, 1 / map.height];
         //if planeMatrix is null, line is in tile coordinates
         // line = planeMatrix ? line.line : line;
-        const flip = Math.floor(aNormal.get(meshElements[start]) / 2);
+        const flip = Math.floor(normal / 2);
+        const vertical = normal % 2;
+
+        //以下在js中实现了 text.line.vert 中的原有的shape和offset算法：
+        /**
+        void main() {
+            vec4 pos = projViewModelMatrix * vec4(aPosition, 1.0);
+            float distance = pos.w;
+
+            float cameraScale = distance / cameraToCenterDistance;
+
+            float distanceRatio = (1.0 - cameraToCenterDistance / distance) * textPerspectiveRatio;
+            //通过distance动态调整大小
+            float perspectiveRatio = clamp(
+                0.5 + 0.5 * (1.0 - distanceRatio),
+                0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
+                4.0);
+
+            //精度修正：js中用int16存放旋转角，会丢失小数点，乘以64能在int16范围内尽量保留小数点后尽量多的位数
+            float rotation = aRotation / 64.0 * RAD + textRotation;
+            float flip = float(int(aNormal) / 2);
+            float vertical = mod(aNormal, 2.0);
+            rotation += mix(0.0, -PI / 2.0, vertical); //-90 degree
+
+            float angleSin = sin(rotation);
+            float angleCos = cos(rotation);
+            mat2 shapeMatrix = mat2(angleCos, -angleSin, angleSin, angleCos);
+
+            vec2 shape = shapeMatrix * aShape;
+
+            vec2 offset = aOffset / 10.0; //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
+            vec2 texCoord = aTexCoord;
+
+            shape = shape / glyphSize * textSize;
+
+            if (pitchWithMap == 1.0) {
+                offset = shape * vec2(1.0, -1.0) + offset;
+                //乘以cameraScale可以抵消相机近大远小的透视效果
+                gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+                vGammaScale = cameraScale + mapPitch / 4.0;
+            } else {
+                offset = (shape + offset * vec2(1.0, -1.0)) * 2.0 / canvasSize;
+                pos.xy += offset * perspectiveRatio * pos.w;
+                gl_Position = pos;
+                //当textPerspective:
+                //值为1.0时: vGammaScale用cameraScale动态计算
+                //值为0.0时: vGammaScale固定为1.2
+                vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio);
+            }
+
+            gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
+         */
+
         //array to store current text's elements
         for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
             //every character has 4 vertice, and 6 indexes
@@ -565,14 +656,49 @@ export default class TextPainter extends CollisionPainter {
             if (!offset) {
                 //remove whole text if any char is missed
                 visible = false;
+                if (!enableCollision) {
+                    resetOffset(aOffset, meshElements, start, end);
+                }
                 break;
             }
+
+            let rotation = offset[2];
+            if (vertical) {
+                rotation += Math.PI / 2;
+            }
+
+            const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+
             for (let ii = 0; ii < 4; ii++) {
+                vec2.set(SHAPE, aShape[2 * (vertexStart + ii)], aShape[2 * (vertexStart + ii) + 1]);
+                vec2.scale(SHAPE, SHAPE, textSize / glyphSize);
+                vec2.transformMat2(SHAPE, SHAPE, shapeMatrix);
+
+                if (isPitchWithMap) {
+                    vec2.multiply(SHAPE, SHAPE, AXIS_FACTOR);
+                    vec2.add(OFFSET, SHAPE, offset);
+                } else {
+                    vec2.multiply(OFFSET, offset, AXIS_FACTOR);
+                    // vec2.set(OFFSET, 0, OFFSET[1], 0);
+                    vec2.add(OFFSET, SHAPE, OFFSET);
+                }
+
+                // OFFSET[0] /= 2;
+                // OFFSET[1] /= 2;
+
+                // INT160[0] = OFFSET[0];
+                // INT161[0] = OFFSET[1];
+
                 //*10 是为了保留小数点做的精度修正
-                aOffset.set(2 * (vertexStart + ii), offset[0] * 10);
-                aOffset.set(2 * (vertexStart + ii) + 1, offset[1] * 10);
+                // if (aOffset.get(2 * (vertexStart + ii)) !== INT160[0] ||
+                //     aOffset.get(2 * (vertexStart + ii) + 1) !== INT161[0]) {
+                //     aOffset.arraybuffer._dirty = true;
+                aOffset.set(2 * (vertexStart + ii), OFFSET[0] * 10);
+                aOffset.set(2 * (vertexStart + ii) + 1, OFFSET[1] * 10);
+                // }
+
                 //*64 是为了提升旋转角的精度
-                aRotation.set(vertexStart + ii, offset[2] * 180 / Math.PI * 64);
+                // aRotation.set(vertexStart + ii, offset[2] * 180 / Math.PI * 64);
             }
         }
 
@@ -580,14 +706,11 @@ export default class TextPainter extends CollisionPainter {
     }
 
     _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix) {
-        const { aNormal } = mesh.geometry.properties;
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
         const map = this.getMap();
         const normal = onlyOne ? 0 : getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, map.width / map.height, planeMatrix);
-        //更新normal
-        for (let i = firstChrIdx; i <= lastChrIdx; i++) {
-            aNormal.set(i, normal);
-        }
+
+        return normal;
     }
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
@@ -721,6 +844,7 @@ export default class TextPainter extends CollisionPainter {
             'textDy',
             'textRotation',
             'cameraToCenterDistance',
+            'viewMatrix',
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
@@ -793,7 +917,7 @@ export default class TextPainter extends CollisionPainter {
                 this.pickingFBO
             );
             this.picking.filter = mesh => {
-                return !mesh.geometry.properties.aNormal;
+                return mesh.geometry.properties.symbol['textPlacement'] !== 'line';
             };
 
             this._linePicking = new reshader.FBORayPicking(
@@ -805,7 +929,7 @@ export default class TextPainter extends CollisionPainter {
                 this.pickingFBO
             );
             this._linePicking.filter = mesh => {
-                return !!mesh.geometry.properties.aNormal;
+                return mesh.geometry.properties.symbol['textPlacement'] === 'line';
             };
         }
     }
@@ -888,6 +1012,7 @@ export default class TextPainter extends CollisionPainter {
             mapPitch: map.getPitch() * Math.PI / 180,
             mapRotation: map.getBearing() * Math.PI / 180,
             projViewMatrix,
+            viewMatrix: map.viewMatrix,
             cameraToCenterDistance, canvasSize,
             glyphSize: 24,
             // gammaScale : 0.64,
@@ -938,4 +1063,15 @@ function bytesAlign(attributes) {
         stride += (max - stride % max);
     }
     return stride;
+}
+
+function resetOffset(aOffset, meshElements, start, end) {
+    for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
+        //every character has 4 vertice, and 6 indexes
+        const vertexStart = meshElements[j];
+        for (let ii = 0; ii < 4; ii++) {
+            aOffset.set(2 * (vertexStart + ii), 0);
+            aOffset.set(2 * (vertexStart + ii) + 1, 0);
+        }
+    }
 }
