@@ -355,18 +355,6 @@ export default class TextPainter extends CollisionPainter {
         this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
     }
 
-    startFrame(...args) {
-        super.startFrame(...args);
-        this._counter = 0;
-    }
-
-    render(...args) {
-        super.render(...args);
-        // if (this._counter > 0) {
-        //     console.log('一共更新了', this._counter);
-        // }
-    }
-
     /**
      * update flip and vertical data for each text
      */

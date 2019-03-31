@@ -29,8 +29,8 @@ uniform float tileRatio; //EXTENT / tileSize
 #include <fbo_picking_vert>
 
 void main() {
-    vec4 pos = projViewModelMatrix * vec4(aPosition, 1.0);
-    float distance = pos.w;
+        gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+    float distance = gl_Position.w;
 
     float cameraScale = distance / cameraToCenterDistance;
 
@@ -41,31 +41,13 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    //精度修正：js中用int16存放旋转角，会丢失小数点，乘以64能在int16范围内尽量保留小数点后尽量多的位数
-    float rotation = aRotation / 64.0 * RAD + textRotation;
-    float flip = float(int(aNormal) / 2);
-    float vertical = mod(aNormal, 2.0);
-    rotation += mix(0.0, -PI / 2.0, vertical); //-90 degree
-
-    float angleSin = sin(rotation);
-    float angleCos = cos(rotation);
-    mat2 shapeMatrix = mat2(angleCos, -angleSin, angleSin, angleCos);
-
-    vec2 shape = shapeMatrix * aShape;
-
     vec2 offset = aOffset / 10.0; //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
 
-
-    shape = shape / glyphSize * textSize;
-
     if (pitchWithMap == 1.0) {
-        offset = shape * vec2(1.0, -1.0) + offset;
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     } else {
-        offset = (shape + offset * vec2(1.0, -1.0)) * 2.0 / canvasSize;
-        pos.xy += offset * perspectiveRatio * pos.w;
-        gl_Position = pos;
+        gl_Position.xy += offset * 2.0 / canvasSize * perspectiveRatio * distance;
     }
 
     gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
