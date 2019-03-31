@@ -27,7 +27,8 @@ const defaultOptions = {
     //zooming或zoom fading时，每个瓦片最多能绘制的box(icon或text)数量
     boxLimitOnZoomout: 10,
     background: [0, 0, 0, 0],
-    maxCacheSize: 128
+    maxCacheSize: 128,
+    antialias: false
 };
 
 /**

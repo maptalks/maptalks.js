@@ -113,7 +113,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const attributes = layer.options.glOptions || {
             alpha: true,
             depth: true,
-            antialias : false
+            antialias : this.layer.options['antialias']
             // premultipliedAlpha : false
         };
         attributes.preserveDrawingBuffer = true;
