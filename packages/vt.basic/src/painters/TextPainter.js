@@ -16,16 +16,6 @@ import DataAccessor from './util/DataAccessor';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 
-//会崩溃的aOffset值
-const ERROR_OFFSETS = [-175,-373,-118,-297,-304,-279,-247,-202,-136,-321,-80,-244,-265,-226,-209,-150,-98,-269,-41,-192,-227,-174,-170,-97,-59,-216,-3,-140,-188,-122,-132,-45,-21,-164,34,-87,-150,-69,-94,7,17,-111,73,-35,-111,-17,-55,59,52,-63,108,13,-76,31,-20,107,91,-11,147,65,-37,83,18,160,129,41,185,117,0,136,56,212,168,93,224,170,39,188,95,264,206,146,262,222,77,240,133,317,245,198,301,275,116,293,172,369,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-177,-372,-120,-296,-305,-277,-249,-201,-138,-320,-81,-244,-266,-225,-210,-149,-99,-268,-43,-192,-228,-173,-171,-96,-60,-216,-4,-140,-189,-120,-132,-44,-22,-164,34,-87,-150,-68,-94,7,16,-111,73,-35,-111,-16,-55,59,52,-63,108,12,-76,31,-19,107,91,-11,147,64,-37,83,19,160,129,40,186,116,1,136,58,212,168,92,225,169,40,188,96,264,207,144,263,221,78,240,135,316,246,197,302,273,117,292,174,368,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-321,-15,-228,-36,-286,140,-193,119,-255,-31,-162,-49,-224,125,-131,107,-192,-43,-98,-62,-161,113,-67,94,-128,-56,-35,-74,-97,100,-4,82,-64,-68,28,-87,-33,88,59,69,0,-81,92,-99,30,75,123,57,63,-93,156,-112,93,63,187,44,126,-106,220,-124,157,50,250,32,190,-118,283,-137,221,38,314,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-console.log(ERROR_OFFSETS.map(d => d / 10));
-//会崩溃
-ERROR_OFFSETS.fill(0, 0, 32);
-ERROR_OFFSETS.fill(0, 344);
-
-console.log(ERROR_OFFSETS.slice(32, 40));
-//注释掉此行就会崩溃
-ERROR_OFFSETS.fill(0, 32, 40);
 
 const shaderFilter0 = mesh => {
     return mesh.uniforms['level'] === 0 && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
@@ -74,29 +64,29 @@ const MAT2 = [];
 
 const SHAPE = [], OFFSET = [], AXIS_FACTOR = [1, -1];
 
-const INT160 = new Int8Array(1), INT161 = new Int8Array(1);
+const INT16 = new Int8Array(2);
 
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
         super(regl, layer, sceneConfig, pluginIndex);
         this.propAllowOverlap = 'textAllowOverlap';
         this.propIgnorePlacement = 'textIgnorePlacement';
-        this.layer.getRenderer().canvas.addEventListener('webglcontextlost', e => {
-            console.log(JSON.stringify(layer.getMap().getView()));
-            const arr = new Int16Array(this._buffer);
-            const arr2 = [];
-            for (let i = 0; i < arr.length; i += 2) {
-                arr2.push('[' + arr[i] + ',' + arr[i + 1] + ']');
-            }
-            console.log(arr2.join());
-            // // const rotations = new Int16Array(arr.length / 4);
-            // // for (let i = 0; i < rotations.length; i++) {
-            // //     rotations[i] = arr[i * 4 + 2] / 91;
-            // // }
-            // console.log(this._rotations.join());
-            e.preventDefault();
+        // this.layer.getRenderer().canvas.addEventListener('webglcontextlost', e => {
+        //     console.log(JSON.stringify(layer.getMap().getView()));
+        //     const arr = new Int16Array(this._buffer);
+        //     const arr2 = [];
+        //     for (let i = 0; i < arr.length; i += 2) {
+        //         arr2.push('[' + arr[i] + ',' + arr[i + 1] + ']');
+        //     }
+        //     console.log(arr2.join());
+        //     // // const rotations = new Int16Array(arr.length / 4);
+        //     // // for (let i = 0; i < rotations.length; i++) {
+        //     // //     rotations[i] = arr[i * 4 + 2] / 91;
+        //     // // }
+        //     // console.log(this._rotations.join());
+        //     e.preventDefault();
 
-        }, false);
+        // }, false);
     }
 
     createGeometry(glData) {
@@ -412,19 +402,8 @@ export default class TextPainter extends CollisionPainter {
         //     return v + mesh.geometry.count / BOX_ELEMENT_COUNT;
         // }, 0));
         // console.log(meshes.map(m => m.properties.meshKey));
-        const keys = [
-            // "16,-3447296,-2084864,512,512,vt-0",
-            // "16,-3447296,-2085376,512,512,vt-0",
-
-            // "16,-3447808,-2084864,512,512,vt-0",
-            "16,-3447808,-2085376,512,512,vt-0"
-
-        ];
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
-            if (keys.indexOf(mesh.properties.meshKey) === -1) {
-                continue;
-            }
             if (mesh.properties.isHalo || !mesh.isValid() || mesh.properties.level > 0 && this.shouldIgnoreBgTiles()) {
                 //halo和正文共享的同一个geometry，无需更新
                 continue;
@@ -512,12 +491,12 @@ export default class TextPainter extends CollisionPainter {
         });
 
         const mutable = geometry.properties.mutable;
-        this._buffer = mutable;
-        // if (mutable._dirty && !geometry.isDisposed()) {
+        // this._buffer = mutable;
+        if (mutable._dirty && !geometry.isDisposed()) {
         // this._counter += mutable.byteLength;
-        geometry.updateBuffer('mutable', mutable);
-        // mutable._dirty = false;
-        // }
+            geometry.updateBuffer('mutable', mutable);
+            mutable._dirty = false;
+        }
         if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
             geometry.setElements(new geometryProps.elemCtor(visibleElements));
             // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
@@ -596,16 +575,13 @@ export default class TextPainter extends CollisionPainter {
 
         //updateNormal
         //normal decides whether to flip and vertical
-        const firstChrIdx = meshElements[start],
-            lastChrIdx = meshElements[end - 1];
+        const firstChrIdx = meshElements[start];
+        const lastChrIdx = meshElements[end - 1];
         // debugger
         const normal = this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix);
 
         const uniforms = mesh.material.uniforms;
         const isPitchWithMap = uniforms['pitchWithMap'] === 1;
-        // const canvasSize = [1 / map.width, 1 / map.height];
-        //if planeMatrix is null, line is in tile coordinates
-        // line = planeMatrix ? line.line : line;
         const flip = Math.floor(normal / 2);
         const vertical = normal % 2;
 
@@ -675,7 +651,7 @@ export default class TextPainter extends CollisionPainter {
 
             let rotation = offset[2];
             if (vertical) {
-                rotation += Math.PI / 2;
+                rotation -= Math.PI / 2;
             }
 
             const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
@@ -694,27 +670,20 @@ export default class TextPainter extends CollisionPainter {
                     vec2.add(OFFSET, SHAPE, OFFSET);
                 }
 
-                // OFFSET[0] /= 2;
-                // OFFSET[1] /= 2;
 
-                // INT160[0] = OFFSET[0];
-                // INT161[0] = OFFSET[1];
+                INT16[0] = OFFSET[0] * 10;
+                INT16[1] = OFFSET[1] * 10;
 
                 //*10 是为了保留小数点做的精度修正
-                // if (aOffset.get(2 * (vertexStart + ii)) !== INT160[0] ||
-                //     aOffset.get(2 * (vertexStart + ii) + 1) !== INT161[0]) {
-                //     aOffset.arraybuffer._dirty = true;
+                if (aOffset.get(2 * (vertexStart + ii)) !== INT16[0] ||
+                    aOffset.get(2 * (vertexStart + ii) + 1) !== INT16[1]) {
+                    aOffset.arraybuffer._dirty = true;
+                    //乘以十是为了提升shader中offset的精度
+                    aOffset.set(2 * (vertexStart + ii), OFFSET[0] * 10);
+                    aOffset.set(2 * (vertexStart + ii) + 1, OFFSET[1] * 10);
+                }
 
 
-                // aOffset.set(2 * (vertexStart + ii), OFFSET[0] * 10);
-                // aOffset.set(2 * (vertexStart + ii) + 1, OFFSET[1] * 10);
-
-                aOffset.set(2 * (vertexStart + ii), ERROR_OFFSETS[2 * (vertexStart + ii)]);
-                aOffset.set(2 * (vertexStart + ii) + 1, ERROR_OFFSETS[2 * (vertexStart + ii) + 1]);
-                // }
-
-                //*64 是为了提升旋转角的精度
-                // aRotation.set(vertexStart + ii, offset[2] * 180 / Math.PI * 64);
             }
         }
 
@@ -860,7 +829,6 @@ export default class TextPainter extends CollisionPainter {
             'textDy',
             'textRotation',
             'cameraToCenterDistance',
-            'viewMatrix',
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
@@ -1086,8 +1054,12 @@ function resetOffset(aOffset, meshElements, start, end) {
         //every character has 4 vertice, and 6 indexes
         const vertexStart = meshElements[j];
         for (let ii = 0; ii < 4; ii++) {
-            aOffset.set(2 * (vertexStart + ii), 0);
-            aOffset.set(2 * (vertexStart + ii) + 1, 0);
+            if (aOffset.get(2 * (vertexStart + ii)) ||
+                aOffset.get(2 * (vertexStart + ii) + 1)) {
+                aOffset.arraybuffer._dirty = true;
+                aOffset.set(2 * (vertexStart + ii), 0);
+                aOffset.set(2 * (vertexStart + ii) + 1, 0);
+            }
         }
     }
 }
