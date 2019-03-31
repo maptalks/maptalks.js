@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4 } from '@maptalks/gl';
+import { vec2, vec3, vec4, mat2 } from '@maptalks/gl';
 import CollisionPainter from './CollisionPainter';
 import { TYPE_BYTES, isNil, evaluate } from '../Util';
 import { reshader, mat4 } from '@maptalks/gl';
@@ -55,6 +55,8 @@ const BOX_ELEMENT_COUNT = 6;
 
 // temparary variables used later
 const PROJ_MATRIX = [], CHAR_OFFSET = [];
+
+const PLANE_MATRIX = [];
 
 const BOX = [], BOX0 = [], BOX1 = [];
 
@@ -365,15 +367,7 @@ export default class TextPainter extends CollisionPainter {
         }
         const map = this.getMap();
         const bearing = -map.getBearing() * Math.PI / 180;
-        const angleCos = Math.cos(bearing),
-            angleSin = Math.sin(bearing),
-            pitchCos = Math.cos(0),
-            pitchSin = Math.sin(0);
-        const planeMatrix = [
-            angleCos, -1.0 * angleSin * pitchCos, angleSin * pitchSin,
-            angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
-            0.0, pitchSin, pitchCos
-        ];
+        const planeMatrix = mat2.fromRotation(PLANE_MATRIX, bearing);
         const fn = (elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex) => {
             // debugger
             const boxCount = (end - start) / 6;

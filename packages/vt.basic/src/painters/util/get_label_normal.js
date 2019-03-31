@@ -1,4 +1,4 @@
-import { vec3 } from '@maptalks/gl';
+import { vec2 } from '@maptalks/gl';
 import { getCharOffset } from './get_char_offset';
 
 const FIRST_POINT = [], LAST_POINT = [];
@@ -15,8 +15,8 @@ export function getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, la
     getCharOffset(FIRST_POINT, mesh, textSize, line, firstChrIdx, labelAnchor, scale, false);
     getCharOffset(LAST_POINT, mesh, textSize, line, lastChrIdx, labelAnchor, scale, false);
     if (planeMatrix) {
-        vec3.transformMat3(FIRST_POINT, FIRST_POINT, planeMatrix);
-        vec3.transformMat3(LAST_POINT, LAST_POINT, planeMatrix);
+        vec2.transformMat2(FIRST_POINT, FIRST_POINT, planeMatrix);
+        vec2.transformMat2(LAST_POINT, LAST_POINT, planeMatrix);
     }
     let vertical, flip;
     if (!isVertical) {
@@ -28,12 +28,7 @@ export function getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, la
         flip = FIRST_POINT[0] > LAST_POINT[0] ? 1 : 0;
         if (rise > run) {
             vertical = 1;
-            if (planeMatrix) {
-                //in tile coordinate system
-                flip = FIRST_POINT[1] > LAST_POINT[1] ? 0 : 1;
-            } else {
-                flip = FIRST_POINT[1] < LAST_POINT[1] ? 0 : 1;
-            }
+            flip = FIRST_POINT[1] < LAST_POINT[1] ? 0 : 1;
         } else {
             vertical = 0;
         }
