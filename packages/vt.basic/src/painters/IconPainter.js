@@ -58,10 +58,7 @@ class IconPainter extends CollisionPainter {
                 usage: 'dynamic',
                 data: aOpacity
             };
-            geometry.properties.aOpacity = {
-                usage: 'dynamic',
-                data: new Uint8Array(vertexCount)
-            };
+            geometry.properties.aOpacity = new Uint8Array(vertexCount);
 
             geometry.properties.aAnchor = aPosition;
             geometry.properties.aShape = aShape;
@@ -157,10 +154,7 @@ class IconPainter extends CollisionPainter {
             this._forEachIcon(mesh, elements, (mesh, start, end, mvpMatrix, index) => {
                 fn(elements, visibleElements, mesh, start, end, mvpMatrix, index);
             });
-            geometry.setElements({
-                usage: 'dynamic',
-                data: new geometry.properties.elemCtor(visibleElements)
-            });
+            geometry.setElements(new geometry.properties.elemCtor(visibleElements));
             geometry.updateData('aOpacity', geometry.properties.aOpacity);
         }
     }
