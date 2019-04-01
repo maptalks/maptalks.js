@@ -1,5 +1,5 @@
 import Shader from './Shader.js';
-import { extend, isNumber } from '../common/Util.js';
+import { isNumber } from '../common/Util.js';
 
 class MeshShader extends Shader {
 
