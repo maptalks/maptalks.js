@@ -13,8 +13,12 @@ class DebugPainter {
             this._data = this._regl.buffer(new Uint16Array([
                 0, 0,
                 0, extent,
+                0, extent,
+                extent, extent,
                 extent, extent,
                 extent, 0,
+                extent, 0,
+                0, 0
             ]));
         }
         this._command({
@@ -67,8 +71,8 @@ class DebugPainter {
                 transform : this._regl.prop('transform'),
                 color : this._color
             },
-            count : 4,
-            primitive : 'line loop',
+            count : 8,
+            primitive : 'lines',
             depth : {
                 enable : false,
                 mask : false
