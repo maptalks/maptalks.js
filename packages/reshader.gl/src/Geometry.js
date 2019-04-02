@@ -35,7 +35,9 @@ export default class Geometry {
         //generate regl buffers beforehand to avoid repeated bufferData
         const allocatedBuffers = this._buffers;
         for (const p in allocatedBuffers) {
-            allocatedBuffers[p].buffer = regl.buffer(allocatedBuffers[p].data);
+            if (!allocatedBuffers[p].buffer) {
+                allocatedBuffers[p].buffer = regl.buffer(allocatedBuffers[p].data);
+            }
             delete allocatedBuffers[p].data;
         }
         const data = this.data;
