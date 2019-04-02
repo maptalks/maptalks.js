@@ -3,7 +3,7 @@ import Pbf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import Ajax from '../util/Ajax';
 
-export default class VectorLayerWorker extends LayerWorker {
+export default class VectorTileLayerWorker extends LayerWorker {
     constructor(id, options, uploader, callback) {
         super(id, options, uploader);
         options = options || {};

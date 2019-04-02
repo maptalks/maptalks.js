@@ -1,5 +1,5 @@
 import GeoJSONLayerWorker from './layer/GeojsonLayerWorker';
-import VectorLayerWorker from './layer/VectorLayerWorker';
+import VectorTileLayerWorker from './layer/VectorTileLayerWorker';
 
 let callbackId = 0;
 
@@ -31,7 +31,7 @@ export default class Dispatcher {
         if (type === 'GeoJSONVectorTileLayer') {
             this._layers[key] = new GeoJSONLayerWorker(layerId, options, uploader, callback);
         } else if (type === 'VectorTileLayer') {
-            this._layers[key] = new VectorLayerWorker(layerId, options, uploader, callback);
+            this._layers[key] = new VectorTileLayerWorker(layerId, options, uploader, callback);
         }
     }
 
