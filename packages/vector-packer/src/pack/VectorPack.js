@@ -7,6 +7,7 @@ import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } fr
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
+import { loadFunctionTypes } from '@maptalks/function-type';
 
 //feature index defined in BaseLayerWorker
 const KEY_IDX = '__fea_idx';
@@ -18,7 +19,9 @@ export default class VectorPack {
     constructor(features, symbol, options) {
         //TODO 预先把altitude传到pack里来？
         this.features = this._check(features);
-        this.symbol = symbol;
+        this.symbol = loadFunctionTypes(symbol, () => {
+            return [options.zoom];
+        });
         this.options = options;
         this.styledVectors = [];
     }
@@ -81,7 +84,6 @@ export default class VectorPack {
                     reject(err);
                     return;
                 }
-                // debugger
                 if (data) {
                     const { icons, glyphs } = data;
                     if (icons && Object.keys(icons).length) {

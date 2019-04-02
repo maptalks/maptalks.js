@@ -1,10 +1,10 @@
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import Color from 'color';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
+import { setUniformFromSymbol, createColorSetter } from '../Util';
 
 const DEFAULT_UNIFORMS = {
     'polygonFill': [255, 255, 255],
@@ -14,18 +14,11 @@ const DEFAULT_UNIFORMS = {
 class FillPainter extends BasicPainter {
 
     createMesh(geometry, transform) {
+        this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
         const uniforms = {};
-        if (symbol['polygonFill']) {
-            const color = Color(symbol['polygonFill']);
-            uniforms.polygonFill = color.unitArray();
-            if (uniforms.polygonFill.length === 3) {
-                uniforms.polygonFill.push(1);
-            }
-        }
-        if (symbol['polygonOpacity'] || symbol['polygonOpacity'] === 0) {
-            uniforms.polygonOpacity = symbol['polygonOpacity'];
-        }
+        setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity');
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {

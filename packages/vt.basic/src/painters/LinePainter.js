@@ -1,10 +1,10 @@
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import Color from 'color';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.picking.vert';
+import { setUniformFromSymbol, createColorSetter } from '../Util';
 
 const defaultUniforms = {
     'lineColor': [0, 0, 0, 1],
@@ -23,42 +23,20 @@ class LinePainter extends BasicPainter {
     }
 
     createMesh(geometry, transform) {
+        this._colorCache = this._colorCache || {};
         //TODO 如果uniforms属性是动态symbol，则改为functin方式
         const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio
         };
-        if (symbol['lineColor']) {
-            const color = Color(symbol['lineColor']);
-            uniforms.lineColor = color.unitArray();
-            if (uniforms.lineColor.length === 3) {
-                uniforms.lineColor.push(1);
-            }
-        }
-        if (symbol['lineOpacity'] || symbol['lineOpacity'] === 0) {
-            uniforms.lineOpacity = symbol['lineOpacity'];
-        }
-
-        if (symbol['lineWidth'] || symbol['lineWidth'] === 0) {
-            uniforms.lineWidth = symbol['lineWidth'];
-        }
-
-        if (symbol['lineGapWidth']) {
-            uniforms.lineGapWidth = symbol['lineGapWidth'];
-        }
-
-        if (symbol['lineBlur'] || symbol['lineBlur'] === 0) {
-            uniforms.lineBlur = symbol['lineBlur'];
-        }
-
-        if (symbol['lineDx'] || symbol['lineDx'] === 0) {
-            uniforms.lineDx = symbol['lineDx'];
-        }
-
-        if (symbol['lineDy'] || symbol['lineDy'] === 0) {
-            uniforms.lineDy = symbol['lineDy'];
-        }
+        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
+        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
+        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
+        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur');
+        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx');
+        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy');
 
         //TODO lineDx, lineDy
         // const indices = geometries[i].elements;

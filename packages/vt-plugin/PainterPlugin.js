@@ -175,6 +175,7 @@ function createPainterPlugin(type, Painter) {
                     painter.deleteMesh(this._meshCache[key], true);
                 }
             }
+            painter.updateSymbol();
             delete this._meshCache;
         },
 

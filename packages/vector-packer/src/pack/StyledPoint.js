@@ -1,15 +1,18 @@
 import { isNil } from '../style/Util';
 import { getMarkerPathBase64, evaluateIconSize, evaluateTextSize } from '../style/Marker';
-import { getFont, resolveText } from '../style/Text';
+import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
+import { loadFunctionTypes } from '@maptalks/function-type';
 
 export default class StyledPoint {
     constructor(feature, symbol, options) {
         //anchor(世界坐标), offset(normalized offset), tex, size(世界坐标), opacity, rotation
         //u_size_scale 当前像素坐标相对世界坐标的大小, u_rotation map的旋转角度(?)
         this.feature = feature;
-        this.symbol = symbol;
+        this.symbol = loadFunctionTypes(symbol, () => {
+            return [options.zoom];
+        });
         this.options = options;
     }
 
@@ -93,7 +96,7 @@ export default class StyledPoint {
         }
 
         if (hasText) {
-            const font = getFont(symbol);
+            const font = getSDFFont(symbol);
             const text = resolveText(symbol.textName, this.feature.properties || this.feature.properties);
             result.glyph = {
                 font, text

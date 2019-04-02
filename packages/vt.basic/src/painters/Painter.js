@@ -1,6 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
-import { evaluate } from '../Util';
+import { loadFunctionTypes } from '@maptalks/function-type';
 
 const MAT = [];
 
@@ -186,15 +186,19 @@ class Painter {
         }
     }
 
+    updateSymbol() {
+        delete this._symbol;
+    }
+
     getSymbol() {
-        const styles = this.layer.getCompiledStyle();
-        const symbol = styles[this.pluginIndex].symbol;
-        const z = this.layer.getMap().getZoom();
-        const result = {};
-        for (const p in symbol) {
-            result[p] = evaluate(symbol[p], null, z);
+        if (this._symbol) {
+            return this._symbol;
         }
-        return result;
+        const styles = this.layer.getCompiledStyle();
+        this._symbol = loadFunctionTypes(styles[this.pluginIndex].symbol, () => {
+            return [this.layer.getRenderer().getCurrentTileZoom()];
+        });
+        return this.getSymbol();
     }
 
     _stencil(quadStencil) {

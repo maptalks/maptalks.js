@@ -169,6 +169,86 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update textSize with line placement', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■', textSize: 10, textFill: '#f00', textPlacement: 'line', textSpacing: 5 }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: line,
+            style
+        });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('layerload', () => {
+            const xOffset = 2;
+            count++;
+            if (count === 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.updateSymbol(0, { textSize: 20, textFill: '#0f0' });
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
+                //变成绿色
+                assert.deepEqual(pixel, [0, 255, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('should can update text visible with line placement', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■', textSize: 10, textFill: '#f00', textPlacement: 'line', textSpacing: 5 }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: line,
+            style
+        });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('layerload', () => {
+            const xOffset = 2;
+            count++;
+            if (count === 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.updateSymbol(0, { visible: false });
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
+                //变成透明
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
     function assertChangeStyle(done, expectedColor, changeFun) {
         const style = [
             {

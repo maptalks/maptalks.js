@@ -5,6 +5,7 @@ import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.picking.vert';
 import { getIconBox } from './util/get_icon_box';
+import { setUniformFromSymbol } from '../Util';
 
 const defaultUniforms = {
     'markerOpacity': 1,
@@ -67,41 +68,11 @@ class IconPainter extends CollisionPainter {
             geometry.properties.elemCtor = geometry.elements.constructor;
         }
 
-        // let transparent = false;
-        if (symbol['markerOpacity'] || symbol['markerOpacity'] === 0) {
-            uniforms.markerOpacity = symbol['markerOpacity'];
-        }
+        this._setMeshUniforms(uniforms, symbol);
 
         const iconAtlas = geometry.properties.iconAtlas;
         uniforms['texture'] = iconAtlas;
         uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
-
-        if (symbol['markerPitchAlignment'] === 'map') {
-            uniforms['pitchWithMap'] = 1;
-        }
-
-        if (symbol['markerRotationAlignment'] === 'map') {
-            uniforms.rotateWithMap = 1;
-        }
-
-        if (symbol['markerPerspectiveRatio']) {
-            uniforms['markerPerspectiveRatio'] = symbol['markerPerspectiveRatio'];
-        }
-        if (symbol['markerWidth']) {
-            uniforms['markerWidth'] = symbol['markerWidth'];
-        }
-        if (symbol['markerHeight']) {
-            uniforms['markerHeight'] = symbol['markerHeight'];
-        }
-        if (symbol['markerDx']) {
-            uniforms['markerDx'] = symbol['markerDx'];
-        }
-        if (symbol['markerDy']) {
-            uniforms['markerDy'] = symbol['markerDy'];
-        }
-        if (symbol['markerRotation']) {
-            uniforms['markerRotation'] = symbol['markerRotation'] * Math.PI / 180;
-        }
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, defaultUniforms);
         const mesh = new reshader.Mesh(geometry, material, {
@@ -117,6 +88,25 @@ class IconPainter extends CollisionPainter {
         mesh.setLocalTransform(transform);
 
         return mesh;
+    }
+
+    _setMeshUniforms(uniforms, symbol) {
+
+        if (symbol['markerPitchAlignment'] === 'map') {
+            uniforms['pitchWithMap'] = 1;
+        }
+
+        if (symbol['markerRotationAlignment'] === 'map') {
+            uniforms['rotateWithMap'] = 1;
+        }
+
+        setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity');
+        setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio');
+        setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth');
+        setUniformFromSymbol(uniforms, 'markerHeight', symbol, 'markerHeight');
+        setUniformFromSymbol(uniforms, 'markerDx', symbol, 'markerDx');
+        setUniformFromSymbol(uniforms, 'markerDy', symbol, 'markerDy');
+        setUniformFromSymbol(uniforms, 'markerRotation', symbol, 'markerRotation', v => v * Math.PI / 180);
     }
 
     preparePaint(context) {

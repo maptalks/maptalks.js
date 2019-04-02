@@ -1,7 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { extend } from '../Util';
+import { extend, setUniformFromSymbol, createColorSetter } from '../Util';
 import Painter from './Painter';
-import Color from 'color';
 import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
 import pickingVert from './glsl/native-line.picking.vert';
@@ -40,17 +39,10 @@ class NativeLinePainter extends Painter {
     }
 
     getMeshUniforms(geometry, symbol) {
+        this._colorCache = this._colorCache || {};
         const uniforms = {};
-        if (symbol['lineColor']) {
-            const color = Color(symbol['lineColor']);
-            uniforms.lineColor = color.unitArray();
-            if (uniforms.lineColor.length === 3) {
-                uniforms.lineColor.push(1);
-            }
-        }
-        if (symbol['lineOpacity'] || symbol['lineOpacity'] === 0) {
-            uniforms.lineOpacity = symbol['lineOpacity'];
-        }
+        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
         return uniforms;
     }
 

@@ -7,11 +7,11 @@ const DEFAULT_FONT = 'monospace';
  * @return {String}       CSS Font String
  * @memberOf StringUtil
  */
-export function getFont(style) {
+export function getSDFFont(style) {
     //textStyle textWeight textSize textFaceName
     return [style['textStyle'] || 'normal',
         style['textWeight'] || 'normal',
-        style['textSize'] + 'px ',
+        '24px', //in GlyphRequestor.js, font size is fixed to 24
         style['textFaceName'] || DEFAULT_FONT].join(' ');
 
 }

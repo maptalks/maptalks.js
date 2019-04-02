@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import Color from 'color';
 
 /**
  * Merges the properties of sources into destination object.
@@ -47,3 +48,38 @@ export const TYPE_BYTES = {
     'float': 4,
     'float32': 4
 };
+
+
+export function setUniformFromSymbol(uniforms, name, symbol, key, fn) {
+    if (isNil(symbol[key])) {
+        return;
+    }
+    if (symbol['_' + key]) {
+        // a function type
+        Object.defineProperty(uniforms, name, {
+            enumerable: true,
+            get: function () {
+                return fn ? fn(symbol[key]) : symbol[key];
+            }
+        });
+    } else {
+        uniforms[name] = fn ? fn(symbol[key]) : symbol[key];
+    }
+}
+
+export function createColorSetter(cache) {
+    return c => {
+        if (Array.isArray(c)) {
+            return c;
+        }
+        if (cache[c]) {
+            return cache[c];
+        }
+        const color = Color(c).unitArray();
+        if (color.length === 3) {
+            color.push(1);
+        }
+        cache[c] = color;
+        return color;
+    };
+}
