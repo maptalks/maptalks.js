@@ -78,6 +78,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     setStyle(style) {
+        style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
         this.config('style', style);
         this.validateStyle();
