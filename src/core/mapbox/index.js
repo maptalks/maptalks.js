@@ -7,4 +7,4 @@
  */
 
 export * from '@maptalks/feature-filter';
-export * from './FunctionType';
+export * from '@maptalks/function-type';
