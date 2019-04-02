@@ -86,18 +86,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     createContext() {
         this._prepareWorker();
-
-        if (this.canvas.gl && this.canvas.gl.wrap) {
+        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
+        if (inGroup) {
             this.gl = this.canvas.gl.wrap();
         }
         this._createREGLContext();
-        const map = this.getMap();
-        if (!map.pickingFBO) {
-            map.pickingFBO = this.regl.framebuffer(this.canvas.width, this.canvas.height);
-            map.pickingFBO.refCount = 0;
+        if (inGroup) {
+            this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         }
-        this.pickingFBO = map.pickingFBO;
-        this.pickingFBO.refCount++;
+        this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         // this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Uint16Array([
         //     0, EXTENT, 0,
         //     0, 0, 0,
@@ -541,12 +538,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             delete this._workerConn;
         }
         if (this.pickingFBO) {
-            this.pickingFBO.refCount--;
-            if (!this.pickingFBO.refCount) {
-                //pickingFBO的引用计数为0，不再有图层引用，则销毁
-                const map = this.getMap();
+            if (!this.canvas.pickingFBO) {
                 this.pickingFBO.destroy();
-                delete map.pickingFBO;
             }
             delete this.pickingFBO;
         }
