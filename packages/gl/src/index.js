@@ -1,4 +1,4 @@
-import createREGL from 'regl';
+import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 export {
     glMatrix,

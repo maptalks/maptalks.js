@@ -380,6 +380,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         return gl;
         /* eslint-enable no-empty */
     }
+
+    onRemove() {
+        //regl framebuffer for picking created by children layers
+        if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
+            this.canvas.pickingFBO.destroy();
+        }
+        super.onRemove();
+    }
 }
 
 GroupGLLayer.registerRenderer('gl', Renderer);
