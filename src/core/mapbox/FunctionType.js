@@ -36,6 +36,7 @@ function createFunction(parameters, defaultType) {
                         zoom: stop[0].zoom,
                         type: parameters.type,
                         property: parameters.property,
+                        default: parameters.default,
                         stops: []
                     };
                 }
@@ -69,13 +70,20 @@ function createFunction(parameters, defaultType) {
     return fun;
 }
 
+function coalesce(a, b, c) {
+    if (a !== undefined) return a;
+    if (b !== undefined) return b;
+    if (c !== undefined) return c;
+    return null;
+}
+
 function evaluateCategoricalFunction(parameters, input) {
     for (let i = 0; i < parameters.stops.length; i++) {
         if (input === parameters.stops[i][0]) {
             return parameters.stops[i][1];
         }
     }
-    return parameters.stops[0][1];
+    return parameters.default;
 }
 
 function evaluateIntervalFunction(parameters, input) {
@@ -114,7 +122,7 @@ function evaluateExponentialFunction(parameters, input) {
 }
 
 function evaluateIdentityFunction(parameters, input) {
-    return input;
+    return coalesce(input, parameters.default);
 }
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
@@ -223,26 +231,28 @@ export function loadFunctionTypes(obj, argFn) {
         }
     }
 
+    const buildFn = function (p) {
+        Object.defineProperty(result, p, {
+            get: function () {
+                if (!this['__fn_' + p]) {
+                    this['__fn_' + p] = interpolated(this['_' + p]);
+                }
+                return this['__fn_' + p].apply(this, argFn());
+            },
+            set: function (v) {
+                this['_' + p] = v;
+            },
+            configurable: true,
+            enumerable: true
+        });
+    };
+
     for (let i = 0, len = props.length; i < len; i++) {
         p = props[i];
         if (isFunctionDefinition(obj[p])) {
             hit = true;
             result['_' + p] = obj[p];
-            (function (_p) {
-                Object.defineProperty(result, _p, {
-                    get: function () {
-                        if (!this['__fn_' + _p]) {
-                            this['__fn_' + _p] = interpolated(this['_' + _p]);
-                        }
-                        return this['__fn_' + _p].apply(this, argFn());
-                    },
-                    set: function (v) {
-                        this['_' + _p] = v;
-                    },
-                    configurable: true,
-                    enumerable: true
-                });
-            })(p);
+            buildFn(p);
         } else {
             result[p] = obj[p];
         }
