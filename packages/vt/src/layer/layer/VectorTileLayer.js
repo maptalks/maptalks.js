@@ -25,7 +25,7 @@ const defaultOptions = {
     //每帧每个瓦片最多能绘制的sdf数量
     glyphSdfLimitPerFrame: 15,
     //zooming或zoom fading时，每个瓦片最多能绘制的box(icon或text)数量
-    boxLimitOnZoomout: 10,
+    boxLimitOnZoomout: 7,
     background: [0, 0, 0, 0],
     maxCacheSize: 128,
     antialias: false

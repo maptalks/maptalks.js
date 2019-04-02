@@ -23,13 +23,12 @@ export default class CollisionPainter extends BasicPainter {
 
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
         const { level, meshKey } = mesh.properties;
-        const map = this.getMap();
         //没有缩放，且没在fading时，禁止父级瓦片的绘制，避免不正常的闪烁现象
         if (this.shouldIgnoreBgTiles() && level > 0) {
             return false;
         }
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
-        if ((this._zoomingOut && (map.isZooming() || this._zoomEndTimestamp !== undefined && level > 0)) && boxIndex > this.layer.options['boxLimitOnZoomout']) {
+        if (this.shouldLimitBox(level) && boxIndex > this.layer.options['boxLimitOnZoomout']) {
             return false;
         }
         const geometryProps = mesh.geometry.properties;
@@ -296,6 +295,13 @@ export default class CollisionPainter extends BasicPainter {
     shouldIgnoreBgTiles() {
         const map = this.getMap();
         return !map.isZooming() && this._zoomFading === undefined;
+    }
+
+    shouldLimitBox(level, ignoreZoomOut) {
+        const map = this.getMap();
+        return this.layer.options['boxLimitOnZoomout'] &&
+            (ignoreZoomOut || this._zoomingOut) &&
+            (map.isZooming() || this._zoomEndTimestamp !== undefined && level > 0);
     }
 
     startFrame({ timestamp }) {

@@ -452,10 +452,7 @@ export default class TextPainter extends CollisionPainter {
         let visibleElements = enableCollision ? [] : allElements;
 
         this._forEachLabel(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
-            // if (labelIndex < 10) { //4
-            //     return;
-            // }
-            let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null);
+            let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 return;
@@ -524,12 +521,21 @@ export default class TextPainter extends CollisionPainter {
     }
 
     // start and end is the start and end index of a label
-    _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix) {
+    _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix, labelIndex) {
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         const map = this.getMap();
         const geometry = mesh.geometry;
 
         const { aShape, aOffset, aAnchor } = geometry.properties;
+        const { level } = mesh.properties;
+
+        //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
+        if (this.shouldLimitBox(level, true) && labelIndex > this.layer.options['boxLimitOnZoomout']) {
+            if (!enableCollision) {
+                resetOffset(aOffset, meshElements, start, end);
+            }
+            return false;
+        }
 
         const isProjected = !planeMatrix;
         const idx = meshElements[start] * 3;
