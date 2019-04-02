@@ -58,7 +58,7 @@ class Shader {
      * Get shader's context uniforms values
      * @param {Object} meshProps - mesh uniforms
      */
-    appendUniforms(meshProps) {
+    appendRenderUniforms(meshProps) {
         //append but not extend to save unnecessary object copies
         const context = this.context;
         const props = extend2(meshProps, context);

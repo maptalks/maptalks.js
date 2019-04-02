@@ -55,8 +55,9 @@ class Material {
         if (!this._dirtyUniforms) {
             return this._reglUniforms;
         }
+        const uniforms = this.uniforms;
         const realUniforms = {};
-        for (const p in this.uniforms) {
+        for (const p in uniforms) {
             const v = this.uniforms[p];
             if (this.isTexture(p)) {
                 if (this._dirtyUniforms === 'primitive' && this._reglUniforms[p]) {
@@ -68,7 +69,13 @@ class Material {
                     realUniforms[p] = v.getREGLTexture(regl);
                 }
             } else {
-                realUniforms[p] = v;
+                Object.defineProperty(realUniforms, p, {
+                    enumerable: true,
+                    configurable: true,
+                    get: function () {
+                        return uniforms && uniforms[p];
+                    }
+                });
             }
         }
         this._reglUniforms = realUniforms;

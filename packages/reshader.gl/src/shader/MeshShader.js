@@ -32,7 +32,7 @@ class MeshShader extends Shader {
                 props.length = 0;
             }
             const meshProps = meshes[i].getREGLProps();
-            this.appendUniforms(meshProps);
+            this.appendRenderUniforms(meshProps);
             props.push(meshProps);
             if (i < l - 1) {
                 preCommand = command;
