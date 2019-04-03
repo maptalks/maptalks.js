@@ -277,7 +277,7 @@ export default class TextPainter extends CollisionPainter {
         setUniformFromSymbol(uniforms, 'textFill', symbol, 'textFill', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'textHaloFill', symbol, 'textHaloFill', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'textHaloBlur', symbol, 'textHaloBlur');
-        if (!isNil(symbol['textHaloRadius'])) {
+        if (symbol['textHaloRadius']) {
             setUniformFromSymbol(uniforms, 'textHaloRadius', symbol, 'textHaloRadius');
             uniforms.isHalo = 1;
         }
