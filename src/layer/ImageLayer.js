@@ -41,7 +41,11 @@ class ImageLayer extends Layer {
             images = null;
         }
         super(id, options);
-        this._prepareImages(images);
+        this._images = images;
+    }
+
+    onAdd() {
+        this._prepareImages(this._images);
     }
 
     /**
@@ -68,9 +72,12 @@ class ImageLayer extends Layer {
         if (!Array.isArray(images)) {
             images = [images];
         }
+        const map = this.getMap();
         this._imageData = images.map(img => {
+            const extent = new Extent(img.extent);
             return extend({}, img, {
-                extent: new Extent(img.extent),
+                extent: extent,
+                extent2d: extent.convertTo(c => map.coordToPoint(c, map.getGLZoom()))
             });
         });
         this._images = images;
@@ -156,10 +163,10 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     _drawImages() {
         const imgData = this.layer._imageData;
         const map = this.getMap();
-        const mapExtent = map.getExtent();
+        const mapExtent = map._get2DExtent(map.getGLZoom());
         if (imgData && imgData.length) {
             for (let i = 0; i < imgData.length; i++) {
-                const extent = imgData[i].extent;
+                const extent = imgData[i].extent2d;
                 const image = this.resources && this.resources.getImage(imgData[i].url);
                 if (image && mapExtent.intersects(extent)) {
                     this._painted = true;
@@ -177,9 +184,9 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
             ctx.globalAlpha = opacity;
         }
         const map = this.getMap();
-        const min = map.coordToPoint(extent.getMin()),
-            max = map.coordToPoint(extent.getMax());
-        const point = map._pointToContainerPoint(min);
+        const min = extent.getMin(),
+            max = extent.getMax();
+        const point = map._pointToContainerPoint(min, map.getGLZoom());
         let x = point.x, y = point.y;
         const bearing = map.getBearing();
         if (bearing) {
@@ -190,7 +197,8 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
             }
             x = y = 0;
         }
-        ctx.drawImage(image, x, y, max.x - min.x, max.y - min.y);
+        const scale = map.getGLScale();
+        ctx.drawImage(image, x, y, (max.x - min.x) / scale, (max.y - min.y) / scale);
         if (bearing) {
             ctx.restore();
         }
@@ -212,12 +220,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
     }
 
     _drawImage(image, extent, opacity) {
-        const map = this.getMap();
-        let extent2d = extent.__imagelayerposition;
-        if (!extent2d) {
-            extent2d = extent.__imagelayerposition = extent.convertTo(c => map.coordToPoint(c, map.getGLZoom()));
-        }
-        this.drawGLImage(image, extent2d.xmin, extent2d.ymin, extent2d.getWidth(), extent2d.getHeight(), opacity);
+        this.drawGLImage(image, extent.xmin, extent.ymin, extent.getWidth(), extent.getHeight(), opacity);
     }
 
     createContext() {
