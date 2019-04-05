@@ -182,6 +182,8 @@ class InfoWindow extends UIComponent {
         const o = new Point(-size['width'] / 2, 0);
         if (!this.options['custom']) {
             o._sub(4, 12);
+        } else {
+            o._sub(0, size['height']);
         }
         const owner = this.getOwner();
         if (owner instanceof Marker || owner instanceof MultiPoint) {
