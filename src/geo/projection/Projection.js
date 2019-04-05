@@ -60,7 +60,7 @@ export default /** @lends projection.Common */ {
                 p = this.project(current);
                 if (Math.abs(dx) > 180) {
                     if (wrapX === undefined) {
-                        wrapX = current.x < pre.x;
+                        wrapX = current.x > pre.x;
                     }
                     if (wrapX) {
                         p._add(-circum.x * sign(dx) * sx, 0);
