@@ -5,7 +5,6 @@ import {
     now,
     isFunction
 } from '../../../core/util';
-import Browser from '../../../core/Browser';
 import Canvas2D from '../../../core/Canvas';
 import TileLayer from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
@@ -323,7 +322,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return false;
         }
         const clipExtent = map.getContainerExtent();
-        const r = Browser.retina ? 2 : 1;
+        const r = map.getDevicePixelRatio();
         ctx.save();
         ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
         ctx.beginPath();

@@ -280,7 +280,7 @@ class CanvasRenderer extends Class {
             return false;
         }
         const map = this.getMap();
-        const r = Browser.retina ? 2 : 1;
+        const r = map.getDevicePixelRatio();
         const size = map.getSize();
         if (point.x < 0 || point.x > size['width'] * r || point.y < 0 || point.y > size['height'] * r) {
             return false;
@@ -360,7 +360,7 @@ class CanvasRenderer extends Class {
         }
         const map = this.getMap();
         const size = map.getSize();
-        const r = Browser.retina ? 2 : 1,
+        const r = map.getDevicePixelRatio(),
             w = r * size.width,
             h = r * size.height;
         if (this.layer._canvas) {
@@ -396,9 +396,9 @@ class CanvasRenderer extends Class {
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
         }
-        if (Browser.retina) {
-            const r = 2;
-            this.context.scale(r, r);
+        const dpr = this.getMap().getDevicePixelRatio();
+        if (dpr !== 1) {
+            this.context.scale(dpr, dpr);
         }
     }
 
@@ -406,8 +406,8 @@ class CanvasRenderer extends Class {
         if (!this.context) {
             return;
         }
-        const r = Browser.retina ? 2 : 1;
-        this.context.setTransform(r, 0, 0, r, 0, 0);
+        const dpr = this.getMap().getDevicePixelRatio();
+        this.context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     /**
@@ -420,14 +420,14 @@ class CanvasRenderer extends Class {
             return;
         }
         const size = canvasSize || this.getMap().getSize();
-        const r = Browser.retina ? 2 : 1;
+        const r = this.getMap().getDevicePixelRatio();
         if (canvas.width === r * size.width && canvas.height === r * size.height) {
             return;
         }
         //retina support
         canvas.height = r * size.height;
         canvas.width = r * size.width;
-        if (Browser.retina && this.context) {
+        if (r !== 1 && this.context) {
             this.context.scale(r, r);
         }
         if (this.layer._canvas && canvas.style) {
@@ -519,9 +519,10 @@ class CanvasRenderer extends Class {
         //when clipping, layer's southwest needs to be reset for mask's containerPoint conversion
         this.southWest = map._containerPointToPoint(new Point(0, map.height));
         context.save();
-        if (Browser.retina) {
+        const dpr = map.getDevicePixelRatio();
+        if (dpr !== 1) {
             context.save();
-            context.scale(2, 2);
+            context.scale(dpr, dpr);
         }
         // Handle MultiPolygon
         if (mask.getGeometries) {
@@ -538,7 +539,7 @@ class CanvasRenderer extends Class {
             const painter = mask._getPainter();
             painter.paint(null, context);
         }
-        if (Browser.retina) {
+        if (dpr !== 1) {
             context.restore();
         }
         context.clip();
