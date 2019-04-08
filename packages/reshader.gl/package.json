@@ -22,6 +22,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
+    "cubemap-sh": "0.2.1",
     "gl-matrix": "^2.6.1"
   },
   "devDependencies": {

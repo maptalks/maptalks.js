@@ -2,12 +2,12 @@ import { renderToCube } from '../common/RenderHelper.js';
 
 import cubeData from './CubeData.js';
 
-import cubemapVS from './glsl/helper/cubemap.vert';
-import equirectangularMapFS from './glsl/helper/equirectangular_to_cubemap.frag';
-import prefilterFS from './glsl/helper/prefilter.frag';
-import dfgFS from './glsl/helper/dfg.frag';
-import dfgVS from './glsl/helper/dfg.vert';
-import coefficients from 'cubemap-sh';
+import cubemapVS from './glsl/cubemap.vert';
+import equirectangularMapFS from './glsl/equirectangular_to_cubemap.frag';
+import prefilterFS from './glsl/prefilter.frag';
+import brdfFS from './glsl/brdf.frag';
+import brdfVS from './glsl/brdf.vert';
+import irradianceFS from './glsl/irradiance_convolution.frag';
 
 /**
  * {
@@ -17,7 +17,7 @@ import coefficients from 'cubemap-sh';
  *  sampleSize,
  *  roughnessLevels,
  *  prefilterCubeSize,
- *  dfgSize
+ *  brdfSize
  * }
  * @param {REGL} regl - regl
  * @param {Object} config - config
@@ -29,127 +29,31 @@ export function createIBLMaps(regl, config = {}) {
 
     const envCubeSize = config.envCubeSize || 512;
 
-    // const irradianceCubeSize = config.irradianceCubeSize || 32;
+    const irradianceCubeSize = config.irradianceCubeSize || 32;
 
     const sampleSize = config.sampleSize || 1024;
     const roughnessLevels = config.roughnessLevels || 256;
     const prefilterCubeSize = config.prefilterCubeSize || 256;
 
-    const dfgSize = config.dfgSize || 512;
+    const brdfSize = config.brdfSize || 512;
 
     //----------------------------------------------------
     // generate ibl maps
 
     const envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize);
 
+    const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
+
     const prefilterMap = createPrefilterCube(regl, envMap, prefilterCubeSize, sampleSize, roughnessLevels);
 
-    const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
+    const brdfLUT = generateBRDFLUT(regl, brdfSize, sampleSize, roughnessLevels);
 
     return {
-        // envMap,
-        // irradianceMap,
+        envMap,
+        irradianceMap,
         prefilterMap,
-        dfgLUT
+        brdfLUT
     };
-}
-
-/**
- * Generate spherical harmonics
- * @param {Number[][]} faces - an array of faces in the shown order (opengl order): posx, negx, posy, negy, posz, neg
- * @param {Number} envCubeSize - size of each face (default is 128)
- * @param {Number} numChannels - number of channels (3 for rgb or 4 for rgba, default is 4)
- * @returns {Number[]} sh
- */
-export function computeSH(faces, envCubeSize = 128, numChannels = 4) {
-    return coefficients(faces, envCubeSize, numChannels);
-}
-
-/**
- * Read 6 faces images pixels
- * @param {String[] | Image[]} input
- * @returns {Number[][]} faces
- */
-export function getSkyImagePixels(input) {
-    if (!Array.isArray(input)) {
-        throw new Error('input images must be an array');
-    }
-    const promises = [];
-    if (typeof input[0] === 'string') {
-        for (let i = 0; i < input.length; i++) {
-            const url = input[i];
-            promises.push(new Promise((resolve, reject) => {
-                const image = new Image();
-                image.onload = function () {
-                    resolve(image);
-                };
-                image.onerror = function () {
-                    reject(image);
-                };
-                image.onabort = function () {
-                    reject(image);
-                };
-                image.src = url;
-            }));
-        }
-    } else {
-        promises.push(...input);
-    }
-    return Promise.all(promises).then(images => {
-        const faces = [
-            getPixels(images[0]),
-            getPixels(images[1]),
-            getPixels(images[2]),
-            getPixels(images[3]),
-            getPixels(images[4]),
-            getPixels(images[5]),
-        ];
-        return faces;
-    });
-}
-
-/**
- * Read hdr format sky map's pixels
- * @param {REGL} regl
- * @param {REGLTexture} envTexture
- * @param {Number} envCubeSize
- * @returns {Number[][]} faces
- */
-export function getSkyHDRPixels(regl, envTexture, envCubeSize) {
-    const drawCube = regl({
-        frag : equirectangularMapFS,
-        vert : cubemapVS,
-        attributes : {
-            'aPosition' : cubeData.vertices
-        },
-        uniforms : {
-            'projMatrix' : regl.context('projMatrix'),
-            'viewMatrix' :  regl.context('viewMatrix'),
-            'equirectangularMap' : envTexture
-        },
-        elements : cubeData.indices
-    });
-    return new Promise((resolve) => {
-        const faces = [];
-        const tmpFBO = regl.framebuffer(envCubeSize);
-        renderToCube(regl, tmpFBO, drawCube, {
-            size : envCubeSize
-        }, function (/* context, props, batchId */) {
-            const pixels = regl.read();
-            faces.push(pixels);
-        });
-        resolve(faces);
-    });
-}
-
-const canvas = document.createElement('canvas');
-
-function getPixels(image) {
-    const context = canvas.getContext('2d');
-    canvas.width = image.width;
-    canvas.height = image.height;
-    context.drawImage(image, 0, 0, image.width, image.height);
-    return context.getImageData(0, 0, image.width, image.height).data;
 }
 
 /**
@@ -179,6 +83,38 @@ function createEquirectangularMapCube(regl, texture, size) {
     renderToCube(regl, envMapFBO, drawCube);
 
     return envMapFBO;
+}
+
+//solve diffuse integral by convolution to create an irradiance (cube)map.
+function createIrradianceCube(regl, envCube, SIZE) {
+    SIZE = SIZE || 32;
+    const irradianceCube = regl.framebufferCube({
+        radius : SIZE,
+        color : regl.cube({
+            radius : SIZE,
+            wrap : 'clamp', // shortcut for both wrapS and wrapT
+            min : 'linear',
+            mag : 'linear'
+        })
+    });
+
+    const drawCube = regl({
+        frag : irradianceFS,
+        vert : cubemapVS,
+        attributes : {
+            'aPosition' : cubeData.vertices
+        },
+        uniforms : {
+            'projMatrix' : regl.context('projMatrix'),
+            'viewMatrix' :  regl.context('viewMatrix'),
+            'environmentMap' : envCube
+        },
+        elements : cubeData.indices
+    });
+
+    renderToCube(regl, irradianceCube, drawCube);
+
+    return irradianceCube;
 }
 
 //因webgl限制，framebufferTexImage2D无法指定mip level
@@ -263,6 +199,7 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
         // wrap : 'clamp',
         faces : mipmap
     });
+
     tmpFBO.destroy();
 
     return prefilterMapFBO;
@@ -282,20 +219,20 @@ const quadTexcoords = [
     1.0, 0.0,
 ];
 
-const DFG_CACHE = {};
+const BRDF_CACHE = {};
 
-function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
+function generateBRDFLUT(regl, size, sampleSize, roughnessLevels) {
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
 
     const key = size + '-' + sampleSize + '-' + roughnessLevels;
 
     let distro;
-    if (DFG_CACHE[key]) {
-        distro = DFG_CACHE[key];
+    if (BRDF_CACHE[key]) {
+        distro = BRDF_CACHE[key];
     } else {
         distro = generateNormalDistribution(sampleSize, roughnessLevels);
-        DFG_CACHE[key] = distro;
+        BRDF_CACHE[key] = distro;
     }
 
     const distributionMap = regl.texture({
@@ -317,8 +254,8 @@ function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     });
     // const FSIZE = Float32Array.BYTES_PER_ELEMENT;
     const drawLUT = regl({
-        frag : dfgFS,
-        vert : dfgVS,
+        frag : brdfFS,
+        vert : brdfVS,
         attributes : {
             'aPosition' : {
                 buffer : quadBuf,
@@ -346,9 +283,6 @@ function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
         primitive: 'triangle strip'
     });
     drawLUT();
-
-    quadBuf.destroy();
-    quadTexBuf.destroy();
 
     return fbo;
 

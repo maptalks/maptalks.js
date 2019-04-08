@@ -1,4 +1,4 @@
-import Material from '../Material.js';
+import Material from '../../Material.js';
 
 const defaultUniforms = {
     albedoMap : null,

@@ -28,15 +28,13 @@ import * as SkyboxHelper from './skybox/SkyboxHelper.js';
 export { SkyboxHelper };
 
 import * as PBRHelper from './pbr/PBRHelper.js';
-import StandardMaterial from './pbr/StandardMaterial.js';
-import StandardVert from './pbr/glsl/standard.vert';
-import StandardFrag from './pbr/glsl/standard.frag';
+import LitMaterial from './pbr/LitMaterial.js';
+import LitShader from './pbr/LitShader';
 
 const pbr = {
     PBRHelper,
-    StandardMaterial,
-    StandardFrag,
-    StandardVert
+    LitShader,
+    LitMaterial
 };
 
 export { pbr };
