@@ -47,7 +47,7 @@ export function createIBLMaps(regl, config = {}) {
     const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
     return {
-        // envMap,
+        envMap,
         // irradianceMap,
         prefilterMap,
         dfgLUT

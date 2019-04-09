@@ -27,6 +27,9 @@ import fl_light_directional from '../pbr/glsl/frag/light_directional.frag';
 //lit材质的逻辑
 import fl_shading_lit from '../pbr/glsl/frag/shading_lit.frag';
 
+//main
+import fl_main from '../pbr/glsl/frag/main.frag';
+
 //Shader Chunks for includes
 const ShaderChunk = {
     vsm_shadow_vert,
@@ -47,7 +50,8 @@ const ShaderChunk = {
     fl_material_uniforms_frag,
     fl_light_indirect,
     fl_light_directional,
-    fl_shading_lit
+    fl_shading_lit,
+    fl_main
 };
 /* eslint-enable camelcase */
 

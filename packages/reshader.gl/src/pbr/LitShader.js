@@ -11,12 +11,12 @@ const MAT4 = [];
 class LitShader extends MeshShader {
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
-        const positionAttribute = this.positionAttribute = config.positionAttribute || 'aPosition';
-        const normalAttribute = this.normalAttribute = config.normalAttribute || 'aNormal';
-        const tangentAttribute = this.tangentAttribute = config.tangentAttribute || 'aTangent';
-        const colorAttribute = this.colorAttribute = config.colorAttribute || 'aColor';
-        const uv0Attribute = this.uv0Attribute = config.uv0Attribute || 'aTexCoord0';
-        const uv1Attribute = this.uv1Attribute = config.uv1Attribute || 'aTexCoord1';
+        const positionAttribute  = config.positionAttribute || 'aPosition';
+        const normalAttribute  = config.normalAttribute || 'aNormal';
+        const tangentAttribute  = config.tangentAttribute || 'aTangent';
+        const colorAttribute  = config.colorAttribute || 'aColor';
+        const uv0Attribute = config.uv0Attribute || 'aTexCoord0';
+        const uv1Attribute  = config.uv1Attribute || 'aTexCoord1';
         extraCommandProps = extend({}, extraCommandProps, {
             blend : {
                 enable: true,
@@ -115,6 +115,12 @@ class LitShader extends MeshShader {
             ],
             extraCommandProps
         });
+        this.positionAttribute = positionAttribute;
+        this.normalAttribute = normalAttribute;
+        this.tangentAttribute = tangentAttribute;
+        this.colorAttribute = colorAttribute;
+        this.uv0Attribute = uv0Attribute;
+        this.uv1Attribute = uv1Attribute;
     }
 
     getGeometryDefines(geometry) {
