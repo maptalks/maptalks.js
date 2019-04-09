@@ -7,7 +7,6 @@ export default class VectorTileLayerWorker extends LayerWorker {
     constructor(id, options, uploader, callback) {
         super(id, options, uploader);
         options = options || {};
-        this._requests = {};
         callback();
     }
 
@@ -18,8 +17,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
      */
     getTileFeatures(tileInfo, cb) {
         const url = tileInfo.url;
-        this._requests[url] = Ajax.getArrayBuffer(url, (err, response) => {
-            delete this._requests[url];
+        return Ajax.getArrayBuffer(url, (err, response) => {
             if (err) {
                 cb(err);
                 return;
@@ -63,17 +61,18 @@ export default class VectorTileLayerWorker extends LayerWorker {
     }
 
     abortTile(url, cb) {
-        if (url && this._requests[url]) {
-            this._requests[url].abort();
-            delete this._requests[url];
+        const xhr = this.requests[url];
+        //需要先从requests中删除url，再abort，触发cancel逻辑, 否则会被当成xhr的error处理掉
+        super.abortTile(url, cb);
+        if (xhr) {
+            xhr.abort();
         }
-        cb();
     }
 
     onRemove() {
-        for (const url in this._requests) {
-            this._requests[url].abort();
+        for (const url in this.requests) {
+            this.requests[url].abort();
         }
-        this._requests = {};
+        this.requests = {};
     }
 }

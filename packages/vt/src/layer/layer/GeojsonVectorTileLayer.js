@@ -41,8 +41,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         return this;
     }
 
-    getTileUrl(/*z: number, x: number, y: number*/) {
-        return '';
+    getTileUrl(x, y, z) {
+        return this.getId() + ',' + x + ',' + y + ',' + z;
     }
 
     getFeature(id) {

@@ -16,9 +16,11 @@ export default class BaseLayerWorker {
         this.options = options;
         this.upload = upload;
         this._compileStyle(options.style || []);
+        this.requests = {};
     }
 
     updateStyle(style, cb) {
+        this.options.style = style;
         this._compileStyle(style || []);
         cb();
     }
@@ -34,19 +36,42 @@ export default class BaseLayerWorker {
      * @param {Function} cb - callback function when finished
      */
     loadTile(context, cb) {
-        this.getTileFeatures(context.tileInfo, (err, features, layers) => {
+        const url = context.tileInfo.url;
+        this.requests[url] = this.getTileFeatures(context.tileInfo, (err, features, layers) => {
+            if (this.checkIfCanceled(url)) {
+                delete this.requests[url];
+                cb(null, { canceled: true });
+                return;
+            }
             if (err) {
+                delete this.requests[url];
                 cb(err);
                 return;
             }
             if (!features || features.length === 0) {
+                delete this.requests[url];
                 cb();
                 return;
             }
             this._createTileData(layers, features, context).then(data => {
+                if (this.checkIfCanceled(url)) {
+                    delete this.requests[url];
+                    cb(null, { canceled: true });
+                    return;
+                }
+                delete this.requests[url];
                 cb(null, data.data, data.buffers);
             });
         });
+    }
+
+    abortTile(url, cb) {
+        delete this.requests[url];
+        cb();
+    }
+
+    checkIfCanceled(url) {
+        return !this.requests[url];
     }
 
     fetchIconGlyphs(icons, glyphs, cb) {

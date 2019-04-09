@@ -921,7 +921,8 @@ export default class TextPainter extends CollisionPainter {
 
         const { meshId, pickingId, point } = picked;
         const mesh = (meshId === 0 || meshId) && picking.getMeshAt(meshId);
-        if (!mesh) {
+        if (!mesh || !mesh.geometry) {
+            //有可能mesh已经被回收，geometry不再存在
             return null;
         }
         const props = mesh.geometry.properties;

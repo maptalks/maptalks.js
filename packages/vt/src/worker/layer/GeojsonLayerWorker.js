@@ -71,12 +71,12 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         const features = [];
         if (!this.index) {
             cb(null, features, []);
-            return;
+            return 1;
         }
         const tile = this.index.getTile(tileInfo.z + this.zoomOffset, tileInfo.x, tileInfo.y);
         if (!tile || tile.features.length === 0) {
             cb(null, features, []);
-            return;
+            return 1;
         }
         const layers = [];
 
@@ -109,6 +109,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
         //TODO 增加geojson-vt的多图层支持
         cb(null, features, layers);
+        return 1;
     }
 
     onRemove() {

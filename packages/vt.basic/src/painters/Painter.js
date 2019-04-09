@@ -136,7 +136,8 @@ class Painter {
         }
         const { meshId, pickingId, point } = picked;
         const mesh = (meshId === 0 || meshId) && this.picking.getMeshAt(meshId);
-        if (!mesh) {
+        if (!mesh || !mesh.geometry) {
+            //有可能mesh已经被回收，geometry不再存在
             return null;
         }
         const props = mesh.geometry.properties;

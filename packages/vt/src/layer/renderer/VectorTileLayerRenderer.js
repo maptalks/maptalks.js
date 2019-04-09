@@ -19,10 +19,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     setStyle() {
         if (this._workerConn) {
+            this.clear();
+            this._clearPlugin();
             this._workerConn.updateStyle(this.layer.getStyle(), err => {
                 if (err) throw new Error(err);
-                this.clear();
-                this._clearPlugin();
                 this._initPlugins();
                 this.setToRedraw();
             });
@@ -226,6 +226,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (err) this.onTileError(EMPTY_VECTOR_TILE, tileInfo);
             if (!data) {
                 this.onTileLoad({ _empty : true }, tileInfo);
+                return;
+            }
+            if (data.canceled) {
                 return;
             }
             let needCompile = false;
