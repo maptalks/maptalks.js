@@ -27,7 +27,6 @@
 
     ObjectUniforms objectUniforms;
 
-#include <fl_common_math_glsl>
 #include <fl_uniforms_glsl>
 #include <fl_inputs_vert>
 
@@ -113,7 +112,7 @@
     void initAttributes() {
         mesh_position = vec4(aPosition, 1.0);
         #if defined(HAS_ATTRIBUTE_TANGENTS)
-            mesh_tangents = aTangents;
+            mesh_tangents = aTangent;
         #endif
         #if defined(HAS_ATTRIBUTE_COLOR)
             mesh_color = vec4(aColor, 1.0);
@@ -167,3 +166,12 @@
     }
     #endif
 
+    /**
+    * Extracts the normal and tangent vectors of the tangent frame encoded in the
+    * specified quaternion.
+    */
+    void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
+        //暂时直接读取aNormal和aTangent，而不封装为 quaternion
+        n = aNormal;
+        t = q.xyz;
+    }
