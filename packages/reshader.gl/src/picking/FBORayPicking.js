@@ -274,12 +274,10 @@ export default class FBORayPicking {
             pickingId = this._getPickingId(x, y, meshes[meshId], uniforms);
         }
         let point = null;
-        if (meshes[meshId] && options['returnPoint'] && pickingId) {
+        if (meshes[meshId] && options['returnPoint']) {
             const { viewMatrix, projMatrix } = options;
             const depth = this._pickDepth(x, y, meshes[meshId], uniforms, pickingId);
-            if (depth) {
-                point = this._getWorldPos(x, y, depth, viewMatrix, projMatrix);
-            }
+            point = this._getWorldPos(x, y, depth, viewMatrix, projMatrix);
         }
 
         return {
