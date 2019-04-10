@@ -2,7 +2,7 @@ import Material from '../Material.js';
 
 const DEFAULT_UNIFORMS = {
     baseColorTexture : null,
-    baseColorFactor : [1, 1, 1],
+    baseColorFactor : [1, 1, 1, 1],
 
     metallicRoughnessTexture: null,
     metallicFactor : 1,
@@ -80,7 +80,10 @@ class LitMaterial extends Material {
         return defines;
     }
 
-
+    getUniforms(regl) {
+        const uniforms = super.getUniforms(regl);
+        return { material: uniforms };
+    }
 }
 
 export default LitMaterial;

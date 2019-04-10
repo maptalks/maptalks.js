@@ -8,7 +8,7 @@
     .container{width:1000px;height:800px}
   </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
-    <script src="../../packages/gl/dist/maptalksgl.js" type="text/javascript"></script>
+    <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
     <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
   <body>
     <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
@@ -66,20 +66,39 @@
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             //绘制gltf模型
             drawGLTFModel(viewMatrix, projMatrix);
-            //绘制天空盒
-            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
         }
         function drawGLTFModel(viewMatrix, projMatrix) {
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
-            const shader = new reshader.pbr.LitShader();
+            const shader = new reshader.pbr.LitShader({
+                positionAttribute : 'POSITION',
+                normalAttribute : 'NORMAL',
+                tangentAttribute : 'TANGENT',
+                colorAttribute : 'COLOR_0',
+                uv0Attribute : 'TEXCOORD_0',
+                uv1Attribute : 'TEXCOORD_1'
+            });
             const scenePromise = getScene();
             scenePromise.then(scene => {
                 renderer.render(
-                shader,
-                {
-                    viewMatrix, projViewMatrix,
-                        'resolution':canvas.width/canvas.height,
-                        'cameraPosition':camPos
+                    shader,
+                    {
+                        viewMatrix,
+                        projViewMatrix,
+
+                        'light_iblDFG': iblMaps.dfgLUT,
+                        'light_iblSpecular': iblMaps.prefilterMap,
+
+                        'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
+                        'cameraPosition':camPos,
+                        'iblSH': iblMaps.sh,
+                        'time': Date.now() / 1000,
+
+                        'lightColorIntensity': [1, 1, 1, 1],
+                        'sun': [1, 1, 1, 1],
+                        'lightDirection': [1, 1, 1],
+                        'iblLuminance': 1,
+                        'exposure': 1,
+                        'ev100': 0,
                     },
                     scene
                 );
@@ -127,7 +146,7 @@
                         });
                     });
                     const scene = new reshader.Scene(modelMeshes);
-                    return scene;     
+                    return scene;
                 });
             });
         }
@@ -145,11 +164,6 @@
                     //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
                     primitive : maptalks.Util.isNumber(primitive.mode) ? MODES[primitive.mode] : primitive.mode,
                     positionAttribute : 'POSITION',
-                    normalAttribute : 'NORMAL',
-                    tangentAttribute : 'TANGENT',
-                    colorAttribute : 'COLOR_0',
-                    uv0Attribute : 'TEXCOORD_0',
-                    uv1Attribute : 'TEXCOORD_1'
                 }
             );
             return modelGeometry;

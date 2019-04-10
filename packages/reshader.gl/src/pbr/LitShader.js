@@ -83,35 +83,38 @@ class LitShader extends MeshShader {
                 'iblLuminance',
                 'exposure',
                 'ev100',
-                'iblSH',
+
+                'light_iblDFG',
+                'light_iblSpecular',
+                'iblSH[9]',
                 //material中的uniforms
-                'baseColorTexture',
-                'baseColorFactor',
+                'material.baseColorTexture',
+                'material.baseColorFactor',
 
-                'metallicRoughnessTexture',
-                'metallicFactor',
-                'roughnessFactor',
+                'material.metallicRoughnessTexture',
+                'material.metallicFactor',
+                'material.roughnessFactor',
 
-                'occlusionTexture',    // default: 0.0
-                'occlusion',
-                'occlusionStrength',
+                'material.occlusionTexture',    // default: 0.0
+                'material.occlusion',
+                'material.occlusionStrength',
 
-                'emissiveTexture',
-                'emissiveFactor',
+                'material.emissiveTexture',
+                'material.emissiveFactor',
 
-                'postLightingColor',   // default: vec4(0.0)
+                'material.postLightingColor',   // default: vec4(0.0)
 
-                'reflectance',         // default: 0.5, not available with cloth
+                'material.reflectance',         // default: 0.5, not available with cloth
 
-                'clearCoat',           // default: 1.0, 是否是clearCoat, 0 or 1
-                'clearCoatRoughnessTexture',
-                'clearCoatRoughness',  // default: 0.0
-                'clearCoatNormalTexture',     // default: vec3(0.0, 0.0, 1.0)
+                'material.clearCoat',           // default: 1.0, 是否是clearCoat, 0 or 1
+                'material.clearCoatRoughnessTexture',
+                'material.clearCoatRoughness',  // default: 0.0
+                'material.clearCoatNormalTexture',     // default: vec3(0.0, 0.0, 1.0)
 
-                'anisotropy',          // default: 0.0
-                'anisotropyDirection', // default: vec3(1.0, 0.0, 0.0)
+                'material.anisotropy',          // default: 0.0
+                'material.anisotropyDirection', // default: vec3(1.0, 0.0, 0.0)
 
-                'normalTexture',              // default: vec3(0.0, 0.0, 1.0)
+                'material.normalTexture',              // default: vec3(0.0, 0.0, 1.0)
             ],
             extraCommandProps,
             defines: {

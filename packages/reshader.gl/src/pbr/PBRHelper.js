@@ -8,6 +8,7 @@ import prefilterFS from './glsl/helper/prefilter.frag';
 import dfgFS from './glsl/helper/dfg.frag';
 import dfgVS from './glsl/helper/dfg.vert';
 import coefficients from 'cubemap-sh';
+import skyboxFrag from '../skybox/skybox.frag';
 
 /**
  * {
@@ -46,23 +47,42 @@ export function createIBLMaps(regl, config = {}) {
 
     const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
+    const faces = getEnvmapPixels(regl, envMap, envCubeSize);
+    const sh = coefficients(faces, envCubeSize, 4);
+
     return {
         envMap,
         // irradianceMap,
         prefilterMap,
-        dfgLUT
+        dfgLUT,
+        sh
     };
 }
 
-/**
- * Generate spherical harmonics
- * @param {Number[][]} faces - an array of faces in the shown order (opengl order): posx, negx, posy, negy, posz, neg
- * @param {Number} envCubeSize - size of each face (default is 128)
- * @param {Number} numChannels - number of channels (3 for rgb or 4 for rgba, default is 4)
- * @returns {Number[]} sh
- */
-export function computeSH(faces, envCubeSize = 128, numChannels = 4) {
-    return coefficients(faces, envCubeSize, numChannels);
+function getEnvmapPixels(regl, cubemap, envCubeSize) {
+    const drawCube = regl({
+        frag : skyboxFrag,
+        vert : cubemapVS,
+        attributes : {
+            'aPosition' : cubeData.vertices
+        },
+        uniforms : {
+            'projMatrix' : regl.context('projMatrix'),
+            'viewMatrix' :  regl.context('viewMatrix'),
+            'cubeMap' : cubemap
+        },
+        elements : cubeData.indices
+    });
+    const faces = [];
+    const tmpFBO = regl.framebuffer(envCubeSize);
+    renderToCube(regl, tmpFBO, drawCube, {
+        size : envCubeSize
+    }, function (/* context, props, batchId */) {
+        const pixels = regl.read();
+        faces.push(pixels);
+    });
+    tmpFBO.destroy();
+    return faces;
 }
 
 /**

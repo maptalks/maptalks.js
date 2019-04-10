@@ -6,10 +6,10 @@
 
 precision mediump float;
 
-vec4 textureLod(sampler2D sampler1, vec2 coord, float lod) {
-    return texture2DLodEXT(sampler1, coord, lod);
+vec4 textureLod(sampler2D sampler, vec2 coord, float lod) {
+    return texture2DLodEXT(sampler, coord, lod);
 }
 
-vec4 textureLod(sampler2D sampler, vec3 coord, float lod) {
-    return texture2DProjLodEXT(sampler, coord, lod);
+vec4 textureLod(samplerCube sampler, vec3 coord, float lod) {
+    return textureCubeLodEXT(sampler, coord, lod);
 }

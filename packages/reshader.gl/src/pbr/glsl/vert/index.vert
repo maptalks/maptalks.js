@@ -1,3 +1,5 @@
+#define SHADER_NAME standard_vertex
+
     attribute vec3 aPosition;
     attribute vec3 aNormal;
 #ifdef HAS_ATTRIBUTE_TANGENTS
