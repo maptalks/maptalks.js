@@ -31,7 +31,7 @@
 
         const loader = new reshader.ResourceLoader(regl.texture(2));
         const renderer = new reshader.Renderer(regl);
-        const camPos = [0, 2, 18];
+        const camPos = [0, 2, 2];
 
         function main() {
             //载入环境光纹理
@@ -119,7 +119,8 @@
                 return loader.load().then(gltfData => {
                     console.log(gltfData);
                     const transformMat = mat4.identity([]);
-                    mat4.rotate(transformMat,transformMat,90,[1,0,0]);
+                    mat4.rotate(transformMat,transformMat,45,[1,1,0]);
+                    mat4.scale(transformMat,transformMat,[20,20,20]);
                     const modelMeshes = [];
                     const nodes = gltfData.scenes[0].nodes;
                     nodes.forEach((node, i) => {
