@@ -21,6 +21,7 @@ void main() {
     MaterialInputs inputs;
     initMaterial(inputs);
 
+    prepareMaterial(inputs);
     // Invoke user code
     getMaterial(inputs);
 

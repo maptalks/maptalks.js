@@ -62,14 +62,44 @@
         }
         main();
         function render() {
-            //生成相机矩阵
-            const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             //绘制gltf模型
-            drawGLTFModel(viewMatrix, projMatrix);
+            drawGLTFModel();
+
         }
-        function drawGLTFModel(viewMatrix, projMatrix) {
+        let SCENE;
+        let SHADER;
+        function drawScene() {
+            const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
-            const shader = new reshader.pbr.LitShader({
+            renderer.render(
+                SHADER,
+                {
+                    viewMatrix,
+                    projViewMatrix,
+
+                    'light_iblDFG': iblMaps.dfgLUT,
+                    'light_iblSpecular': iblMaps.prefilterMap,
+
+                    'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
+                    'cameraPosition':camPos,
+                    'iblSH': iblMaps.sh,
+                    'time': Date.now() / 1000,
+
+                    'lightColorIntensity': [1, 1, 1, 1],
+                    'sun': [1, 1, 1, 1],
+                    'lightDirection': [1, 1, 1],
+                    'iblLuminance': 1,
+                    'exposure': 1,
+                    'ev100': 0,
+                },
+                SCENE
+            );
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            requestAnimationFrame(drawScene);
+        }
+        function drawGLTFModel() {
+
+            SHADER = new reshader.pbr.LitShader({
                 positionAttribute : 'POSITION',
                 normalAttribute : 'NORMAL',
                 tangentAttribute : 'TANGENT',
@@ -79,30 +109,8 @@
             });
             const scenePromise = getScene();
             scenePromise.then(scene => {
-                renderer.render(
-                    shader,
-                    {
-                        viewMatrix,
-                        projViewMatrix,
-
-                        'light_iblDFG': iblMaps.dfgLUT,
-                        'light_iblSpecular': iblMaps.prefilterMap,
-
-                        'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
-                        'cameraPosition':camPos,
-                        'iblSH': iblMaps.sh,
-                        'time': Date.now() / 1000,
-
-                        'lightColorIntensity': [1, 1, 1, 1],
-                        'sun': [1, 1, 1, 1],
-                        'lightDirection': [1, 1, 1],
-                        'iblLuminance': 1,
-                        'exposure': 1,
-                        'ev100': 0,
-                    },
-                    scene
-                );
-                reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+                SCENE = scene;
+                drawScene();
             });
 
         }
@@ -119,8 +127,8 @@
                 return loader.load().then(gltfData => {
                     console.log(gltfData);
                     const transformMat = mat4.identity([]);
-                    mat4.rotate(transformMat,transformMat,45,[1,1,0]);
-                    mat4.scale(transformMat,transformMat,[20,20,20]);
+                    mat4.rotate(transformMat, transformMat, 45 * Math.PI / 180, [0, 1, 0]);
+                    mat4.scale(transformMat, transformMat, [60, 60, 60]);
                     const modelMeshes = [];
                     const nodes = gltfData.scenes[0].nodes;
                     nodes.forEach((node, i) => {

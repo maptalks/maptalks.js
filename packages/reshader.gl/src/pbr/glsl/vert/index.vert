@@ -20,6 +20,7 @@
 
     uniform mat3 normalMatrix;
     uniform mat4 modelMatrix;
+    uniform mat4 modelViewMatrix;
     uniform mat4 projViewModelMatrix;
 
     struct ObjectUniforms {
@@ -28,7 +29,7 @@
     } objectUniforms;
 
     vec4 computeWorldPosition() {
-        return vec4(aPosition, 1.0);
+        return modelViewMatrix * vec4(aPosition, 1.0);
     }
 
 

@@ -26,7 +26,7 @@ const DEFAULT_UNIFORMS = {
     clearCoatRoughness: 0,
     clearCoatNormalTexture: null,
 
-    anisotropy: 0,
+    anisotropy: undefined,
     anisotropyDirection: [1, 0, 0],
 
     normalTexture: null,

@@ -73,6 +73,13 @@ class LitShader extends MeshShader {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 },
+                {
+                    name : 'modelViewMatrix',
+                    type : 'function',
+                    fn : (context, props) => {
+                        return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                    }
+                },
                 //frag中的uniforms
                 'resolution',
                 'cameraPosition',
