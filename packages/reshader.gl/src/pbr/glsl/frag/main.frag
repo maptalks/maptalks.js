@@ -11,9 +11,9 @@ void blendPostLightingColor(const MaterialInputs material, inout vec4 color) {
 #endif
 
 void main() {
-    //uniforms.fs
-    initUniforms();
-    // See shading_parameters.fs
+    //uniforms.glsl
+    initFrameUniforms();
+    // See shading_parameters.frag
     // Computes global variables we need to evaluate material and lighting
     computeShadingParams();
 
@@ -22,7 +22,7 @@ void main() {
     initMaterial(inputs);
 
     // Invoke user code
-    material(inputs);
+    getMaterial(inputs);
 
     gl_FragColor = evaluateMaterial(inputs);
 

@@ -8,25 +8,26 @@ import fbo_picking_vert from './glsl/fbo_picking.vert';
 //webgl 2.0中的函数实现
 import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
 import fl_uniforms_glsl from '../pbr/glsl/uniforms.glsl';
+import fl_common_material_vert from '../pbr/glsl/vert/common_material.vert';
 import fl_inputs_vert from '..//pbr/glsl/vert/inputs.vert';
 
+import fl_header_frag from '../pbr/glsl/frag/gl_header.frag';
+import fl_inputs_frag from '../pbr/glsl/frag/inputs.frag';
 //构造各类shading_*的值
 import fl_shading_params from '../pbr/glsl/frag/shading_params.frag';
 //MaterialInputs结构定义
 import fl_common_material_frag from '../pbr/glsl/frag/common_material.frag';
 //PixelParams结构定义
 import fl_common_lighting_frag from '../pbr/glsl/frag/common_lighting.frag';
-
-import fl_material_uniforms_frag from '../pbr/glsl/frag/material_uniforms.frag';
-
+import fl_material_uniforms_frag from '../pbr/glsl/frag/gl_material_uniforms.frag';
+//灯光相关的uniforms初始化，如 light_iblDFG
+import fl_light_uniforms_frag from '../pbr/glsl/frag/gl_light_uniforms.frag';
 //IBL灯光的计算逻辑
 import fl_light_indirect from '../pbr/glsl/frag/light_indirect.frag';
 //有向光的计算逻辑
 import fl_light_directional from '../pbr/glsl/frag/light_directional.frag';
-
 //lit材质的逻辑
 import fl_shading_lit from '../pbr/glsl/frag/shading_lit.frag';
-
 //main
 import fl_main from '../pbr/glsl/frag/main.frag';
 
@@ -41,13 +42,17 @@ const ShaderChunk = {
     fl_uniforms_glsl,
 
     //pbr vertex includes
+    fl_common_material_vert,
     fl_inputs_vert,
 
     //pbr frag includes
+    fl_header_frag,
+    fl_inputs_frag,
     fl_shading_params,
     fl_common_material_frag,
     fl_common_lighting_frag,
     fl_material_uniforms_frag,
+    fl_light_uniforms_frag,
     fl_light_indirect,
     fl_light_directional,
     fl_shading_lit,

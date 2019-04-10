@@ -7,7 +7,8 @@ uniform struct Material {
         vec4        baseColorFactor;
     #endif
     #if defined(MATERIAL_HAS_METALLICROUGHNESS_MAP)
-        sampler2D   metallicRoughnessTexture; //G: roughness B: metallic
+        //G: roughness B: metallic
+        sampler2D   metallicRoughnessTexture;
     #else
         float       metallicFactor;
         float       roughnessFactor;
@@ -16,7 +17,8 @@ uniform struct Material {
     //https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#occlusiontextureinfo
     #if defined(MATERIAL_HAS_AMBIENT_OCCLUSION)
         #if defined(MATERIAL_HAS_AO_MAP)
-            sampler2D occlusionTexture;    // default: 0.0
+            // default: 0.0
+            sampler2D occlusionTexture;
         #else
             float occlusion;
         #endif
@@ -32,28 +34,34 @@ uniform struct Material {
     #endif
 
     #if defined(MATERIAL_HAS_POST_LIGHTING_COLOR)
-        vec4 postLightingColor;   // default: vec4(0.0)
+        // default: vec4(0.0)
+        vec4 postLightingColor;
     #endif
 
         //TODO reflectance 是否能做成材质？
-        float reflectance;         // default: 0.5, not available with cloth
+        // default: 0.5, not available with cloth
+        float reflectance;
     #if defined(MATERIAL_HAS_CLEAR_COAT)
-            float clearCoat;           // default: 1.0, 是否是clearCoat, 0 or 1
+            // default: 1.0, 是否是clearCoat, 0 or 1
+            float clearCoat;
         #if defined(MATERIAL_HAS_CLEARCOAT_ROUGNESS_MAP)
             sampler2D clearCoatRoughnessTexture;
         #else
-            float clearCoatRoughness;  // default: 0.0
+            // default: 0.0
+            float clearCoatRoughness;
         #endif
 
         #if defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
-            sampler2D clearCoatNormalTexture;     // default: vec3(0.0, 0.0, 1.0)
+            // default: vec3(0.0, 0.0, 1.0)
+            sampler2D clearCoatNormalTexture;
         #endif
     #endif
 
     #if defined(MATERIAL_HAS_ANISOTROPY)
-        //TODO 是否能定义成纹理？
-        float anisotropy;          // default: 0.0
-        vec3 anisotropyDirection; // default: vec3(1.0, 0.0, 0.0)
+        // default: 0.0
+        float anisotropy;
+        // default: vec3(1.0, 0.0, 0.0)
+        vec3 anisotropyDirection;
     #endif
 
     //TODO subsurface模型的定义
@@ -70,15 +78,16 @@ uniform struct Material {
     // not available when the shading model is unlit
     // must be set before calling prepareMaterial()
     #if defined(MATERIAL_HAS_NORMAL)
-        sampler2D normalTexture;              // default: vec3(0.0, 0.0, 1.0)
+        // default: vec3(0.0, 0.0, 1.0)
+        sampler2D normalTexture;
     #endif
 } material;
 
-void material(out MaterialVertexInputs materialInputs) {
+void getMaterial(out MaterialInputs materialInputs) {
     #if defined(MATERIAL_HAS_BASECOLOR_MAP)
         materialInputs.baseColor = texture2D(material.baseColorTexture, vTexCoord);
     #else
-        materialInputs.baseColor = baseColorFactor;
+        materialInputs.baseColor = material.baseColorFactor;
     #endif
 
     #if defined(MATERIAL_HAS_METALLICROUGHNESS_MAP)
@@ -99,12 +108,14 @@ void material(out MaterialVertexInputs materialInputs) {
         materialInputs.reflectance = material.reflectance;
     #endif
 
-    #if defined(MATERIAL_HAS_AO_MAP)
-        materialInputs.ambientOcclusion = texture2D(material.occlusionTexture, vTexCoord).r;
-    #else
-        materialInputs.ambientOcclusion = material.occlusion;
+    #if defined(MATERIAL_HAS_AMBIENT_OCCLUSION)
+        #if defined(MATERIAL_HAS_AO_MAP)
+            materialInputs.ambientOcclusion = texture2D(material.occlusionTexture, vTexCoord).r;
+        #else
+            materialInputs.ambientOcclusion = material.occlusion;
+        #endif
+        materialInputs.ambientOcclusion *= material.occlusionStrength;
     #endif
-    materialInputs.ambientOcclusion *= material.occlusionStrength;
 
     #if defined(MATERIAL_HAS_EMISSIVE)
         #if defined(MATERIAL_HAS_EMISSIVE_MAP)

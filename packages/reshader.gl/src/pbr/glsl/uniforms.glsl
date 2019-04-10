@@ -10,15 +10,15 @@ struct FrameUniforms {
     // mat4 worldFromClipMatrix,
     // mat4 lightFromWorldMatrix,
     // view
-    vec4 resolution, //viewport width, height, 1/width, 1/height
+    vec4 resolution; //viewport width, height, 1/width, 1/height
     // camera
-    vec3 cameraPosition,
+    vec3 cameraPosition;
     // time
-    float time,// time in seconds, with a 1 second period
+    float time;// time in seconds, with a 1 second period
     // directional light
-    vec4 lightColorIntensity,
-    vec4 sun, // cos(sunAngle), sin(sunAngle), 1/(sunAngle*HALO_SIZE-sunAngle), HALO_EXP
-    vec3 lightDirection,
+    vec4 lightColorIntensity;
+    vec4 sun; // cos(sunAngle), sin(sunAngle), 1/(sunAngle*HALO_SIZE-sunAngle), HALO_EXP
+    vec3 lightDirection;
     // int fParamsX,
     // shadow
     vec3 shadowBias;
@@ -30,12 +30,12 @@ struct FrameUniforms {
     // froxels (again, for alignment purposes)
     // oneOverFroxelDimension,
     // ibl
-    float iblLuminance, //TODO 干嘛的？
+    float iblLuminance; //TODO 干嘛的？
     // camera
-    float exposure, //TODO
-    float ev100, //TODO
+    float exposure; //TODO
+    float ev100; //TODO
     // ibl
-    vec3 iblSH[9],
+    vec3 iblSH[9];
     // user time
     // vec4 userTime,
 };
@@ -63,6 +63,10 @@ void initFrameUniforms() {
     frameUniforms.iblLuminance = iblLuminance;
     frameUniforms.exposure = exposure;
     frameUniforms.ev100 = ev100;
-    frameUniforms.iblSH = iblSH;
-    frameUniforms.shadowBias = [0, 0, 0];
+    for (int i = 0; i < 9; i++)
+    {
+        frameUniforms.iblSH[i] = iblSH[i];
+    }
+    // frameUniforms.iblSH = iblSH;
+    frameUniforms.shadowBias = vec3(0.0, 0.0, 0.0);
 }

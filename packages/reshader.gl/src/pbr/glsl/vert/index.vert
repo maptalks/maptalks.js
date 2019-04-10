@@ -23,16 +23,100 @@
     struct ObjectUniforms {
         mat4 worldFromModelMatrix;
         mat3 worldFromModelNormalMatrix;
+    } objectUniforms;
+
+    vec4 computeWorldPosition() {
+        return vec4(aPosition, 1.0);
     }
 
-    ObjectUniforms objectUniforms;
+
 
 #include <fl_uniforms_glsl>
 #include <fl_inputs_vert>
+#include <fl_common_material_vert>
 
 #ifdef HAS_SHADOWING
     #include <vsm_shadow_vert>
 #endif
+
+    void initAttributes() {
+        mesh_position = vec4(aPosition, 1.0);
+        #if defined(HAS_ATTRIBUTE_TANGENTS)
+            mesh_tangents = aTangent;
+        #endif
+        #if defined(HAS_ATTRIBUTE_COLOR)
+            mesh_color = vec4(aColor, 1.0);
+        #endif
+        #if defined(HAS_ATTRIBUTE_UV0)
+            mesh_uv0 = aTexCoord0;
+        #endif
+        #if defined(HAS_ATTRIBUTE_UV0)
+            mesh_uv1 = aTexCoord1;
+        #endif
+
+        //TODO SKINNING的相关属性
+        // mesh_bone_indices // vec4
+        // mesh_bone_weights // vec4
+    }
+
+    void initObjectUniforms() {
+        objectUniforms.worldFromModelMatrix = modelMatrix;
+        objectUniforms.worldFromModelNormalMatrix = normalMatrix;
+    }
+
+
+    /**
+    * Extracts the normal and tangent vectors of the tangent frame encoded in the
+    * specified quaternion.
+    */
+    void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
+        //TODO 暂时直接读取aNormal和aTangent，而不封装为 quaternion
+        //封装后的实现在 common_math.glsl 中
+        n = aNormal;
+        t = q.xyz;
+    }
+
+    void toTangentFrame(const highp vec4 q, out highp vec3 n) {
+        //TODO 暂时直接读取aNormal和aTangent，而不封装为 quaternion
+        //封装后的实现在 common_math.glsl 中
+        n = aNormal;
+    }
+
+    void initTangents(inout MaterialVertexInputs material) {
+        #if defined(HAS_ATTRIBUTE_TANGENTS)
+            // If the material defines a value for the "normal" property, we need to output
+            // the full orthonormal basis to apply normal mapping
+            #if defined(MATERIAL_HAS_ANISOTROPY) || defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
+                // Extract the normal and tangent in world space from the input quaternion
+                // We encode the orthonormal basis as a quaternion to save space in the attributes
+                toTangentFrame(mesh_tangents, material.worldNormal, vertex_worldTangent);
+
+                #if defined(HAS_SKINNING)
+                    skinNormal(material.worldNormal, mesh_bone_indices, mesh_bone_weights);
+                    skinNormal(vertex_worldTangent, mesh_bone_indices, mesh_bone_weights);
+                #endif
+
+                // We don't need to normalize here, even if there's a scale in the matrix
+                // because we ensure the worldFromModelNormalMatrix pre-scales the normal such that
+                // all its components are < 1.0. This precents the bitangent to exceed the range of fp16
+                // in the fragment shader, where we renormalize after interpolation
+                vertex_worldTangent = objectUniforms.worldFromModelNormalMatrix * vertex_worldTangent;
+                material.worldNormal = objectUniforms.worldFromModelNormalMatrix * material.worldNormal;
+
+                // Reconstruct the bitangent from the normal and tangent. We don't bother with
+                // normalization here since we'll do it after interpolation in the fragment stage
+                vertex_worldBitangent =
+                        cross(material.worldNormal, vertex_worldTangent) * sign(mesh_tangents.w);
+            #else
+                // Without anisotropy or normal mapping we only need the normal vector
+                toTangentFrame(mesh_tangents, material.worldNormal);
+                material.worldNormal = objectUniforms.worldFromModelNormalMatrix * material.worldNormal;
+                #if defined(HAS_SKINNING)
+                    skinNormal(material.worldNormal, mesh_bone_indices, mesh_bone_weights);
+                #endif
+            #endif
+        #endif
+    }
 
     void main()
     {
@@ -73,71 +157,6 @@
         #endif
     }
 
-    void initTangents(material) {
-        #if defined(HAS_ATTRIBUTE_TANGENTS)
-        // If the material defines a value for the "normal" property, we need to output
-        // the full orthonormal basis to apply normal mapping
-        #if defined(MATERIAL_HAS_ANISOTROPY) || defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
-            // Extract the normal and tangent in world space from the input quaternion
-            // We encode the orthonormal basis as a quaternion to save space in the attributes
-            toTangentFrame(mesh_tangents, material.worldNormal, vertex_worldTangent);
-
-            #if defined(HAS_SKINNING)
-                skinNormal(material.worldNormal, mesh_bone_indices, mesh_bone_weights);
-                skinNormal(vertex_worldTangent, mesh_bone_indices, mesh_bone_weights);
-            #endif
-
-            // We don't need to normalize here, even if there's a scale in the matrix
-            // because we ensure the worldFromModelNormalMatrix pre-scales the normal such that
-            // all its components are < 1.0. This precents the bitangent to exceed the range of fp16
-            // in the fragment shader, where we renormalize after interpolation
-            vertex_worldTangent = objectUniforms.worldFromModelNormalMatrix * vertex_worldTangent;
-            material.worldNormal = objectUniforms.worldFromModelNormalMatrix * material.worldNormal;
-
-            // Reconstruct the bitangent from the normal and tangent. We don't bother with
-            // normalization here since we'll do it after interpolation in the fragment stage
-            vertex_worldBitangent =
-                    cross(material.worldNormal, vertex_worldTangent) * sign(mesh_tangents.w);
-        #else // MATERIAL_HAS_ANISOTROPY || MATERIAL_HAS_NORMAL
-            // Without anisotropy or normal mapping we only need the normal vector
-            toTangentFrame(mesh_tangents, material.worldNormal);
-            material.worldNormal = objectUniforms.worldFromModelNormalMatrix * material.worldNormal;
-            #if defined(HAS_SKINNING)
-                skinNormal(material.worldNormal, mesh_bone_indices, mesh_bone_weights);
-            #endif
-        #endif // MATERIAL_HAS_ANISOTROPY || MATERIAL_HAS_NORMAL
-
-    }
-
-    void initAttributes() {
-        mesh_position = vec4(aPosition, 1.0);
-        #if defined(HAS_ATTRIBUTE_TANGENTS)
-            mesh_tangents = aTangent;
-        #endif
-        #if defined(HAS_ATTRIBUTE_COLOR)
-            mesh_color = vec4(aColor, 1.0);
-        #endif
-        #if defined(HAS_ATTRIBUTE_UV0)
-            mesh_uv0 = aTexCoord0;
-        #endif
-        #if defined(HAS_ATTRIBUTE_UV0)
-            mesh_uv1 = aTexCoord1;
-        #endif
-
-        //TODO SKINNING的相关属性
-        // mesh_bone_indices // vec4
-        // mesh_bone_weights // vec4
-    }
-
-    void initObjectUniforms() {
-        objectUniforms.worldFromModelMatrix = modelMatrix;
-        objectUniforms.worldFromModelNormalMatrix = normalMatrix;
-    }
-
-    void computeWorldPosition() {
-        return vec4(aPosition, 1.0);
-    }
-
     //------------------------------------------------------------------------------
     // Shadowing
     //------------------------------------------------------------------------------
@@ -166,12 +185,3 @@
     }
     #endif
 
-    /**
-    * Extracts the normal and tangent vectors of the tangent frame encoded in the
-    * specified quaternion.
-    */
-    void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
-        //暂时直接读取aNormal和aTangent，而不封装为 quaternion
-        n = aNormal;
-        t = q.xyz;
-    }

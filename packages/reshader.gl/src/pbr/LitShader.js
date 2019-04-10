@@ -113,7 +113,10 @@ class LitShader extends MeshShader {
 
                 'normalTexture',              // default: vec3(0.0, 0.0, 1.0)
             ],
-            extraCommandProps
+            extraCommandProps,
+            defines: {
+                'IBL_MAX_MIP_LEVEL' : '8.0' //log(256) / log(2), PBRHelper中createPrefilterCube的prefilterCubeSize
+            }
         });
         this.positionAttribute = positionAttribute;
         this.normalAttribute = normalAttribute;

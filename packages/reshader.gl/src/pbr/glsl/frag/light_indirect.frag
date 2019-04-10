@@ -1,3 +1,6 @@
+#if defined(GL_EXT_shader_texture_lod)
+    #extension GL_EXT_shader_texture_lod : enable
+#endif
 //------------------------------------------------------------------------------
 // Image based lighting configuration
 //------------------------------------------------------------------------------
