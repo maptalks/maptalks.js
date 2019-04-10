@@ -177,16 +177,18 @@ class IconPainter extends CollisionPainter {
     }
 
     deleteMesh(meshes, keepGeometry) {
-        if (meshes) {
+        if (!meshes) {
             return;
         }
         if (keepGeometry) {
             //keepGeometry时，文字纹理应该保留
             if (Array.isArray(meshes)) {
                 meshes.forEach(m => {
-                    delete m.material.uniforms.texture;
+                    if (m && m.material) {
+                        delete m.material.uniforms.texture;
+                    }
                 });
-            } else {
+            } else if (meshes.material) {
                 delete meshes.material.uniforms.texture;
             }
         }

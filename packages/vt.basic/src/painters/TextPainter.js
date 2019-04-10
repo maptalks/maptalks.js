@@ -748,9 +748,11 @@ export default class TextPainter extends CollisionPainter {
             //keepGeometry时，文字纹理应该保留
             if (Array.isArray(meshes)) {
                 meshes.forEach(m => {
-                    delete m.material.uniforms.texture;
+                    if (m && m.material) {
+                        delete m.material.uniforms.texture;
+                    }
                 });
-            } else {
+            } else if (meshes.material) {
                 delete meshes.material.uniforms.texture;
             }
         }
