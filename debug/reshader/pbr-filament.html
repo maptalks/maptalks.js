@@ -121,9 +121,9 @@
             });
         }
         function getScene() {
-            var url = 'gltf/AnimatedMorphCube/AnimatedMorphCube.gltf';
+            var url = 'gltf/AnimatedMorphSphere/AnimatedMorphSphere.gltf';
             return gltf.Ajax.getJSON(url, {}).then((json) => {
-                const loader = new gltf.GLTFLoader('gltf/AnimatedMorphCube', json);
+                const loader = new gltf.GLTFLoader('gltf/AnimatedMorphSphere', json);
                 return loader.load().then(gltfData => {
                     console.log(gltfData);
                     const transformMat = mat4.identity([]);
