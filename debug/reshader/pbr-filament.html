@@ -63,7 +63,7 @@
         main();
         function render() {
             //绘制gltf模型
-            //drawGLTFModel();
+            // drawGLTFModel();
             drawSphere();
         }
         let SCENE;
@@ -158,9 +158,9 @@
         }
 
         function _getScene() {
-            var url = 'gltf/MetalRoughSpheres/AnimatedMorphSphere.gltf';
+            var url = 'gltf/MetalRoughSpheres/MetalRoughSpheres.gltf';
             return gltf.Ajax.getJSON(url, {}).then((json) => {
-                const loader = new gltf.GLTFLoader('gltf/AnimatedMorphSphere', json);
+                const loader = new gltf.GLTFLoader('gltf/MetalRoughSpheres', json);
                 return loader.load().then(gltfData => {
                     console.log(gltfData);
                     const transformMat = mat4.identity([]);
@@ -200,12 +200,22 @@
                 });
             });
         }
-
+        function extractMesh(children) {
+            //TODO
+            //children里面可能由很多mesh，后面还需要完善
+            for (let i = 0; i < children.length; i++) {
+                if (children[i].meshes) {
+                    return children[i].meshes;
+                }
+            }
+            return [];
+        }
         function createGeometry(primitive) {
             const attributes = {};
             for (const attr in primitive.attributes) {
                 attributes[attr] =  primitive.attributes[attr].array;
             }
+            delete attributes['TEXCOORD_0'];
             const modelGeometry = new reshader.Geometry(
                 attributes,
                 primitive.indices,
