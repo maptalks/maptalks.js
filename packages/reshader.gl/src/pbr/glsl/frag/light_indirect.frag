@@ -92,7 +92,8 @@ vec3 Irradiance_SphericalHarmonics(vec3 n) {
  */
 vec3 diffuseIrradiance(vec3 n) {
     //TODO 这里何时读取的环境光图片，还有待学习
-    return Irradiance_SphericalHarmonics(n);
+    // return Irradiance_SphericalHarmonics(n);
+    return textureCube(light_iblDiffuse, n).rgb;
 }
 
 //------------------------------------------------------------------------------
@@ -121,11 +122,19 @@ vec3 getSpecularDominantDirection(vec3 n, vec3 r, float linearRoughness) {
 #endif
 }
 
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
 vec3 specularDFG(PixelParams pixel) {
 #if defined(SHADING_MODEL_CLOTH)
     return pixel.f0 * pixel.dfg.z;
 #elif !defined(USE_MULTIPLE_SCATTERING_COMPENSATION)
     return pixel.f0 * pixel.dfg.x + pixel.dfg.y;
+
+    // float cosTheta = max(dot(shading_normal, shading_view), 0.0);
+    // return fresnelSchlickRoughness(cosTheta, pixel.f0, pixel.roughness) * pixel.dfg.x + pixel.dfg.y;
 #else
     return mix(pixel.dfg.xxx, pixel.dfg.yyy, pixel.f0);
 #endif
@@ -413,4 +422,7 @@ void evaluateIBL(MaterialInputs material, PixelParams pixel, inout vec3 color) {
 
     // Note: iblLuminance is already premultiplied by the exposure
     color.rgb += (Fd + Fr) * frameUniforms.iblLuminance;
+
+    // color.rgb = Fr;
+    // color.rgb = shading_normal;
 }

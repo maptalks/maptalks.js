@@ -59,10 +59,11 @@ class LitShader extends MeshShader {
                     name: 'normalMatrix',
                     type: 'function',
                     fn: (context, props) => {
-                        const modelView = mat4.multiply(MAT4, props['viewMatrix'], props['modelMatrix']);
-                        const inverted = mat4.invert(modelView, modelView);
-                        const transposed = mat4.transpose(inverted, inverted);
-                        return mat3.fromMat4([], transposed);
+                        // const modelView = mat4.multiply(MAT4, props['viewMatrix'], props['modelMatrix']);
+                        // const inverted = mat4.invert(modelView, modelView);
+                        // const transposed = mat4.transpose(inverted, inverted);
+                        // return mat3.fromMat4([], transposed);
+                        return mat3.fromMat4([], props['modelMatrix']);
                     }
                 },
                 'modelMatrix',
@@ -90,6 +91,8 @@ class LitShader extends MeshShader {
                 'iblLuminance',
                 'exposure',
                 'ev100',
+
+                'light_iblDiffuse',
 
                 'light_iblDFG',
                 'light_iblSpecular',

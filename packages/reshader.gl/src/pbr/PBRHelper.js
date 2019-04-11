@@ -10,6 +10,7 @@ import dfgVS from './glsl/helper/dfg.vert';
 import coefficients from 'cubemap-sh';
 import skyboxFrag from '../skybox/skybox.frag';
 
+import irradianceFS from './glsl/helper/irradiance_convolution.frag';
 /**
  * {
  *  envTexture,
@@ -30,7 +31,7 @@ export function createIBLMaps(regl, config = {}) {
 
     const envCubeSize = config.envCubeSize || 512;
 
-    // const irradianceCubeSize = config.irradianceCubeSize || 32;
+    const irradianceCubeSize = config.irradianceCubeSize || 32;
 
     const sampleSize = config.sampleSize || 1024;
     const roughnessLevels = config.roughnessLevels || 256;
@@ -50,9 +51,11 @@ export function createIBLMaps(regl, config = {}) {
     const faces = getEnvmapPixels(regl, envMap, envCubeSize);
     const sh = coefficients(faces, envCubeSize, 4);
 
+    const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
+
     return {
         envMap,
-        // irradianceMap,
+        irradianceMap,
         prefilterMap,
         dfgLUT,
         sh
@@ -85,59 +88,21 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
     return faces;
 }
 
-/**
- * Read 6 faces images pixels
- * @param {String[] | Image[]} input
- * @returns {Number[][]} faces
- */
-export function getSkyImagePixels(input) {
-    if (!Array.isArray(input)) {
-        throw new Error('input images must be an array');
-    }
-    const promises = [];
-    if (typeof input[0] === 'string') {
-        for (let i = 0; i < input.length; i++) {
-            const url = input[i];
-            promises.push(new Promise((resolve, reject) => {
-                const image = new Image();
-                image.onload = function () {
-                    resolve(image);
-                };
-                image.onerror = function () {
-                    reject(image);
-                };
-                image.onabort = function () {
-                    reject(image);
-                };
-                image.src = url;
-            }));
-        }
-    } else {
-        promises.push(...input);
-    }
-    return Promise.all(promises).then(images => {
-        const faces = [
-            getPixels(images[0]),
-            getPixels(images[1]),
-            getPixels(images[2]),
-            getPixels(images[3]),
-            getPixels(images[4]),
-            getPixels(images[5]),
-        ];
-        return faces;
+//solve diffuse integral by convolution to create an irradiance (cube)map.
+function createIrradianceCube(regl, envCube, SIZE) {
+    SIZE = SIZE || 32;
+    const irradianceCube = regl.framebufferCube({
+        radius : SIZE,
+        color : regl.cube({
+            radius : SIZE,
+            wrap : 'clamp', // shortcut for both wrapS and wrapT
+            min : 'linear',
+            mag : 'linear'
+        })
     });
-}
 
-/**
- * Read hdr format sky map's pixels
- * @param {REGL} regl
- * @param {REGLTexture} envTexture
- * @param {Number} envCubeSize
- * @returns {Number[][]} faces
- */
-export function getSkyHDRPixels(regl, envTexture, envCubeSize) {
     const drawCube = regl({
-        frag : equirectangularMapFS,
+        frag : irradianceFS,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -145,31 +110,14 @@ export function getSkyHDRPixels(regl, envTexture, envCubeSize) {
         uniforms : {
             'projMatrix' : regl.context('projMatrix'),
             'viewMatrix' :  regl.context('viewMatrix'),
-            'equirectangularMap' : envTexture
+            'environmentMap' : envCube
         },
         elements : cubeData.indices
     });
-    return new Promise((resolve) => {
-        const faces = [];
-        const tmpFBO = regl.framebuffer(envCubeSize);
-        renderToCube(regl, tmpFBO, drawCube, {
-            size : envCubeSize
-        }, function (/* context, props, batchId */) {
-            const pixels = regl.read();
-            faces.push(pixels);
-        });
-        resolve(faces);
-    });
-}
 
-const canvas = document.createElement('canvas');
+    renderToCube(regl, irradianceCube, drawCube);
 
-function getPixels(image) {
-    const context = canvas.getContext('2d');
-    canvas.width = image.width;
-    canvas.height = image.height;
-    context.drawImage(image, 0, 0, image.width, image.height);
-    return context.getImageData(0, 0, image.width, image.height).data;
+    return irradianceCube;
 }
 
 /**

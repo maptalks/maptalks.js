@@ -79,6 +79,7 @@
 
                     'light_iblDFG': iblMaps.dfgLUT,
                     'light_iblSpecular': iblMaps.prefilterMap,
+                    'light_iblDiffuse': iblMaps.irradianceMap,
 
                     'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
                     'cameraPosition':camPos,
@@ -145,7 +146,11 @@
                             mesh.primitives.forEach(primitive => {
                                 const modelGeometry = createGeometry(primitive);
                                 const defines = getGeometryDefines(modelGeometry);
-                                const material = new reshader.pbr.LitMaterial();
+                                const material = new reshader.pbr.LitMaterial({
+                                    metallicFactor : 1,
+                                    roughnessFactor : 0,
+                                    reflectance: 1
+                                });
                                 //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
                                 const modelMesh = new reshader.Mesh(modelGeometry, material);
                                 modelMeshes.push(modelMesh);
