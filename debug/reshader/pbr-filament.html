@@ -40,31 +40,28 @@
         let camPos = [0, 0, 4];
 
         function main() {
-            //载入环境光纹理
-            const hdr = new reshader.Texture2D(
-                {
-                    url : './ibl/resources/env.hdr',
-                    arrayBuffer : true,
-                    hdr : true,
-                    type : 'float',
-                    format : 'rgba',
-                    flipY : true
-                },
-                loader
-            );
-            if (!hdr.isReady()) {
-                loader.on('complete', function () {
-                    if (hdr.isReady()) {
-                        //环境光纹理载入，重新生成ibl纹理
-                        iblMaps = createMaps(hdr);
-                    }
-                    render();
-                });
-            } else {
-                //生成ibl纹理
-                iblMaps = createMaps(hdr);
+            const skyboxTextures = [
+                "./ibl/resources/skybox/right.jpg",
+                "./ibl/resources/skybox/left.jpg",
+                "./ibl/resources/skybox/top.jpg",
+                "./ibl/resources/skybox/bottom.jpg",
+                "./ibl/resources/skybox/back.jpg",
+                "./ibl/resources/skybox/front.jpg"
+            ];
+
+            //载入天空盒纹理图片
+            const promises = skyboxTextures.map(url => new Promise(function (resolve, reject) {
+                const img = new Image();
+                img.onload = function () {
+                    resolve(img);
+                };
+                img.src = url;
+            }));
+
+            Promise.all(promises).then(images => {
+                iblMaps = createMaps(images);
                 render();
-            }
+            });
         }
         main();
         function render() {
@@ -129,16 +126,18 @@
 
         function createMaps(hdr) {
             return reshader.pbr.PBRHelper.createIBLMaps(regl, {
-                envTexture : hdr.getREGLTexture(regl)
+                envTexture : hdr,
+                envCubeSize: 2048,
+                prefilterCubeSize: 64
             });
         }
         function getScene() {
             const meshes = [];
             //创建纹理
             const material = new reshader.pbr.LitMaterial({
-                metallicFactor : 1,
+                metallicFactor : 0,
                 roughnessFactor : 0,
-                reflectance: 1
+                reflectance: 0.5
             });
             const { data, indices } = generateSphereData();
             const modelMatrix = mat4.identity([]);
@@ -149,7 +148,7 @@
             mesh.setLocalTransform(modelMatrix);
             mesh.setDefines(defines);
             meshes.push(mesh);
-            return new reshader.Scene(meshes);                    
+            return new reshader.Scene(meshes);
         }
 
         function generateSphereData() {
@@ -251,21 +250,7 @@
             };
         }
         function getGeometryDefines(geometry) {
-            const defines = {};
-            if (geometry.data['TANGENT']) {
-                defines['HAS_ATTRIBUTE_TANGENTS'] = 1;
-            }
-            if (geometry.data['COLOR_0']) {
-                defines['HAS_COLOR'] = 1;
-                defines['HAS_ATTRIBUTE_COLOR'] = 1;
-            }
-            if (geometry.data['TEXCOORD_0']) {
-                defines['HAS_ATTRIBUTE_UV0'] = 1;
-            }
-            if (geometry.data['TEXCOORD_1']) {
-                defines['HAS_ATTRIBUTE_UV1'] = 1;
-            }
-            return defines;
+            return SHADER.getGeometryDefines(geometry);
         }
 
         canvas.onmousedown = function(ev) { handleMouseDown(ev); };

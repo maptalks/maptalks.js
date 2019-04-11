@@ -141,7 +141,7 @@ class LitShader extends MeshShader {
 
     getGeometryDefines(geometry) {
         const defines = {};
-        if (geometry.data[this.tangentAttribute]) {
+        if (geometry.data[this.tangentAttribute] || geometry.data[this.normalAttribute]) {
             defines['HAS_ATTRIBUTE_TANGENTS'] = 1;
         }
         if (geometry.data[this.colorAttribute]) {

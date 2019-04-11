@@ -91,7 +91,6 @@ vec3 Irradiance_SphericalHarmonics(vec3 n) {
  * 这个实现里，可以避免从 irradianceMap 中采样纹理，省略掉一次纹理操作
  */
 vec3 diffuseIrradiance(vec3 n) {
-    //TODO 这里何时读取的环境光图片，还有待学习
     // return Irradiance_SphericalHarmonics(n);
     return textureCube(light_iblDiffuse, n).rgb;
 }
@@ -423,6 +422,6 @@ void evaluateIBL(MaterialInputs material, PixelParams pixel, inout vec3 color) {
     // Note: iblLuminance is already premultiplied by the exposure
     color.rgb += (Fd + Fr) * frameUniforms.iblLuminance;
 
-    // color.rgb = Fr;
+    // color.rgb = Fd;
     // color.rgb = shading_normal;
 }

@@ -1,8 +1,10 @@
 #define SHADER_NAME standard_vertex
 
     attribute vec3 aPosition;
-    attribute vec3 aNormal;
 #ifdef HAS_ATTRIBUTE_TANGENTS
+    attribute vec3 aNormal;
+#endif
+#if defined(MATERIAL_HAS_ANISOTROPY) || defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
     attribute vec4 aTangent;
 #endif
 #ifdef HAS_COLOR
@@ -29,7 +31,7 @@
     } objectUniforms;
 
     vec4 computeWorldPosition() {
-        return modelViewMatrix * vec4(aPosition, 1.0);
+        return modelMatrix * vec4(aPosition, 1.0);
     }
 
 
@@ -44,7 +46,7 @@
 
     void initAttributes() {
         mesh_position = vec4(aPosition, 1.0);
-        #if defined(HAS_ATTRIBUTE_TANGENTS)
+        #if defined(MATERIAL_HAS_ANISOTROPY) || defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
             mesh_tangents = aTangent;
         #endif
         #if defined(HAS_ATTRIBUTE_COLOR)

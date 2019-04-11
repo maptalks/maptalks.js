@@ -41,15 +41,20 @@ export function createIBLMaps(regl, config = {}) {
 
     //----------------------------------------------------
     // generate ibl maps
-
-    const envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize);
+    let envMap;
+    if (!Array.isArray(envTexture)) {
+        envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize);
+    } else {
+        const cube = regl.cube(...envTexture);
+        envMap = createSkybox(regl, cube, envCubeSize);
+    }
 
     const prefilterMap = createPrefilterCube(regl, envMap, prefilterCubeSize, sampleSize, roughnessLevels);
 
     const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
-    const faces = getEnvmapPixels(regl, envMap, envCubeSize);
-    const sh = coefficients(faces, envCubeSize, 4);
+    // const faces = getEnvmapPixels(regl, envMap, envCubeSize);
+    // const sh = coefficients(faces, envCubeSize, 4);
 
     const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
 
@@ -58,8 +63,27 @@ export function createIBLMaps(regl, config = {}) {
         irradianceMap,
         prefilterMap,
         dfgLUT,
-        sh
+        sh: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
     };
+}
+
+function createSkybox(regl, cubemap, envCubeSize) {
+    const drawCube = regl({
+        frag : skyboxFrag,
+        vert : cubemapVS,
+        attributes : {
+            'aPosition' : cubeData.vertices
+        },
+        uniforms : {
+            'projMatrix' : regl.context('projMatrix'),
+            'viewMatrix' :  regl.context('viewMatrix'),
+            'cubeMap' : cubemap
+        },
+        elements : cubeData.indices
+    });
+    const tmpFBO = regl.framebufferCube(envCubeSize);
+    renderToCube(regl, tmpFBO, drawCube);
+    return tmpFBO;
 }
 
 function getEnvmapPixels(regl, cubemap, envCubeSize) {
