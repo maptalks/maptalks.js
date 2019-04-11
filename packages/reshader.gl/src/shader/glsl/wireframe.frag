@@ -22,8 +22,9 @@ uniform bool squeeze;
 uniform float squeezeMin;
 uniform float squeezeMax;
 
-uniform vec3 stroke;
-uniform vec3 fill;
+uniform vec4 stroke;
+uniform vec4 fill;
+uniform float opacity;
 #extension GL_OES_standard_derivatives : enable
 
 const float PI = 3.14159265;
@@ -78,16 +79,16 @@ vec4 getStyledWireframe (vec3 barycentric) {
   // now compute the final color of the mesh
   vec4 outColor = vec4(0.0);
   if (seeThrough) {
-    outColor = vec4(stroke, edge);
+    outColor = vec4(stroke.xyz, edge);
     if (insideAltColor && !gl_FrontFacing) {
-      outColor.rgb = fill;
+       outColor.rgb = fill.xyz;
     }
   } else {
-    vec3 mainStroke = mix(fill, stroke, edge);
-    outColor.a = 1.0;
+    vec3 mainStroke = mix(fill.xyz, stroke.xyz, edge);
+    outColor.a = fill.a;
     if (dualStroke) {
       float inner = 1.0 - aastep(secondThickness, d);
-      vec3 wireColor = mix(fill, stroke, abs(inner - edge));
+      vec3 wireColor = mix(fill.xyz, stroke.xyz, abs(inner - edge));
       outColor.rgb = wireColor;
     } else {
       outColor.rgb = mainStroke;
@@ -98,5 +99,5 @@ vec4 getStyledWireframe (vec3 barycentric) {
 }
 
 void main () {
-  gl_FragColor = getStyledWireframe(vBarycentric);
+  gl_FragColor = getStyledWireframe(vBarycentric) * opacity;
 }

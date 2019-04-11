@@ -8,9 +8,9 @@ uniform float specularStrength;
 
 
 uniform vec3 lightPosition;
-uniform vec3 lightAmbient;
-uniform vec3 lightDiffuse;
-uniform vec3 lightSpecular;
+uniform vec4 lightAmbient;
+uniform vec4 lightDiffuse;
+uniform vec4 lightSpecular;
 
 varying vec3 vNormal;
 varying vec4 vFragPos;
@@ -23,9 +23,9 @@ void main() {
     //环境光
     // float ambientStrength = 0.5;
     #ifdef USE_BASECOLORTEXTURE
-    vec3 ambient = ambientStrength * lightAmbient * texture2D(sample, TexCoords).rgb;
+    vec3 ambient = ambientStrength * lightAmbient.xyz * texture2D(sample, TexCoords).rgb;
     #else
-    vec3 ambient = ambientStrength * lightAmbient;
+    vec3 ambient = ambientStrength * lightAmbient.xyz;
     #endif
 
 
@@ -34,9 +34,9 @@ void main() {
     vec3 lightDir = vec3(normalize(lightPosition -vec3(vFragPos)));
     float diff = max(dot(norm, lightDir), 0.0);
     #ifdef USE_BASECOLORTEXTURE
-    vec3 diffuse = lightDiffuse * diff *texture2D(sample, TexCoords).rgb;
+    vec3 diffuse = lightDiffuse.xyz * diff *texture2D(sample, TexCoords).rgb;
     #else
-    vec3 diffuse = lightDiffuse * diff;
+    vec3 diffuse = lightDiffuse.xyz * diff;
     #endif
 
     //镜面反色光
@@ -44,7 +44,7 @@ void main() {
     // vec3 reflectDir = reflect(-lightDir, norm);
     vec3 halfwayDir = normalize(lightDir+viewDir);
     float spec = pow(max(dot(norm, halfwayDir), 0.0), materialShininess);
-    vec3 specular = specularStrength * lightSpecular * spec;
+    vec3 specular = specularStrength * lightSpecular.xyz * spec;
 
 
     vec3 result = ambient +diffuse +specular;
