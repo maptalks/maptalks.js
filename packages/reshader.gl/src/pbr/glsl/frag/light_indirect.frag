@@ -34,7 +34,7 @@
 // IBL utilities
 //------------------------------------------------------------------------------
 
-vec3 decodeDataForIBL(vec4 data) {
+vec3 decodeDataForIBL(const vec4 data) {
 #if defined(IBL_USE_RGBM)
     return decodeRGBM(data);
 #else
@@ -64,42 +64,60 @@ vec3 prefilteredDFG(float roughness, float NoV) {
 // IBL irradiance implementations
 //------------------------------------------------------------------------------
 
-vec3 Irradiance_SphericalHarmonics(vec3 n) {
-    return max(
-          frameUniforms.iblSH[0]
-#if SPHERICAL_HARMONICS_BANDS >= 2
-        + frameUniforms.iblSH[1] * (n.y)
-        + frameUniforms.iblSH[2] * (n.z)
-        + frameUniforms.iblSH[3] * (n.x)
-#endif
-#if SPHERICAL_HARMONICS_BANDS >= 3
-        + frameUniforms.iblSH[4] * (n.y * n.x)
-        + frameUniforms.iblSH[5] * (n.y * n.z)
-        + frameUniforms.iblSH[6] * (3.0 * n.z * n.z - 1.0)
-        + frameUniforms.iblSH[7] * (n.z * n.x)
-        + frameUniforms.iblSH[8] * (n.x * n.x - n.y * n.y)
-#endif
-        , 0.0);
+// vec3 Irradiance_SphericalHarmonics(const vec3 n) {
+//     return max(
+//           frameUniforms.iblSH[0]
+// #if SPHERICAL_HARMONICS_BANDS >= 2
+//         + frameUniforms.iblSH[1] * (n.y)
+//         + frameUniforms.iblSH[2] * (n.z)
+//         + frameUniforms.iblSH[3] * (n.x)
+// #endif
+// #if SPHERICAL_HARMONICS_BANDS >= 3
+//         + frameUniforms.iblSH[4] * (n.y * n.x)
+//         + frameUniforms.iblSH[5] * (n.y * n.z)
+//         + frameUniforms.iblSH[6] * (3.0 * n.z * n.z - 1.0)
+//         + frameUniforms.iblSH[7] * (n.z * n.x)
+//         + frameUniforms.iblSH[8] * (n.x * n.x - n.y * n.y)
+// #endif
+//         , 0.0);
+// }
+
+
+vec3 sh(const vec3 sph[9], const in vec3 normal) {
+  float x = normal.x;
+  float y = normal.y;
+  float z = normal.z;
+
+  vec3 result = (
+    sph[0] +
+
+    sph[1] * x +
+    sph[2] * y +
+    sph[3] * z +
+
+    sph[4] * z * x +
+    sph[5] * y * z +
+    sph[6] * y * x +
+    sph[7] * (3.0 * z * z - 1.0) +
+    sph[8] * (x*x - y*y)
+  );
+
+  return max(result, vec3(0.0));
 }
 
 //------------------------------------------------------------------------------
 // IBL irradiance dispatch
 //------------------------------------------------------------------------------
-/**
- * 用球体谐波(Speherical Harmonics) 近似计算给定法线方向的ibl散射部分的辐射量
- * 在老的实现中，是用预先卷积绘制到帧缓冲(irradianceMap)来实现的
- * 这个实现里，可以避免从 irradianceMap 中采样纹理，省略掉一次纹理操作
- */
-vec3 diffuseIrradiance(vec3 n) {
+vec3 diffuseIrradiance(const vec3 n) {
     // return Irradiance_SphericalHarmonics(n);
-    return textureCube(light_iblDiffuse, n).rgb;
+    return sh(frameUniforms.iblSH, n);
 }
 
 //------------------------------------------------------------------------------
 // IBL specular
 //------------------------------------------------------------------------------
 
-vec3 prefilteredRadiance(vec3 r, float roughness) {
+vec3 prefilteredRadiance(const vec3 r, float roughness) {
     // lod = lod_count * sqrt(linear_roughness), which is the mapping used by cmgen
     // where linear_roughness = roughness^2
     // using all the mip levels requires seamless cubemap sampling
@@ -107,7 +125,7 @@ vec3 prefilteredRadiance(vec3 r, float roughness) {
     return decodeDataForIBL(textureLod(light_iblSpecular, r, lod));
 }
 
-vec3 prefilteredRadiance(vec3 r, float roughness, float offset) {
+vec3 prefilteredRadiance(const vec3 r, float roughness, float offset) {
     float lod = IBL_MAX_MIP_LEVEL * roughness * roughness;
     return decodeDataForIBL(textureLod(light_iblSpecular, r, lod + offset));
 }
@@ -121,19 +139,11 @@ vec3 getSpecularDominantDirection(vec3 n, vec3 r, float linearRoughness) {
 #endif
 }
 
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-}
-
-vec3 specularDFG(PixelParams pixel) {
+vec3 specularDFG(const PixelParams pixel) {
 #if defined(SHADING_MODEL_CLOTH)
     return pixel.f0 * pixel.dfg.z;
 #elif !defined(USE_MULTIPLE_SCATTERING_COMPENSATION)
     return pixel.f0 * pixel.dfg.x + pixel.dfg.y;
-
-    // float cosTheta = max(dot(shading_normal, shading_view), 0.0);
-    // return fresnelSchlickRoughness(cosTheta, pixel.f0, pixel.roughness) * pixel.dfg.x + pixel.dfg.y;
 #else
     return mix(pixel.dfg.xxx, pixel.dfg.yyy, pixel.f0);
 #endif
@@ -148,7 +158,7 @@ vec3 specularDFG(PixelParams pixel) {
  *   direction to match reference renderings when the roughness increases
  */
 
-vec3 getReflectedVector(PixelParams pixel, vec3 v, vec3 n) {
+vec3 getReflectedVector(const PixelParams pixel, const vec3 v, const vec3 n) {
 #if defined(MATERIAL_HAS_ANISOTROPY)
     vec3  anisotropyDirection = pixel.anisotropy >= 0.0 ? pixel.anisotropicB : pixel.anisotropicT;
     vec3  anisotropicTangent  = cross(anisotropyDirection, v);
@@ -163,7 +173,7 @@ vec3 getReflectedVector(PixelParams pixel, vec3 v, vec3 n) {
     return r;
 }
 
-vec3 getReflectedVector(PixelParams pixel, vec3 n) {
+vec3 getReflectedVector(const PixelParams pixel, const vec3 n) {
 #if defined(MATERIAL_HAS_ANISOTROPY)
     vec3 r = getReflectedVector(pixel, shading_view, n);
 #else
@@ -181,9 +191,9 @@ vec2 hammersley(uint index) {
     // Compute Hammersley sequence
     // TODO: these should come from uniforms
     // TODO: we should do this with logical bit operations
-    uint numSamples = uint(IBL_INTEGRATION_IMPORTANCE_SAMPLING_COUNT);
-    uint numSampleBits = uint(log2(float(numSamples)));
-    float invNumSamples = 1.0 / float(numSamples);
+    const uint numSamples = uint(IBL_INTEGRATION_IMPORTANCE_SAMPLING_COUNT);
+    const uint numSampleBits = uint(log2(float(numSamples)));
+    const float invNumSamples = 1.0 / float(numSamples);
     uint i = uint(index);
     uint t = i;
     uint bits = 0u;
@@ -236,18 +246,18 @@ vec3 importanceSamplingVNdfDggx(vec2 u, float linearRoughness, vec3 v) {
 float prefilteredImportanceSampling(float ipdf) {
     // See: "Real-time Shading with Filtered Importance Sampling", Jaroslav Krivanek
     // Prefiltering doesn't work with anisotropy
-    float numSamples = float(IBL_INTEGRATION_IMPORTANCE_SAMPLING_COUNT);
-    float invNumSamples = 1.0 / float(numSamples);
-    float dim = float(1u << uint(IBL_MAX_MIP_LEVEL));
-    float omegaP = (4.0 * PI) / (6.0 * dim * dim);
-    float invOmegaP = 1.0 / omegaP;
-    float K = 4.0;
+    const float numSamples = float(IBL_INTEGRATION_IMPORTANCE_SAMPLING_COUNT);
+    const float invNumSamples = 1.0 / float(numSamples);
+    const float dim = float(1u << uint(IBL_MAX_MIP_LEVEL));
+    const float omegaP = (4.0 * PI) / (6.0 * dim * dim);
+    const float invOmegaP = 1.0 / omegaP;
+    const float K = 4.0;
     float omegaS = invNumSamples * ipdf;
     float mipLevel = clamp(log2(K * omegaS * invOmegaP) * 0.5, 0.0, IBL_MAX_MIP_LEVEL);
     return mipLevel;
 }
 
-vec3 isEvaluateIBL(PixelParams pixel, vec3 n, vec3 v, float NoV) {
+vec3 isEvaluateIBL(const PixelParams pixel, vec3 n, vec3 v, float NoV) {
     // TODO: for a true anisotropic BRDF, we need a real tangent space
     vec3 up = abs(n.z) < 0.9999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
 
@@ -259,8 +269,8 @@ vec3 isEvaluateIBL(PixelParams pixel, vec3 n, vec3 v, float NoV) {
     float linearRoughness = pixel.linearRoughness;
     float a2 = linearRoughness * linearRoughness;
 
-    uint numSamples = uint(IBL_INTEGRATION_IMPORTANCE_SAMPLING_COUNT);
-    float invNumSamples = 1.0 / float(numSamples);
+    const uint numSamples = uint(IBL_INTEGRATION_IMPORTANCE_SAMPLING_COUNT);
+    const float invNumSamples = 1.0 / float(numSamples);
 
     vec3 indirectSpecular = vec3(0.0);
     for (uint i = 0u; i < numSamples; i++) {
@@ -297,7 +307,7 @@ vec3 isEvaluateIBL(PixelParams pixel, vec3 n, vec3 v, float NoV) {
     return indirectSpecular;
 }
 
-void isEvaluateClearCoatIBL(PixelParams pixel, float specularAO, inout vec3 Fd, inout vec3 Fr) {
+void isEvaluateClearCoatIBL(const PixelParams pixel, float specularAO, inout vec3 Fd, inout vec3 Fr) {
 #if defined(MATERIAL_HAS_CLEAR_COAT)
 #if defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
     // We want to use the geometric normal for the clear coat layer
@@ -342,7 +352,7 @@ float computeSpecularAO(float NoV, float ao, float roughness) {
 #endif
 }
 
-void evaluateClothIndirectDiffuseBRDF(PixelParams pixel, inout float diffuse) {
+void evaluateClothIndirectDiffuseBRDF(const PixelParams pixel, inout float diffuse) {
 #if defined(SHADING_MODEL_CLOTH)
 #if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
     // Simulate subsurface scattering with a wrap diffuse term
@@ -351,7 +361,7 @@ void evaluateClothIndirectDiffuseBRDF(PixelParams pixel, inout float diffuse) {
 #endif
 }
 
-void evaluateClearCoatIBL(PixelParams pixel, float specularAO, inout vec3 Fd, inout vec3 Fr) {
+void evaluateClearCoatIBL(const PixelParams pixel, float specularAO, inout vec3 Fd, inout vec3 Fr) {
 #if defined(MATERIAL_HAS_CLEAR_COAT)
 #if defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
     // We want to use the geometric normal for the clear coat layer
@@ -370,7 +380,7 @@ void evaluateClearCoatIBL(PixelParams pixel, float specularAO, inout vec3 Fd, in
 #endif
 }
 
-void evaluateSubsurfaceIBL(PixelParams pixel, vec3 diffuseIrradiance,
+void evaluateSubsurfaceIBL(const PixelParams pixel, const vec3 diffuseIrradiance,
         inout vec3 Fd, inout vec3 Fr) {
 #if defined(SHADING_MODEL_SUBSURFACE)
     vec3 viewIndependent = diffuseIrradiance;

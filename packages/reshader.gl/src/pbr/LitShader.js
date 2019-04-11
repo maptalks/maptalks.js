@@ -5,8 +5,6 @@ import MeshShader from '../shader/MeshShader.js';
 import { extend } from '../common/Util';
 
 
-const MAT4 = [];
-
 //http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates/
 class LitShader extends MeshShader {
     constructor(config = {}) {
@@ -92,8 +90,6 @@ class LitShader extends MeshShader {
                 'exposure',
                 'ev100',
 
-                'light_iblDiffuse',
-
                 'light_iblDFG',
                 'light_iblSpecular',
                 'iblSH[9]',
@@ -126,10 +122,7 @@ class LitShader extends MeshShader {
 
                 'material.normalTexture',              // default: vec3(0.0, 0.0, 1.0)
             ],
-            extraCommandProps,
-            defines: {
-                'IBL_MAX_MIP_LEVEL' : '8.0' //log(256) / log(2), PBRHelper中createPrefilterCube的prefilterCubeSize
-            }
+            extraCommandProps
         });
         this.positionAttribute = positionAttribute;
         this.normalAttribute = normalAttribute;
