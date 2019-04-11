@@ -28,7 +28,13 @@
             ]
         });
         let iblMaps;
-
+        let mouseDown = false;
+        let roll = Math.PI;
+        let pitch = 0.0;
+        let translate = 4.0;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
         const loader = new reshader.ResourceLoader(regl.texture(2));
         const renderer = new reshader.Renderer(regl);
         let camPos = [0, 0, 4];
@@ -231,7 +237,14 @@
 
         function getViewProjection(cameraPos, aspect) {
             const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 1, 200);
-            const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            //const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            var xRotation = mat4.create();
+            mat4.rotateY(xRotation, xRotation, roll);
+            var yRotation = mat4.create();
+            mat4.rotateX(yRotation, yRotation, pitch);
+            var viewMatrix = mat4.create();
+            mat4.multiply(viewMatrix, yRotation, xRotation);
+            viewMatrix[14] = -translate;
             return {
                 viewMatrix,
                 projMatrix
@@ -255,13 +268,6 @@
             return defines;
         }
 
-        let mouseDown = false;
-        let roll = Math.PI;
-        let pitch = 0.0;
-        let translate = 4.0;
-        var wheelSpeed = 1.04;
-        let lastMouseX = null;
-        let lastMouseY = null;
         canvas.onmousedown = function(ev) { handleMouseDown(ev); };
         canvas.onmouseup = function(ev) { handleMouseUp(ev); };
         canvas.onmousemove = function(ev) { handleMouseMove(ev); };
@@ -307,9 +313,9 @@
         }
 
         function updateCamera() {
-            camPos = [translate * Math.sin(roll) * Math.cos(-pitch),
-            translate * Math.sin(-pitch),
-            -translate * Math.cos(roll) * Math.cos(-pitch)];
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
         }
     </script>
   </body>
