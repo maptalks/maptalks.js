@@ -59,7 +59,7 @@ void initFrameUniforms() {
     frameUniforms.time = time;
     frameUniforms.lightColorIntensity = lightColorIntensity;
     frameUniforms.sun = sun;
-    frameUniforms.lightDirection = lightDirection;
+    frameUniforms.lightDirection = normalize(lightDirection);
     frameUniforms.iblLuminance = iblLuminance;
     frameUniforms.exposure = exposure;
     frameUniforms.ev100 = ev100;

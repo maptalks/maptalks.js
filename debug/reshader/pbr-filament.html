@@ -90,8 +90,8 @@
                     'time': Date.now() / 1000,
 
                     'lightColorIntensity': [1, 1, 1, 1],
-                    'sun': [1, 1, 1, 1],
-                    'lightDirection': [1, 1, 1],
+                    'sun': [1, 1, 1, -1],
+                    'lightDirection': [1, 0, -1],
                     'iblLuminance': 1,
                     'exposure': 1,
                     'ev100': 0,
@@ -135,9 +135,9 @@
             const meshes = [];
             //创建纹理
             const material = new reshader.pbr.LitMaterial({
-                metallicFactor : 0,
-                roughnessFactor : 0,
-                reflectance: 0.5
+                'metallicFactor' : 1,
+                'roughnessFactor' : 0.5,
+                'reflectance': 0.5
             });
             const { data, indices } = generateSphereData();
             const modelMatrix = mat4.identity([]);
@@ -235,7 +235,7 @@
         }
 
         function getViewProjection(cameraPos, aspect) {
-            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 1, 200);
+            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 0.1, 200);
             //const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
             var xRotation = mat4.create();
             mat4.rotateY(xRotation, xRotation, roll);
@@ -250,7 +250,9 @@
             };
         }
         function getGeometryDefines(geometry) {
-            return SHADER.getGeometryDefines(geometry);
+            const defines = SHADER.getGeometryDefines(geometry);
+            defines['HAS_DIRECTIONAL_LIGHTING'] = 1;
+            return defines;
         }
 
         canvas.onmousedown = function(ev) { handleMouseDown(ev); };

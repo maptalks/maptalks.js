@@ -41,6 +41,5 @@ void evaluateDirectionalLight(const PixelParams pixel, inout vec3 color) {
 #elif defined(MATERIAL_CAN_SKIP_LIGHTING)
     if (light.NoL <= 0.0) return;
 #endif
-    //TODO 暂时注释掉，因为还没有引入各类材质的 surfaceShading 方法
-    //color.rgb += surfaceShading(pixel, light, visibility);
+    color.rgb += surfaceShading(pixel, light, visibility);
 }

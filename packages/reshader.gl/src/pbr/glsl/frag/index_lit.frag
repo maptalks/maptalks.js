@@ -5,6 +5,8 @@
 #include <fl_uniforms_glsl>
 //varyings
 #include <fl_inputs_frag>
+//brdf functions
+#include <fl_brdf_frag>
 //MaterialInputs结构定义
 //mapatalksgl的Material => MaterialInputs
 #include <fl_common_material_frag>
@@ -19,6 +21,7 @@
 
 //IBL灯光的计算逻辑
 #include <fl_light_indirect>
+#include <fl_shading_model_standard_frag>
 //有向光的计算逻辑
 #include <fl_light_directional>
 

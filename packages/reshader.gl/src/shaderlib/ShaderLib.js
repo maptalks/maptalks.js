@@ -13,6 +13,7 @@ import fl_inputs_vert from '..//pbr/glsl/vert/inputs.vert';
 
 import fl_header_frag from '../pbr/glsl/frag/gl_header.frag';
 import fl_inputs_frag from '../pbr/glsl/frag/inputs.frag';
+import fl_brdf_frag from '../pbr/glsl/frag/brdf.frag';
 //构造各类shading_*的值
 import fl_shading_params from '../pbr/glsl/frag/shading_params.frag';
 //MaterialInputs结构定义
@@ -25,6 +26,7 @@ import fl_light_uniforms_frag from '../pbr/glsl/frag/gl_light_uniforms.frag';
 //IBL灯光的计算逻辑
 import fl_light_indirect from '../pbr/glsl/frag/light_indirect.frag';
 //有向光的计算逻辑
+import fl_shading_model_standard_frag from '../pbr/glsl/frag/shading_model_standard.frag';
 import fl_light_directional from '../pbr/glsl/frag/light_directional.frag';
 //lit材质的逻辑
 import fl_shading_lit from '../pbr/glsl/frag/shading_lit.frag';
@@ -48,12 +50,14 @@ const ShaderChunk = {
     //pbr frag includes
     fl_header_frag,
     fl_inputs_frag,
+    fl_brdf_frag,
     fl_shading_params,
     fl_common_material_frag,
     fl_common_lighting_frag,
     fl_material_uniforms_frag,
     fl_light_uniforms_frag,
     fl_light_indirect,
+    fl_shading_model_standard_frag,
     fl_light_directional,
     fl_shading_lit,
     fl_main
