@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/reshader.gl",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "A shader centric WebGL engine based on regl",
   "module": "dist/reshadergl.es.js",
   "jsnext:main": "dist/reshadergl.es.js",
