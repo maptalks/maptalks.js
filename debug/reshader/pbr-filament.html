@@ -14,7 +14,7 @@
     <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
-
+        import sphereData from './common/sphere.js';
         const { createREGL, mat4, reshader } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -31,7 +31,7 @@
 
         const loader = new reshader.ResourceLoader(regl.texture(2));
         const renderer = new reshader.Renderer(regl);
-        const camPos = [0, 2, 2];
+        let camPos = [0, 0, 4];
 
         function main() {
             //载入环境光纹理
@@ -63,8 +63,8 @@
         main();
         function render() {
             //绘制gltf模型
-            drawGLTFModel();
-
+            //drawGLTFModel();
+            drawSphere();
         }
         let SCENE;
         let SHADER;
@@ -98,8 +98,13 @@
             reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
             requestAnimationFrame(drawScene);
         }
-        function drawGLTFModel() {
 
+        function drawSphere() {
+            SHADER = new reshader.pbr.LitShader();
+            SCENE = getScene();
+            drawScene();
+        }
+        function drawGLTFModel() {
             SHADER = new reshader.pbr.LitShader({
                 positionAttribute : 'POSITION',
                 normalAttribute : 'NORMAL',
@@ -122,7 +127,38 @@
             });
         }
         function getScene() {
-            var url = 'gltf/AnimatedMorphSphere/AnimatedMorphSphere.gltf';
+            const meshes = [];
+            //创建纹理
+            const material = new reshader.pbr.LitMaterial({
+                metallicFactor : 1,
+                roughnessFactor : 0,
+                reflectance: 1
+            });
+            const { data, indices } = generateSphereData();
+            const modelMatrix = mat4.identity([]);
+            mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
+            const geometry = new reshader.Geometry(data, indices);
+            const defines = getGeometryDefines(geometry);
+            const mesh = new reshader.Mesh(geometry, material);
+            mesh.setLocalTransform(modelMatrix);
+            mesh.setDefines(defines);
+            meshes.push(mesh);
+            return new reshader.Scene(meshes);                    
+        }
+
+        function generateSphereData() {
+            const data = {
+                'aPosition' : sphereData.vertices,
+                'aNormal' : sphereData.normals,
+                'aTexCoord' : sphereData.textures
+            };
+
+            const indices = sphereData.indices;
+            return { data, indices };
+        }
+
+        function _getScene() {
+            var url = 'gltf/MetalRoughSpheres/AnimatedMorphSphere.gltf';
             return gltf.Ajax.getJSON(url, {}).then((json) => {
                 const loader = new gltf.GLTFLoader('gltf/AnimatedMorphSphere', json);
                 return loader.load().then(gltfData => {
@@ -207,7 +243,64 @@
                 defines['HAS_ATTRIBUTE_UV1'] = 1;
             }
             return defines;
-    }
+        }
+
+        let mouseDown = false;
+        let roll = Math.PI;
+        let pitch = 0.0;
+        let translate = 4.0;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.onmousemove = function(ev) { handleMouseMove(ev); };
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+
+        function handleMouseDown(ev) {
+            mouseDown = true;
+            lastMouseX = ev.clientX;
+            lastMouseY = ev.clientY;
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+
+            updateCamera();
+        }
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+
+        function updateCamera() {
+            camPos = [translate * Math.sin(roll) * Math.cos(-pitch),
+            translate * Math.sin(-pitch),
+            -translate * Math.cos(roll) * Math.cos(-pitch)];
+        }
     </script>
   </body>
 </html>
