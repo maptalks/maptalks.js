@@ -10,13 +10,13 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
     <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
     <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/dat.gui.min.js"></script>
   <body>
     <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
         const PREFILTER_CUBE_SIZE = 512;
-
         const { createREGL, mat4, reshader } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -26,7 +26,7 @@
                 'OES_texture_float',
                 'OES_element_index_uint',
                 'OES_standard_derivatives',
-                'EXT_shader_texture_lod'
+                'EXT_shader_texture_lod',
             ]
         });
         let iblMaps;
@@ -40,6 +40,10 @@
         const loader = new reshader.ResourceLoader(regl.texture(2));
         const renderer = new reshader.Renderer(regl);
         let camPos = [0, 0, 4];
+        let SCENE = null;
+        let SHADER;
+        window.UNIFORMS = null;
+        window.MatUNIFORMS = null;
 
         function main() {
             const skyboxTextures = [
@@ -62,6 +66,26 @@
 
             Promise.all(promises).then(images => {
                 iblMaps = createMaps(images);
+                UNIFORMS = {
+                    'light_iblDFG': iblMaps.dfgLUT,
+                    'light_iblSpecular': iblMaps.prefilterMap,
+                    'light_iblDiffuse': iblMaps.irradianceMap,
+                    'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
+                    'cameraPosition':camPos,
+                    'iblSH': iblMaps.sh,
+                    'lightColorIntensity': [1, 1, 1, 30000],
+                    'sun': [1, 1, 1, -1],
+                    'lightDirection': [1, 0, -1],
+                    'iblLuminance': 8000,
+                    'exposure': EV100toExposure(ev100),
+                    'ev100': ev100,
+                };
+                MatUNIFORMS = {
+                    'metallicFactor' : 1,
+                    'roughnessFactor' : 0.5,
+                    'reflectance': 0.5
+                };
+                initGUI();
                 render();
             });
         }
@@ -71,33 +95,18 @@
             // drawGLTFModel();
             drawSphere();
         }
-        let SCENE;
-        let SHADER;
         function drawScene() {
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
-            const ev100 = computeEV100(16, 1 / 125, 100);
+            UNIFORMS.viewMatrix = viewMatrix;
+            UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.time = Date.now() / 1000;
+            UNIFORMS.viewMatrix = viewMatrix;
+            UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.time = Date.now() / 1000;
             renderer.render(
                 SHADER,
-                {
-                    viewMatrix,
-                    projViewMatrix,
-
-                    'light_iblDFG': iblMaps.dfgLUT,
-                    'light_iblSpecular': iblMaps.prefilterMap,
-
-                    'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
-                    'cameraPosition':camPos,
-                    'iblSH': iblMaps.sh,
-                    'time': Date.now() / 1000,
-
-                    'lightColorIntensity': [1, 1, 1, 30000],
-                    'sun': [1, 1, 1, -1],
-                    'lightDirection': [1, 0, -1],
-                    'iblLuminance': 8000,
-                    'exposure': EV100toExposure(ev100),
-                    'ev100': ev100,
-                },
+                UNIFORMS,
                 SCENE
             );
             reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
@@ -123,7 +132,6 @@
                 SCENE = scene;
                 drawScene();
             });
-
         }
 
         function createMaps(hdr) {
@@ -136,11 +144,8 @@
         function getScene() {
             const meshes = [];
             //创建纹理
-            const material = new reshader.pbr.LitMaterial({
-                'metallicFactor' : 1,
-                'roughnessFactor' : 0.5,//Math.sqrt(0.1),
-                'reflectance': 0.5
-            });
+            const material = new reshader.pbr.LitMaterial(MatUNIFORMS);
+
             const { data, indices } = generateSphereData();
             const modelMatrix = mat4.identity([]);
             mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
@@ -288,8 +293,6 @@
 
             lastMouseX = newX;
             lastMouseY = newY;
-
-            updateCamera();
         }
         function handleWheel(ev, redraw) {
             ev.preventDefault();
@@ -299,13 +302,12 @@
             else {
                 translate /= wheelSpeed;
             }
-            updateCamera();
         }
 
-        function updateCamera() {
-            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
-            -translate * Math.sin(-pitch),
-            translate * Math.cos(roll) * Math.cos(-pitch)];
+       window.changeMaterialUniforms = function(key, value) {
+            SCENE.getMeshes().forEach(mesh => {
+               mesh.getMaterial().uniforms[key] = value;
+            });
         }
         //根据快门参数，计算ev100
         function computeEV100(aperture, shutterSpeed, ISO) {
@@ -317,5 +319,6 @@
             return 1.0 / (1.2 * Math.pow(2.0, EV100));
         }
     </script>
+    <script type="text/javascript" src="js/initGui.js"></script>
   </body>
 </html>
