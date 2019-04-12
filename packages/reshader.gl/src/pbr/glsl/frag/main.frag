@@ -10,6 +10,8 @@ void blendPostLightingColor(const MaterialInputs material, inout vec4 color) {
 }
 #endif
 
+#include <fl_gl_post_process_frag>
+
 void main() {
     //uniforms.glsl
     initFrameUniforms();
@@ -25,7 +27,13 @@ void main() {
     // Invoke user code
     getMaterial(inputs);
 
-    gl_FragColor = evaluateMaterial(inputs);
+    vec4 color = evaluateMaterial(inputs);
+
+#if defined(POST_PROCESS_TONE_MAPPING)
+    color.rgb = postProcess(color.rgb);
+#endif
+
+    gl_FragColor = color;
 
 #if defined(MATERIAL_HAS_POST_LIGHTING_COLOR)
     blendPostLightingColor(inputs, gl_FragColor);

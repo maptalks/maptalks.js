@@ -31,7 +31,9 @@ const DEFAULT_UNIFORMS = {
 
     normalTexture: null,
 
-    postLightingColor: [0, 0, 0, 0]
+    postLightingColor: [0, 0, 0, 0],
+
+    POST_PROCESS_TONE_MAPPING: 1
 };
 
 class LitMaterial extends Material {
@@ -76,6 +78,9 @@ class LitMaterial extends Material {
             defines['MATERIAL_HAS_CLEARCOAT_ROUGNESS_MAP'] ||
             defines['MATERIAL_HAS_CLEAR_COAT_NORMAL']) {
             defines['MATERIAL_HAS_MAP'] = 1;
+        }
+        if (uniforms['POST_PROCESS_TONE_MAPPING']) {
+            defines['POST_PROCESS_TONE_MAPPING'] = 1;
         }
         return defines;
     }

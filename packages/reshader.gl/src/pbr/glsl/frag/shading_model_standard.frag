@@ -128,6 +128,7 @@ vec3 surfaceShading(const PixelParams pixel, const Light light, float occlusion)
     // at high roughness
     vec3 color = Fd + Fr * pixel.energyCompensation;
 #endif
+    // color = Fd + Fr;
     return (color * light.colorIntensity.rgb) *
             (light.colorIntensity.w * light.attenuation * NoL * occlusion);
 }

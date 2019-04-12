@@ -30,6 +30,8 @@ import fl_shading_model_standard_frag from '../pbr/glsl/frag/shading_model_stand
 import fl_light_directional from '../pbr/glsl/frag/light_directional.frag';
 //lit材质的逻辑
 import fl_shading_lit from '../pbr/glsl/frag/shading_lit.frag';
+//tone mapping and sRGB
+import fl_gl_post_process_frag from '../pbr/glsl/frag/gl_post_process.frag';
 //main
 import fl_main from '../pbr/glsl/frag/main.frag';
 
@@ -60,6 +62,7 @@ const ShaderChunk = {
     fl_shading_model_standard_frag,
     fl_light_directional,
     fl_shading_lit,
+    fl_gl_post_process_frag,
     fl_main
 };
 /* eslint-enable camelcase */
