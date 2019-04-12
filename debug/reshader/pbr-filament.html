@@ -73,7 +73,6 @@
                 UNIFORMS = {
                     'light_iblDFG': iblMaps.dfgLUT,
                     'light_iblSpecular': iblMaps.prefilterMap,
-                    'light_iblDiffuse': iblMaps.irradianceMap,
                     'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
                     'cameraPosition':camPos,
                     'iblSH': iblMaps.sh,
@@ -310,7 +309,7 @@
             }
             updateCamera();
         }
-        
+
         function updateCamera() {
             camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
             -translate * Math.sin(-pitch),
