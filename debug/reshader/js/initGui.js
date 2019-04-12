@@ -1,6 +1,6 @@
 var gui = new dat.GUI( { width: 250 } );
 var aperture = 16; //光圈
-var speed = 1 / 125; //快门速度
+var speed = '1/125'; //快门速度
 var iso = 100; //iso感光度
 function initGUI() {
 
@@ -103,9 +103,10 @@ function initGUI() {
         aperture = value;
         updateEV100();
     });
-    var speedController = exposureController.add(options, 'speed', [1/4000, 1/2000, 1/1000, 1/500, 1/250, 1/125, 1/60, 1/30, 1/15, 1/8, 1/4, 1/2, 1, 2, 4]);
+    var speedController = exposureController.add(options, 'speed', ['1/4000', '1/2000', '1/1000', '1/500', '1/250', '1/125', '1/60', '1/30', '1/15', '1/8', '1/4', '1/2', '1', '2', '4']);
     speedController.onChange(function(value){
-        speed = value;
+        var values = value.split('/');
+        speed = Number(values[0]) / Number(values[1]);
         updateEV100();
     });
     var isoController = exposureController.add(options, 'iso', [ 100.0, 125.0, 160.0, 200.0, 250.0, 320.0, 400.0, 500.0, 640.0, 800.0, 1000.0, 1250.0, 1600.0, 2000.0, 2500.0, 3200.0, 4000.0, 5000.0, 6400.0]);
