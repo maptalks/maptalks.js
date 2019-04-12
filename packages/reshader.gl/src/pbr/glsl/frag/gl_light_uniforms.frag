@@ -2,5 +2,3 @@
 uniform sampler2D light_iblDFG;
 //prefilterMap
 uniform samplerCube light_iblSpecular;
-
-uniform samplerCube light_iblDiffuse;

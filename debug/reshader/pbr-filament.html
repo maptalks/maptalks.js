@@ -16,7 +16,7 @@
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
-        var gui = new dat.GUI( { width: 250 } );
+        const PREFILTER_CUBE_SIZE = 512;
         const { createREGL, mat4, reshader } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -134,19 +134,21 @@
         function createMaps(hdr) {
             return reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
-                envCubeSize: 2048,
-                prefilterCubeSize: 64
+                envCubeSize: 512,
+                prefilterCubeSize: PREFILTER_CUBE_SIZE
             });
         }
         function getScene() {
             const meshes = [];
             //创建纹理
             const material = new reshader.pbr.LitMaterial(MatUNIFORMS);
+
             const { data, indices } = generateSphereData();
             const modelMatrix = mat4.identity([]);
             mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
             const geometry = new reshader.Geometry(data, indices);
             const defines = getGeometryDefines(geometry);
+            defines['IBL_MAX_MIP_LEVEL'] = (Math.log(PREFILTER_CUBE_SIZE) / Math.log(2)) + '.0';
             const mesh = new reshader.Mesh(geometry, material);
             mesh.setLocalTransform(modelMatrix);
             mesh.setDefines(defines);

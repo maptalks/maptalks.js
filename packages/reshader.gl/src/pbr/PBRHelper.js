@@ -53,17 +53,18 @@ export function createIBLMaps(regl, config = {}) {
 
     const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
-    // const faces = getEnvmapPixels(regl, envMap, envCubeSize);
-    // const sh = coefficients(faces, envCubeSize, 4);
+    const faces = getEnvmapPixels(regl, envMap, envCubeSize);
+    const sh = coefficients(faces, envCubeSize, 4);
 
-    const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
+    // const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
 
     return {
         envMap,
-        irradianceMap,
+        // irradianceMap,
         prefilterMap,
         dfgLUT,
-        sh: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        // sh: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        sh
     };
 }
 
@@ -218,11 +219,11 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
 
     const tmpFBO = regl.framebuffer(size);
 
-    const maxLevels = Math.log(size) / Math.log(2) + 1;//log2(SIZE); //fix to 4
+    const maxLevels = Math.log(size) / Math.log(2);//log2(SIZE); //fix to 4
 
     //手动构造prefilterMap各mipmap level的数据
     const mipmap = [];
-    for (let i = 0; i < maxLevels; i++) {
+    for (let i = 0; i <= maxLevels; i++) {
         const roughness = i / (maxLevels - 1);
         let faceId = 0;
         //分别绘制六个方向，读取fbo的pixel，作为某个方向的mipmap级别数据
@@ -241,11 +242,9 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
             //下一个面
             faceId++;
         });
-        if (i < maxLevels - 1) {
-            //下一个mipmap level
-            size /= 2;
-            tmpFBO.resize(size);
-        }
+        //下一个mipmap level
+        size /= 2;
+        tmpFBO.resize(size);
     }
 
     const prefilterMapFBO = regl.cube({
