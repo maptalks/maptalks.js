@@ -57,10 +57,10 @@ void initFrameUniforms() {
     frameUniforms.resolution = resolution;
     frameUniforms.cameraPosition = cameraPosition;
     frameUniforms.time = time;
-    frameUniforms.lightColorIntensity = lightColorIntensity;
+    frameUniforms.lightColorIntensity = lightColorIntensity * vec4(1.0, 1.0, 1.0, exposure);
     frameUniforms.sun = sun;
     frameUniforms.lightDirection = normalize(lightDirection);
-    frameUniforms.iblLuminance = iblLuminance;
+    frameUniforms.iblLuminance = iblLuminance * exposure;
     frameUniforms.exposure = exposure;
     frameUniforms.ev100 = ev100;
     for (int i = 0; i < 9; i++)

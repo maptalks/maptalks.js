@@ -31,7 +31,7 @@ export function createIBLMaps(regl, config = {}) {
 
     const envCubeSize = config.envCubeSize || 512;
 
-    const irradianceCubeSize = config.irradianceCubeSize || 32;
+    // const irradianceCubeSize = config.irradianceCubeSize || 32;
 
     const sampleSize = config.sampleSize || 1024;
     const roughnessLevels = config.roughnessLevels || 256;
@@ -205,7 +205,8 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
             'viewMatrix' :  regl.context('viewMatrix'),
             'environmentMap' : fromCubeMap,
             'distributionMap' : distributionMap,
-            'roughness' : regl.prop('roughness')
+            'roughness' : regl.prop('roughness'),
+            'resolution': SIZE
         },
         elements : cubeData.indices,
         viewport : {
@@ -228,7 +229,7 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
         let faceId = 0;
         //分别绘制六个方向，读取fbo的pixel，作为某个方向的mipmap级别数据
         renderToCube(regl, tmpFBO, drawCube, {
-            roughness : roughness,
+            roughness : Math.sqrt(roughness),
             size : size
         }, function (/* context, props, batchId */) {
             const pixels = regl.read();

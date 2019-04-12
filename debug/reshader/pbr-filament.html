@@ -76,6 +76,7 @@
         function drawScene() {
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            const ev100 = computeEV100(16, 1 / 125, 100);
             renderer.render(
                 SHADER,
                 {
@@ -90,12 +91,12 @@
                     'iblSH': iblMaps.sh,
                     'time': Date.now() / 1000,
 
-                    'lightColorIntensity': [1, 1, 1, 1],
+                    'lightColorIntensity': [1, 1, 1, 30000],
                     'sun': [1, 1, 1, -1],
                     'lightDirection': [1, 0, -1],
-                    'iblLuminance': 1,
-                    'exposure': 1,
-                    'ev100': 0,
+                    'iblLuminance': 8000,
+                    'exposure': EV100toExposure(ev100),
+                    'ev100': ev100,
                 },
                 SCENE
             );
@@ -136,8 +137,8 @@
             const meshes = [];
             //创建纹理
             const material = new reshader.pbr.LitMaterial({
-                'metallicFactor' : 0,
-                'roughnessFactor' : 0.5,
+                'metallicFactor' : 1,
+                'roughnessFactor' : 0.5,//Math.sqrt(0.1),
                 'reflectance': 0.5
             });
             const { data, indices } = generateSphereData();
@@ -305,6 +306,15 @@
             camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
             -translate * Math.sin(-pitch),
             translate * Math.cos(roll) * Math.cos(-pitch)];
+        }
+        //根据快门参数，计算ev100
+        function computeEV100(aperture, shutterSpeed, ISO) {
+            // log2((N^2*S)/(t*100))
+            return Math.log2(((aperture * aperture) * 100.0) / (shutterSpeed * ISO));
+        }
+
+        function EV100toExposure(EV100) {
+            return 1.0 / (1.2 * Math.pow(2.0, EV100));
         }
     </script>
   </body>
