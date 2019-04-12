@@ -103,6 +103,7 @@
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
             UNIFORMS.viewMatrix = viewMatrix;
+            UNIFORMS.cameraPosition = camPos;
             UNIFORMS.projViewMatrix = projViewMatrix;
             UNIFORMS.time = Date.now() / 1000;
             UNIFORMS.viewMatrix = viewMatrix;
@@ -297,6 +298,7 @@
 
             lastMouseX = newX;
             lastMouseY = newY;
+            updateCamera();
         }
         function handleWheel(ev, redraw) {
             ev.preventDefault();
@@ -306,6 +308,13 @@
             else {
                 translate /= wheelSpeed;
             }
+            updateCamera();
+        }
+        
+        function updateCamera() {
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
         }
 
        window.changeMaterialUniforms = function(key, value) {

@@ -6,9 +6,9 @@ function initGUI() {
         this.roughnessFactor = MatUNIFORMS['roughnessFactor'];
         this.reflectance = MatUNIFORMS['reflectance'];
         //cameraPosition
-        this.camPosX = UNIFORMS['cameraPosition'][0];
-        this.camPosY = UNIFORMS['cameraPosition'][1];
-        this.camPosZ = UNIFORMS['cameraPosition'][2];
+        // this.camPosX = UNIFORMS['cameraPosition'][0];
+        // this.camPosY = UNIFORMS['cameraPosition'][1];
+        // this.camPosZ = UNIFORMS['cameraPosition'][2];
         //lightColorIntensity
         this.lightColorIntensityX = UNIFORMS['lightColorIntensity'][0];
         this.lightColorIntensityY = UNIFORMS['lightColorIntensity'][1];
@@ -41,83 +41,59 @@ function initGUI() {
     reflectanceController.onChange(function(value){
         changeMaterialUniforms('reflectance', value);
     });
-    //cameraPosition
-    var cameraPositionController = gui.addFolder('cameraPosition');
-    var cameraPositionControllerX = cameraPositionController.add(options, 'camPosX');
-    cameraPositionControllerX.onFinishChange(function(value){
-        UNIFORMS['cameraPosition'][0] = value;
-    });
-    var cameraPositionControllerY = cameraPositionController.add(options, 'camPosY');
-    cameraPositionControllerY.onFinishChange(function(value){
-        UNIFORMS['cameraPosition'][1] = value;
-    });
-    var cameraPositionControllerZ = cameraPositionController.add(options, 'camPosZ');
-    cameraPositionControllerZ.onFinishChange(function(value){
-        UNIFORMS['cameraPosition'][2] = value;
-    });
     //lightColorIntensity
     var lightColorIntensityController = gui.addFolder('lightColorIntensity');
     var lightColorIntensityControllerX = lightColorIntensityController.add(options, 'lightColorIntensityX', 0, 1);
-    lightColorIntensityControllerX.onFinishChange(function(value){
+    lightColorIntensityControllerX.onChange(function(value){
         UNIFORMS['lightColorIntensity'][0] = value;
     });
     var lightColorIntensityControllerY = lightColorIntensityController.add(options, 'lightColorIntensityY', 0, 1);
-    lightColorIntensityControllerY.onFinishChange(function(value){
+    lightColorIntensityControllerY.onChange(function(value){
         UNIFORMS['lightColorIntensity'][1] = value;
     });
     var lightColorIntensityControllerZ = lightColorIntensityController.add(options, 'lightColorIntensityZ', 0, 1);
-    lightColorIntensityControllerZ.onFinishChange(function(value){
+    lightColorIntensityControllerZ.onChange(function(value){
         UNIFORMS['lightColorIntensity'][2] = value;
     });
-    var lightColorIntensityControllerW = lightColorIntensityController.add(options, 'lightColorIntensityW', 0, 1);
-    lightColorIntensityControllerW.onFinishChange(function(value){
+    var lightColorIntensityControllerW = lightColorIntensityController.add(options, 'lightColorIntensityW', 0, 50000);
+    lightColorIntensityControllerW.onChange(function(value){
         UNIFORMS['lightColorIntensity'][3] = value;
     });
     //sun
     var sunController = gui.addFolder('sun');
     var sunControllerX = sunController.add(options, 'sunX');
-    sunControllerX.onFinishChange(function(value){
+    sunControllerX.onChange(function(value){
         UNIFORMS['sun'][0] = value;
     });
     var sunControllerY = sunController.add(options, 'sunY');
-    sunControllerY.onFinishChange(function(value){
+    sunControllerY.onChange(function(value){
         UNIFORMS['sun'][1] = value;
     });
     var sunControllerZ = sunController.add(options, 'sunZ');
-    sunControllerZ.onFinishChange(function(value){
+    sunControllerZ.onChange(function(value){
         UNIFORMS['sun'][2] = value;
     });
     var sunControllerW = sunController.add(options, 'sunW');
-    sunControllerW.onFinishChange(function(value){
+    sunControllerW.onChange(function(value){
         UNIFORMS['sun'][3] = value;
     });
     //lightDirection
     var lightDirectionController = gui.addFolder('lightDirection');
     var lightDirectionControllerX = lightDirectionController.add(options, 'lightDirectionX');
-    lightDirectionControllerX.onFinishChange(function(value){
+    lightDirectionControllerX.onChange(function(value){
         UNIFORMS['lightDirection'][0] = value;
     });
     var lightDirectionControllerY = lightDirectionController.add(options, 'lightDirectionY');
-    lightDirectionControllerY.onFinishChange(function(value){
+    lightDirectionControllerY.onChange(function(value){
         UNIFORMS['lightDirection'][1] = value;
     });
     var lightDirectionControllerZ = lightDirectionController.add(options, 'lightDirectionZ');
-    lightDirectionControllerZ.onFinishChange(function(value){
+    lightDirectionControllerZ.onChange(function(value){
         UNIFORMS['lightDirection'][2] = value;
     });
     //iblLuminance
-    var iblLuminanceController = gui.add(options, 'iblLuminance', 0, 1);
+    var iblLuminanceController = gui.add(options, 'iblLuminance', 0, 30000);
     iblLuminanceController.onChange(function(value){
         UNIFORMS['iblLuminance'] = value;
-    });
-    //exposure
-    var exposureController = gui.add(options, 'exposure', 0, 1);
-    exposureController.onChange(function(value){
-        UNIFORMS['exposure'] = value;
-    });
-    //ev100
-    var ev100Controller = gui.add(options, 'ev100', 0, 1);
-    ev100Controller.onChange(function(value){
-        UNIFORMS['ev100'] = value;
     });
 }
