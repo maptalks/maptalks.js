@@ -39,7 +39,7 @@
         let lastMouseY = null;
         const loader = new reshader.ResourceLoader(regl.texture(2));
         const renderer = new reshader.Renderer(regl);
-        let camPos = [0, 0, 4];
+        let camPos = [0, 0, -4];
         let SCENE = null;
         let SHADER;
         window.UNIFORMS = null;
@@ -322,12 +322,12 @@
             });
         }
         //根据快门参数，计算ev100
-        function computeEV100(aperture, shutterSpeed, ISO) {
+        window.computeEV100 = function(aperture, shutterSpeed, ISO) {
             // log2((N^2*S)/(t*100))
             return Math.log2(((aperture * aperture) * 100.0) / (shutterSpeed * ISO));
         }
 
-        function EV100toExposure(EV100) {
+        window.EV100toExposure = function(EV100) {
             return 1.0 / (1.2 * Math.pow(2.0, EV100));
         }
     </script>

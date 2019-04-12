@@ -1,14 +1,13 @@
 var gui = new dat.GUI( { width: 250 } );
+var aperture = 16; //光圈
+var speed = '1/125'; //快门速度
+var iso = 100; //iso感光度
 function initGUI() {
 
     var Config = function() {
         this.metallicFactor = MatUNIFORMS['metallicFactor'];
         this.roughnessFactor = MatUNIFORMS['roughnessFactor'];
         this.reflectance = MatUNIFORMS['reflectance'];
-        //cameraPosition
-        // this.camPosX = UNIFORMS['cameraPosition'][0];
-        // this.camPosY = UNIFORMS['cameraPosition'][1];
-        // this.camPosZ = UNIFORMS['cameraPosition'][2];
         //lightColorIntensity
         this.lightColorIntensityX = UNIFORMS['lightColorIntensity'][0];
         this.lightColorIntensityY = UNIFORMS['lightColorIntensity'][1];
@@ -25,8 +24,9 @@ function initGUI() {
         this.lightDirectionZ = UNIFORMS['lightDirection'][2];
         //
         this.iblLuminance = UNIFORMS['iblLuminance'];
-        this.exposure = UNIFORMS['exposure'];
-        this.ev100 = UNIFORMS['ev100'];
+        this.aperture = aperture;
+        this.speed = speed;
+        this.iso = iso;
     };
     var options = new Config();
     var metallicFactorController = gui.add(options, 'metallicFactor', 0, 1);
@@ -73,21 +73,21 @@ function initGUI() {
     sunControllerZ.onChange(function(value){
         UNIFORMS['sun'][2] = value;
     });
-    var sunControllerW = sunController.add(options, 'sunW');
+    var sunControllerW = sunController.add(options, 'sunW', -1, 1);
     sunControllerW.onChange(function(value){
         UNIFORMS['sun'][3] = value;
     });
     //lightDirection
     var lightDirectionController = gui.addFolder('lightDirection');
-    var lightDirectionControllerX = lightDirectionController.add(options, 'lightDirectionX');
+    var lightDirectionControllerX = lightDirectionController.add(options, 'lightDirectionX',-100, 100);
     lightDirectionControllerX.onChange(function(value){
         UNIFORMS['lightDirection'][0] = value;
     });
-    var lightDirectionControllerY = lightDirectionController.add(options, 'lightDirectionY');
+    var lightDirectionControllerY = lightDirectionController.add(options, 'lightDirectionY', -100, 100);
     lightDirectionControllerY.onChange(function(value){
         UNIFORMS['lightDirection'][1] = value;
     });
-    var lightDirectionControllerZ = lightDirectionController.add(options, 'lightDirectionZ');
+    var lightDirectionControllerZ = lightDirectionController.add(options, 'lightDirectionZ', -100, 100);
     lightDirectionControllerZ.onChange(function(value){
         UNIFORMS['lightDirection'][2] = value;
     });
@@ -96,4 +96,27 @@ function initGUI() {
     iblLuminanceController.onChange(function(value){
         UNIFORMS['iblLuminance'] = value;
     });
+    //exposure
+    var exposureController = gui.addFolder('exposure');
+    var apertureController = exposureController.add(options, 'aperture', [1.0, 1.2, 1.4, 1.8, 2, 2.5, 2.8, 3.2, 4, 4.8, 5.6, 6.7, 8, 9.5, 11, 13, 16, 18, 22, 27, 32]);
+    apertureController.onChange(function(value){
+        aperture = value;
+        updateEV100();
+    });
+    var speedController = exposureController.add(options, 'speed', ['1/4000', '1/2000', '1/1000', '1/500', '1/250', '1/125', '1/60', '1/30', '1/15', '1/8', '1/4', '1/2', '1', '2', '4']);
+    speedController.onChange(function(value){
+        var values = value.split('/');
+        speed = Number(values[0]) / Number(values[1]);
+        updateEV100();
+    });
+    var isoController = exposureController.add(options, 'iso', [ 100.0, 125.0, 160.0, 200.0, 250.0, 320.0, 400.0, 500.0, 640.0, 800.0, 1000.0, 1250.0, 1600.0, 2000.0, 2500.0, 3200.0, 4000.0, 5000.0, 6400.0]);
+    isoController.onChange(function(value){
+        iso = value;
+        updateEV100();
+    });
+}
+
+function updateEV100() {
+    UNIFORMS['ev100'] = computeEV100(aperture, speed, iso);
+    UNIFORMS['exposure'] = EV100toExposure(UNIFORMS['ev100']);
 }
