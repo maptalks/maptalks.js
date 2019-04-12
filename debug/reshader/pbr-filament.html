@@ -66,6 +66,10 @@
 
             Promise.all(promises).then(images => {
                 iblMaps = createMaps(images);
+                const aperture = 16; //光圈
+                const speed = 1 / 125; //快门速度
+                const iso = 100; //iso感光度
+                const ev100 = computeEV100(aperture, speed, iso);
                 UNIFORMS = {
                     'light_iblDFG': iblMaps.dfgLUT,
                     'light_iblSpecular': iblMaps.prefilterMap,
