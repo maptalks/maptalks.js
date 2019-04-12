@@ -16,6 +16,7 @@
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
+        var gui = new dat.GUI( { width: 250 } );
         const PREFILTER_CUBE_SIZE = 512;
         const { createREGL, mat4, reshader } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
