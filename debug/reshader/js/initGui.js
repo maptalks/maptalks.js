@@ -57,19 +57,19 @@ function initGUI() {
     });
     //lightColorIntensity
     var lightColorIntensityController = gui.addFolder('lightColorIntensity');
-    var lightColorIntensityControllerX = lightColorIntensityController.add(options, 'lightColorIntensityX');
+    var lightColorIntensityControllerX = lightColorIntensityController.add(options, 'lightColorIntensityX', 0, 1);
     lightColorIntensityControllerX.onFinishChange(function(value){
         UNIFORMS['lightColorIntensity'][0] = value;
     });
-    var lightColorIntensityControllerY = lightColorIntensityController.add(options, 'lightColorIntensityX');
+    var lightColorIntensityControllerY = lightColorIntensityController.add(options, 'lightColorIntensityY', 0, 1);
     lightColorIntensityControllerY.onFinishChange(function(value){
         UNIFORMS['lightColorIntensity'][1] = value;
     });
-    var lightColorIntensityControllerZ = lightColorIntensityController.add(options, 'lightColorIntensityX');
+    var lightColorIntensityControllerZ = lightColorIntensityController.add(options, 'lightColorIntensityZ', 0, 1);
     lightColorIntensityControllerZ.onFinishChange(function(value){
         UNIFORMS['lightColorIntensity'][2] = value;
     });
-    var lightColorIntensityControllerW = lightColorIntensityController.add(options, 'lightColorIntensityW');
+    var lightColorIntensityControllerW = lightColorIntensityController.add(options, 'lightColorIntensityW', 0, 1);
     lightColorIntensityControllerW.onFinishChange(function(value){
         UNIFORMS['lightColorIntensity'][3] = value;
     });
