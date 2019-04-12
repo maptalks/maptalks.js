@@ -21,6 +21,8 @@ class TileConfig {
         this.tileSize = tileSize;
         this.fullExtent = fullExtent;
         this.prepareTileInfo(tileSystem, fullExtent);
+        this._xScale = fullExtent['right'] >= fullExtent['left'] ? 1 : -1;
+        this._yScale = fullExtent['top'] >= fullExtent['bottom'] ? 1 : -1;
     }
 
     prepareTileInfo(tileSystem, fullExtent) {
@@ -178,8 +180,8 @@ class TileConfig {
     getTilePrjNW(tileX, tileY, res) {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
-        const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * (res * tileSize['height']);
-        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'] + tileSystem['origin']['x'];
+        const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * res * tileSize['height'];
+        const x = tileSystem['origin']['x'] + this._xScale * tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'];
         return new Coordinate(x, y);
     }
 
@@ -193,8 +195,8 @@ class TileConfig {
     getTilePrjSE(tileX, tileY, res) {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
-        const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * (res * tileSize['height']);
-        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 1 : 0)) * res * tileSize['width'] + tileSystem['origin']['x'];
+        const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * res * tileSize['height'];
+        const x = tileSystem['origin']['x'] + this._xScale * tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 1 : 0)) * res * tileSize['width'];
         return new Coordinate(x, y);
     }
 
