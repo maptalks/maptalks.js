@@ -1,6 +1,6 @@
 var gui = new dat.GUI( { width: 250 } );
-function initGUI(UNIFORMS, MatUNIFORMS) {
-    console.log(window.UNIFORMS);
+function initGUI() {
+
     var Config = function() {
         this.metallicFactor = MatUNIFORMS['metallicFactor'];
         this.roughnessFactor = MatUNIFORMS['roughnessFactor'];
