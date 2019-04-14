@@ -23,9 +23,10 @@ void main() {
     MaterialInputs inputs;
     initMaterial(inputs);
 
-    prepareMaterial(inputs);
     // Invoke user code
     getMaterial(inputs);
+    //shading_params
+    prepareMaterial(inputs);
 
     vec4 color = evaluateMaterial(inputs);
 
@@ -34,6 +35,7 @@ void main() {
 #endif
 
     gl_FragColor = color;
+    // gl_FragColor = vec4(shading_normal, 1.0);
 
 #if defined(MATERIAL_HAS_POST_LIGHTING_COLOR)
     blendPostLightingColor(inputs, gl_FragColor);

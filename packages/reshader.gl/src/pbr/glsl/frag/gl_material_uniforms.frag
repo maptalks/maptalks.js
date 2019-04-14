@@ -85,7 +85,7 @@ uniform struct Material {
 
 void getMaterial(out MaterialInputs materialInputs) {
     #if defined(MATERIAL_HAS_BASECOLOR_MAP)
-        materialInputs.baseColor = texture2D(material.baseColorTexture, vTexCoord);
+        materialInputs.baseColor = texture2D(material.baseColorTexture, vertex_uv01.xy);
     #else
         materialInputs.baseColor = material.baseColorFactor;
     #endif
@@ -110,7 +110,7 @@ void getMaterial(out MaterialInputs materialInputs) {
 
     #if defined(MATERIAL_HAS_AMBIENT_OCCLUSION)
         #if defined(MATERIAL_HAS_AO_MAP)
-            materialInputs.ambientOcclusion = texture2D(material.occlusionTexture, vTexCoord).r;
+            materialInputs.ambientOcclusion = texture2D(material.occlusionTexture, vertex_uv01.xy).r;
         #else
             materialInputs.ambientOcclusion = material.occlusion;
         #endif
@@ -119,7 +119,7 @@ void getMaterial(out MaterialInputs materialInputs) {
 
     #if defined(MATERIAL_HAS_EMISSIVE)
         #if defined(MATERIAL_HAS_EMISSIVE_MAP)
-            materialInputs.emissive = texture2D(material.emissiveTexture, vTexCoord);
+            materialInputs.emissive = texture2D(material.emissiveTexture, vertex_uv01.xy);
         #else
             materialInputs.emissive = material.emissiveFactor;
         #endif
@@ -128,13 +128,13 @@ void getMaterial(out MaterialInputs materialInputs) {
     #if defined(MATERIAL_HAS_CLEAR_COAT)
         materialInputs.clearCoat = material.clearCoat;
         #if defined(MATERIAL_HAS_CLEARCOAT_ROUGNESS_MAP)
-            materialInputs.clearCoatRoughness = texture2D(material.clearCoatRoughnessTexture, vTexCoord).g;
+            materialInputs.clearCoatRoughness = texture2D(material.clearCoatRoughnessTexture, vertex_uv01.xy).g;
         #else
             materialInputs.clearCoatRoughness = material.clearCoatRoughness;
         #endif
 
         #if defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
-            materialInputs.clearCoatNormal = texture2D(material.clearCoatNormalTexture, vTexCoord).xyz;
+            materialInputs.clearCoatNormal = texture2D(material.clearCoatNormalTexture, vertex_uv01.xy).xyz;
         #endif
     #endif
 
@@ -144,7 +144,7 @@ void getMaterial(out MaterialInputs materialInputs) {
     #endif
 
     #if defined(MATERIAL_HAS_NORMAL)
-        materialInputs.normal = texture2D(material.normalTexture, vTexCoord).xyz;
+        materialInputs.normal = texture2D(material.normalTexture, vertex_uv01.xy).xyz;
     #endif
 
     #if defined(MATERIAL_HAS_POST_LIGHTING_COLOR)

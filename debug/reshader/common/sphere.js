@@ -1,3 +1,5 @@
+const { vec3 } = maptalksgl;
+
 function createSphere(widthSegments, heightSegments,) {
     //from claygl
     var vertexCount = (widthSegments + 1) * (heightSegments + 1);
@@ -133,10 +135,13 @@ function SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLeng
         }
     }
 
+    const tangents = computeTangents(vertices, normals, uvs, indices);
+
     return {
         vertices,
         textures : uvs,
         normals,
+        tangents,
         indices
     };
 }
@@ -144,3 +149,193 @@ function SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLeng
 const sphere = SphereGeometry(2, 128, 128);
 
 export default sphere;
+
+function computeTangents( positions, normals, uvs, indices ) {
+
+    // var index = geometry.index;
+    // var attributes = geometry.attributes;
+
+    // based on http://www.terathon.com/code/tangent.html
+    // (per vertex tangents)
+
+    // if ( index === null ||
+    //      attributes.position === undefined ||
+    //      attributes.normal === undefined ||
+    //      attributes.uv === undefined ) {
+
+    //     console.warn( 'THREE.BufferGeometry: Missing required attributes (index, position, normal or uv) in BufferGeometry.computeTangents()' );
+    //     return;
+
+    // }
+
+    // var indices = index.array;
+    // var positions = attributes.position.array;
+    // var normals = attributes.normal.array;
+    // var uvs = attributes.uv.array;
+
+    var nVertices = positions.length / 3;
+
+    // if ( attributes.tangent === undefined ) {
+
+    //     // geometry.addAttribute( 'tangent', new THREE.BufferAttribute( new Float32Array( 4 * nVertices ), 4 ) );
+    //     attributes['tangent', new Float32Array( 4 * nVertices )];
+    //
+    // }
+
+    // var tangents = attributes.tangent.array;
+    var tangents = new Array( 4 * nVertices );
+
+    var tan1 = [], tan2 = [];
+
+    for ( var i = 0; i < nVertices; i ++ ) {
+
+        tan1[ i ] = [0, 0, 0];
+        tan2[ i ] = [0, 0, 0];
+
+    }
+
+    var vA = [ 0, 0, 0 ],
+        vB = [ 0, 0, 0 ],
+        vC = [ 0, 0, 0 ],
+
+        uvA = [ 0, 0 ],
+        uvB = [ 0, 0 ],
+        uvC = [ 0, 0 ],
+
+        sdir = [ 0, 0, 0 ],
+        tdir = [ 0, 0, 0 ];
+
+    function handleTriangle( a, b, c ) {
+
+        fromArray3( vA, positions, a * 3 );
+        fromArray3( vB, positions, b * 3 );
+        fromArray3( vC, positions, c * 3 );
+
+        fromArray2( uvA, uvs, a * 2 );
+        fromArray2( uvB, uvs, b * 2 );
+        fromArray2( uvC, uvs, c * 2 );
+
+        var x1 = vB[0] - vA[0];
+        var x2 = vC[0] - vA[0];
+
+        var y1 = vB[1] - vA[1];
+        var y2 = vC[1] - vA[1];
+
+        var z1 = vB[2] - vA[2];
+        var z2 = vC[2] - vA[2];
+
+        var s1 = uvB[0] - uvA[0];
+        var s2 = uvC[0] - uvA[0];
+
+        var t1 = uvB[1] - uvA[1];
+        var t2 = uvC[1] - uvA[1];
+
+        var r = 1.0 / ( s1 * t2 - s2 * t1 );
+
+        vec3.set(
+            sdir,
+            ( t2 * x1 - t1 * x2 ) * r,
+            ( t2 * y1 - t1 * y2 ) * r,
+            ( t2 * z1 - t1 * z2 ) * r
+        );
+
+        vec3.set(
+            tdir,
+            ( s1 * x2 - s2 * x1 ) * r,
+            ( s1 * y2 - s2 * y1 ) * r,
+            ( s1 * z2 - s2 * z1 ) * r
+        );
+
+        vec3.add( tan1[ a ], tan1[ a ], sdir );
+        vec3.add( tan1[ b ], tan1[ b ], sdir );
+        vec3.add( tan1[ c ], tan1[ c ], sdir );
+
+        vec3.add( tan2[ a ], tan2[ a ], tdir );
+        vec3.add( tan2[ b ], tan2[ b ], tdir );
+        vec3.add( tan2[ c ], tan2[ c ], tdir );
+
+    }
+
+    // var groups = geometry.groups;
+
+    // if ( groups.length === 0 ) {
+
+    //     groups = [ {
+    //         start: 0,
+    //         count: indices.length
+    //     } ];
+
+    // }
+
+
+    for ( var j = 0, jl = indices.length; j < jl; j += 3 ) {
+
+        handleTriangle(
+            indices[ j + 0 ],
+            indices[ j + 1 ],
+            indices[ j + 2 ]
+        );
+
+    }
+
+
+
+    var tmp =[], tmp2 =[];
+    var n =[], n2 =[];
+    var w, t, test;
+
+    function handleVertex( v ) {
+
+        fromArray3( n, normals, v * 3 );
+        vec3.copy( n2, n );
+        // n2.copy( n );
+
+        t = tan1[ v ];
+
+        // Gram-Schmidt orthogonalize
+
+        vec3.copy( tmp, t );
+        vec3.sub(tmp, tmp, vec3.scale(n, n, vec3.dot( n, t )));
+        vec3.normalize(tmp, tmp);
+        // tmp.sub( n.multiplyScalar( n.dot( t ) ) ).normalize();
+
+        // Calculate handedness
+
+        vec3.cross(tmp2, n2, t);
+        test = vec3.dot( tmp2, tan2[ v ] );
+        // tmp2.crossVectors( n2, t );
+        // test = tmp2.dot( tan2[ v ] );
+        w = ( test < 0.0 ) ? - 1.0 : 1.0;
+
+        tangents[ v * 4 ] = tmp[0];
+        tangents[ v * 4 + 1 ] = tmp[1];
+        tangents[ v * 4 + 2 ] = tmp[2];
+        tangents[ v * 4 + 3 ] = w;
+
+    }
+
+    for ( var j = 0, jl = indices.length; j < jl; j += 3 ) {
+
+        handleVertex( indices[ j + 0 ] );
+        handleVertex( indices[ j + 1 ] );
+        handleVertex( indices[ j + 2 ] );
+
+    }
+
+
+
+    return tangents;
+}
+
+function fromArray3(out, array, offset) {
+    out[0] = array[offset];
+    out[1] = array[offset + 1];
+    out[2] = array[offset + 2];
+    return out;
+}
+
+function fromArray2(out, array, offset) {
+    out[0] = array[offset];
+    out[1] = array[offset + 1];
+    return out;
+}

@@ -55,7 +55,7 @@
         #if defined(HAS_ATTRIBUTE_UV0)
             mesh_uv0 = aTexCoord0;
         #endif
-        #if defined(HAS_ATTRIBUTE_UV0)
+        #if defined(HAS_ATTRIBUTE_UV1)
             mesh_uv1 = aTexCoord1;
         #endif
 
