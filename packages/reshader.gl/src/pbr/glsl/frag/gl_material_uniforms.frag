@@ -91,8 +91,8 @@ void getMaterial(out MaterialInputs materialInputs) {
     #endif
 
     #if defined(MATERIAL_HAS_METALLICROUGHNESS_MAP)
-        vec2 roughnessMetallic = texture2D(material.metallicRoughnessTexture).gb;
-        materialInputs.roughness = roughnessMetallicp[0];
+        vec2 roughnessMetallic = texture2D(material.metallicRoughnessTexture, vertex_uv01.xy).gb;
+        materialInputs.roughness = roughnessMetallic[0];
         #if !defined(SHADING_MODEL_CLOTH)
             materialInputs.metallic = roughnessMetallic[1];
         #endif

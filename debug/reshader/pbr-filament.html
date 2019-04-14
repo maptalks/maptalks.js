@@ -45,6 +45,7 @@
         window.UNIFORMS = null;
         window.MatUNIFORMS = null;
         let NORMAL_TEXTURE;
+        let ROUGHNESS_METALLIC_TEXTURE;
 
         function main() {
             const skyboxTextures = [
@@ -66,7 +67,8 @@
             }));
 
             const textures = [
-                "./ibl/resources/rusted_iron/normal.png"
+                "./ibl/resources/rusted_iron/normal.png",
+                "./ibl/resources/rusted_iron/occulusionRoughnessMetallicMap-1024.png"
             ];
 
             promises.push(...textures.map(url => new Promise(function (resolve, reject) {
@@ -80,6 +82,7 @@
             Promise.all(promises).then(images => {
                 iblMaps = createMaps(images.slice(0, 6));
                 NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[6]));
+                ROUGHNESS_METALLIC_TEXTURE = new reshader.Texture2D(regl.texture(images[7]));
                 const aperture = 16; //光圈
                 const speed = 1 / 125; //快门速度
                 const iso = 100; //iso感光度
@@ -101,7 +104,8 @@
                     'metallicFactor' : 1,
                     'roughnessFactor' : 0.5,
                     'reflectance': 0.5,
-                    'normalTexture': NORMAL_TEXTURE
+                    'normalTexture': NORMAL_TEXTURE,
+                    'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE
                 };
                 initGUI();
                 render();
