@@ -1,3 +1,4 @@
+const path = require('path');
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
@@ -243,6 +244,42 @@ describe('update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //变成透明
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('should can update markerAllowOverlap', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'icon',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: {
+                    markerFile: 'file://' + path.resolve(__dirname, '../integration/resources/plane-min.png'),
+                    markerWidth: 30,
+                    markerHeight: 30,
+                    markerOpacity: 1
+                }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                layer.updateSymbol(0, { markerAllowOverlap: true });
+            } else if (count === 3) {
                 done();
             }
         });
