@@ -12,9 +12,8 @@ const DEFAULT_UNIFORMS = {
     occlusion: 0,   //filament: ambientOcclusion
     occlusionStrength: 1, //filament: ambientStrength
 
-    normalMap : null,
+    normalTexture : null,
     normalStrength : 1,
-    emissionMap : null,
 
     reflectance: 0.5,
 
@@ -29,11 +28,9 @@ const DEFAULT_UNIFORMS = {
     anisotropy: undefined,
     anisotropyDirection: [1, 0, 0],
 
-    normalTexture: null,
-
     postLightingColor: [0, 0, 0, 0],
 
-    POST_PROCESS_TONE_MAPPING: 1
+    HAS_TONE_MAPPING: 1
 };
 
 class LitMaterial extends Material {
@@ -79,8 +76,8 @@ class LitMaterial extends Material {
             defines['MATERIAL_HAS_CLEAR_COAT_NORMAL']) {
             defines['MATERIAL_HAS_MAP'] = 1;
         }
-        if (uniforms['POST_PROCESS_TONE_MAPPING']) {
-            defines['POST_PROCESS_TONE_MAPPING'] = 1;
+        if (uniforms['HAS_TONE_MAPPING']) {
+            defines['HAS_TONE_MAPPING'] = 1;
         }
         return defines;
     }

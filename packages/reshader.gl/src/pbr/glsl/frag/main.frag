@@ -30,7 +30,7 @@ void main() {
 
     vec4 color = evaluateMaterial(inputs);
 
-#if defined(POST_PROCESS_TONE_MAPPING)
+#if defined(HAS_TONE_MAPPING)
     color.rgb = postProcess(color.rgb);
 #endif
 
