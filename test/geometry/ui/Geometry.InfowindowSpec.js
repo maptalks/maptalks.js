@@ -83,7 +83,11 @@ describe('Geometry.InfoWindow', function () {
         marker.openInfoWindow();
         var w = marker.getInfoWindow();
         var position = w.getPosition();
-        expect(position.round().toArray()).to.be.eql([433, -109]);
+        if (maptalks.Browser.ie) {
+            expect(position.round().toArray()).to.be.eql([433, -85]);
+        } else {
+            expect(position.round().toArray()).to.be.eql([433, -109]);
+        }
     });
 
     it('autoOpen on click', function (done) {
