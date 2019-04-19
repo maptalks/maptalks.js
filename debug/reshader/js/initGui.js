@@ -27,6 +27,8 @@ function initGUI() {
         this.aperture = aperture;
         this.speed = speed;
         this.iso = iso;
+        //anisotropy
+        this.anisotropy = MatUNIFORMS['anisotropy'];
     };
     var options = new Config();
     var metallicFactorController = gui.add(options, 'metallicFactor', 0, 1);
@@ -113,6 +115,13 @@ function initGUI() {
     isoController.onChange(function(value){
         iso = value;
         updateEV100();
+    });
+    //anisotropy
+    var anisotropyFolderController = gui.addFolder('anisotropyFolder');
+    var anisotropyController = anisotropyFolderController.add(options, 'anisotropy', -1, 1, 0.1);
+    anisotropyController.onChange(function(value){
+        changeMaterialUniforms('anisotropy', value);
+        // MatUNIFORMS['anisotropy'] = value;
     });
 }
 

@@ -139,7 +139,9 @@ void getMaterial(out MaterialInputs materialInputs) {
     #endif
 
     #if defined(MATERIAL_HAS_ANISOTROPY)
-        materialInputs.anisotropy = material.anisotropy;
+        //anisotropy为1时，anisotropicLobe 中 at和ab 结果为1，产生anisotropy不再受roughness影响的现象，绘制结果不符合直觉
+        //乘以0.95后，最大值不再为1，则能避免此现象
+        materialInputs.anisotropy = material.anisotropy * 0.95;
         materialInputs.anisotropyDirection = material.anisotropyDirection;
     #endif
 

@@ -109,7 +109,8 @@
                     'reflectance': 0.5,
                     'normalTexture': NORMAL_TEXTURE,
                     'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-                    'baseColorTexture': BASE_COLOR_TEXTURE
+                    'baseColorTexture': BASE_COLOR_TEXTURE,
+                    'anisotropy': 0
                 };
                 initGUI();
                 render();
@@ -164,7 +165,7 @@
         function createMaps(hdr) {
             return reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
-                envCubeSize: 512,
+                envCubeSize: 256,
                 prefilterCubeSize: PREFILTER_CUBE_SIZE
             });
         }

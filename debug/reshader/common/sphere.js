@@ -99,7 +99,7 @@ function SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLeng
         var verticesRow = [];
         var v = iy / heightSegments;
         // special case for the poles
-        var uOffset = ((iy === 0) ? 0.5 / widthSegments : (iy === heightSegments)) ? -0.5 / widthSegments : 0;
+        var uOffset = (iy === 0) ? 0.5 / widthSegments : ((iy === heightSegments) ? -0.5 / widthSegments : 0 );
         for (ix = 0; ix <= widthSegments; ix++) {
             var u = ix / widthSegments;
             // vertex
@@ -108,14 +108,8 @@ function SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLeng
             vertex[2] = radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength);
             vertices.push(vertex[0], vertex[1], vertex[2]);
             // normal
-            normal[0] = vertex[0];
-            normal[1] = vertex[1];
-            normal[2] = vertex[2];
-            // .normalize();
-            var length = Math.sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]) || 1;
-            normal[0] = normal[0] / length;
-            normal[1] = normal[1] / length;
-            normal[2] = normal[2] / length;
+            vec3.set(normal, vertex[0], vertex[1], vertex[2]);
+            vec3.normalize(normal, normal);
             normals.push(normal[0], normal[1], normal[2]);
             // uv
             uvs.push(u + uOffset, 1 - v);
