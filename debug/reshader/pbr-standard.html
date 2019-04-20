@@ -2,12 +2,12 @@
 <html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Red Cube</title>
+  <title>Lit</title>
   <style type="text/css">
     html,body{margin:0px;height:100%;width:100%}
     .container{width:1000px;height:800px}
   </style>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
     <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
     <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
     <script type="text/javascript" src="js/dat.gui.min.js"></script>
@@ -47,6 +47,7 @@
         let NORMAL_TEXTURE;
         let ROUGHNESS_METALLIC_TEXTURE;
         let BASE_COLOR_TEXTURE;
+        let CLEAR_COAT_NORMAL_TEXTURE;
 
         function main() {
             const skyboxTextures = [
@@ -68,9 +69,11 @@
             }));
 
             const textures = [
-                "./ibl/resources/rusted_iron/normal.png",
+                // "./ibl/resources/rusted_iron/normal.png",
+                "./ibl/resources/rusted_iron/609-normal.jpg",
                 "./ibl/resources/rusted_iron/occulusionRoughnessMetallicMap-1024.png",
                 "./ibl/resources/rusted_iron/albedo.png",
+                // "./ibl/resources/rusted_iron/normal.png",
             ];
 
             promises.push(...textures.map(url => new Promise(function (resolve, reject) {
@@ -86,6 +89,7 @@
                 NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[6]));
                 ROUGHNESS_METALLIC_TEXTURE = new reshader.Texture2D(regl.texture(images[7]));
                 BASE_COLOR_TEXTURE = new reshader.Texture2D(regl.texture(images[8]));
+                // CLEAR_COAT_NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[9]));
                 const aperture = 16; //光圈
                 const speed = 1 / 125; //快门速度
                 const iso = 100; //iso感光度
@@ -104,12 +108,15 @@
                     'ev100': ev100,
                 };
                 MatUNIFORMS = {
-                    'metallicFactor' : 1,
-                    'roughnessFactor' : 0.5,
+                    'metallicFactor' : 0,
+                    'roughnessFactor' : 1,
                     'reflectance': 0.5,
+                    'clearCoat': 1,
+                    // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
+                    'clearCoatRoughness': 0.3,
                     'normalTexture': NORMAL_TEXTURE,
-                    'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-                    'baseColorTexture': BASE_COLOR_TEXTURE,
+                    // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
+                    // 'baseColorTexture': BASE_COLOR_TEXTURE,
                     'anisotropy': 0
                 };
                 initGUI();
@@ -264,7 +271,7 @@
                 0,
                 {
                     //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
-                    primitive : maptalks.Util.isNumber(primitive.mode) ? MODES[primitive.mode] : primitive.mode,
+                    primitive : (typeof primitive.mode === 'number') ? MODES[primitive.mode] : primitive.mode,
                     positionAttribute : 'POSITION',
                 }
             );

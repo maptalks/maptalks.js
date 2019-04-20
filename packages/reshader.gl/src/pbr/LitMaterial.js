@@ -20,7 +20,7 @@ const DEFAULT_UNIFORMS = {
     emissiveTexture: null,
     emissiveFactor: [0, 0, 0, 0],
 
-    clearCoat: 1,
+    clearCoat: undefined,
     clearCoatRoughnessTexture: null,
     clearCoatRoughness: 0,
     clearCoatNormalTexture: null,
@@ -64,6 +64,9 @@ class LitMaterial extends Material {
         }
         if (uniforms['normalTexture']) {
             defines['MATERIAL_HAS_NORMAL'] = 1;
+        }
+        if (uniforms['clearCoat'] !== undefined) {
+            defines['MATERIAL_HAS_CLEAR_COAT'] = 1;
         }
         if (uniforms['postLightingColor']) {
             defines['MATERIAL_HAS_POST_LIGHTING_COLOR'] = 1;

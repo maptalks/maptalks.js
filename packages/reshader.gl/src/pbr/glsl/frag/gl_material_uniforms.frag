@@ -134,7 +134,7 @@ void getMaterial(out MaterialInputs materialInputs) {
         #endif
 
         #if defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
-            materialInputs.clearCoatNormal = texture2D(material.clearCoatNormalTexture, vertex_uv01.xy).xyz;
+            materialInputs.clearCoatNormal = texture2D(material.clearCoatNormalTexture, vertex_uv01.xy).xyz * 2.0 - 1.0;
         #endif
     #endif
 

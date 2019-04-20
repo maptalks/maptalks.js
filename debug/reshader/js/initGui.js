@@ -29,6 +29,9 @@ function initGUI() {
         this.iso = iso;
         //anisotropy
         this.anisotropy = MatUNIFORMS['anisotropy'];
+        //clearCoat
+        this.clearCoat = MatUNIFORMS['clearCoat'];
+        this.clearCoatRoughness = MatUNIFORMS['clearCoatRoughness'];
     };
     var options = new Config();
     var metallicFactorController = gui.add(options, 'metallicFactor', 0, 1);
@@ -121,7 +124,16 @@ function initGUI() {
     var anisotropyController = anisotropyFolderController.add(options, 'anisotropy', -1, 1, 0.1);
     anisotropyController.onChange(function(value){
         changeMaterialUniforms('anisotropy', value);
-        // MatUNIFORMS['anisotropy'] = value;
+    });
+    //clearCoat
+    var clearCoatFolderController = gui.addFolder('clearCoatFolder');
+    var clearCoatController = clearCoatFolderController.add(options, 'clearCoat', 0, 4, 0.1);
+    clearCoatController.onChange(function(value){
+        changeMaterialUniforms('clearCoat', value);
+    });
+    var clearCoatRoughnessController = clearCoatFolderController.add(options, 'clearCoatRoughness', 0, 1, 0.1);
+    clearCoatRoughnessController.onChange(function(value){
+        changeMaterialUniforms('clearCoatRoughness', value);
     });
 }
 
