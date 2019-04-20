@@ -146,7 +146,7 @@ void getMaterial(out MaterialInputs materialInputs) {
     #endif
 
     #if defined(MATERIAL_HAS_NORMAL)
-        materialInputs.normal = texture2D(material.normalTexture, vertex_uv01.xy).xyz;
+        materialInputs.normal = texture2D(material.normalTexture, vertex_uv01.xy).xyz * 2.0 - 1.0;
     #endif
 
     #if defined(MATERIAL_HAS_POST_LIGHTING_COLOR)
