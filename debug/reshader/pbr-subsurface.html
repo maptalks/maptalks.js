@@ -2,7 +2,7 @@
 <html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cloth</title>
+  <title>Subsurface</title>
   <style type="text/css">
     html,body{margin:0px;height:100%;width:100%}
     .container{width:1000px;height:800px}
@@ -113,12 +113,14 @@
                 };
                 MatUNIFORMS = {
                     'roughnessFactor' : 1,
-                    'normalTexture': NORMAL_TEXTURE,
+                    // 'normalTexture': NORMAL_TEXTURE,
                     // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
                     // 'baseColorTexture': BASE_COLOR_TEXTURE,
                     'baseColorFactor': [61 / 255, 120 / 255, 12 / 255, 1],
-                    'subsurfaceColor': [0, 0, 0],
-                    'uvScale': 8
+                    'subsurfaceColor': [0, 1, 0],
+                    'uvScale': 8,
+                    'thickness': 0.5,
+                    'subsurfacePower': 12.234
                 };
                 initGUI();
                 render();
@@ -150,12 +152,12 @@
         }
 
         function drawSphere() {
-            SHADER = new reshader.pbr.ClothShader();
+            SHADER = new reshader.pbr.SubsurfaceShader();
             SCENE = getScene();
             drawScene();
         }
         function drawGLTFModel() {
-            SHADER = new reshader.pbr.ClothShader({
+            SHADER = new reshader.pbr.SubsurfaceShader({
                 positionAttribute : 'POSITION',
                 normalAttribute : 'NORMAL',
                 tangentAttribute : 'TANGENT',
@@ -180,7 +182,7 @@
         function getScene() {
             const meshes = [];
             //创建纹理
-            const material = new reshader.pbr.ClothMaterial(MatUNIFORMS);
+            const material = new reshader.pbr.SubsurfaceMaterial(MatUNIFORMS);
 
             const { data, indices } = generateSphereData();
             const modelMatrix = mat4.identity([]);
@@ -362,6 +364,6 @@
             return 1.0 / (1.2 * Math.pow(2.0, EV100));
         }
     </script>
-    <script type="text/javascript" src="js/initGui-cloth.js"></script>
+    <script type="text/javascript" src="js/initGui-subsurface.js"></script>
   </body>
 </html>

@@ -10,7 +10,7 @@ uniform struct Material {
         //G: roughness B: metallic
         sampler2D   metallicRoughnessTexture;
     #else
-        #if !defined(SHADING_MODEL_CLOTH)
+        #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
             float       metallicFactor;
         #endif
         float       roughnessFactor;
@@ -82,6 +82,10 @@ uniform struct Material {
         #if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
         vec3 subsurfaceColor;
         #endif
+    #else
+        float thickness;
+        float subsurfacePower;
+        vec3 subsurfaceColor;
     #endif
 
     // not available when the shading model is unlit
@@ -102,17 +106,17 @@ void getMaterial(out MaterialInputs materialInputs) {
     #if defined(MATERIAL_HAS_METALLICROUGHNESS_MAP)
         vec2 roughnessMetallic = texture2D(material.metallicRoughnessTexture, vertex_uv01.xy).gb;
         materialInputs.roughness = roughnessMetallic[0];
-        #if !defined(SHADING_MODEL_CLOTH)
+        #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
             materialInputs.metallic = roughnessMetallic[1];
         #endif
     #else
         materialInputs.roughness = material.roughnessFactor;
-        #if !defined(SHADING_MODEL_CLOTH)
+        #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
             materialInputs.metallic = material.metallicFactor;
         #endif
     #endif
 
-    #if !defined(SHADING_MODEL_CLOTH)
+    #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
         //TODO 可能需要从纹理中读取
         materialInputs.reflectance = material.reflectance;
     #endif
@@ -169,5 +173,11 @@ void getMaterial(out MaterialInputs materialInputs) {
         #if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
             materialInputs.subsurfaceColor = material.subsurfaceColor;
         #endif
+    #endif
+
+    #if defined(SHADING_MODEL_SUBSURFACE)
+        materialInputs.thickness = material.thickness;
+        materialInputs.subsurfacePower = material.subsurfacePower;
+        materialInputs.subsurfaceColor = material.subsurfaceColor;
     #endif
 }

@@ -28,6 +28,7 @@ import fl_light_indirect from '../pbr/glsl/frag/light_indirect.frag';
 //有向光的计算逻辑
 import fl_shading_model_standard_frag from '../pbr/glsl/frag/shading_model_standard.frag';
 import fl_shading_model_cloth_frag from '../pbr/glsl/frag/shading_model_cloth.frag';
+import fl_shading_model_subsurface_frag from '../pbr/glsl/frag/shading_model_subsurface.frag';
 import fl_light_directional from '../pbr/glsl/frag/light_directional.frag';
 //lit材质的逻辑
 import fl_shading_lit from '../pbr/glsl/frag/shading_lit.frag';
@@ -62,6 +63,7 @@ const ShaderChunk = {
     fl_light_indirect,
     fl_shading_model_standard_frag,
     fl_shading_model_cloth_frag,
+    fl_shading_model_subsurface_frag,
     fl_light_directional,
     fl_shading_lit,
     fl_gl_post_process_frag,

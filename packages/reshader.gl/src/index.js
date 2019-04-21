@@ -32,13 +32,17 @@ import LitMaterial from './pbr/LitMaterial.js';
 import LitShader from './pbr/LitShader';
 import ClothMaterial from './pbr/ClothMaterial.js';
 import ClothShader from './pbr/ClothShader';
+import SubsurfaceMaterial from './pbr/SubsurfaceMaterial.js';
+import SubsurfaceShader from './pbr/SubsurfaceShader';
 
 const pbr = {
     PBRHelper,
     LitShader,
     LitMaterial,
     ClothShader,
-    ClothMaterial
+    ClothMaterial,
+    SubsurfaceShader,
+    SubsurfaceMaterial
 };
 
 export { pbr };
