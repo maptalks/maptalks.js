@@ -30,11 +30,15 @@ export { SkyboxHelper };
 import * as PBRHelper from './pbr/PBRHelper.js';
 import LitMaterial from './pbr/LitMaterial.js';
 import LitShader from './pbr/LitShader';
+import ClothMaterial from './pbr/ClothMaterial.js';
+import ClothShader from './pbr/ClothShader';
 
 const pbr = {
     PBRHelper,
     LitShader,
-    LitMaterial
+    LitMaterial,
+    ClothShader,
+    ClothMaterial
 };
 
 export { pbr };

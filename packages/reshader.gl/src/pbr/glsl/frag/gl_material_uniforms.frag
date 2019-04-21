@@ -10,7 +10,9 @@ uniform struct Material {
         //G: roughness B: metallic
         sampler2D   metallicRoughnessTexture;
     #else
-        float       metallicFactor;
+        #if !defined(SHADING_MODEL_CLOTH)
+            float       metallicFactor;
+        #endif
         float       roughnessFactor;
     #endif
 
@@ -38,31 +40,32 @@ uniform struct Material {
         vec4 postLightingColor;
     #endif
 
+    #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
         //TODO reflectance 是否能做成材质？
         // default: 0.5, not available with cloth
-        float reflectance;
-    #if defined(MATERIAL_HAS_CLEAR_COAT)
-            // default: 1.0, 是否是clearCoat, 0 or 1
-            float clearCoat;
-        #if defined(MATERIAL_HAS_CLEARCOAT_ROUGNESS_MAP)
-            sampler2D clearCoatRoughnessTexture;
-        #else
+            float reflectance;
+        #if defined(MATERIAL_HAS_CLEAR_COAT)
+                // default: 1.0, 是否是clearCoat, 0 or 1
+                float clearCoat;
+            #if defined(MATERIAL_HAS_CLEARCOAT_ROUGNESS_MAP)
+                sampler2D clearCoatRoughnessTexture;
+            #else
+                // default: 0.0
+                float clearCoatRoughness;
+            #endif
+
+            #if defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
+                // default: vec3(0.0, 0.0, 1.0)
+                sampler2D clearCoatNormalTexture;
+            #endif
+        #endif
+
+        #if defined(MATERIAL_HAS_ANISOTROPY)
             // default: 0.0
-            float clearCoatRoughness;
+            float anisotropy;
+            // default: vec3(1.0, 0.0, 0.0)
+            vec3 anisotropyDirection;
         #endif
-
-        #if defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
-            // default: vec3(0.0, 0.0, 1.0)
-            sampler2D clearCoatNormalTexture;
-        #endif
-    #endif
-
-    #if defined(MATERIAL_HAS_ANISOTROPY)
-        // default: 0.0
-        float anisotropy;
-        // default: vec3(1.0, 0.0, 0.0)
-        vec3 anisotropyDirection;
-    #endif
 
     //TODO subsurface模型的定义
     // only available when the shading model is subsurface
@@ -74,6 +77,12 @@ uniform struct Material {
     // only available when the shading model is cloth
     // vec3 sheenColor;          // default: sqrt(baseColor)
     // vec3 subsurfaceColor;     // default: vec3(0.0)
+    #elif defined(SHADING_MODEL_CLOTH)
+        vec3 sheenColor;
+        #if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+        vec3 subsurfaceColor;
+        #endif
+    #endif
 
     // not available when the shading model is unlit
     // must be set before calling prepareMaterial()
@@ -151,5 +160,14 @@ void getMaterial(out MaterialInputs materialInputs) {
 
     #if defined(MATERIAL_HAS_POST_LIGHTING_COLOR)
         materialInputs.postLightingColor = material.postLightingColor;
+    #endif
+
+    #if defined(SHADING_MODEL_CLOTH)
+        if (material.sheenColor[0] >= 0.0) {
+            materialInputs.sheenColor = material.sheenColor;
+        }
+        #if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+            materialInputs.subsurfaceColor = material.subsurfaceColor;
+        #endif
     #endif
 }

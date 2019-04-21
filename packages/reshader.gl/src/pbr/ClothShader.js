@@ -1,12 +1,12 @@
 import { mat3, mat4 } from 'gl-matrix';
-import LitFrag from './glsl/frag/index_lit.frag';
-import LitVert from './glsl/vert/index.vert';
+import clothFrag from './glsl/frag/index_cloth.frag';
+import clothVert from './glsl/vert/index.vert';
 import MeshShader from '../shader/MeshShader.js';
 import { extend } from '../common/Util';
 
 
 //http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates/
-class LitShader extends MeshShader {
+class ClothShader extends MeshShader {
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
         const positionAttribute  = config.positionAttribute || 'aPosition';
@@ -28,7 +28,7 @@ class LitShader extends MeshShader {
                 alpha: true
             }
         });
-        let vert = LitVert;
+        let vert = clothVert;
         //将着色器代码中的aPosition替换成指定的变量名
         if (positionAttribute !== 'aPosition') {
             vert = vert.replace(/aPosition/g, positionAttribute);
@@ -50,7 +50,7 @@ class LitShader extends MeshShader {
         }
         super({
             vert,
-            frag : LitFrag,
+            frag : clothFrag,
             uniforms : [
                 //vert中的uniforms
                 {
@@ -100,7 +100,6 @@ class LitShader extends MeshShader {
                 'material.baseColorFactor',
 
                 'material.metallicRoughnessTexture',
-                'material.metallicFactor',
                 'material.roughnessFactor',
 
                 'material.occlusionTexture',    // default: 0.0
@@ -112,17 +111,10 @@ class LitShader extends MeshShader {
 
                 'material.postLightingColor',   // default: vec4(0.0)
 
-                'material.reflectance',         // default: 0.5, not available with cloth
-
-                'material.clearCoat',           // default: 1.0, 是否是clearCoat, 0 or 1
-                'material.clearCoatRoughnessTexture',
-                'material.clearCoatRoughness',  // default: 0.0
-                'material.clearCoatNormalTexture',     // default: vec3(0.0, 0.0, 1.0)
-
-                'material.anisotropy',          // default: 0.0
-                'material.anisotropyDirection', // default: vec3(1.0, 0.0, 0.0)
-
                 'material.normalTexture',              // default: vec3(0.0, 0.0, 1.0)
+
+                'material.sheenColor',
+                'material.subsurfaceColor',
             ],
             extraCommandProps
         });
@@ -154,4 +146,4 @@ class LitShader extends MeshShader {
 }
 
 
-export default LitShader;
+export default ClothShader;

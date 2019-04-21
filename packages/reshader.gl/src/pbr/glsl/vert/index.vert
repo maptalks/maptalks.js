@@ -14,11 +14,11 @@
 
 #if defined(HAS_ATTRIBUTE_UV0)
     attribute vec2 aTexCoord0;
+    uniform float uvScale;
 #endif
 #if defined(HAS_ATTRIBUTE_UV1)
     attribute vec2 aTexCoord1;
 #endif
-
 
     uniform mat3 normalMatrix;
     uniform mat4 modelMatrix;
@@ -53,7 +53,7 @@
             mesh_color = vec4(aColor, 1.0);
         #endif
         #if defined(HAS_ATTRIBUTE_UV0)
-            mesh_uv0 = aTexCoord0;
+            mesh_uv0 = aTexCoord0 * uvScale;
         #endif
         #if defined(HAS_ATTRIBUTE_UV1)
             mesh_uv1 = aTexCoord1;
