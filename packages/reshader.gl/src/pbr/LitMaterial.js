@@ -24,6 +24,7 @@ const DEFAULT_UNIFORMS = {
     clearCoatRoughnessTexture: null,
     clearCoatRoughness: 0,
     clearCoatNormalTexture: null,
+    clearCoatIorChange: true,
 
     anisotropy: undefined,
     anisotropyDirection: [1, 0, 0],
@@ -67,6 +68,9 @@ class LitMaterial extends Material {
         }
         if (uniforms['clearCoat'] !== undefined) {
             defines['MATERIAL_HAS_CLEAR_COAT'] = 1;
+        }
+        if (uniforms['clearCoatIorChange']) {
+            defines['CLEAR_COAT_IOR_CHANGE'] = 1;
         }
         if (uniforms['postLightingColor']) {
             defines['MATERIAL_HAS_POST_LIGHTING_COLOR'] = 1;
