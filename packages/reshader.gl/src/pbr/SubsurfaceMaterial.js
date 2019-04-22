@@ -26,7 +26,8 @@ const DEFAULT_UNIFORMS = {
     subsurfacePower: 12.234,     // default: 12.234
     subsurfaceColor: [1, 1, 1],     // default: float3(1.0)
 
-    uvScale: 1
+    uvScale: 1,
+    uvOffset: [0, 0]
 };
 
 class ClothMaterial extends Material {
@@ -72,7 +73,7 @@ class ClothMaterial extends Material {
 
     getUniforms(regl) {
         const uniforms = super.getUniforms(regl);
-        return { material: uniforms, uvScale: uniforms.uvScale };
+        return { material: uniforms, uvScale: uniforms.uvScale, uvOffset: uniforms.uvOffset };
     }
 }
 

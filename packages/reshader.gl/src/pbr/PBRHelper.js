@@ -10,7 +10,7 @@ import dfgVS from './glsl/helper/dfg.vert';
 import coefficients from 'cubemap-sh';
 import skyboxFrag from '../skybox/skybox.frag';
 
-import irradianceFS from './glsl/helper/irradiance_convolution.frag';
+// import irradianceFS from './glsl/helper/irradiance_convolution.frag';
 /**
  * {
  *  envTexture,
@@ -114,36 +114,36 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
 }
 
 //solve diffuse integral by convolution to create an irradiance (cube)map.
-function createIrradianceCube(regl, envCube, SIZE) {
-    SIZE = SIZE || 32;
-    const irradianceCube = regl.framebufferCube({
-        radius : SIZE,
-        color : regl.cube({
-            radius : SIZE,
-            wrap : 'clamp', // shortcut for both wrapS and wrapT
-            min : 'linear',
-            mag : 'linear'
-        })
-    });
+// function createIrradianceCube(regl, envCube, SIZE) {
+//     SIZE = SIZE || 32;
+//     const irradianceCube = regl.framebufferCube({
+//         radius : SIZE,
+//         color : regl.cube({
+//             radius : SIZE,
+//             wrap : 'clamp', // shortcut for both wrapS and wrapT
+//             min : 'linear',
+//             mag : 'linear'
+//         })
+//     });
 
-    const drawCube = regl({
-        frag : irradianceFS,
-        vert : cubemapVS,
-        attributes : {
-            'aPosition' : cubeData.vertices
-        },
-        uniforms : {
-            'projMatrix' : regl.context('projMatrix'),
-            'viewMatrix' :  regl.context('viewMatrix'),
-            'environmentMap' : envCube
-        },
-        elements : cubeData.indices
-    });
+//     const drawCube = regl({
+//         frag : irradianceFS,
+//         vert : cubemapVS,
+//         attributes : {
+//             'aPosition' : cubeData.vertices
+//         },
+//         uniforms : {
+//             'projMatrix' : regl.context('projMatrix'),
+//             'viewMatrix' :  regl.context('viewMatrix'),
+//             'environmentMap' : envCube
+//         },
+//         elements : cubeData.indices
+//     });
 
-    renderToCube(regl, irradianceCube, drawCube);
+//     renderToCube(regl, irradianceCube, drawCube);
 
-    return irradianceCube;
-}
+//     return irradianceCube;
+// }
 
 /**
  * Create a texture cube map from an equirectangular texture

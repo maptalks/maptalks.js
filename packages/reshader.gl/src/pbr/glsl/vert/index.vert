@@ -15,6 +15,7 @@
 #if defined(HAS_ATTRIBUTE_UV0)
     attribute vec2 aTexCoord0;
     uniform float uvScale;
+    uniform vec2 uvOffset;
 #endif
 #if defined(HAS_ATTRIBUTE_UV1)
     attribute vec2 aTexCoord1;
@@ -53,7 +54,7 @@
             mesh_color = vec4(aColor, 1.0);
         #endif
         #if defined(HAS_ATTRIBUTE_UV0)
-            mesh_uv0 = aTexCoord0 * uvScale;
+            mesh_uv0 = (aTexCoord0 + uvOffset) * uvScale;
         #endif
         #if defined(HAS_ATTRIBUTE_UV1)
             mesh_uv1 = aTexCoord1;

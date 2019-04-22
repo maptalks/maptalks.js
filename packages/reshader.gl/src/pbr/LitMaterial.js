@@ -33,7 +33,8 @@ const DEFAULT_UNIFORMS = {
 
     HAS_TONE_MAPPING: 1,
 
-    uvScale: 1
+    uvScale: 1,
+    uvOffset: [0, 0]
 };
 
 class LitMaterial extends Material {
@@ -93,7 +94,7 @@ class LitMaterial extends Material {
 
     getUniforms(regl) {
         const uniforms = super.getUniforms(regl);
-        return { material: uniforms, uvScale: uniforms.uvScale };
+        return { material: uniforms, uvScale: uniforms.uvScale, uvOffset: uniforms.uvOffset };
     }
 }
 
