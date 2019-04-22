@@ -1,3 +1,4 @@
+import clothFrag from './glsl/frag/index_cloth.frag';
 import StandardShader from './StandardShader.js';
 
 const UNIFORMS = [
@@ -24,7 +25,7 @@ const UNIFORMS = [
 
 class ClothShader extends StandardShader {
     constructor(config = {}) {
-        super(config, UNIFORMS);
+        super(config, clothFrag, UNIFORMS);
     }
 }
 

@@ -1,13 +1,12 @@
 import { mat3, mat4 } from 'gl-matrix';
-import clothFrag from './glsl/frag/index_cloth.frag';
-import clothVert from './glsl/vert/index.vert';
+import vertSource from './glsl/vert/index.vert';
 import MeshShader from '../shader/MeshShader.js';
 import { extend } from '../common/Util';
 
 
 //http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates/
 class StandardShader extends MeshShader {
-    constructor(config = {}, materialUniforms) {
+    constructor(config = {}, frag, materialUniforms) {
         let extraCommandProps = config.extraCommandProps || {};
         const positionAttribute  = config.positionAttribute || 'aPosition';
         const normalAttribute  = config.normalAttribute || 'aNormal';
@@ -16,10 +15,14 @@ class StandardShader extends MeshShader {
         const uv0Attribute = config.uv0Attribute || 'aTexCoord0';
         const uv1Attribute  = config.uv1Attribute || 'aTexCoord1';
         extraCommandProps = extend({}, extraCommandProps, {
+            cull: {
+                enable: true,
+                face: 'back'
+            },
             blend : {
                 enable: true,
                 func: {
-                    src: 'src alpha',
+                    src: 'one',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
@@ -28,7 +31,7 @@ class StandardShader extends MeshShader {
                 alpha: true
             }
         });
-        let vert = clothVert;
+        let vert = vertSource;
         //将着色器代码中的aPosition替换成指定的变量名
         if (positionAttribute !== 'aPosition') {
             vert = vert.replace(/aPosition/g, positionAttribute);
@@ -50,7 +53,7 @@ class StandardShader extends MeshShader {
         }
         super({
             vert,
-            frag : clothFrag,
+            frag,
             uniforms : [
                 //vert中的uniforms
                 {

@@ -45,6 +45,9 @@ class LitMaterial extends Material {
     createDefines() {
         const uniforms = this.uniforms;
         const defines = {};
+        if (uniforms['baseColorFactor'] && uniforms['baseColorFactor'][3] < 1) {
+            defines['BLEND_MODE_TRANSPARENT'] = 1;
+        }
         if (uniforms['baseColorTexture']) {
             defines['MATERIAL_HAS_BASECOLOR_MAP'] = 1;
         }

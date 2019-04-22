@@ -1,3 +1,4 @@
+import subsurfaceFrag from './glsl/frag/index_subsurface.frag';
 import StandardShader from './StandardShader';
 
 const UNIFORMS = [
@@ -26,7 +27,7 @@ const UNIFORMS = [
 //http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates/
 class ClothShader extends StandardShader {
     constructor(config = {}) {
-        super(config, UNIFORMS);
+        super(config, subsurfaceFrag, UNIFORMS);
     }
 }
 

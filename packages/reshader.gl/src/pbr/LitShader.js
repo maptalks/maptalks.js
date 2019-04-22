@@ -1,3 +1,4 @@
+import litFrag from './glsl/frag/index_lit.frag';
 import StandardShader from './StandardShader.js';
 
 const UNIFORMS = [
@@ -32,7 +33,7 @@ const UNIFORMS = [
 
 class LitShader extends StandardShader {
     constructor(config = {}) {
-        super(config, UNIFORMS);
+        super(config, litFrag, UNIFORMS);
     }
 }
 
