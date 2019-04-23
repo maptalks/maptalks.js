@@ -84,15 +84,15 @@ function initGUI() {
     });
     //lightDirection
     var lightDirectionController = gui.addFolder('lightDirection');
-    var lightDirectionControllerX = lightDirectionController.add(options, 'lightDirectionX',-100, 100);
+    var lightDirectionControllerX = lightDirectionController.add(options, 'lightDirectionX',-1, 1);
     lightDirectionControllerX.onChange(function(value){
         UNIFORMS['lightDirection'][0] = value;
     });
-    var lightDirectionControllerY = lightDirectionController.add(options, 'lightDirectionY', -100, 100);
+    var lightDirectionControllerY = lightDirectionController.add(options, 'lightDirectionY', -1, 1);
     lightDirectionControllerY.onChange(function(value){
         UNIFORMS['lightDirection'][1] = value;
     });
-    var lightDirectionControllerZ = lightDirectionController.add(options, 'lightDirectionZ', -100, 100);
+    var lightDirectionControllerZ = lightDirectionController.add(options, 'lightDirectionZ', -1, 1);
     lightDirectionControllerZ.onChange(function(value){
         UNIFORMS['lightDirection'][2] = value;
     });

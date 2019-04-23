@@ -15,10 +15,6 @@ class StandardShader extends MeshShader {
         const uv0Attribute = config.uv0Attribute || 'aTexCoord0';
         const uv1Attribute  = config.uv1Attribute || 'aTexCoord1';
         extraCommandProps = extend({}, extraCommandProps, {
-            cull: {
-                enable: true,
-                face: 'back'
-            },
             blend : {
                 enable: true,
                 func: {

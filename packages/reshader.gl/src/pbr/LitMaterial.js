@@ -33,6 +33,8 @@ const DEFAULT_UNIFORMS = {
 
     HAS_TONE_MAPPING: 1,
 
+    GAMMA_CORRECT_INPUT: 1,
+
     uvScale: 1,
     uvOffset: [0, 0]
 };
@@ -44,7 +46,9 @@ class LitMaterial extends Material {
 
     createDefines() {
         const uniforms = this.uniforms;
-        const defines = {};
+        const defines = {
+            BLEND_MODE_TRANSPARENT: 1
+        };
         if (uniforms['baseColorFactor'] && uniforms['baseColorFactor'][3] < 1) {
             defines['BLEND_MODE_TRANSPARENT'] = 1;
             defines['TRANSPARENT_MATERIAL'] = 1;
@@ -94,6 +98,9 @@ class LitMaterial extends Material {
         }
         if (uniforms['HAS_TONE_MAPPING']) {
             defines['HAS_TONE_MAPPING'] = 1;
+        }
+        if (uniforms['GAMMA_CORRECT_INPUT']) {
+            defines['GAMMA_CORRECT_INPUT'] = 1;
         }
         return defines;
     }

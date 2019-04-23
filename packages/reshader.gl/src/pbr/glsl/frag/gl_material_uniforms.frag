@@ -67,16 +67,6 @@ uniform struct Material {
             vec3 anisotropyDirection;
         #endif
 
-    //TODO subsurface模型的定义
-    // only available when the shading model is subsurface
-    // float thickness;           // default: 0.5
-    // float subsurfacePower;     // default: 12.234
-    // vec3 subsurfaceColor;     // default: vec3(1.0)
-
-    //TODO cloth模型的定义
-    // only available when the shading model is cloth
-    // vec3 sheenColor;          // default: sqrt(baseColor)
-    // vec3 subsurfaceColor;     // default: vec3(0.0)
     #elif defined(SHADING_MODEL_CLOTH)
         vec3 sheenColor;
         #if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
@@ -96,16 +86,32 @@ uniform struct Material {
     #endif
 } material;
 
+vec3 gammaCorrectInput(vec3 color) {
+    #if defined(GAMMA_CORRECT_INPUT)
+        return pow(color, vec3(2.2));
+    #else
+        return color;
+    #endif
+}
+
+vec4 gammaCorrectInput(vec4 color) {
+    #if defined(GAMMA_CORRECT_INPUT)
+        return vec4(gammaCorrectInput(color.rgb), color.a);
+    #else
+        return color;
+    #endif
+}
+
 void getMaterial(out MaterialInputs materialInputs) {
     #if defined(MATERIAL_HAS_BASECOLOR_MAP)
-        materialInputs.baseColor = texture2D(material.baseColorTexture, vertex_uv01.xy);
+        materialInputs.baseColor = gammaCorrectInput(texture2D(material.baseColorTexture, vertex_uv01.xy));
     #else
         materialInputs.baseColor = material.baseColorFactor;
     #endif
 
     #if defined(MATERIAL_HAS_METALLICROUGHNESS_MAP)
         vec2 roughnessMetallic = texture2D(material.metallicRoughnessTexture, vertex_uv01.xy).gb;
-        materialInputs.roughness = sqrt(roughnessMetallic[0]);
+        materialInputs.roughness = roughnessMetallic[0];
         #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
             materialInputs.metallic = roughnessMetallic[1];
         #endif
@@ -132,7 +138,7 @@ void getMaterial(out MaterialInputs materialInputs) {
 
     #if defined(MATERIAL_HAS_EMISSIVE)
         #if defined(MATERIAL_HAS_EMISSIVE_MAP)
-            materialInputs.emissive = texture2D(material.emissiveTexture, vertex_uv01.xy);
+            materialInputs.emissive = gammaCorrectInput(texture2D(material.emissiveTexture, vertex_uv01.xy));
         #else
             materialInputs.emissive = material.emissiveFactor;
         #endif

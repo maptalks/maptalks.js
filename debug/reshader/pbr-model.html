@@ -94,7 +94,7 @@
                     'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
                     'cameraPosition':camPos,
                     'iblSH': iblMaps.sh,
-                    'lightColorIntensity': [1, 1, 1, 30000],
+                    'lightColorIntensity': [0.98, 0.92, 0.89, 30000],
                     'sun': [1, 1, 1, -1],
                     'lightDirection': [1, 0, -1],
                     'iblLuminance': 8000,
@@ -152,7 +152,13 @@
                 tangentAttribute : 'TANGENT',
                 colorAttribute : 'COLOR_0',
                 uv0Attribute : 'TEXCOORD_0',
-                uv1Attribute : 'TEXCOORD_1'
+                uv1Attribute : 'TEXCOORD_1',
+                extraCommandProps: {
+                    cull: {
+                        enable: true,
+                        face: 'back'
+                    }
+                }
             });
             const scenePromise = getGLTFScene();
             scenePromise.then(scene => {
@@ -173,85 +179,100 @@
             var url = 'gltf/DamagedHelmet.glb';
             return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
                 const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
+            // const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
+            // return gltf.Ajax.getJSON(url, {}).then((json) => {
+            //     const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
                 return loader.load().then(gltfData => {
                     const transformMat = mat4.identity([]);
                     mat4.rotate(transformMat, transformMat, 90 * Math.PI / 180, [1, 0, 0]);
                     // mat4.scale(transformMat, transformMat, [60, 60, 60]);
                     const modelMeshes = [];
-                    const nodes = gltfData.scenes[0].nodes;
-                    nodes.forEach((node, i) => {
-                        if (!node.meshes && !node.children) {
-                            return;
-                        }
-                        let meshes = null;
-                        if (node.children) {
-                            meshes = extractMesh(node.children);
-                        } else if (node.meshes) {
-                            meshes = node.meshes;
-                        }
-                        meshes.forEach(mesh => {
-                            mesh.primitives.forEach(primitive => {
-                                const modelGeometry = createGeometry(primitive);
-                                const defines = getGeometryDefines(modelGeometry);
-                                defines['IBL_MAX_MIP_LEVEL'] = (Math.log(PREFILTER_CUBE_SIZE) / Math.log(2)) + '.0';
-                                let uniforms = {};
-                                if (primitive.material) {
-                                    const textures = primitive.material.pbrMetallicRoughness;
-                                    if (textures.baseColorTexture) {
-                                        uniforms.baseColorTexture = toTexture(textures.baseColorTexture);
-                                    } else if (textures.baseColorFactor) {
-                                        uniforms.baseColorFactor = textures.baseColorFactor;
+                    for (let i = 0; i < gltfData.scenes.length; i++) {
+                        const scene = gltfData.scenes[i];
+                        const nodes = scene.nodes;
+                        nodes.forEach((node, i) => {
+                            if (!node.meshes && !node.children) {
+                                return;
+                            }
+                            let meshes = null;
+                            if (node.children) {
+                                meshes = extractMesh(node.children);
+                            } else if (node.meshes) {
+                                meshes = [
+                                    {
+                                        mesh: node.meshes[0],
+                                        matrix: getNodeTransformation(node)
                                     }
-                                    if (textures.metallicRoughnessTexture) {
-                                        uniforms.metallicRoughnessTexture = toTexture(textures.metallicRoughnessTexture);
-                                    } else {
-                                        if (textures.metallicFactor !== undefined) {
-                                            uniforms.metallicFactor = textures.metallicFactor;
+                                ];
+                            }
+                            // debugger
+                            meshes.forEach(({ mesh, matrix }) => {
+                                mesh.primitives.forEach(primitive => {
+                                    const modelGeometry = createGeometry(primitive);
+                                    const defines = getGeometryDefines(modelGeometry);
+                                    defines['IBL_MAX_MIP_LEVEL'] = (Math.log(PREFILTER_CUBE_SIZE) / Math.log(2)) + '.0';
+                                    let uniforms = {};
+                                    if (primitive.material) {
+                                        const textures = primitive.material.pbrMetallicRoughness;
+                                        if (textures.baseColorTexture) {
+                                            uniforms.baseColorTexture = toTexture(textures.baseColorTexture);
+                                        } else if (textures.baseColorFactor) {
+                                            uniforms.baseColorFactor = textures.baseColorFactor;
                                         }
-                                        if (textures.roughnessFactor !== undefined) {
-                                            uniforms.roughnessFactor = textures.roughnessFactor;
+                                        if (textures.metallicRoughnessTexture) {
+                                            uniforms.metallicRoughnessTexture = toTexture(textures.metallicRoughnessTexture);
+                                        } else {
+                                            if (textures.metallicFactor !== undefined) {
+                                                uniforms.metallicFactor = textures.metallicFactor;
+                                            }
+                                            if (textures.roughnessFactor !== undefined) {
+                                                uniforms.roughnessFactor = textures.roughnessFactor;
+                                            }
                                         }
-                                    }
 
-                                    if (primitive.material.normalTexture) {
-                                        uniforms.normalTexture = toTexture(primitive.material.normalTexture);
+                                        if (primitive.material.normalTexture) {
+                                            uniforms.normalTexture = toTexture(primitive.material.normalTexture);
+                                        }
+                                        if (primitive.material.occlusionTexture) {
+                                            uniforms.occlusionTexture = toTexture(primitive.material.occlusionTexture);
+                                        }
+                                        if (primitive.material.emissiveTexture) {
+                                            uniforms.emissiveTexture = toTexture(primitive.material.emissiveTexture);
+                                        }
+                                    } else {
+                                        uniforms = {
+                                            metallicFactor : 1,
+                                            roughnessFactor : 0,
+                                            reflectance: 1
+                                        };
                                     }
-                                    if (primitive.material.occlusionTexture) {
-                                        uniforms.occlusionTexture = toTexture(primitive.material.occlusionTexture);
-                                    }
-                                    if (primitive.material.emissiveTexture) {
-                                        uniforms.emissiveTexture = toTexture(primitive.material.emissiveTexture);
-                                    }
-                                } else {
-                                    uniforms = {
-                                        metallicFactor : 1,
-                                        roughnessFactor : 0,
-                                        reflectance: 1
-                                    };
-                                }
-                                const material = new reshader.pbr.LitMaterial(uniforms);
-                                //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
-                                const modelMesh = new reshader.Mesh(modelGeometry, material);
-                                modelMeshes.push(modelMesh);
-                                modelMesh.setLocalTransform(transformMat);
-                                modelMesh.setDefines(defines);
+                                    const material = new reshader.pbr.LitMaterial(uniforms);
+                                    //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
+                                    const modelMesh = new reshader.Mesh(modelGeometry, material);
+                                    modelMeshes.push(modelMesh);
+                                    modelMesh.setLocalTransform(matrix);
+                                    modelMesh.setDefines(defines);
+                                });
                             });
                         });
-                    });
+                    }
+
                     const scene = new reshader.Scene(modelMeshes);
                     return scene;
                 });
             });
         }
         function extractMesh(children) {
-            //TODO
-            //children里面可能由很多mesh，后面还需要完善
+            const meshes = [];
             for (let i = 0; i < children.length; i++) {
                 if (children[i].meshes) {
-                    return children[i].meshes;
+                    meshes.push({
+                        mesh: children[i].meshes[0],
+                        matrix: getNodeTransformation(children[i])
+                    });
                 }
             }
-            return [];
+            return meshes;
         }
         function createGeometry(primitive) {
             const attributes = {};
@@ -412,6 +433,17 @@
                 mag: 'linear',
                 min: 'mipmap'
             }));
+        }
+
+        function getNodeTransformation(node) {
+            if (node.matrix) {
+                return node.matrix;
+            }
+            const mat = mat4.identity([]);
+            const v = node.translation || [0, 0, 0];
+            const q = node.rotation || [0, 0, 0, 1];
+            const s = node.scale || [1, 1, 1];
+            return mat4.fromRotationTranslationScale([], q, v, s)
         }
     </script>
     <script type="text/javascript" src="js/initGui.js"></script>
