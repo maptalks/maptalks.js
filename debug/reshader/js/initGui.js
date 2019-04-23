@@ -97,7 +97,7 @@ function initGUI() {
         UNIFORMS['lightDirection'][2] = value;
     });
     //iblLuminance
-    var iblLuminanceController = gui.add(options, 'iblLuminance', 0, 30000);
+    var iblLuminanceController = gui.add(options, 'iblLuminance', 0, 50000);
     iblLuminanceController.onChange(function(value){
         UNIFORMS['iblLuminance'] = value;
     });

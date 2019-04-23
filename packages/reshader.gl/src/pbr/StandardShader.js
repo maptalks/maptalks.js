@@ -24,6 +24,10 @@ class StandardShader extends MeshShader {
                 func: {
                     src: 'one',
                     dst: 'one minus src alpha'
+                    // srcRGB: 'src alpha',
+                    // srcAlpha: 1,
+                    // dstRGB: 'one minus src alpha',
+                    // dstAlpha: 'one minus src alpha'
                 },
                 equation: 'add'
             },

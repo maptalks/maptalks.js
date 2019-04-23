@@ -49,9 +49,11 @@ class ClothMaterial extends Material {
         }
         if (uniforms['occlusionTexture']) {
             defines['MATERIAL_HAS_AO_MAP'] = 1;
+            defines['MATERIAL_HAS_AMBIENT_OCCLUSION'] = 1;
         }
         if (uniforms['emissiveTexture']) {
             defines['MATERIAL_HAS_EMISSIVE_MAP'] = 1;
+            defines['MATERIAL_HAS_EMISSIVE'] = 1;
         }
         if (uniforms['normalTexture']) {
             defines['MATERIAL_HAS_NORMAL'] = 1;

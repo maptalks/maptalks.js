@@ -1,19 +1,19 @@
 import Material from '../Material.js';
 
 const DEFAULT_UNIFORMS = {
-    baseColorTexture : null,
-    baseColorFactor : [1, 1, 1, 1],
+    baseColorTexture: null,
+    baseColorFactor: [1, 1, 1, 1],
 
     metallicRoughnessTexture: null,
-    metallicFactor : 1,
-    roughnessFactor : 1,
+    metallicFactor: 1,
+    roughnessFactor: 1,
 
     occlusionTexture: null,
     occlusion: 0,   //filament: ambientOcclusion
     occlusionStrength: 1, //filament: ambientStrength
 
-    normalTexture : null,
-    normalStrength : 1,
+    normalTexture: null,
+    normalStrength: 1,
 
     reflectance: 0.5,
 
@@ -47,6 +47,7 @@ class LitMaterial extends Material {
         const defines = {};
         if (uniforms['baseColorFactor'] && uniforms['baseColorFactor'][3] < 1) {
             defines['BLEND_MODE_TRANSPARENT'] = 1;
+            defines['TRANSPARENT_MATERIAL'] = 1;
         }
         if (uniforms['baseColorTexture']) {
             defines['MATERIAL_HAS_BASECOLOR_MAP'] = 1;
@@ -56,9 +57,11 @@ class LitMaterial extends Material {
         }
         if (uniforms['occlusionTexture']) {
             defines['MATERIAL_HAS_AO_MAP'] = 1;
+            defines['MATERIAL_HAS_AMBIENT_OCCLUSION'] = 1;
         }
         if (uniforms['emissiveTexture']) {
             defines['MATERIAL_HAS_EMISSIVE_MAP'] = 1;
+            defines['MATERIAL_HAS_EMISSIVE'] = 1;
         }
         if (uniforms['clearCoatRoughnessTexture']) {
             defines['MATERIAL_HAS_CLEARCOAT_ROUGNESS_MAP'] = 1;

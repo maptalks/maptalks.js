@@ -12,6 +12,7 @@ import fl_common_material_vert from '../pbr/glsl/vert/common_material.vert';
 import fl_inputs_vert from '..//pbr/glsl/vert/inputs.vert';
 
 import fl_header_frag from '../pbr/glsl/frag/gl_header.frag';
+import fl_common_graphics_glsl from '../pbr/glsl/frag/common_graphics.frag';
 import fl_inputs_frag from '../pbr/glsl/frag/inputs.frag';
 import fl_brdf_frag from '../pbr/glsl/frag/brdf.frag';
 //构造各类shading_*的值
@@ -45,6 +46,7 @@ const ShaderChunk = {
 
     //pbr common includes
     fl_common_math_glsl,
+    fl_common_graphics_glsl,
     fl_uniforms_glsl,
 
     //pbr vertex includes

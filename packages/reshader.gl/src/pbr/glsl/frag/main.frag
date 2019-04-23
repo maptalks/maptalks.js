@@ -35,7 +35,7 @@ void main() {
 #endif
 
     gl_FragColor = color;
-    // gl_FragColor = vec4(shading_normal, 1.0);
+    // gl_FragColor = vec4(vec3(inputs.ambientOcclusion), 1.0);
 
 #if defined(MATERIAL_HAS_POST_LIGHTING_COLOR)
     blendPostLightingColor(inputs, gl_FragColor);
