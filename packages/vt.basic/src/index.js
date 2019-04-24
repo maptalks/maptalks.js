@@ -12,6 +12,8 @@ import PBRPainter from './painters/pbr/PBRPainter';
 import PhongPainter from './painters/PhongPainter';
 import WireframePainter from './painters/WireframePainter';
 
+import LitPainter from './painters/pbr/LitPainter';
+
 const FillPlugin = createPainterPlugin('fill', FillPainter);
 FillPlugin.registerAt(VectorTileLayer);
 
@@ -45,6 +47,9 @@ PhongPlugin.registerAt(VectorTileLayer);
 const WireframePlugin = createPainterPlugin('wireframe', WireframePainter);
 WireframePlugin.registerAt(VectorTileLayer);
 
+const LitPlugin = createPainterPlugin('lit', LitPainter);
+LitPlugin.registerAt(VectorTileLayer);
+
 export {
     LinePlugin,
     FillPlugin,
@@ -68,4 +73,7 @@ export {
     PBRPainter,
     PhongPainter,
     WireframePainter,
+
+    //pbr plugins
+    LitPlugin
 };

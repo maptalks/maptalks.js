@@ -22,19 +22,9 @@
 <body>
 
   <div id="main">
-    <div id="map2" style="width:1000px;height:1000px;float:left;background-color:#fff;"></div>
+    <div id="map2" style="width:1000px;height:1000px;background-color:#fff;"></div>
     <!-- <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas> -->
-    <div style="float:right;width:300px;">
-      金属度： <input id="metallic" type="range" value=100> <br>
-      粗糙度： <input id="roughness" type="range" value=0> <br>
-      环境光强度： <input id="ambientIntensity" type="range" value=0> <br>
-      albedo贴图：<br><img id="albedoMap" style="width:200px;height:200px;border:1px black solid;"/> <br>
-      法线贴图：<br><img id="normalMap" style="width:200px;height:200px;border:1px black solid;"/><br>
-      金属粗糙度和ao贴图：<br><img id="occulusionRoughnessMetallicMap" style="width:200px;height:200px;border:1px black solid;"/><br>
-      环境光贴图：<br><img id="hdr" style="width:200px;height:200px;border:1px black solid;"/>
-    </div>
-    <!-- <canvas id="debugc" width=256 height=1024 /> -->
 
   </div>
 
@@ -90,7 +80,7 @@
     console.log(data.features.length);
 
     const renderPlugin = {
-        type : 'pbr',
+        type : 'lit',
         dataConfig : {
           type : '3d-extrusion',
           altitudeProperty : 'levels',
@@ -105,17 +95,23 @@
         sceneConfig : {
           animation : 'easeOutBounce',
           material : {
-            roughness : 0.0,
-            metallic : 1.0,
-            albedoColor : [1, 1, 1],
-            // occulusionRoughnessMetallicMap : 'resources/occulusionRoughnessMetallicMap.png',
-            // albedoMap : 'resources/brickwall.jpg',
-            // normalMap : 'resources/Rock_01_local.jpg'
+            'baseColorFactor': [0.660, 0.609, 0.526, 1],
+            'metallicFactor' : 1,
+            'roughnessFactor' : 1,
+            'reflectance': 0.47,
+            'clearCoat': 4,
+            // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
+            'clearCoatRoughness': 0.3,
+            // 'clearCoatIorChange': false,
+            // 'normalTexture': NORMAL_TEXTURE,
+            // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
+            // 'baseColorTexture': BASE_COLOR_TEXTURE,
+            'anisotropy': 0
           },
           shadow : {
             type : 'vsm',
             // type : 'stencil',
-            enable : true,
+            enable : false,
             quality : 'medium',
             opacity : 0.5,
             color : [0, 0, 0],
@@ -123,17 +119,15 @@
             // debug : ['shadow', 'shadow2']
           },
           lights : {
-            ambientCubeLight : {
-              url : 'resources/venice_sunset_2k.hdr'
+            ambient: {
+              url: 'resources/venice_sunset_2k.hdr',
+              luminance: 12000
             },
-            ambientColor : [0.2, 0.2, 0.2],
-            ambientIntensity : 1,
-            dirLights : [
-              {
-                color : [1, 1, 1],
-                direction : [0, 1, 1]
-              }
-            ]
+            directional: {
+              color : [1, 1, 1],
+              direction : [1, 1, -1],
+              intensity: 30000
+            }
           }
         }
       };
@@ -278,57 +272,6 @@
     }
 
   </script>
-  <script>
-    const metallicSlider = document.getElementById('metallic'),
-      roughnessSlider = document.getElementById('roughness'),
-      ambientIntensitySlider = document.getElementById('ambientIntensity');
-    metallicSlider.onchange = metallicSlider.oninput = roughnessSlider.onchange = roughnessSlider.oninput = ambientIntensitySlider.onchange = ambientIntensitySlider.oninput = updateMetallicRoughness;
-
-    const imageMaps = {};
-    register('albedoMap', document.getElementById('albedoMap'));
-    register('normalMap', document.getElementById('normalMap'));
-    register('occulusionRoughnessMetallicMap', document.getElementById('occulusionRoughnessMetallicMap'));
-    register('hdr', document.getElementById('hdr'));
-
-    function register(name, element) {
-      element.ondrop = function (e) {
-        readFile(name, this, e);
-        e.preventDefault();
-        return false;
-      };
-      element.ondragover = function () {
-        return false;
-      };
-      element.ondragend = function () {
-        return false;
-      };
-    }
-
-    function humanFileSize(size) {
-        var i = Math.floor(Math.log(size) / Math.log(1024));
-        return Math.round(100 * (size / Math.pow(1024, i))) / 100 + ' ' + ['B', 'kB', 'MB', 'GB'][i];
-    }
-
-    function readFile(name, img, e) {
-      var reader = new FileReader();
-      reader.onload = function (event) {
-          console.log(name + ' data size', humanFileSize(event.target.result.length));
-          if (name !== 'hdr') {
-            const url = event.target.result;
-            img.src = url;
-            imageMaps[name] = url;
-          } else {
-            imageMaps['hdr'] = event.target.result;
-          }
-          updateStyle(imageMaps);
-      };
-      if (name === 'hdr') {
-        reader.readAsArrayBuffer(e.dataTransfer.files[0]);
-      } else {
-        reader.readAsDataURL(e.dataTransfer.files[0]);
-      }
-    }
-    </script>
 </body>
 
 </html>
