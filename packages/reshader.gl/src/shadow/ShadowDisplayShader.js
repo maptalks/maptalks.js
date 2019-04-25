@@ -5,7 +5,7 @@ import MeshShader from '../shader/MeshShader.js';
 
 class ShadowDisplayShader extends MeshShader {
 
-    constructor() {
+    constructor(viewport) {
         super({
             vert : shadowDisplayVert,
             frag : shadowDisplayFrag,
@@ -25,6 +25,9 @@ class ShadowDisplayShader extends MeshShader {
                 'color', 'vsm_shadow_opacity'
             ],
             defines : {
+            },
+            extraCommandProps: {
+                viewport
             }
         });
     }
