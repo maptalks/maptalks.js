@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <title>pbr-buildings</title>
 
-  <link rel="stylesheet" href="http://localhost:20000/maptalks.css" />
+  <link rel="stylesheet" href="http://localhost/maptalks/dist/maptalks.css" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -22,7 +22,7 @@
 <body>
 
   <div id="main">
-    <div id="map2" style="width:1000px;height:1000px;background-color:#fff;"></div>
+    <div id="map2" style="width:100%;height:1000px;background-color:#ddd;"></div>
     <!-- <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas> -->
 
@@ -52,6 +52,8 @@
       pitch : 45,
 
       "center":[13.422091481252892,52.53081935839131],"zoom":17,"pitch":45,"bearing":0,
+
+      "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
       // bearing : -42,
       // baseLayer: osm
@@ -95,13 +97,13 @@
         sceneConfig : {
           animation : 'easeOutBounce',
           material : {
-            'baseColorFactor': [0.660, 0.609, 0.526, 1],
-            'metallicFactor' : 1,
-            'roughnessFactor' : 1,
-            'reflectance': 0.47,
-            'clearCoat': 4,
+            'baseColorFactor': [0.560, 0.570, 0.580, 1],
+            'metallicFactor' : 0,
+            'roughnessFactor' : 0.7,
+            'reflectance': 0.5,
+            'clearCoat': 3,
             // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
-            'clearCoatRoughness': 0.3,
+            'clearCoatRoughness': 0.5,
             // 'clearCoatIorChange': false,
             // 'normalTexture': NORMAL_TEXTURE,
             // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
@@ -111,8 +113,8 @@
           shadow : {
             type : 'vsm',
             // type : 'stencil',
-            enable : false,
-            quality : 'medium',
+            enable : true,
+            quality : 'low',
             opacity : 0.5,
             color : [0, 0, 0],
             blurOffset : 1,
@@ -120,12 +122,12 @@
           },
           lights : {
             ambient: {
-              url: 'resources/venice_sunset_2k.hdr',
-              luminance: 12000
+              url: 'resources/windowStudio.hdr',
+              luminance: 24000
             },
             directional: {
               color : [1, 1, 1],
-              direction : [1, 1, -1],
+              direction : [0, 1, 1],
               intensity: 30000
             }
           }
@@ -150,85 +152,9 @@
       }
     ];
 
-    // const style = [
-    //   {
-    //     type : 'pbr',
-    //     dataConfig : {
-    //       type : '3d-extrusion',
-    //       altitudeProperty : 'levels',
-    //       altitudeScale : 5,
-    //       defaultAltitude : 1,
-    //       normal : true,
-    //       uv : true,
-    //       uvSize : [128 / 50, 128 / 50],
-    //       // shadowVolume : true,
-    //       // shadowDir : [-1, -1, 0]
-    //     },
-    //     sceneConfig : {
-    //       animation : 'easeOutBounce',
-    //       material : {
-    //         roughness : 0.0,
-    //         metallic : 1.0,
-    //         albedoColor : [1, 1, 1],
-    //         // occulusionRoughnessMetallicMap : 'resources/occulusionRoughnessMetallicMap.png',
-    //         // albedoMap : 'resources/brickwall.jpg',
-    //         // normalMap : 'resources/Rock_01_local.jpg'
-    //       },
-    //       shadow : {
-    //         type : 'vsm',
-    //         // type : 'stencil',
-    //         enable : true,
-    //         quality : 'medium',
-    //         opacity : 0.5,
-    //         color : [0, 0, 0],
-    //         blurOffset : 1,
-    //         // debug : ['shadow', 'shadow2']
-    //       },
-    //       lights : {
-    //         ambientCubeLight : {
-    //           url : 'resources/venice_sunset_2k.hdr'
-    //         },
-    //         ambientColor : [0.2, 0.2, 0.2],
-    //         ambientIntensity : 1,
-    //         dirLights : [
-    //           {
-    //             color : [1, 1, 1],
-    //             direction : [0, 1, 1]
-    //           }
-    //         ]
-    //       }
-    //     },
-
-    //     style : [
-    //       {
-    //         filter : ['==', 'levels', 5],
-    //         symbol: {
-    //           polygonOpacity: 1,
-    //           polygonFill: '#f00'
-    //         }
-    //       },
-    //       {
-    //         filter : ['==', 'levels', 3],
-    //         symbol: {
-    //           polygonOpacity: 1,
-    //           // polygonFill: '#fff',
-    //           polygonFill: '#fff700'
-    //         }
-    //       },
-    //       {
-    //         symbol: {
-    //           polygonOpacity: 1,
-    //           polygonFill: '#fff',
-    //           // polygonFill: '#fff700'
-    //         }
-    //       }
-    //     ]
-    //   }
-    // ];
-
     // test tile clipping mask
     var layer1 = new maptalks.GeoJSONVectorTileLayer('polygon1', {
-      debug : true,
+      debug : false,
       // canvas: debugCanvas,
       data: data,
       hitDetect : false,

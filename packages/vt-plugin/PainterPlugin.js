@@ -100,7 +100,7 @@ function createPainterPlugin(type, Painter) {
                         mesh.properties.meshKey = key;
                     }
                     if (sceneConfig.animation) {
-                        this._animationTime = context.timestamp;
+                        mesh._animationTime = context.timestamp;
                     }
                 }
                 this._meshCache[key] = mesh;
@@ -130,9 +130,9 @@ function createPainterPlugin(type, Painter) {
                 let animation = sceneConfig.animation;
                 if (animation) {
                     const duration = context.sceneConfig.animationDuration || DEFAULT_ANIMATION_DURATION;
-                    const t = (context.timestamp - this._animationTime) / duration;
+                    const t = (context.timestamp - mesh._animationTime) / duration;
                     const createTime = Array.isArray(mesh) ? mesh[0].properties.createTime : mesh.properties.createTime;
-                    if (this._animationTime - createTime < duration && t < 1) {
+                    if (mesh._animationTime - createTime < duration && t < 1) {
                         if (animation === true || animation === 1) {
                             animation = 'linear';
                         }

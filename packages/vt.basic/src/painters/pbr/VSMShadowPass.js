@@ -17,21 +17,21 @@ class VSMShadowPass {
             shadowRes = 1024;
         }
         this.shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: this.sceneConfig.shadow.blurOffset });
-        this.shadowShader = new reshader.ShadowDisplayShader(this.sceneConfig.lights.dirLights.length);
+        this.shadowShader = new reshader.ShadowDisplayShader();
     }
 
-    getUniforms(numOfDirLights) {
+    getUniforms() {
         const uniforms = [];
         uniforms.push({
-            name: `vsm_shadow_lightProjViewModelMatrix[${numOfDirLights}]`,
+            name: 'vsm_shadow_lightProjViewModelMatrix',
             type: 'function',
             fn: function (context, props) {
                 const lightProjViews = props['vsm_shadow_lightProjViewMatrix'];
                 const model = props['modelMatrix'];
-                return lightProjViews.map(mat => mat4.multiply([], mat, model));
+                return  mat4.multiply([], lightProjViews, model);
             }
         });
-        uniforms.push(`vsm_shadow_shadowMap[${numOfDirLights}]`);
+        uniforms.push('vsm_shadow_shadowMap');
         return uniforms;
     }
 
@@ -47,7 +47,7 @@ class VSMShadowPass {
         const shadowConfig = this.sceneConfig.shadow;
         const map = layer.getMap();
         const cameraProjViewMatrix = mat4.multiply([], uniforms.projMatrix, uniforms.viewMatrix);
-        const lightDir = vec3.normalize([], uniforms['dirLightDirections'][0]);
+        const lightDir = vec3.normalize([], uniforms['lightDirection']);
         const extent = map['_get2DExtent'](map.getGLZoom());
         const arr = extent.toArray();
         const { lightProjViewMatrix, shadowMap, /* depthFBO, */ blurFBO } = this.shadowPass.render(
@@ -55,8 +55,8 @@ class VSMShadowPass {
             { cameraProjViewMatrix, lightDir, farPlane: arr.map(c => [c.x, c.y, 0, 1]) }
         );
 
-        uniforms['vsm_shadow_lightProjViewMatrix'] = [lightProjViewMatrix];
-        uniforms['vsm_shadow_shadowMap'] = [shadowMap];
+        uniforms['vsm_shadow_lightProjViewMatrix'] = lightProjViewMatrix;
+        uniforms['vsm_shadow_shadowMap'] = shadowMap;
 
         const ground = groundScene.meshes[0];
         //display ground shadows
@@ -64,8 +64,8 @@ class VSMShadowPass {
             'modelMatrix': ground.localTransform,
             'projMatrix': uniforms.projMatrix,
             'viewMatrix': uniforms.viewMatrix,
-            'vsm_shadow_lightProjViewModelMatrix': [mat4.multiply([], lightProjViewMatrix, ground.localTransform)],
-            'vsm_shadow_shadowMap': [shadowMap],
+            'vsm_shadow_lightProjViewModelMatrix': mat4.multiply([], lightProjViewMatrix, ground.localTransform),
+            'vsm_shadow_shadowMap': shadowMap,
             'color': shadowConfig.color || [0, 0, 0],
             'opacity': isNil(shadowConfig.opacity) ? 1 : shadowConfig.opacity
         }, groundScene);

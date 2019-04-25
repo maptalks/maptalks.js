@@ -150,7 +150,7 @@ class LitPainter extends Painter {
 
     delete() {
         super.delete();
-        //TODO 删除iblMaps
+        this._disposeIblMaps();
         if (this._emptyCube) {
             this._emptyCube.destroy();
         }
@@ -194,7 +194,7 @@ class LitPainter extends Painter {
 
         this.renderer = new reshader.Renderer(regl);
 
-        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.dirLights) {
+        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.directional) {
             const planeGeo = new reshader.Plane();
             planeGeo.generateBuffers(regl);
             this._ground = new reshader.Mesh(planeGeo);
@@ -219,6 +219,7 @@ class LitPainter extends Painter {
         };
 
         const config = {
+            uniforms: this._shadowPass ? this._shadowPass.getUniforms() : null,
             defines: this._getDefines(),
             extraCommandProps: {
                 //enable cullFace
@@ -287,6 +288,9 @@ class LitPainter extends Painter {
     }
 
     _createIBLMaps(hdr) {
+        if (this.iblMaps) {
+            this._disposeIblMaps();
+        }
         const regl = this.regl;
         return reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: hdr.getREGLTexture(regl),
@@ -302,12 +306,16 @@ class LitPainter extends Painter {
         const material = {};
         for (const p in materialConfig) {
             if (materialConfig.hasOwnProperty(p)) {
-                if (p.indexOf('Map') > 0) {
+                if (p.indexOf('Texture') > 0) {
                     //a texture image
-                    material[p] = new reshader.Texture2D({
-                        url: materialConfig[p],
-                        wrap: 'repeat',
-                    }, this._loader);
+                    let texConf = materialConfig[p];
+                    if (typeof texConf === 'string') {
+                        texConf = {
+                            url: texConf,
+                            wrap: 'repeat'
+                        };
+                    }
+                    material[p] = new reshader.Texture2D(texConf, this._loader);
                 } else {
                     material[p] = materialConfig[p];
                 }
@@ -396,11 +404,14 @@ class LitPainter extends Painter {
     }
 
     _getDefines() {
+        const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
         const lightConfig = this.sceneConfig.lights;
         const defines = {
             'IBL_MAX_MIP_LEVEL': (Math.log(lightConfig.ambient.prefilterCubeSize || 256) / Math.log(2)) + '.0'
         };
-
+        if (shadowEnabled) {
+            defines['HAS_SHADOWING'] = 1;
+        }
         if (lightConfig.directional) {
             defines['HAS_DIRECTIONAL_LIGHTING'] = 1;
         }
@@ -412,6 +423,13 @@ class LitPainter extends Painter {
         return defines;
     }
 
+    _disposeIblMaps() {
+        for (const p in this.iblMaps) {
+            if (this.iblMaps[p].destroy) {
+                this.iblMaps[p].destroy();
+            }
+        }
+    }
 }
 
 //根据快门参数，计算ev100
