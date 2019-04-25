@@ -99,14 +99,14 @@ class Mesh {
         return this.geometry.getElements();
     }
 
-    getREGLProps() {
+    getREGLProps(regl) {
         const props = extend({}, this.geometry.data);
         props.elements = this.geometry.getElements();
         props.count = this.geometry.getDrawCount();
         props.offset = this.geometry.getDrawOffset();
         // command primitive : triangle, triangle strip, etc
         props.primitive = this.geometry.getPrimitive();
-        const uniforms = this.getUniforms();
+        const uniforms = this.getUniforms(regl);
         for (const p in uniforms) {
             if (uniforms.hasOwnProperty(p)) {
                 props[p] = uniforms[p];

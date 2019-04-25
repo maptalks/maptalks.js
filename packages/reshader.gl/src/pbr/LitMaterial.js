@@ -35,7 +35,7 @@ const DEFAULT_UNIFORMS = {
 
     GAMMA_CORRECT_INPUT: 1,
 
-    uvScale: 1,
+    uvScale: [1, 1],
     uvOffset: [0, 0]
 };
 

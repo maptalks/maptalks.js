@@ -25,7 +25,7 @@ const DEFAULT_UNIFORMS = {
     sheenColor: [-1, -1, -1],          // default: sqrt(baseColor)
     subsurfaceColor: undefined,     // default: float3(0.0)
 
-    uvScale: 1,
+    uvScale: [1, 1],
     uvOffset: [0, 0]
 };
 

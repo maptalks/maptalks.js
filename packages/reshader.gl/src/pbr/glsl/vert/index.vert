@@ -14,7 +14,7 @@
 
 #if defined(HAS_ATTRIBUTE_UV0)
     attribute vec2 aTexCoord0;
-    uniform float uvScale;
+    uniform vec2 uvScale;
     uniform vec2 uvOffset;
 #endif
 #if defined(HAS_ATTRIBUTE_UV1)

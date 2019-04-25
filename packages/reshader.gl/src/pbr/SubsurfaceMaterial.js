@@ -26,7 +26,7 @@ const DEFAULT_UNIFORMS = {
     subsurfacePower: 12.234,     // default: 12.234
     subsurfaceColor: [1, 1, 1],     // default: float3(1.0)
 
-    uvScale: 1,
+    uvScale: [1, 1],
     uvOffset: [0, 0]
 };
 
