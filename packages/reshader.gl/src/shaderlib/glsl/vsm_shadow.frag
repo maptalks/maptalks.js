@@ -3,6 +3,7 @@
 //
 //
 // uniform sampler2D vsm_shadow_shadowMap 深度纹理
+// uniform float vsm_shadow_opacity 阴影透明度
 //
 //
 // void shadow_computeShadow()
@@ -14,6 +15,7 @@
 //--------------------------
 
 uniform sampler2D vsm_shadow_shadowMap;
+uniform float vsm_shadow_opacity;
 
 varying vec4 vsm_shadow_vLightSpacePos;
 
@@ -32,7 +34,8 @@ float vsm_shadow_chebyshevUpperBound(sampler2D shadowMap, vec3 projCoords){
 
     float d = distance - moments.x;
     float p_max = variance / (variance + d * d);
-    return p_max;
+    // return p_max;
+    return 1.0 - (1.0 - p_max) * vsm_shadow_opacity;
 }
 
 float shadow_computeShadow() {
