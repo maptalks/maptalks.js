@@ -31,7 +31,7 @@ class VSMShadowPass {
                 return  mat4.multiply([], lightProjViews, model);
             }
         });
-        uniforms.push('vsm_shadow_shadowMap');
+        uniforms.push('vsm_shadow_shadowMap', 'vsm_shadow_opacity');
         return uniforms;
     }
 
@@ -57,6 +57,7 @@ class VSMShadowPass {
 
         uniforms['vsm_shadow_lightProjViewMatrix'] = lightProjViewMatrix;
         uniforms['vsm_shadow_shadowMap'] = shadowMap;
+        uniforms['vsm_shadow_opacity'] = shadowConfig.opacity;
 
         const ground = groundScene.meshes[0];
         //display ground shadows
@@ -66,6 +67,7 @@ class VSMShadowPass {
             'viewMatrix': uniforms.viewMatrix,
             'vsm_shadow_lightProjViewModelMatrix': mat4.multiply([], lightProjViewMatrix, ground.localTransform),
             'vsm_shadow_shadowMap': shadowMap,
+            'vsm_shadow_opacity': shadowConfig.opacity,
             'color': shadowConfig.color || [0, 0, 0],
             'opacity': isNil(shadowConfig.opacity) ? 1 : shadowConfig.opacity
         }, groundScene);

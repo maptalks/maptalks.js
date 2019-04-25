@@ -105,10 +105,25 @@ class VectorTileLayer extends maptalks.TileLayer {
             throw new Error(`No style defined at ${idx}`);
         }
         const target = style.symbol;
+
+        function update() {
+            for (const p in symbol) {
+                if (maptalks.Util.isObject(symbol[p])) {
+                    //对象类型的属性则extend
+                    if (!target[p]) {
+                        target[p] = {};
+                    }
+                    extend(target[p], symbol[p]);
+                } else {
+                    target[p] = symbol[p];
+                }
+            }
+        }
+
         const renderer = this.getRenderer();
         if (!renderer) {
             //layer还没有渲染，直接更新style并返回
-            extend(target, symbol);
+            update();
             this._compileStyle();
             return this;
         }
@@ -121,7 +136,9 @@ class VectorTileLayer extends maptalks.TileLayer {
                 break;
             }
         }
-        extend(target, symbol);
+
+        update();
+
         if (needRefresh) {
             this.setStyle(this.options.style);
         } else {

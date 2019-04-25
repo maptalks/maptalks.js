@@ -167,6 +167,11 @@ class LitPainter extends Painter {
         }
     }
 
+    updateSymbol() {
+        super.updateSymbol();
+        this._updateMaterial();
+    }
+
     _transformGround() {
         const layer = this.layer;
         const map = layer.getMap();
@@ -243,6 +248,7 @@ class LitPainter extends Painter {
 
         this.shader = new reshader.pbr.LitShader(config);
 
+        this._bindedOnTextureLoad = this._onTextureLoad.bind(this);
         this._updateMaterial();
 
         this._initCubeLight();
@@ -277,14 +283,18 @@ class LitPainter extends Painter {
         this._emptyCube = regl.texture(2);
         this._loader = new reshader.ResourceLoader(this._emptyCube);
         this._hdr = null;
-        this._loader.on('complete', () => {
-            if (this._hdr && this._hdr.isReady() && !this._isIBLRecreated) {
-                //环境光纹理载入，重新生成ibl纹理
-                this.iblMaps = this._createIBLMaps(this._hdr);
-                this._isIBLRecreated = true;
-            }
-            this.setToRedraw();
-        });
+    }
+
+    _onTextureLoad({ resources }) {
+        if (this._hdr && this._hdr.isReady() && !this._isIBLRecreated) {
+            //环境光纹理载入，重新生成ibl纹理
+            this.iblMaps = this._createIBLMaps(this._hdr);
+            this._isIBLRecreated = true;
+        }
+        for (let i = 0; i < resources.length; i++) {
+            this.addCachedTexture(resources[i].url, resources[i].data);
+        }
+        this.setToRedraw();
     }
 
     _createIBLMaps(hdr) {
@@ -302,20 +312,50 @@ class LitPainter extends Painter {
         if (this.material) {
             this.material.dispose();
         }
-        const materialConfig = this.sceneConfig.material;
+        const materialConfig = this.getSymbol().material;
         const material = {};
         for (const p in materialConfig) {
             if (materialConfig.hasOwnProperty(p)) {
                 if (p.indexOf('Texture') > 0) {
-                    //a texture image
+                    //纹理图片
                     let texConf = materialConfig[p];
-                    if (typeof texConf === 'string') {
+                    const url = typeof texConf === 'string' ? texConf : texConf.url;
+                    const cachedTex = this.getCachedTexture(url);
+
+                    if (cachedTex) {
+                        //已有缓存
+                        if (cachedTex.then) {
+                            //是一个promise
+                            if (url === texConf) {
+                                texConf = {
+                                    promise: cachedTex,
+                                    wrap: 'repeat'
+                                };
+                            } else {
+                                texConf.promise = cachedTex;
+                            }
+                        } else if (url === texConf) {
+                            //已有图片数据
+                            texConf = {
+                                data: cachedTex,
+                                wrap: 'repeat'
+                            };
+                        } else {
+                            //已有图片数据
+                            texConf.data = cachedTex;
+                        }
+                    } else if (url === texConf) {
+                        //无缓存
                         texConf = {
-                            url: texConf,
+                            url,
                             wrap: 'repeat'
                         };
                     }
                     material[p] = new reshader.Texture2D(texConf, this._loader);
+                    material[p].once('complete', this._bindedOnTextureLoad);
+                    if (material[p].promise) {
+                        this.addCachedTexture(url, material[p].promise);
+                    }
                 } else {
                     material[p] = materialConfig[p];
                 }
@@ -330,6 +370,7 @@ class LitPainter extends Painter {
             if (!cubeLightConfig.url && !cubeLightConfig.data) {
                 throw new Error('Must provide url or data(ArrayBuffer) for ambient cube light');
             }
+            const cached = cubeLightConfig.url && this.getCachedTexture(cubeLightConfig.url);
             const props = {
                 url: cubeLightConfig.url,
                 arrayBuffer: true,
@@ -338,8 +379,15 @@ class LitPainter extends Painter {
                 format: 'rgba',
                 flipY: true
             };
+            if (cached) {
+                if (cached.then) {
+                    props.promise = cached;
+                } else {
+                    props.data = cached;
+                }
+            }
             this._isIBLRecreated = !!cubeLightConfig.data;
-            if (cubeLightConfig.data) {
+            if (!props.data && cubeLightConfig.data) {
                 let data = cubeLightConfig.data;
                 if (cubeLightConfig.data instanceof ArrayBuffer) {
                     // HDR raw data
@@ -355,6 +403,7 @@ class LitPainter extends Painter {
                 props,
                 this._loader
             );
+            this._hdr.once('complete', this._bindedOnTextureLoad);
             //生成ibl纹理
             this.iblMaps = this._createIBLMaps(this._hdr);
         }
@@ -429,6 +478,10 @@ class LitPainter extends Painter {
                 this.iblMaps[p].destroy();
             }
         }
+    }
+
+    shouldDeleteMeshOnUpdateSymbol() {
+        return false;
     }
 }
 

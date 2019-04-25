@@ -17,6 +17,7 @@
   <script src="../../packages/vt/dist/maptalks.vt.js"></script>
   <script src="../../packages/vt.basic/dist/maptalks.vt.basic.js"></script>
   <script src="js/stats.min.js"></script>
+  <script src="js/dat.gui.min.js"></script>
 </head>
 
 <body>
@@ -96,20 +97,6 @@
         },
         sceneConfig : {
           animation : 'easeOutBounce',
-          material : {
-            'baseColorFactor': [0.560, 0.570, 0.580, 1],
-            'metallicFactor' : 0,
-            'roughnessFactor' : 0.7,
-            'reflectance': 0.5,
-            'clearCoat': 3,
-            // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
-            'clearCoatRoughness': 0.5,
-            // 'clearCoatIorChange': false,
-            // 'normalTexture': NORMAL_TEXTURE,
-            // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-            // 'baseColorTexture': BASE_COLOR_TEXTURE,
-            'anisotropy': 0
-          },
           shadow : {
             type : 'vsm',
             // type : 'stencil',
@@ -139,6 +126,21 @@
         filter : true,
         renderPlugin,
         symbol: {
+          material : {
+            'baseColorFactor': [0.560, 0.570, 0.580, 1],
+            'metallicFactor' : 0,
+            'roughnessFactor' : 0.7,
+            'reflectance': 0.5,
+            'clearCoat': 0,
+            // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
+            'clearCoatRoughness': 0.5,
+            // 'clearCoatIorChange': false,
+            'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+            // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
+            'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+            'anisotropy': 0,
+            'uvScale': [0.5, 0.5]
+          },
           polygonOpacity: 1,
           polygonFill: {
             property : 'levels',
@@ -153,24 +155,26 @@
     ];
 
     // test tile clipping mask
-    var layer1 = new maptalks.GeoJSONVectorTileLayer('polygon1', {
+    var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
       debug : false,
       // canvas: debugCanvas,
       data: data,
       hitDetect : false,
     });
-    layer1.setStyle(style);
+    layer.setStyle(style);
 
     // map.on('click', function (e) {
-    //   alert(JSON.stringify(layer1.identify(e.coordinate)));
+    //   alert(JSON.stringify(layer.identify(e.coordinate)));
     // });
 
-    // map.addLayer(layer1);
-    new maptalks.GroupGLLayer('group', [layer1]).addTo(map);
+    // map.addLayer(layer);
+    new maptalks.GroupGLLayer('group', [layer]).addTo(map);
 
     map.on('click', e => {
-      console.log(JSON.stringify(layer1.identify(e.coordinate)));
+      console.log(JSON.stringify(layer.identify(e.coordinate)));
     });
+
+    initGUI();
 
     function updateStyle(imageMaps) {
       const sceneConfig = style[0].sceneConfig;
@@ -185,15 +189,28 @@
       layer1.updateSceneConfig(0, config);
     }
 
-    function updateMetallicRoughness() {
-      const materialConfig = style[0].sceneConfig.material;
-      maptalks.Util.extend(materialConfig, {
-        metallic : +document.getElementById('metallic').value / 100,
-        roughness : +document.getElementById('roughness').value / 100,
-        ambientIntensity : +document.getElementById('ambientIntensity').value / 50 + 1.0,
+    function initGUI() {
+      const gui = new dat.GUI( { width: 250 } );
+      const options = {
+        metallicFactor: style[0].symbol.material.metallicFactor,
+        roughnessFactor: style[0].symbol.material.roughnessFactor,
+      };
+      const m = gui.add(options, 'metallicFactor', 0, 1);
+      m.onChange(function(value){
+        updateMaterial('metallicFactor', value);
       });
-      layer1.updateSceneConfig(0, {
-        material : materialConfig
+
+      const r = gui.add(options, 'roughnessFactor', 0, 1);
+      r.onChange(function(value){
+        updateMaterial('roughnessFactor', value);
+      });
+    }
+
+    function updateMaterial(key, value) {
+      const material = {};
+      material[key] = value;
+      layer.updateSymbol(0, {
+        material
       });
     }
 

@@ -2,6 +2,8 @@ import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes } from '@maptalks/function-type';
 
+const TEX_CACHE_KEY = '__gl_textures';
+
 const MAT = [];
 
 const level0Filter = mesh => {
@@ -25,6 +27,7 @@ class Painter {
         this._stencilHelper = new StencilHelper();
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
+        this.loginTextureCache();
         this.init();
     }
 
@@ -185,6 +188,7 @@ class Painter {
         if (this.picking) {
             this.picking.dispose();
         }
+        this.logoutTextureCache();
     }
 
     updateSymbol() {
@@ -200,6 +204,36 @@ class Painter {
             return [this.layer.getRenderer().getCurrentTileZoom()];
         });
         return this.getSymbol();
+    }
+
+    loginTextureCache() {
+        const map = this.getMap();
+        if (!map[TEX_CACHE_KEY]) {
+            map[TEX_CACHE_KEY] = {
+                count: 0
+            };
+        }
+        map[TEX_CACHE_KEY].count++;
+    }
+
+    logoutTextureCache() {
+        const map = this.getMap();
+        map[TEX_CACHE_KEY].count--;
+        if (map[TEX_CACHE_KEY].count <= 0) {
+            map[TEX_CACHE_KEY] = {};
+        }
+    }
+
+    getCachedTexture(url) {
+        return this.getMap()[TEX_CACHE_KEY][url];
+    }
+
+    addCachedTexture(url, value) {
+        this.getMap()[TEX_CACHE_KEY][url] = value;
+    }
+
+    shouldDeleteMeshOnUpdateSymbol() {
+        return true;
     }
 
     _stencil(quadStencil) {
