@@ -2,9 +2,10 @@ import { reshader, mat4, vec3 } from '@maptalks/gl';
 import { isNil } from '../../Util';
 
 class VSMShadowPass {
-    constructor(sceneConfig, renderer) {
+    constructor(sceneConfig, renderer, viewport) {
         this.renderer = renderer;
         this.sceneConfig = sceneConfig;
+        this._viewport = viewport;
         this._init();
     }
 
@@ -17,7 +18,7 @@ class VSMShadowPass {
             shadowRes = 1024;
         }
         this.shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: this.sceneConfig.shadow.blurOffset });
-        this.shadowShader = new reshader.ShadowDisplayShader();
+        this.shadowShader = new reshader.ShadowDisplayShader(this._viewport);
     }
 
     getUniforms() {

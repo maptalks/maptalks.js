@@ -199,19 +199,6 @@ class LitPainter extends Painter {
 
         this.renderer = new reshader.Renderer(regl);
 
-        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.directional) {
-            const planeGeo = new reshader.Plane();
-            planeGeo.generateBuffers(regl);
-            this._ground = new reshader.Mesh(planeGeo);
-            this._groundScene = new reshader.Scene([this._ground]);
-
-            this._shadowScene = new reshader.Scene();
-            this._shadowScene.addMesh(this._ground);
-            if (this.sceneConfig.shadow.type === 'vsm') {
-                this._shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
-            }
-        }
-
         const viewport = {
             x: 0,
             y: 0,
@@ -222,6 +209,20 @@ class LitPainter extends Painter {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
+
+        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.directional) {
+            const planeGeo = new reshader.Plane();
+            planeGeo.generateBuffers(regl);
+            this._ground = new reshader.Mesh(planeGeo);
+            this._groundScene = new reshader.Scene([this._ground]);
+
+            this._shadowScene = new reshader.Scene();
+            this._shadowScene.addMesh(this._ground);
+            if (this.sceneConfig.shadow.type === 'vsm') {
+                this._shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer, viewport);
+            }
+        }
+
 
         const config = {
             uniforms: this._shadowPass ? this._shadowPass.getUniforms() : null,
