@@ -32,7 +32,8 @@ void evaluateDirectionalLight(const PixelParams pixel, inout vec3 color) {
     float visibility = 1.0;
 #if defined(HAS_SHADOWING)
     if (light.NoL > 0.0) {
-        visibility = shadow(light_shadowMap, getLightSpacePosition());
+        // visibility = shadow(light_shadowMap, getLightSpacePosition());
+        visibility = shadow_computeShadow();
     } else {
 #if defined(MATERIAL_CAN_SKIP_LIGHTING)
         return;

@@ -97,8 +97,6 @@
                 UNIFORMS = {
                     'light_iblDFG': iblMaps.dfgLUT,
                     'light_iblSpecular': iblMaps.prefilterMap,
-                    'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
-                    'cameraPosition':camPos,
                     'iblSH': iblMaps.sh,
                     'lightColorIntensity': [1, 1, 1, 30000],
                     'sun': [1, 1, 1, -1],
@@ -106,6 +104,8 @@
                     'iblLuminance': 8000,
                     'exposure': EV100toExposure(ev100),
                     'ev100': ev100,
+                    'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
+                    'cameraPosition':camPos,
                 };
                 MatUNIFORMS = {
                     // 'baseColorFactor': [0.9, 0.9, 0.9, 0.3],

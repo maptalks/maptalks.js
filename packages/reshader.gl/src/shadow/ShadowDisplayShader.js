@@ -5,7 +5,7 @@ import MeshShader from '../shader/MeshShader.js';
 
 class ShadowDisplayShader extends MeshShader {
 
-    constructor(numOfDirLights) {
+    constructor() {
         super({
             vert : shadowDisplayVert,
             frag : shadowDisplayFrag,
@@ -20,12 +20,11 @@ class ShadowDisplayShader extends MeshShader {
                         return projViewModelMatrix;
                     }
                 },
-                `vsm_shadow_lightProjViewModelMatrix[${numOfDirLights}]`,
-                `vsm_shadow_shadowMap[${numOfDirLights}]`,
+                'vsm_shadow_lightProjViewModelMatrix',
+                'vsm_shadow_shadowMap',
                 'color', 'opacity'
             ],
             defines : {
-                'NUM_OF_DIR_LIGHTS' : numOfDirLights
             }
         });
     }

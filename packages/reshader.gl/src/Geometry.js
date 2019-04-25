@@ -8,7 +8,7 @@ const defaultDesc = {
     //name of position attribute
     'positionAttribute': 'aPosition',
     'normalAttribute': 'aNormal',
-    'uvAttribute': 'aTexCoord'
+    'uv0Attribute': 'aTexCoord'
 };
 
 export default class Geometry {
@@ -221,7 +221,7 @@ export default class Geometry {
         this.data[name] = computeTangents(
             this.data[this.desc.positionAttribute],
             this.data[this.desc.normalAttribute],
-            this.data[this.desc.uvAttribute],
+            this.data[this.desc.uv0Attribute],
             this.elements
         );
     }

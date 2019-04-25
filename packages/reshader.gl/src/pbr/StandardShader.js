@@ -99,8 +99,9 @@ class StandardShader extends MeshShader {
                 'light_iblDFG',
                 'light_iblSpecular',
                 'iblSH[9]',
-            ].concat(materialUniforms),
-            extraCommandProps
+            ].concat(materialUniforms).concat(config.uniforms || []),
+            extraCommandProps,
+            defines: config.defines
         });
         this.positionAttribute = positionAttribute;
         this.normalAttribute = normalAttribute;
