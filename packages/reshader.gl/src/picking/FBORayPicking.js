@@ -248,8 +248,18 @@ export default class FBORayPicking {
         x = Math.round(x);
         y = Math.round(y);
 
-        const regl = this._renderer.regl;
         const fbo = this._fbo;
+
+        if (x < 0 || x > fbo.width ||
+            y < 0 || y > fbo.height) {
+            return {
+                pickingId : null,
+                meshId : null,
+                point : null
+            };
+        }
+
+        const regl = this._renderer.regl;
         const data = regl.read({
             data : pixels,
             x, y : fbo.height - y,
