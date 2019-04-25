@@ -1,10 +1,10 @@
 import Texture from './AbstractTexture';
 
 class TextureCube extends Texture {
-    onLoad(error, images) {
+    onLoad(images) {
         const config = this.config;
         const faces = this._createFaces(images);
-        config.faces = faces;
+        config.faces = faces.map(face => face.data);
         this._updateREGL();
     }
 

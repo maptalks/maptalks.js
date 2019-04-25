@@ -1,5 +1,6 @@
 import Eventable from './common/Eventable.js';
 import Ajax from './common/Ajax.js';
+import Promise from './common/Promise.js';
 
 class ResourceLoader {
     constructor(DEFAULT_TEXTURE) {
@@ -10,42 +11,28 @@ class ResourceLoader {
         this.resources = {};
     }
 
-    get(url, cb) {
+    get(url) {
         if (Array.isArray(url)) {
-            return this._loadImages(url, cb);
+            return this._loadImages(url);
         } else {
-            return this._loadImage(url, cb);
+            return this._loadImage(url);
         }
     }
 
-    getArrayBuffer(url, cb) {
-        if (!this._count || this._count < 0) {
-            this._count = 0;
-        }
+    getArrayBuffer(url) {
         if (Array.isArray(url)) {
-            const promises = url.map(u => new Promise((resolve, reject) => {
-                Ajax.getArrayBuffer(u, (err, buffer) => {
+            const promises = url.map(u => this.getArrayBuffer(u));
+            return Promise.all(promises);
+        } else {
+            return new Promise((resolve, reject) => {
+                Ajax.getArrayBuffer(url, (err, buffer) => {
                     if (err) {
                         reject(err);
-                        return;
+                    } else {
+                        resolve({ url, data: buffer });
                     }
-                    resolve(buffer.data);
                 });
-            }));
-            Promise.all(promises).then(
-                values => {
-                    cb(null, values);
-                    this._onComplete();
-                },
-                cb
-            );
-            return this._getBlankTextures(url.length);
-        } else {
-            Ajax.getArrayBuffer(url, (err, buffer) => {
-                cb(err, buffer);
-                this._onComplete();
             });
-            return this.defaultTexture;
         }
     }
 
@@ -62,6 +49,14 @@ class ResourceLoader {
         return this._count && this._count > 0;
     }
 
+    getDefaultTexture(url) {
+        if (!Array.isArray(url)) {
+            return this.defaultTexture;
+        } else {
+            return this._getBlankTextures(url.length);
+        }
+    }
+
     _disposeOne(url) {
         const resources = this.resources;
         if (!resources[url]) {
@@ -73,58 +68,36 @@ class ResourceLoader {
         }
     }
 
-    _loadImage(url, cb, inGroup) {
-        if (!this._count || this._count < 0) {
-            this._count = 0;
-        }
-        this._count++;
+    _loadImage(url) {
         const resources = this.resources;
         if (resources[url]) {
-            cb(null,  resources[url].image);
-            this._onComplete();
-            return resources[url].image;
+            return Promise.resolve({ url, data: resources[url].image });
         }
-        const img = new Image();
-        const self = this;
-        img.onload = function () {
-            resources[url] = {
-                image : img,
-                count : 1
+        const promise = new Promise((resolve, reject) => {
+            const img = new Image();
+
+            img.onload = function () {
+                resources[url] = {
+                    image : img,
+                    count : 1
+                };
+                resolve({ url, data: img });
             };
-            cb(null, img);
-            if (!inGroup) {
-                self._onComplete();
-            }
-        };
-        img.src = url;
-        return this.defaultTexture;
+            img.onerror = function () {
+                reject();
+            };
+            img.onabort = function () {
+                reject();
+            };
+            img.src = url;
+        });
+        return promise;
     }
 
-    _loadImages(urls, cb) {
-        const promises = urls.map(url => new Promise((resolve, reject) => {
-            this._loadImage(url, (err, image) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(image);
-            }, true);
-        }));
-        Promise.all(promises).then(
-            values => {
-                cb(null, values);
-                self._onComplete();
-            },
-            cb
-        );
-        return this._getBlankTextures(urls.length);
-    }
-
-    _onComplete() {
-        this._count--;
-        if (this._count <= 0) {
-            this._count = 0;
-            this.fire('complete');
-        }
+    _loadImages(urls) {
+        const promises = urls.map(url => this._loadImage(url, true));
+        const promise = Promise.all(promises);
+        return promise;
     }
 
     _getBlankTextures(count) {
@@ -135,6 +108,5 @@ class ResourceLoader {
         return t;
     }
 }
-
 
 export default Eventable(ResourceLoader);

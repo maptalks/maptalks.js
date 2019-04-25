@@ -6,7 +6,7 @@ import Texture from './AbstractTexture.js';
  */
 class Texture2D extends Texture {
 
-    onLoad(error, data) {
+    onLoad({ data }) {
         const config = this.config;
         if (config.hdr) {
             data = parseRGBE(data.data);

@@ -37,12 +37,12 @@ const Eventable = Base =>
         _wrapOnce(type, handler) {
             const self = this;
             let called = false;
-            const fn = function onceHandler() {
+            const fn = function onceHandler(params) {
                 if (called) {
                     return;
                 }
                 called = true;
-                handler();
+                handler(params);
                 self.off(type, onceHandler);
             };
             return fn;

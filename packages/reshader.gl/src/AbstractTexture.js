@@ -25,23 +25,36 @@ class AbstractTexture {
         } else {
             this.config = config || {};
             this.resLoader = resLoader;
-            if (config.url) {
+            if ((config.url || config.promise) && !config.data) {
                 this._loading = true;
                 const self = this;
-                let loadFn;
-                if (config.arrayBuffer) {
-                    loadFn = resLoader.getArrayBuffer;
+                let promise;
+                if (config.promise) {
+                    promise = config.promise;
                 } else {
-                    loadFn = resLoader.get;
+                    let loadFn;
+                    if (config.arrayBuffer) {
+                        loadFn = resLoader.getArrayBuffer;
+                    } else {
+                        loadFn = resLoader.get;
+                    }
+                    promise = loadFn.call(resLoader, config.url);
                 }
-                config.data = loadFn.call(resLoader, config.url, function () {
+                config.data = resLoader.getDefaultTexture(config.url);
+                this.promise = promise;
+                promise.then(data => {
+                    delete this.promise;
                     self._loading = false;
                     if (!self.config) {
                         //disposed
-                        return;
+                        return data;
                     }
-                    self.onLoad.apply(self, arguments);
-                    self.fire('complete');
+                    self.onLoad(data);
+                    if (!Array.isArray(data)) {
+                        data = [data];
+                    }
+                    self.fire('complete', { resources: data });
+                    return data;
                 });
             }
         }
