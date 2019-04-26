@@ -75,7 +75,7 @@ class ResourceLoader {
         }
         const promise = new Promise((resolve, reject) => {
             const img = new Image();
-
+            img.crossOrigin = 'anonymous';
             img.onload = function () {
                 resources[url] = {
                     image : img,
