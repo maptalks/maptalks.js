@@ -1,6 +1,12 @@
 #include <fl_header_frag>
+
+#if defined(HAS_SHADOWING)
+#include <vsm_shadow_frag>
+#endif
+
 //webgl 2.0中的函数实现
 #include <fl_common_math_glsl>
+#include <fl_common_graphics_glsl>
 //initialize frameUniforms
 #include <fl_uniforms_glsl>
 //varyings

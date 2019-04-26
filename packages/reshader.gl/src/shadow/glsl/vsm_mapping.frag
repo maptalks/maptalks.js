@@ -1,3 +1,4 @@
+#define SHADER_NAME vsm_mapping
 #extension GL_OES_standard_derivatives : enable
 
 precision mediump float;
@@ -18,5 +19,5 @@ void main()
     // Resovle shadow acne
     moment2 += 0.25 * (dx * dx + dy * dy);
 
-    gl_FragColor = vec4(moment1, moment2, 0.0, 1.0);
+    gl_FragColor = vec4(moment1, moment2, depth, 0.0);
 }

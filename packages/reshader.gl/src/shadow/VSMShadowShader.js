@@ -17,7 +17,17 @@ class VSMShadowShader extends MeshShader {
                         return mat4.multiply([], props['lightProjViewMatrix'], props['modelMatrix']);
                     }
                 }
-            ]
+            ],
+            extraCommandProps: {
+                depth: {
+                    enable: true,
+                    func: '<=',
+                },
+                cull: {
+                    enable: true,
+                    face: 'back'
+                }
+            }
 
         });
     }

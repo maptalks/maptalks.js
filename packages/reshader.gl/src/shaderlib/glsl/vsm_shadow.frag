@@ -19,9 +19,20 @@ uniform float vsm_shadow_opacity;
 
 varying vec4 vsm_shadow_vLightSpacePos;
 
-float vsm_shadow_chebyshevUpperBound(sampler2D shadowMap, vec3 projCoords){
-    // if(projCoords.z >= 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) return 1.0;
-    vec2 moments = texture2D(shadowMap, projCoords.xy).rg;
+float esm(vec3 projCoords, vec4 shadowTexel) {
+    // vec2 uv = projCoords.xy;
+    float compare = projCoords.z;
+    float c = 50.0;
+    float depth = shadowTexel.b;
+
+    // depth = exp(-c * min(compare - depth, 0.05));
+    depth = exp(c * depth) * exp(-c * compare);
+    return clamp(depth, 0.0, 1.0);
+}
+
+float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
+
+    vec2 moments = shadowTexel.rg;
     float distance = projCoords.z;
     // Surface is fully lit. as the current fragment is before the light occluder
     if (distance >= 1.0 || distance <= moments.x)
@@ -34,8 +45,16 @@ float vsm_shadow_chebyshevUpperBound(sampler2D shadowMap, vec3 projCoords){
 
     float d = distance - moments.x;
     float p_max = variance / (variance + d * d);
-    // return p_max;
-    return 1.0 - (1.0 - p_max) * vsm_shadow_opacity;
+    return p_max;
+}
+
+float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
+    vec2 uv = projCoords.xy;
+    vec4 shadowTexel = texture2D(shadowMap, uv);
+    float esm_coeff = esm(projCoords, shadowTexel);
+    float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
+    float coeff = esm_coeff * vsm_coeff;
+    return 1.0 - (1.0 - coeff) * vsm_shadow_opacity;
 }
 
 float shadow_computeShadow() {
@@ -43,7 +62,7 @@ float shadow_computeShadow() {
     vec3 projCoords = vsm_shadow_vLightSpacePos.xyz / vsm_shadow_vLightSpacePos.w;
     // 变换到[0,1]的范围
     projCoords = projCoords * 0.5 + 0.5;
-
-    return vsm_shadow_chebyshevUpperBound(vsm_shadow_shadowMap, projCoords);
+    if(projCoords.z >= 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) return 1.0;
+    return shadow_computeShadow_coeff(vsm_shadow_shadowMap, projCoords);
 
 }
