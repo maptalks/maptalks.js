@@ -191,18 +191,21 @@
 
     function initGUI() {
       const gui = new dat.GUI( { width: 250 } );
-      const options = {
-        metallicFactor: style[0].symbol.material.metallicFactor,
-        roughnessFactor: style[0].symbol.material.roughnessFactor,
-      };
-      const m = gui.add(options, 'metallicFactor', 0, 1);
-      m.onChange(function(value){
+      const options = style[0].symbol.material;
+      gui.add(options, 'metallicFactor', 0, 1).onChange(function(value){
         updateMaterial('metallicFactor', value);
       });
 
-      const r = gui.add(options, 'roughnessFactor', 0, 1);
-      r.onChange(function(value){
+      gui.add(options, 'roughnessFactor', 0, 1).onChange(function(value){
         updateMaterial('roughnessFactor', value);
+      });
+
+      gui.add(options, 'clearCoat', 0, 5).onChange(function(value){
+        updateMaterial('clearCoat', value);
+      });
+
+      gui.add(options, 'clearCoatRoughness', 0, 1).onChange(function(value){
+        updateMaterial('clearCoatRoughness', value);
       });
     }
 
