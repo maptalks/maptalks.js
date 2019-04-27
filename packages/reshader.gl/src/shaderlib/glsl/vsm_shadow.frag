@@ -16,6 +16,7 @@
 
 uniform sampler2D vsm_shadow_shadowMap;
 uniform float vsm_shadow_opacity;
+uniform float vsm_shadow_threshold;
 
 varying vec4 vsm_shadow_vLightSpacePos;
 
@@ -23,11 +24,11 @@ float esm(vec3 projCoords, vec4 shadowTexel) {
     // vec2 uv = projCoords.xy;
     float compare = projCoords.z;
     float c = 50.0;
-    float depth = shadowTexel.b;
+    float depth = shadowTexel.r;
 
-    // depth = exp(-c * min(compare - depth, 0.05));
-    depth = exp(c * depth) * exp(-c * compare);
-    return clamp(depth, 0.0, 1.0);
+    depth = exp(-c * min(compare - depth, 0.05));
+    // depth = exp(c * depth) * exp(-c * compare);
+    return clamp(depth, vsm_shadow_threshold, 1.0);
 }
 
 float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
@@ -52,8 +53,9 @@ float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
     vec2 uv = projCoords.xy;
     vec4 shadowTexel = texture2D(shadowMap, uv);
     float esm_coeff = esm(projCoords, shadowTexel);
-    float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
-    float coeff = esm_coeff * vsm_coeff;
+    // float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
+    // float coeff = esm_coeff * vsm_coeff;
+    float coeff = esm_coeff;
     return 1.0 - (1.0 - coeff) * vsm_shadow_opacity;
 }
 

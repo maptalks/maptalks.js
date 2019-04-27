@@ -10,14 +10,15 @@ void main()
 {
     float depth = vPosition.z / vPosition.w;
     depth = depth * 0.5 + 0.5;
-    float moment1 = depth;
-    float moment2 = depth * depth;
+    // float moment1 = depth;
+    // float moment2 = depth * depth;
 
-    // Adjusting moments using partial derivative
-    float dx = dFdx(depth);
-    float dy = dFdy(depth);
-    // Resovle shadow acne
-    moment2 += 0.25 * (dx * dx + dy * dy);
+    // // Adjusting moments using partial derivative
+    // float dx = dFdx(depth);
+    // float dy = dFdy(depth);
+    // // Resovle shadow acne
+    // moment2 += 0.25 * (dx * dx + dy * dy);
+    // gl_FragColor = vec4(moment1, moment2, depth, 0.0);
 
-    gl_FragColor = vec4(moment1, moment2, depth, 0.0);
+    gl_FragColor = vec4(depth, 0.0, 0.0, 0.0);
 }
