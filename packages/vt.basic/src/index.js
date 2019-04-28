@@ -13,6 +13,8 @@ import PhongPainter from './painters/PhongPainter';
 import WireframePainter from './painters/WireframePainter';
 
 import LitPainter from './painters/pbr/LitPainter';
+import ClothPainter from './painters/pbr/ClothPainter';
+import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
 
 const FillPlugin = createPainterPlugin('fill', FillPainter);
 FillPlugin.registerAt(VectorTileLayer);
@@ -50,6 +52,12 @@ WireframePlugin.registerAt(VectorTileLayer);
 const LitPlugin = createPainterPlugin('lit', LitPainter);
 LitPlugin.registerAt(VectorTileLayer);
 
+const ClothPlugin = createPainterPlugin('cloth', ClothPainter);
+ClothPlugin.registerAt(VectorTileLayer);
+
+const SubsurfacePlugin = createPainterPlugin('subsurface', SubsurfacePainter);
+SubsurfacePlugin.registerAt(VectorTileLayer);
+
 export {
     LinePlugin,
     FillPlugin,
@@ -75,5 +83,7 @@ export {
     WireframePainter,
 
     //pbr plugins
-    LitPlugin
+    LitPlugin,
+    ClothPlugin,
+    SubsurfacePlugin
 };
