@@ -45,6 +45,7 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     constructor(id, options) {
         super(id, options);
+        this.VERSION = VectorTileLayer.VERSION;
         // const tileSize = this.getTileSize();
         // this.zoomOffset = -log2(tileSize.width / 256);
         const style = options && options.style || [];

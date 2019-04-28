@@ -1,6 +1,7 @@
 const resolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
+const json = require('rollup-plugin-json');
 const uglify = require('rollup-plugin-uglify').uglify;
 const pkg = require('../package.json');
 
@@ -19,6 +20,7 @@ const plugins = production ? [
 module.exports = [{
     input: 'src/worker/index.js',
     plugins: [
+        json(),
         resolve({
             module: true,
             jsnext: true,
@@ -44,6 +46,7 @@ module.exports = [{
     input: 'src/layer/index.js',
     external: ['maptalks', '@maptalks/gl'],
     plugins: [
+        json(),
         resolve({
             module: true,
             jsnext: true,
