@@ -40,6 +40,7 @@ const header = `
             adapter.onmessage(msg, wrap(msg.callback));
         } catch (err) {
             post(msg.callback, workerKey + ':' + err.message);
+            console.error(err);
             throw err;
         }
     };
