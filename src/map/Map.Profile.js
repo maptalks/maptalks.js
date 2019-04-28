@@ -113,7 +113,8 @@ Map.include(/** @lends Map.prototype */ {
             options = {};
         }
         const json = {
-            'version': this['JSON_VERSION'],
+            'jsonVersion': this['JSON_VERSION'],
+            'version': this.VERSION,
             'extent': this.getExtent().toJSON()
         };
         json['options'] = this.config();
