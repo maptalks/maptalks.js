@@ -176,6 +176,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete opts['layers'];
         super(opts);
 
+        this.VERSION = Map.VERSION;
+
         Object.defineProperty(this, 'id', {
             value: UID(),
             writable: false

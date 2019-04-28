@@ -1,3 +1,4 @@
+import { version } from '../package.json';
 export * from './core/Constants';
 export { default as Browser } from './core/Browser';
 import * as Util from './core/util';
@@ -20,7 +21,9 @@ export { default as DragHandler } from './handler/Drag';
 // geo classes
 export * from './geo';
 
-export * from './map';
+import { Map } from './map';
+Map.VERSION = version;
+export { Map };
 
 export { MapTool, DrawTool, AreaTool, DistanceTool } from './map/tool';
 export { default as SpatialReference } from './map/spatial-reference/SpatialReference';
