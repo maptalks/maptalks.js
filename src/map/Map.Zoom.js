@@ -1,5 +1,4 @@
 import { isNil } from '../core/util';
-import Browser from '../core/Browser';
 import Point from '../geo/Point';
 import Map from './Map';
 
@@ -94,8 +93,9 @@ Map.include(/** @lends Map.prototype */{
         const matrix = {
             'view' : [scale, 0, 0, scale, (origin.x - offset.x) *  (1 - scale), (origin.y - offset.y) *  (1 - scale)]
         };
-        if (Browser.retina) {
-            origin = origin.multi(2);
+        const dpr = this.getDevicePixelRatio();
+        if (dpr !== 1) {
+            origin = origin.multi(dpr);
         }
         matrix['container'] = [scale, 0, 0, scale, origin.x * (1 - scale), origin.y *  (1 - scale)];
         /**

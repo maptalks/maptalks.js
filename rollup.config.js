@@ -1,6 +1,7 @@
 const commonjs = require('rollup-plugin-commonjs'),
     resolve = require('rollup-plugin-node-resolve'),
-    babel = require('rollup-plugin-babel');
+    babel = require('rollup-plugin-babel'),
+    json = require('rollup-plugin-json');
 const pkg = require('./package.json');
 
 const testing = process.env.BUILD === 'test';
@@ -20,6 +21,7 @@ const outro = `typeof console !== 'undefined' && console.log && console.log('${p
 module.exports = {
     input: 'src/index.js',
     plugins: [
+        json(),
         resolve({
             module : true,
             jsnext : true,

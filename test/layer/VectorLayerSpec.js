@@ -237,8 +237,11 @@ describe('VectorLayer.Spec', function () {
                     maptalks.Browser.retina = false;
                     expect(sx).to.be.eql(2);
                     expect(sy).to.be.eql(2);
+                    maptalks.Browser.devicePixelRatio = 1;
+                    maptalks.Browser.retina = false;
                     done();
                 });
+                maptalks.Browser.devicePixelRatio = 2;
                 maptalks.Browser.retina = true;
                 container.style.width = (parseInt(container.style.width) - 1) + 'px';
             });

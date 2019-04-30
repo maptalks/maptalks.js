@@ -6,6 +6,7 @@ import './handler/Map.GeometryEvents';
 import './handler/Map.ScrollWheelZoom';
 import './handler/Map.Touch';
 import './handler/Map.BoxZoom';
+import './handler/Map.AutoPanAtEdge';
 
 import './Map.Anim';
 import './Map.DomEvents';

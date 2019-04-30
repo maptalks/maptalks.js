@@ -21,6 +21,8 @@ const DEFAULT_TEXT_COLOR = '#000';
 
 let hitTesting = false;
 
+let TEMP_CANVAS = null;
+
 const Canvas = {
     setHitTesting(testing) {
         hitTesting = testing;
@@ -482,14 +484,26 @@ const Canvas = {
         if (!isArrayHasData(points)) {
             return;
         }
-        function fillPolygon(points, i, op) {
-            Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
-        }
+
         const isPatternLine = Canvas._isPattern(ctx.strokeStyle),
             fillFirst = (isArrayHasData(lineDashArray) && !ctx.setLineDash) || isPatternLine && !smoothness;
         if (!isArrayHasData(points[0])) {
             points = [points];
         }
+        const savedCtx = ctx;
+        if (points.length > 1 && !IS_NODE) {
+            if (!TEMP_CANVAS) {
+                TEMP_CANVAS = Canvas.createCanvas(1, 1);
+            }
+            ctx.canvas._drawn = false;
+            TEMP_CANVAS.width = ctx.canvas.width;
+            TEMP_CANVAS.height = ctx.canvas.height;
+            ctx = TEMP_CANVAS.getContext('2d');
+            copyProperties(ctx, savedCtx);
+        }
+        // function fillPolygon(points, i, op) {
+        //     Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
+        // }
         let op, i, len;
         if (fillFirst) {
             //因为canvas只填充moveto,lineto,lineto的空间, 而dashline的moveto不再构成封闭空间, 所以重新绘制图形轮廓用于填充
@@ -504,7 +518,7 @@ const Canvas = {
                     ctx.globalCompositeOperation = 'destination-out';
                     op = 1;
                 }
-                fillPolygon(points, i, op);
+                Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
                 if (i > 0) {
                     ctx.globalCompositeOperation = 'source-over';
                 } else if (len > 1) {
@@ -533,7 +547,7 @@ const Canvas = {
                     ctx.globalCompositeOperation = 'destination-out';
                     op = 1;
                 }
-                fillPolygon(points, i, op);
+                Canvas.fillCanvas(ctx, op, points[i][0].x, points[i][0].y);
                 if (i > 0) {
                     //return to default compositeOperation to display strokes.
                     ctx.globalCompositeOperation = 'source-over';
@@ -544,7 +558,11 @@ const Canvas = {
             }
             Canvas._stroke(ctx, lineOpacity);
         }
-
+        if (points.length > 1 && !IS_NODE) {
+            savedCtx.drawImage(TEMP_CANVAS, 0, 0);
+            savedCtx.canvas._drawn = ctx.canvas._drawn;
+            copyProperties(savedCtx, ctx);
+        }
     },
 
     _ring(ctx, ring, lineDashArray, lineOpacity, ignorePattern) {
@@ -922,4 +940,19 @@ function extractImageUrl(url) {
         return url;
     }
     return extractCssUrl(url);
+}
+
+function copyProperties(ctx, savedCtx) {
+    ctx.filter = savedCtx.filter;
+    ctx.fillStyle = savedCtx.fillStyle;
+    ctx.globalAlpha = savedCtx.globalAlpha;
+    ctx.lineCap = savedCtx.lineCap;
+    ctx.lineDashOffset = savedCtx.lineDashOffset;
+    ctx.lineJoin = savedCtx.lineJoin;
+    ctx.lineWidth = savedCtx.lineWidth;
+    ctx.shadowBlur = savedCtx.shadowBlur;
+    ctx.shadowColor = savedCtx.shadowColor;
+    ctx.shadowOffsetX = savedCtx.shadowOffsetX;
+    ctx.shadowOffsetY = savedCtx.shadowOffsetY;
+    ctx.strokeStyle = savedCtx.strokeStyle;
 }

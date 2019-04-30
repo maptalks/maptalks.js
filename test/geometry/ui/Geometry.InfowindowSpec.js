@@ -68,6 +68,28 @@ describe('Geometry.InfoWindow', function () {
         expect(position.round().toArray()).to.be.eql([633, 25]);
     });
 
+    it('custom infowindow position', function () {
+        // test infowindow's position with frame offset
+        var marker = new maptalks.Marker(center.add(0.01, 0.01));
+        marker.addTo(layer);
+        var options = {
+            title: 'title',
+            content: '<div style="width:400px;height:100px;">this is a customized infowindow.</div>',
+            animation : false,
+            custom: true
+        };
+        marker.setInfoWindow(options);
+        map.setCenter(marker.getCenter());
+        marker.openInfoWindow();
+        var w = marker.getInfoWindow();
+        var position = w.getPosition();
+        if (maptalks.Browser.ie) {
+            expect(position.round().toArray()).to.be.eql([433, -85]);
+        } else {
+            expect(position.round().toArray()).to.be.eql([433, -109]);
+        }
+    });
+
     it('autoOpen on click', function (done) {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);

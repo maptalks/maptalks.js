@@ -56,21 +56,21 @@ describe('Geometry.AntiMeridian', function () {
     });
 
     describe('linestring on meridian', function () {
-        it('linestring should continue to draw from [170, 80] to [-150, 80]', function () {
-            map.setCenter([170, 80]);
-            var line = new maptalks.LineString([[170, 80], [-170, 80], [-150, 80]]);
-            layer.addGeometry(line);
-            expect(layer).not.to.be.painted(-2, 0);
-            expect(layer).to.be.painted(10, 0);
-            expect(line.getSize()._round().toArray()).to.be.eql([59, 2]);
-        });
-
-        it('linestring should draw a long line from [-150, 80] to [170, 80]', function () {
-            map.setCenter([170, 80]);
-            var line = new maptalks.LineString([[-150, 80], [-170, 80], [170, 80]]);
+        it('linestring should continue to draw from [-170, 80] to [170, 80]', function () {
+            map.setCenter([-170, 80]);
+            var line = new maptalks.LineString([[-170, 80], [170, 80]]);
             layer.addGeometry(line);
             expect(layer).not.to.be.painted(2, 0);
-            expect(layer).to.be.painted(-100, 0);
+            expect(layer).to.be.painted(-10, 0);
+            expect(line.getSize()._round().toArray()).to.be.eql([30, 2]);
+        });
+
+        it('linestring should draw a long line from [170, 80] to [-170, 80]', function () {
+            map.setCenter([-170, 80]);
+            var line = new maptalks.LineString([[170, 80], [-170, 80]]);
+            layer.addGeometry(line);
+            expect(layer).not.to.be.painted(-2, 0);
+            expect(layer).to.be.painted(100, 0);
             expect(line.getSize()._round().toArray()).to.be.eql([486, 2]);
         });
 
@@ -95,20 +95,20 @@ describe('Geometry.AntiMeridian', function () {
 
     describe('polygon on meridian', function () {
         it('polygon should continue to draw from [170, 80] to [-170, 70]', function () {
-            map.setCenter([170, 80]);
-            var polygon = new maptalks.Polygon([[170, 80], [-170, 80], [-170, 70]]);
+            map.setCenter([-170, 80]);
+            var polygon = new maptalks.Polygon([[-170, 80], [170, 80], [170, 70]]);
             layer.addGeometry(polygon);
-            expect(layer).not.to.be.painted(-4, 0);
-            expect(layer).to.be.painted(10, 0);
+            expect(layer).not.to.be.painted(4, 0);
+            expect(layer).to.be.painted(-10, 0);
             expect(polygon.getSize()._round().toArray()).to.be.eql([30, 59]);
         });
 
-        it('polygon should draw a big polygon from [-170, 80] to [170, 70]', function () {
-            map.setCenter([170, 80]);
-            var polygon = new maptalks.Polygon([[-170, 80], [170, 70], [170, 80]]);
+        it('polygon should draw a big polygon from [170, 80] to [-170, 70]', function () {
+            map.setCenter([-170, 80]);
+            var polygon = new maptalks.Polygon([[170, 80], [-170, 70], [-170, 80]]);
             layer.addGeometry(polygon);
-            expect(layer).not.to.be.painted(2, 0);
-            expect(layer).to.be.painted(-100, 0);
+            expect(layer).not.to.be.painted(-2, 0);
+            expect(layer).to.be.painted(100, 0);
             expect(polygon.getSize()._round().toArray()).to.be.eql([486, 59]);
         });
 
@@ -213,7 +213,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).not.to.be.painted(0, -10);
-            expect(rectangle.getSize()._round().toArray()).to.be.eql([79, 54]);
+            expect(rectangle.getSize()._round().toArray()).to.be.eql([437, 54]);
         });
 
         it('paint at [-180, -85]', function () {

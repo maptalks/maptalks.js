@@ -351,7 +351,7 @@ describe('OverlayLayer', function () {
 
         it('selectAll', function () {
             var layer = new maptalks.VectorLayer('id');
-            expect(layer.filter(function () { return true; }).getGeometries()).to.be.empty();
+            expect(layer.filter(function () { return true; })).to.be.empty();
             var points = [
                 new maptalks.Marker([0, 0], {
                     properties : {
@@ -383,9 +383,9 @@ describe('OverlayLayer', function () {
                 })
             ];
             var selection = layer.addGeometry(points).filter(function () { return true; });
-            expect(selection.getGeometries()).to.have.length(points.length);
+            expect(selection).to.have.length(points.length);
             for (var i = 0; i < points.length; i++) {
-                expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
+                expect(selection[i].toJSON()).to.be.eql(points[i].toJSON());
             }
 
         });
@@ -431,20 +431,19 @@ describe('OverlayLayer', function () {
                 return geometry.getType() === 'Point' && geometry.getProperties().foo1 > 0 && geometry.getProperties().foo2.indexOf('test') >= 0;
             });
 
-            expect(selection).to.be.an(maptalks.GeometryCollection);
-            expect(selection.getGeometries()).to.have.length(points.length);
+            expect(selection).to.have.length(points.length);
             for (var i = points.length - 1; i >= 0; i--) {
-                expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
+                expect(selection[i].toJSON()).to.be.eql(points[i].toJSON());
             }
 
             expect(layer.filter(function (geometry) {
                 return geometry.getProperties().foo3 === true;
-            }).getGeometries()).to.have.length(3);
+            })).to.have.length(3);
 
             selection = layer.filter(function (geometry) {
                 return geometry.getType() !== 'Point';
             });
-            expect(selection.getGeometries()).to.be.empty();
+            expect(selection).to.be.empty();
         });
 
         it('filter by feature-filter', function () {
@@ -456,20 +455,19 @@ describe('OverlayLayer', function () {
                 ['>', 'foo1', 0]
             ]);
 
-            expect(selection).to.be.an(maptalks.GeometryCollection);
-            expect(selection.getGeometries()).to.have.length(points.length);
+            expect(selection).to.have.length(points.length);
             for (var i = points.length - 1; i >= 0; i--) {
-                expect(selection.getGeometries()[i].toJSON()).to.be.eql(points[i].toJSON());
+                expect(selection[i].toJSON()).to.be.eql(points[i].toJSON());
             }
 
             expect(layer.filter(function (geometry) {
                 return geometry.getProperties().foo3 === true;
-            }).getGeometries()).to.have.length(3);
+            })).to.have.length(3);
 
             selection = layer.filter(function (geometry) {
                 return geometry.getType() !== 'Point';
             });
-            expect(selection.getGeometries()).to.be.empty();
+            expect(selection).to.be.empty();
         });
     });
 

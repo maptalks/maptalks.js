@@ -5,7 +5,6 @@ import {
     now,
     isFunction
 } from '../../../core/util';
-import Browser from '../../../core/Browser';
 import Canvas2D from '../../../core/Canvas';
 import TileLayer from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
@@ -34,6 +33,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._parentTiles = [];
         this._childTiles = [];
         this.tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
+    }
+
+    getCurrentTileZoom() {
+        return this._tileZoom;
     }
 
     draw() {
@@ -319,7 +322,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return false;
         }
         const clipExtent = map.getContainerExtent();
-        const r = Browser.retina ? 2 : 1;
+        const r = map.getDevicePixelRatio();
         ctx.save();
         ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
         ctx.beginPath();
@@ -412,8 +415,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileImage.src = tileInfo.url;
             return;
         }
-        if (tileImage instanceof Image) {           
-            this.abortTileLoading(tileImage);
+        if (tileImage instanceof Image) {
+            this.abortTileLoading(tileImage, tileInfo);
         }
         tileImage.loadTime = 0;
         delete this.tilesLoading[tileInfo['id']];
@@ -577,7 +580,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const tilesLoading = this.tilesLoading;
             if (tilesLoading && tilesLoading[tileId]) {
                 tilesLoading[tileId].current = false;
-                this.abortTileLoading(tilesLoading[tileId]);
+                const { image, info } = tilesLoading[tileId];
+                this.abortTileLoading(image, info);
                 delete tilesLoading[tileId];
             }
         } else {
@@ -632,7 +636,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (force || !tile.current) {
                 // abort loading tiles
                 if (tile.image) {
-                    this.abortTileLoading(tile.image);
+                    this.abortTileLoading(tile.image, tile.info);
                 }
                 this.deleteTile(tile);
                 delete this.tilesLoading[i];

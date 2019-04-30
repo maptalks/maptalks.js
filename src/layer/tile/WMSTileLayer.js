@@ -1,5 +1,4 @@
 import { extend } from '../../core/util';
-import Browser from '../../core/Browser';
 import TileLayer from './TileLayer';
 
 /**
@@ -64,15 +63,18 @@ class WMSTileLayer extends TileLayer {
         }
         this.setOptions(options);
         this.setZIndex(options.zIndex);
-        const r = options.detectRetina && Browser.retina ? 2 : 1,
-            tileSize = this.getTileSize();
-        wmsParams.width = tileSize.width * r;
-        wmsParams.height = tileSize.height * r;
+        const tileSize = this.getTileSize();
+        wmsParams.width = tileSize.width;
+        wmsParams.height = tileSize.height;
         this.wmsParams = wmsParams;
         this._wmsVersion = parseFloat(wmsParams.version);
     }
 
     onAdd() {
+        const dpr = this.getMap().getDevicePixelRatio();
+        const r = options.detectRetina ? dpr : 1;
+        this.wmsParams.width *= r;
+        this.wmsParams.height *= r;
         const crs = this.options.crs || this.getMap().getProjection().code;
         const projectionKey = this._wmsVersion >= 1.3 ? 'crs' : 'srs';
         this.wmsParams[projectionKey] = crs;

@@ -73,6 +73,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number[]}       [options.fogColor=[233, 233, 233]]        - color of fog: [r, g, b]
  *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
+ * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
  * @memberOf Map
  * @instance
  */
@@ -112,6 +113,7 @@ const options = {
     'fixCenterOnResize' : false,
 
     'checkSize': true,
+    'checkSizeInterval' : 1000,
 
     'renderer': 'canvas'
 };
@@ -173,6 +175,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const layers = opts['layers'];
         delete opts['layers'];
         super(opts);
+
+        this.VERSION = Map.VERSION;
 
         Object.defineProperty(this, 'id', {
             value: UID(),
@@ -1685,6 +1689,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this._getRenderer();
     }
 
+    /**
+     * Get device's devicePixelRatio, you can override it by setting devicePixelRatio in options.
+     * @returns {Number}
+     */
+    getDevicePixelRatio() {
+        return this.options['devicePixelRatio'] || Math.ceil(Browser.devicePixelRatio);
+    }
+
     //-----------------------------------------------------------
 
     _initContainer(container) {
@@ -1942,10 +1954,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!isNil(containerDOM.width) && !isNil(containerDOM.height)) {
             width = containerDOM.width;
             height = containerDOM.height;
-            if (Browser.retina && containerDOM['layer']) {
+            const dpr = this.getDevicePixelRatio();
+            if (dpr !== 1 && containerDOM['layer']) {
                 //is a canvas tile of CanvasTileLayer
-                width /= 2;
-                height /= 2;
+                width /= dpr;
+                height /= dpr;
             }
         } else if (!isNil(containerDOM.clientWidth) && !isNil(containerDOM.clientHeight)) {
             width = parseInt(containerDOM.clientWidth, 0);

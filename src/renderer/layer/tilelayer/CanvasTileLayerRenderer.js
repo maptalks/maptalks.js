@@ -1,4 +1,3 @@
-import Browser from '../../../core/Browser';
 import CanvasTileLayer from '../../../layer/tile/CanvasTileLayer';
 import Canvas2D from '../../../core/Canvas';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
@@ -9,7 +8,7 @@ function loadTile(tile) {
     const tileSize = this.layer.getTileSize(),
         canvasClass = this.canvas.constructor,
         map = this.getMap();
-    const r = Browser.retina ? 2 : 1;
+    const r = map.getDevicePixelRatio();
     const tileCanvas = Canvas2D.createCanvas(tileSize['width'] * r, tileSize['height'] * r, canvasClass);
     tileCanvas['layer'] = this.layer;
     const me = this;

@@ -21,6 +21,8 @@ class TileConfig {
         this.tileSize = tileSize;
         this.fullExtent = fullExtent;
         this.prepareTileInfo(tileSystem, fullExtent);
+        this._xScale = fullExtent['right'] >= fullExtent['left'] ? 1 : -1;
+        this._yScale = fullExtent['top'] >= fullExtent['bottom'] ? 1 : -1;
     }
 
     prepareTileInfo(tileSystem, fullExtent) {
@@ -109,6 +111,7 @@ class TileConfig {
         let out = false;
         const idx = x;
         const idy = y;
+
         const ext = this._getTileFullIndex(res);
         if (isRepeatWorld) {
             //caculate tile index to request in url in repeated world.
@@ -152,6 +155,18 @@ class TileConfig {
         const transformation = this.transformation;
         const nwIndex = this._getTileNum(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
         const seIndex = this._getTileNum(transformation.transform(new Coordinate(ext['right'], ext['bottom']), 1), res);
+
+        const tileSystem = this.tileSystem;
+        //如果x方向为左大右小
+        if (tileSystem['scale']['x'] < 0) {
+            nwIndex.x -= 1;
+            seIndex.x -= 1;
+        }
+        //如果y方向上大下小
+        if (tileSystem['scale']['y'] > 0) {
+            nwIndex.y -= 1;
+            seIndex.y -= 1;
+        }
         return new Extent(nwIndex, seIndex);
     }
 
@@ -165,8 +180,8 @@ class TileConfig {
     getTilePrjNW(tileX, tileY, res) {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
-        const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * (res * tileSize['height']);
-        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'] + tileSystem['origin']['x'];
+        const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * res * tileSize['height'];
+        const x = tileSystem['origin']['x'] + this._xScale * tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * res * tileSize['width'];
         return new Coordinate(x, y);
     }
 
@@ -180,8 +195,8 @@ class TileConfig {
     getTilePrjSE(tileX, tileY, res) {
         const tileSystem = this.tileSystem;
         const tileSize = this['tileSize'];
-        const y = tileSystem['origin']['y'] + tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * (res * tileSize['height']);
-        const x = tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 1 : 0)) * res * tileSize['width'] + tileSystem['origin']['x'];
+        const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * res * tileSize['height'];
+        const x = tileSystem['origin']['x'] + this._xScale * tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 1 : 0)) * res * tileSize['width'];
         return new Coordinate(x, y);
     }
 

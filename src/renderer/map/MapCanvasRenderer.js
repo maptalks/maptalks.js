@@ -574,8 +574,9 @@ class MapCanvasRenderer extends MapRenderer {
     _drawLayerCanvasImage(layer, layerImage) {
         const ctx = this.context;
         const point = layerImage['point'].round();
-        if (Browser.retina) {
-            point._multi(2);
+        const dpr = this.map.getDevicePixelRatio();
+        if (dpr !== 1) {
+            point._multi(dpr);
         }
         const canvasImage = layerImage['image'];
         const width = canvasImage.width, height = canvasImage.height;
@@ -661,8 +662,8 @@ class MapCanvasRenderer extends MapRenderer {
         if (map.getPitch() <= map.options['maxVisualPitch'] || !map.options['fog']) {
             return;
         }
-        const fogThickness = 30,
-            r = Browser.retina ? 2 : 1;
+        const fogThickness = 30;
+        const r = map.getDevicePixelRatio();
         const ctx = this.context,
             clipExtent = map.getContainerExtent();
         let top = (map.height - map._getVisualHeight(75)) * r;
@@ -699,7 +700,7 @@ class MapCanvasRenderer extends MapRenderer {
         const map = this.map,
             mapSize = map.getSize(),
             canvas = this.canvas,
-            r = Browser.retina ? 2 : 1;
+            r = map.getDevicePixelRatio();
         if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
             return false;
         }
@@ -752,7 +753,7 @@ class MapCanvasRenderer extends MapRenderer {
         const map = this.map;
 
         if (map.options['checkSize'] && !IS_NODE && (typeof window !== 'undefined')) {
-            this._setCheckSizeInterval(1000);
+            this._setCheckSizeInterval(map.options['checkSizeInterval']);
         }
         if (!Browser.mobile) {
             map.on('_mousemove', this._onMapMouseMove, this);

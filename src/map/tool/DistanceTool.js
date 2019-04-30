@@ -213,6 +213,7 @@ class DistanceTool extends DrawTool {
         }).addTo(this._measureMarkerLayer);
         const content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
         const startLabel = new Label(content, param['coordinate'], this.options['labelOptions']);
+        this._lastVertex = startLabel;
         this._measureMarkerLayer.addGeometry(startLabel);
     }
 

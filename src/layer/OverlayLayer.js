@@ -1,7 +1,9 @@
 import { GEOJSON_TYPES } from '../core/Constants';
 import { isNil, UID, isObject } from '../core/util';
 import Extent from '../geo/Extent';
-import { Geometry, GeometryCollection, LineString, Curve } from '../geometry';
+import { Geometry, LineString, Curve } from '../geometry';
+import { isFunction } from '../core/util';
+import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import Layer from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
 
@@ -152,8 +154,18 @@ class OverlayLayer extends Layer {
      * @param  {*} [context=undefined]  - Function's context, value to use as this when executing function.
      * @return {GeometryCollection} A GeometryCollection with all the geometries that pass the test
      */
-    filter() {
-        return GeometryCollection.prototype.filter.apply(this, arguments);
+    filter(fn, context) {
+        const selected = [];
+        const isFn = isFunction(fn);
+        const filter = isFn ? fn : createFilter(fn);
+
+        this.forEach(geometry => {
+            const g = isFn ? geometry : getFilterFeature(geometry);
+            if (context ? filter.call(context, g) : filter(g)) {
+                selected.push(geometry);
+            }
+        }, this);
+        return selected;
     }
 
     /**

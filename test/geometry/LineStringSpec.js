@@ -389,7 +389,16 @@ describe('Geometry.LineString', function () {
                 map.getCenter(),
                 map.getCenter().add(0.01, 0.01)
             ], {
-                'visible' : false
+                'visible' : false,
+                'symbol' : {
+                    'lineColor' : '#1bbc9b',
+                    'lineWidth' : 6,
+                    "lineOpacity ": 1,
+                    'textName': 'name',
+                    'textPlacement': 'vertex-last',
+                    'textSize': 14,
+                    'textFill': '#0f0',
+                }
             });
             layer.once('layerload', function () {
                 var geojson = polyline.toGeoJSON();
@@ -422,6 +431,15 @@ describe('Geometry.LineString', function () {
                 'visible' : false,
                 'properties': {
                     altitude: 300
+                },
+                'symbol' : {
+                    'lineColor' : '#1bbc9b',
+                    'lineWidth' : 6,
+                    "lineOpacity ": 1,
+                    'textName': 'name',
+                    'textPlacement': 'vertex-first',
+                    'textSize': 14,
+                    'textFill': '#0f0',
                 }
             });
             layer.once('layerload', function () {
@@ -485,6 +503,26 @@ describe('Geometry.LineString', function () {
                 });
             });
             layer.addGeometry(polyline).addTo(map);
+        });
+
+        it('line containerExtent when drawing altitude', function () {
+            map.setPitch(60);
+            map.setBearing(70);
+            layer = new maptalks.VectorLayer('id2', { enableAltitude: true, drawAltitude : true }).addTo(map);
+            var polyline = new maptalks.LineString([
+                map.getCenter(),
+                map.getCenter().add(0.01, 0.01),
+                map.getCenter().add(0.01, 0),
+                map.getCenter().add(0, 0),
+            ], {
+                'visible' : true,
+                'properties': {
+                    altitude: 10
+                }
+            }).addTo(layer);
+            var extent = polyline._getPainter().getContainerExtent().round().toString();
+            console.log(extent);
+            expect(extent).to.be.eql('-404,-38,320,151');
         });
     });
 

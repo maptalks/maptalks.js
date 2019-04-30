@@ -79,6 +79,38 @@ describe('FunctionTypeSpec', function () {
         layer.addGeometry(marker);
     });
 
+    it('markerWidth with default value', function (done) {
+        var marker = new maptalks.Marker([100, 0], {
+            symbol:{
+                'markerFile' : 'resources/x.svg',
+                'markerWidth': { property:'foo', type: 'identity', stops: [[1, 1], [5, 10], [18, 20]], default: 30 },
+                'markerHeight':30
+            }
+        });
+        layer.once('layerload', function () {
+            expect(marker.getMap()).to.be.ok();
+            expect(marker.getSize().width).to.be.eql(30);
+            done();
+        });
+        layer.addGeometry(marker);
+    });
+
+    it('markerWidth with categorical type and default value', function (done) {
+        var marker = new maptalks.Marker([100, 0], {
+            symbol:{
+                'markerFile' : 'resources/x.svg',
+                'markerWidth': { property:'foo', type: 'categorical', stops: [[1, 1], [5, 10], [18, 20]], default: 30 },
+                'markerHeight':30
+            }
+        });
+        layer.once('layerload', function () {
+            expect(marker.getMap()).to.be.ok();
+            expect(marker.getSize().width).to.be.eql(30);
+            done();
+        });
+        layer.addGeometry(marker);
+    });
+
     it('markerWidth interpolating with properties', function () {
         var marker = new maptalks.Marker([100, 0], {
             symbol:{

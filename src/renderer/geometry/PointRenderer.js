@@ -108,13 +108,15 @@ const PolyRenderer = {
 
         } else if (placement === 'vertex-first') {
             const coords = this._getPrjCoordinates();
-            points = [map._prjToPoint(coords[0], glZoom)];
-            rotations = [[map._prjToPoint(coords[0], glZoom), map._prjToPoint(coords[1], glZoom)]];
+            points = coords.length ? [map._prjToPoint(coords[0], glZoom)] : [];
+            rotations = coords.length ? [[map._prjToPoint(coords[0], glZoom), map._prjToPoint(coords[1], glZoom)]] : [];
         } else if (placement === 'vertex-last') {
             const coords = this._getPrjCoordinates();
             const l = coords.length;
-            points = [map._prjToPoint(coords[l - 1], glZoom)];
-            rotations = [[map._prjToPoint(coords[l - 2], glZoom), map._prjToPoint(coords[l - 1], glZoom)]];
+            points = l ? [map._prjToPoint(coords[l - 1], glZoom)] : [];
+            const current = l - 1,
+                previous = l > 1 ? l - 2 : l - 1;
+            rotations = l ? [[map._prjToPoint(coords[previous], glZoom), map._prjToPoint(coords[current], glZoom)]] : [];
         } else {
             const pcenter = this._getProjection().project(this.getCenter());
             points = [map._prjToPoint(pcenter, glZoom)];

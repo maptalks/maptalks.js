@@ -42,6 +42,8 @@ if (!IS_NODE) {
         webgl = false;
     }
 
+    const devicePixelRatio = (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
+
     Browser = {
         ie: ie,
         ielt9: ie && !document.addEventListener,
@@ -71,7 +73,8 @@ if (!IS_NODE) {
         msPointer: !!msPointer,
         pointer: !!pointer,
 
-        retina: (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI)) > 1,
+        retina: devicePixelRatio > 1,
+        devicePixelRatio,
 
         language: navigator.browserLanguage ? navigator.browserLanguage : navigator.language,
         ie9: (ie && document.documentMode === 9),
