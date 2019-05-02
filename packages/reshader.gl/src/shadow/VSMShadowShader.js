@@ -19,14 +19,10 @@ class VSMShadowShader extends MeshShader {
                 }
             ],
             extraCommandProps: {
-                depth: {
-                    enable: true,
-                    func: '<=',
-                },
-                cull: {
-                    enable: true,
-                    face: 'back'
-                }
+                // cull: {
+                //     enable: true,
+                //     face: 'back'
+                // }
             }
 
         });

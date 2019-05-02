@@ -1,15 +1,15 @@
 #define SHADER_NAME vsm_mapping
-#extension GL_OES_standard_derivatives : enable
+// #extension GL_OES_standard_derivatives : enable
 
-precision mediump float;
+// precision mediump float;
 
-varying vec4 vPosition;
+// varying vec4 vPosition;
 
 //VSM
 void main()
 {
-    float depth = vPosition.z / vPosition.w;
-    depth = depth * 0.5 + 0.5;
+    // float depth = gl_FragCoord.z;//vPosition.z / vPosition.w;
+    // depth = depth * 0.5 + 0.5;
     // float moment1 = depth;
     // float moment2 = depth * depth;
 
@@ -20,5 +20,5 @@ void main()
     // moment2 += 0.25 * (dx * dx + dy * dy);
     // gl_FragColor = vec4(moment1, moment2, depth, 0.0);
 
-    gl_FragColor = vec4(depth, 0.0, 0.0, 0.0);
+    gl_FragColor = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
 }

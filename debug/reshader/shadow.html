@@ -11,6 +11,7 @@
   <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
   <body>
     <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <canvas id="debug" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
     <script type="module">
         import cubeData from './common/cube.js';
         import planeData from './common/plane.js';
@@ -70,7 +71,7 @@
             // uniform mat4 lightView;
             // uniform mat4 lightProj;
 
-            uniform vec3 lightPos;
+            uniform vec3 lightDir;
             uniform vec3 viewPos;
 
             //插入 vsm shadow 的frag代码
@@ -86,7 +87,7 @@
                 // Ambient
                 vec3 ambient = 0.15 * color;
                 // Diffuse
-                vec3 lightDir = normalize(lightPos - FragPos);
+                // vec3 lightDir = normalize(lightPos - FragPos);
                 float diff = max(dot(lightDir, normal), 0.0);
                 vec3 diffuse = diff * lightColor;
                 // Specular
@@ -102,7 +103,7 @@
                     shadow = shadow_computeShadow();
                 #endif
 
-                vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+                vec3 lighting = (ambient + shadow * (diffuse + specular)) * color;
 
                 gl_FragColor = vec4(lighting, 1.0);
                 // gl_FragColor = vec4(shadow, shadow, shadow, 1.0);
@@ -116,7 +117,7 @@
             uniforms : [
                 'viewProjMatrix',
                 'diffuseColor',
-                'lightPos', 'viewPos',
+                'lightDir', 'viewPos',
                 {
                     name : 'normalMatrix',
                     type : 'function',
@@ -132,7 +133,6 @@
                     // 名称里带[1]，说明是一个1个元素的数组，且在运行时动态计算
                     // vsm_shadow_lightProjViewModelMatrix 是 vsm_shadow_vert中定义的uniform
                     // 值是光源的 lightProjViewMatrix * modelMatrix
-                    // lightProjViewMatrix 是一个数组，数组长度 = 光源的数量
                     name : 'vsm_shadow_lightProjViewModelMatrix',
                     type : 'function',
                     fn : function (context, props) {
@@ -149,33 +149,42 @@
             ],
             defines : {
                 'USE_SHADOW_MAP' : 1
+            },
+            extraCommandProps: {
+                // cull: {
+                //     enable: true,
+                //     face: 'back'
+                // }
             }
         });
 
         const renderer = new reshader.Renderer(regl);
         const SHADOW_RES = 512;
-        const shadowPass = new reshader.ShadowPass(renderer, { width : SHADOW_RES, height : SHADOW_RES});
+        const shadowPass = new reshader.ShadowPass(renderer, { width : SHADOW_RES, height : SHADOW_RES, blurOffset: 1});
 
         render();
 
         function render() {
-            const cameraPos = [4, 8, 8];
-            const lightPos = [-4.0, 3.0, -1.0];
+            const cameraPos = [0, 4, 4];
+            const lightDir = vec3.normalize([], [-1.0, 1.0, 1.0]);
+            // const lightDir = vec3.normalize([], [-5.0, -1.0, -0.0]);
             const cameraProjViewMatrix = getViewProjection(cameraPos);
             const scene = getScene();
 
-            let { lightProjViewMatrix, shadowMap } = shadowPass.render(scene, { cameraProjViewMatrix, lightDir: lightPos });
+            let { lightProjViewMatrix, shadowMap, depthFBO } = shadowPass.render(scene, { cameraProjViewMatrix, lightDir: lightDir });
             renderer.render(shader, {
                 viewProjMatrix : cameraProjViewMatrix,
                 diffuseColor : [1, 1, 1],
-                lightPos : lightPos,
+                lightDir : lightDir,
                 viewPos : cameraPos,
                 //uniforms needed by vsm shadow map
                 vsm_shadow_shadowMap : shadowMap,
                 lightProjViewMatrix : lightProjViewMatrix,
                 vsm_shadow_opacity: 1,
-                vsm_shadow_threshold: 0.0
+                vsm_shadow_threshold: 0.5
             }, scene);
+            // requestAnimationFrame(render);
+            debugFBO('debug', depthFBO);
         }
 
         function getScene() {
@@ -196,6 +205,11 @@
             mat4.scale(planeModel, planeModel, [20, 20, 20]);
             planeMesh.setLocalTransform(planeModel);
 
+            const cubeModel = mat4.identity([]);
+            mat4.scale(cubeModel, cubeModel, [0.3, 0.3, 0.3]);
+            mat4.rotate(cubeModel, cubeModel, -20 * Math.PI / 180, [0, 1, 0]);
+            cubeMesh.setLocalTransform(cubeModel);
+
             const scene = new reshader.Scene([planeMesh, cubeMesh]);
             return scene;
         }
@@ -206,6 +220,47 @@
             const view = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
             const viewProjection = mat4.multiply([], projection, view);
             return viewProjection;
+        }
+
+        function debugFBO(id, fbo) {
+            const canvas = document.getElementById(id);
+            const width = fbo.width, height = fbo.height;
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const pixels = regl.read({
+                framebuffer: fbo
+            });
+
+            const halfHeight = height / 2 | 0;  // the | 0 keeps the result an int
+            const bytesPerRow = width * 4;
+
+            for (let i = 0; i < pixels.length; i++) {
+                pixels[i] *= 255;
+            }
+
+            // make a temp buffer to hold one row
+            const temp = new Uint8Array(width * 4);
+            for (let y = 0; y < halfHeight; ++y) {
+                const topOffset = y * bytesPerRow;
+                const bottomOffset = (height - y - 1) * bytesPerRow;
+
+                // make copy of a row on the top half
+                temp.set(pixels.subarray(topOffset, topOffset + bytesPerRow));
+
+                // copy a row from the bottom half to the top
+                pixels.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
+
+                // copy the copy of the top half row to the bottom half
+                pixels.set(temp, bottomOffset);
+            }
+
+            // This part is not part of the answer. It's only here
+            // to show the code above worked
+            // copy the pixels in a 2d canvas to show it worked
+            const imgdata = new ImageData(width, height);
+            imgdata.data.set(pixels);
+            ctx.putImageData(imgdata, 0, 0);
         }
 
 

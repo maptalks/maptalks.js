@@ -53,9 +53,11 @@ float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
     vec2 uv = projCoords.xy;
     vec4 shadowTexel = texture2D(shadowMap, uv);
     float esm_coeff = esm(projCoords, shadowTexel);
-    // float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
-    // float coeff = esm_coeff * vsm_coeff;
     float coeff = esm_coeff;
+    // float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
+    // float coeff = vsm_coeff;
+    // float coeff = esm_coeff * vsm_coeff;
+
     return 1.0 - (1.0 - coeff) * vsm_shadow_opacity;
 }
 

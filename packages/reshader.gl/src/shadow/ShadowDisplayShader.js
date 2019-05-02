@@ -22,7 +22,7 @@ class ShadowDisplayShader extends MeshShader {
                 },
                 'vsm_shadow_lightProjViewModelMatrix',
                 'vsm_shadow_shadowMap',
-                'vsm_shadow_threshold',
+                'vsm_shadow_threshold', //默认0.5
                 'color', 'vsm_shadow_opacity'
             ],
             defines : {
