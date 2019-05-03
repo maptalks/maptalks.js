@@ -56,6 +56,9 @@
 
       "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
+      //阴影有裂缝
+      "center":[13.414905354183702,52.52913153292073],"zoom":20,"pitch":33.00000000000021,"bearing":145.20000000000005,
+
       // bearing : -42,
       // baseLayer: osm
     });
@@ -83,7 +86,7 @@
     console.log(data.features.length);
 
     const renderPlugin = {
-        type : 'lit',
+        type : 'subsurface',
         dataConfig : {
           type : '3d-extrusion',
           altitudeProperty : 'levels',
@@ -101,8 +104,8 @@
             type : 'vsm',
             // type : 'stencil',
             enable : true,
-            quality : 'low',
-            opacity : 0.5,
+            quality : 'medium',
+            opacity : 1,
             color : [0, 0, 0],
             blurOffset : 1,
             // debug : ['shadow', 'shadow2']
@@ -110,7 +113,7 @@
           lights : {
             ambient: {
               url: 'resources/windowStudio.hdr',
-              luminance: 24000
+              luminance: 12000
             },
             directional: {
               color : [1, 1, 1],
@@ -121,26 +124,54 @@
         }
       };
 
+    const litMaterial = {
+      'baseColorFactor': [0.560, 0.570, 0.580, 1],
+      'metallicFactor' : 0,
+      'roughnessFactor' : 0.7,
+      'reflectance': 0.5,
+      'clearCoat': 0,
+      // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
+      'clearCoatRoughness': 0.5,
+      // 'clearCoatIorChange': false,
+      'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
+      'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      'anisotropy': 0,
+      'uvScale': [0.5, 0.5],  //纹理坐标的缩放比例
+      'uvOffset': [0, 0]      //纹理坐标的偏移量
+    };
+
+    const clothMaterial = {
+      'roughnessFactor' : 1,
+      // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/normals/3.jpg',
+      // 'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
+      // 'baseColorTexture': BASE_COLOR_TEXTURE,
+      'baseColorFactor': [61 / 255, 120 / 255, 12 / 255, 1],
+      'subsurfaceColor': [0, 0, 0],
+      'uvScale': [0.4, 0.4]
+    };
+
+    const subsurfaceMaterial = {
+      'roughnessFactor' : 1,
+      // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
+      // 'baseColorTexture': BASE_COLOR_TEXTURE,
+      'baseColor': [61, 120, 12],
+      'baseColorFactor': [61 / 255, 120 / 255, 12 / 255, 1],
+      'subsurface': [255, 255, 255],
+      'subsurfaceColor': [1, 1, 1],
+      'uvScale': [0.3, 0.3],
+      'thickness': 0.5,
+      'subsurfacePower': 12.234
+    };
+
     const style =  [
       {
         filter : true,
         renderPlugin,
         symbol: {
-          material : {
-            'baseColorFactor': [0.560, 0.570, 0.580, 1],
-            'metallicFactor' : 0,
-            'roughnessFactor' : 0.7,
-            'reflectance': 0.5,
-            'clearCoat': 0,
-            // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
-            'clearCoatRoughness': 0.5,
-            // 'clearCoatIorChange': false,
-            'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
-            // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-            'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
-            'anisotropy': 0,
-            'uvScale': [0.5, 0.5]
-          },
+          material: subsurfaceMaterial,
           polygonOpacity: 1,
           polygonFill: {
             property : 'levels',
@@ -176,42 +207,54 @@
 
     initGUI();
 
-    function updateStyle(imageMaps) {
-      const sceneConfig = style[0].sceneConfig;
-      const config = {
-        material :  maptalks.Util.extend(sceneConfig.material, imageMaps)
-      };
-      if (imageMaps.hdr) {
-        config.lights = sceneConfig.lights;
-        delete config.lights.ambientCubeLight.url;
-        config.lights.ambientCubeLight.data = imageMaps.hdr;
-      }
-      layer1.updateSceneConfig(0, config);
-    }
-
     function initGUI() {
       const gui = new dat.GUI( { width: 250 } );
       const options = style[0].symbol.material;
-      gui.add(options, 'metallicFactor', 0, 1).onChange(function(value){
-        updateMaterial('metallicFactor', value);
-      });
+      if (options['metallicFactor'] !== undefined) {
+        gui.add(options, 'metallicFactor', 0, 1).onChange(function(value){
+          updateMaterial('metallicFactor', value);
+        });
+        gui.add(options, 'clearCoat', 0, 5).onChange(function(value){
+          updateMaterial('clearCoat', value);
+        });
 
+        gui.add(options, 'clearCoatRoughness', 0, 1).onChange(function(value){
+          updateMaterial('clearCoatRoughness', value);
+        });
+      }
       gui.add(options, 'roughnessFactor', 0, 1).onChange(function(value){
         updateMaterial('roughnessFactor', value);
       });
 
-      gui.add(options, 'clearCoat', 0, 5).onChange(function(value){
-        updateMaterial('clearCoat', value);
-      });
+      if (options['thickness']) {
+        gui.add(options, 'thickness', 0, 1, 0.1).onChange(function(value){
+          updateMaterial('thickness', value);
+        });
 
-      gui.add(options, 'clearCoatRoughness', 0, 1).onChange(function(value){
-        updateMaterial('clearCoatRoughness', value);
+        gui.add(options, 'subsurfacePower', 0, 30, 1).onChange(function(value){
+          updateMaterial('subsurfacePower', value);
+        });
+      }
+
+      gui.addColor(options, 'baseColor').onChange(function(value){
+        updateMaterial('baseColor', value);
       });
+      if (options['subsurface']) {
+        gui.addColor(options, 'subsurface').onChange(function(value){
+          updateMaterial('subsurface', value);
+        });
+      }
+
     }
 
     function updateMaterial(key, value) {
       const material = {};
       material[key] = value;
+      if (key === 'baseColor') {
+        material['baseColorFactor'] = [material.baseColor[0] / 255, material.baseColor[1] / 255, material.baseColor[2] / 255, 1];
+      } else if (key === 'subsurface') {
+        material['subsurfaceColor'] = [material.subsurface[0] / 255, material.subsurface[1] / 255, material.subsurface[2] / 255];
+      }
       layer.updateSymbol(0, {
         material
       });
