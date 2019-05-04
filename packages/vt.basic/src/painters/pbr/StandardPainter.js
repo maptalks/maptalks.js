@@ -18,13 +18,12 @@ class StandardPainter extends Painter {
             aTexCoord0: glData.uvs,
             aNormal: glData.normals,
             aColor: glData.colors,
-            aPickingId: glData.featureIndexes
+            aPickingId: glData.featureIndexes,
+            aTangent: glData.tangents
         };
         const geometry = new reshader.Geometry(data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'
         });
-        //创建 tangent
-        geometry.createTangent('aTangent');
         geometry.generateBuffers(this.regl);
         return geometry;
     }
