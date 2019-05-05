@@ -38,6 +38,10 @@ class IconPainter extends CollisionPainter {
         if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
             return null;
         }
+        const iconAtlas = geometry.properties.iconAtlas;
+        if (!iconAtlas) {
+            return null;
+        }
         const symbol = this.getSymbol();
         geometry.properties.symbol = symbol;
         const uniforms = {
@@ -70,7 +74,6 @@ class IconPainter extends CollisionPainter {
 
         this._setMeshUniforms(uniforms, symbol);
 
-        const iconAtlas = geometry.properties.iconAtlas;
         uniforms['texture'] = iconAtlas;
         uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
         geometry.generateBuffers(this.regl);

@@ -3,8 +3,6 @@
 attribute vec3 aPosition;
 attribute vec2 aShape;
 attribute vec2 aOffset;
-//flip * 2 + vertical
-attribute float aNormal;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif

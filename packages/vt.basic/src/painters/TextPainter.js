@@ -108,6 +108,10 @@ export default class TextPainter extends CollisionPainter {
         if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
             return meshes;
         }
+        const glyphAtlas = geometry.properties.glyphAtlas;
+        if (!glyphAtlas) {
+            return meshes;
+        }
 
         const symbol = this.getSymbol();
         if (symbol['textSize'] === 0 || symbol['textOpacity'] === 0) {
@@ -138,7 +142,6 @@ export default class TextPainter extends CollisionPainter {
             transparent = true;
         }
 
-        const glyphAtlas = geometry.properties.glyphAtlas;
         uniforms['texture'] = glyphAtlas;
         uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
 
@@ -829,6 +832,25 @@ export default class TextPainter extends CollisionPainter {
 
         const extraCommandProps = {
             viewport,
+            stencil: { //fix #94, intel显卡的崩溃和blending关系比较大，开启stencil来避免blending
+                enable: true,
+                mask: 0xFF,
+                func: {
+                    cmp: '!=',
+                    ref: 1,
+                    mask: 0xFF
+                },
+                opFront: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                },
+                opBack: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
             blend: {
                 enable: true,
                 func: {
