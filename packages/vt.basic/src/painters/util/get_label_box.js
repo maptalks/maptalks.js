@@ -87,10 +87,10 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
 
         const { aOffset } = geoProps;
         //除以10是因为赋值时, aOffset有精度修正
-        let tl = vec2.set(V2_0, aOffset.get(i * 2) / 10, aOffset.get(i * 2 + 1) / 10),
-            tr = vec2.set(V2_1, aOffset.get(i * 2 + 2) / 10, aOffset.get(i * 2 + 3) / 10),
-            bl = vec2.set(V2_2, aOffset.get(i * 2 + 4) / 10, aOffset.get(i * 2 + 5) / 10),
-            br = vec2.set(V2_3, aOffset.get(i * 2 + 6) / 10, aOffset.get(i * 2 + 7) / 10);
+        let tl = vec2.set(V2_0, aOffset[i * 2] / 10, aOffset[i * 2 + 1] / 10),
+            tr = vec2.set(V2_1, aOffset[i * 2 + 2] / 10, aOffset[i * 2 + 3] / 10),
+            bl = vec2.set(V2_2, aOffset[i * 2 + 4] / 10, aOffset[i * 2 + 5] / 10),
+            br = vec2.set(V2_3, aOffset[i * 2 + 6] / 10, aOffset[i * 2 + 7] / 10);
         if (uniforms['pitchWithMap'] === 1) {
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
         } else {

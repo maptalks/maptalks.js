@@ -57,12 +57,12 @@ export default class CollisionPainter extends BasicPainter {
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
             const vertexIndexStart = allElements[start];
-            if (getOpacity(geometryProps.aOpacity, vertexIndexStart) !== opacity) {
+            if (geometryProps.aOpacity[vertexIndexStart] !== opacity) {
                 const vertexIndexEnd = allElements[end - 1];
                 for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
-                    setOpacity(geometryProps.aOpacity, i, opacity);
-                    // geometryProps.aOpacity[i] = opacity;
+                    geometryProps.aOpacity[i] = opacity;
                 }
+                geometryProps.aOpacity._dirty = true;
             }
         }
         return visible;
@@ -422,19 +422,4 @@ export default class CollisionPainter extends BasicPainter {
             mesh.setUniform('level', level);
         }
     }
-}
-
-function getOpacity(opacity, i) {
-    if (opacity.isAccessor) {
-        return opacity.get(i);
-    }
-    return opacity[i];
-}
-
-function setOpacity(opacity, i, value) {
-    if (opacity.isAccessor) {
-        opacity.set(i, value);
-        return;
-    }
-    opacity[i] = value;
 }

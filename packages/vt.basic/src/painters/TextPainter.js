@@ -11,7 +11,6 @@ import vertAlongLine from './glsl/text.line.vert';
 import frag from './glsl/text.frag';
 import pickingVert from './glsl/text.picking.vert';
 import linePickingVert from './glsl/text.line.picking.vert';
-import DataAccessor from './util/DataAccessor';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 
@@ -65,7 +64,7 @@ const MAT2 = [];
 
 const SHAPE = [], OFFSET = [], AXIS_FACTOR = [1, -1];
 
-const INT16 = new Int8Array(2);
+const INT16 = new Int16Array(2);
 
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
@@ -210,50 +209,20 @@ export default class TextPainter extends CollisionPainter {
             delete geometry.data.aVertical;
             delete geometry.data.aGlyphOffset;
 
-            let stride = 0;
-            const attributes = {};
-            //TODO 给regl增加type支持，而不是统一为一种类型
-            //https://github.com/regl-project/regl/pull/530
-            attributes.aOffset = {
-                offset: stride,
-                size: 2,
-                type: 'int16',
-                buffer: 'mutable'
+            geometry.data.aOffset = {
+                usage: 'dynamic',
+                data: new Int16Array(aShape.length)
             };
-            stride += 2 * 2;
+            geometry.properties.aOffset = new Int16Array(aShape.length);
 
             if (enableCollision) {
                 //非line placement时
-                attributes.aOpacity = {
-                    offset: stride++,
-                    size: 1,
-                    type: 'uint8',
-                    buffer: 'mutable'
+                geometry.data.aOpacity = {
+                    usage: 'dynamic',
+                    data: new Uint8Array(aShape.length / 2)
                 };
+                geometry.properties.aOpacity = new Uint8Array(aShape.length / 2);
             }
-
-            stride = bytesAlign(attributes);
-
-            for (const p in attributes) {
-                geometry.data[p] = attributes[p];
-                geometry.data[p].stride = stride;
-            }
-
-            const mutable = new ArrayBuffer(vertexCount * stride);
-            mutable._dirty = true;
-
-            const buffer = mutable;
-
-            geometry.properties.aOffset = new DataAccessor(buffer, geometry.data['aOffset']);
-            if (enableCollision) {
-                geometry.properties.aOpacity = new DataAccessor(mutable, geometry.data['aOpacity']);
-            }
-
-            geometry.addBuffer('mutable', {
-                usage: 'dynamic',
-                data: mutable
-            });
-            geometry.properties.mutable = mutable;
 
 
         } else if (enableCollision) {
@@ -380,6 +349,15 @@ export default class TextPainter extends CollisionPainter {
                     continue;
                 }
                 this._updateLineLabel(mesh, planeMatrix);
+                const { aOffset, aOpacity } = geometry.properties;
+                if (aOffset._dirty) {
+                    geometry.updateData('aOffset', aOffset);
+                    aOffset._dirty = false;
+                }
+                if (aOpacity && aOpacity._dirty) {
+                    geometry.updateData('aOpacity', aOpacity);
+                    aOpacity._dirty = false;
+                }
             } else if (enableCollision) {
                 const elements = geometry.properties.elements;
                 const visibleElements = [];
@@ -445,14 +423,6 @@ export default class TextPainter extends CollisionPainter {
                 }
             }
         });
-
-        const mutable = geometry.properties.mutable;
-        // this._buffer = mutable;
-        if (mutable._dirty && !geometry.isDisposed()) {
-        // this._counter += mutable.byteLength;
-            geometry.updateBuffer('mutable', mutable);
-            mutable._dirty = false;
-        }
         if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
             geometry.setElements(new geometryProps.elemCtor(visibleElements));
             // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
@@ -640,12 +610,12 @@ export default class TextPainter extends CollisionPainter {
                 INT16[1] = OFFSET[1] * 10;
 
                 //*10 是为了保留小数点做的精度修正
-                if (aOffset.get(2 * (vertexStart + ii)) !== INT16[0] ||
-                    aOffset.get(2 * (vertexStart + ii) + 1) !== INT16[1]) {
-                    aOffset.arraybuffer._dirty = true;
+                if (aOffset[2 * (vertexStart + ii)] !== INT16[0] ||
+                    aOffset[2 * (vertexStart + ii) + 1] !== INT16[1]) {
+                    aOffset._dirty = true;
                     //乘以十是为了提升shader中offset的精度
-                    aOffset.set(2 * (vertexStart + ii), OFFSET[0] * 10);
-                    aOffset.set(2 * (vertexStart + ii) + 1, OFFSET[1] * 10);
+                    aOffset[2 * (vertexStart + ii)] = INT16[0];
+                    aOffset[2 * (vertexStart + ii) + 1] = INT16[1];
                 }
 
 
@@ -833,11 +803,14 @@ export default class TextPainter extends CollisionPainter {
         const extraCommandProps = {
             viewport,
             stencil: { //fix #94, intel显卡的崩溃和blending关系比较大，开启stencil来避免blending
-                enable: true,
+                enable: this.layer.options['workarounds']['win-intel-gpu-crash'] && isWinIntelGPU(this.layer.getRenderer().gl),
                 mask: 0xFF,
                 func: {
-                    cmp: '!=',
-                    ref: 1,
+                    //halo的stencil ref更大，允许文字填充在halo上绘制
+                    cmp: '<',
+                    ref: (context, props) => {
+                        return props.isHalo + 1;
+                    },
                     mask: 0xFF
                 },
                 opFront: {
@@ -1041,12 +1014,25 @@ function resetOffset(aOffset, meshElements, start, end) {
         //every character has 4 vertice, and 6 indexes
         const vertexStart = meshElements[j];
         for (let ii = 0; ii < 4; ii++) {
-            if (aOffset.get(2 * (vertexStart + ii)) ||
-                aOffset.get(2 * (vertexStart + ii) + 1)) {
-                aOffset.arraybuffer._dirty = true;
-                aOffset.set(2 * (vertexStart + ii), 0);
-                aOffset.set(2 * (vertexStart + ii) + 1, 0);
+            if (aOffset[2 * (vertexStart + ii)] ||
+                aOffset[2 * (vertexStart + ii) + 1]) {
+                aOffset._dirty = true;
+                aOffset[2 * (vertexStart + ii)] = 0;
+                aOffset[2 * (vertexStart + ii) + 1] = 0;
             }
         }
     }
+}
+
+function isWinIntelGPU(gl) {
+    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+    if (debugInfo && typeof navigator !== 'undefined') {
+        //e.g. ANGLE (Intel(R) HD Graphics 620
+        const gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        const win = navigator.platform === 'Win32' || navigator.platform === 'Win64';
+        if (gpu && gpu.toLowerCase().indexOf('intel') >= 0 && win) {
+            return true;
+        }
+    }
+    return false;
 }
