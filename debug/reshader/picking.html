@@ -59,7 +59,11 @@
                     }
                 }
 
-            ]
+            ],
+            defines: {
+                'ENABLE_PICKING': 1,
+
+            }
         });
 
         const renderer = new reshader.Renderer(regl);
@@ -78,7 +82,7 @@
             {
                 gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
                 //传入gl_Position的depth值
-                fbo_picking_setData(gl_Position.w);
+                fbo_picking_setData(gl_Position.w, true);
             }
 
         `
@@ -161,9 +165,10 @@
                 '<br>坐标：' + point;
             */
             canvas.onclick = function(e) {
-                const { meshId, pickingId, point } = picking.pick(
+                const picked = picking.pick(
                     e.x,   // 屏幕坐标 x轴的值
                     e.y,  // 屏幕坐标 y轴的值
+                    20,
                     {
                         'projViewMatrix' : viewProjMatrix
                     },           // pickingVert中所需的uniforms值
@@ -173,6 +178,7 @@
                         returnPoint : true
                     }
                );
+               const { meshId, pickingId, point } = picked;
                debugFBO('debug', picking._fbo1);
                document.getElementById('info').innerHTML = '屏幕中心点选取物<br>'+
                 'meshId：' + meshId +

@@ -125,7 +125,6 @@ const depthFrag = `
     }
 `;
 
-const pixels = new Uint8Array(4);
 
 export default class FBORayPicking {
 
@@ -234,7 +233,7 @@ export default class FBORayPicking {
         return this;
     }
 
-    pick(x, y, uniforms, options = {}) {
+    pick(x, y, tolerance, uniforms, options = {}) {
         const shader = this._currentShader;
         const meshes = this._currentMeshes;
         if (!shader || !meshes || !meshes.length) {
@@ -259,31 +258,79 @@ export default class FBORayPicking {
             };
         }
 
+        const { px, py, width, height } = this._getParams(x, y, tolerance, fbo);
+        const pixels = new Uint8Array(4 * width * height);
+
         const regl = this._renderer.regl;
         const data = regl.read({
-            data : pixels,
-            x, y : fbo.height - y,
+            data: pixels,
+            x: px,
+            y: py,
             framebuffer : fbo,
-            width : 1,
-            height : 1
+            width,
+            height
         });
 
-        let { pickingId, meshId } = this._packData(data, shader);
-        if (meshId !== null && shader === this._shader1 && meshes[0].geometry.data['aPickingId']) {
-            //TODO 再次渲染，获得aPickingId
-            pickingId = this._getPickingId(x, y, meshes[meshId], uniforms);
+        const meshIds = [];
+        let pickingIds = [];
+        for (let i = 0; i < data.length; i += 4) {
+            const { pickingId, meshId } = this._packData(data.subarray(i, i + 4), shader);
+            meshIds.push(meshId);
+            pickingIds.push(pickingId);
         }
-        let point = null;
-        if (meshes[meshId] && options['returnPoint']) {
+
+        const visited = {};
+        const pickedMeshes = meshIds.filter(id => {
+            if (id != null && !visited[id]) {
+                visited[id] = 1;
+                return true;
+            }
+            return false;
+        }).map(id => meshes[id]);
+
+        if (meshIds.length && shader === this._shader1 && meshes[0].geometry.data['aPickingId']) {
+            pickingIds = this._getPickingId(px, py, width, height, pixels, pickedMeshes, uniforms);
+        }
+
+        const points = [];
+        if (meshIds.length && options['returnPoint']) {
             const { viewMatrix, projMatrix } = options;
-            const depth = this._pickDepth(x, y, meshes[meshId], uniforms, pickingId);
-            point = this._getWorldPos(x, y, depth, viewMatrix, projMatrix);
+            const depths = this._pickDepth(px, py, width, height, pixels, pickedMeshes, uniforms);
+            for (let i = 0; i < depths.length; i++) {
+                if (depths[i] && meshIds[i] != null && pickingIds[i] != null) {
+                    const point = this._getWorldPos(x, y, depths[i], viewMatrix, projMatrix);
+                    points.push(point);
+                } else {
+                    points.push(null);
+                }
+            }
+        }
+
+        //从x,y开始从内往外遍历，优先测试离x,y较近的点
+        const iterDists = [];
+        for (let i = 0; i <= tolerance; i++) {
+            iterDists.push(i);
+            if (i > 0) {
+                iterDists.push(-i);
+            }
+        }
+        for (let i = 0; i < iterDists.length; i++) { //行
+            for (let j = 0; j < iterDists.length; j++) { //列
+                const ii = (iterDists[j] + tolerance) * width + (iterDists[i] + tolerance);
+                if (meshIds[ii] != null && pickingIds[ii] != null) {
+                    return {
+                        meshId: meshIds[ii],
+                        pickingId: pickingIds[ii],
+                        point: points[ii] || null
+                    };
+                }
+            }
         }
 
         return {
-            pickingId,
-            meshId,
-            point
+            pickingId: null,
+            meshId: null,
+            point: null
         };
     }
 
@@ -349,22 +396,27 @@ export default class FBORayPicking {
         return [interpolate(near[0], far[0], t), interpolate(near[1], far[1], t), interpolate(near[2], far[2], t)];
     }
 
-    _getPickingId(x, y, mesh, uniforms) {
+    _getPickingId(x, y, width, height, pixels, meshes, uniforms) {
         const regl = this._renderer.regl;
         const fbo1 = this._getFBO1();
         this._clearFbo(fbo1);
-        this._scene1.setMeshes([mesh]);
+        this._scene1.setMeshes(meshes);
         this._renderer.render(this._shader2, uniforms, this._scene1, fbo1);
         const data = regl.read({
-            x, y : fbo1.height - y,
+            data: pixels,
+            x, y,
             framebuffer : fbo1,
-            width : 1,
-            height : 1
+            width,
+            height
         });
-        return pack3(data);
+        const ids = [];
+        for (let i = 0; i < data.length; i += 4) {
+            ids.push(pack3(data.subarray(i, i + 4)));
+        }
+        return ids;
     }
 
-    _pickDepth(x, y, mesh, uniforms) {
+    _pickDepth(x, y, width, height, pixels, meshes, uniforms) {
         const regl = this._renderer.regl;
         const fbo1 = this._getFBO1();
         //second render to find depth value of point
@@ -375,7 +427,7 @@ export default class FBORayPicking {
         // geometry.setDrawCount(count);
         // geometry.setDrawOffset(offset);
 
-        this._scene1.setMeshes([mesh]);
+        this._scene1.setMeshes(meshes);
         this._clearFbo(fbo1);
 
         this._renderer.render(this._depthShader, uniforms, this._scene1, fbo1);
@@ -384,13 +436,19 @@ export default class FBORayPicking {
         // geometry.setDrawOffset(0);
 
         const data = regl.read({
-            x, y : fbo1.height - y,
+            data: pixels,
+            x, y,
             framebuffer : fbo1,
-            width : 1,
-            height : 1
+            width,
+            height
         });
+
+        const depths = [];
+        for (let i = 0; i < data.length; i += 4) {
+            depths.push(packDepth(data.subarray(i, i + 4)));
+        }
         // console.log(data);
-        return packDepth(data);
+        return depths;
     }
 
     _packData(data, shader) {
@@ -401,7 +459,8 @@ export default class FBORayPicking {
                 pickingId : null
             };
         }
-        let pickingId, meshId;
+        let pickingId = null;
+        let meshId = null;
         if (shader === this._shader1) {
             //only fbo_picking_meshId
             meshId = pack3(data);
@@ -467,6 +526,35 @@ export default class FBORayPicking {
 
     //     return pickingMap[pickingId];
     // }
+
+    _getParams(px, py, tolerance, fbo) {
+        px -= tolerance;
+        py = fbo.height - py;
+        py -= tolerance;
+
+        let width = 2 * tolerance + 1;
+        let height = 2 * tolerance + 1;
+
+        //        ____
+        //      |      |
+        //height|  x,y |
+        //      | ____ | width
+        // (px, py)
+
+        const right = px + width;
+        const top = py + height;
+        if (right > fbo.width) {
+            width -= right - fbo.width;
+        }
+        if (top > fbo.height) {
+            height -= top - fbo.height;
+        }
+
+        px = px < 0 ? 0 : px;
+        py = py < 0 ? 0 : py;
+
+        return { px, py, width, height };
+    }
 }
 
 function applyMatrix(out, v, e) {
