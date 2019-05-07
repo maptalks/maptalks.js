@@ -116,7 +116,7 @@ class Painter {
         this.renderer.render(this.shader, uniforms, this.scene);
     }
 
-    pick(x, y) {
+    pick(x, y, tolerance = 3) {
         if (!this.layer.options['picking'] || !this.sceneConfig.picking === false) {
             return null;
         }
@@ -131,7 +131,7 @@ class Painter {
         }
         let picked = {};
         if (this.picking.getRenderedMeshes().length) {
-            picked = this.picking.pick(x, y, uniforms, {
+            picked = this.picking.pick(x, y, tolerance, uniforms, {
                 viewMatrix: map.viewMatrix,
                 projMatrix: map.projMatrix,
                 returnPoint: this.layer.options['pickingPoint'] && this.sceneConfig.pickingPoint !== false

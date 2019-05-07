@@ -189,14 +189,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._compiledStyles || [];
     }
 
-    identify(coordinate) {
+    identify(coordinate, options = {}) {
         const map = this.getMap();
         const renderer = this.getRenderer();
         if (!map || !renderer) {
             return [];
         }
         const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
-        return renderer.pick(cp.x, cp.y);
+        return renderer.pick(cp.x, cp.y, options);
     }
 
     /**

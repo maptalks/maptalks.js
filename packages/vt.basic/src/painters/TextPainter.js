@@ -877,14 +877,14 @@ export default class TextPainter extends CollisionPainter {
         }
     }
 
-    pick(x, y) {
+    pick(x, y, tolerance = 1) {
         if (!this._hasLineText) {
-            return super.pick(x, y);
+            return super.pick(x, y, tolerance);
         }
         if (!this._hasNormalText) {
             const picking = this.picking;
             this.picking = this._linePicking;
-            const picked = super.pick(x, y);
+            const picked = super.pick(x, y, tolerance);
             this.picking = picking;
             return picked;
         }
@@ -897,7 +897,7 @@ export default class TextPainter extends CollisionPainter {
         let picking = this.picking;
         let picked = {};
         if (this.picking.getRenderedMeshes().length) {
-            picked = this.picking.pick(x, y, uniforms, {
+            picked = this.picking.pick(x, y, tolerance, uniforms, {
                 viewMatrix: map.viewMatrix,
                 projMatrix: map.projMatrix,
                 returnPoint: true
@@ -908,7 +908,7 @@ export default class TextPainter extends CollisionPainter {
             picking = this._linePicking;
             this._linePicking.render(this.scene.getMeshes(), uniforms, true);
             if (this._linePicking.getRenderedMeshes().length) {
-                picked = this._linePicking.pick(x, y, uniforms, {
+                picked = this._linePicking.pick(x, y, tolerance, uniforms, {
                     viewMatrix: map.viewMatrix,
                     projMatrix: map.projMatrix,
                     returnPoint: true

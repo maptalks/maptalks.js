@@ -181,9 +181,9 @@ function createPainterPlugin(type, Painter) {
             painter.updateSymbol();
         },
 
-        pick: function (x, y) {
+        pick: function (x, y, tolerance) {
             if (this.painter && this.painter.pick) {
-                return this.painter.pick(x, y);
+                return this.painter.pick(x, y, tolerance);
             }
             return null;
         },

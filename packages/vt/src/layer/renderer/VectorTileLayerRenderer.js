@@ -464,7 +464,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setCanvasUpdated();
     }
 
-    pick(x, y) {
+    pick(x, y, options) {
         if (maptalks['Browser']['retina']) {
             x *= 2;
             y *= 2;
@@ -476,7 +476,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!visible) {
                 return;
             }
-            const picked = plugin.pick(x, y);
+            const picked = plugin.pick(x, y, options.tolerance);
             if (picked) {
                 picked.type = plugin.getType();
                 hits.push(picked);
