@@ -318,6 +318,9 @@ class StandardPainter extends Painter {
                 if (p.indexOf('Texture') > 0) {
                     //纹理图片
                     let texConf = materialConfig[p];
+                    if (!texConf) {
+                        continue;
+                    }
                     const url = typeof texConf === 'string' ? texConf : texConf.url;
                     const cachedTex = this.getCachedTexture(url);
 
@@ -472,11 +475,15 @@ class StandardPainter extends Painter {
     }
 
     _disposeIblMaps() {
+        if (!this.iblMaps) {
+            return;
+        }
         for (const p in this.iblMaps) {
             if (this.iblMaps[p].destroy) {
                 this.iblMaps[p].destroy();
             }
         }
+        delete this.iblMaps;
     }
 
     shouldDeleteMeshOnUpdateSymbol() {
