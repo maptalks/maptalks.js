@@ -83,11 +83,11 @@ class ResourceLoader {
                 };
                 resolve({ url, data: img });
             };
-            img.onerror = function () {
-                reject();
+            img.onerror = function (err) {
+                reject(err);
             };
             img.onabort = function () {
-                reject();
+                reject(`image(${url}) loading aborted.`);
             };
             img.src = url;
         });

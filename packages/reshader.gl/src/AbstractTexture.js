@@ -55,6 +55,8 @@ class AbstractTexture {
                     }
                     self.fire('complete', { resources: data });
                     return data;
+                }).catch(err => {
+                    console.error('error when loading texture image.', err);
                 });
             }
         }
