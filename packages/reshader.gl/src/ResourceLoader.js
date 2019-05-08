@@ -77,11 +77,12 @@ class ResourceLoader {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = function () {
+                const resized = resize(img);
                 resources[url] = {
-                    image : img,
+                    image : resized,
                     count : 1
                 };
-                resolve({ url, data: img });
+                resolve({ url, data: resized });
             };
             img.onerror = function (err) {
                 reject(err);
@@ -110,3 +111,39 @@ class ResourceLoader {
 }
 
 export default Eventable(ResourceLoader);
+
+function resize(image) {
+    if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
+        return image;
+    }
+    let width = image.width;
+    let height = image.height;
+    if (!isPowerOfTwo(width)) {
+        width = floorPowerOfTwo(width);
+    }
+    if (!isPowerOfTwo(height)) {
+        height = floorPowerOfTwo(height);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+    const url = image.src;
+    const idx = url.lastIndexOf('/') + 1;
+    const filename = url.substring(idx);
+    console.warn(`Texture(${filename})'s size is not power of two, resize from (${image.width}, ${image.height}) to (${width}, ${height})`);
+    return canvas;
+}
+
+function isPowerOfTwo(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+}
+
+
+function floorPowerOfTwo(value) {
+    return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
+}
+
+function ceilPowerOfTwo(value) {
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+}
