@@ -2,7 +2,7 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend } from '../../Util';
 import Painter from '../Painter';
-import VSMShadowPass from './VSMShadowPass.js';
+import ShadowMapPass from './ShadowMapPass.js';
 import StencilShadowPass from './StencilShadowPass.js';
 
 const SCALE = [1, 1, 1];
@@ -177,7 +177,7 @@ class PBRPainter extends Painter {
             this._shadowScene = new reshader.Scene();
             this._shadowScene.addMesh(this._ground);
             if (this.sceneConfig.shadow.type === 'vsm') {
-                this._shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer);
+                this._shadowPass = new ShadowMapPass(this.sceneConfig, this.renderer);
             } else {
                 this._shadowPass = new StencilShadowPass(this.sceneConfig, this.renderer);
             }

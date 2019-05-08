@@ -2,7 +2,7 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend } from '../../Util';
 import Painter from '../Painter';
-import VSMShadowPass from './VSMShadowPass.js';
+import ShadowMapPass from './ShadowMapPass.js';
 
 const SCALE = [1, 1, 1];
 
@@ -217,9 +217,8 @@ class StandardPainter extends Painter {
 
             this._shadowScene = new reshader.Scene();
             this._shadowScene.addMesh(this._ground);
-            if (this.sceneConfig.shadow.type === 'vsm') {
-                this._shadowPass = new VSMShadowPass(this.sceneConfig, this.renderer, viewport);
-            }
+            //默认阴影用vsm来实现
+            this._shadowPass = new ShadowMapPass(this.sceneConfig, this.renderer, viewport);
         }
 
 

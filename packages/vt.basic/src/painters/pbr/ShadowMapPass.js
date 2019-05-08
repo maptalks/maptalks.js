@@ -19,7 +19,7 @@ class VSMShadowPass {
             shadowRes = 1024;
         }
         this.shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: this.sceneConfig.shadow.blurOffset });
-        this.shadowShader = new reshader.ShadowDisplayShader(this._viewport);
+        this.shadowShader = new reshader.ShadowDisplayShader(this._viewport, this.getDefines());
     }
 
     getUniforms() {
@@ -38,9 +38,19 @@ class VSMShadowPass {
     }
 
     getDefines() {
-        return {
+        const defines = {
             'USE_SHADOW_MAP': 1
         };
+        const type = this.sceneConfig.shadow.type;
+        if (type === undefined || type === 'esm') {
+            //默认的阴影类型
+            defines['USE_ESM'] = 1;
+        } else if (type === 'vsm') {
+            defines['USE_VSM'] = 1;
+        } else if (type === 'vsm_esm') {
+            defines['USE_VSM_ESM'] = 1;
+        }
+        return defines;
     }
 
     pass1({
