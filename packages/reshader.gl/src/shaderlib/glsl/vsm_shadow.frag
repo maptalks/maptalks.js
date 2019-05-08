@@ -52,11 +52,20 @@ float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
 float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
     vec2 uv = projCoords.xy;
     vec4 shadowTexel = texture2D(shadowMap, uv);
-    float esm_coeff = esm(projCoords, shadowTexel);
-    float coeff = esm_coeff;
-    // float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
-    // float coeff = vsm_coeff;
-    // float coeff = esm_coeff * vsm_coeff;
+    #if defined(USE_ESM) || defined(USE_VSM_ESM)
+        float esm_coeff = esm(projCoords, shadowTexel);
+    #endif
+    //TODO shadowMap是用esm算法生成的，但貌似采用vsm效果却不算差
+    #if defined(USE_VSM) || defined(USE_VSM_ESM)
+        float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
+    #endif
+    #if defined(USE_VSM_ESM)
+       float coeff = esm_coeff * vsm_coeff;
+    #elif defined(USE_ESM)
+        float coeff = esm_coeff;
+    #else
+        float coeff = vsm_coeff;
+    #endif
 
     return 1.0 - (1.0 - coeff) * vsm_shadow_opacity;
 }

@@ -5,7 +5,7 @@ import MeshShader from '../shader/MeshShader.js';
 
 class ShadowDisplayShader extends MeshShader {
 
-    constructor(viewport) {
+    constructor(viewport, defines) {
         super({
             vert : shadowDisplayVert,
             frag : shadowDisplayFrag,
@@ -25,7 +25,8 @@ class ShadowDisplayShader extends MeshShader {
                 'vsm_shadow_threshold', //默认0.5
                 'color', 'vsm_shadow_opacity'
             ],
-            defines : {
+            defines : defines || {
+                'USE_ESM': 1
             },
             extraCommandProps: {
                 viewport

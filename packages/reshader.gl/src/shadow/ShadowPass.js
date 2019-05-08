@@ -1,6 +1,6 @@
 import { isNil } from '../common/Util';
 import { mat4, vec4, vec3 } from 'gl-matrix';
-import VSMShadowShader from './VSMShadowShader';
+import ShadowMapShader from './ShadowMapShader';
 import BoxBlurShader from '../shader/BoxBlurShader';
 
 let getFrustumWorldSpace, getDirLightCameraProjView;
@@ -39,7 +39,7 @@ class ShadowPass {
     _renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane) {
         const renderer = this.renderer;
         if (!this.vsmShader) {
-            this.vsmShader = new VSMShadowShader();
+            this.vsmShader = new ShadowMapShader();
         }
         const frustum = getFrustumWorldSpace(cameraProjViewMatrix);
         if (farPlane) {

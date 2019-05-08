@@ -3,7 +3,7 @@ import vsmFrag from './glsl/vsm_mapping.frag';
 import vsmVert from './glsl/vsm_mapping.vert';
 import MeshShader from '../shader/MeshShader.js';
 
-class VSMShadowShader extends MeshShader {
+class ShadowMapShader extends MeshShader {
 
     constructor() {
         super({
@@ -24,7 +24,6 @@ class VSMShadowShader extends MeshShader {
                 //     face: 'back'
                 // }
             }
-
         });
     }
 
@@ -33,8 +32,8 @@ class VSMShadowShader extends MeshShader {
     }
 
     getMeshCommand(regl, mesh) {
-        if (!this.commands['vsm']) {
-            this.commands['vsm'] = this.createREGLCommand(
+        if (!this.commands['shadowmap']) {
+            this.commands['shadowmap'] = this.createREGLCommand(
                 regl,
                 null,
                 mesh.getAttributes(),
@@ -42,8 +41,8 @@ class VSMShadowShader extends MeshShader {
                 mesh.getElements()
             );
         }
-        return this.commands['vsm'];
+        return this.commands['shadowmap'];
     }
 }
 
-export default VSMShadowShader;
+export default ShadowMapShader;
