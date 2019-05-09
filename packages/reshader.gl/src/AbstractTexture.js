@@ -56,7 +56,7 @@ class AbstractTexture {
                     if (!Array.isArray(data)) {
                         data = [data];
                     }
-                    self.fire('complete', { resources: data });
+                    self.fire('complete', { target: this, resources: data });
                     return data;
                 }).catch(err => {
                     console.error('error when loading texture image.', err);
@@ -106,6 +106,7 @@ class AbstractTexture {
             this._texture['__destroyed'] = true;
         }
         delete this.resLoader;
+        this.fire('disposed', { target: this, url: this.config.url });
         delete this.config;
     }
 
