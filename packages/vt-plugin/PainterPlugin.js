@@ -64,7 +64,7 @@ function createPainterPlugin(type, Painter) {
             if (!geometry) {
                 var glData = tileData.data;
                 var data = glData;
-                if (this.painter.colorSymbol) {
+                if (this.painter.colorSymbol && glData) {
                     var colors = this._generateColorArray(features, glData.featureIndexes, glData.indices, glData.vertices);
                     data = extend({}, glData);
                     if (colors) {
@@ -72,8 +72,10 @@ function createPainterPlugin(type, Painter) {
                     }
                 }
                 geometry = tileCache.geometry = painter.createGeometry(data, features);
-                geometry.properties.features = features;
-                this._fillCommonProps(geometry, context);
+                if (geometry) {
+                    geometry.properties.features = features;
+                    this._fillCommonProps(geometry, context);
+                }
             }
             if (!geometry) {
                 return {

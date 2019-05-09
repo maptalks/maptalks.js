@@ -4,6 +4,9 @@ import { extend } from '../Util';
 
 export default class BasicPainter extends Painter {
     createGeometry(glData) {
+        if (!glData) {
+            return null;
+        }
         const regl = this.regl;
         let iconAtlas, glyphAtlas;
         if (glData.iconAtlas) {

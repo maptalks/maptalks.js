@@ -132,6 +132,9 @@ export default class VectorPack {
             throw new Error('layout scale is undefined');
         }
         const pack = this.createDataPack(this.styledVectors, scale);
+        if (!pack) {
+            return null;
+        }
         const buffers = pack.buffers;
         delete pack.buffers;
         const vectorPack = {

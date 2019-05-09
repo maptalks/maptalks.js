@@ -60,6 +60,10 @@ export default class StyledPoint {
                 );
             }
         } else if (iconGlyph && iconGlyph.icon) {
+            if (!iconAtlas.positions[iconGlyph.icon]) {
+                //图片没有载入成功
+                return null;
+            }
             const markerAnchor = getAnchor(symbol['markerHorizontalAlignment'], symbol['markerVerticalAlignment']);
             shape = shapeIcon(iconAtlas.positions[iconGlyph.icon], markerAnchor);
             if (!this.size) {

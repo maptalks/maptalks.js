@@ -36,9 +36,9 @@ export default class IconRequestor {
             }
         }
         function onerror() {
-            console.warn(`failed loading icon (${this.index}) at (${this.url})`);
-            if (self.options.errorUrl) {
-                this.src = self.options.errorUrl;
+            console.warn(`failed loading icon(${this.index}) at "${this.url}"`);
+            if (self.options.iconErrorUrl) {
+                this.src = self.options.iconErrorUrl;
             } else {
                 current++;
                 if (current === count) {

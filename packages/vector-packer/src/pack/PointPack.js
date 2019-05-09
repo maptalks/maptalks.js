@@ -141,6 +141,9 @@ export default class PointPack extends VectorPack {
     }
 
     createDataPack() {
+        if (!this.iconAtlas && !this.glyphAtlas) {
+            return null;
+        }
         this.lineVertex = [];
         const pack = super.createDataPack.apply(this, arguments);
         if (!pack) {
