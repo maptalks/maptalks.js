@@ -164,6 +164,9 @@ class StandardPainter extends Painter {
         if (this._shadowPass) {
             this._shadowPass.delete();
         }
+        if (this._hdr) {
+            this._hdr.dispose();
+        }
     }
 
     updateSymbol() {
@@ -248,6 +251,8 @@ class StandardPainter extends Painter {
         this.shader = this.getShader(config);
 
         this._bindedOnTextureLoad = this._onTextureLoad.bind(this);
+        this._bindDisposeCachedTexture = this.disposeCachedTexture.bind(this);
+
         this._updateMaterial();
 
         this._initCubeLight();
@@ -355,7 +360,9 @@ class StandardPainter extends Painter {
                     }
                     material[p] = new reshader.Texture2D(texConf, this._loader);
                     material[p].once('complete', this._bindedOnTextureLoad);
+                    material[p].once('disposed', this._bindDisposeCachedTexture);
                     if (material[p].promise) {
+                        //把promise加入缓存，方便图片被多个纹理对象同时引用时，避免重复请求
                         this.addCachedTexture(url, material[p].promise);
                     }
                 } else {
@@ -406,6 +413,7 @@ class StandardPainter extends Painter {
                 this._loader
             );
             this._hdr.once('complete', this._bindedOnTextureLoad);
+            this._hdr.once('disposed', this._bindDisposeCachedTexture);
             //生成ibl纹理
             this.iblMaps = this._createIBLMaps(this._hdr);
         }

@@ -218,6 +218,19 @@ class Painter {
 
     logoutTextureCache() {
         const map = this.getMap();
+        const myTextures = this._myTextures;
+        if (myTextures) {
+            for (const url in myTextures) {
+                if (myTextures.hasOwnProperty(url)) {
+                    if (map[TEX_CACHE_KEY][url]) {
+                        map[TEX_CACHE_KEY][url].count--;
+                        if (map[TEX_CACHE_KEY][url].count <= 0) {
+                            delete map[TEX_CACHE_KEY][url];
+                        }
+                    }
+                }
+            }
+        }
         map[TEX_CACHE_KEY].count--;
         if (map[TEX_CACHE_KEY].count <= 0) {
             map[TEX_CACHE_KEY] = {};
@@ -225,11 +238,50 @@ class Painter {
     }
 
     getCachedTexture(url) {
-        return this.getMap()[TEX_CACHE_KEY][url];
+        const cached = this.getMap()[TEX_CACHE_KEY][url];
+        return cached ? cached.data : null;
     }
 
-    addCachedTexture(url, value) {
-        this.getMap()[TEX_CACHE_KEY][url] = value;
+    addCachedTexture(url, data) {
+        let cached = this.getMap()[TEX_CACHE_KEY][url];
+        if (!cached) {
+            cached = this.getMap()[TEX_CACHE_KEY][url] = {
+                data,
+                count: 0
+            };
+        } else {
+            cached.data = data;
+        }
+        if (!this._myTextures) {
+            this._myTextures = {};
+        }
+        if (!cached.data.then && !this._myTextures[url]) {
+            //不是promise时才计数，painter内部不管引用多少次，计数器只+1
+            cached.count++;
+            this._myTextures[url] = 1;
+        }
+    }
+
+    disposeCachedTexture(texture) {
+        let url;
+        if (typeof texture === 'string') {
+            url = texture;
+        } else {
+            url = texture.url;
+        }
+        if (!this._myTextures || !this._myTextures[url]) {
+            return;
+        }
+        //删除texture时，同时回收cache上的纹理，尽量保证不出现内存泄漏
+        //最常见场景： 更新material时，回收原有的texture
+        delete this._myTextures[url];
+        const map = this.getMap();
+        if (map[TEX_CACHE_KEY][url]) {
+            map[TEX_CACHE_KEY][url].count--;
+            if (map[TEX_CACHE_KEY][url].count <= 0) {
+                delete map[TEX_CACHE_KEY][url];
+            }
+        }
     }
 
     shouldDeleteMeshOnUpdateSymbol() {
