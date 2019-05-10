@@ -79,7 +79,7 @@ const options = {
     'zoomOffset' : 0
 };
 
-const urlPattern = /\{ *([\w_]+) *\}/g;
+const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
 const MAX_VISIBLE_SIZE = 5;
 
@@ -201,7 +201,7 @@ class TileLayer extends Layer {
             'z': z,
             's': domain
         };
-        return urlTemplate.replace(urlPattern, function (str, key) {
+        return urlTemplate.replace(URL_PATTERN, function (str, key) {
             let value = data[key];
 
             if (value === undefined) {
