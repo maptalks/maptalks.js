@@ -92,10 +92,13 @@ export default class StyledPoint {
         }
         this.size = size;
         if (hasMarker) {
-            //返回
-            const icon = symbol.markerFile ? symbol.markerFile :
-                symbol.markerPath ? getMarkerPathBase64(symbol, size[0], size[1]) : symbol.markerType ? '' : null;
-                //TODO markerType类型的解析
+            let icon;
+            if (symbol.markerType) {
+                icon = 'vector://' + JSON.stringify(symbol);
+            } else {
+                icon = symbol.markerFile ? symbol.markerFile :
+                    symbol.markerPath ? getMarkerPathBase64(symbol, size[0], size[1]) : symbol.markerType ? '' : null;
+            }
             result.icon = icon;
         }
 

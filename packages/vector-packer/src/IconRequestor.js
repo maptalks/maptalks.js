@@ -1,3 +1,5 @@
+import { Marker } from 'maptalks';
+
 export default class IconRequestor {
     //options.errorUrl : alt image when failing loading the icon
     constructor(options) {
@@ -13,7 +15,7 @@ export default class IconRequestor {
         }
         const urls = Object.keys(icons);
         const images = {}, buffers = [];
-        const count = urls.length;
+        let count = 0;
         let current = 0;
         const self = this;
         function onload() {
@@ -46,14 +48,38 @@ export default class IconRequestor {
                 }
             }
         }
+        let hasAsyn = false;
+        let marker;
         for (let i = 0; i < urls.length; i++) {
-            const img = new Image();
-            img.index = i;
-            img.onload = onload;
-            img.onerror = onerror;
-            img.onabort = onerror;
-            img.url = urls[i];
-            img.src = urls[i];
+            const url = urls[i];
+            if (url.indexOf('vector://') === 0) {
+                marker = marker ||  new Marker([0, 0]);
+                const symbol = JSON.parse(url.substring('vector://'.length));
+                marker.setSymbol(symbol);
+                const sprite = marker._getSprite();
+                if (sprite) {
+                    const canvas = sprite.canvas;
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    const data = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+                    images[url] = { data: { data, width, height }, url };
+                    buffers.push(data.buffer);
+                }
+
+            } else {
+                const img = new Image();
+                img.index = i;
+                img.onload = onload;
+                img.onerror = onerror;
+                img.onabort = onerror;
+                img.url = url;
+                img.src = url;
+                hasAsyn = true;
+                count++;
+            }
+        }
+        if (!hasAsyn) {
+            cb(null, { icons: images, buffers });
         }
     }
 }
