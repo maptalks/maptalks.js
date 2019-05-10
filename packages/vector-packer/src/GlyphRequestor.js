@@ -7,12 +7,13 @@ let DEBUG_COUNTER = 0;
 let LIMIT_PER_FRAME = 15;
 
 export default class GlyphRequestor {
-    constructor(framer, limit = LIMIT_PER_FRAME) {
+    constructor(framer, limit = LIMIT_PER_FRAME, useCharBackBuffer) {
         this.entries = {};
         this._cachedFont = {};
         this._cache = new LRUCache(2048, function () {});
         this._framer = framer;
         this._limit = limit;
+        this._useCharBackBuffer = useCharBackBuffer;
     }
 
     getGlyphs(glyphs, cb) {
@@ -82,9 +83,11 @@ export default class GlyphRequestor {
         const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
         const buffer = 3;
-        let advBuffer = 1;
+        let backBuffer = this._useCharBackBuffer ? 1 : 0;
         if (fonts[0] === 'normal' && !charHasUprightVerticalOrientation(charCode)) {
-            advBuffer = 2;
+            //非中文/韩文时，增大 backBuffer，让文字更紧凑
+            //但因为intel gpu崩溃问题，启用stencil且backBuffer不为0时，会有文字削边现象，所以必须设为0
+            backBuffer = this._useCharBackBuffer ? 2 : 0;
         }
         if (!tinySDF) {
             let fontWeight = '400';
@@ -145,7 +148,7 @@ export default class GlyphRequestor {
                 left: 0,
                 top: -8 - (buffer - 3),
                 // top: -buffer,
-                advance: width + buffer - advBuffer
+                advance: width + buffer - backBuffer
             }
         };
     }

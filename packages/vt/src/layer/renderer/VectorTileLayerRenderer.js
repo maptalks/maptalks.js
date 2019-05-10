@@ -85,7 +85,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     createContext() {
-        this._prepareWorker();
         const inGroup = this.canvas.gl && this.canvas.gl.wrap;
         if (inGroup) {
             this.gl = this.canvas.gl.wrap();
@@ -102,6 +101,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         //     EXTENT, 0, 0
         // ]), layer.options['stencil'] === 'debug');
         this._debugPainter = new DebugPainter(this.regl, this.canvas);
+        this._prepareWorker();
     }
 
     _createREGLContext() {
@@ -723,6 +723,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const v = evaluate(symbol['visible'], null, z);
         return v !== false;
     }
+
+    isEnableWorkAround(key) {
+        if (key === 'win-intel-gpu-crash') {
+            return this.layer.options['workarounds']['win-intel-gpu-crash'] && isWinIntelGPU(this.gl);
+        }
+        return false;
+    }
 }
 
 VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
@@ -781,4 +788,17 @@ export function evaluate(prop, properties, zoom) {
     } else {
         return prop;
     }
+}
+
+function isWinIntelGPU(gl) {
+    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+    if (debugInfo && typeof navigator !== 'undefined') {
+        //e.g. ANGLE (Intel(R) HD Graphics 620
+        const gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        const win = navigator.platform === 'Win32' || navigator.platform === 'Win64';
+        if (gpu && gpu.toLowerCase().indexOf('intel') >= 0 && win) {
+            return true;
+        }
+    }
+    return false;
 }

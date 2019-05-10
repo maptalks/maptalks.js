@@ -16,9 +16,10 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         this._isDedicated = dedicatedLayers.indexOf(type) >= 0;
         this._dedicatedVTWorkers = {};
         this._iconRequestor = new IconRequestor({ iconErrorUrl: layer.options['iconErrorUrl'] });
+        const useCharBackBuffer = !layer.getRenderer().isEnableWorkAround('win-intel-gpu-crash');
         this._glyphRequestor = new GlyphRequestor(fn => {
             layer.getMap().getRenderer().callInNextFrame(fn);
-        }, layer.options['glyphSdfLimitPerFrame']);
+        }, layer.options['glyphSdfLimitPerFrame'], useCharBackBuffer);
     }
 
     initialize(cb) {

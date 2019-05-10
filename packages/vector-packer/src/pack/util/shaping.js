@@ -344,10 +344,15 @@ function shapeLines(shaping, //: Shaping,
             if (!glyph) continue;
 
             if (!charHasUprightVerticalOrientation(codePoint) || writingMode === WritingMode.horizontal) {
-                positionedGlyphs.push({ glyph: codePoint, x, y, vertical: false });
+                if (codePoint !== 32) {
+                    //fuzhen 忽略空格，而只增加x值，让空格前后文字的偏移正常，但空格本身不再添加到pointpack中
+                    positionedGlyphs.push({ glyph: codePoint, x, y, vertical: false });
+                }
                 x += glyph.metrics.advance + spacing;
             } else {
-                positionedGlyphs.push({ glyph: codePoint, x, y: 0, vertical: true });
+                if (codePoint !== 32) {
+                    positionedGlyphs.push({ glyph: codePoint, x, y: 0, vertical: true });
+                }
                 x += verticalHeight + spacing;
             }
         }
