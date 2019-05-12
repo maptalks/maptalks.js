@@ -339,6 +339,7 @@ class IconPainter extends CollisionPainter {
             //icon and text
             const firstBoxIdx = iconMesh.geometry.properties.elements[boxIndex * BOX_ELEMENT_COUNT];
             const iconBox = getIconBox(BOX, iconMesh, firstBoxIdx, matrix, map);
+            boxes.push(iconBox.slice(0));
             const collides = this.isCollides(iconBox, z);
             if (collides === 1) {
                 hasCollides = true;
@@ -352,7 +353,6 @@ class IconPainter extends CollisionPainter {
                 //offscreen
                 offscreenCount++;
             }
-            boxes.push(iconBox.slice(0));
 
             const charCount = boxCount;
             const textSize = mesh.properties.textSize;
