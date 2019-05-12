@@ -17,7 +17,7 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties;
     const symbol = geoProps.symbol;
-    const isAlongLine = (symbol['textPlacement'] === 'line');
+    const isAlongLine = (symbol['textPlacement'] === 'line' && !symbol['isIconText']);
 
     const glyphSize = 24;
 
@@ -37,7 +37,7 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
             4.0);
     }
 
-    const dxdy = vec2.set(DXDY, symbol['markerDx'] || 0, symbol['markerDy'] || 0);
+    const dxdy = vec2.set(DXDY, symbol['textDx'] || 0, symbol['textDy'] || 0);
 
     if (!isAlongLine) {
         const { aShape } = geoProps;

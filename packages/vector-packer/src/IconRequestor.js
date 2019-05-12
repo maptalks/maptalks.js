@@ -55,6 +55,10 @@ export default class IconRequestor {
             if (url.indexOf('vector://') === 0) {
                 marker = marker ||  new Marker([0, 0]);
                 const symbol = JSON.parse(url.substring('vector://'.length));
+                delete symbol.markerHorizontalAlignment;
+                delete symbol.markerVerticalAlignment;
+                delete symbol.markerDx;
+                delete symbol.markerDy;
                 marker.setSymbol(symbol);
                 const sprite = marker._getSprite();
                 if (sprite) {

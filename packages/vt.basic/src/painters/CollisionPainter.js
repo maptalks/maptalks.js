@@ -56,16 +56,20 @@ export default class CollisionPainter extends BasicPainter {
         }
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
-            const vertexIndexStart = allElements[start];
-            if (geometryProps.aOpacity[vertexIndexStart] !== opacity) {
-                const vertexIndexEnd = allElements[end - 1];
-                for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
-                    geometryProps.aOpacity[i] = opacity;
-                }
-                geometryProps.aOpacity._dirty = true;
-            }
+            this.setCollisionOpacity(mesh, allElements, geometryProps.aOpacity, opacity, start, end, boxIndex);
         }
         return visible;
+    }
+
+    setCollisionOpacity(mesh, allElements, aOpacity, value, start, end) {
+        const vertexIndexStart = allElements[start];
+        if (aOpacity[vertexIndexStart] !== value) {
+            const vertexIndexEnd = allElements[end - 1];
+            for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
+                aOpacity[i] = value;
+            }
+            aOpacity._dirty = true;
+        }
     }
 
     isBoxFading(key, boxIndex) {

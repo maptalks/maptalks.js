@@ -11,7 +11,7 @@ const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
 
 function getPackSDFFormat(symbol) {
-    if (symbol['textPlacement'] === 'line') {
+    if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
         //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
         return [
             {
@@ -72,11 +72,6 @@ function getPackSDFFormat(symbol) {
                 type: Uint8Array,
                 width: 1,
                 name: 'aCount'
-            },
-            {
-                type: Int16Array,
-                width: 2,
-                name: 'aGlyphOffset'
             }
         ];
     }
@@ -170,7 +165,7 @@ export default class PointPack extends VectorPack {
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;
         // const size = point.size;
-        const alongLine = point.symbol['textPlacement'] === 'line' || point.symbol['markerPlacement'] === 'line';
+        const alongLine = symbol['textPlacement'] === 'line' && !symbol['isIconText'] || symbol['markerPlacement'] === 'line';
         const isText = symbol['textName'] !== undefined;
         const isVertical = isText && alongLine && allowsVerticalWritingMode(point.getIconAndGlyph().glyph.text) ? 1 : 0;
         let quads;
@@ -253,14 +248,13 @@ export default class PointPack extends VectorPack {
      */
     _fillData(data, alongLine, textCount, glyphOffset, anchor, vertical) {
         data.push(textCount);
-        data.push(glyphOffset[0], glyphOffset[1]);
         if (alongLine) {
+            data.push(glyphOffset[0], glyphOffset[1]);
             const startIndex = anchor.startIndex;
             data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
             data.push(vertical);
         }
     }
-
     _getAnchors(point, shape, scale) {
         const feature = point.feature,
             type = point.feature.type,

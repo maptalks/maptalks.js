@@ -72,14 +72,14 @@ export function createColorSetter(cache) {
         if (Array.isArray(c)) {
             return c;
         }
-        if (cache[c]) {
+        if (cache && cache[c]) {
             return cache[c];
         }
         const color = Color(c).unitArray();
         if (color.length === 3) {
             color.push(1);
         }
-        cache[c] = color;
+        if (cache) cache[c] = color;
         return color;
     };
 }

@@ -33,7 +33,7 @@ export default class StyledPoint {
                 fontScale = size / glyphSize;
             const oneEm = 24;
             const keepUpright = symbol['textKeepUpright'],
-                textAlongLine = symbol['textRotationAlignment'] === 'map' && symbol['textPlacement'] === 'line';
+                textAlongLine = symbol['textRotationAlignment'] === 'map' && symbol['textPlacement'] === 'line' && !symbol['isIconText'];
             const glyphs = glyphAtlas.glyphMap[font],
                 textAnchor = getAnchor(symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
                 lineHeight = 1.2 * oneEm, //TODO 默认的lineHeight的计算
@@ -146,6 +146,6 @@ function getAnchor(h, v) {
         h = 'center';
     }
     let vv = v !== 'center' ? v : '';
-    vv += h !== 'center' ? '-' + h : '';
+    vv += h !== 'center' ? (vv.length ? '-' : '') + h : '';
     return vv;
 }

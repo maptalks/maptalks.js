@@ -29,6 +29,7 @@ module.exports = [{
         commonjs(),
         babel()
     ],
+    external: ['maptalks'],
     output: {
         format: 'amd',
         name: 'maptalks',

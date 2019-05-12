@@ -1,7 +1,6 @@
-import { vec2, vec3, vec4, mat2 } from '@maptalks/gl';
+import { vec2, vec3, vec4, mat2, mat4, reshader } from '@maptalks/gl';
 import CollisionPainter from './CollisionPainter';
-import { TYPE_BYTES, isNil, setUniformFromSymbol, createColorSetter } from '../Util';
-import { reshader, mat4 } from '@maptalks/gl';
+import { TYPE_BYTES, isNil } from '../Util';
 import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
 import { getLabelBox } from './util/get_label_box';
@@ -13,6 +12,7 @@ import pickingVert from './glsl/text.picking.vert';
 import linePickingVert from './glsl/text.line.picking.vert';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
+import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GLYPH_SIZE, GAMMA_SCALE } from './util/create_text_painter';
 
 
 const shaderFilter0 = mesh => {
@@ -29,23 +29,6 @@ const shaderLineFilter0 = mesh => {
 
 const shaderLineFilterN = mesh => {
     return mesh.uniforms['level'] > 0 && mesh.geometry.properties.symbol['textPlacement'] === 'line';
-};
-
-const DEFAULT_UNIFORMS = {
-    'textFill': [0, 0, 0, 1],
-    'textOpacity': 1,
-    'pitchWithMap': 0,
-    'rotateWithMap': 0,
-    'textHaloRadius': 0,
-    'textHaloFill': [1, 1, 1, 1],
-    'textHaloBlur': 0,
-    'textHaloOpacity': 1,
-    'isHalo': 0,
-    'textPerspectiveRatio': 0,
-    'textSize': 14,
-    'textDx': 0,
-    'textDy': 0,
-    'textRotation': 0
 };
 
 //label box 或 icon box 对应的element数量
@@ -90,9 +73,22 @@ export default class TextPainter extends CollisionPainter {
     }
 
     createGeometry(glData) {
-        const geometry = super.createGeometry.apply(this, arguments);
-        if (glData.lineVertex) {
-            geometry.properties.line = glData.lineVertex;
+        if (!glData.length) {
+            return null;
+        }
+        let geometry;
+        let pack;
+        for (let i = 0; i < glData.length; i++) {
+            pack = glData[i];
+            if (pack.glyphAtlas) {
+                geometry = super.createGeometry(pack);
+            }
+        }
+        if (!geometry) {
+            return null;
+        }
+        if (pack.lineVertex) {
+            geometry.properties.line = pack.lineVertex;
             //原先createGeometry返回的geometry有多个，line.id用来区分是第几个geometry
             //现在geometry只会有一个，所以统一为0
             geometry.properties.line.id = 0;
@@ -101,174 +97,21 @@ export default class TextPainter extends CollisionPainter {
     }
 
     createMesh(geometry, transform) {
-        const meshes = [];
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
-
-        if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
-            return meshes;
-        }
-        const glyphAtlas = geometry.properties.glyphAtlas;
-        if (!glyphAtlas) {
-            return meshes;
-        }
-
         const symbol = this.getSymbol();
-        if (symbol['textSize'] === 0 || symbol['textOpacity'] === 0) {
-            return meshes;
-        }
-        geometry.properties.symbol = symbol;
-        const isLinePlacement = symbol['textPlacement'] === 'line';
-        //tags for picking
-        if (isLinePlacement) {
-            this._hasLineText = true;
-        } else {
-            this._hasNormalText = true;
-        }
 
-        //避免重复创建属性数据
-        if (!geometry.properties.aAnchor) {
-            this._prepareGeometry(geometry);
-        }
-
-        const uniforms = {
-            tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio
-        };
-        this._setMeshUniforms(uniforms, symbol);
-
-        let transparent = false;
-        if (symbol['textOpacity'] < 1) {
-            transparent = true;
-        }
-
-        uniforms['texture'] = glyphAtlas;
-        uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
-
-        geometry.properties.memorySize = geometry.getMemorySize();
-        geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
-        const mesh = new reshader.Mesh(geometry, material, {
-            transparent,
-            castShadow: false,
-            picking: true
-        });
-        mesh.setLocalTransform(transform);
-        //设置ignoreCollision，此mesh略掉collision检测
-        //halo mesh会进行collision检测，并统一更新elements
-        if (symbol['textHaloRadius']) {
-            mesh.properties.isHalo = true;
-        }
-        if (enableCollision) {
-            mesh.setDefines({
-                'ENABLE_COLLISION': 1
-            });
-        }
-        meshes.push(mesh);
-
-        if (symbol['textHaloRadius']) {
-            uniforms.isHalo = 0;
-            const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
-            const mesh = new reshader.Mesh(geometry, material, {
-                transparent,
-                castShadow: false,
-                picking: true
-            });
-            if (enableCollision) {
-                mesh.setDefines({
-                    'ENABLE_COLLISION': 1
-                });
+        const meshes = createTextMesh(this.regl, geometry, transform, symbol, enableCollision);
+        if (meshes.length) {
+            const isLinePlacement = symbol['textPlacement'] === 'line';
+            //tags for picking
+            if (isLinePlacement) {
+                this._hasLineText = true;
+            } else {
+                this._hasNormalText = true;
             }
-            mesh.setLocalTransform(transform);
-            meshes.push(mesh);
         }
+
         return meshes;
-    }
-
-    _prepareGeometry(geometry) {
-        const { symbol } = geometry.properties;
-        const isLinePlacement = symbol['textPlacement'] === 'line';
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
-        const { aPosition, aShape } = geometry.data;
-        const vertexCount = aPosition.length / 3;
-        geometry.properties.aPickingId = geometry.data.aPickingId;
-        geometry.properties.aCount = geometry.data.aCount;
-        delete geometry.data.aCount;
-
-        if ((enableCollision || isLinePlacement)) {
-            geometry.properties.aAnchor = aPosition;
-            geometry.properties.aShape = aShape;
-        }
-
-        if (isLinePlacement) {
-            const { aVertical, aSegment, aGlyphOffset } = geometry.data;
-            geometry.properties.aGlyphOffset = aGlyphOffset;
-            geometry.properties.aSegment = aSegment;
-            geometry.properties.aVertical = aVertical;
-
-            delete geometry.data.aSegment;
-            delete geometry.data.aVertical;
-            delete geometry.data.aGlyphOffset;
-
-            geometry.data.aOffset = {
-                usage: 'dynamic',
-                data: new Int16Array(aShape.length)
-            };
-            geometry.properties.aOffset = new Int16Array(aShape.length);
-
-            if (enableCollision) {
-                //非line placement时
-                geometry.data.aOpacity = {
-                    usage: 'dynamic',
-                    data: new Uint8Array(aShape.length / 2)
-                };
-                geometry.properties.aOpacity = new Uint8Array(aShape.length / 2);
-            }
-
-
-        } else if (enableCollision) {
-            const aOpacity = geometry.properties.aOpacity = new Uint8Array(vertexCount);
-            for (let i = 0; i < aOpacity.length; i++) {
-                aOpacity[i] = 255;
-            }
-            //非line placement时
-            geometry.data.aOpacity = {
-                usage: 'dynamic',
-                data: new Uint8Array(aOpacity.length)
-            };
-        }
-
-        if (isLinePlacement || enableCollision) {
-            geometry.properties.elements = geometry.elements;
-            geometry.properties.elemCtor = geometry.elements.constructor;
-        }
-    }
-
-    _setMeshUniforms(uniforms, symbol) {
-        this._colorCache = this._colorCache || {};
-        setUniformFromSymbol(uniforms, 'textOpacity', symbol, 'textOpacity');
-        setUniformFromSymbol(uniforms, 'textFill', symbol, 'textFill', createColorSetter(this._colorCache));
-        setUniformFromSymbol(uniforms, 'textHaloFill', symbol, 'textHaloFill', createColorSetter(this._colorCache));
-        setUniformFromSymbol(uniforms, 'textHaloBlur', symbol, 'textHaloBlur');
-        if (symbol['textHaloRadius']) {
-            setUniformFromSymbol(uniforms, 'textHaloRadius', symbol, 'textHaloRadius');
-            uniforms.isHalo = 1;
-        }
-        setUniformFromSymbol(uniforms, 'textHaloOpacity', symbol, 'textHaloOpacity');
-        if (symbol['textPerspectiveRatio']) {
-            uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
-        } else if (symbol['textPlacement'] === 'line') {
-            uniforms.textPerspectiveRatio = 1;
-        }
-        if (symbol['textRotationAlignment'] === 'map') {
-            uniforms.rotateWithMap = 1;
-        }
-        if (symbol['textPitchAlignment'] === 'map') {
-            uniforms.pitchWithMap = 1;
-        }
-        setUniformFromSymbol(uniforms, 'textSize', symbol, 'textSize');
-        setUniformFromSymbol(uniforms, 'textDx', symbol, 'textDx');
-        setUniformFromSymbol(uniforms, 'textDy', symbol, 'textDy');
-        setUniformFromSymbol(uniforms, 'textRotation', symbol, 'textRotation', v => v * Math.PI / 180);
     }
 
     preparePaint(context) {
@@ -359,16 +202,18 @@ export default class TextPainter extends CollisionPainter {
                     aOpacity._dirty = false;
                 }
             } else if (enableCollision) {
-                const elements = geometry.properties.elements;
+                const { elements, elemCtor, aOpacity } = geometry.properties;
                 const visibleElements = [];
                 this._forEachLabel(mesh, elements, (mesh, start, end, mvpMatrix, labelIndex) => {
                     fn(elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex);
                 });
-                geometry.updateData('aOpacity', geometry.properties.aOpacity);
+                if (aOpacity && aOpacity._dirty) {
+                    geometry.updateData('aOpacity', aOpacity);
+                }
 
                 const allVisilbe = visibleElements.length === elements.length && geometry.count === elements.length;
                 if (!allVisilbe) {
-                    geometry.setElements(new geometry.properties.elemCtor(visibleElements));
+                    geometry.setElements(new elemCtor(visibleElements));
                 }
             }
         }
@@ -443,25 +288,23 @@ export default class TextPainter extends CollisionPainter {
     _forEachLabel(mesh, elements, fn) {
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
-        const geometry = mesh.geometry,
-            geometryProps = geometry.properties;
-        const pickingId = geometryProps.aPickingId;
+        const { aPickingId, aCount } = mesh.geometry.properties;
 
         let index = 0;
 
         let idx = elements[0];
-        let start = 0, current = pickingId[idx];
+        let start = 0, current = aPickingId[idx];
         //每个文字有6个element
         for (let i = 0; i <= elements.length; i += BOX_ELEMENT_COUNT) {
             idx = elements[i];
             //pickingId发生变化，新的feature出现
-            if (pickingId[idx] !== current || i === elements.length) {
+            if (aPickingId[idx] !== current || i === elements.length) {
                 const end = i/*  === elements.length - 6 ? elements.length : i */;
-                const charCount = geometryProps.aCount[elements[start]];
+                const charCount = aCount[elements[start]];
                 for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
                     fn.call(this, mesh, ii, ii + charCount * BOX_ELEMENT_COUNT, matrix, index++);
                 }
-                current = pickingId[idx];
+                current = aPickingId[idx];
                 start = i;
             }
         }
@@ -637,7 +480,7 @@ export default class TextPainter extends CollisionPainter {
         const map = this.getMap();
         const geoProps = mesh.geometry.properties;
         const symbol = geoProps.symbol;
-        const isLinePlacement = (symbol['textPlacement'] === 'line');
+        const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
         const debugCollision = this.layer.options['debugCollision'];
         const textSize = mesh.properties.textSize;
 
@@ -745,100 +588,10 @@ export default class TextPainter extends CollisionPainter {
     init() {
         // const map = this.getMap();
         const regl = this.regl;
-        const canvas = this.canvas;
 
         this.renderer = new reshader.Renderer(regl);
 
-        const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return canvas ? canvas.width : 1;
-            },
-            height: () => {
-                return canvas ? canvas.height : 1;
-            }
-        };
-
-        const uniforms = [
-            'textSize',
-            'textDx',
-            'textDy',
-            'textRotation',
-            'cameraToCenterDistance',
-            {
-                name: 'projViewModelMatrix',
-                type: 'function',
-                fn: function (context, props) {
-                    return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                }
-            },
-            'textPerspectiveRatio',
-            'texSize',
-            'canvasSize',
-            'glyphSize',
-            'pitchWithMap',
-            'mapPitch',
-            'texture',
-            'gammaScale',
-            'textFill',
-            'textOpacity',
-            'textHaloRadius',
-            'textHaloFill',
-            'textHaloBlur',
-            'textHaloOpacity',
-            'isHalo',
-            {
-                name: 'zoomScale',
-                type: 'function',
-                fn: function (context, props) {
-                    return props['tileResolution'] / props['resolution'];
-                }
-            },
-            'rotateWithMap',
-            'mapRotation',
-            'tileRatio'
-        ];
-
-        const extraCommandProps = {
-            viewport,
-            stencil: { //fix #94, intel显卡的崩溃和blending关系比较大，开启stencil来避免blending
-                enable: this.layer.getRenderer().isEnableWorkAround('win-intel-gpu-crash'),
-                mask: 0xFF,
-                func: {
-                    //halo的stencil ref更大，允许文字填充在halo上绘制
-                    cmp: '<',
-                    ref: (context, props) => {
-                        return props.isHalo + 1;
-                    },
-                    mask: 0xFF
-                },
-                opFront: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                },
-                opBack: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                }
-            },
-            blend: {
-                enable: true,
-                func: {
-                    // src: 'src alpha',
-                    // dst: 'one minus src alpha'
-                    src: 'one',
-                    dst: 'one minus src alpha'
-                },
-                equation: 'add'
-            },
-            depth: {
-                enable: true,
-                func: 'always'
-            },
-        };
+        const { uniforms, extraCommandProps } = createTextShader(this.layer);
 
         this.shader = new reshader.MeshShader({
             vert, frag,
@@ -958,9 +711,9 @@ export default class TextPainter extends CollisionPainter {
             projViewMatrix,
             viewMatrix: map.viewMatrix,
             cameraToCenterDistance, canvasSize,
-            glyphSize: 24,
+            glyphSize: GLYPH_SIZE,
             // gammaScale : 0.64,
-            gammaScale: 0.79,
+            gammaScale: GAMMA_SCALE,
             resolution: map.getResolution(),
             // planeMatrix
         };
@@ -1022,17 +775,4 @@ function resetOffset(aOffset, meshElements, start, end) {
             }
         }
     }
-}
-
-function isWinIntelGPU(gl) {
-    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    if (debugInfo && typeof navigator !== 'undefined') {
-        //e.g. ANGLE (Intel(R) HD Graphics 620
-        const gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-        const win = navigator.platform === 'Win32' || navigator.platform === 'Win64';
-        if (gpu && gpu.toLowerCase().indexOf('intel') >= 0 && win) {
-            return true;
-        }
-    }
-    return false;
 }

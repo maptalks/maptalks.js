@@ -133,18 +133,33 @@ export default class BaseLayerWorker {
         }
 
         return Promise.all(promises).then(tileDatas => {
+            function handleTileData(tileData, i) {
+                tileData.data.type = pluginConfigs[pluginIndexes[i]].renderPlugin.dataConfig.type;
+
+                if (tileData.buffers && tileData.buffers.length) {
+                    for (let i = 0; i < tileData.buffers.length; i++) {
+                        buffers.push(tileData.buffers[i]);
+                    }
+                }
+            }
+
             for (let i = 0; i < tileDatas.length; i++) {
                 if (!tileDatas[i]) {
                     continue;
                 }
-                tileDatas[i].data.type = pluginConfigs[pluginIndexes[i]].renderPlugin.dataConfig.type;
-                data[pluginIndexes[i]].data = tileDatas[i].data;
-
-                if (tileDatas[i].buffers && tileDatas[i].buffers.length) {
-                    for (let ii = 0, ll = tileDatas[i].buffers.length; ii < ll; ii++) {
-                        buffers.push(tileDatas[i].buffers[ii]);
+                const tileData = tileDatas[i];
+                if (Array.isArray(tileData)) {
+                    const datas = [];
+                    for (let ii = 0; ii < tileData.length; ii++) {
+                        handleTileData(tileData[ii], i);
+                        datas.push(tileData[ii].data);
                     }
+                    data[pluginIndexes[i]].data = datas;
+                } else {
+                    handleTileData(tileData, i);
+                    data[pluginIndexes[i]].data = tileData.data;
                 }
+
             }
             const allFeas = [];
             const schema = layers;
@@ -192,7 +207,6 @@ export default class BaseLayerWorker {
     }
 
     _createTileGeometry(features, pluginConfig, context) {
-
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
 
@@ -209,8 +223,11 @@ export default class BaseLayerWorker {
                 requestor: this.fetchIconGlyphs.bind(this),
                 zoom
             });
-            const pack = new PointPack(features, symbol, options);
-            return pack.load(extent / tileSize);
+            const symbols = splitPointSymbol(symbol);
+            const scale = extent / tileSize;
+            return Promise.all(symbols.map(s => new PointPack(features, s, options).load(scale)));
+            // const pack = new PointPack(features, symbol, options);
+            // return pack.load(extent / tileSize);
         } else if (type === 'native-point') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
@@ -398,4 +415,30 @@ function getPropTypes(properties) {
         }
     }
     return types;
+}
+
+function splitPointSymbol(symbol) {
+    let iconSymbol = null;
+    let textSymbol = null;
+    for (const name in symbol) {
+        if (name.indexOf('marker') === 0) {
+            iconSymbol = iconSymbol || {};
+            iconSymbol[name] = symbol[name];
+        } else if (name.indexOf('text') === 0) {
+            textSymbol = textSymbol || {};
+            textSymbol[name] = symbol[name];
+        }
+    }
+    const results = [];
+    if (iconSymbol) results.push(iconSymbol);
+    if (textSymbol) {
+        if (iconSymbol) {
+            //用marker的placement和spacing 覆盖文字的
+            textSymbol['textPlacement'] = iconSymbol['markerPlacement'];
+            textSymbol['textSpacing'] = iconSymbol['markerSpacing'];
+            textSymbol['isIconText'] = true;
+        }
+        results.push(textSymbol);
+    }
+    return results;
 }

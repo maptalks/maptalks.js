@@ -73,8 +73,15 @@ function createPainterPlugin(type, Painter) {
                 }
                 geometry = tileCache.geometry = painter.createGeometry(data, features);
                 if (geometry) {
-                    geometry.properties.features = features;
-                    this._fillCommonProps(geometry, context);
+                    if (Array.isArray(geometry)) {
+                        for (let i = 0; i < geometry.length; i++) {
+                            geometry[i].properties.features = features;
+                            this._fillCommonProps(geometry[i], context);
+                        }
+                    } else {
+                        geometry.properties.features = features;
+                        this._fillCommonProps(geometry, context);
+                    }
                 }
             }
             if (!geometry) {
@@ -263,7 +270,7 @@ function createPainterPlugin(type, Painter) {
         _filterElements(geometry, glData, features, regl) {
             if (Array.isArray(geometry)) {
                 geometry.forEach((g, idx) => {
-                    this._filterGeoElements(g, glData.packs[idx], features, regl);
+                    this._filterGeoElements(g, glData[idx], features, regl);
                 });
             } else {
                 this._filterGeoElements(geometry, glData, features, regl);
