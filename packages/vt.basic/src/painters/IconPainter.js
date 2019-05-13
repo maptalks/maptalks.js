@@ -102,7 +102,7 @@ class IconPainter extends CollisionPainter {
             tileRatio: geometry.properties.tileRatio
         };
 
-        //!geometry.properties.aAnchor 以避免创建collision数据
+        //!geometry.properties.aAnchor 以避免重复创建collision数据
         if (enableCollision && !geometry.properties.aAnchor) {
             const { aPosition, aShape } = geometry.data;
             const vertexCount = geometry.data.aPosition.length / 3;
@@ -110,7 +110,7 @@ class IconPainter extends CollisionPainter {
             //aOpacity用于fading透明度的调整
             const aOpacity = new Uint8Array(vertexCount);
             for (let i = 0; i < aOpacity.length; i++) {
-                aOpacity[i] = 255;
+                aOpacity[i] = 0;
             }
             geometry.data.aOpacity = {
                 usage: 'dynamic',
