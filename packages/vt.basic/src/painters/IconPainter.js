@@ -45,7 +45,6 @@ const defaultUniforms = {
 
 //temparary variables
 const BOX = [];
-const CHAR_BOX = [];
 const PROJ_MATRIX = [];
 
 class IconPainter extends CollisionPainter {

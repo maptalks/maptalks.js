@@ -10,6 +10,7 @@ const V2_0 = [], V2_1 = [], V2_2 = [], V2_3 = [];
 const DXDY = [];
 
 const AXIS_FACTOR = [1, -1];
+const ICON_SIZE = 24;
 
 export function getIconBox(out, mesh, i, matrix, map) {
     const uniforms = mesh.material.uniforms;
@@ -43,10 +44,12 @@ export function getIconBox(out, mesh, i, matrix, map) {
         bl = vec2.set(V2_2, aShape[i * 2 + 4], aShape[i * 2 + 5]),
         br = vec2.set(V2_3, aShape[i * 2 + 6], aShape[i * 2 + 7]);
 
-    vec2.scale(tl, tl, 2);
-    vec2.scale(tr, tr, 2);
-    vec2.scale(bl, bl, 2);
-    vec2.scale(br, br, 2);
+    const { markerWidth, markerHeight } = geoProps.symbol;
+    const sizeScale = [markerWidth / ICON_SIZE, markerHeight / ICON_SIZE];
+    vec2.mul(tl, tl, sizeScale);
+    vec2.mul(tr, tr, sizeScale);
+    vec2.mul(bl, bl, sizeScale);
+    vec2.mul(br, br, sizeScale);
 
     let rotation = symbol['markerRotation'] || 0;
 
