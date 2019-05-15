@@ -30,6 +30,7 @@ const defaultOptions = {
     maxCacheSize: 128,
     antialias: false,
     iconErrorUrl: null,
+    collisionFrameLimit: 2,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true

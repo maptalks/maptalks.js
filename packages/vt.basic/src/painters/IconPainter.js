@@ -215,6 +215,8 @@ class IconPainter extends CollisionPainter {
         };
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
+            const meshKey = mesh.properties.meshKey;
+            this.startMeshCollision(meshKey);
             const geometry = mesh.geometry;
             const { elements, elemCtor, aOpacity } = geometry.properties;
             const visibleElements = [];
@@ -225,6 +227,7 @@ class IconPainter extends CollisionPainter {
             if (aOpacity._dirty) {
                 geometry.updateData('aOpacity', aOpacity);
             }
+            this.endMeshCollision(meshKey);
         }
     }
 
@@ -244,6 +247,8 @@ class IconPainter extends CollisionPainter {
         for (let m = 0; m < meshes.length; m++) {
             const iconMesh = meshes[m];
             const textMesh = iconMesh._textMesh;
+            const meshKey = textMesh.properties.meshKey;
+            this.startMeshCollision(meshKey);
             const symbol = textMesh.geometry.properties.symbol;
             textMesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
             const iconGeometry = iconMesh.geometry;
@@ -263,6 +268,7 @@ class IconPainter extends CollisionPainter {
             if (textGeometry.properties.aOpacity._dirty) {
                 textGeometry.updateData('aOpacity', textGeometry.properties.aOpacity);
             }
+            this.endMeshCollision(meshKey);
         }
     }
 
@@ -387,9 +393,6 @@ class IconPainter extends CollisionPainter {
             }
         }
 
-        if (debugCollision) {
-            this.addCollisionDebugBox(boxes, hasCollides ? 0 : 1);
-        }
         return {
             collides: hasCollides,
             boxes

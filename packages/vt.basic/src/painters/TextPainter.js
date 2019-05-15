@@ -185,11 +185,14 @@ export default class TextPainter extends CollisionPainter {
 
             // const idx = geometry.properties.aPickingId[0];
             // console.log(`图层:${geometry.properties.features[idx].feature.layer},数据数量：${geometry.count / BOX_ELEMENT_COUNT}`);
-
+            const meshKey = mesh.properties.meshKey;
             if (geometry.properties.symbol['textPlacement'] === 'line') {
                 //line placement
                 if (!geometry.properties.line) {
                     continue;
+                }
+                if (enableCollision) {
+                    this.startMeshCollision(meshKey);
                 }
                 this._updateLineLabel(mesh, planeMatrix);
                 const { aOffset, aOpacity } = geometry.properties;
@@ -201,7 +204,11 @@ export default class TextPainter extends CollisionPainter {
                     geometry.updateData('aOpacity', aOpacity);
                     aOpacity._dirty = false;
                 }
+                if (enableCollision) {
+                    this.endMeshCollision(meshKey);
+                }
             } else if (enableCollision) {
+                this.startMeshCollision(meshKey);
                 const { elements, elemCtor, aOpacity } = geometry.properties;
                 const visibleElements = [];
                 this._forEachLabel(mesh, elements, (mesh, start, end, mvpMatrix, labelIndex) => {
@@ -215,6 +222,7 @@ export default class TextPainter extends CollisionPainter {
                 if (!allVisilbe) {
                     geometry.setElements(new elemCtor(visibleElements));
                 }
+                this.endMeshCollision(meshKey);
             }
         }
     }
@@ -253,6 +261,12 @@ export default class TextPainter extends CollisionPainter {
 
         this._forEachLabel(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
+            // const meshKey = mesh.properties.meshKey;
+            // let collision = this.getCachedCollision(meshKey, labelIndex);
+            // let visible = true;
+            // if (!collision || this.isCachedCollisionStale(meshKey)) {
+            //     visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
+            // }
             if (!visible) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 return;
@@ -546,9 +560,6 @@ export default class TextPainter extends CollisionPainter {
                     };
                 }
             }
-        }
-        if (debugCollision) {
-            this.addCollisionDebugBox(boxes, hasCollides ? 0 : 1);
         }
         return {
             collides: hasCollides,

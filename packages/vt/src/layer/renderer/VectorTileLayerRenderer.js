@@ -395,6 +395,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 timestamp
             });
         });
+        this.getMap().collisionFrameTime = 0;
     }
 
     _endFrame(timestamp) {

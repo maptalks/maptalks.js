@@ -13,12 +13,83 @@ const DEFAULT_SCENE_CONFIG = {
 };
 
 const UINT8 = new Uint8Array(1);
+const COLLISION_OFFSET_THRESHOLD = 2;
 
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
         super(regl, layer, sceneConfig, pluginIndex);
         this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
         this._fadingRecords = {};
+    }
+
+    startMeshCollision(/* meshKey */) {
+        this._canProceed = this._canProceedCollision();
+    }
+
+    endMeshCollision(meshKey) {
+        const meshContext = this._collisionContext.tags[meshKey];
+        if (this._canProceed && meshContext && this._isCachedCollisionStale(meshKey)) {
+            const map = this.getMap();
+            meshContext.anchor0 = map.containerPointToCoord(this._containerAnchor0);
+            meshContext.anchor1 = map.containerPointToCoord(this._containerAnchor1);
+        }
+    }
+
+    _isCachedCollisionStale(meshKey) {
+        const [anchor0, anchor1] = this._getMeshAnchor(meshKey);
+        //如果没有anchor，或者anchor距离它应该在的点的像素距离超过阈值时，则说明collision已经过期
+        if (!anchor0 || anchor0.distanceTo(this._containerAnchor0) > COLLISION_OFFSET_THRESHOLD ||
+            anchor1.distanceTo(this._containerAnchor1) > COLLISION_OFFSET_THRESHOLD) {
+            return true;
+        }
+        return false;
+    }
+
+    _startCollision() {
+        const map = this.getMap();
+        this._coordCache = {};
+        this._containerAnchor0 = new maptalks.Point(map.width / 2, map.height / 3);
+        this._containerAnchor1 = new maptalks.Point(map.width / 2, map.height * 2 / 3);
+        delete this._canProceed;
+        if (!this._collisionContext) {
+            this._collisionContext = {
+                tags: {}
+            };
+        }
+    }
+
+    _getCachedCollision(meshKey, boxIndex) {
+        const context = this._collisionContext;
+        return context && context.tags[meshKey] && context.tags[meshKey][boxIndex];
+    }
+
+    _setCollisionCache(meshKey, boxIndex, value) {
+        const context = this._collisionContext;
+        context.tags[meshKey] = context.tags[meshKey] || {};
+        context.tags[meshKey][boxIndex] = value;
+    }
+
+    _canProceedCollision() {
+        const map = this.getMap();
+        const limit = this.layer.options['collisionFrameLimit'];
+        return map.collisionFrameTime <= limit;
+    }
+
+    _getMeshAnchor(meshKey) {
+        const meshContext = this._collisionContext.tags[meshKey];
+        if (meshContext && meshContext.anchor0) {
+            const key0 = meshContext.anchor0.toArray().join();
+            const key1 = meshContext.anchor1.toArray().join();
+            let anchor0 = this._coordCache[key0];
+            let anchor1 = this._coordCache[key1];
+            if (!anchor0) {
+                const map = this.getMap();
+                anchor0 = this._coordCache[key0] = map.coordToContainerPoint(meshContext.anchor0);
+                anchor1 = this._coordCache[key1] = map.coordToContainerPoint(meshContext.anchor1);
+            }
+            return [anchor0, anchor1];
+        }
+        return [];
     }
 
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
@@ -31,9 +102,25 @@ export default class CollisionPainter extends BasicPainter {
         if (this.shouldLimitBox(level) && boxIndex > this.layer.options['boxLimitOnZoomout']) {
             return false;
         }
-        const geometryProps = mesh.geometry.properties;
-        let collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
-        let visible = !collision.collides;
+        const map = this.getMap();
+        const { symbol, aOpacity } = mesh.geometry.properties;
+
+
+        let collision = this._getCachedCollision(meshKey, boxIndex);
+        let visible = false;
+        let isUpdate = false;
+        if (!collision || this._isCachedCollisionStale(meshKey)) {
+            //没有collision，或collision已经过期
+            isUpdate = true;
+        }
+        if (isUpdate && this._canProceed) {
+            const now = performance.now();
+            collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
+            map.collisionFrameTime += performance.now() - now;
+
+            this._setCollisionCache(meshKey, boxIndex, collision);
+        }
+        visible = collision && collision.collides === false;
 
         let fadingOpacity = 1;
         let isFading = false;
@@ -48,15 +135,18 @@ export default class CollisionPainter extends BasicPainter {
             }
         }
 
+        if (this._canProceed && collision && this.layer.options['debugCollision']) {
+            this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
+        }
+
         if (visible || isFading) {
-            const symbol = geometryProps.symbol;
-            if (!symbol[this.propIgnorePlacement]) {
+            if (this._canProceed && !symbol[this.propIgnorePlacement] && collision.boxes) {
                 this._fillCollisionIndex(collision.boxes, mesh);
             }
         }
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
-            this.setCollisionOpacity(mesh, allElements, geometryProps.aOpacity, opacity, start, end, boxIndex);
+            this.setCollisionOpacity(mesh, allElements, aOpacity, opacity, start, end, boxIndex);
         }
         return visible;
     }
@@ -175,11 +265,16 @@ export default class CollisionPainter extends BasicPainter {
         if (!meshes) {
             return;
         }
-        if (this._fadingRecords) {
+        if (Array.isArray(meshes)) {
             for (let i = 0; i < meshes.length; i++) {
                 const key = meshes[i].properties.meshKey;
-                delete this._fadingRecords[key];
+                if (this._fadingRecords) delete this._fadingRecords[key];
+                if (this._collisionContext) delete this._collisionContext.tags[key];
             }
+        } else {
+            const key = meshes.properties.meshKey;
+            if (this._fadingRecords) delete this._fadingRecords[key];
+            if (this._collisionContext) delete this._collisionContext.tags[key];
         }
         super.deleteMesh(meshes, keepGeometry);
     }
@@ -193,6 +288,7 @@ export default class CollisionPainter extends BasicPainter {
             delete this._collisionShader;
             delete this._collisionRenderer;
         }
+        delete this._collisionContext;
         super.delete(context);
     }
 
@@ -273,12 +369,16 @@ export default class CollisionPainter extends BasicPainter {
             this.scene.addMesh(this._zoomMeshes);
         }
         super.preparePaint(context);
+        this._startCollision();
     }
 
     paint(context) {
         const status = super.paint(context);
 
         this._renderCollisionBox();
+        if (this._canProceed === false) {
+            this.setToRedraw();
+        }
         return status;
     }
 
