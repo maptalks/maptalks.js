@@ -1,6 +1,6 @@
 import { vec2, vec3, vec4, mat2, mat4, reshader } from '@maptalks/gl';
 import CollisionPainter from './CollisionPainter';
-import { TYPE_BYTES, isNil } from '../Util';
+import { extend, TYPE_BYTES, isNil } from '../Util';
 import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
 import { getLabelBox } from './util/get_label_box';
@@ -604,16 +604,25 @@ export default class TextPainter extends CollisionPainter {
 
         const { uniforms, extraCommandProps } = createTextShader(this.layer);
 
-        this.shader = new reshader.MeshShader({
-            vert, frag,
-            uniforms,
-            extraCommandProps
-        });
         this._shaderAlongLine = new reshader.MeshShader({
             vert: vertAlongLine, frag,
             uniforms,
             extraCommandProps
         });
+        let commandProps = extraCommandProps;
+        if (extraCommandProps && extraCommandProps.stencil && extraCommandProps.stencil.enable) {
+            //为解决intel gpu crash，stencil可能会被启用
+            //但只有line-text渲染才需要，普通文字渲染不用打开stencil
+            commandProps = extend({}, extraCommandProps);
+            commandProps.stencil = extend({}, extraCommandProps.stencil);
+            commandProps.stencil.enable = false;
+        }
+        this.shader = new reshader.MeshShader({
+            vert, frag,
+            uniforms,
+            extraCommandProps: commandProps
+        });
+
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
