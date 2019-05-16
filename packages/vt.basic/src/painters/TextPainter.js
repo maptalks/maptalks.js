@@ -235,8 +235,12 @@ export default class TextPainter extends CollisionPainter {
         //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
         //aNormal在两种情况都要实时计算更新
 
-        const properties = mesh.geometry.properties;
-        let line = properties.line;
+        if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(mesh.properties.level)) {
+            geometry.setElements([]);
+            return;
+        }
+
+        let line = geometryProps.line;
         if (!line) {
             return;
         }
