@@ -17,11 +17,13 @@ export default class BaseLayerWorker {
         this.upload = upload;
         this._compileStyle(options.style || []);
         this.requests = {};
+        this._styleCounter = 0;
     }
 
     updateStyle(style, cb) {
         this.options.style = style;
         this._compileStyle(style || []);
+        this._styleCounter++;
         cb();
     }
 
@@ -54,12 +56,13 @@ export default class BaseLayerWorker {
                 return;
             }
             this._createTileData(layers, features, context).then(data => {
-                if (this.checkIfCanceled(url)) {
+                if (data.canceled || this.checkIfCanceled(url)) {
                     delete this.requests[url];
                     cb(null, { canceled: true });
                     return;
                 }
                 delete this.requests[url];
+                data.data.style = this._styleCounter;
                 cb(null, data.data, data.buffers);
             });
         });
@@ -98,14 +101,15 @@ export default class BaseLayerWorker {
             //图层没有定义任何style，通过数据动态生成pluginConfig
             pluginConfigs = this._updateLayerPluginConfig(layers);
         }
-
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
             data = [],
             pluginIndexes = [],
             options = this.options,
             buffers = [];
-        const promises = [];
+        const promises = [
+            Promise.resolve(this._styleCounter)
+        ];
         for (let i = 0; i < pluginConfigs.length; i++) {
             const pluginConfig = pluginConfigs[i];
             const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.filter, features, i);
@@ -125,22 +129,34 @@ export default class BaseLayerWorker {
             let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, glScale, zScale, zoom });
             if (useDefault) {
                 promise = promise.then(tileData => {
-                    tileData.data.layer = tileFeatures[0].layer;
+                    if (tileData.data) {
+                        tileData.data.layer = tileFeatures[0].layer;
+                    } else if (Array.isArray(tileData)) {
+                        for (let i = 0; i < tileData.length; i++) {
+                            if (tileData[i].data) tileData[i].data.layer = tileFeatures[0].layer;
+                        }
+                    }
+
                     return tileData;
                 });
             }
             promises.push(promise);
         }
 
-        return Promise.all(promises).then(tileDatas => {
+        return Promise.all(promises).then(([styleCount, ...tileDatas]) => {
             function handleTileData(tileData, i) {
                 tileData.data.type = pluginConfigs[pluginIndexes[i]].renderPlugin.dataConfig.type;
+                tileData.data.filter = pluginConfigs[pluginIndexes[i]].filter.def;
 
                 if (tileData.buffers && tileData.buffers.length) {
                     for (let i = 0; i < tileData.buffers.length; i++) {
                         buffers.push(tileData.buffers[i]);
                     }
                 }
+            }
+
+            if (styleCount !== this._styleCounter) {
+                return { canceled: true };
             }
 
             for (let i = 0; i < tileDatas.length; i++) {

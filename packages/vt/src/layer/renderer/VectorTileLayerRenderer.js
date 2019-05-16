@@ -11,6 +11,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         super(layer);
         this._initPlugins();
         this.ready = false;
+        this._styleCounter = 0;
     }
 
     getWorkerConnection() {
@@ -18,6 +19,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     setStyle() {
+        this._styleCounter++;
         if (this._workerConn) {
             this.clear();
             this._clearPlugin();
@@ -229,6 +231,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 return;
             }
             if (data.canceled) {
+                return;
+            }
+            if (data.style !== this._styleCounter) {
+                //返回的是上一个style的tileData
                 return;
             }
             let needCompile = false;
