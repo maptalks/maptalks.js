@@ -86,13 +86,14 @@ class ToolTip extends UIComponent {
 
     buildOn() {
         const dom = createEl('div');
+        const options = this.options || {};
         if (options.height) {
             dom.style.height = options.height + 'px';
         }
         if (options.width) {
             dom.style.width = options.width + 'px';
         }
-        const cssName = this.options.cssName;
+        const cssName = options.cssName;
         if (!cssName && options.height) {
             dom.style.lineHeight = options.height + 'px';
         }

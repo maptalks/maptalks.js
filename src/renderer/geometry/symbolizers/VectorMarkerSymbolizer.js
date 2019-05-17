@@ -251,7 +251,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
             ctx.lineCap = lineCap;
         } else if (markerType === 'pie') {
-            point = point.add(0, -hLineWidth);
+            point = point.add(0, hLineWidth);
             const angle = Math.atan(width / 2 / height) * 180 / Math.PI;
             const lineCap = ctx.lineCap;
             ctx.lineCap = 'round';

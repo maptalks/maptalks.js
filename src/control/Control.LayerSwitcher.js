@@ -23,12 +23,12 @@ const options = {
 
 /**
  * @classdesc
- * A layerswither control for the map.
+ * A LayerSwitcher control for the map.
  * @category control
  * @extends control.Control
  * @memberOf control
  * @example
- * var layerswither = new Layerswither({
+ * var LayerSwitcher = new LayerSwitcher({
  *     position : {'top': '0', 'right': '0'}
  * }).addTo(map);
 */

@@ -8,6 +8,7 @@ import * as MapboxUtil from './core/mapbox';
 export { Util, DomUtil, StringUtil, MapboxUtil };
 export { default as Ajax } from './core/Ajax';
 export { default as Canvas } from './core/Canvas';
+export { default as Promise } from './core/Promise';
 
 // core classes
 export { default as Class } from './core/Class';
