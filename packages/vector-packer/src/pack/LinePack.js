@@ -38,21 +38,9 @@ const LINE_DISTANCE_SCALE = 1;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
 
-// aPos_normal
-// point.x,
-// point.y,
-// round ? 1 : 0,
-// up ? 1 : -1,
-// // a_data
-// // add 128 to store a byte in an unsigned byte
-// Math.round(EXTRUDE_SCALE * extrude.x) + 128,
-// Math.round(EXTRUDE_SCALE * extrude.y) + 128,
-// // lower 8-bit + higher 8 bit
-// ((linesofar & 0xFF)),
-// linesofar >> 8
 
 /**
- * 点类型数据，负责输入feature和symbol后，生成能直接赋给shader的arraybuffer
+ * 线类型数据，负责输入feature和symbol后，生成能直接赋给shader的arraybuffer
  * 设计上能直接在worker中执行
  * 其执行过程：
  * 1. 解析features（ vt 格式, geojson-vt的feature 或 geojson ）
@@ -93,7 +81,6 @@ export default class LinePack extends VectorPack {
                 width: 1,
                 name: 'aLinesofar'
             }
-            //TODO 动态color和width
         ];
     }
 
@@ -284,6 +271,11 @@ export default class LinePack extends VectorPack {
             // Calculate how far along the line the currentVertex is
             if (prevVertex) this.distance += currentVertex.dist(prevVertex);
 
+            if (i > first) {
+                //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+                this.addCurrentVertex(currentVertex, this.distance, prevNormal, -1, -1, false, lineDistances);
+            }
+
             if (currentJoin === 'miter') {
 
                 joinNormal._mult(miterLength);
@@ -396,6 +388,11 @@ export default class LinePack extends VectorPack {
 
                     this.addCurrentVertex(currentVertex, this.distance, nextNormal, 0, 0, false, lineDistances);
                 }
+            }
+
+            if (i > first && i < len - 1) {
+                //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+                this.addCurrentVertex(currentVertex, this.distance, nextNormal, 1, 1, false, lineDistances);
             }
 
             if (isSharpCorner && i < len - 1) {

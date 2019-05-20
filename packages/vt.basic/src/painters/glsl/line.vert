@@ -15,7 +15,7 @@
 attribute vec3 aPosition;
 attribute float aNormal;
 attribute vec2 aExtrude;
-// attribute float aLinesofar;
+attribute float aLinesofar;
 
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
@@ -31,6 +31,7 @@ uniform vec2 canvasSize;
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
+varying highp float vLinesofar;
 
 void main() {
     float gapwidth = lineGapWidth / 2.0;
@@ -59,4 +60,5 @@ void main() {
     // vNormal = aNormal;
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
+    vLinesofar = aLinesofar / tileRatio;
 }
