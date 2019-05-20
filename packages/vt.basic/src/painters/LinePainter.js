@@ -43,12 +43,14 @@ class LinePainter extends BasicPainter {
         if (symbol.lineDasharray && symbol.lineDasharray.length) {
             let lineDasharray;
             const old = symbol.lineDasharray;
-            if (symbol.lineDasharray.length === 2) {
+            if (symbol.lineDasharray.length === 1) {
+                lineDasharray = [old[0], old[0], old[0], old[0]];
+            } else if (symbol.lineDasharray.length === 2) {
                 lineDasharray = [old[0], old[1], old[0], old[1]];
             } else if (symbol.lineDasharray.length === 3) {
                 lineDasharray = [old[0], old[1], old[2], old[2]];
-            } else if (symbol.lineDasharray.length === 1) {
-                lineDasharray = [old[0], old[0], old[0], old[0]];
+            } else if (symbol.lineDasharray.length === 4) {
+                lineDasharray = symbol.lineDasharray;
             }
             if (lineDasharray) {
                 uniforms['lineDasharray'] = lineDasharray;

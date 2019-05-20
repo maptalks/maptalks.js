@@ -13,6 +13,14 @@ varying highp float vLinesofar;
 uniform vec4 lineDasharray;
 uniform vec4 lineDashColor;
 
+float dashAntialias(float dashMod, float dashWidth) {
+    //dash两边的反锯齿
+    float dashHalf = dashWidth / 2.0;
+    float dashDist = abs(dashMod - dashHalf);
+    float blur2 = (0.1 + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
+    return clamp(min(dashDist + blur2, dashHalf - dashDist) / blur2, 0.0, 1.0);
+}
+
 void main() {
     float dist = length(vNormal) * vWidth.s;//outset
 
@@ -34,15 +42,8 @@ void main() {
         color = mix(color, lineDashColor * alpha, isInDash);
 
         //dash两边的反锯齿
-        float dashHalf = lineDasharray[0] / 2.0;
-        float dashDist = abs(dashMod - dashHalf);
-        blur2 = (0.1 + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
-        float firstDashAlpha = clamp(min(dashDist + blur2, dashHalf - dashDist) / blur2, 0.0, 1.0);
-
-        dashHalf = lineDasharray[2] / 2.0;
-        dashDist = abs(secondDashMod - dashHalf);
-        blur2 = (0.1 + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
-        float secondDashAlpha = clamp(min(dashDist + blur2, dashHalf - dashDist) / blur2, 0.0, 1.0);
+        float firstDashAlpha = dashAntialias(dashMod, lineDasharray[0]);
+        float secondDashAlpha = dashAntialias(secondDashMod, lineDasharray[2]);;
 
         color *= mix(1.0, firstDashAlpha * firstInDash + secondDashAlpha * secondDashAlpha, isInDash);
     }
