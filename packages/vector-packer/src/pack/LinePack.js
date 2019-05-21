@@ -271,7 +271,7 @@ export default class LinePack extends VectorPack {
             // Calculate how far along the line the currentVertex is
             if (prevVertex) this.distance += currentVertex.dist(prevVertex);
 
-            if (i > first) {
+            if (i > first && i < len - 1) {
                 //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
                 this.addCurrentVertex(currentVertex, this.distance, prevNormal, -1, -1, false, lineDistances);
             }
