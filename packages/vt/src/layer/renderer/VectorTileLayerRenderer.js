@@ -19,12 +19,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     setStyle() {
-        this._styleCounter++;
         if (this._workerConn) {
             this.clear();
             this._clearPlugin();
             this._workerConn.updateStyle(this.layer.getStyle(), err => {
                 if (err) throw new Error(err);
+                this._styleCounter++;
                 this._initPlugins();
                 this.setToRedraw();
             });
@@ -473,8 +473,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     pick(x, y, options) {
         if (maptalks['Browser']['retina']) {
-            x *= 2;
-            y *= 2;
+            const dpr = this.getMap().getDevicePixelRatio();
+            x *= dpr;
+            y *= dpr;
         }
         const hits = [];
         const plugins = this._getFramePlugins();
