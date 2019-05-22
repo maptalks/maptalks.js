@@ -60,7 +60,7 @@ export default class IconRequestor {
                 delete symbol.markerDx;
                 delete symbol.markerDy;
                 marker.setSymbol(symbol);
-                const sprite = marker._getSprite();
+                const sprite = marker['_getSprite']();
                 if (sprite) {
                     const canvas = sprite.canvas;
                     const width = canvas.width;
