@@ -1,6 +1,8 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayer from './VectorTileLayer';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
+import Ajax from '../../worker/util/Ajax';
+import { isString } from '../../common/Util';
 
 const options = {
     //feature data to return from worker
@@ -12,21 +14,30 @@ const options = {
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {
 
-    constructor(id, options) {
+    constructor(id, options = {}) {
         super(id, options);
-        this._generateIdMap();
+        this.setData(options['data']);
     }
 
     getWorkerOptions() {
         const options = super.getWorkerOptions();
-        options.data = this.options.data;
+        options.data = this._data;
         options.tileBuffer = this.options.tileBuffer;
         options.extent = this.options.extent;
         return options;
     }
 
     setData(data) {
-        this.options.data = data;
+        if (isString(data)) {
+            Ajax.getJSON(data, (err, data) => {
+                if (err) {
+                    throw err;
+                }
+                this.setData(data);
+            });
+            return this;
+        }
+        this._data = data;
         this._generateIdMap();
         const renderer = this.getRenderer();
         if (renderer) {
@@ -41,6 +52,10 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         return this;
     }
 
+    getData() {
+        return this._data || null;
+    }
+
     getTileUrl(x, y, z) {
         return this.getId() + ',' + x + ',' + y + ',' + z;
     }
@@ -49,16 +64,21 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         return this._idMaps[id];
     }
 
+    static fromJSON(layerJSON) {
+        if (!layerJSON || layerJSON['type'] !== 'GeoJSONVectorTileLayer') {
+            return null;
+        }
+
+        return new GeoJSONVectorTileLayer(layerJSON['id'], layerJSON['options']);
+    }
+
     _generateIdMap() {
-        if (!this.options.data) {
+        if (!this._data) {
             return;
         }
-        this.features = JSON.parse(JSON.stringify(this.options.data));
+        this.features = JSON.parse(JSON.stringify(this._data));
         if (!this.features) {
             return;
-        }
-        if (maptalks.Util.isString(this.features)) {
-            this.features = JSON.parse(this.features);
         }
         let uid = 0;
         this._idMaps = {};
@@ -78,7 +98,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 this._idMaps[f.id] = f;
             });
         }
-        this.options.data = JSON.stringify(this.features);
+        this._data = JSON.stringify(this.features);
     }
 }
 
