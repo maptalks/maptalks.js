@@ -1,5 +1,7 @@
 import { isFunction, uid } from '../../common/Util';
 
+const USE_FETCH = typeof fetch === 'function' && typeof AbortController  === 'function';
+
 /**
  * @classdesc
  * Ajax Utilities. It is static and should not be initiated.
@@ -65,19 +67,57 @@ const Ajax = {
             cb = options;
             options = t;
         }
-        const client = Ajax._getClient(cb);
-        client.open('GET', url, true);
-        if (options) {
-            for (const k in options.headers) {
-                client.setRequestHeader(k, options.headers[k]);
+        if (!USE_FETCH) {
+            const client = Ajax._getClient(cb);
+            client.open('GET', url, true);
+            if (options) {
+                for (const k in options.headers) {
+                    client.setRequestHeader(k, options.headers[k]);
+                }
+                client.withCredentials = options.credentials === 'include';
+                if (options['responseType']) {
+                    client.responseType = options['responseType'];
+                }
             }
-            client.withCredentials = options.credentials === 'include';
-            if (options['responseType']) {
-                client.responseType = options['responseType'];
-            }
+            client.send(null);
+            return client;
+        } else {
+            options = options || {};
+            const controller = new AbortController();
+            const signal = controller.signal;
+            fetch(url, { signal, method: 'GET', headers: options.headers, credentials: options.credentials, referrerPolicy: 'origin' }).then(response => {
+                const parsed = this._parseResponse(response, options['returnJSON'], options['responseType']);
+                if (parsed instanceof Error) {
+                    cb(parsed);
+                } else {
+                    parsed.then(data => {
+                        if (options.responseType === 'arraybuffer') {
+                            cb(null, {
+                                data,
+                                cacheControl: response.headers.get('Cache-Control'),
+                                expires: response.headers.get('Expires'),
+                                contentType : response.headers.get('Content-Type')
+                            });
+                        } else {
+                            cb(null, data);
+                        }
+                    });
+                }
+            }).catch(err => {
+                cb(err, null);
+            });
+            return controller;
         }
-        client.send(null);
-        return client;
+    },
+
+    _parseResponse(response, isJSON, responseType) {
+        if (response.status !== 200) {
+            return new Error(`incorrect http request with status code(${response.status}): ${response.statusText}`);
+        } else if (responseType === 'arraybuffer') {
+            return response.arrayBuffer();
+        } else {
+            return isJSON ? response.json() : response.text();
+        }
     },
 
     _wrapCallback: function (client, cb) {
@@ -177,12 +217,14 @@ Ajax.getJSON = function (url, options, cb) {
         options = t;
     }
     const callback = function (err, resp) {
-        const data = resp ? JSON.parse(resp) : null;
+        const data = typeof resp === 'string' ? JSON.parse(resp) : resp || null;
         cb(err, data);
     };
     if (options && options['jsonp']) {
         return Ajax.jsonp(url, callback);
     }
+    options = options || {};
+    options['returnJSON'] = true;
     return Ajax.get(url, options, callback);
 };
 
