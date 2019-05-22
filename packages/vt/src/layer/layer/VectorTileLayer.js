@@ -242,6 +242,13 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._schema[z];
     }
 
+    static fromJSON(layerJSON) {
+        if (!layerJSON || layerJSON['type'] !== 'VectorTileLayer') {
+            return null;
+        }
+
+        return new VectorTileLayer(layerJSON['id'], layerJSON['options']);
+    }
 
     _compileStyle() {
         const styles = this.options.style;
