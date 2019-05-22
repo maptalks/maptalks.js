@@ -1,6 +1,6 @@
 import { vec2, vec3, vec4, mat2, mat4, reshader } from '@maptalks/gl';
 import CollisionPainter from './CollisionPainter';
-import { extend, TYPE_BYTES, isNil } from '../Util';
+import { extend, isNil } from '../Util';
 import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
 import { getLabelBox } from './util/get_label_box';
@@ -770,21 +770,21 @@ export function resolveText(str, props) {
     });
 }
 
-function bytesAlign(attributes) {
-    let max = 0;
-    let stride = 0;
-    for (const p in attributes) {
-        const type = attributes[p].type;
-        if (TYPE_BYTES[type] > max) {
-            max = TYPE_BYTES[type];
-        }
-        stride += TYPE_BYTES[type] * attributes[p].size || 1;
-    }
-    if (stride % max > 0) {
-        stride += (max - stride % max);
-    }
-    return stride;
-}
+// function bytesAlign(attributes) {
+//     let max = 0;
+//     let stride = 0;
+//     for (const p in attributes) {
+//         const type = attributes[p].type;
+//         if (TYPE_BYTES[type] > max) {
+//             max = TYPE_BYTES[type];
+//         }
+//         stride += TYPE_BYTES[type] * attributes[p].size || 1;
+//     }
+//     if (stride % max > 0) {
+//         stride += (max - stride % max);
+//     }
+//     return stride;
+// }
 
 function resetOffset(aOffset, meshElements, start, end) {
     for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
