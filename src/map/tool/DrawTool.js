@@ -354,10 +354,10 @@ class DrawTool extends MapTool {
             this._clickCoords.push(coordinate);
             this._historyPointer = this._clickCoords.length;
             if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
-                registerMode['update']([coordinate], this._geometry, event);
+                registerMode['update']([coordinate], this._geometry, event, this);
                 this.endDraw(event);
             } else {
-                registerMode['update'](this._clickCoords, this._geometry, event);
+                registerMode['update'](this._clickCoords, this._geometry, event, this);
             }
             /**
              * drawvertex event.
@@ -388,7 +388,7 @@ class DrawTool extends MapTool {
         const symbol = this.getSymbol();
         if (!this._geometry) {
             this._clickCoords = [coordinate];
-            this._geometry = registerMode['create'](this._clickCoords, event);
+            this._geometry = registerMode['create'](this._clickCoords, event, this);
             if (symbol && mode !== 'point') {
                 this._geometry.setSymbol(symbol);
             } else if (this.options.hasOwnProperty('symbol')) {
@@ -436,9 +436,9 @@ class DrawTool extends MapTool {
             if (path && path.length > 0 && coordinate.equals(path[path.length - 1])) {
                 return;
             }
-            registerMode['update'](path.concat([coordinate]), this._geometry, event);
+            registerMode['update'](path.concat([coordinate]), this._geometry, event, this);
         } else {
-            registerMode['update']([coordinate], this._geometry, event);
+            registerMode['update']([coordinate], this._geometry, event, this);
         }
         /**
          * mousemove event.
@@ -484,7 +484,7 @@ class DrawTool extends MapTool {
         if (path.length < 2 || (this._geometry && (this._geometry instanceof Polygon) && path.length < 3)) {
             return;
         }
-        registerMode['update'](path, this._geometry, event);
+        registerMode['update'](path, this._geometry, event, this);
         this.endDraw(event);
     }
 
@@ -578,7 +578,7 @@ class DrawTool extends MapTool {
             param = {};
         }
         if (this._geometry) {
-            param['geometry'] = this._getRegisterMode()['generate'](this._geometry).copy();
+            param['geometry'] = this._getRegisterMode()['generate'](this._geometry, this).copy();
         }
         MapTool.prototype._fireEvent.call(this, eventName, param);
     }
