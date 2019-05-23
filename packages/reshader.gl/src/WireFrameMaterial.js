@@ -16,7 +16,8 @@ const defaultUniforms = {
     'squeezeMin': 0.5,
     'squeezeMax': 1,
     'dualStroke': false,
-    'secondThickness': 0.05
+    'secondThickness': 0.05,
+    'opacity' : 1.0
 };
 
 class WireFrameMaterial extends Material {
