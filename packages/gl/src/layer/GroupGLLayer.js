@@ -103,10 +103,21 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @return {Object} layer's profile JSON
      */
     toJSON() {
+        const layers = [];
+        if (this.layers) {
+            for (let i = 0; i < this.layers.length; i++) {
+                if (!this.layers[i]) {
+                    continue;
+                }
+                if (this.layers[i] && this.layers[i].toJSON) {
+                    layers[i].push(layers[i].toJSON());
+                }
+            }
+        }
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
-            'layers' : this.layers.map(layer => layer.toJSON()),
+            'layers' : layers,
             'options': this.config()
         };
         return profile;
