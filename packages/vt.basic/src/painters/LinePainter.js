@@ -193,7 +193,7 @@ class LinePainter extends BasicPainter {
                 blend: {
                     enable: true,
                     func: {
-                        src: 'src alpha',
+                        src: 'one',
                         dst: 'one minus src alpha'
                     },
                     // func : {
