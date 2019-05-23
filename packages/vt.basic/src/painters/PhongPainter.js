@@ -225,6 +225,26 @@ class PhongPainter extends Painter {
 
     }
 
+    deleteMesh(meshes, keepGeometry) {
+        if (!meshes) {
+            return;
+        }
+        this.scene.removeMesh(meshes);
+        if (Array.isArray(meshes)) {
+            for (let i = 0; i < meshes.length; i++) {
+                if (!keepGeometry) {
+                    meshes[i].geometry.dispose();
+                }
+                meshes[i].dispose();
+            }
+        } else {
+            if (!keepGeometry) {
+                meshes.geometry.dispose();
+            }
+            meshes.dispose();
+        }
+    }
+
     _updateMaterial() {
         if (this._material) {
             this._material.dispose();

@@ -20,11 +20,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     setStyle() {
         if (this._workerConn) {
+            this._styleCounter++;
             this.clear();
             this._clearPlugin();
             this._workerConn.updateStyle(this.layer.getStyle(), err => {
                 if (err) throw new Error(err);
-                this._styleCounter++;
                 this._initPlugins();
                 this.setToRedraw();
             });

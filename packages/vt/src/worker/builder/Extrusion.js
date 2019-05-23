@@ -3,6 +3,7 @@ import { buildFaceUV, buildSideUV } from './UV';
 import { pushIn, getIndexArrayType } from '../../common/Util';
 import { clipPolygon } from './clip';
 import earcut from 'earcut';
+import { KEY_IDX } from './Constant';
 
 export function buildExtrudeFaces(
     features, EXTENT,
@@ -158,7 +159,7 @@ export function buildExtrudeFaces(
         // need to buildUniqueVertex
         const count = indices.length - featIndexes.length;
         for (let i = 0; i < count; i++) {
-            featIndexes.push(r);
+            featIndexes.push(feature[KEY_IDX] || r);
         }
     }
     const feaCtor = getIndexArrayType(features.length);

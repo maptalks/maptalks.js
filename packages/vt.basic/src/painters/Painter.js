@@ -160,17 +160,27 @@ class Painter {
         this.scene.removeMesh(meshes);
         if (Array.isArray(meshes)) {
             for (let i = 0; i < meshes.length; i++) {
-                if (!keepGeometry) {
+                if (!meshes[i].isValid()) {
+                    continue;
+                }
+                if (!keepGeometry && meshes[i].geometry) {
                     meshes[i].geometry.dispose();
                 }
-                meshes[i].material.dispose();
+                if (meshes[i].material) {
+                    meshes[i].material.dispose();
+                }
                 meshes[i].dispose();
             }
         } else {
-            if (!keepGeometry) {
+            if (!meshes.isValid()) {
+                return;
+            }
+            if (!keepGeometry && meshes.geometry) {
                 meshes.geometry.dispose();
             }
-            meshes.material.dispose();
+            if (meshes.material) {
+                meshes.material.dispose();
+            }
             meshes.dispose();
         }
     }

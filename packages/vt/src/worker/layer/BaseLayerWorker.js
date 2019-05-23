@@ -5,9 +5,9 @@ import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack } fro
 import Promise from '../../common/Promise';
 import distinctColors from '../../common/Colors';
 import { createFilter } from '@maptalks/feature-filter';
+import { KEY_IDX } from '../builder/Constant';
 // import Browser from '../util/Browser';
 
-const KEY_IDX = '__fea_idx';
 // let FONT_CANVAS;
 
 export default class BaseLayerWorker {

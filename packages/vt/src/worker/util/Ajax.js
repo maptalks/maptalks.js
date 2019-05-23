@@ -101,11 +101,9 @@ const Ajax = {
                         } else {
                             cb(null, data);
                         }
-                    });
+                    }).catch(cb);
                 }
-            }).catch(err => {
-                cb(err, null);
-            });
+            }).catch(cb);
             return controller;
         }
     },

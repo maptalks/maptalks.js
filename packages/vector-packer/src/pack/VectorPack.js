@@ -10,7 +10,7 @@ import { extend } from '../style/Util';
 import { loadFunctionTypes } from '@maptalks/function-type';
 
 //feature index defined in BaseLayerWorker
-const KEY_IDX = '__fea_idx';
+export const KEY_IDX = '__fea_idx';
 
 /**
  * abstract class for all vector packs
@@ -168,7 +168,6 @@ export default class VectorPack {
 
         const format = this.getFormat(vectors[0].symbol);
         const formatWidth = this.formatWidth = getFormatWidth(format);
-
         //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
         let maxFeaIndex = 0;
