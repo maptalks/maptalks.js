@@ -22,8 +22,8 @@ const EXTRUDE_SCALE = 63;
  *
  * The newly created vertices are placed SHARP_CORNER_OFFSET pixels from the corner.
  */
-const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
-const SHARP_CORNER_OFFSET = 15;
+// const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
+// const SHARP_CORNER_OFFSET = 15;
 
 
 
@@ -115,8 +115,8 @@ export default class LinePack extends VectorPack {
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
         //TODO overscaling的含义？
-        const EXTENT = this.options.EXTENT,
-            overscaling = 1;
+        // const EXTENT = this.options.EXTENT,
+        //     overscaling = 1;
 
         let lineDistances = null;
         //TODO lineDistances 和 gradient 的处理
@@ -151,7 +151,7 @@ export default class LinePack extends VectorPack {
 
         if (join === 'bevel') miterLimit = 1.05;
 
-        const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * overscaling));
+        // const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * overscaling));
 
         const firstVertex = vertices[first];
 
@@ -230,17 +230,17 @@ export default class LinePack extends VectorPack {
             const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
             const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
-            const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
+            // const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
-            if (isSharpCorner && i > first) {
-                const prevSegmentLength = currentVertex.dist(prevVertex);
-                if (prevSegmentLength > 2 * sharpCornerOffset) {
-                    const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
-                    this.distance += newPrevVertex.dist(prevVertex);
-                    this.addCurrentVertex(newPrevVertex, this.distance, prevNormal.mult(1), 0, 0, false, lineDistances);
-                    prevVertex = newPrevVertex;
-                }
-            }
+            // if (isSharpCorner && i > first) {
+            //     const prevSegmentLength = currentVertex.dist(prevVertex);
+            //     if (prevSegmentLength > 2 * sharpCornerOffset) {
+            //         const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
+            //         this.distance += newPrevVertex.dist(prevVertex);
+            //         this.addCurrentVertex(newPrevVertex, this.distance, prevNormal.mult(1), 0, 0, false, lineDistances);
+            //         prevVertex = newPrevVertex;
+            //     }
+            // }
 
             // The join if a middle vertex, otherwise the cap.
             const middleVertex = prevVertex && nextVertex;
@@ -395,15 +395,15 @@ export default class LinePack extends VectorPack {
                 this.addCurrentVertex(currentVertex, this.distance, nextNormal, 1, 1, false, lineDistances);
             }
 
-            if (isSharpCorner && i < len - 1) {
-                const nextSegmentLength = currentVertex.dist(nextVertex);
-                if (nextSegmentLength > 2 * sharpCornerOffset) {
-                    const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
-                    this.distance += newCurrentVertex.dist(currentVertex);
-                    this.addCurrentVertex(newCurrentVertex, this.distance, nextNormal.mult(1), 0, 0, false, lineDistances);
-                    currentVertex = newCurrentVertex;
-                }
-            }
+            // if (isSharpCorner && i < len - 1) {
+            //     const nextSegmentLength = currentVertex.dist(nextVertex);
+            //     if (nextSegmentLength > 2 * sharpCornerOffset) {
+            //         const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
+            //         this.distance += newCurrentVertex.dist(currentVertex);
+            //         this.addCurrentVertex(newCurrentVertex, this.distance, nextNormal.mult(1), 0, 0, false, lineDistances);
+            //         currentVertex = newCurrentVertex;
+            //     }
+            // }
 
             startOfLine = false;
         }

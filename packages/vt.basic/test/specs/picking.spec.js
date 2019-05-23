@@ -3,6 +3,7 @@ const assert = require('assert');
 const data = require('../integration/fixtures/data');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
+const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
@@ -392,11 +393,8 @@ describe('picking specs', () => {
                             geometry: {
                                 type: 'LineString',
                                 coordinates: [
-                                    [13.41706531630723, 52.529564627058534],
                                     [13.417135053741617, 52.52956625878565],
                                     [13.417226248848124, 52.52954504632825],
-                                    [13.417290621864481, 52.52956625878565],
-                                    [13.417635229170008, 52.529564137540376]
                                 ]
                             }
                         }
@@ -432,7 +430,7 @@ describe('picking specs', () => {
                 }
                 const redPoint = layer.identify([13.417226248848124, 52.52954504632825]);
 
-                const expected = { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [[13.41706531630723, 52.529564627058534], [13.417135053741617, 52.52956625878565], [13.417226248848124, 52.52954504632825], [13.417290621864481, 52.52956625878565], [13.417635229170008, 52.529564137540376]] }, 'id': 0, 'layer': 0 }, 'symbol': { 'lineColor': '#f00' } };
+                const expected = { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [[13.417135053741617, 52.52956625878565], [13.417226248848124, 52.52954504632825]] }, 'id': 0, 'layer': 0 }, 'symbol': { 'lineColor': '#f00' } };
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
 
                 done();
@@ -441,36 +439,39 @@ describe('picking specs', () => {
         });
     });
 
-    it('should let options.features control picking result', done => {
-        const options = {
-            data: {
-                type: 'FeatureCollection',
-                features: [
-                    { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } }
-                ]
-            },
-            style: {
-                renderPlugin: {
-                    type: 'native-point',
-                    dataConfig: {
-                        type: 'native-point'
-                    }
-                },
-                symbol: {
-                    markerType: 'square',
-                    markerSize: 20,
-                    markerFill: '#ff0',
-                    markerOpacity: 0.5
+    const COMMON_OPTIONS = {
+        data: {
+            type: 'FeatureCollection',
+            features: [
+                { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } }
+            ]
+        },
+        style: {
+            renderPlugin: {
+                type: 'native-point',
+                dataConfig: {
+                    type: 'native-point'
                 }
             },
-            features: false,
-            view: {
-                center: [0.5, 0.5],
-                zoom: 8
+            symbol: {
+                markerType: 'square',
+                markerSize: 20,
+                markerFill: '#ff0',
+                markerOpacity: 0.5
             }
-        };
-        map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+        },
+        features: true,
+        view: {
+            center: [0.5, 0.5],
+            zoom: 8
+        }
+    };
 
+    it('should let options.features control picking result', done => {
+
+        map = new maptalks.Map(container, COMMON_OPTIONS.view || DEFAULT_VIEW);
+        const options = JSON.parse(JSON.stringify(COMMON_OPTIONS));
+        options.features = false;
         const layer = new GeoJSONVectorTileLayer('gvt', options);
         let count = 0;
         layer.on('layerload', () => {
@@ -486,6 +487,26 @@ describe('picking specs', () => {
             }
         });
         layer.addTo(map);
+    }).timeout(5000);
+
+    it('should pick in a GroupGLLayer', done => {
+        map = new maptalks.Map(container, COMMON_OPTIONS.view || DEFAULT_VIEW);
+
+        let count = 0;
+        const layer1 = new GeoJSONVectorTileLayer('gvt1', COMMON_OPTIONS);
+        const layer2 = new GeoJSONVectorTileLayer('gvt2', COMMON_OPTIONS);
+        const group = new GroupGLLayer('group', [layer1, layer2]);
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                let picked = layer1.identify([0.5, 0.5]);
+                assert.ok(picked[0].data);
+                picked = layer2.identify([0.5, 0.5]);
+                assert.ok(picked[0].data);
+                done();
+            }
+        });
+        group.addTo(map);
     });
 
     //TODO line 和 Polygon 的picking 测试

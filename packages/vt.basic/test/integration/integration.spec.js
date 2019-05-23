@@ -34,6 +34,7 @@ describe('vector tile integration specs', () => {
             const options = style.view || DEFAULT_VIEW;
             options.centerCross = true;
             map = new maptalks.Map(container, options);
+            style.debugCollision = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             let count = 0;
             layer.on('layerload', () => {

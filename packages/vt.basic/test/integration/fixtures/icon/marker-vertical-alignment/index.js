@@ -16,7 +16,7 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                collision: false,
+                collision: true,
                 fading: false
             }
         },
@@ -44,7 +44,7 @@ const style = [
             markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
             markerWidth: 30,
             markerHeight: 30,
-            markerOpacity: 1
+            markerOpacity: 1,
         }
     }
 ];

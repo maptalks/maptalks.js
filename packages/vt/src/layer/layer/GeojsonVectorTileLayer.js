@@ -1,4 +1,3 @@
-import * as maptalks from 'maptalks';
 import VectorTileLayer from './VectorTileLayer';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import Ajax from '../../worker/util/Ajax';
@@ -21,7 +20,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     getWorkerOptions() {
         const options = super.getWorkerOptions();
-        options.data = this._data;
+        options.data = JSON.stringify(this.features);
         options.tileBuffer = this.options.tileBuffer;
         options.extent = this.options.extent;
         return options;
@@ -37,7 +36,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             });
             return this;
         }
-        this._data = data;
+        this.features = data;
         this._generateIdMap();
         const renderer = this.getRenderer();
         if (renderer) {
@@ -53,7 +52,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     getData() {
-        return this._data || null;
+        return this.features || null;
     }
 
     getTileUrl(x, y, z) {
@@ -73,10 +72,10 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     _generateIdMap() {
-        if (!this._data) {
+        if (!this.features) {
             return;
         }
-        this.features = JSON.parse(JSON.stringify(this._data));
+        this.features = JSON.parse(JSON.stringify(this.features));
         if (!this.features) {
             return;
         }
@@ -98,7 +97,6 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 this._idMaps[f.id] = f;
             });
         }
-        this._data = JSON.stringify(this.features);
     }
 }
 

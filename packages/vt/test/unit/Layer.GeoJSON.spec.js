@@ -32,11 +32,9 @@ describe('GeoJSONVectorTileLayer', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: points
         }).addTo(map);
-        const target = JSON.parse(JSON.stringify(points));
-        target.features.forEach((f, index) => {
-            f.id = index;
-        });
-        assert.ok(layer.options.data === JSON.stringify(target));
+        assert.ok(layer.options.data === points);
+        //TODO 改为多图层后，getData返回的数据格式可能会有改变
+        assert.equal(layer.getData().features.length, points.features.length);
         assert.ok(points.features[0].id === undefined);
     });
 
@@ -48,5 +46,19 @@ describe('GeoJSONVectorTileLayer', () => {
             assert.ok(e);
             done();
         });
+    });
+
+    it('should can be serialized', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points
+        });
+        const json = layer.toJSON();
+        const layer2 = maptalks.Layer.fromJSON(json);
+        layer2.on('workerready', e => {
+            assert.ok(e);
+            assert.ok(layer2.getData().features.length === points.features.length);
+            done();
+        });
+        layer2.addTo(map);
     });
 });
