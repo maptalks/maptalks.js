@@ -167,10 +167,15 @@ export default class BaseLayerWorker {
                 if (Array.isArray(tileData)) {
                     const datas = [];
                     for (let ii = 0; ii < tileData.length; ii++) {
+                        if (!tileData[ii]) {
+                            continue;
+                        }
                         handleTileData(tileData[ii], i);
                         datas.push(tileData[ii].data);
                     }
-                    data[pluginIndexes[i]].data = datas;
+                    if (datas.length) {
+                        data[pluginIndexes[i]].data = datas;
+                    }
                 } else {
                     handleTileData(tileData, i);
                     data[pluginIndexes[i]].data = tileData.data;
