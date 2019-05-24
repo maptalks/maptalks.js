@@ -1,6 +1,7 @@
 const maptalks = require('maptalks');
 const assert = require('assert');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
 // const deepEqual = require('fast-deep-equal');
 
 const points = {
@@ -57,6 +58,21 @@ describe('GeoJSONVectorTileLayer', () => {
         layer2.on('workerready', e => {
             assert.ok(e);
             assert.ok(layer2.getData().features.length === points.features.length);
+            done();
+        });
+        layer2.addTo(map);
+    });
+
+    it('should can serialize GroupGLLayer', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points
+        });
+        const groupLayer = new GroupGLLayer('group', [layer]);
+        const json = groupLayer.toJSON();
+        const layer2 = maptalks.Layer.fromJSON(json);
+        layer2.on('layerload', e => {
+            assert.ok(e);
+            assert.ok(layer2.getLayers()[0].getData().features.length === points.features.length);
             done();
         });
         layer2.addTo(map);
