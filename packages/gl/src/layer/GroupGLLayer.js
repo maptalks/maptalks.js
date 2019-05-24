@@ -106,11 +106,12 @@ export default class GroupGLLayer extends maptalks.Layer {
         const layers = [];
         if (this.layers) {
             for (let i = 0; i < this.layers.length; i++) {
-                if (!this.layers[i]) {
+                const layer = this.layers[i];
+                if (!layer) {
                     continue;
                 }
-                if (this.layers[i] && this.layers[i].toJSON) {
-                    layers[i].push(layers[i].toJSON());
+                if (layer && layer.toJSON) {
+                    layers.push(layer.toJSON());
                 }
             }
         }
