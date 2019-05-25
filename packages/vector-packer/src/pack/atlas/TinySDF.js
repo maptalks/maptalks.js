@@ -40,7 +40,7 @@ TinySDF.prototype.draw = function (char, width, height) {
     this.ctx.clearRect(0, 0, this.size, this.size);
     // this.ctx.fillText(char, this.buffer, this.middle);
     this.ctx.textBaseline = 'bottom';
-    this.ctx.fillText(char, this.buffer, height - this.buffer + 2);
+    this.ctx.fillText(char, this.buffer, height - this.buffer + 1);
 
     var imgData = this.ctx.getImageData(0, 0, width, height);
     var alphaChannel = new Uint8ClampedArray(width * height);

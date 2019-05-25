@@ -126,6 +126,11 @@ export default class PointPack extends VectorPack {
                 fontGlphy[text.charCodeAt(i)] = 1;
                 //TODO mapbox-gl 这里对 vertical 字符做了特殊处理
             }
+            if (symbol['textPlacement'] === 'line') {
+                //isCharsCompact是指英文等字符需要适当缩小间隔，让文字更紧凑
+                //但placement为line时，为解决intel gpu的崩溃问题需开启stencil，所以不能缩小间隔，否则会出现文字的削边问题
+                glyphReqs.options = { isCharsCompact: false };
+            }
         }
         return point;
     }
@@ -189,7 +194,7 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchor.x, anchor.y, 0,
-                    tl.x, tl.y,
+                    tl.x * 10, tl.y * 10,
                     tex.x, tex.y + tex.h
                 );
                 if (isText) {
@@ -198,7 +203,7 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchor.x, anchor.y, 0,
-                    tr.x, tr.y,
+                    tr.x * 10, tr.y * 10,
                     tex.x + tex.w, tex.y + tex.h
                 );
                 if (isText) {
@@ -207,7 +212,7 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchor.x, anchor.y, 0,
-                    bl.x, bl.y,
+                    bl.x * 10, bl.y * 10,
                     tex.x, tex.y
                 );
                 if (isText) {
@@ -216,7 +221,7 @@ export default class PointPack extends VectorPack {
 
                 data.push(
                     anchor.x, anchor.y, 0,
-                    br.x, br.y,
+                    br.x * 10, br.y * 10,
                     tex.x + tex.w, tex.y
                 );
                 if (isText) {

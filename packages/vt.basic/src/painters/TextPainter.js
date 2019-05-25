@@ -453,7 +453,7 @@ export default class TextPainter extends CollisionPainter {
             const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
 
             for (let ii = 0; ii < 4; ii++) {
-                vec2.set(SHAPE, aShape[2 * (vertexStart + ii)], aShape[2 * (vertexStart + ii) + 1]);
+                vec2.set(SHAPE, aShape[2 * (vertexStart + ii)] / 10, aShape[2 * (vertexStart + ii) + 1] / 10);
                 vec2.scale(SHAPE, SHAPE, textSize / glyphSize);
                 vec2.transformMat2(SHAPE, SHAPE, shapeMatrix);
 

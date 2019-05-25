@@ -7,13 +7,13 @@ let DEBUG_COUNTER = 0;
 let LIMIT_PER_FRAME = 15;
 
 export default class GlyphRequestor {
-    constructor(framer, limit = LIMIT_PER_FRAME, useCharBackBuffer) {
+    constructor(framer, limit = LIMIT_PER_FRAME, isCompactChars) {
         this.entries = {};
         this._cachedFont = {};
         this._cache = new LRUCache(2048, function () {});
         this._framer = framer;
         this._limit = limit;
-        this._useCharBackBuffer = useCharBackBuffer;
+        this._isCompactChars = isCompactChars;
     }
 
     getGlyphs(glyphs, cb) {
@@ -22,6 +22,12 @@ export default class GlyphRequestor {
             return;
         }
         const entries = this.entries;
+        const options = glyphs.options;
+        let isCharsCompact = true;
+        if (options) {
+            isCharsCompact = options.isCharsCompact !== false;
+        }
+        isCharsCompact = isCharsCompact || this._isCompactChars;
 
         const run = (startStep, glyphSdfs, buffers) => {
             let drawCount = 0;
@@ -29,6 +35,9 @@ export default class GlyphRequestor {
             // const now = performance.now();
 
             for (const font in glyphs) {
+                if (font === 'options') {
+                    continue;
+                }
                 entries[font] = entries[font] || {};
                 glyphSdfs[font] = glyphSdfs[font] || {};
                 for (const charCode in glyphs[font]) {
@@ -36,12 +45,14 @@ export default class GlyphRequestor {
                     if (step <= startStep) {
                         continue;
                     }
-                    const key = font + ':' + charCode;
+                    const fonts = font.split(' ');
+                    const isCharCompact = isCharsCompact && fonts[0] === 'normal' && !charHasUprightVerticalOrientation(+charCode);
+                    const key = font + ':' + charCode + ':' + isCharCompact;
                     let sdf;
                     if (this._cache.has(key)) {
                         sdf = this._cache.get(key);
                     } else {
-                        sdf = this._tinySDF(entries[font], font, charCode);
+                        sdf = this._tinySDF(entries[font], fonts, charCode, isCharCompact);
                         // count++;
                         this._cache.add(key, sdf);
                         drawCount++;
@@ -71,24 +82,21 @@ export default class GlyphRequestor {
 
     }
 
-    _tinySDF(entry, font, charCode) {
+    _tinySDF(entry, fonts, charCode, isCharsCompact) {
 
         // if (!isChar['CJK Unified Ideographs'](id) && !isChar['Hangul Syllables'](id)) { // eslint-disable-line new-cap
         //     return;
         // }
-        const fonts = font.split(' ');
         const textStyle = fonts[0],
             textWeight = fonts[1],
             textFaceName = fonts.slice(3).join(' ');
         const fontFamily = textFaceName;
         let tinySDF = entry.tinySDF;
-        const buffer = 3;
-        let backBuffer = this._useCharBackBuffer ? 1 : 0;
-        if (fonts[0] === 'normal' && !charHasUprightVerticalOrientation(charCode)) {
-            //非中文/韩文时，增大 backBuffer，让文字更紧凑
-            //但因为intel gpu崩溃问题，启用stencil且backBuffer不为0时，会有文字削边现象，所以必须设为0
-            backBuffer = this._useCharBackBuffer ? 2 : 0;
-        }
+        const buffer = 2;
+        //1. 中日韩字符中间适当多留一些间隔
+        //2. 英文或其他拉丁文字，减小 advanceBuffer，让文字更紧凑
+        //3. 但因为intel gpu崩溃问题，启用stencil且advancaBuffer < 0时，会有文字削边现象，所以设为 1
+        const advanceBuffer = isCharsCompact ? -2 : 0;
         if (!tinySDF) {
             let fontWeight = '400';
             if (/bolder/i.test(textWeight)) {
@@ -134,7 +142,6 @@ export default class GlyphRequestor {
         //         advance: 26
         //     }
         // };
-
         return {
             charCode,
             bitmap: {
@@ -146,9 +153,9 @@ export default class GlyphRequestor {
                 width: width,
                 height: 24,
                 left: 0,
-                top: -8 - (buffer - 3),
+                top: -8,
                 // top: -buffer,
-                advance: width + buffer - backBuffer
+                advance: width + buffer + advanceBuffer
             }
         };
     }

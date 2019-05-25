@@ -50,7 +50,7 @@ void main() {
     float angleCos = cos(rotation);
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    vec2 shape = shapeMatrix * aShape;
+    vec2 shape = shapeMatrix * (aShape / 10.0);
     shape = shape / iconSize * vec2(markerWidth, markerHeight);
 
     if (pitchWithMap == 0.0) {
