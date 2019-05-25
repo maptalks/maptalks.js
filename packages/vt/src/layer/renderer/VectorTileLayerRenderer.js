@@ -225,7 +225,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
         const glScale = map.getGLScale(tileInfo.z);
         this._workerConn.loadTile({ tileInfo, glScale, zScale : this._zScale }, (err, data) => {
-            if (err) this.onTileError(EMPTY_VECTOR_TILE, tileInfo);
+            if (err) {
+                if (err.status && err.status === 404) {
+                    //只处理404
+                    this.onTileError(EMPTY_VECTOR_TILE, tileInfo);
+                }
+                return;
+            }
             if (!data) {
                 this.onTileLoad({ _empty : true }, tileInfo);
                 return;

@@ -87,7 +87,7 @@ const Ajax = {
             const signal = controller.signal;
             fetch(url, { signal, method: 'GET', headers: options.headers, credentials: options.credentials, referrerPolicy: 'origin' }).then(response => {
                 const parsed = this._parseResponse(response, options['returnJSON'], options['responseType']);
-                if (parsed instanceof Error) {
+                if (parsed.message) {
                     cb(parsed);
                 } else {
                     parsed.then(data => {
@@ -110,7 +110,11 @@ const Ajax = {
 
     _parseResponse(response, isJSON, responseType) {
         if (response.status !== 200) {
-            return new Error(`incorrect http request with status code(${response.status}): ${response.statusText}`);
+            return {
+                status: response.status,
+                statusText: response.statusText,
+                message: `incorrect http request with status code(${response.status}): ${response.statusText}`,
+            };
         } else if (responseType === 'arraybuffer') {
             return response.arrayBuffer();
         } else {
