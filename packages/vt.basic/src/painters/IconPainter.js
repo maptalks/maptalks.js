@@ -44,7 +44,6 @@ const defaultUniforms = {
 };
 
 //temparary variables
-const BOX = [];
 const PROJ_MATRIX = [];
 
 class IconPainter extends CollisionPainter {
@@ -334,7 +333,7 @@ class IconPainter extends CollisionPainter {
         if (!iconMesh) {
             //only icon
             const firstBoxIdx = elements[start];
-            boxes = getIconBox(BOX, mesh, firstBoxIdx, matrix, map);
+            boxes = getIconBox([], mesh, firstBoxIdx, matrix, map);
             hasCollides = this.isCollides(boxes, z) !== 0;
         } else {
             boxes = [];
@@ -343,8 +342,8 @@ class IconPainter extends CollisionPainter {
             // debugger
             //icon and text
             const firstBoxIdx = iconMesh.geometry.properties.elements[boxIndex * BOX_ELEMENT_COUNT];
-            const iconBox = getIconBox(BOX, iconMesh, firstBoxIdx, matrix, map);
-            boxes.push(iconBox.slice(0));
+            const iconBox = getIconBox([], iconMesh, firstBoxIdx, matrix, map);
+            boxes.push(iconBox);
             const collides = this.isCollides(iconBox, z);
             if (collides === 1) {
                 hasCollides = true;
@@ -366,8 +365,8 @@ class IconPainter extends CollisionPainter {
             //insert every character's box into collision index
             for (let j = start; j < start + charCount * 6; j += 6) {
                 //use int16array to save some memory
-                const box = getLabelBox(BOX, mesh, textSize, elements[j], matrix, map);
-                boxes.push(box.slice(0));
+                const box = getLabelBox([], mesh, textSize, elements[j], matrix, map);
+                boxes.push(box);
                 const collides = this.isCollides(box, z);
                 if (collides === 1) {
                     hasCollides = true;
