@@ -39,10 +39,10 @@ export function getIconBox(out, mesh, i, matrix, map) {
     const { aShape, symbol } = geoProps;
     const dxdy = vec2.set(DXDY, symbol['markerDx'] || 0, symbol['markerDy'] || 0);
 
-    let tl = vec2.set(V2_0, aShape[i * 2], aShape[i * 2 + 1]),
-        tr = vec2.set(V2_1, aShape[i * 2 + 2], aShape[i * 2 + 3]),
-        bl = vec2.set(V2_2, aShape[i * 2 + 4], aShape[i * 2 + 5]),
-        br = vec2.set(V2_3, aShape[i * 2 + 6], aShape[i * 2 + 7]);
+    let tl = vec2.set(V2_0, aShape[i * 2] / 10, aShape[i * 2 + 1] / 10),
+        tr = vec2.set(V2_1, aShape[i * 2 + 2] / 10, aShape[i * 2 + 3] / 10),
+        bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, aShape[i * 2 + 5] / 10),
+        br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, aShape[i * 2 + 7] / 10);
 
     const { markerWidth, markerHeight } = geoProps.symbol;
     const sizeScale = [markerWidth / ICON_SIZE, markerHeight / ICON_SIZE];
