@@ -39,19 +39,19 @@ configBrowsers.split(',').forEach(name => {
 
 const stylesPattern = './assets/css/**/*.css';
 
-gulp.task('styles', ['images'], () => {
-    return gulp.src(stylesPattern)
-        .pipe(concat('maptalks.css'))
-        .pipe(cssnano())
-        .pipe(gulp.dest('./dist/'));
-});
-
 gulp.task('images', () => {
     return gulp.src('./assets/images/**/*')
         .pipe(gulp.dest('./dist/images'));
 });
 
-gulp.task('transform-proto', () => {
+gulp.task('styles', gulp.series(['images'], () => {
+    return gulp.src(stylesPattern)
+        .pipe(concat('maptalks.css'))
+        .pipe(cssnano())
+        .pipe(gulp.dest('./dist/'));
+}));
+
+gulp.task('transform-proto', done => {
     //a silly work round as transform proto-to-assign is not working in babel 7
     const filename = __dirname + '/dist/maptalks.js';
     const code = fs.readFileSync(filename).toString('utf-8');
@@ -60,9 +60,10 @@ gulp.task('transform-proto', () => {
     );
     // fs.writeFileSync(__dirname + '/dist/compiled.js', transformed);
     fs.writeFileSync(filename, transformed);
+    done();
 });
 
-gulp.task('minify', () => {
+gulp.task('minify', done => {
     const name = package.name;
     const dest = package.main;
     const code = fs.readFileSync(dest).toString('utf-8');
@@ -76,12 +77,13 @@ gulp.task('minify', () => {
     fs.writeFileSync('dist/' + name + '.min.js', minified);
     const gzipped = zlib.gzipSync(minified);
     fs.writeFileSync('dist/' + name + '.min.js.gz', gzipped);
+    done();
 });
 
 /**
  * Run test once and exit
  */
-gulp.task('test', function (done) {
+gulp.task('test', done => {
     // const karmaConfig = {
     //     configFile: path.join(__dirname, 'build/karma.test.config.js')
     // };
@@ -127,7 +129,7 @@ gulp.task('test', function (done) {
 /**
  * Watch for file changes and re-run tests on each change
  */
-gulp.task('tdd', function (done) {
+gulp.task('tdd', done => {
     const karmaConfig = {
         configFile: path.join(__dirname, 'build/karma.tdd.config.js')
     };
@@ -159,19 +161,14 @@ gulp.task('tdd', function (done) {
 });
 
 gulp.task('connect', () => {
-    connect.server({
+    return connect.server({
         root: ['dist', 'debug'],
         livereload: true,
         port: 20000
     });
 });
 
-gulp.task('reload', ['scripts'], () => {
-    gulp.src('./dist/*.js')
-        .pipe(connect.reload());
-});
-
-gulp.task('doc', (done) => {
+gulp.task('doc', done => {
     const sources = require('./build/api-files.js');
     del([
         './docs/api/**/*'
@@ -198,16 +195,16 @@ gulp.task('doc', (done) => {
     });
 });
 
-gulp.task('editdoc', ['doc'], () => {
-    gulp.watch(['src/**/*.js'], ['doc']);
-});
+gulp.task('editdoc', gulp.series(['doc'], () => {
+    return gulp.watch(['src/**/*.js'], ['doc']);
+}));
 
 gulp.task('beforeZip', () => {
     return gulp.src(['LICENSE', 'ACKNOWLEDGEMENT', 'docs/**/*'])
     .pipe(gulp.dest('dist'))
 });
 
-gulp.task('zip', ['beforeZip'], done => {
+gulp.task('zip', gulp.series(['beforeZip'], done => {
     gulp.src(['dist/*.js', 'dist/*.mjs', 'dist/images/**/*', 'dist/maptalks.css', 'dist/LICENSE', 'dist/ACKNOWLEDGEMENT', 'dist/api/**/*'], { base: 'dist/' })
         .pipe(zip('maptalks-' + package.version + '.zip'))
         .pipe(gulp.dest('dist'));
@@ -219,7 +216,7 @@ gulp.task('zip', ['beforeZip'], done => {
         });
         done();
     }, 2000);
-});
+}));
 
-gulp.task('default', ['connect']);
+gulp.task('default', gulp.series(['connect']));
 
