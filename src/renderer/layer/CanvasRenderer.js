@@ -711,7 +711,7 @@ class CanvasRenderer extends Class {
         t = now() - t;
         //reduce some time in the first draw
         this._drawTime = painted ? t  : t / 2;
-        if (painted && this.layer.options['logDrawTime']) {
+        if (painted && this.layer && this.layer.options['logDrawTime']) {
             console.log(this.layer.getId(), 'frameTimeStamp:', framestamp, 'drawTime:', this._drawTime);
         }
     }
