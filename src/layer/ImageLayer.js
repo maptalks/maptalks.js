@@ -36,7 +36,7 @@ const options = {
 class ImageLayer extends Layer {
 
     constructor(id, images, options) {
-        if (!Array.isArray(images) && !images.url) {
+        if (images && !Array.isArray(images) && !images.url) {
             options = images;
             images = null;
         }
