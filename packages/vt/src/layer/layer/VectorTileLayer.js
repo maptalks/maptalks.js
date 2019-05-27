@@ -1,7 +1,9 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend, compileStyle, isNil } from '../../common/Util';
+import { extend, compileStyle, isNil, isString, isObject } from '../../common/Util';
 import { compress, uncompress } from './Compress';
+
+const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
 const defaultOptions = {
     renderer: 'gl',
@@ -85,16 +87,60 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     setStyle(style) {
+        if (style.root) {
+            let root, iconset;
+            root = this._styleRootPath = style.root;
+            if (root && root[root.length - 1] === '/') {
+                root = root.substring(0, root.length - 1);
+            }
+            iconset =  this._styleIconset = style.iconset;
+            if (iconset && iconset[iconset.length - 1] === '/') {
+                iconset = iconset.substring(0, iconset.length - 1);
+            }
+            style = style.style || [];
+            this._replacer = function replacer(str, key) {
+                if (key === 'root') {
+                    return root;
+                } else {
+                    return `${iconset}/${key}.svg`;
+                }
+            };
+        }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
         this.config('style', style);
         this.validateStyle();
+        if (this._replacer) {
+            this._parseStylePath();
+        }
         this._compileStyle();
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setStyle();
         }
         return this;
+    }
+
+    _parseStylePath() {
+        const styles = this.options.style;
+        for (let i = 0; i < styles.length; i++) {
+            const { symbol } = styles[i];
+            if (symbol) {
+                this._parseSymbolPath(symbol);
+            }
+        }
+    }
+
+    _parseSymbolPath(symbol) {
+        for (const p in symbol) {
+            if (symbol.hasOwnProperty(p)) {
+                if (isString(symbol[p])) {
+                    symbol[p] = symbol[p].replace(URL_PATTERN, this._replacer);
+                } else if (isObject(symbol[p])) {
+                    this._parseSymbolPath(symbol[p]);
+                }
+            }
+        }
     }
 
     updateSceneConfig(idx, sceneConfig) {
@@ -111,18 +157,20 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!style) {
             throw new Error(`No style defined at ${idx}`);
         }
+        symbol = this._parseSymbolPath(JSON.parse(JSON.stringify(symbol)));
         const target = style.symbol;
-
         function update() {
             for (const p in symbol) {
-                if (maptalks.Util.isObject(symbol[p])) {
-                    //对象类型的属性则extend
-                    if (!target[p]) {
-                        target[p] = {};
+                if (symbol.hasOwnProperty(p)) {
+                    if (maptalks.Util.isObject(symbol[p])) {
+                        //对象类型的属性则extend
+                        if (!target[p]) {
+                            target[p] = {};
+                        }
+                        extend(target[p], symbol[p]);
+                    } else {
+                        target[p] = symbol[p];
                     }
-                    extend(target[p], symbol[p]);
-                } else {
-                    target[p] = symbol[p];
                 }
             }
         }

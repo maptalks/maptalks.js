@@ -72,7 +72,7 @@ export function isFunction(obj) {
  * @memberOf Util
  */
 export function isObject(obj) {
-    return typeof obj === 'object' && !!obj;
+    return !Array.isArray(obj) && typeof obj === 'object' && !!obj;
 }
 
 export function isNil(obj) {
