@@ -49,7 +49,7 @@ const header = `
             callback : callback
         };
         if (err) {
-            msg.error = err.message ? err.message : err.toString();
+            msg.error = err;
         } else {
             msg.data = data;
         }

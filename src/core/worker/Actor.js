@@ -125,7 +125,7 @@ export default class Actor {
                 });
             }
         } else if (callback && data.error) {
-            callback(new Error(data.error));
+            callback(data.error);
         } else if (callback) {
             callback(null, data.data);
         }
