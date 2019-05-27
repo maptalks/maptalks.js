@@ -197,6 +197,12 @@ describe('ExtentSpec', function () {
             expect(ext1.contains(new maptalks.Point(20, 20))).to.not.be.ok();
         });
 
+        //#899
+        it('contains with projection', function () {
+            var ext = new maptalks.Extent([-170, -80, 170, 80], maptalks.projection.EPSG3857);
+
+            expect(ext.contains(new maptalks.Coordinate([-0.113049,51.49856]))).to.be.ok();
+        });
     });
 
 
