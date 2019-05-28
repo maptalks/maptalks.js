@@ -34,6 +34,8 @@ const defaultOptions = {
     antialias: false,
     iconErrorUrl: null,
     collisionFrameLimit: 2,
+    //是否开启无style时的默认绘制功能
+    defaultRendering: true,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true
@@ -177,7 +179,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             throw new Error(`No style defined at ${idx}`);
         }
         if (this._replacer) {
-            this._parseSymbolPath(JSON.parse(JSON.stringify(symbol)));
+            symbol = JSON.parse(JSON.stringify(symbol));
+            this._parseSymbolPath(symbol);
         }
         const target = style.symbol;
         function update() {
@@ -225,7 +228,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     isDefaultRender() {
-        return !!this._isDefaultRender;
+        return !!this._isDefaultRender && this.options['defaultRendering'];
     }
 
     validateStyle() {

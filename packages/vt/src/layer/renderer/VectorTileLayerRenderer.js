@@ -181,15 +181,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     draw(timestamp) {
+        const layer = this.layer;
         this.prepareCanvas();
-        if (!this.ready || !this.layer.ready) {
+        if (!this.ready || !layer.ready ||
+            !layer.isDefaultRender() && (!this.plugins || !this.plugins.length)) {
             this.completeRender();
             return;
         }
-        const layer = this.layer;
-        layer.clearCollisionIndex();
-        layer.clearBackgroundCollisionIndex();
-
+        if (layer.options['collision']) {
+            layer.clearCollisionIndex();
+            layer.clearBackgroundCollisionIndex();
+        }
         this._frameTime = timestamp;
         this._zScale = this._getMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this._startFrame(timestamp);
