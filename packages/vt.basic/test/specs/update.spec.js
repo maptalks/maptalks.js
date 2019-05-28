@@ -84,6 +84,20 @@ describe('update style specs', () => {
         });
     });
 
+    it('should can updateSymbol of function type', done => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateSymbol(0, {
+                lineColor: {
+                    type: 'interval',
+                    stops: [
+                        [map.getZoom(), '#0f0'],
+                        [map.getZoom() + 2, '#f00'],
+                    ]
+                }
+            });
+        });
+    });
+
     it('should hide by setting visible to false', done => {
         assertChangeStyle(done, [0, 0, 0, 0], layer => {
             layer.updateSymbol(0, {

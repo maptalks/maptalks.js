@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { extend, compileStyle, isNil, isString, isObject } from '../../common/Util';
 import { compress, uncompress } from './Compress';
+import Ajax from '../../worker/util/Ajax';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
@@ -79,7 +80,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             tileSize: this.options['tileSize'],
             baseRes: map.getResolution(map.getGLZoom()),
             //default render时，this.options.style有可能被default render设值
-            style: this.isDefaultRender() ? [] : this.options.style,
+            style: this.isDefaultRender() ? [] : !Array.isArray(this.options.style) ? [] : this.options.style,
             features: this.options.features,
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry']
@@ -87,6 +88,24 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     setStyle(style) {
+        if (isString(style)) {
+            const url = style;
+            const endIndex = url.lastIndexOf('/');
+            const prefix = endIndex < 0 ? '.' : url.substring(0, endIndex);
+            const root = prefix + '/resources';
+            const iconset = root + '/iconset';
+            this.ready = false;
+            Ajax.getJSON(url, (err, json) => {
+                if (err) throw err;
+                this.setStyle({
+                    root,
+                    iconset,
+                    style: json
+                });
+            });
+            return this;
+        }
+        this.ready = true;
         if (style.root) {
             let root, iconset;
             root = this._styleRootPath = style.root;
@@ -133,8 +152,8 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     _parseSymbolPath(symbol) {
         for (const p in symbol) {
-            if (symbol.hasOwnProperty(p)) {
-                if (isString(symbol[p])) {
+            if (symbol.hasOwnProperty(p) && p !== 'textName') {
+                if (isString(symbol[p]) && symbol[p].length > 2) {
                     symbol[p] = symbol[p].replace(URL_PATTERN, this._replacer);
                 } else if (isObject(symbol[p])) {
                     this._parseSymbolPath(symbol[p]);
@@ -157,12 +176,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!style) {
             throw new Error(`No style defined at ${idx}`);
         }
-        symbol = this._parseSymbolPath(JSON.parse(JSON.stringify(symbol)));
+        if (this._replacer) {
+            this._parseSymbolPath(JSON.parse(JSON.stringify(symbol)));
+        }
         const target = style.symbol;
         function update() {
             for (const p in symbol) {
                 if (symbol.hasOwnProperty(p)) {
-                    if (maptalks.Util.isObject(symbol[p])) {
+                    if (maptalks.Util.isObject(symbol[p]) && !symbol[p].stops) {
                         //对象类型的属性则extend
                         if (!target[p]) {
                             target[p] = {};

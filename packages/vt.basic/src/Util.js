@@ -70,6 +70,9 @@ export function setUniformFromSymbol(uniforms, name, symbol, key, fn) {
 export function createColorSetter(cache) {
     return c => {
         if (Array.isArray(c)) {
+            if (c.length === 3) {
+                c.push(1);
+            }
             return c;
         }
         if (cache && cache[c]) {
