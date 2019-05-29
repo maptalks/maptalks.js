@@ -1,6 +1,6 @@
 {
   "name": "maptalks",
-  "version": "0.44.0",
+  "version": "0.44.2",
   "description": "A light JavaScript library to create integrated 2D/3D maps.",
   "license": "BSD-3-Clause",
   "author": "Fu Zhen",
@@ -58,7 +58,7 @@
     "eslint-plugin-mocha": "^5.0.0",
     "expect-maptalks": "^0.4.1",
     "expect.js": "^0.3.1",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "5.0.0",
     "gulp-cssnano": "^2.1.2",

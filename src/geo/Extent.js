@@ -547,7 +547,7 @@ class Extent {
             //FIXME a rare but potential bug:
             //An extent may be projected by multiple projection
             if (ext._dirty) {
-                let minmax = [ext.getMin(), ext.getMax()];
+                let minmax = [new Coordinate(ext.xmax, ext.ymin), new Coordinate(ext.xmin, ext.ymax)];
                 minmax = proj.projectCoords(minmax);
                 const min = minmax[0],
                     max = minmax[1];

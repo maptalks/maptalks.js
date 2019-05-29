@@ -383,7 +383,7 @@ class Painter extends Class {
             return;
         }
         const renderer = this.getLayer()._getRenderer();
-        if (!renderer || !renderer.context) {
+        if (!renderer || !renderer.context && !context) {
             return;
         }
         //reduce geos to paint when drawOnInteracting
