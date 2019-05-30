@@ -60,6 +60,11 @@ class LinePainter extends BasicPainter {
         // setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray');
         setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', createColorSetter(this._colorCache));
 
+        if (symbol.linePatternFile) {
+            const iconAtlas = geometry.properties.iconAtlas;
+            uniforms.linePatternFile = iconAtlas;
+            uniforms.linePatternSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
+        }
         //TODO lineDx, lineDy
         // const indices = geometries[i].elements;
         // const projViewMatrix = mat4.multiply([], mapUniforms.projMatrix, mapUniforms.viewMatrix);
@@ -86,6 +91,11 @@ class LinePainter extends BasicPainter {
             picking: true
         });
         mesh.setLocalTransform(transform);
+        if (symbol.linePatternFile) {
+            mesh.setDefines({
+                'HAS_PATTERN': 1
+            });
+        }
         return mesh;
     }
 
@@ -193,7 +203,7 @@ class LinePainter extends BasicPainter {
                 blend: {
                     enable: true,
                     func: {
-                        src: 'one',
+                        src: 'src alpha',
                         dst: 'one minus src alpha'
                     },
                     // func : {

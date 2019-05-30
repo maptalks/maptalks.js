@@ -20,12 +20,26 @@ export default class IconRequestor {
         const self = this;
         function onload() {
             current++;
-            const width = this.width, height = this.height;
             const ctx = self.ctx;
-            ctx.canvas.width = width;
-            ctx.canvas.height = height;
+            let width, height;
             try {
-                ctx.drawImage(this, 0, 0);
+                if (this.resize) {
+                    resize(this, ctx.canvas);
+                    width = ctx.canvas.width;
+                    height = ctx.canvas.height;
+                    if (document.getElementById('DEBUG')) {
+                        const debug = document.getElementById('DEBUG');
+                        debug.width = width;
+                        debug.height = height;
+                        debug.style.width = width + 'px';
+                        debug.style.height = height + 'px';
+                        debug.getContext('2d').drawImage(ctx.canvas, 0, 0);
+                    }
+                } else {
+                    width = ctx.canvas.width = this.width;
+                    height = ctx.canvas.height = this.height;
+                    ctx.drawImage(this, 0, 0);
+                }
                 const data = ctx.getImageData(0, 0, width, height).data;
                 buffers.push(data.buffer);
                 images[this.url] = { data: { data, width, height }, url: this.src };
@@ -76,6 +90,7 @@ export default class IconRequestor {
                 img.onload = onload;
                 img.onerror = onerror;
                 img.onabort = onerror;
+                img.resize = icons[url] === 'resize';
                 img.url = url;
                 img.src = url;
                 hasAsyn = true;
@@ -86,4 +101,41 @@ export default class IconRequestor {
             cb(null, { icons: images, buffers });
         }
     }
+}
+
+
+
+function resize(image, canvas) {
+    if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        canvas.getContext('2d').drawImage(image, 0, 0, image.width, image.height);
+        return image;
+    }
+    let width = image.width;
+    let height = image.height;
+    if (!isPowerOfTwo(width)) {
+        width = ceilPowerOfTwo(width);
+    }
+    if (!isPowerOfTwo(height)) {
+        height = ceilPowerOfTwo(height);
+    }
+    // const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+    const url = image.src;
+    const idx = url.lastIndexOf('/') + 1;
+    const filename = url.substring(idx);
+    console.warn(`Texture(${filename})'s size is not power of two, resize from (${image.width}, ${image.height}) to (${width}, ${height})`);
+    return canvas;
+}
+
+function isPowerOfTwo(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+}
+
+
+function ceilPowerOfTwo(value) {
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 }

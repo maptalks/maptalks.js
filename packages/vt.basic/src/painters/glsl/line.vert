@@ -33,6 +33,14 @@ varying vec2 vWidth;
 varying float vGammaScale;
 varying highp float vLinesofar;
 
+#ifdef HAS_PATTERN
+    attribute vec2 aPrevExtrude;
+
+    varying float vZoomScale;
+    varying vec2 vExtrudeOffset;
+    varying float vDirection;
+#endif
+
 void main() {
     float gapwidth = lineGapWidth / 2.0;
     float halfwidth = lineWidth / 2.0;
@@ -54,11 +62,18 @@ void main() {
 
     // x is 1 if it's a round cap, 0 otherwise
     // y is 1 if the normal points up, and -1 if it points down
-    float round = float(int(aNormal) / 2);
+    float direction =  float(int(aNormal) / 4);
+    float round = float(int(mod(aNormal, 4.0)) / 2);
     float up = mod(aNormal, 2.0);
     vNormal = vec2(round, sign(up - 0.1));
     // vNormal = aNormal;
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
     vLinesofar = aLinesofar / tileRatio;
+
+    #ifdef HAS_PATTERN
+        vZoomScale = scale;
+        vExtrudeOffset = (aPrevExtrude - extrude) / EXTRUDE_SCALE;
+        vDirection = direction - 2.0;
+    #endif
 }

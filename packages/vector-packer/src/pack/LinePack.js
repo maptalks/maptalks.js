@@ -2,6 +2,7 @@
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import { isClippedEdge } from './util/util';
+import Point from '@mapbox/point-geometry';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -38,6 +39,8 @@ const LINE_DISTANCE_SCALE = 1;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
 
+const RIGHT_DIRECTION = 1;
+const LEFT_DIRECTION = -1;
 
 /**
  * 线类型数据，负责输入feature和symbol后，生成能直接赋给shader的arraybuffer
@@ -51,7 +54,7 @@ export default class LinePack extends VectorPack {
 
     createStyledVector(feature, symbol, options, iconReqs) {
         if (symbol['linePatternFile']) {
-            iconReqs[symbol['linePatternFile']] = 1;
+            iconReqs[symbol['linePatternFile']] = 'resize';
         }
         return new StyledVector(feature, symbol, options);
     }
@@ -80,6 +83,12 @@ export default class LinePack extends VectorPack {
                 type: Uint16Array,
                 width: 1,
                 name: 'aLinesofar'
+            },
+            //上一个端点的extrude，用于计算 lineJoin 的 uv 坐标
+            {
+                type: Int8Array,
+                width: 2,
+                name: 'aPrevExtrude'
             }
         ];
     }
@@ -271,15 +280,18 @@ export default class LinePack extends VectorPack {
             // Calculate how far along the line the currentVertex is
             if (prevVertex) this.distance += currentVertex.dist(prevVertex);
 
+            let prevExtrudes;
             if (i > first && i < len - 1) {
                 //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
-                this.addCurrentVertex(currentVertex, this.distance, prevNormal, -1, -1, false, lineDistances);
+                this.addCurrentVertex(currentVertex, this.distance, prevNormal, -1, -1, false, lineDistances, null, LEFT_DIRECTION);
+                const length = this.data.length;
+                prevExtrudes = [new Point(this.data[length - this.formatWidth - 5], this.data[length - this.formatWidth - 4]), new Point(this.data[length - 5], this.data[length - 4])];
             }
 
             if (currentJoin === 'miter') {
 
                 joinNormal._mult(miterLength);
-                this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false, lineDistances);
+                this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false, lineDistances, prevExtrudes);
 
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
@@ -293,8 +305,8 @@ export default class LinePack extends VectorPack {
                     const bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
                     joinNormal._perp()._mult(bevelLength * direction);
                 }
-                this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false, lineDistances);
-                this.addCurrentVertex(currentVertex, this.distance, joinNormal.mult(-1), 0, 0, false, lineDistances);
+                this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false, lineDistances, prevExtrudes);
+                this.addCurrentVertex(currentVertex, this.distance, joinNormal.mult(-1), 0, 0, false, lineDistances, prevExtrudes);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
                 const lineTurnsLeft = (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
@@ -309,7 +321,7 @@ export default class LinePack extends VectorPack {
 
                 // Close previous segment with a bevel
                 if (!startOfLine) {
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, offsetA, offsetB, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, offsetA, offsetB, false, lineDistances, prevExtrudes);
                 }
 
                 if (currentJoin === 'fakeround') {
@@ -325,31 +337,31 @@ export default class LinePack extends VectorPack {
 
                     for (let m = 0; m < n; m++) {
                         approxFractionalJoinNormal = nextNormal.mult((m + 1) / (n + 1))._add(prevNormal)._unit();
-                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, lineDistances);
+                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, lineDistances, prevExtrudes);
                     }
 
-                    this.addPieSliceVertex(currentVertex, this.distance, joinNormal, lineTurnsLeft, lineDistances);
+                    this.addPieSliceVertex(currentVertex, this.distance, joinNormal, lineTurnsLeft, lineDistances, prevExtrudes);
 
                     for (let k = n - 1; k >= 0; k--) {
                         approxFractionalJoinNormal = prevNormal.mult((k + 1) / (n + 1))._add(nextNormal)._unit();
-                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, lineDistances);
+                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, lineDistances, prevExtrudes);
                     }
                 }
 
                 // Start next segment
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, -offsetA, -offsetB, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, -offsetA, -offsetB, false, lineDistances, prevExtrudes);
                 }
 
             } else if (currentJoin === 'butt') {
                 if (!startOfLine) {
                     // Close previous segment with a butt
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 0, 0, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 0, 0, false, lineDistances, prevExtrudes);
                 }
 
                 // Start next segment with a butt
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, 0, 0, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, 0, 0, false, lineDistances, prevExtrudes);
                 }
 
             } else if (currentJoin === 'square') {
@@ -371,10 +383,10 @@ export default class LinePack extends VectorPack {
 
                 if (!startOfLine) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 0, 0, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 0, 0, false, lineDistances, prevExtrudes);
 
                     // Add round cap or linejoin at end of segment
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 1, 1, true, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 1, 1, true, lineDistances, prevExtrudes);
 
                     // The segment is done. Unset vertices to disconnect segments.
                     this.e1 = this.e2 = -1;
@@ -384,9 +396,9 @@ export default class LinePack extends VectorPack {
                 // Start next segment with a butt
                 if (nextVertex) {
                     // Add round cap before first segment
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, -1, -1, true, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, -1, -1, true, lineDistances, prevExtrudes);
 
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, 0, 0, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, 0, 0, false, lineDistances, prevExtrudes);
                 }
             }
 
@@ -425,7 +437,8 @@ export default class LinePack extends VectorPack {
         endLeft, //: number,
         endRight, //: number,
         round, //: boolean,
-        distancesForScaling/* : ?Object */) {
+        distancesForScaling, /* : ?Object */
+        prevExtrudes, direction) {
         let extrude;
         // const layoutVertexArray = this.layoutVertexArray;
         // const indexArray = this.indexArray;
@@ -437,7 +450,7 @@ export default class LinePack extends VectorPack {
 
         extrude = normal.clone();
         if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, distance);
+        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, distance, prevExtrudes ? prevExtrudes[0] : extrude.mult(EXTRUDE_SCALE), direction);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -447,7 +460,7 @@ export default class LinePack extends VectorPack {
 
         extrude = normal.mult(-1);
         if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, distance);
+        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, distance, prevExtrudes ? prevExtrudes[1] : extrude.mult(EXTRUDE_SCALE), direction);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -461,7 +474,7 @@ export default class LinePack extends VectorPack {
         // to `linesofar`.
         if (distance > MAX_LINE_DISTANCE && !distancesForScaling) {
             this.distance = 0;
-            this.addCurrentVertex(currentVertex, this.distance, normal, endLeft, endRight, round);
+            this.addCurrentVertex(currentVertex, this.distance, normal, endLeft, endRight, round, distancesForScaling, prevExtrudes, direction);
         }
     }
 
@@ -479,14 +492,15 @@ export default class LinePack extends VectorPack {
         distance, //: number,
         extrude, //: Point,
         lineTurnsLeft, //: boolean,
-        distancesForScaling/* : ?Object */) {
+        distancesForScaling, /* : ?Object */
+        prevExtrudes) {
         extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
         // const layoutVertexArray = this.layoutVertexArray;
         // const indexArray = this.indexArray;
 
         if (distancesForScaling) distance = scaleDistance(distance, distancesForScaling);
 
-        this.addLineVertex(this.data, currentVertex, extrude, false, lineTurnsLeft, distance);
+        this.addLineVertex(this.data, currentVertex, extrude, false, lineTurnsLeft, distance, prevExtrudes);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -499,16 +513,17 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    addLineVertex(data, point, extrude, round, up, linesofar) {
+    addLineVertex(data, point, extrude, round, up, linesofar, prevExtrude, direction = RIGHT_DIRECTION) {
         linesofar *= LINE_DISTANCE_SCALE;
         data.push(
             point.x,
             point.y,
             0,
-            (round ? 1 : 0) * 2 + (up ? 1 : 0),
+            (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             EXTRUDE_SCALE * extrude.x,
             EXTRUDE_SCALE * extrude.y,
-            linesofar
+            linesofar,
+            prevExtrude.x, prevExtrude.y
         );
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }

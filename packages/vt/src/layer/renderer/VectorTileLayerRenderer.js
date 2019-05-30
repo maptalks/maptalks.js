@@ -507,16 +507,20 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (tile.image && !tile.image._empty) {
             const plugins = this._getAllPlugins();
-            plugins.forEach((plugin, idx) => {
-                plugin.deleteTile({
-                    regl : this.regl,
-                    layer : this.layer,
-                    gl : this.gl,
-                    tileCache : tile.image.cache ? tile.image.cache[idx] : {},
-                    tileInfo : tile.info,
-                    tileData : tile.image
+            if (plugins) {
+                plugins.forEach((plugin, idx) => {
+                    if (plugin) {
+                        plugin.deleteTile({
+                            regl : this.regl,
+                            layer : this.layer,
+                            gl : this.gl,
+                            tileCache : tile.image.cache ? tile.image.cache[idx] : {},
+                            tileInfo : tile.info,
+                            tileData : tile.image
+                        });
+                    }
                 });
-            });
+            }
         }
         //ask plugin to clear caches
         super.deleteTile(tile);

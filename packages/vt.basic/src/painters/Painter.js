@@ -163,8 +163,9 @@ class Painter {
                 if (!meshes[i].isValid()) {
                     continue;
                 }
-                if (!keepGeometry && meshes[i].geometry) {
-                    meshes[i].geometry.dispose();
+                const geometry = meshes[i].geometry;
+                if (!keepGeometry && geometry) {
+                    geometry.dispose();
                 }
                 if (meshes[i].material) {
                     meshes[i].material.dispose();

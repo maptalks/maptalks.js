@@ -7,7 +7,7 @@
 import ShelfPack from '@mapbox/shelf-pack';
 import { RGBAImage } from '../../Image';
 
-const padding = 1;
+const PADDING = 1;
 
 export class ImagePosition {
     //paddedRect : x, y, w, h
@@ -18,22 +18,22 @@ export class ImagePosition {
 
     get tl() {
         return [
-            this.paddedRect.x + padding,
-            this.paddedRect.y + padding
+            this.paddedRect.x + PADDING,
+            this.paddedRect.y + PADDING
         ];
     }
 
     get br() {
         return [
-            this.paddedRect.x + this.paddedRect.w - padding,
-            this.paddedRect.y + this.paddedRect.h - padding
+            this.paddedRect.x + this.paddedRect.w - PADDING,
+            this.paddedRect.y + this.paddedRect.h - PADDING
         ];
     }
 
     get displaySize() {
         return [
-            (this.paddedRect.w - padding * 2) / this.pixelRatio,
-            (this.paddedRect.h - padding * 2) / this.pixelRatio
+            (this.paddedRect.w - PADDING * 2) / this.pixelRatio,
+            (this.paddedRect.h - PADDING * 2) / this.pixelRatio
         ];
     }
 }
@@ -58,7 +58,7 @@ export default class IconAtlas {
         const positions = {};
         const pack = new ShelfPack(0, 0, { autoResize: true });
         const bins = [];
-
+        const padding = Object.keys(images).length > 1 ? PADDING : 0;
         for (const id in images) {
             const src = images[id];
             const bin = {

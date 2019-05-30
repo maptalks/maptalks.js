@@ -10,12 +10,15 @@ export default class BasicPainter extends Painter {
         const regl = this.regl;
         let iconAtlas, glyphAtlas;
         if (glData.iconAtlas) {
+            const repeatMode = (glData.type !== 'point') ? 'repeat' : 'clamp';
             const image = glData.iconAtlas.image;
             iconAtlas = regl.texture({
                 width: image.width,
                 height: image.height,
                 data: image.data,
                 format: image.format,
+                wrapS: repeatMode,
+                wrapT: 'clamp',
                 mag: 'linear', //very important
                 min: 'linear', //very important
                 flipY: false,
