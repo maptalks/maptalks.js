@@ -2,6 +2,7 @@ import { VectorTileLayer } from '@maptalks/vt';
 import { createPainterPlugin } from '@maptalks/vt-plugin';
 import FillPainter from './painters/FillPainter';
 import LinePainter from './painters/LinePainter';
+import LineGradientPainter from './painters/LineGradientPainter';
 import LineGlowPainter from './painters/LineGlowPainter';
 import IconPainter from './painters/IconPainter';
 import TextPainter from './painters/TextPainter';
@@ -21,6 +22,9 @@ FillPlugin.registerAt(VectorTileLayer);
 
 const LinePlugin = createPainterPlugin('line', LinePainter);
 LinePlugin.registerAt(VectorTileLayer);
+
+const LineGradientPlugin = createPainterPlugin('line-gradient', LineGradientPainter);
+LineGradientPlugin.registerAt(VectorTileLayer);
 
 const IconPlugin = createPainterPlugin('icon', IconPainter);
 IconPlugin.registerAt(VectorTileLayer);
@@ -60,6 +64,7 @@ SubsurfacePlugin.registerAt(VectorTileLayer);
 
 export {
     LinePlugin,
+    LineGradientPlugin,
     FillPlugin,
     IconPlugin,
     TextPlugin,

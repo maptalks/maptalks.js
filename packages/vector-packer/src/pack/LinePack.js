@@ -126,18 +126,19 @@ export default class LinePack extends VectorPack {
         //TODO overscaling的含义？
         // const EXTENT = this.options.EXTENT,
         //     overscaling = 1;
-
         let lineDistances = null;
         //TODO lineDistances 和 gradient 的处理
-        // if (!!feature.properties &&
-        //     feature.properties.hasOwnProperty('mapbox_clip_start') &&
-        //     feature.properties.hasOwnProperty('mapbox_clip_end')) {
-        //     lineDistances = {
-        //         start: feature.properties.mapbox_clip_start,
-        //         end: feature.properties.mapbox_clip_end,
-        //         tileTotal: undefined
-        //     };
-        // }
+        if (!!feature.properties &&
+            feature.properties.hasOwnProperty('mapbox_clip_start') &&
+            feature.properties.hasOwnProperty('mapbox_clip_end')) {
+            lineDistances = {
+                start: feature.properties.mapbox_clip_start,
+                end: feature.properties.mapbox_clip_end,
+                tileTotal: undefined
+            };
+        }
+
+
 
         const isPolygon = feature.type === 3; //POLYGON
 

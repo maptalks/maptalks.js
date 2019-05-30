@@ -10,7 +10,9 @@
 // this case).
 // #define scale 63.0
 // EXTRUDE_SCALE = 1 / 127.0
-#define EXTRUDE_SCALE 63.0;//0.0078740157
+//0.0078740157
+#define EXTRUDE_SCALE 63.0;
+#define MAX_LINE_DISTANCE 65535.0
 
 attribute vec3 aPosition;
 attribute float aNormal;
@@ -39,6 +41,11 @@ varying highp float vLinesofar;
     varying float vZoomScale;
     varying vec2 vExtrudeOffset;
     varying float vDirection;
+#endif
+#ifdef HAS_GRADIENT
+    attribute float aGradIndex;
+
+    varying float vGradIndex;
 #endif
 
 void main() {
@@ -69,7 +76,13 @@ void main() {
     // vNormal = aNormal;
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
-    vLinesofar = aLinesofar / tileRatio;
+
+    #ifdef HAS_GRADIENT
+        vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
+        vGradIndex = aGradIndex;
+    #else
+        vLinesofar = aLinesofar / tileRatio;
+    #endif
 
     #ifdef HAS_PATTERN
         vZoomScale = scale;

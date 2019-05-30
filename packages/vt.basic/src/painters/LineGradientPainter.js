@@ -2,36 +2,56 @@ import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
-import frag from './glsl/line.frag';
+import frag from './glsl/line.gradient.frag';
 import pickingVert from './glsl/line.picking.vert';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { setUniformFromSymbol } from '../Util';
 
 const defaultUniforms = {
-    'lineColor': [0, 0, 0, 1],
     'lineOpacity': 1,
-    'lineWidth': 1,
-    'lineGapWidth': 0,
+    'lineWidth': 2,
     'lineDx': 0,
     'lineDy': 0,
     'lineBlur': 1,
-    'lineDasharray': [0, 0, 0, 0],
-    'lineDashColor': [0, 0, 0, 0]
+    'lineGapWidth': 0
 };
 
+const MAX_LINE_COUNT = 128;
 
 class LinePainter extends BasicPainter {
     needToRedraw() {
         return this._redraw;
     }
 
+    createGeometry(glData, features) {
+        const geometry = super.createGeometry(glData, features);
+        if (!geometry) {
+            return null;
+        }
+        const symbol = this.getSymbol();
+        const gradProp = symbol['lineGradientProperty'];
+        const featureIndexes = glData.data.featureIndexes;
+        const aGradIndex = new Uint8Array(featureIndexes.length);
+        const grads = [];
+        let current = featureIndexes[0];
+        grads.push(features[current].feature.properties[gradProp]);
+        for (let i = 1; i < featureIndexes.length; i++) {
+            if (featureIndexes[i] !== current) {
+                current = featureIndexes[i];
+                grads.push(features[current].feature.properties[gradProp]);
+            }
+            aGradIndex[i] = grads.length - 1;
+        }
+        geometry.data.aGradIndex = aGradIndex;
+        geometry.properties.gradients = grads;
+        return geometry;
+    }
+
     createMesh(geometry, transform) {
-        this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio
         };
-        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
@@ -39,48 +59,23 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx');
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy');
 
-        if (symbol.lineDasharray && symbol.lineDasharray.length) {
-            let lineDasharray;
-            const old = symbol.lineDasharray;
-            if (symbol.lineDasharray.length === 1) {
-                lineDasharray = [old[0], old[0], old[0], old[0]];
-            } else if (symbol.lineDasharray.length === 2) {
-                lineDasharray = [old[0], old[1], old[0], old[1]];
-            } else if (symbol.lineDasharray.length === 3) {
-                lineDasharray = [old[0], old[1], old[2], old[2]];
-            } else if (symbol.lineDasharray.length === 4) {
-                lineDasharray = symbol.lineDasharray;
-            }
-            if (lineDasharray) {
-                uniforms['lineDasharray'] = lineDasharray;
-            }
+        const gradients = geometry.properties.gradients;
+        let height = gradients.length * 2;
+        if (!isPowerOfTwo(height)) {
+            height = ceilPowerOfTwo(height);
         }
+        const texture = this.regl.texture({
+            width: 256,
+            height,
+            data: createGradient(gradients),
+            format: 'rgba',
+            mag: 'linear', //very important
+            min: 'linear', //very important
+            flipY: false,
+        });
 
-        // setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray');
-        setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', createColorSetter(this._colorCache));
-
-        if (symbol.linePatternFile) {
-            const iconAtlas = geometry.properties.iconAtlas;
-            uniforms.linePatternFile = iconAtlas;
-            uniforms.linePatternSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
-        }
-        //TODO lineDx, lineDy
-        // const indices = geometries[i].elements;
-        // const projViewMatrix = mat4.multiply([], mapUniforms.projMatrix, mapUniforms.viewMatrix);
-        // const projViewModelMatrix = mat4.multiply(new Float32Array(16), projViewMatrix, transform);
-        // console.log('projViewModelMatrix', projViewModelMatrix);
-        // const pos = geometries[i].data.aPosition;
-        // for (let ii = 0; ii < indices.length; ii++) {
-        //     const idx = indices[ii] * 3;
-        //     // if (ii === 2) {
-        //     //     pos[idx + 2] = 8192;
-        //     // }
-        //     const vector = [pos[idx], pos[idx + 1], pos[idx + 2], 1];
-        //     const glPos = vec4.transformMat4([], vector, projViewModelMatrix);
-        //     const tilePos = vec4.transformMat4([], vector, transform);
-        //     const ndc = [glPos[0] / glPos[3], glPos[1] / glPos[3], glPos[2] / glPos[3]];
-        //     console.log(vector, tilePos, glPos, ndc);
-        // }
+        uniforms['lineGradientTexture'] = texture;
+        uniforms['lineGradientHeight'] = texture.height;
 
         geometry.generateBuffers(this.regl);
 
@@ -89,12 +84,10 @@ class LinePainter extends BasicPainter {
             castShadow: false,
             picking: true
         });
+        mesh.setDefines({
+            'HAS_GRADIENT': 1
+        });
         mesh.setLocalTransform(transform);
-        if (symbol.linePatternFile) {
-            mesh.setDefines({
-                'HAS_PATTERN': 1
-            });
-        }
         return mesh;
     }
 
@@ -156,11 +149,8 @@ class LinePainter extends BasicPainter {
             uniforms: [
                 'cameraToCenterDistance',
                 'lineWidth',
-                'lineGapWidth',
                 'lineBlur',
                 'lineOpacity',
-                'lineDasharray',
-                'lineDashColor',
                 {
                     name: 'projViewModelMatrix',
                     type: 'function',
@@ -231,3 +221,40 @@ class LinePainter extends BasicPainter {
 }
 
 export default LinePainter;
+
+function createGradient(grads) {
+    if (grads.length > MAX_LINE_COUNT) {
+        console.warn(`Line count in a tile exceeds maximum limit (${MAX_LINE_COUNT}) for line-gradient render plugin.`);
+        grads = grads.slice(0, MAX_LINE_COUNT);
+    }
+    // create a 256x1 gradient that we'll use to turn a grayscale heatmap into a colored one
+    const canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+
+    canvas.width = 256;
+    canvas.height = 2 * grads.length;
+    if (!isPowerOfTwo(canvas.height)) {
+        canvas.height = ceilPowerOfTwo(2 * grads.length);
+    }
+
+    for (let g = 0; g < grads.length; g++) {
+        const grad = grads[g];
+        const gradient = ctx.createLinearGradient(0, 0, 256, 0);
+        for (let i = 0; i < grad.length; i += 2) {
+            gradient.addColorStop(+grad[i], grad[i + 1]);
+        }
+        ctx.fillStyle = gradient;
+        const dy = g % 256;
+        ctx.fillRect(0, dy * 2, 256, dy * 2 + 2);
+    }
+
+    return ctx.canvas;
+}
+
+function isPowerOfTwo(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+}
+
+function ceilPowerOfTwo(value) {
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+}

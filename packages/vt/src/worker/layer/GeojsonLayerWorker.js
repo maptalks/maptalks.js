@@ -59,7 +59,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 extent: this.options.extent, // tile extent (both width and height)
                 buffer: this.options.tileBuffer || 64,	  // tile buffer on each side
                 debug: 0,      // logging level (0 to disable, 1 or 2)
-
+                lineMetrics: true,
                 indexMaxZoom: 5,       // max zoom in the initial tile index
                 indexMaxPoints: 100000 // max number of points per tile in the index
             });
