@@ -17,6 +17,7 @@ void main() {
     gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
     #ifdef HAS_PATTERN
         float zoomScale = tileResolution / resolution;
-        vTexCoord = aTexCoord * uvScale * zoomScale / tileRatio;
+        // /32.0 是为提升精度，原数据都 * 32
+        vTexCoord = aTexCoord / 32.0 * uvScale * zoomScale / tileRatio;
     #endif
 }

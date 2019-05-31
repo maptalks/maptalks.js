@@ -32,7 +32,7 @@ export default class PolygonPack extends VectorPack {
         ];
         if (symbol['polygonPatternFile']) {
             format.push({
-                type: Float32Array,
+                type: Int16Array,
                 width: 2,
                 name: 'aTexCoord'
             });
@@ -92,7 +92,7 @@ export default class PolygonPack extends VectorPack {
                     ring[0].x, ring[0].y, 0
                 );
                 if (hasUV) {
-                    this.data.push(ring[0].x / uvSize, ring[0].y / uvSize);
+                    this.data.push(ring[0].x * 32 / uvSize, ring[0].y * 32 / uvSize);
                 }
                 this.maxPos = Math.max(this.maxPos, Math.abs(ring[0].x), Math.abs(ring[0].y));
                 this.addLineElements(lineIndex + ring.length - 1, lineIndex);
@@ -103,7 +103,7 @@ export default class PolygonPack extends VectorPack {
                 for (let i = 1; i < ring.length; i++) {
                     this.data.push(ring[i].x, ring[i].y, 0);
                     if (hasUV) {
-                        this.data.push(ring[i].x / uvSize, ring[i].y / uvSize);
+                        this.data.push(ring[i].x * 32 / uvSize, ring[i].y * 32 / uvSize);
                     }
                     this.maxPos = Math.max(this.maxPos, Math.abs(ring[i].x), Math.abs(ring[i].y));
                     this.addLineElements(lineIndex + i - 1, lineIndex + i);
