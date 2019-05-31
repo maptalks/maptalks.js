@@ -18,7 +18,7 @@ export default class BasicPainter extends Painter {
                 data: image.data,
                 format: image.format,
                 wrapS: repeatMode,
-                wrapT: 'clamp',
+                wrapT: repeatMode,
                 mag: 'linear', //very important
                 min: 'linear', //very important
                 flipY: false,

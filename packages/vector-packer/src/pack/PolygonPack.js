@@ -15,15 +15,14 @@ export default class PolygonPack extends VectorPack {
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
-        //每个point的icon和text
         if (symbol['polygonPatternFile']) {
-            iconReqs[symbol['polygonPatternFile']] = 1;
+            iconReqs[symbol['polygonPatternFile']] = 'resize';
         }
         return new StyledVector(feature, symbol, options);
     }
 
-    getFormat() {
-        return [
+    getFormat(symbol) {
+        const format = [
             {
                 type: Int32Array,
                 width: 3,
@@ -31,6 +30,14 @@ export default class PolygonPack extends VectorPack {
             }
             //TODO 动态color
         ];
+        if (symbol['polygonPatternFile']) {
+            format.push({
+                type: Float32Array,
+                width: 2,
+                name: 'aTexCoord'
+            });
+        }
+        return format;
     }
 
     createDataPack(...args) {
@@ -59,10 +66,12 @@ export default class PolygonPack extends VectorPack {
     }
 
     _addPolygon(geometry) {
+        const uvSize = 256;
+        const hasUV = !!this.symbol['polygonPatternFile'];
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
-            const triangleIndex = this.data.length / 3;
+            const triangleIndex = this.data.length / this.formatWidth;
 
             const flattened = [];
             const holeIndices = [];
@@ -82,6 +91,9 @@ export default class PolygonPack extends VectorPack {
                 this.data.push(
                     ring[0].x, ring[0].y, 0
                 );
+                if (hasUV) {
+                    this.data.push(ring[0].x / uvSize, ring[0].y / uvSize);
+                }
                 this.maxPos = Math.max(this.maxPos, Math.abs(ring[0].x), Math.abs(ring[0].y));
                 this.addLineElements(lineIndex + ring.length - 1, lineIndex);
 
@@ -90,6 +102,9 @@ export default class PolygonPack extends VectorPack {
 
                 for (let i = 1; i < ring.length; i++) {
                     this.data.push(ring[i].x, ring[i].y, 0);
+                    if (hasUV) {
+                        this.data.push(ring[i].x / uvSize, ring[i].y / uvSize);
+                    }
                     this.maxPos = Math.max(this.maxPos, Math.abs(ring[i].x), Math.abs(ring[i].y));
                     this.addLineElements(lineIndex + i - 1, lineIndex + i);
                     flattened.push(ring[i].x);

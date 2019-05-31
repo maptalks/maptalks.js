@@ -7,7 +7,7 @@ import pickingVert from './glsl/fill.picking.vert';
 import { setUniformFromSymbol, createColorSetter } from '../Util';
 
 const DEFAULT_UNIFORMS = {
-    'polygonFill': [255, 255, 255],
+    'polygonFill': [1, 1, 1, 1],
     'polygonOpacity': 1
 };
 
@@ -16,15 +16,29 @@ class FillPainter extends BasicPainter {
     createMesh(geometry, transform) {
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
-        const uniforms = {};
+        const uniforms = {
+            tileResolution: geometry.properties.tileResolution,
+            tileRatio: geometry.properties.tileRatio
+        };
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity');
+
+        if (symbol.polygonPatternFile) {
+            const iconAtlas = geometry.properties.iconAtlas;
+            uniforms.polygonPatternFile = iconAtlas;
+            uniforms.uvScale = iconAtlas ? [256 / iconAtlas.width, 256 / iconAtlas.height] : [1, 1];
+        }
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true
         });
+        if (symbol.polygonPatternFile) {
+            mesh.setDefines({
+                'HAS_PATTERN': 1
+            });
+        }
         mesh.setLocalTransform(transform);
         return mesh;
     }
@@ -50,6 +64,7 @@ class FillPainter extends BasicPainter {
             vert, frag,
             uniforms: [
                 'polygonFill', 'polygonOpacity',
+                'polygonPatternFile', 'uvScale',
                 {
                     name: 'projViewModelMatrix',
                     type: 'function',
@@ -60,6 +75,7 @@ class FillPainter extends BasicPainter {
                         return projViewModelMatrix;
                     }
                 },
+                'tileResolution', 'resolution'
             ],
             extraCommandProps: {
                 viewport,
@@ -124,8 +140,10 @@ class FillPainter extends BasicPainter {
     getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix;
+        const resolution = map.getResolution();
         return {
-            viewMatrix, projMatrix
+            viewMatrix, projMatrix,
+            resolution
         };
     }
 }
