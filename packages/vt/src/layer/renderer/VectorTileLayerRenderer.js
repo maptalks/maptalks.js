@@ -19,7 +19,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     setStyle() {
-        if (this._workerConn) {
+        if (this._workerConn && this.ready) {
+            //32位的chrome上，addLayer和setStyle同时调用时，worker会出现冲突
+            //所以需要判断是否ready
             this._styleCounter++;
             this.clear();
             this._clearPlugin();
