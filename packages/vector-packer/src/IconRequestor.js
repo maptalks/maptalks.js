@@ -93,6 +93,7 @@ export default class IconRequestor {
                 img.resize = icons[url] === 'resize';
                 img.url = url;
                 img.src = url;
+                img.crossOrigin = 'Anonymous';
                 hasAsyn = true;
                 count++;
             }
