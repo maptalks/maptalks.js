@@ -30,7 +30,7 @@ export default class Dispatcher {
         const uploader = this.send.bind(this, actorId);
         if (type === 'GeoJSONVectorTileLayer') {
             this._layers[key] = new GeoJSONLayerWorker(layerId, options, uploader, callback);
-        } else if (type === 'VectorTileLayer') {
+        } else {
             this._layers[key] = new VectorTileLayerWorker(layerId, options, uploader, callback);
         }
     }

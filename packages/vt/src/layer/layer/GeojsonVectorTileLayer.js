@@ -1,5 +1,4 @@
 import VectorTileLayer from './VectorTileLayer';
-import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import Ajax from '../../worker/util/Ajax';
 import { isString } from '../../common/Util';
 
@@ -101,9 +100,6 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
 }
 
 GeoJSONVectorTileLayer.registerJSONType('GeoJSONVectorTileLayer');
-
-GeoJSONVectorTileLayer.registerRenderer('gl', VectorTileLayerRenderer);
-GeoJSONVectorTileLayer.registerRenderer('canvas', null);
 
 GeoJSONVectorTileLayer.mergeOptions(options);
 
