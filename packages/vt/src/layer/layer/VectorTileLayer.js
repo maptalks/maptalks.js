@@ -95,7 +95,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             const endIndex = url.lastIndexOf('/');
             const prefix = endIndex < 0 ? '.' : url.substring(0, endIndex);
             const root = prefix;
-            const iconset = root + '/iconset';
+            const iconset = root + '/style-res/iconset';
             this.ready = false;
             Ajax.getJSON(url, (err, json) => {
                 if (err) {
