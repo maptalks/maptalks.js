@@ -49,6 +49,7 @@ function createPainterPlugin(type, Painter) {
             var tileCache = context.tileCache,
                 tileData = context.tileData,
                 tileInfo = context.tileInfo,
+                tileCenter = context.tileCenter,
                 tileTransform = tileData.transform,
                 tileZoom = context.tileZoom,
                 sceneConfig = context.sceneConfig;
@@ -95,7 +96,7 @@ function createPainterPlugin(type, Painter) {
             }
             var mesh = this._getMesh(key);
             if (!mesh) {
-                mesh = painter.createMesh(geometry, tileTransform);
+                mesh = painter.createMesh(geometry, tileTransform, { tileCenter, tileZoom });
                 if (mesh) {
                     if (Array.isArray(mesh)) {
                         for (let i = 0; i < mesh.length; i++) {

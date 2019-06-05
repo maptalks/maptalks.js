@@ -11,9 +11,11 @@ const DEFAULT_UNIFORMS = {
     'polygonOpacity': 1
 };
 
+const EMPTY_UV_OFFSET = [0, 0];
+
 class FillPainter extends BasicPainter {
 
-    createMesh(geometry, transform) {
+    createMesh(geometry, transform, { tileCenter }) {
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
         const uniforms = {
@@ -24,8 +26,10 @@ class FillPainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity');
 
         if (symbol.polygonPatternFile) {
+            uniforms.tileCenter = tileCenter.toArray();
             const iconAtlas = geometry.properties.iconAtlas;
             uniforms.polygonPatternFile = iconAtlas;
+            uniforms.patternSize = [iconAtlas.width, iconAtlas.height];
             uniforms.uvScale = iconAtlas ? [256 / iconAtlas.width, 256 / iconAtlas.height] : [1, 1];
         }
         geometry.generateBuffers(this.regl);
@@ -75,7 +79,24 @@ class FillPainter extends BasicPainter {
                         return projViewModelMatrix;
                     }
                 },
-                'tileResolution', 'resolution'
+                {
+                    name: 'uvOffset',
+                    type: 'function',
+                    fn: (context, props) => {
+                        if (!props['tileCenter']) {
+                            return EMPTY_UV_OFFSET;
+                        }
+                        const scale =  props['tileResolution'] / props['resolution'];
+                        const [width, height] = props['patternSize'];
+                        const tileSize = this.layer.options['tileSize'];
+                        //瓦片左边沿的坐标 = 瓦片中心点.x - 瓦片宽度 / 2
+                        //瓦片左边沿的屏幕坐标 = 瓦片左边沿的坐标 * tileResolution / resolution
+                        //瓦片左边沿的uv偏移量 = （瓦片左边沿的屏幕坐标 / 模式图片的宽） % 1
+                        const offset = [(props['tileCenter'][0] - tileSize[0] / 2) * scale / width % 1, (props['tileCenter'][1] - tileSize[1] / 2) * scale / height % 1];
+                        return offset;
+                    }
+                },
+                'tileResolution', 'resolution', 'tileRatio'
             ],
             extraCommandProps: {
                 viewport,

@@ -438,7 +438,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo, tileData.extent);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, tileData.extent);
         const pluginData = tileData.data;
 
         const plugins = this._getFramePlugins(tileData);
@@ -460,6 +460,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 pluginIndex : idx,
                 tileCache : tileCache[idx],
                 tileData : pluginData[idx],
+                tileCenter: tileInfo.point,
                 tileExtent : tileData.extent,
                 timestamp : this._frameTime,
                 tileInfo,
@@ -754,10 +755,10 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
     const v0 = new Array(3);
     const v1 = new Array(3);
     const v2 = new Array(3);
-    return function (tileInfo, EXTENT) {
+    return function (point, z, EXTENT) {
         const map = this.getMap();
-        const glScale = map.getGLScale(tileInfo.z);
-        const tilePos = tileInfo.point;
+        const glScale = map.getGLScale(z);
+        const tilePos = point;
         const tileSize = this.layer.getTileSize();
         const posMatrix = mat4.identity([]);
         //TODO 计算zScale时，zoom可能和tileInfo.z不同
