@@ -19,9 +19,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     setStyle() {
-        if (this._workerConn && this.ready) {
-            //32位的chrome上，addLayer和setStyle同时调用时，worker会出现冲突
-            //所以需要判断是否ready
+        if (this._workerConn) {
             this._styleCounter++;
             this.clear();
             this._clearPlugin();
@@ -142,18 +140,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const workerConn = this._workerConn;
         //setTimeout in case layer's style is set to layer after layer's creating.
-        setTimeout(() => {
-            if (!workerConn.isActive()) {
-                return;
-            }
-            workerConn.addLayer(err => {
-                if (err) throw err;
-                if (!this.layer) return;
-                this.ready = true;
-                this.layer.fire('workerready');
-                this.setToRedraw();
-            });
-        }, 1);
+        workerConn.addLayer(err => {
+            if (err) throw err;
+            if (!this.layer) return;
+            this.ready = true;
+            this.layer.fire('workerready');
+            this.setToRedraw();
+        });
     }
 
     clearCanvas() {
