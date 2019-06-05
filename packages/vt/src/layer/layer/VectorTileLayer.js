@@ -57,8 +57,6 @@ class VectorTileLayer extends maptalks.TileLayer {
     constructor(id, options) {
         super(id, options);
         this.VERSION = VectorTileLayer.VERSION;
-        // const tileSize = this.getTileSize();
-        // this.zoomOffset = -log2(tileSize.width / 256);
         const style = options && options.style || [];
         this.setStyle(style);
     }
@@ -68,11 +66,6 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (renderer) {
             renderer.updateOptions(conf);
         }
-    }
-
-    getTileUrl(x, y, z) {
-        const res = this.getMap().getResolution(z);
-        return super.getTileUrl(x, y, getMapBoxZoom(res));
     }
 
     getWorkerOptions() {
@@ -362,11 +355,6 @@ VectorTileLayer.registerRenderer('gl', VectorTileLayerRenderer);
 VectorTileLayer.registerRenderer('canvas', null);
 
 export default VectorTileLayer;
-
-const MAX_RES = 2 * 6378137 * Math.PI / (256 * Math.pow(2, 20));
-function getMapBoxZoom(res) {
-    return 19 - Math.log(res / MAX_RES) / Math.LN2;
-}
 
 function isPropFunction(v) {
     return !!(v && v.properties);
