@@ -34,6 +34,7 @@ varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
 varying highp float vLinesofar;
+varying vec2 vPosition;
 
 #ifdef HAS_PATTERN
     attribute vec2 aPrevExtrude;
@@ -76,6 +77,7 @@ void main() {
     // vNormal = aNormal;
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
+    vPosition = aPosition.xy;
 
     #ifdef HAS_GRADIENT
         vLinesofar = aLinesofar / MAX_LINE_DISTANCE;

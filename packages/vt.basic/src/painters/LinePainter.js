@@ -29,7 +29,8 @@ class LinePainter extends BasicPainter {
         const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio
+            tileRatio: geometry.properties.tileRatio,
+            tileExtent: geometry.properties.tileExtent
         };
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
@@ -173,6 +174,7 @@ class LinePainter extends BasicPainter {
                 'tileRatio',
                 'resolution',
                 'tileResolution',
+                'tileExtent',
                 'lineDx',
                 'lineDy',
                 'canvasSize'
@@ -202,7 +204,7 @@ class LinePainter extends BasicPainter {
                 blend: {
                     enable: true,
                     func: {
-                        src: 'src alpha',
+                        src: 'one',
                         dst: 'one minus src alpha'
                     },
                     // func : {

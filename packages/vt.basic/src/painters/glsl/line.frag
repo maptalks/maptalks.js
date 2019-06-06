@@ -17,9 +17,11 @@ uniform lowp vec4 lineColor;
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
+varying vec2 vPosition;
 varying highp float vLinesofar;
 uniform vec4 lineDasharray;
 uniform vec4 lineDashColor;
+uniform float tileExtent;
 
 float dashAntialias(float dashMod, float dashWidth) {
     //dash两边的反锯齿
@@ -64,5 +66,9 @@ void main() {
         color *= mix(1.0, firstDashAlpha * firstInDash + secondDashAlpha * secondDashAlpha, isInDash);
     }
 
-    gl_FragColor = color * lineOpacity;
+    //当position的x, y超出tileExtent时，设为透明
+    float clipOpacity = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
+        sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
+
+    gl_FragColor = color * lineOpacity * clipOpacity;
 }

@@ -1,9 +1,10 @@
-precision mediump float;
 #ifdef USE_CIRCLE
 #ifdef GL_OES_standard_derivatives
 #extension GL_OES_standard_derivatives : enable
 #endif
 #endif
+
+precision mediump float;
 
 uniform vec3 markerFill;
 uniform float markerOpacity;

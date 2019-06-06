@@ -50,7 +50,8 @@ class LinePainter extends BasicPainter {
         const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio
+            tileRatio: geometry.properties.tileRatio,
+            tileExtent: geometry.properties.tileExtent
         };
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
@@ -122,6 +123,7 @@ class LinePainter extends BasicPainter {
                         'tileRatio',
                         'resolution',
                         'tileResolution',
+                        'tileExtent',
                         'lineDx',
                         'lineDy',
                         'canvasSize'
