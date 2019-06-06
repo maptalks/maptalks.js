@@ -129,7 +129,11 @@ const Ajax = {
                     if (client.responseType === 'arraybuffer') {
                         const response = client.response;
                         if (response.byteLength === 0) {
-                            cb(new Error('http status 200 returned without content.'));
+                            cb({
+                                status: 200,
+                                statusText: client.statusText,
+                                message: 'http status 200 returned without content.'
+                            });
                         } else {
                             cb(null, {
                                 data: client.response,
@@ -142,7 +146,11 @@ const Ajax = {
                         cb(null, client.responseText);
                     }
                 } else {
-                    cb(new Error(client.statusText + ',' + client.status));
+                    cb({
+                        status: client.status,
+                        statusText: client.statusText,
+                        message: `incorrect http request with status code(${client.status}): ${client.statusText}`,
+                    });
                 }
             }
         };
