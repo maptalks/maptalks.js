@@ -17,7 +17,7 @@ const defaultUniforms = {
 
 const MAX_LINE_COUNT = 128;
 
-class LinePainter extends BasicPainter {
+class LineGradientPainter extends BasicPainter {
     needToRedraw() {
         return this._redraw;
     }
@@ -76,7 +76,7 @@ class LinePainter extends BasicPainter {
         });
 
         uniforms['lineGradientTexture'] = texture;
-        uniforms['lineGradientHeight'] = texture.height;
+        uniforms['lineGradientTextureHeight'] = texture.height;
 
         geometry.generateBuffers(this.regl);
 
@@ -222,7 +222,7 @@ class LinePainter extends BasicPainter {
     }
 }
 
-export default LinePainter;
+export default LineGradientPainter;
 
 function createGradient(grads) {
     if (grads.length > MAX_LINE_COUNT) {
