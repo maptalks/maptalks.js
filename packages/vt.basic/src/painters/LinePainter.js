@@ -57,7 +57,6 @@ class LinePainter extends BasicPainter {
             }
         }
 
-        // setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray');
         setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', createColorSetter(this._colorCache));
 
         if (symbol.linePatternFile) {

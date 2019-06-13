@@ -47,19 +47,20 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
     //in buildUniqueVertex, indices will be updated
     const l = faces.indices.length;
     const ctor = getIndexArrayType(l);
-    faces.indices = new ctor(faces.indices);
-    buffers.push(faces.indices.buffer);
+    const indices = new ctor(faces.indices);
+    delete faces.indices;
+    buffers.push(indices.buffer);
 
-    const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, faces.indices, { 'vertices' : { size : 3 }});
+    const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, indices, { 'vertices' : { size : 3 }});
     faces.vertices = uniqueFaces.vertices;
     // debugger
     if (normal || shadowVolume) {
-        const normals = buildFaceNormals(faces.vertices, faces.indices);
+        const normals = buildFaceNormals(faces.vertices, indices);
         faces.normals = normals;
         buffers.push(normals.buffer);
     }
     if (tangent) {
-        const tangents = computeTangents(faces.vertices, faces.normals, faces.uvs, faces.indices);
+        const tangents = computeTangents(faces.vertices, faces.normals, faces.uvs, indices);
         faces.tangents = tangents;
         buffers.push(tangents.buffer);
     }
@@ -67,12 +68,12 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         buffers.push(faces.uvs.buffer);
     }
     if (shadowVolume) {
-        const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, faces.indices, faces.normals, faces.featureIndexes, shadowDir);
+        const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, indices, faces.normals, faces.featureIndexes, shadowDir);
         faces.shadowVolume = shadowVolume;
         buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
     }
     return {
-        data : faces,
+        data : { data: faces, indices },
         buffers
     };
 }

@@ -127,8 +127,9 @@ export default class LinePack extends VectorPack {
         // const EXTENT = this.options.EXTENT,
         //     overscaling = 1;
         let lineDistances = null;
-        //TODO lineDistances 和 gradient 的处理
-        if (!!feature.properties &&
+        //只有有gradient才会scaleDistance，把 linesofar 从实际距离转化到 0-2^15
+        if (!!this.symbol['lineGradientProperty'] &&
+            !!feature.properties &&
             feature.properties.hasOwnProperty('mapbox_clip_start') &&
             feature.properties.hasOwnProperty('mapbox_clip_end')) {
             lineDistances = {

@@ -91,7 +91,7 @@ export function getHeightValue(properties, heightProp, defaultValue) {
     if (height === undefined) {
         height = defaultValue;
     }
-    return height;
+    return height * 100;//乘以100是因为 tileTransform 中是以厘米为单位，但这里是以米为单位
 }
 
 export function isClippedEdge(vertices, i0, i1, EXTENT) {
