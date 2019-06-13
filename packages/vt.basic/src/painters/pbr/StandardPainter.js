@@ -13,13 +13,14 @@ class StandardPainter extends Painter {
     }
 
     createGeometry(glData) {
+        const attributes = glData.data;
         const data = {
-            aPosition: glData.vertices,
-            aTexCoord0: glData.uvs,
-            aNormal: glData.normals,
-            aColor: glData.colors,
-            aPickingId: glData.featureIndexes,
-            aTangent: glData.tangents
+            aPosition: attributes.vertices,
+            aTexCoord0: attributes.uvs,
+            aNormal: attributes.normals,
+            aColor: attributes.colors,
+            aPickingId: attributes.featureIndexes,
+            aTangent: attributes.tangents
         };
         const geometry = new reshader.Geometry(data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'

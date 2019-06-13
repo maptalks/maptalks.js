@@ -1,6 +1,6 @@
 import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 import distinctColors from '../../common/Colors';
@@ -278,6 +278,20 @@ export default class BaseLayerWorker {
                 zoom
             });
             const pack = new PolygonPack(features, symbol, options);
+            return pack.load();
+        } else if (type === 'line-extrusion') {
+            //line-extrusion 不需要 lineGradientProperty 属性，以免错误的把linesofar转化到了 0-2^15
+            delete symbol['lineGradientProperty'];
+            symbol['lineJoin'] = 'miter';
+            symbol['lineCap'] = 'butt';
+            const options = extend({}, dataConfig, {
+                EXTENT: extent,
+                tileSize,
+                zScale,
+                glScale,
+                zoom
+            });
+            const pack = new LineExtrusionPack(features, symbol, options);
             return pack.load();
         }
         return Promise.resolve({

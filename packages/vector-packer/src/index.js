@@ -1,5 +1,6 @@
 export { default as PointPack } from './pack/PointPack';
 export { default as LinePack } from './pack/LinePack';
+export { default as LineExtrusionPack } from './pack/LineExtrusionPack';
 export { default as NativeLinePack } from './pack/NativeLinePack';
 export { default as NativePointPack } from './pack/NativePointPack';
 export { default as PolygonPack } from './pack/PolygonPack';
