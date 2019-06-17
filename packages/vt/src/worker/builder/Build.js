@@ -2,54 +2,6 @@ import { pushIn, exportIndices } from '../../common/Util';
 import { vec3 } from 'gl-matrix';
 import earcut from 'earcut';
 
-/**
- * Generate normals per vertex.
- * from claygl's Geometry
- */
-export function buildFaceNormals(vertices, indices) {
-    const normals = new Float32Array(vertices.length);
-
-    const p1 = new Array(3);
-    const p2 = new Array(3);
-    const p3 = new Array(3);
-
-    const v21 = new Array(3);
-    const v32 = new Array(3);
-    const n = new Array(3);
-
-    const len = indices.length;
-    let i1, i2, i3;
-    for (let f = 0; f < len;) {
-        if (indices) {
-            i1 = indices[f++];
-            i2 = indices[f++];
-            i3 = indices[f++];
-        } else {
-            i1 = f++;
-            i2 = f++;
-            i3 = f++;
-        }
-
-        vec3.set(p1, vertices[i1 * 3], vertices[i1 * 3 + 1], vertices[i1 * 3 + 2]);
-        vec3.set(p2, vertices[i2 * 3], vertices[i2 * 3 + 1], vertices[i2 * 3 + 2]);
-        vec3.set(p3, vertices[i3 * 3], vertices[i3 * 3 + 1], vertices[i3 * 3 + 2]);
-
-        vec3.sub(v21, p2, p1);
-        vec3.sub(v32, p2, p3);
-
-        vec3.cross(n, v21, v32);
-
-        vec3.normalize(n, n);
-
-        for (let i = 0; i < 3; i++) {
-            normals[i1 * 3 + i] = n[i];
-            normals[i2 * 3 + i] = n[i];
-            normals[i3 * 3 + i] = n[i];
-        }
-    }
-    return normals;
-}
-
 
 /**
  * Create a unique vertex for each index.
