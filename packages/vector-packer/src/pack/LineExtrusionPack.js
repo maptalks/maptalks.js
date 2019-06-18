@@ -26,19 +26,36 @@ export default class LineExtrusionPack extends LinePack {
                 width: 3,
                 name: 'aPosition'
             },
-            //round? + up?
             {
                 type: Uint16Array,
                 width: 1,
                 name: 'aLinesofar'
             },
-            //当前点距离aPos的凸起方向
             {
                 type: Uint8Array,
                 width: 1,
                 name: 'aUp'
             }
         ];
+    }
+
+    _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
+        super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
+        const end = this.data.length / this.formatWidth;
+        const isPolygon = feature.type === 3; //POLYGON)
+        // debugger
+        if (!isPolygon) {
+            //封闭两端
+            //line开始时顶点顺序: down0, down0-底, up0, up0-底
+            //开始端封闭的两个三角形: 1. down0, up0, up0-底, 2. down0, up0-底, down0-底
+            super.addElements(this.offset, this.offset + 2, this.offset + 3);
+            super.addElements(this.offset, this.offset + 3, this.offset + 1);
+
+            //line结束的顶点顺序: down1, down1底, up1, up1底
+            //结束段封闭的两个三角形: 1. up1, down1, down1底, 2. up1, down1底, up1底
+            super.addElements(end - 2, end - 4, end - 3);
+            super.addElements(end - 2, end - 3, end - 1);
+        }
     }
 
     addLineVertex(data, point, extrude, round, up, linesofar) {
@@ -94,7 +111,6 @@ export default class LineExtrusionPack extends LinePack {
     createDataPack(vectors, scale) {
         const pack = super.createDataPack(vectors, scale);
         const { data, indices } = pack;
-        // debugger
         buildUniqueVertex(data, indices, DESCRIPTION);
         const { aPosition, aLinesofar, aUp } = data;
         const arrays = {};
