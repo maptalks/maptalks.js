@@ -34,8 +34,3 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     }
 });
-
-
-Map.mergeOptions({
-    'collisionAutoClear' : true
-});

@@ -74,13 +74,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number[]}       [options.fogColor=[233, 233, 233]]        - color of fog: [r, g, b]
  *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
-<<<<<<< HEAD
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
-=======
- *
- * @property {Boolean} [options.collisionAutoClear=true]               - auto clear collision index at the beggining of every frame.
- *
->>>>>>> add collision support to map
  * @memberOf Map
  * @instance
  */
