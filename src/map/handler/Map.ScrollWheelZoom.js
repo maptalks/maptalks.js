@@ -3,7 +3,28 @@ import { addDomEvent, removeDomEvent, getEventContainerPoint, preventDefault, st
 import Handler from '../../handler/Handler';
 import Map from '../Map';
 
+/*!
+ * Contains code from mapbox-gl-js
+ * http://github.com/mapbox/mapbox-gl-js
+ * License BSD-3-Clause
+ */
+
+const wheelZoomDelta = 4.000244140625;
+
+const defaultZoomRate = 1 / 100;
+const wheelZoomRate = 1 / 450;
+
+const maxScalePerFrame = 2;
+
 class MapScrollWheelZoomHandler extends Handler {
+    constructor(target) {
+        super(target);
+        this._thisScrollZoom = this._scrollZoom.bind(this);
+        this._wheelZoomRate = wheelZoomRate;
+        this._defaultZoomRate = defaultZoomRate;
+        this._delta = 0;
+    }
+
     addHooks() {
         addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
     }
@@ -19,12 +40,72 @@ class MapScrollWheelZoomHandler extends Handler {
         }
         preventDefault(evt);
         stopPropagation(evt);
+        const container = map._containerDOM;
+        const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
+        if (map.options['seamlessZoom']) {
+            return this._seamless(evt, origin);
+        } else {
+            return this._interval(evt, origin);
+        }
+    }
+
+    _seamless(evt, origin) {
+        let value = evt.deltaMode === window.WheelEvent.DOM_DELTA_LINE ? evt.deltaY * 40 : evt.deltaY;
+
+        if (evt.shiftKey && value) value = value / 4;
+
+        this._lastWheelEvent = evt;
+        this._delta -= value;
+        if (!this._zooming && this._delta) {
+            const map = this.target;
+            this._zoomOrigin = origin;
+            map.onZoomStart(null, origin);
+        }
+        this._start();
+    }
+
+    _start() {
+        if (!this._delta) return;
+        this._zooming = true;
+        const map = this.target;
+        if (!this._active) {
+            map.getRenderer().callInNextFrame(this._thisScrollZoom);
+            this._active = true;
+        }
+    }
+
+    _scrollZoom() {
+        this._active = false;
+        if (!this._delta) {
+            return;
+        }
+        const zoomRate = (Math.abs(this._delta) > wheelZoomDelta) ? this._wheelZoomRate : this._defaultZoomRate;
+        let scale = maxScalePerFrame / (1 + Math.exp(-Math.abs(this._delta * zoomRate)));
+        if (this._delta < 0 && scale !== 0) {
+            scale = 1 / scale;
+        }
+        const map = this.target;
+        const zoom = map.getZoom();
+        const targetZoom = map.getZoomForScale(scale, zoom, true);
+        this._delta = 0;
+        map.onZooming(targetZoom, this._zoomOrigin);
+        if (this._timeout) {
+            clearTimeout(this._timeout);
+        }
+        this._timeout = setTimeout(() => {
+            this._zooming = false;
+            delete this._timeout;
+            map.onZoomEnd(map.getZoom(), this._zoomOrigin);
+        }, 300);
+    }
+
+    _interval(evt, origin) {
+        const map = this.target;
         if (this._zooming) {
             this._requesting++;
             return false;
         }
         this._requesting = 0;
-        const container = map._containerDOM;
         let levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             levelValue *= -1;
@@ -36,7 +117,6 @@ class MapScrollWheelZoomHandler extends Handler {
             return false;
         }
         this._zooming = true;
-        const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
         if (!this._delta) {
             map.onZoomStart(null, origin);
             this._origin = origin;
@@ -88,7 +168,8 @@ class MapScrollWheelZoomHandler extends Handler {
 }
 
 Map.mergeOptions({
-    'scrollWheelZoom': true
+    'scrollWheelZoom': true,
+    'seamlessZoom': false
 });
 
 Map.addOnLoadHook('addHandler', 'scrollWheelZoom', MapScrollWheelZoomHandler);
