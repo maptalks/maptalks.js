@@ -58,7 +58,7 @@ class Scale extends Control {
     }
 
     _addScales() {
-        const css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 2px 5px 1px;' +
+        const css = 'border: 2px solid #000000;border-top: none;line-height: 1.1;padding: 0px;' +
             'color: #000000;font-size: 11px;text-align:center;white-space: nowrap;overflow: hidden' +
             ';-moz-box-sizing: content-box;box-sizing: content-box;background: #fff; background: rgba(255, 255, 255, 0);';
         if (this.options['metric']) {
