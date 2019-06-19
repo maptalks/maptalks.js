@@ -403,7 +403,8 @@ export default class CollisionPainter extends BasicPainter {
 
     shouldLimitBox(level, ignoreZoomOut) {
         const map = this.getMap();
-        return this.layer.options['boxLimitOnZoomout'] &&
+        return !map.options['seamlessZoom'] &&
+            this.layer.options['boxLimitOnZoomout'] &&
             (ignoreZoomOut || this._zoomingOut) &&
             (map.isZooming() || this._zoomEndTimestamp !== undefined && level > 0);
     }
