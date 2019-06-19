@@ -109,7 +109,7 @@ class NativePointPainter extends Painter {
                 },
                 depth: {
                     enable: true,
-                    func: this.sceneConfig.depthFunc || '<='
+                    func: this.sceneConfig.depthFunc || 'always'
                 },
                 blend: {
                     enable: true,

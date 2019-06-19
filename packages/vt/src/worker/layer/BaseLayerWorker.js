@@ -3,7 +3,6 @@ import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
-import distinctColors from '../../common/Colors';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../builder/Constant';
 // import Browser from '../util/Browser';
@@ -407,24 +406,22 @@ function getDefaultRenderPlugin(type) {
     return null;
 }
 
-let COLOR_INCRE = 0;
 
 function getDefaultSymbol(type) {
-    const length = distinctColors.length;
-    const color = distinctColors[COLOR_INCRE++ % length];
     switch (type) {
     case 1:
         return {
-            markerFill: color,
+            markerFill: '#f00',
             markerSize: 10
         };
     case 2:
         return {
-            lineColor: color
+            lineColor: '#fff'
         };
     case 3:
         return {
-            polygonFill: color
+            polygonFill: '#00f',
+            polygonOpacity: 0.4
         };
     }
     return null;

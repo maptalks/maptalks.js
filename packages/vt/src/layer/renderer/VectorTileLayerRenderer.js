@@ -3,7 +3,8 @@ import { mat4, vec3, createREGL } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
-import distinctColors from '../../common/Colors';
+
+const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -339,19 +340,28 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (useDefault) {
             //没有定义任何图层，采用图层默认的plugin渲染
             const layerId = pluginData.data.layer;
-            const { updated, symbol, renderPlugin } = this._updateLayerRenderer(pluginData.data.type, layerId);
-            if (updated) {
+            const { updateAction, symbol, renderPlugin } = this._updateDefaultPluginPerLayer(pluginData.data.type, layerId);
+            if (updateAction) {
                 style = {
                     filter: ['==', '$layer', layerId],
                     symbol,
                     renderPlugin
                 };
-                layerStyles.push(style);
+                if (updateAction === 'add') {
+                    layerStyles.push(style);
+                } else {
+                    for (let ii = 0; ii < layerStyles.length; ii++) {
+                        if (layerStyles[ii].filter[2] === layerId) {
+                            layerStyles[ii] = style;
+                            break;
+                        }
+                    }
+                }
                 isUpdated = true;
             } else {
-                for (let i = 0; i < layerStyles.length; i++) {
-                    if (layerStyles[i].filter[2] === layerId) {
-                        style = layerStyles[i];
+                for (let ii = 0; ii < layerStyles.length; ii++) {
+                    if (layerStyles[ii].filter[2] === layerId) {
+                        style = layerStyles[ii];
                         break;
                     }
                 }
@@ -683,19 +693,26 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         ctx.putImageData(imgdata, 0, 0);
     }
 
-    _updateLayerRenderer(type, layer) {
+    _updateDefaultPluginPerLayer(type, layer) {
         let layerPlugins = this._layerPlugins;
         if (!layerPlugins) {
             layerPlugins = this._layerPlugins = {};
         }
-        let updated = false;
+        let updateAction = false;
         if (!layerPlugins[layer]) {
             layerPlugins[layer] = this._getDefaultRenderPlugin(type);
-            updated = true;
+            updateAction = 'add';
+        } else {
+            //当图层数据存在类型降级(面=>线=>点)时，则更新默认插件到低级别上
+            const current = layerPlugins[layer].renderPlugin.type;
+            if (DEFAULT_PLUGIN_ORDERS.indexOf(current) > DEFAULT_PLUGIN_ORDERS.indexOf(type)) {
+                layerPlugins[layer] = this._getDefaultRenderPlugin(type);
+                updateAction = 'update';
+            }
         }
         const { plugin, symbol, renderPlugin } = layerPlugins[layer];
         return {
-            updated,
+            updateAction,
             plugin,
             symbol,
             renderPlugin
@@ -772,26 +789,24 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
 
 export default VectorTileLayerRenderer;
 
-let COLOR_INCRE = 0;
 
 function getDefaultSymbol(type) {
-    const length = distinctColors.length;
-    const color = distinctColors[COLOR_INCRE++ % length];
     switch (type) {
     case 'native-point':
         return {
-            markerFill: color,
-            markerSize: 10
+            markerFill: '#f00',
+            markerSize: 6,
+            markerOpacity: 0.5
         };
     case 'native-line':
         return {
-            lineColor: color,
-            lineOpacity: 0.7
+            lineColor: '#fff',
+            lineOpacity: 0.5
         };
     case 'fill':
         return {
-            polygonFill: color,
-            polygonOpacity: 0.7
+            polygonFill: '#00f',
+            polygonOpacity: 0.6
         };
     }
     return null;
