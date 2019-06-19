@@ -101,7 +101,7 @@ const Ajax = {
                         } else {
                             cb(null, data);
                         }
-                    }).catch(cb);
+                    });
                 }
             }).catch(cb);
             return controller;
