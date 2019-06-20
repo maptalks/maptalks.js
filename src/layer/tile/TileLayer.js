@@ -263,13 +263,8 @@ class TileLayer extends Layer {
     }
 
     _getTileZoom(zoom) {
-        const map = this.getMap();
         if (!isInteger(zoom)) {
-            if (map.isZooming()) {
-                zoom = (zoom > map._frameZoom ? Math.floor(zoom) : Math.ceil(zoom));
-            } else {
-                zoom = Math.round(zoom);
-            }
+            zoom = Math.round(zoom);
         }
         const maxZoom = this.options['maxAvailableZoom'];
         if (!isNil(maxZoom) && zoom > maxZoom) {
