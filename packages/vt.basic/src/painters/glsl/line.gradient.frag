@@ -18,6 +18,13 @@ varying float vGradIndex;
 varying vec2 vPosition;
 
 void main() {
+        //当position的x, y超出tileExtent时，丢弃该片元
+    float clip = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
+        sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
+    if (clip == 0.0) {
+        discard;
+    }
+
     float dist = length(vNormal) * vWidth.s;//outset
 
     float blur2 = (lineBlur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
@@ -27,9 +34,5 @@ void main() {
     vec4 color = texture2D(lineGradientTexture, vec2(x, (vGradIndex * 2.0 + 0.5) / lineGradientTextureHeight)) * alpha;
     color *= max(sign(MAX_LINE_COUNT - vGradIndex), 0.0); //超过MAX_LINE_COUNT时则不显示
 
-    //当position的x, y超出tileExtent时，设为透明
-    float clipOpacity = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
-        sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
-
-    gl_FragColor = color * lineOpacity * clipOpacity;
+    gl_FragColor = color * lineOpacity;
 }

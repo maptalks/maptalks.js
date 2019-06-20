@@ -32,6 +32,13 @@ float dashAntialias(float dashMod, float dashWidth) {
 }
 
 void main() {
+    //当position的x, y超出tileExtent时，丢弃该片元
+    float clip = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
+        sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
+    if (clip == 0.0) {
+        discard;
+    }
+
     float dist = length(vNormal) * vWidth.s;//outset
 
     float blur2 = (lineBlur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
@@ -66,9 +73,5 @@ void main() {
         color *= mix(1.0, firstDashAlpha * firstInDash + secondDashAlpha * secondDashAlpha, isInDash);
     }
 
-    //当position的x, y超出tileExtent时，设为透明
-    float clipOpacity = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
-        sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
-
-    gl_FragColor = color * lineOpacity * clipOpacity;
+    gl_FragColor = color * lineOpacity;
 }
