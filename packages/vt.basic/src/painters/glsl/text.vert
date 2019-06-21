@@ -79,7 +79,7 @@ void main() {
     // gl_Position.xy += vec2(1.0, 10.0);
 
     vTexCoord = texCoord / texSize;
-    vGammaScale = clamp(vGammaScale, 0.0, 1.3);
+    vGammaScale = clamp(vGammaScale, 0.0, 1.0);
 
     vSize = textSize;
     #ifdef ENABLE_COLLISION

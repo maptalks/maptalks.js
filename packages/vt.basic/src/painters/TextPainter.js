@@ -375,6 +375,7 @@ export default class TextPainter extends CollisionPainter {
         const lastChrIdx = meshElements[end - 1];
         const normal = this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix);
         if (normal === null) {
+            resetOffset(aOffset, meshElements, start, end);
             //normal返回null说明计算过程中有文字visible是false，直接退出
             return false;
         }

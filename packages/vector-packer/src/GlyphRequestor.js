@@ -96,7 +96,7 @@ export default class GlyphRequestor {
         //1. 中日韩字符中间适当多留一些间隔
         //2. 英文或其他拉丁文字，减小 advanceBuffer，让文字更紧凑
         //3. 但因为intel gpu崩溃问题，启用stencil且advancaBuffer < 0时，会有文字削边现象，所以设为 1
-        const advanceBuffer = isCharsCompact ? -2 : 0;
+        const advanceBuffer = isCharsCompact ? -1 : 2;
         if (!tinySDF) {
             let fontWeight = '400';
             if (/bolder/i.test(textWeight)) {
@@ -153,7 +153,7 @@ export default class GlyphRequestor {
                 width: width,
                 height: 24,
                 left: 0,
-                top: -8,
+                top: -7,
                 // top: -buffer,
                 advance: width + buffer + advanceBuffer
             }
