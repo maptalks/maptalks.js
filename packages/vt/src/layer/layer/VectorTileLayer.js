@@ -347,6 +347,16 @@ class VectorTileLayer extends maptalks.TileLayer {
 
 }
 
+VectorTileLayer.prototype['_getTileZoom'] = function (zoom) {
+    zoom = Math.floor(zoom);
+    const maxZoom = this.options['maxAvailableZoom'];
+    if (!isNil(maxZoom) && zoom > maxZoom) {
+        zoom = maxZoom;
+    }
+    return zoom;
+};
+
+
 VectorTileLayer.registerJSONType('VectorTileLayer');
 
 VectorTileLayer.mergeOptions(defaultOptions);
