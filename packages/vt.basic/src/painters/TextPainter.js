@@ -49,6 +49,9 @@ const SHAPE = [], OFFSET = [], AXIS_FACTOR = [1, -1];
 
 const INT16 = new Int16Array(2);
 
+
+const FIRST_CHAROFFSET = [], LAST_CHAROFFSET = [];
+
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
         super(regl, layer, sceneConfig, pluginIndex);
@@ -439,7 +442,14 @@ export default class TextPainter extends CollisionPainter {
         for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
             //every character has 4 vertice, and 6 indexes
             const vertexStart = meshElements[j];
-            const offset = getCharOffset(CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
+            let offset;
+            if (!flip && j === start) {
+                offset = FIRST_CHAROFFSET;
+            } else if (!flip && j === end - BOX_ELEMENT_COUNT) {
+                offset = LAST_CHAROFFSET;
+            } else {
+                offset = getCharOffset(CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
+            }
             if (!offset) {
                 //remove whole text if any char is missed
                 visible = false;
@@ -493,7 +503,7 @@ export default class TextPainter extends CollisionPainter {
     _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix) {
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
         const map = this.getMap();
-        const normal = onlyOne ? 0 : getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, map.width / map.height, planeMatrix);
+        const normal = onlyOne ? 0 : getLabelNormal(FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, map.width / map.height, planeMatrix);
 
         return normal;
     }

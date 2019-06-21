@@ -1,9 +1,9 @@
-import { vec2 } from '@maptalks/gl';
+import { vec2, vec3 } from '@maptalks/gl';
 import { getCharOffset } from './get_char_offset';
 
 const FIRST_POINT = [], LAST_POINT = [];
 
-export function getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, aspectRatio, planeMatrix) {
+export function getLabelNormal(firstCharOffset, lastCharOffset, mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, aspectRatio, planeMatrix) {
     const { aVertical } = mesh.geometry.properties;
     const isVertical = aVertical[firstChrIdx];
 
@@ -16,10 +16,12 @@ export function getLabelNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, la
     if (!offset) {
         return null;
     }
+    vec3.copy(firstCharOffset, offset);
     offset = getCharOffset(LAST_POINT, mesh, textSize, line, lastChrIdx, labelAnchor, scale, false);
     if (!offset) {
         return null;
     }
+    vec3.copy(lastCharOffset, offset);
     if (planeMatrix) {
         vec2.transformMat2(FIRST_POINT, FIRST_POINT, planeMatrix);
         vec2.transformMat2(LAST_POINT, LAST_POINT, planeMatrix);
