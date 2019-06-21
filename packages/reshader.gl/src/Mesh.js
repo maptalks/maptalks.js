@@ -16,6 +16,7 @@ class Mesh {
         this.uniforms = {};
         this.localTransform = mat4.identity(new Array(16));
         this.properties = {};
+        this._dirtyUniforms = true;
     }
 
     setParent() {
@@ -29,6 +30,9 @@ class Mesh {
     }
 
     setUniform(k, v) {
+        if (this.uniforms[k] === undefined) {
+            this._dirtyUniforms = true;
+        }
         this.uniforms[k] = v;
         return this;
     }
@@ -67,25 +71,52 @@ class Mesh {
         return this._definesKey;
     }
 
+    // getUniforms(regl) {
+    //     const uniforms = {
+    //         'modelMatrix': this.localTransform
+    //     };
+    //     if (this.material) {
+    //         const materialUniforms = this.material.getUniforms(regl);
+    //         extend(uniforms, materialUniforms);
+    //     }
+    //     extend(uniforms, this.uniforms);
+    //     return uniforms;
+    // }
+
     getUniforms(regl) {
-        const uniforms = {
-            'modelMatrix' : this.localTransform
-        };
-        for (const p in this.uniforms) {
-            uniforms[p] = this.uniforms[p];
-        }
-        if (this.material) {
-            const materialUniforms = this.material.getUniforms(regl);
-            if (materialUniforms) {
-                for (const p in materialUniforms) {
-                    if (materialUniforms.hasOwnProperty(p)) {
-                        uniforms[p] = materialUniforms[p];
-                    }
+        if (this._dirtyUniforms || this.material.isDirty()) {
+            this._realUniforms = {
+            };
+            const uniforms = this.uniforms;
+            for (const p in this.uniforms) {
+                if (this.uniforms.hasOwnProperty(p)) {
+                    Object.defineProperty(this._realUniforms, p, {
+                        enumerable: true,
+                        configurable: true,
+                        get: function () {
+                            return uniforms && uniforms[p];
+                        }
+                    });
                 }
             }
+            const materialUniforms = this.material.getUniforms(regl);
+            for (const p in materialUniforms) {
+                if (materialUniforms.hasOwnProperty(p)) {
+                    Object.defineProperty(this._realUniforms, p, {
+                        enumerable: true,
+                        configurable: true,
+                        get: function () {
+                            return materialUniforms && materialUniforms[p];
+                        }
+                    });
+                }
+            }
+            this._dirtyUniforms = false;
         }
-        return uniforms;
+        this._realUniforms['modelMatrix'] = this.localTransform;
+        return this._realUniforms;
     }
+
 
     getMaterial() {
         return this.material;
@@ -100,18 +131,13 @@ class Mesh {
     }
 
     getREGLProps(regl) {
-        const props = extend({}, this.geometry.data);
+        const props = this.getUniforms(regl);
+        extend(props, this.geometry.data);
         props.elements = this.geometry.getElements();
         props.count = this.geometry.getDrawCount();
         props.offset = this.geometry.getDrawOffset();
         // command primitive : triangle, triangle strip, etc
         props.primitive = this.geometry.getPrimitive();
-        const uniforms = this.getUniforms(regl);
-        for (const p in uniforms) {
-            if (uniforms.hasOwnProperty(p)) {
-                props[p] = uniforms[p];
-            }
-        }
         return props;
     }
 

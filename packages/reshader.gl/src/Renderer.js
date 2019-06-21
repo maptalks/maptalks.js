@@ -1,5 +1,3 @@
-import { extend } from './common/Util.js';
-
 /**
  * A basic renderer to render meshes in fashion of forward rendering
  */
@@ -12,7 +10,7 @@ class Renderer {
         //rendering of large number of lights can be accelarated by clip-space quadtree
         //https://stackoverflow.com/questions/30594511/webgl-fragment-shader-for-multiple-light-sources
 
-        shader.setUniforms(extend({}, uniforms || {}));
+        shader.setUniforms(uniforms || {});
         shader.setFramebuffer(framebuffer);
         if (scene) {
             const { opaques, transparents } = scene.getSortedMeshes();

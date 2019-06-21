@@ -48,13 +48,13 @@ class MeshShader extends Shader {
     }
 
     getMeshCommand(regl, mesh) {
-        const uniforms = Object.keys(mesh.getUniforms(regl));
         let dKey = mesh.getDefinesKey();
         const defines = mesh.getDefines();
         const elementType = isNumber(mesh.getElements()) ? 'count' : 'elements';
         dKey += '_' + elementType;
         let command = this.commands[dKey];
         if (!command) {
+            const uniforms = Object.keys(mesh.getUniforms(regl));
             command = this.commands[dKey] =
                 this.createREGLCommand(
                     regl,

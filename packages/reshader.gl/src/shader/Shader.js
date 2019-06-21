@@ -1,4 +1,4 @@
-import { extend, extend2, isString, isFunction, isNumber } from '../common/Util.js';
+import { extend, isString, isFunction, isNumber } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
 const UNIFORM_TYPE = {
@@ -61,7 +61,8 @@ class Shader {
     appendRenderUniforms(meshProps) {
         //append but not extend to save unnecessary object copies
         const context = this.context;
-        const props = extend2(meshProps, context);
+        //TODO 这里以前是extend2，需要明确改用extend后是否会有bug
+        const props = extend(meshProps, context);
         const uniforms = props;
         const desc = this.contextDesc;
         for (const p in desc) {
