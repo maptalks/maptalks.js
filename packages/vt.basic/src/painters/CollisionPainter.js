@@ -11,9 +11,10 @@ const DEFAULT_SCENE_CONFIG = {
     fadingDuration: 400,
     fadingDelay: 200
 };
-
+const MESH_ANCHOR_KEY = '__meshAnchorKey';
 const UINT8 = new Uint8Array(1);
 const COLLISION_OFFSET_THRESHOLD = 2;
+const MESH_ANCHORS = [];
 
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
@@ -38,8 +39,9 @@ export default class CollisionPainter extends BasicPainter {
     _isCachedCollisionStale(meshKey) {
         const [anchor0, anchor1] = this._getMeshAnchor(meshKey);
         //如果没有anchor，或者anchor距离它应该在的点的像素距离超过阈值时，则说明collision已经过期
-        if (!anchor0 || anchor0.distanceTo(this._containerAnchor0) > COLLISION_OFFSET_THRESHOLD ||
-            !anchor1 || anchor1.distanceTo(this._containerAnchor1) > COLLISION_OFFSET_THRESHOLD) {
+        if (!anchor0 || !anchor1 ||
+            anchor0.distanceTo(this._containerAnchor0) > COLLISION_OFFSET_THRESHOLD ||
+            anchor1.distanceTo(this._containerAnchor1) > COLLISION_OFFSET_THRESHOLD) {
             return true;
         }
         return false;
@@ -78,18 +80,23 @@ export default class CollisionPainter extends BasicPainter {
     _getMeshAnchor(meshKey) {
         const meshContext = this._collisionContext.tags[meshKey];
         if (meshContext && meshContext.anchor0) {
-            const key0 = meshContext.anchor0.toArray().join();
-            const key1 = meshContext.anchor1.toArray().join();
-            let anchor0 = this._coordCache[key0];
-            let anchor1 = this._coordCache[key1];
+            const { anchor0, anchor1 } = meshContext;
+            const key0 = anchor0[MESH_ANCHOR_KEY] = anchor0[MESH_ANCHOR_KEY] || anchor0.x + ',' + anchor0.y;
+            const key1 = anchor1[MESH_ANCHOR_KEY] = anchor1[MESH_ANCHOR_KEY] || anchor1.x + ',' + anchor1.y;
+            let cp0 = this._coordCache[key0];
+            let cp1 = this._coordCache[key1];
             if (!anchor0 || !anchor1) {
                 const map = this.getMap();
-                anchor0 = this._coordCache[key0] = map.coordToContainerPoint(meshContext.anchor0);
-                anchor1 = this._coordCache[key1] = map.coordToContainerPoint(meshContext.anchor1);
+                cp0 = this._coordCache[key0] = map.coordToContainerPoint(anchor0);
+                cp1 = this._coordCache[key1] = map.coordToContainerPoint(anchor1);
             }
-            return [anchor0, anchor1];
+            MESH_ANCHORS[0] = cp0;
+            MESH_ANCHORS[1] = cp1;
+            return MESH_ANCHORS;
+        } else {
+            MESH_ANCHORS[0] = MESH_ANCHORS[1] = null;
         }
-        return [];
+        return MESH_ANCHORS;
     }
 
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
