@@ -19,16 +19,21 @@
 
 
         const regl = createREGL({
-            canvas : canvas
+            canvas : canvas,
+            extensions : [
+                'ANGLE_instanced_arrays',
+                'OES_element_index_uint'
+            ]
         });
 
         const vert = `
             attribute vec3 aPosition;
+            attribute vec3 iOffset;
             uniform mat4 projViewModelMatrix;
 
             void main()
             {
-                gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+                gl_Position = projViewModelMatrix * vec4(aPosition + iOffset, 1.0);
 
             }
         `;
@@ -131,10 +136,12 @@
             //方便实际绘制时，不再重复拷贝数据 (bufferData)
             cube.generateBuffers(regl);
 
-            const cubeMesh = new reshader.Mesh(cube);
+            const count = 10;
+            const cubeMesh = new reshader.InstancedMesh({ iOffset: generateOffsets(count) }, count * count, cube);
+            cubeMesh.generateInstancedBuffers(regl);
 
             const transformMat = mat4.identity([]);
-            mat4.scale(transformMat, transformMat, [0.5, 0.5, 0.5]);
+            mat4.scale(transformMat, transformMat, [0.1, 0.1, 0.1]);
             cubeMesh.setLocalTransform(transformMat);
 
             const scene = new reshader.Scene([cubeMesh]);
@@ -149,6 +156,16 @@
             return viewProjection;
         }
 
+        function generateOffsets(N) {
+            const offset = [];
+            const count = N * N;
+            for (let i = 0; i < count; i++) {
+                const x = (-1 + 2 * Math.floor(i / N) / N) * 40
+                const z = (-1 + 2 * (i % N) / N) * 40
+                offset.push(x, 0, z);
+            }
+            return offset;
+        }
 
     </script>
   </body>
