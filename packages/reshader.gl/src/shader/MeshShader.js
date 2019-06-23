@@ -1,5 +1,6 @@
 import Shader from './Shader.js';
 import { isNumber } from '../common/Util.js';
+import { InstancedMesh } from '../index.js';
 
 class MeshShader extends Shader {
 
@@ -52,6 +53,9 @@ class MeshShader extends Shader {
         const defines = mesh.getDefines();
         const elementType = isNumber(mesh.getElements()) ? 'count' : 'elements';
         dKey += '_' + elementType;
+        if (mesh instanceof InstancedMesh) {
+            dKey += '_instanced';
+        }
         let command = this.commands[dKey];
         if (!command) {
             const uniforms = Object.keys(mesh.getUniforms(regl));
@@ -61,7 +65,8 @@ class MeshShader extends Shader {
                     defines,
                     mesh.getAttributes(),
                     uniforms,
-                    mesh.getElements()
+                    mesh.getElements(),
+                    mesh instanceof InstancedMesh
                 );
         }
         return command;

@@ -103,7 +103,7 @@ class Shader {
         return this;
     }
 
-    createREGLCommand(regl, materialDefines, attrProps, uniProps, elements) {
+    createREGLCommand(regl, materialDefines, attrProps, uniProps, elements, isInstanced) {
         uniProps = uniProps || [];
         attrProps = attrProps || [];
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
@@ -148,6 +148,9 @@ class Shader {
         command.offset = regl.prop('offset');
         command.primitive = regl.prop('primitive');
         command.framebuffer = regl.prop('framebuffer');
+        if (isInstanced) {
+            command.instances = regl.prop('instances');
+        }
         extend(command, this.extraCommandProps);
         return regl(command);
     }

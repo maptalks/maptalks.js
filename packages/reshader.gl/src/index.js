@@ -5,6 +5,7 @@ export { default as Material } from './Material.js';
 export { default as WireFrameMaterial } from './WireFrameMaterial.js';
 export { default as PhongMaterial } from './PhongMaterial.js';
 export { default as Mesh } from './Mesh.js';
+export { default as InstancedMesh } from './InstancedMesh.js';
 export { default as Renderer } from './Renderer.js';
 export { default as ResourceLoader } from './ResourceLoader.js';
 export { default as Scene } from './Scene.js';
