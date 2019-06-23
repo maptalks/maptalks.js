@@ -84,7 +84,7 @@ class Mesh {
     // }
 
     getUniforms(regl) {
-        if (this._dirtyUniforms || this.material.isDirty()) {
+        if (this._dirtyUniforms || this.material && this.material.isDirty()) {
             this._realUniforms = {
             };
             const uniforms = this.uniforms;
@@ -99,16 +99,18 @@ class Mesh {
                     });
                 }
             }
-            const materialUniforms = this.material.getUniforms(regl);
-            for (const p in materialUniforms) {
-                if (materialUniforms.hasOwnProperty(p)) {
-                    Object.defineProperty(this._realUniforms, p, {
-                        enumerable: true,
-                        configurable: true,
-                        get: function () {
-                            return materialUniforms && materialUniforms[p];
-                        }
-                    });
+            if (this.material) {
+                const materialUniforms = this.material.getUniforms(regl);
+                for (const p in materialUniforms) {
+                    if (materialUniforms.hasOwnProperty(p)) {
+                        Object.defineProperty(this._realUniforms, p, {
+                            enumerable: true,
+                            configurable: true,
+                            get: function () {
+                                return materialUniforms && materialUniforms[p];
+                            }
+                        });
+                    }
                 }
             }
             this._dirtyUniforms = false;
