@@ -2,10 +2,11 @@
 
     attribute vec3 aPosition;
 #ifdef HAS_ATTRIBUTE_TANGENTS
-    attribute vec3 aNormal;
-#endif
-#if defined(MATERIAL_HAS_ANISOTROPY) || defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
+    #ifndef HAS_ATTRIBUTE_NORMALS
     attribute vec4 aTangent;
+    #else
+    attribute vec3 aNormal;
+    #endif
 #endif
 #ifdef HAS_COLOR
     attribute vec3 aColor;
@@ -40,6 +41,7 @@
 #include <fl_uniforms_glsl>
 #include <fl_inputs_vert>
 #include <fl_common_material_vert>
+#include <fl_common_math_glsl>
 
 #ifdef HAS_SHADOWING
     #include <vsm_shadow_vert>
@@ -70,24 +72,6 @@
         objectUniforms.worldFromModelNormalMatrix = normalMatrix;
     }
 
-
-    /**
-    * Extracts the normal and tangent vectors of the tangent frame encoded in the
-    * specified quaternion.
-    */
-    void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
-        //TODO 暂时直接读取aNormal和aTangent，而不封装为 quaternion
-        //封装后的实现在 common_math.glsl 中
-        n = aNormal;
-        t = q.xyz;
-    }
-
-    void toTangentFrame(const highp vec4 q, out highp vec3 n) {
-        //TODO 暂时直接读取aNormal和aTangent，而不封装为 quaternion
-        //封装后的实现在 common_math.glsl 中
-        n = aNormal;
-    }
-
     void initTangents(inout MaterialVertexInputs material) {
         #if defined(HAS_ATTRIBUTE_TANGENTS)
             // If the material defines a value for the "normal" property, we need to output
@@ -114,8 +98,12 @@
                 vertex_worldBitangent =
                         cross(material.worldNormal, vertex_worldTangent) * sign(mesh_tangents.w);
             #else
-                // Without anisotropy or normal mapping we only need the normal vector
-                toTangentFrame(mesh_tangents, material.worldNormal);
+                #if defined(HAS_ATTRIBUTE_NORMALS)
+                    material.worldNormal = aNormal;
+                #else
+                    // Without anisotropy or normal mapping we only need the normal vector
+                    toTangentFrame(mesh_tangents, material.worldNormal);
+                #endif
                 material.worldNormal = objectUniforms.worldFromModelNormalMatrix * material.worldNormal;
                 #if defined(HAS_SKINNING)
                     skinNormal(material.worldNormal, mesh_bone_indices, mesh_bone_weights);

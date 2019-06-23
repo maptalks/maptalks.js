@@ -1,8 +1,9 @@
-import { vec3 } from 'gl-matrix';
+import { vec3, vec4 } from 'gl-matrix';
+import { packTangentFrame, buildTangents } from '@maptalks/tbn-packer';
 import { isNumber, extend, isArray } from './common/Util';
 import BoundingBox from './BoundingBox';
 
-const defaultDesc = {
+const DEFAULT_DESC = {
     'positionSize': 3,
     'primitive': 'triangles',
     //name of position attribute
@@ -15,7 +16,7 @@ export default class Geometry {
     constructor(data, elements, count, desc) {
         this.data = data;
         this.elements = elements;
-        this.desc = extend({}, defaultDesc, desc) || defaultDesc;
+        this.desc = extend({}, DEFAULT_DESC, desc);
         const pos = data[this.desc.positionAttribute];
         if (!count) {
             if (elements) {
@@ -35,6 +36,7 @@ export default class Geometry {
 
     generateBuffers(regl) {
         //generate regl buffers beforehand to avoid repeated bufferData
+        //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
         for (const p in allocatedBuffers) {
             if (!allocatedBuffers[p].buffer) {
@@ -48,10 +50,12 @@ export default class Geometry {
             if (!data[key]) {
                 continue;
             }
+            //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
                 if (data[key].buffer.destroy) {
                     buffers[key] = data[key];
                 } else if (allocatedBuffers[data[key].buffer]) {
+                    //多个属性共用同一个ArrayBuffer(interleaved)
                     buffers[key] = extend({}, data[key]);
                     buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
                 }
@@ -72,6 +76,11 @@ export default class Geometry {
         }
     }
 
+    /**
+     * 手动设置geometry的buffer，用于多个属性共用一个ArrayBuffer(interleaved)
+     * @param {String} key - 属性
+     * @param {ArrayBuffer|REGLBuffer} data - 数据
+     */
     addBuffer(key, data) {
         this._buffers[key] = {
             data
@@ -218,12 +227,22 @@ export default class Geometry {
     }
 
     createTangent(name = 'aTangent') {
-        this.data[name] = computeTangents(
+        const normals = this.data[this.desc.normalAttribute];
+        const tangents = buildTangents(
             this.data[this.desc.positionAttribute],
-            this.data[this.desc.normalAttribute],
+            normals,
             this.data[this.desc.uv0Attribute],
             this.elements
         );
+        const aTangent = this.data[name] = new Float32Array(tangents.length);
+        const t = [], n = [], q = [];
+        for (let i = 0; i < tangents.length; i += 4) {
+            const ni = i / 4 * 3;
+            vec3.set(n, normals[ni], normals[ni + 1], normals[ni + 2]);
+            vec4.set(t, tangents[i], tangents[i + 1], tangents[i + 2], tangents[i + 3]);
+            packTangentFrame(q, n, t);
+            vec4.copy(aTangent.subarray(i, i + 4), q);
+        }
     }
 
     /**
@@ -340,148 +359,4 @@ function getElementLength(elements) {
         return elements.data.length;
     }
     throw new Error('invalid elements length');
-}
-
-function computeTangents(positions, normals, uvs, indices) {
-    const nVertices = positions.length / 3;
-
-    const tangents = new Array(4 * nVertices);
-
-    const tan1 = [], tan2 = [];
-
-    for (let i = 0; i < nVertices; i++) {
-
-        tan1[ i ] = [0, 0, 0];
-        tan2[ i ] = [0, 0, 0];
-
-    }
-
-    const vA = [0, 0, 0],
-        vB = [0, 0, 0],
-        vC = [0, 0, 0],
-
-        uvA = [0, 0],
-        uvB = [0, 0],
-        uvC = [0, 0],
-
-        sdir = [0, 0, 0],
-        tdir = [0, 0, 0];
-
-    function handleTriangle(a, b, c) {
-
-        fromArray3(vA, positions, a * 3);
-        fromArray3(vB, positions, b * 3);
-        fromArray3(vC, positions, c * 3);
-
-        fromArray2(uvA, uvs, a * 2);
-        fromArray2(uvB, uvs, b * 2);
-        fromArray2(uvC, uvs, c * 2);
-
-        const x1 = vB[0] - vA[0];
-        const x2 = vC[0] - vA[0];
-
-        const y1 = vB[1] - vA[1];
-        const y2 = vC[1] - vA[1];
-
-        const z1 = vB[2] - vA[2];
-        const z2 = vC[2] - vA[2];
-
-        const s1 = uvB[0] - uvA[0];
-        const s2 = uvC[0] - uvA[0];
-
-        const t1 = uvB[1] - uvA[1];
-        const t2 = uvC[1] - uvA[1];
-
-        const r = 1.0 / (s1 * t2 - s2 * t1);
-
-        vec3.set(
-            sdir,
-            (t2 * x1 - t1 * x2) * r,
-            (t2 * y1 - t1 * y2) * r,
-            (t2 * z1 - t1 * z2) * r
-        );
-
-        vec3.set(
-            tdir,
-            (s1 * x2 - s2 * x1) * r,
-            (s1 * y2 - s2 * y1) * r,
-            (s1 * z2 - s2 * z1) * r
-        );
-
-        vec3.add(tan1[ a ], tan1[ a ], sdir);
-        vec3.add(tan1[ b ], tan1[ b ], sdir);
-        vec3.add(tan1[ c ], tan1[ c ], sdir);
-
-        vec3.add(tan2[ a ], tan2[ a ], tdir);
-        vec3.add(tan2[ b ], tan2[ b ], tdir);
-        vec3.add(tan2[ c ], tan2[ c ], tdir);
-
-    }
-
-    for (let j = 0, jl = indices.length; j < jl; j += 3) {
-
-        handleTriangle(
-            indices[ j + 0 ],
-            indices[ j + 1 ],
-            indices[ j + 2 ]
-        );
-
-    }
-
-    const tmp = [], tmp2 = [];
-    const n = [], n2 = [];
-    let w, t, test;
-
-    function handleVertex(v) {
-
-        fromArray3(n, normals, v * 3);
-        vec3.copy(n2, n);
-        // n2.copy(n);
-
-        t = tan1[ v ];
-
-        // Gram-Schmidt orthogonalize
-
-        vec3.copy(tmp, t);
-        vec3.sub(tmp, tmp, vec3.scale(n, n, vec3.dot(n, t)));
-        vec3.normalize(tmp, tmp);
-        // tmp.sub(n.multiplyScalar(n.dot(t))).normalize();
-
-        // Calculate handedness
-
-        vec3.cross(tmp2, n2, t);
-        test = vec3.dot(tmp2, tan2[ v ]);
-        // tmp2.crossVectors(n2, t);
-        // test = tmp2.dot(tan2[ v ]);
-        w = (test < 0.0) ? -1.0 : 1.0;
-
-        tangents[ v * 4 ] = tmp[0];
-        tangents[ v * 4 + 1 ] = tmp[1];
-        tangents[ v * 4 + 2 ] = tmp[2];
-        tangents[ v * 4 + 3 ] = w;
-
-    }
-
-    for (let j = 0, jl = indices.length; j < jl; j += 3) {
-
-        handleVertex(indices[ j + 0 ]);
-        handleVertex(indices[ j + 1 ]);
-        handleVertex(indices[ j + 2 ]);
-
-    }
-
-    return tangents;
-}
-
-function fromArray3(out, array, offset) {
-    out[0] = array[offset];
-    out[1] = array[offset + 1];
-    out[2] = array[offset + 2];
-    return out;
-}
-
-function fromArray2(out, array, offset) {
-    out[0] = array[offset];
-    out[1] = array[offset + 1];
-    return out;
 }

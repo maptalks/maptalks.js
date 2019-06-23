@@ -115,6 +115,9 @@ class StandardShader extends MeshShader {
         const defines = {};
         if (geometry.data[this.tangentAttribute] || geometry.data[this.normalAttribute]) {
             defines['HAS_ATTRIBUTE_TANGENTS'] = 1;
+            if (!geometry.data[this.tangentAttribute]) {
+                defines['HAS_ATTRIBUTE_NORMALS'] = 1;
+            }
         }
         if (geometry.data[this.colorAttribute]) {
             defines['HAS_COLOR'] = 1;
