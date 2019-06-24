@@ -311,13 +311,17 @@ export default class PointPack extends VectorPack {
                 const polygon = rings[i];
                 // 16 here represents 2 pixels
                 const poi = findPoleOfInaccessibility(polygon, 16);
-                anchors.push(poi);
+                if (!isOut(poi, EXTENT)) {
+                    anchors.push(poi);
+                }
             }
         } else if (feature.type === 2) {
             // https://github.com/mapbox/mapbox-gl-js/issues/3808
             for (let i = 0; i < feature.geometry.length; i++) {
                 const line = feature.geometry[i];
-                anchors.push(line[0]);
+                if (!isOut(line[0], EXTENT)) {
+                    anchors.push(line[0]);
+                }
             }
         } else if (feature.type === 1) {
             for (let i = 0; i < feature.geometry.length; i++) {
