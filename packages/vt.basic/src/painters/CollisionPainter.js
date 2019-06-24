@@ -85,7 +85,7 @@ export default class CollisionPainter extends BasicPainter {
             const key1 = anchor1[MESH_ANCHOR_KEY] = anchor1[MESH_ANCHOR_KEY] || anchor1.x + ',' + anchor1.y;
             let cp0 = this._coordCache[key0];
             let cp1 = this._coordCache[key1];
-            if (!anchor0 || !anchor1) {
+            if (!cp0 || !cp1) {
                 const map = this.getMap();
                 cp0 = this._coordCache[key0] = map.coordToContainerPoint(anchor0);
                 cp1 = this._coordCache[key1] = map.coordToContainerPoint(anchor1);
