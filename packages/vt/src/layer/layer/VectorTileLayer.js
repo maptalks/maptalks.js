@@ -4,7 +4,7 @@ import { extend, compileStyle, isNil, isString, isObject } from '../../common/Ut
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 
-const URL_PATTERN = /\{ *([\w_]+) *\}/g;
+const URL_PATTERN = /\{ *(root) *\}/g;
 
 const defaultOptions = {
     renderer: 'gl',
@@ -88,7 +88,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             const endIndex = url.lastIndexOf('/');
             const prefix = endIndex < 0 ? '.' : url.substring(0, endIndex);
             const root = prefix;
-            const iconset = root + '/style-res/iconset';
             this.ready = false;
             Ajax.getJSON(url, (err, json) => {
                 if (err) {
@@ -97,7 +96,6 @@ class VectorTileLayer extends maptalks.TileLayer {
                 }
                 this.setStyle({
                     root,
-                    iconset,
                     style: json
                 });
             });
@@ -105,22 +103,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         this.ready = true;
         if (style.root) {
-            let root, iconset;
+            let root;
             root = this._styleRootPath = style.root;
             if (root && root[root.length - 1] === '/') {
                 root = root.substring(0, root.length - 1);
             }
-            iconset =  this._styleIconset = style.iconset;
-            if (iconset && iconset[iconset.length - 1] === '/') {
-                iconset = iconset.substring(0, iconset.length - 1);
-            }
             style = style.style || [];
-            this._replacer = function replacer(str, key) {
-                if (key === 'root') {
-                    return root;
-                } else {
-                    return `${iconset}/${key}.svg`;
-                }
+            this._replacer = function replacer() {
+                return root;
             };
         }
         style = JSON.parse(JSON.stringify(style));

@@ -5,6 +5,8 @@ import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
 import { loadFunctionTypes } from '@maptalks/function-type';
 
+const URL_PATTERN = /\{ *([\w_]+) *\}/g;
+
 export default class StyledPoint {
     constructor(feature, symbol, options) {
         //anchor(世界坐标), offset(normalized offset), tex, size(世界坐标), opacity, rotation
@@ -14,6 +16,11 @@ export default class StyledPoint {
             return [options.zoom];
         });
         this.options = options;
+        this._thisReplacer = this._replacer.bind(this);
+    }
+
+    _replacer(str, key) {
+        return this.feature.properties[key] || 'default';
     }
 
     getShape(iconAtlas, glyphAtlas) {
@@ -96,7 +103,7 @@ export default class StyledPoint {
             if (symbol.markerType) {
                 icon = 'vector://' + JSON.stringify(symbol);
             } else {
-                icon = symbol.markerFile ? symbol.markerFile :
+                icon = symbol.markerFile ? symbol.markerFile.replace(URL_PATTERN, this._thisReplacer) :
                     symbol.markerPath ? getMarkerPathBase64(symbol, size[0], size[1]) : symbol.markerType ? '' : null;
             }
             result.icon = icon;
