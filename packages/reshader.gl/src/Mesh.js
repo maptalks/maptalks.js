@@ -62,7 +62,7 @@ class Mesh {
     }
 
     getDefinesKey() {
-        if (this._definesKey && !this.dirtyDefines && (!this.material || !this.material.dirtyDefines)) {
+        if (this._definesKey !== undefined && !this.dirtyDefines && (!this.material || !this.material.dirtyDefines)) {
             return this._definesKey;
         }
         //refresh defines
