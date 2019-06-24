@@ -125,7 +125,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             gl : this.gl,
             attributes,
             extensions : [
-                // 'ANGLE_instanced_arrays',
+                'ANGLE_instanced_arrays',
                 'OES_texture_float',
                 'OES_texture_float_linear',
                 'OES_element_index_uint',
