@@ -1,6 +1,13 @@
 #define SHADER_NAME standard_vertex
 
     attribute vec3 aPosition;
+#ifdef IS_LINE_EXTRUSION
+    #define EXTRUDE_SCALE 63.0;
+    attribute vec2 aExtrude;
+    uniform float lineWidth;
+    uniform float lineHeight;
+    uniform float linePixelScale;
+#endif
 #ifdef HAS_ATTRIBUTE_TANGENTS
     #ifndef HAS_ATTRIBUTE_NORMALS
     attribute vec4 aTangent;
@@ -27,19 +34,18 @@
     uniform mat4 modelViewMatrix;
     uniform mat4 projViewModelMatrix;
 
+#include <fl_uniforms_glsl>
+#include <fl_inputs_vert>
+
     struct ObjectUniforms {
         mat4 worldFromModelMatrix;
         mat3 worldFromModelNormalMatrix;
     } objectUniforms;
 
     vec4 computeWorldPosition() {
-        return modelMatrix * vec4(aPosition, 1.0);
+        return modelMatrix * mesh_position;
     }
 
-
-
-#include <fl_uniforms_glsl>
-#include <fl_inputs_vert>
 #include <fl_common_material_vert>
 #include <fl_common_math_glsl>
 
@@ -47,8 +53,20 @@
     #include <vsm_shadow_vert>
 #endif
 
+    void initMeshPosition() {
+        #ifdef IS_LINE_EXTRUSION
+            float halfwidth = lineWidth / 2.0;
+            float outset = halfwidth;
+            vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
+            //linePixelScale = tileRatio * resolution / tileResolution
+            mesh_position = vec4(aPosition + vec3(dist, 0.0) * linePixelScale, 1.0);
+        #else
+            mesh_position = vec4(aPosition, 1.0);
+        #endif
+    }
+
     void initAttributes() {
-        mesh_position = vec4(aPosition, 1.0);
+        initMeshPosition();
         #if defined(MATERIAL_HAS_ANISOTROPY) || defined(MATERIAL_HAS_NORMAL) || defined(MATERIAL_HAS_CLEAR_COAT_NORMAL)
             mesh_tangents = aTangent;
         #endif
@@ -114,9 +132,9 @@
 
     void main()
     {
+        initAttributes();
         initFrameUniforms();
         initObjectUniforms();
-        initAttributes();
         MaterialVertexInputs material;
         initMaterialVertex(material);
         initTangents(material);
