@@ -1,4 +1,4 @@
-import LinePack from './LinePack';
+import { default as LinePack, EXTRUDE_SCALE }  from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
@@ -12,9 +12,11 @@ import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-pac
 
 const DESCRIPTION = {
     aPosition: { size: 3 },
+    aPosition0: { size: 3 },
     aLinesofar: { size: 1 },
     aUp: { size: 1 },
-    featureIndexes: { size: 1 }
+    featureIndexes: { size: 1 },
+    aExtrude: { size: 2 }
 };
 
 export default class LineExtrusionPack extends LinePack {
@@ -35,7 +37,17 @@ export default class LineExtrusionPack extends LinePack {
                 type: Uint8Array,
                 width: 1,
                 name: 'aUp'
-            }
+            },
+            {
+                type: Int16Array,
+                width: 3,
+                name: 'aPosition0'
+            },
+            {
+                type: Int8Array,
+                width: 2,
+                name: 'aExtrude'
+            },
         ];
     }
 
@@ -60,17 +72,19 @@ export default class LineExtrusionPack extends LinePack {
 
     addLineVertex(data, point, extrude, round, up, linesofar) {
         // debugger
-        const { glScale, zScale } = this.options;
         const tileScale = this.options['EXTENT'] / this.options['tileSize'];
         const lineWidth = this.symbol['lineWidth'] / 2 * tileScale;
 
-        const extrudedPoint = new Point(lineWidth * extrude.x, lineWidth * extrude.y)._add(point);
-        const height = this.symbol['lineHeight'] * glScale / zScale;
-        //计算uv坐标
-        data.push(extrudedPoint.x, extrudedPoint.y, height, linesofar, up);
-        data.push(extrudedPoint.x, extrudedPoint.y, 0, linesofar, up);
+        const aExtrudeX = EXTRUDE_SCALE * extrude.x;
+        const aExtrudeY = EXTRUDE_SCALE * extrude.y;
 
-        this.maxPos = Math.max(this.maxPos, Math.abs(extrudedPoint.x), Math.abs(extrudedPoint.y));
+        const extrudedPoint = new Point(lineWidth * extrude.x, lineWidth * extrude.y)._add(point);
+        const height = this.symbol['lineHeight'];
+
+        data.push(extrudedPoint.x, extrudedPoint.y, height, linesofar, up, point.x, point.y, height, aExtrudeX, aExtrudeY);
+        data.push(extrudedPoint.x, extrudedPoint.y, 0, linesofar, up, point.x, point.y, 0, aExtrudeX, aExtrudeY);
+
+        this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
 
     addElements(e1, e2, e3) {
@@ -112,7 +126,7 @@ export default class LineExtrusionPack extends LinePack {
         const pack = super.createDataPack(vectors, scale);
         const { data, indices } = pack;
         buildUniqueVertex(data, indices, DESCRIPTION);
-        const { aPosition, aLinesofar, aUp } = data;
+        const { aPosition, aPosition0, aLinesofar, aUp, aExtrude } = data;
         const arrays = {};
         const normals = buildNormals(aPosition, indices);
         let uvs;
@@ -122,16 +136,16 @@ export default class LineExtrusionPack extends LinePack {
             tangents = buildTangents(aPosition, normals, uvs, indices);
             tangents = createQuaternion(normals, tangents);
         }
-
-        arrays['vertices'] = aPosition;
+        arrays['aPosition'] = aPosition0;
         if (tangents) {
-            arrays['uvs'] = new Float32Array(uvs);
-            arrays['tangents'] = tangents;
+            arrays['aTexCoord0'] = new Float32Array(uvs);
+            arrays['aTangent'] = tangents;
         } else {
             //normal被封装在了tangents中，不用再次定义
-            arrays['normals'] = new Float32Array(normals);
+            arrays['aNormal'] = new Float32Array(normals);
         }
-        arrays['featureIndexes'] = data.featureIndexes;
+        arrays['aPickingId'] = data.featureIndexes;
+        arrays['aExtrude'] = aExtrude;
         const buffers = [];
         for (const p in arrays) {
             buffers.push(arrays[p].buffer);

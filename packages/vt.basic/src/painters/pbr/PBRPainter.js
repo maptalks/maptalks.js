@@ -14,14 +14,7 @@ class PBRPainter extends Painter {
     }
 
     createGeometry(glData) {
-        const data = {
-            aPosition: glData.vertices,
-            aTexCoord: glData.uvs,
-            aNormal: glData.normals,
-            aColor: glData.colors,
-            aPickingId: glData.featureIndexes
-        };
-        const geometry = new reshader.Geometry(data, glData.indices);
+        const geometry = new reshader.Geometry(glData.data, glData.indices);
         geometry.generateBuffers(this.regl);
 
         if (glData.shadowVolume && this._shadowPass && this._shadowPass.createShadowVolume) {

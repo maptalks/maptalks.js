@@ -1,5 +1,6 @@
 import { countVertexes, isClippedEdge, fillPosArray, getHeightValue } from './Common';
 import { getIndexArrayType } from '../../common/Util';
+import { KEY_IDX } from './Constant';
 
 export function buildWireframe(
     features, EXTENT,
@@ -83,7 +84,7 @@ export function buildWireframe(
         }
         const count = indices.length - featIndexes.length;
         for (let i = 0; i < count; i++) {
-            featIndexes.push(r);
+            featIndexes.push(feature[KEY_IDX]);
         }
     }
     const maxIndex = indices.reduce((a, b) => {
@@ -96,9 +97,9 @@ export function buildWireframe(
     const feaCtor = getIndexArrayType(features.length);
 
     const data = {
-        vertices,  // vertexes
+        aPosition: vertices,  // vertexes
         indices : tIndices,    // indices for drawElements
-        featureIndexes : new feaCtor(featIndexes)     // vertex index of each feature
+        aPickingId : new feaCtor(featIndexes)     // vertex index of each feature
     };
     return data;
 }

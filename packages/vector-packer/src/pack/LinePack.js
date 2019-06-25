@@ -10,7 +10,7 @@ import Point from '@mapbox/point-geometry';
 // normals for line joins, because the x-value remains 0 for the texture
 // normal array, while the extrude normal actually moves the vertex to create
 // the acute/bevelled line join.
-const EXTRUDE_SCALE = 63;
+export const EXTRUDE_SCALE = 63;
 
 /*
  * Sharp corners cause dashed lines to tilt because the distance along the line

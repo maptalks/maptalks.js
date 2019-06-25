@@ -41,11 +41,8 @@ class WireframePainter extends Painter {
     }
 
     createGeometry(glData) {
-        const data = {
-            aPosition: glData.vertices,
-            aColor: glData.colors
-        };
-        const geometry = new reshader.Geometry(data, glData.indices, 0, { 'primitive': 'lines' });
+        const { data, indices } = glData;
+        const geometry = new reshader.Geometry(data, indices, 0, { 'primitive': 'lines' });
         geometry.generateBuffers(this.regl);
 
         return geometry;

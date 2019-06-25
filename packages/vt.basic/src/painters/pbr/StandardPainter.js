@@ -3,6 +3,7 @@ import { mat4 } from '@maptalks/gl';
 import { extend } from '../../Util';
 import Painter from '../Painter';
 import ShadowMapPass from './ShadowMapPass.js';
+import { setUniformFromSymbol } from '../../Util';
 
 const SCALE = [1, 1, 1];
 
@@ -13,16 +14,7 @@ class StandardPainter extends Painter {
     }
 
     createGeometry(glData) {
-        const attributes = glData.data;
-        const data = {
-            aPosition: attributes.vertices,
-            aTexCoord0: attributes.uvs,
-            aNormal: attributes.normals,
-            aColor: attributes.colors,
-            aPickingId: attributes.featureIndexes,
-            aTangent: attributes.tangents
-        };
-        const geometry = new reshader.Geometry(data, glData.indices, 0, {
+        const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'
         });
         geometry.generateBuffers(this.regl);
@@ -39,6 +31,19 @@ class StandardPainter extends Painter {
             transform = mat;
         }
         const defines = this.shader.getGeometryDefines(geometry);
+        if (geometry.data.aExtrude) {
+            defines['IS_LINE_EXTRUSION'] = 1;
+            const symbol = this.getSymbol();
+            const { tileResolution, tileRatio } = geometry.properties;
+            const map = this.getMap();
+            Object.defineProperty(mesh.uniforms, 'linePixelScale', {
+                enumerable: true,
+                get: function () {
+                    return tileRatio * map.getResolution() / tileResolution;
+                }
+            });
+            setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
+        }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
 

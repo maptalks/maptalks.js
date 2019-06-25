@@ -39,7 +39,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
             vScale : zScale * (extent / tileSize)
             //<<
         });
-    const buffers = [faces.vertices.buffer, faces.featureIndexes.buffer];
+    const buffers = [];
 
     let oldIndices;
     if (shadowVolume) {
@@ -52,8 +52,11 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
     delete faces.indices;
     buffers.push(indices.buffer);
 
-    const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices }, indices, { 'vertices' : { size : 3 }});
+    const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices, featureIndexes: faces.featureIndexes }, indices, { 'vertices' : { size : 3 }, 'featureIndexes' : { size : 1 }});
     faces.vertices = uniqueFaces.vertices;
+    faces.featureIndexes = uniqueFaces.featureIndexes;
+    buffers.push(faces.vertices.buffer, faces.featureIndexes.buffer);
+
     // debugger
     if (tangent || normal || shadowVolume) {
         const normals = buildNormals(faces.vertices, indices);
@@ -80,7 +83,16 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
     }
     return {
-        data : { data: faces, indices },
+        data : {
+            data: {
+                aPosition: faces.vertices,
+                aNormal: faces.aNormal,
+                aTexCoord0: faces.uvs,
+                aTangent: faces.tangents,
+                aPickingId: faces.featureIndexes,
+            },
+            indices
+        },
         buffers
     };
 }
