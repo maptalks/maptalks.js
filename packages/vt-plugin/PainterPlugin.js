@@ -5,6 +5,12 @@ import Color from 'color';
 
 const DEFAULT_ANIMATION_DURATION = 800;
 
+const NO_REDRAW = {
+    redraw: false
+};
+
+const THROTTLE_KEY = '__vt_plugin_mesh_throttle';
+
 /**
  * Create a VT Plugin with a given painter
  */
@@ -31,6 +37,9 @@ function createPainterPlugin(type, Painter) {
             if (excludes !== this._excludes) {
                 this._excludesFunc = excludes ? createFilter(excludes) : null;
                 this._excludes = excludes;
+            }
+            if (layer.options['meshCreationLimitOnInteracting'] && layer.getMap()[THROTTLE_KEY]) {
+                layer.getMap()[THROTTLE_KEY].length = 0;
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
             painter.startFrame(context);
@@ -63,6 +72,9 @@ function createPainterPlugin(type, Painter) {
             let geometry = tileCache.geometry;
             var features = tileData.features;
             if (!geometry) {
+                if (this._throttle(context.layer, key)) {
+                    return NO_REDRAW;
+                }
                 var glData = tileData.data;
                 var data = glData;
                 if (this.painter.colorSymbol && glData) {
@@ -83,9 +95,7 @@ function createPainterPlugin(type, Painter) {
                 }
             }
             if (!geometry) {
-                return {
-                    'redraw': false
-                };
+                return NO_REDRAW;
             }
             if (tileCache.excludes !== this._excludes) {
                 this._filterElements(geometry, tileData.data, features, context.regl);
@@ -93,6 +103,9 @@ function createPainterPlugin(type, Painter) {
             }
             var mesh = this._getMesh(key);
             if (!mesh) {
+                if (this._throttle(context.layer, key)) {
+                    return NO_REDRAW;
+                }
                 mesh = painter.createMesh(geometry, tileTransform, { tileCenter, tileZoom });
                 if (mesh) {
                     if (Array.isArray(mesh)) {
@@ -113,9 +126,7 @@ function createPainterPlugin(type, Painter) {
                 this._meshCache[key] = mesh;
             }
             if (!mesh || Array.isArray(mesh) && !mesh.length) {
-                return {
-                    'redraw': false
-                };
+                return NO_REDRAW;
             }
             //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
             //level:    4       2     0     1       3
@@ -300,6 +311,26 @@ function createPainterPlugin(type, Painter) {
                 geometry.setElements(glData.indices);
             }
             geometry.generateBuffers(regl);
+        },
+
+        _throttle(layer, key) {
+            const limit = layer.options['meshCreationLimitOnInteracting'] || 0;
+            if (!limit) {
+                return false;
+            }
+            const map = layer.getMap();
+            if (!map.isInteracting()) {
+                return false;
+            }
+            let keys = map[THROTTLE_KEY];
+            if (!keys) {
+                keys = map[THROTTLE_KEY] = [];
+            }
+            if (keys.indexOf(key) >= 0) {
+                return false;
+            }
+            keys.push(key);
+            return keys.length > limit;
         }
     });
 
