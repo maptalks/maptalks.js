@@ -68,21 +68,23 @@ export function setUniformFromSymbol(uniforms, name, symbol, key, fn) {
 }
 
 export function createColorSetter(cache) {
-    return c => {
-        if (Array.isArray(c)) {
-            if (c.length === 3) {
-                c.push(1);
-            }
-            return c;
+    return _colorSetter.bind(this, cache);
+}
+
+function _colorSetter(cache, c) {
+    if (Array.isArray(c)) {
+        if (c.length === 3) {
+            c.push(1);
         }
-        if (cache && cache[c]) {
-            return cache[c];
-        }
-        const color = Color(c).unitArray();
-        if (color.length === 3) {
-            color.push(1);
-        }
-        if (cache) cache[c] = color;
-        return color;
-    };
+        return c;
+    }
+    if (cache && cache[c]) {
+        return cache[c];
+    }
+    const color = Color(c).unitArray();
+    if (color.length === 3) {
+        color.push(1);
+    }
+    if (cache) cache[c] = color;
+    return color;
 }
