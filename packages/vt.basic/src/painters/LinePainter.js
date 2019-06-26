@@ -90,10 +90,15 @@ class LinePainter extends BasicPainter {
             picking: true
         });
         mesh.setLocalTransform(transform);
+        const defines = {};
         if (symbol.linePatternFile) {
-            mesh.setDefines({
-                'HAS_PATTERN': 1
-            });
+            defines['HAS_PATTERN'] = 1;
+        }
+        if (Array.isArray(symbol.lineDasharray) &&
+            symbol.lineDasharray.reduce((accumulator, currentValue)=> {
+                return accumulator + currentValue;
+            }, 0) > 0) {
+            defines['HAS_DASHARRAY'] = 1;
         }
         return mesh;
     }

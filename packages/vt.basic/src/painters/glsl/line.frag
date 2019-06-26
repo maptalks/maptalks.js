@@ -18,10 +18,13 @@ varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
 varying vec2 vPosition;
-varying highp float vLinesofar;
-uniform vec4 lineDasharray;
-uniform vec4 lineDashColor;
+
 uniform float tileExtent;
+#ifdef HAS_DASHARRAY
+    uniform vec4 lineDasharray;
+    uniform vec4 lineDashColor;
+    varying highp float vLinesofar;
+#endif
 
 float dashAntialias(float dashMod, float dashWidth) {
     //dash两边的反锯齿
@@ -53,7 +56,7 @@ void main() {
         vec4 color = lineColor * alpha;
     #endif
 
-    if (length(lineDasharray) > 0.0) {
+    #ifdef HAS_DASHARRAY
         float dashWidth = lineDasharray[0] + lineDasharray[1] + lineDasharray[2] + lineDasharray[3];
         float dashMod = mod(vLinesofar, dashWidth);
         //判断是否在第一个dash中
@@ -71,7 +74,7 @@ void main() {
         float secondDashAlpha = dashAntialias(secondDashMod, lineDasharray[2]);;
 
         color *= mix(1.0, firstDashAlpha * firstInDash + secondDashAlpha * secondDashAlpha, isInDash);
-    }
+    #endif
 
     gl_FragColor = color * lineOpacity;
 }

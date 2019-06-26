@@ -17,7 +17,10 @@
 attribute vec3 aPosition;
 attribute float aNormal;
 attribute vec2 aExtrude;
-attribute float aLinesofar;
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+    attribute float aLinesofar;
+    varying highp float vLinesofar;
+#endif
 
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
@@ -33,7 +36,6 @@ uniform vec2 canvasSize;
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
-varying highp float vLinesofar;
 varying vec2 vPosition;
 
 #ifdef HAS_PATTERN
@@ -79,11 +81,13 @@ void main() {
     vGammaScale = distance / cameraToCenterDistance;
     vPosition = aPosition.xy;
 
-    #ifdef HAS_GRADIENT
-        vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
-        vGradIndex = aGradIndex;
-    #else
-        vLinesofar = aLinesofar / tileRatio;
+    #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+        #ifdef HAS_GRADIENT
+            vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
+            vGradIndex = aGradIndex;
+        #else
+            vLinesofar = aLinesofar / tileRatio;
+        #endif
     #endif
 
     #ifdef HAS_PATTERN
