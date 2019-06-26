@@ -36,8 +36,8 @@ const defaultOptions = {
     collisionFrameLimit: 2,
     //是否开启无style时的默认绘制功能
     defaultRendering: true,
-    //是否在地图交互时，限制 mesh creation
-    meshCreationLimitOnInteracting: 1,
+    //是否限制每帧的 tile mesh creation
+    tileMeshCreationLimitPerFrame: 1,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true

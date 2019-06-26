@@ -3,13 +3,13 @@ import { createFilter } from '@maptalks/feature-filter';
 import VectorTilePlugin from './VectorTilePlugin';
 import Color from 'color';
 
-const DEFAULT_ANIMATION_DURATION = 800;
+var DEFAULT_ANIMATION_DURATION = 800;
 
-const NO_REDRAW = {
+var NO_REDRAW = {
     redraw: false
 };
 
-const THROTTLE_KEY = '__vt_plugin_mesh_throttle';
+var THROTTLE_KEY = '__vt_plugin_mesh_throttle';
 
 /**
  * Create a VT Plugin with a given painter
@@ -130,7 +130,7 @@ function createPainterPlugin(type, Painter) {
             }
             //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
             //level:    4       2     0     1       3
-            const level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
+            var level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
                     m.properties.tile = tileInfo;
@@ -147,9 +147,9 @@ function createPainterPlugin(type, Painter) {
                 let progress = null;
                 let animation = sceneConfig.animation;
                 if (animation) {
-                    const duration = context.sceneConfig.animationDuration || DEFAULT_ANIMATION_DURATION;
-                    const t = (context.timestamp - mesh._animationTime) / duration;
-                    const createTime = Array.isArray(mesh) ? mesh[0].properties.createTime : mesh.properties.createTime;
+                    var duration = context.sceneConfig.animationDuration || DEFAULT_ANIMATION_DURATION;
+                    var t = (context.timestamp - mesh._animationTime) / duration;
+                    var createTime = Array.isArray(mesh) ? mesh[0].properties.createTime : mesh.properties.createTime;
                     if (mesh._animationTime - createTime < duration && t < 1) {
                         if (animation === true || animation === 1) {
                             animation = 'linear';
@@ -168,8 +168,8 @@ function createPainterPlugin(type, Painter) {
         },
 
         _fillCommonProps(geometry, context) {
-            const { layer, tileInfo } = context;
-            const map = layer.getMap(),
+            var { layer, tileInfo } = context;
+            var map = layer.getMap(),
                 tileResolution = map.getResolution(tileInfo.z),
                 tileRatio = context.tileExtent / layer.getTileSize().width;
             geometry.properties.tileResolution = tileResolution;
@@ -314,15 +314,12 @@ function createPainterPlugin(type, Painter) {
         },
 
         _throttle(layer, key) {
-            const limit = layer.options['meshCreationLimitOnInteracting'] || 0;
+            var limit = layer.options['tileMeshCreationLimitPerFrame'] || 0;
             if (!limit) {
                 return false;
             }
-            const map = layer.getMap();
-            if (!map.isInteracting()) {
-                return false;
-            }
-            let keys = map[THROTTLE_KEY];
+            var map = layer.getMap();
+            var keys = map[THROTTLE_KEY];
             if (!keys) {
                 keys = map[THROTTLE_KEY] = [];
             }
