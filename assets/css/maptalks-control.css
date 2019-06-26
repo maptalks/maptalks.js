@@ -2,7 +2,7 @@
 .maptalks-bc-2 { width: 49px; height: 49px; background: url(images/control/2_2.png) no-repeat; position: absolute; left: 75px; top: 5px;}
 
 .maptalks-zoom { text-align: center;}
-.maptalks-zoom .maptalks-zoom-zoomlevel { display: block; width: 23px; height: 23px; background: #172029; color: #fff;  line-height: 23px; font-size: 12px;}
+.maptalks-zoom .maptalks-zoom-zoomlevel { display: block; width: 29px; height: 29px; background: #172029; color: #fff;  line-height: 29px; font-size: 12px; transform: scale(.8); -ms-transform: scale(.8); transform-origin: bottom left; -ms-transform-origin: bottom left}
 .maptalks-zoom-slider {margin-top: 6px;}
 .maptalks-zoom-slider a.maptalks-zoom-zoomin ,.maptalks-zoom-slider a.maptalks-zoom-zoomout {display: block; font-size: 16px; width: 21px; height: 21px; border: 1px solid #363539; background: #172029; color: #fff;  line-height: 19px; text-decoration: none;}
 .maptalks-zoom-slider-box { width: 21px; height: 124px; background: #34495e; background:url(images/control/kedu.png) repeat-y; border: 1px solid #35383b; position: relative;}
