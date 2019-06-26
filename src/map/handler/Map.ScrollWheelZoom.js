@@ -43,6 +43,10 @@ class MapScrollWheelZoomHandler extends Handler {
         const container = map._containerDOM;
         const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
         if (map.options['seamlessZoom']) {
+            if (!this._zooming) {
+                this._trackPadSuspect = 0;
+                this._ensureTrackpad = false;
+            }
             return this._seamless(evt, origin);
         } else {
             return this._interval(evt, origin);
@@ -51,6 +55,24 @@ class MapScrollWheelZoomHandler extends Handler {
 
     _seamless(evt, origin) {
         let value = evt.deltaMode === window.WheelEvent.DOM_DELTA_LINE ? evt.deltaY * 40 : evt.deltaY;
+        if (value % wheelZoomDelta !== 0) {
+            //according to https://archive.fo/ZV8gz
+            //value % wheelDelta === 0 means it must be  mouse on Mac OS X
+            if (!this._ensureTrackpad) {
+                if (Math.abs(value) < 40) {
+                    this._trackPadSuspect++;
+                } else {
+                    this._trackPadSuspect = 0;
+                }
+                //repeated very small delta value ensure it's a trackpad
+                if (this._trackPadSuspect >= 2) {
+                    this._ensureTrackpad = true;
+                }
+            }
+            if (this._ensureTrackpad) {
+                value *= 20;
+            }
+        }
 
         if (evt.shiftKey && value) value = value / 4;
 
@@ -96,7 +118,7 @@ class MapScrollWheelZoomHandler extends Handler {
             this._zooming = false;
             delete this._timeout;
             map.onZoomEnd(map.getZoom(), this._zoomOrigin);
-        }, 300);
+        }, 200);
     }
 
     _interval(evt, origin) {
