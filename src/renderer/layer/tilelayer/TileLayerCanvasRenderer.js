@@ -509,7 +509,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             max = info.extent2d.getMax(),
             pmin = layer._project(map._pointToPrj(min, info.z)),
             pmax = layer._project(map._pointToPrj(max, info.z));
-        const zoomDiff = 3;
+        const zoomDiff = 2;
         for (let i = 1; i < zoomDiff; i++) {
             this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
         }
