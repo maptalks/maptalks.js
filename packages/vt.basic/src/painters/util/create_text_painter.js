@@ -103,7 +103,7 @@ function prepareGeometry(geometry, enableCollision) {
     const { symbol } = geometry.properties;
     const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
     const { aPosition, aShape } = geometry.data;
-    const vertexCount = aPosition.length / 3;
+    const vertexCount = aPosition.length / geometry.desc.positionSize;
     geometry.properties.aPickingId = geometry.data.aPickingId;
     geometry.properties.aCount = geometry.data.aCount;
     delete geometry.data.aCount;

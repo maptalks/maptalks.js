@@ -104,6 +104,13 @@ export default class TextPainter extends CollisionPainter {
         const symbol = this.getSymbol();
 
         const meshes = createTextMesh(this.regl, geometry, transform, symbol, enableCollision);
+        if (geometry.desc.positionSize === 2) {
+            meshes.forEach(mesh => {
+                const defines = mesh.defines;
+                defines['IS_2D_POSITION'] = 1;
+                mesh.setDefines(defines);
+            });
+        }
         if (meshes.length) {
             const isLinePlacement = symbol['textPlacement'] === 'line';
             //tags for picking
@@ -336,6 +343,7 @@ export default class TextPainter extends CollisionPainter {
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         const map = this.getMap();
         const geometry = mesh.geometry;
+        const positionSize = geometry.desc.positionSize;
 
         const { aShape, aOffset, aAnchor } = geometry.properties;
         const { level } = mesh.properties;
@@ -349,8 +357,8 @@ export default class TextPainter extends CollisionPainter {
         }
 
         const isProjected = !planeMatrix;
-        const idx = meshElements[start] * 3;
-        let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
+        const idx = meshElements[start] * positionSize;
+        let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], positionSize === 2 ? 0 : aAnchor[idx + 2]);
         const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
         vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1], projLabelAnchor[0], projLabelAnchor[1]);
         if (map.isOffscreen(ANCHOR_BOX)) {

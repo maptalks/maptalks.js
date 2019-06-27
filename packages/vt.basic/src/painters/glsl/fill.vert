@@ -1,4 +1,8 @@
-attribute vec3 aPosition;
+#ifdef IS_2D_POSITION
+    attribute vec2 aPosition;
+#else
+    attribute vec3 aPosition;
+#endif
 
 uniform mat4 projViewModelMatrix;
 
@@ -15,7 +19,12 @@ uniform mat4 projViewModelMatrix;
 #endif
 
 void main() {
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+    #ifdef IS_2D_POSITION
+        vec3 position = vec3(aPosition, 0.0);
+    #else
+        vec3 position = aPosition;
+    #endif
+    gl_Position = projViewModelMatrix * vec4(position, 1.0);
     #ifdef HAS_PATTERN
         float zoomScale = tileResolution / resolution;
         // /32.0 是为提升精度，原数据都 * 32

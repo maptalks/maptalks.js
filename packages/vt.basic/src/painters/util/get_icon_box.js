@@ -17,8 +17,9 @@ export function getIconBox(out, mesh, i, matrix, map) {
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties;
 
+    const positionSize = mesh.geometry.desc.positionSize;
     const aAnchor = geoProps.aAnchor;
-    const anchor = vec3.set(ANCHOR, aAnchor[i * 3], aAnchor[i * 3 + 1], aAnchor[i * 3 + 2]);
+    const anchor = vec3.set(ANCHOR, aAnchor[i * positionSize], aAnchor[i * positionSize + 1], positionSize === 2 ? 0 : aAnchor[i * positionSize + 2]);
     let projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
 
     const cameraDistance = projAnchor[2];

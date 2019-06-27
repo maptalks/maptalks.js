@@ -5,14 +5,6 @@ import { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 
-const FORMAT = [
-    {
-        type: Int16Array,
-        width: 3,
-        name: 'aPosition'
-    }
-];
-
 const MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
 
@@ -26,7 +18,13 @@ export default class NativePointPack extends VectorPack {
     }
 
     getFormat() {
-        return FORMAT;
+        return [
+            {
+                type: Int16Array,
+                width: this.positionSize,
+                name: 'aPosition'
+            }
+        ];
     }
 
     placeVector(point) {
@@ -36,7 +34,10 @@ export default class NativePointPack extends VectorPack {
 
         for (let ii = 0; ii < anchors.length; ii++) {
             const point = anchors[ii];
-            this.data.push(point.x, point.y, 0);
+            this.data.push(point.x, point.y);
+            if (this.positionSize === 3) {
+                this.data.push(0);
+            }
             const max = Math.max(Math.abs(point.x), Math.abs(point.y));
             if (max > this.maxPos) {
                 this.maxPos = max;

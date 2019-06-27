@@ -29,7 +29,7 @@ class LineGradientPainter extends BasicPainter {
         }
         const symbol = this.getSymbol();
         const gradProp = symbol['lineGradientProperty'];
-        const featureIndexes = glData.data.featureIndexes;
+        const featureIndexes = glData.data.aPickingId;
         const aGradIndex = new Uint8Array(featureIndexes.length);
         const grads = [];
         let current = featureIndexes[0];

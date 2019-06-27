@@ -23,6 +23,7 @@ export default class VectorPack {
             return [options.zoom];
         });
         this.options = options;
+        this.positionSize = options['only2D'] ? 2 : 3;
         this.styledVectors = [];
     }
 
@@ -188,7 +189,7 @@ export default class VectorPack {
         format[0].type = getPosArrayType(this.maxPos);
 
         const arrays = fillTypedArray(format, data);
-        arrays.featureIndexes = featureIndexes;
+        arrays.aPickingId = featureIndexes;
 
         const buffers = [];
         for (const p in arrays) {
@@ -202,6 +203,7 @@ export default class VectorPack {
             data: arrays,
             // format,
             indices: elements,
+            positionSize: this.positionSize,
             buffers
         };
     }

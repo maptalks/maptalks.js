@@ -1,4 +1,8 @@
-attribute vec3 aPosition;
+#ifdef IS_2D_POSITION
+    attribute vec2 aPosition;
+#else
+    attribute vec3 aPosition;
+#endif
 attribute vec2 aTexCoord;
 attribute vec2 aOffset;
 #ifdef ENABLE_COLLISION
@@ -26,7 +30,12 @@ varying float vSize;
 varying float vOpacity;
 
 void main() {
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+    #ifdef IS_2D_POSITION
+        vec3 position = vec3(aPosition, 0.0);
+    #else
+        vec3 position = aPosition;
+    #endif
+    gl_Position = projViewModelMatrix * vec4(position, 1.0);
     float distance = gl_Position.w;
 
     float cameraScale = distance / cameraToCenterDistance;
@@ -43,7 +52,7 @@ void main() {
 
     if (pitchWithMap == 1.0) {
         //乘以cameraScale可以抵消相机近大远小的透视效果
-        gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+        gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
         vGammaScale = cameraScale + mapPitch / 4.0;
     } else {
         gl_Position.xy += offset * 2.0 / canvasSize * perspectiveRatio * distance;

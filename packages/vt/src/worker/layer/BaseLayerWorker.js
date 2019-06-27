@@ -385,21 +385,24 @@ function getDefaultRenderPlugin(type) {
         return {
             type: 'native-point',
             dataConfig: {
-                type: 'native-point'
+                type: 'native-point',
+                only2D: true
             }
         };
     case 2:
         return {
             type: 'native-line',
             dataConfig: {
-                type: 'native-line'
+                type: 'native-line',
+                only2D: true
             }
         };
     case 3:
         return {
             type: 'fill',
             dataConfig: {
-                type: 'fill'
+                type: 'fill',
+                only2D: true
             }
         };
     }

@@ -38,11 +38,14 @@ class FillPainter extends BasicPainter {
             castShadow: false,
             picking: true
         });
+        const defines = {};
         if (symbol.polygonPatternFile) {
-            mesh.setDefines({
-                'HAS_PATTERN': 1
-            });
+            defines['HAS_PATTERN'] = 1;
         }
+        if (geometry.desc.positionSize === 2) {
+            defines['IS_2D_POSITION'] = 1;
+        }
+        mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
     }

@@ -11,7 +11,11 @@
 // #define scale 63.0
 #define EXTRUDE_SCALE 63.0;//0.0078740157
 
-attribute vec3 aPosition;
+#ifdef IS_2D_POSITION
+    attribute vec2 aPosition;
+#else
+    attribute vec3 aPosition;
+#endif
 attribute float aNormal;
 attribute vec2 aExtrude;
 // attribute float aLinesofar;
@@ -30,6 +34,11 @@ uniform vec2 canvasSize;
 #include <fbo_picking_vert>
 
 void main() {
+    #ifdef IS_2D_POSITION
+        vec3 position = vec3(aPosition, 0.0);
+    #else
+        vec3 position = aPosition;
+    #endif
     float gapwidth = lineGapWidth / 2.0;
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
@@ -43,7 +52,7 @@ void main() {
     vec2 dist = outset * extrude / EXTRUDE_SCALE;
 
     float scale = tileResolution / resolution;
-    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+    gl_Position = projViewModelMatrix * vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
 
     float distance = gl_Position.w;
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;

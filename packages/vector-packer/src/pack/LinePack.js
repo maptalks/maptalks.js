@@ -63,7 +63,7 @@ export default class LinePack extends VectorPack {
         return [
             {
                 type: Int16Array,
-                width: 3,
+                width: this.positionSize,
                 name: 'aPosition'
             },
             //round? + up?
@@ -517,10 +517,11 @@ export default class LinePack extends VectorPack {
 
     addLineVertex(data, point, extrude, round, up, linesofar, prevExtrude, direction = RIGHT_DIRECTION) {
         linesofar *= LINE_DISTANCE_SCALE;
+        data.push(point.x, point.y);
+        if (this.positionSize === 3) {
+            data.push(0);
+        }
         data.push(
-            point.x,
-            point.y,
-            0,
             (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             EXTRUDE_SCALE * extrude.x,
             EXTRUDE_SCALE * extrude.y,

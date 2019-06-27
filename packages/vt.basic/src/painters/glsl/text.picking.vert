@@ -1,6 +1,10 @@
 #define RAD 0.0174532925
 
-attribute vec3 aPosition;
+#ifdef IS_2D_POSITION
+    attribute vec2 aPosition;
+#else
+    attribute vec3 aPosition;
+#endif
 attribute vec2 aShape;
 attribute vec2 aTexCoord;
 #ifdef ENABLE_COLLISION
@@ -30,10 +34,15 @@ uniform float tileRatio; //EXTENT / tileSize
 #include <fbo_picking_vert>
 
 void main() {
+    #ifdef IS_2D_POSITION
+        vec3 position = vec3(aPosition, 0.0);
+    #else
+        vec3 position = aPosition;
+    #endif
     vec2 shape = aShape / 10.0;
     vec2 texCoord = aTexCoord;
 
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+    gl_Position = projViewModelMatrix * vec4(position, 1.0);
     float distance = gl_Position.w;
 
     //预乘w，得到gl_Position在NDC中的坐标值
@@ -63,7 +72,7 @@ void main() {
         float cameraScale = distance / cameraToCenterDistance;
         vec2 offset = shape * vec2(1.0, -1.0);
         //乘以cameraScale可以抵消相机近大远小的透视效果
-        gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+        gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }
     gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
 

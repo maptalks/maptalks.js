@@ -38,9 +38,7 @@ export default class BasicPainter extends Painter {
         }
 
         const data = extend({}, glData.data);
-        data.aPickingId = data.featureIndexes;
-        delete data.featureIndexes;
-        const geometry = new reshader.Geometry(data, glData.indices, 0, { positionSize: 3 });
+        const geometry = new reshader.Geometry(data, glData.indices, 0, { positionSize: glData.positionSize || 3 });
         geometry.properties = {
             iconAtlas,
             glyphAtlas

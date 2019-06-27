@@ -16,9 +16,7 @@ class NativePointPainter extends Painter {
 
     createGeometry(glData) {
         const data = extend({}, glData.data);
-        data.aPickingId = data.featureIndexes;
-        delete data.featureIndexes;
-        const geometry = new reshader.Geometry(data, null, 0, { primitive: 'points' });
+        const geometry = new reshader.Geometry(data, null, 0, { primitive: 'points', positionSize: glData.positionSize });
         return geometry;
     }
 
@@ -41,7 +39,11 @@ class NativePointPainter extends Painter {
             castShadow: false,
             picking: true
         });
-
+        if (geometry.desc.positionSize === 2) {
+            mesh.setDefines({
+                'IS_2D_POSITION': 1
+            });
+        }
         mesh.setLocalTransform(transform);
         return mesh;
     }

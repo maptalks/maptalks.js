@@ -10,13 +10,13 @@ import { allowsVerticalWritingMode } from './util/script_detection';
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
 
-function getPackSDFFormat(symbol) {
+function getPackSDFFormat(symbol, positionSize) {
     if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
         //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
         return [
             {
                 type: Int16Array,
-                width: 3,
+                width: positionSize,
                 name: 'aPosition'
             },
             {
@@ -55,7 +55,7 @@ function getPackSDFFormat(symbol) {
         return [
             {
                 type: Int16Array,
-                width: 3,
+                width: positionSize,
                 name: 'aPosition'
             },
             {
@@ -77,11 +77,11 @@ function getPackSDFFormat(symbol) {
     }
 }
 
-function getPackMarkerFormat() {
+function getPackMarkerFormat(positionSize) {
     return [
         {
             type: Int16Array,
-            width: 3,
+            width: positionSize,
             name: 'aPosition'
         },
         {
@@ -137,7 +137,7 @@ export default class PointPack extends VectorPack {
 
     getFormat(symbol) {
         const isText = symbol['textName'] !== undefined;
-        return isText ? getPackSDFFormat(symbol) : getPackMarkerFormat();
+        return isText ? getPackSDFFormat(symbol, this.positionSize) : getPackMarkerFormat(this.positionSize);
     }
 
     createDataPack() {
@@ -182,6 +182,7 @@ export default class PointPack extends VectorPack {
             quads = getIconQuads(shape);
         }
         const textCount = quads.length;
+        const only2D = this.options['only2D'];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             const l = quads.length;
@@ -191,9 +192,11 @@ export default class PointPack extends VectorPack {
                 //把line的端点存到line vertex array里
                 const { tl, tr, bl, br, tex } = quad;
                 //char's quad if flipped
-
+                data.push(anchor.x, anchor.y);
+                if (!only2D) {
+                    data.push(0);
+                }
                 data.push(
-                    anchor.x, anchor.y, 0,
                     tl.x * 10, tl.y * 10,
                     tex.x, tex.y + tex.h
                 );
@@ -201,8 +204,11 @@ export default class PointPack extends VectorPack {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
 
+                data.push(anchor.x, anchor.y);
+                if (!only2D) {
+                    data.push(0);
+                }
                 data.push(
-                    anchor.x, anchor.y, 0,
                     tr.x * 10, tr.y * 10,
                     tex.x + tex.w, tex.y + tex.h
                 );
@@ -210,8 +216,11 @@ export default class PointPack extends VectorPack {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
 
+                data.push(anchor.x, anchor.y);
+                if (!only2D) {
+                    data.push(0);
+                }
                 data.push(
-                    anchor.x, anchor.y, 0,
                     bl.x * 10, bl.y * 10,
                     tex.x, tex.y
                 );
@@ -219,8 +228,11 @@ export default class PointPack extends VectorPack {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
 
+                data.push(anchor.x, anchor.y);
+                if (!only2D) {
+                    data.push(0);
+                }
                 data.push(
-                    anchor.x, anchor.y, 0,
                     br.x * 10, br.y * 10,
                     tex.x + tex.w, tex.y
                 );

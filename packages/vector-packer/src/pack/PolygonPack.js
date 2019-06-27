@@ -25,7 +25,7 @@ export default class PolygonPack extends VectorPack {
         const format = [
             {
                 type: Int32Array,
-                width: 3,
+                width: this.positionSize,
                 name: 'aPosition'
             }
             //TODO 动态color
@@ -89,8 +89,11 @@ export default class PolygonPack extends VectorPack {
                 const lineIndex = this.lineElements.length;
 
                 this.data.push(
-                    ring[0].x, ring[0].y, 0
+                    ring[0].x, ring[0].y
                 );
+                if (this.positionSize === 3) {
+                    this.data.push(0);
+                }
                 if (hasUV) {
                     this.data.push(ring[0].x * 32 / uvSize, ring[0].y * 32 / uvSize);
                 }
@@ -101,7 +104,12 @@ export default class PolygonPack extends VectorPack {
                 flattened.push(ring[0].y);
 
                 for (let i = 1; i < ring.length; i++) {
-                    this.data.push(ring[i].x, ring[i].y, 0);
+                    this.data.push(
+                        ring[i].x, ring[i].y
+                    );
+                    if (this.positionSize === 3) {
+                        this.data.push(0);
+                    }
                     if (hasUV) {
                         this.data.push(ring[i].x * 32 / uvSize, ring[i].y * 32 / uvSize);
                     }

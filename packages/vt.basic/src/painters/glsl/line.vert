@@ -14,7 +14,11 @@
 #define EXTRUDE_SCALE 63.0;
 #define MAX_LINE_DISTANCE 65535.0
 
-attribute vec3 aPosition;
+#ifdef IS_2D_POSITION
+    attribute vec2 aPosition;
+#else
+    attribute vec3 aPosition;
+#endif
 attribute float aNormal;
 attribute vec2 aExtrude;
 #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
@@ -52,6 +56,11 @@ varying vec2 vPosition;
 #endif
 
 void main() {
+    #ifdef IS_2D_POSITION
+        vec3 position = vec3(aPosition, 0.0);
+    #else
+        vec3 position = aPosition;
+    #endif
     float gapwidth = lineGapWidth / 2.0;
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
@@ -65,7 +74,7 @@ void main() {
     vec2 dist = outset * extrude / EXTRUDE_SCALE;
 
     float scale = tileResolution / resolution;
-    gl_Position = projViewModelMatrix * vec4(aPosition + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+    gl_Position = projViewModelMatrix * vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
 
     float distance = gl_Position.w;
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
@@ -79,7 +88,7 @@ void main() {
     // vNormal = aNormal;
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
-    vPosition = aPosition.xy;
+    vPosition = position.xy;
 
     #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
         #ifdef HAS_GRADIENT

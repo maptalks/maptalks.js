@@ -103,7 +103,7 @@ class IconPainter extends CollisionPainter {
         //!geometry.properties.aAnchor 以避免重复创建collision数据
         if (enableCollision && !geometry.properties.aAnchor) {
             const { aPosition, aShape } = geometry.data;
-            const vertexCount = geometry.data.aPosition.length / 3;
+            const vertexCount = geometry.data.aPosition.length / geometry.desc.positionSize;
             //initialize opacity array
             //aOpacity用于fading透明度的调整
             const aOpacity = new Uint8Array(vertexCount);
@@ -148,11 +148,14 @@ class IconPainter extends CollisionPainter {
             castShadow: false,
             picking: true
         });
+        const defines = {};
         if (enableCollision) {
-            mesh.setDefines({
-                'ENABLE_COLLISION': 1
-            });
+            defines['ENABLE_COLLISION'] = 1;
         }
+        if (geometry.desc.positionSize === 2) {
+            defines['IS_2D_POSITION'] = 1;
+        }
+        mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
     }

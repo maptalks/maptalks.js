@@ -100,6 +100,10 @@ class LinePainter extends BasicPainter {
             }, 0) > 0) {
             defines['HAS_DASHARRAY'] = 1;
         }
+        if (geometry.desc.positionSize === 2) {
+            defines['IS_2D_POSITION'] = 1;
+        }
+        mesh.setDefines(defines);
         return mesh;
     }
 
