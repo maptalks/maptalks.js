@@ -4,7 +4,7 @@ import { extend, compileStyle, isNil, isString, isObject } from '../../common/Ut
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 
-const URL_PATTERN = /\{ *(root) *\}/g;
+const URL_PATTERN = /\{ *(\$root) *\}/g;
 
 const defaultOptions = {
     renderer: 'gl',
@@ -37,7 +37,7 @@ const defaultOptions = {
     //是否开启无style时的默认绘制功能
     defaultRendering: true,
     //是否限制每帧的 tile mesh creation
-    tileMeshCreationLimitPerFrame: 1,
+    tileMeshCreationLimitPerFrame: 2,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true
