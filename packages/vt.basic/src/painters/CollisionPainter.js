@@ -8,7 +8,7 @@ import { clamp } from '../Util';
 const DEFAULT_SCENE_CONFIG = {
     collision: true,
     fading: true,
-    fadingDuration: 400,
+    fadingDuration: 16 * 14,
     fadingDelay: 200
 };
 const MESH_ANCHOR_KEY = '__meshAnchorKey';
