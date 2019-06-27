@@ -86,7 +86,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         data : {
             data: {
                 aPosition: faces.vertices,
-                aNormal: faces.aNormal,
+                aNormal: faces.normals,
                 aTexCoord0: faces.uvs,
                 aTangent: faces.tangents,
                 aPickingId: faces.featureIndexes,

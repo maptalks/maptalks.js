@@ -1,5 +1,9 @@
 attribute vec3 aPosition;
-attribute vec3 aNormal;
+#ifdef HAS_NORMAL
+    attribute vec3 aNormal;
+#else
+    attribute vec4 aTangent;
+#endif
 attribute vec3 aColor;
 
 uniform mat4 projViewModelMatrix; //
@@ -15,11 +19,26 @@ varying vec3 vColor;
     varying float vExtrusionOpacity;
 #endif
 
+/**
+ * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
+ */
+void toTangentFrame(const highp vec4 q, out highp vec3 n) {
+    n = vec3( 0.0,  0.0,  1.0) +
+        vec3( 2.0, -2.0, -2.0) * q.x * q.zwx +
+        vec3( 2.0,  2.0, -2.0) * q.y * q.wzy;
+}
+
 void main()
 {
+    #ifdef HAS_NORMAL
+        vec3 normal = aNormal;
+    #else
+        vec3 normal;
+        toTangentFrame(aTangent, normal);
+    #endif
     vec4 pos = vec4(aPosition, 1.0);
     gl_Position = projViewModelMatrix * pos;
-    vNormal = normalMatrix * aNormal;
+    vNormal = normalMatrix * normal;
     vFragPos = vec3(modelMatrix * pos);
     vColor = aColor / 255.0;
 

@@ -35,10 +35,11 @@ class PhongPainter extends Painter {
 
     createGeometry(glData) {
         const data = {
-            aPosition: glData.vertices,
-            aNormal: glData.normals,
-            aColor: glData.colors,
-            aPickingId: glData.featureIndexes
+            aPosition: glData.data.aPosition,
+            aNormal: glData.data.aNormal,
+            aTangent: glData.data.aTangent,
+            aColor: glData.data.aColor,
+            aPickingId: glData.data.aPickingId
         };
         const extrusionOpacity = this.sceneConfig.extrusionOpacity;
         if (extrusionOpacity) {
@@ -72,6 +73,11 @@ class PhongPainter extends Painter {
             mat4.fromScaling(mat, SCALE);
             mat4.multiply(mat, transform, mat);
             transform = mat;
+        }
+        if (geometry.data.aNormal && !geometry.data.aTangent) {
+            mesh.setDefines({
+                'HAS_NORMAL': 1
+            });
         }
         mesh.setLocalTransform(transform);
         return mesh;
