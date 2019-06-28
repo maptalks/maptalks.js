@@ -9,7 +9,7 @@ const DEFAULT_SCENE_CONFIG = {
     collision: true,
     fading: true,
     fadingDuration: 16 * 14,
-    fadingDelay: 200
+    fadingDelay: 300
 };
 const MESH_ANCHOR_KEY = '__meshAnchorKey';
 const UINT8 = new Uint8Array(1);

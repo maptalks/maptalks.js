@@ -30,10 +30,10 @@ const defaultOptions = {
     //zooming或zoom fading时，每个瓦片最多能绘制的box(icon或text)数量
     boxLimitOnZoomout: 7,
     background: [0, 0, 0, 0],
-    maxCacheSize: 128,
+    maxCacheSize: 96,
     antialias: false,
     iconErrorUrl: null,
-    collisionFrameLimit: 2,
+    collisionFrameLimit: 1,
     //是否开启无style时的默认绘制功能
     defaultRendering: true,
     //是否限制每帧的 tile mesh creation

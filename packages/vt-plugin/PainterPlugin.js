@@ -319,6 +319,9 @@ function createPainterPlugin(type, Painter) {
                 return false;
             }
             var map = layer.getMap();
+            if (!map.isInteracting()) {
+                return false;
+            }
             var keys = map[THROTTLE_KEY];
             if (!keys) {
                 keys = map[THROTTLE_KEY] = [];
