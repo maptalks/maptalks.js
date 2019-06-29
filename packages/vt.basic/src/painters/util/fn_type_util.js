@@ -28,10 +28,6 @@ export function prepareFnTypeData(geometry, features, symbolDef, config) {
             //说明瓦片中没有 function-type 中涉及的 feature
             continue;
         }
-        geometry.data[attrName] = {
-            usage: 'dynamic',
-            data: arr
-        };
         geoProps[PREFIX + attrName + 'Index'] = aIndex;
         geoProps[PREFIX + attrName] = new arr.constructor(arr);
         if (!geoProps.aPickingId) {
