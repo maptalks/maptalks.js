@@ -28,7 +28,6 @@ attribute vec2 aExtrude;
 
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
-uniform float lineWidth;
 uniform mat4 projViewModelMatrix;
 uniform float tileResolution;
 uniform float resolution;
@@ -41,6 +40,17 @@ varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
 varying vec2 vPosition;
+
+#ifdef HAS_LINE_WIDTH
+    attribute float aLineWidth;
+#else
+    uniform float lineWidth;
+#endif
+
+#ifdef HAS_COLOR
+    attribute vec4 aColor;
+    varying vec4 vColor;
+#endif
 
 #ifdef HAS_PATTERN
     attribute vec2 aPrevExtrude;
@@ -62,7 +72,11 @@ void main() {
         vec3 position = aPosition;
     #endif
     float gapwidth = lineGapWidth / 2.0;
-    float halfwidth = lineWidth / 2.0;
+    #ifdef HAS_LINE_WIDTH
+        float halfwidth = aLineWidth / 2.0;
+    #else
+        float halfwidth = lineWidth / 2.0;
+    #endif
     // offset = -1.0 * offset;
 
     float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
@@ -103,5 +117,9 @@ void main() {
         vZoomScale = scale;
         vExtrudeOffset = (aPrevExtrude - extrude) / EXTRUDE_SCALE;
         vDirection = direction - 2.0;
+    #endif
+
+    #ifdef HAS_COLOR
+        vColor = aColor;
     #endif
 }

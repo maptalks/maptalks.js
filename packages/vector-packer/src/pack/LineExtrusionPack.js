@@ -15,7 +15,7 @@ const DESCRIPTION = {
     aPosition0: { size: 3 },
     aLinesofar: { size: 1 },
     aUp: { size: 1 },
-    featureIndexes: { size: 1 },
+    aPickingId: { size: 1 },
     aExtrude: { size: 2 }
 };
 
@@ -144,7 +144,7 @@ export default class LineExtrusionPack extends LinePack {
             //normal被封装在了tangents中，不用再次定义
             arrays['aNormal'] = new Float32Array(normals);
         }
-        arrays['aPickingId'] = data.featureIndexes;
+        arrays['aPickingId'] = data.aPickingId;
         arrays['aExtrude'] = aExtrude;
         const buffers = [];
         for (const p in arrays) {

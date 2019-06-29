@@ -211,7 +211,8 @@ class Painter {
             return this._symbol;
         }
         const styles = this.layer.getCompiledStyle();
-        this._symbol = loadFunctionTypes(styles[this.pluginIndex].symbol, () => {
+        this.symbolDef = styles[this.pluginIndex].symbol;
+        this._symbol = loadFunctionTypes(this.symbolDef, () => {
             return [this.layer.getRenderer().getCurrentTileZoom()];
         });
         return this.getSymbol();

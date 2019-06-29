@@ -19,6 +19,7 @@ export default class VectorPack {
     constructor(features, symbol, options) {
         //TODO 预先把altitude传到pack里来？
         this.features = this._check(features);
+        this.symbolDef = symbol;
         this.symbol = loadFunctionTypes(symbol, () => {
             return [options.zoom];
         });

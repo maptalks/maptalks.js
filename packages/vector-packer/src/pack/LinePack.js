@@ -3,6 +3,8 @@ import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import { isClippedEdge } from './util/util';
 import Point from '@mapbox/point-geometry';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
+import Color from 'color';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -52,6 +54,16 @@ const LEFT_DIRECTION = -1;
  */
 export default class LinePack extends VectorPack {
 
+    constructor(features, symbol, options) {
+        super(features, symbol, options);
+        if (isFunctionDefinition(this.symbolDef['lineWidth'])) {
+            this._lineWidthFn = interpolated(this.symbolDef['lineWidth']);
+        }
+        if (isFunctionDefinition(this.symbolDef['lineColor'])) {
+            this._colorFn = interpolated(this.symbolDef['lineColor']);
+        }
+    }
+
     createStyledVector(feature, symbol, options, iconReqs) {
         if (symbol['linePatternFile']) {
             iconReqs[symbol['linePatternFile']] = 'resize';
@@ -60,7 +72,7 @@ export default class LinePack extends VectorPack {
     }
 
     getFormat() {
-        return [
+        const format = [
             {
                 type: Int16Array,
                 width: this.positionSize,
@@ -83,14 +95,37 @@ export default class LinePack extends VectorPack {
                 type: Uint16Array,
                 width: 1,
                 name: 'aLinesofar'
-            },
-            //上一个端点的extrude，用于计算 lineJoin 的 uv 坐标
-            {
-                type: Int8Array,
-                width: 2,
-                name: 'aPrevExtrude'
             }
         ];
+        if (this.symbol['linePatternFile']) {
+            format.push(
+                //上一个端点的extrude，用于计算 lineJoin 的 uv 坐标
+                {
+                    type: Int8Array,
+                    width: 2,
+                    name: 'aPrevExtrude'
+                }
+            );
+        }
+        if (this._lineWidthFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aLineWidth'
+                }
+            );
+        }
+        if (this._colorFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 4,
+                    name: 'aColor'
+                }
+            );
+        }
+        return format;
     }
 
     placeVector(line) {
@@ -108,6 +143,33 @@ export default class LinePack extends VectorPack {
             //所以this.elements只会存放当前line的elements，方便filter处理
             this.elements = [];
         }
+        if (this._lineWidthFn) {
+            // {
+            //     lineWidth: {
+            //         property: 'type',
+            //         stops: [1, { stops: [[2, 3], [3, 4]] }]
+            //     }
+            // }
+            this._feaLineWidth = this._lineWidthFn(null, feature.properties);
+            if (isFunctionDefinition(this._feaLineWidth)) {
+                //dynamic line width
+                this._feaLineWidth = 0;
+            }
+        }
+        if (this._colorFn) {
+            this._feaColor = this._colorFn(null, feature.properties);
+            if (isFunctionDefinition(this.feaColor)) {
+                this._feaColor = [0, 0, 0, 0];
+            } else {
+                if (!Array.isArray(this._feaColor)) {
+                    this._feaColor = Color(this._feaColor).array();
+                }
+                if (this._feaColor.length === 3) {
+                    this._feaColor.push(255);
+                }
+            }
+
+        }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
@@ -123,8 +185,9 @@ export default class LinePack extends VectorPack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
+        const needExtraVertex = this.symbol['linePatternFile'] || this.symbol['lineDasharray'];
         //TODO overscaling的含义？
-        // const EXTENT = this.options.EXTENT,
+        const EXTENT = this.options.EXTENT;
         //     overscaling = 1;
         let lineDistances = null;
         //只有有gradient才会scaleDistance，把 linesofar 从实际距离转化到 0-2^15
@@ -242,6 +305,7 @@ export default class LinePack extends VectorPack {
             const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
             // const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
+            // if (needExtraVertex) {
 
             // if (isSharpCorner && i > first) {
             //     const prevSegmentLength = currentVertex.dist(prevVertex);
@@ -251,6 +315,7 @@ export default class LinePack extends VectorPack {
             //         this.addCurrentVertex(newPrevVertex, this.distance, prevNormal.mult(1), 0, 0, false, lineDistances);
             //         prevVertex = newPrevVertex;
             //     }
+            // }
             // }
 
             // The join if a middle vertex, otherwise the cap.
@@ -284,10 +349,18 @@ export default class LinePack extends VectorPack {
 
             let prevExtrudes;
             if (i > first && i < len - 1) {
-                //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
-                this.addCurrentVertex(currentVertex, this.distance, prevNormal, -1, -1, false, lineDistances, null, LEFT_DIRECTION);
+                //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
+                if (needExtraVertex || prevVertex && outOfExtent(prevVertex, EXTENT)) {
+                    //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, -1, -1, false, lineDistances, null, LEFT_DIRECTION);
+                }
                 const length = this.data.length;
-                prevExtrudes = [new Point(this.data[length - this.formatWidth - 5], this.data[length - this.formatWidth - 4]), new Point(this.data[length - 5], this.data[length - 4])];
+                const extrudeIndex = this.positionSize + 1;
+                //上两个端点的extrude数据
+                prevExtrudes = [
+                    new Point(this.data[length - 2 * this.formatWidth + extrudeIndex], this.data[length - 2 * this.formatWidth + extrudeIndex + 1]),
+                    new Point(this.data[length - this.formatWidth + extrudeIndex], this.data[length - this.formatWidth + extrudeIndex + 1])
+                ];
             }
 
             if (currentJoin === 'miter') {
@@ -404,12 +477,14 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            if (i > first && i < len - 1) {
-                //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+            if ((needExtraVertex || nextVertex && outOfExtent(nextVertex, EXTENT)) &&
+                i > first && i < len - 1) {
+                //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+                //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 this.addCurrentVertex(currentVertex, this.distance, nextNormal, 1, 1, false, lineDistances);
             }
 
-            // if (isSharpCorner && i < len - 1) {
+            // if (!needExtraVertex && isSharpCorner && i < len - 1) {
             //     const nextSegmentLength = currentVertex.dist(nextVertex);
             //     if (nextSegmentLength > 2 * sharpCornerOffset) {
             //         const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
@@ -525,9 +600,17 @@ export default class LinePack extends VectorPack {
             (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             EXTRUDE_SCALE * extrude.x,
             EXTRUDE_SCALE * extrude.y,
-            linesofar,
-            prevExtrude.x, prevExtrude.y
+            linesofar
         );
+        if (this.symbol['linePatternFile']) {
+            data.push(prevExtrude.x, prevExtrude.y);
+        }
+        if (this._lineWidthFn) {
+            data.push(this._feaLineWidth);
+        }
+        if (this._colorFn) {
+            data.push(...this._feaColor);
+        }
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
 
@@ -583,4 +666,8 @@ export function calculateFullDistance(vertices, first, len) {
  */
 function scaleDistance(tileDistance/* : number */, stats/* : Object */) {
     return ((tileDistance / stats.tileTotal) * (stats.end - stats.start) + stats.start) * (MAX_LINE_DISTANCE - 1);
+}
+
+function outOfExtent(vertex, EXTENT) {
+    return vertex.x < 0 || vertex.x > EXTENT || vertex.y < 0 || vertex.y > EXTENT;
 }

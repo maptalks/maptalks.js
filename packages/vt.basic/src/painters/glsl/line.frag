@@ -4,7 +4,12 @@ precision highp float;
 
 uniform lowp float lineBlur;
 uniform lowp float lineOpacity;
-uniform lowp vec4 lineColor;
+
+#ifdef HAS_COLOR
+    varying vec4 vColor;
+#else
+    uniform lowp vec4 lineColor;
+#endif
 
 #ifdef HAS_PATTERN
     uniform sampler2D linePatternFile;
@@ -53,7 +58,11 @@ void main() {
         float y = (vNormal.y + 1.0) / 2.0;
         vec4 color = texture2D(linePatternFile, vec2(x, y));
     #else
-        vec4 color = lineColor * alpha;
+        #ifdef HAS_COLOR
+            vec4 color = vColor / 255.0 * alpha;
+        #else
+            vec4 color = lineColor * alpha;
+        #endif
     #endif
 
     #ifdef HAS_DASHARRAY

@@ -85,9 +85,13 @@ class LineGradientPainter extends BasicPainter {
             castShadow: false,
             picking: true
         });
-        mesh.setDefines({
+        const defines = {
             'HAS_GRADIENT': 1
-        });
+        };
+        if (geometry.desc.positionSize === 2) {
+            defines['IS_2D_POSITION'] = 1;
+        }
+        mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
     }

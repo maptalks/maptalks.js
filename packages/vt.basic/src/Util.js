@@ -88,3 +88,13 @@ function _colorSetter(cache, c) {
     if (cache) cache[c] = color;
     return color;
 }
+
+export function fillArray(arr, value, start, end) {
+    if (arr.fill) {
+        arr.fill(value, start, end);
+    } else {
+        for (let i = start; i < end; i++) {
+            arr[i] = value;
+        }
+    }
+}

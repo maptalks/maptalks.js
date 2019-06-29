@@ -1,10 +1,12 @@
+import Color from 'color';
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.picking.vert';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { setUniformFromSymbol, createColorSetter, fillArray } from '../Util';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 const defaultUniforms = {
     'lineColor': [0, 0, 0, 1],
@@ -32,9 +34,10 @@ class LinePainter extends BasicPainter {
             tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
-        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
+        const defines = {};
+        prepareDynamicSymbols(geometry, this.symbolDef, symbol, uniforms, defines, this._colorCache);
+
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
-        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
         setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur');
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx');
@@ -90,7 +93,7 @@ class LinePainter extends BasicPainter {
             picking: true
         });
         mesh.setLocalTransform(transform);
-        const defines = {};
+
         if (symbol.linePatternFile) {
             defines['HAS_PATTERN'] = 1;
         }
@@ -105,6 +108,73 @@ class LinePainter extends BasicPainter {
         }
         mesh.setDefines(defines);
         return mesh;
+    }
+
+    preparePaint(context) {
+        super.preparePaint(context);
+        this._updateLineAttribs(context.timestamp);
+    }
+
+    _updateLineAttribs() {
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        const zoom = this.getMap().getZoom();
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            const geometry = mesh.geometry;
+            const { features, aPickingId, aColor, aLineWidth, lineWidthFn, colorFn, aIndex } = geometry.properties;
+            if (!aPickingId || !aIndex.length) {
+                continue;
+            }
+            const u = new aLineWidth.constructor(1);
+            const l = aIndex.length;
+            for (let ii = 0; ii < l; ii += 2) {
+                const start = aIndex[ii];
+                const end = aIndex[ii + 1];
+                //new feature
+                const feature = features[aPickingId[start]];
+                const properties = feature ? feature.feature ? feature.feature.properties : null : null;
+                // if (properties.class === 'secondary') debugger
+                if (lineWidthFn) {
+                    const lineWidth = lineWidthFn(zoom, properties);
+                    u[0] = lineWidth;
+                    if (aLineWidth[start] !== u[0]) {
+                        fillArray(aLineWidth, u[0], start, end);
+                        aLineWidth._dirty = true;
+                    }
+                }
+                if (colorFn) {
+                    let color = colorFn(zoom, properties);
+                    if (!Array.isArray(color)) {
+                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
+                    }
+                    if (color.length === 3) {
+                        color.push(255);
+                    }
+                    if (aColor[start * 4] !== color[0] ||
+                        aColor[start * 4 + 1] !== color[1] ||
+                        aColor[start * 4 + 2] !== color[2] ||
+                        aColor[start * 4 + 3] !== color[3]) {
+                        for (let iii = start * 4; iii < end * 4; iii += 4) {
+                            aColor.set(color, iii);
+                        }
+                        aColor._dirty = true;
+                    }
+
+                }
+
+            }
+            if (lineWidthFn && aLineWidth._dirty) {
+                geometry.updateData('aLineWidth', aLineWidth);
+                aLineWidth._dirty = false;
+            }
+            if (colorFn && aColor._dirty) {
+                geometry.updateData('aColor', aColor);
+                aColor._dirty = false;
+            }
+        }
     }
 
     init() {
@@ -241,3 +311,84 @@ class LinePainter extends BasicPainter {
 }
 
 export default LinePainter;
+
+function prepareDynamicSymbols(geometry, symbolDef, symbol, uniforms, defines, colorCache) {
+    const { aColor, aPickingId, aLineWidth } = geometry.data;
+    const { features } = geometry.properties;
+    if (!isFunctionDefinition(symbolDef['lineColor'])) {
+        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(colorCache));
+    } else {
+        defines['HAS_COLOR'] = 1;
+        const targetProperties = [];
+        for (let i = 0; i < symbolDef['lineColor'].stops.length; i++) {
+            if (isFunctionDefinition(symbolDef['lineColor'].stops[i][1])) {
+                //动态属性名
+                targetProperties.push(symbolDef['lineColor'].stops[i][0]);
+                break;
+            }
+        }
+        if (targetProperties.length > 0) {
+            geometry.data.aColor = {
+                usage: 'dynamic',
+                data: aColor
+            };
+            const aIndex = geometry.properties.aIndex = [];
+            let current = aPickingId[0];
+            for (let i = 1, l = aPickingId.length; i < l; i++) {
+                if (aPickingId[i] !== current) {
+                    aIndex.push(i);
+                    current = aPickingId[i];
+                }
+            }
+            aIndex.push(aPickingId.length);
+            geometry.properties.aColor = new aColor.constructor(aColor);
+            geometry.properties.aPickingId = new aPickingId.constructor(aPickingId);
+            geometry.properties.colorFn = interpolated(symbolDef['lineColor']);
+        }
+    }
+    if (!isFunctionDefinition(symbolDef['lineWidth'])) {
+        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
+    } else {
+        defines['HAS_LINE_WIDTH'] = 1;
+        const stopValues = [];
+        for (let i = 0; i < symbolDef['lineWidth'].stops.length; i++) {
+            if (isFunctionDefinition(symbolDef['lineWidth'].stops[i][1])) {
+                stopValues.push(symbolDef['lineWidth'].stops[i][0]);
+            }
+        }
+        if (stopValues.length > 0) {
+            geometry.data.aLineWidth = {
+                usage: 'dynamic',
+                data: aLineWidth
+            };
+            geometry.properties.aLineWidth = new aLineWidth.constructor(aLineWidth);
+            if (!geometry.properties.aPickingId) {
+                const aIndex = geometry.properties.aIndex = [];
+                let start = 0;
+                let current = aPickingId[0];
+                for (let ii = 1, l = aPickingId.length; ii < l; ii++) {
+                    if (aPickingId[ii] !== current) {
+                        if (hasDynamicProperty(features[current].feature, symbolDef['lineWidth'].property, stopValues)) {
+                            aIndex.push(start, ii);
+                        }
+                        current = aPickingId[ii];
+                        start = ii;
+                    }
+                }
+                geometry.properties.aPickingId = new aPickingId.constructor(aPickingId);
+            }
+            geometry.properties.lineWidthFn = interpolated(symbolDef['lineWidth']);
+        }
+    }
+}
+
+function hasDynamicProperty(feature, property, stopValues) {
+    for (let i = 0; i < stopValues.length; i++) {
+        // if (feature.properties[property] === 'secondary') debugger
+        if (property[0] === '$' && feature[property.substring(0)] === stopValues[i] ||
+            feature.properties[property] === stopValues[i]) {
+            return true;
+        }
+    }
+    return false;
+}
