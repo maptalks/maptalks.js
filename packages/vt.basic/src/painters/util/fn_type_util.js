@@ -19,24 +19,26 @@ export function prepareFnTypeData(geometry, features, symbolDef, config) {
             continue;
         }
         const stopValues = getFnTypePropertyStopValues(symbolDef[symbolName].stops);
-        if (stopValues.length) {
-            geometry.data[attrName] = {
-                usage: 'dynamic',
-                data: arr
-            };
-            const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues);
-            if (!aIndex.length) {
-                //说明瓦片中没有 function-type 中涉及的 feature
-                return;
-            }
-            geoProps[PREFIX + attrName + 'Index'] = aIndex;
-            geoProps[PREFIX + attrName] = new arr.constructor(arr);
-            if (!geoProps.aPickingId) {
-                geoProps.aPickingId = new aPickingId.constructor(aPickingId);
-            }
-            if (!geoProps.features) {
-                geometry.features = features;
-            }
+        if (!stopValues.length) {
+            //说明stops中没有function-type类型
+            continue;
+        }
+        const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues);
+        if (!aIndex.length) {
+            //说明瓦片中没有 function-type 中涉及的 feature
+            continue;
+        }
+        geometry.data[attrName] = {
+            usage: 'dynamic',
+            data: arr
+        };
+        geoProps[PREFIX + attrName + 'Index'] = aIndex;
+        geoProps[PREFIX + attrName] = new arr.constructor(arr);
+        if (!geoProps.aPickingId) {
+            geoProps.aPickingId = new aPickingId.constructor(aPickingId);
+        }
+        if (!geoProps.features) {
+            geometry.features = features;
         }
     }
 }
