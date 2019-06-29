@@ -56,10 +56,12 @@ export default class LinePack extends VectorPack {
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
-        if (isFunctionDefinition(this.symbolDef['lineWidth'])) {
+        if (isFunctionDefinition(this.symbolDef['lineWidth']) &&
+            this.symbolDef['lineWidth'].property) {
             this._lineWidthFn = interpolated(this.symbolDef['lineWidth']);
         }
-        if (isFunctionDefinition(this.symbolDef['lineColor'])) {
+        if (isFunctionDefinition(this.symbolDef['lineColor']) &&
+            this.symbolDef['lineColor'].property) {
             this._colorFn = interpolated(this.symbolDef['lineColor']);
         }
     }

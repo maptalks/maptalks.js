@@ -28,6 +28,8 @@ class Painter {
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
+        const styles = this.layer.getCompiledStyle();
+        this.symbolDef = styles[pluginIndex].symbol;
         this.init();
     }
 
@@ -203,6 +205,8 @@ class Painter {
     }
 
     updateSymbol() {
+        const styles = this.layer.getCompiledStyle();
+        this.symbolDef = styles[this.pluginIndex].symbol;
         delete this._symbol;
     }
 
@@ -210,8 +214,6 @@ class Painter {
         if (this._symbol) {
             return this._symbol;
         }
-        const styles = this.layer.getCompiledStyle();
-        this.symbolDef = styles[this.pluginIndex].symbol;
         this._symbol = loadFunctionTypes(this.symbolDef, () => {
             return [this.layer.getRenderer().getCurrentTileZoom()];
         });
