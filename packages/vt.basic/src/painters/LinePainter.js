@@ -123,8 +123,8 @@ class LinePainter extends BasicPainter {
         return mesh;
     }
 
-    preparePaint(context) {
-        super.preparePaint(context);
+    preparePaint(...args) {
+        super.preparePaint(...args);
         const meshes = this.scene.getMeshes();
         if (!meshes || !meshes.length) {
             return;

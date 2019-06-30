@@ -4,6 +4,16 @@
     attribute vec3 aPosition;
 #endif
 
+#ifdef HAS_COLOR
+    attribute vec4 aColor;
+    varying vec4 vColor;
+#endif
+
+#ifdef HAS_OPACITY
+    attribute float aOpacity;
+    varying float vOpacity;
+#endif
+
 uniform mat4 projViewModelMatrix;
 
 #ifdef HAS_PATTERN
@@ -29,5 +39,13 @@ void main() {
         float zoomScale = tileResolution / resolution;
         // /32.0 是为提升精度，原数据都 * 32
         vTexCoord = aTexCoord / 32.0 * uvScale * zoomScale / tileRatio + uvOffset;
+    #endif
+
+    #ifdef HAS_COLOR
+        vColor = aColor / 255.0;
+    #endif
+
+    #ifdef HAS_OPACITY
+        vOpacity = aOpacity / 255.0;
     #endif
 }

@@ -3,7 +3,7 @@ import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import { isClippedEdge } from './util/util';
 import Point from '@mapbox/point-geometry';
-import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
+import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 
 // NOTE ON EXTRUDE SCALE:
@@ -62,7 +62,7 @@ export default class LinePack extends VectorPack {
         }
         if (isFunctionDefinition(this.symbolDef['lineColor']) &&
             this.symbolDef['lineColor'].property) {
-            this._colorFn = interpolated(this.symbolDef['lineColor']);
+            this._colorFn = piecewiseConstant(this.symbolDef['lineColor']);
         }
     }
 
@@ -152,25 +152,16 @@ export default class LinePack extends VectorPack {
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            this._feaLineWidth = this._lineWidthFn(null, feature.properties);
-            if (isFunctionDefinition(this._feaLineWidth)) {
-                //dynamic line width
-                this._feaLineWidth = 0;
-            }
+            this._feaLineWidth = this._lineWidthFn(null, feature.properties) || 0;
         }
         if (this._colorFn) {
-            this._feaColor = this._colorFn(null, feature.properties);
-            if (isFunctionDefinition(this.feaColor)) {
-                this._feaColor = [0, 0, 0, 0];
-            } else {
-                if (!Array.isArray(this._feaColor)) {
-                    this._feaColor = Color(this._feaColor).array();
-                }
-                if (this._feaColor.length === 3) {
-                    this._feaColor.push(255);
-                }
+            this._feaColor = this._colorFn(null, feature.properties) || [0, 0, 0, 0];
+            if (!Array.isArray(this._feaColor)) {
+                this._feaColor = Color(this._feaColor).array();
             }
-
+            if (this._feaColor.length === 3) {
+                this._feaColor.push(255);
+            }
         }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine

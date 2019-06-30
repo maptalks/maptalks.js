@@ -91,8 +91,8 @@ void main() {
 
     vSize = textSize;
     #ifdef ENABLE_COLLISION
-    vOpacity = aOpacity / 255.0;
+        vOpacity = aOpacity / 255.0;
     #else
-    vOpacity = 1.0;
+        vOpacity = 1.0;
     #endif
 }

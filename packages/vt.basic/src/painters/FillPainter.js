@@ -5,6 +5,9 @@ import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
 import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { piecewiseConstant, interpolated } from '@maptalks/function-type';
+import Color from 'color';
 
 const DEFAULT_UNIFORMS = {
     'polygonFill': [1, 1, 1, 1],
@@ -14,6 +17,10 @@ const DEFAULT_UNIFORMS = {
 const EMPTY_UV_OFFSET = [0, 0];
 
 class FillPainter extends BasicPainter {
+    constructor(...args) {
+        super(...args);
+        this._fnTypeConfig = this._getFnTypeConfig();
+    }
 
     createMesh(geometry, transform, { tileCenter }) {
         this._colorCache = this._colorCache || {};
@@ -22,6 +29,8 @@ class FillPainter extends BasicPainter {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio
         };
+
+        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity');
 
@@ -45,9 +54,65 @@ class FillPainter extends BasicPainter {
         if (geometry.desc.positionSize === 2) {
             defines['IS_2D_POSITION'] = 1;
         }
+        if (geometry.data.aColor) {
+            defines['HAS_COLOR'] = 1;
+        }
+        if (geometry.data.aOpacity) {
+            defines['HAS_OPACITY'] = 1;
+        }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
+    }
+
+    preparePaint(...args) {
+        super.preparePaint(...args);
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes);
+    }
+
+    _getFnTypeConfig() {
+        this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
+        this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
+        const map = this.getMap();
+        const u8 = new Uint8Array(1);
+        return [
+            {
+                //geometry.data 中的属性数据
+                attrName: 'aColor',
+                //symbol中的function-type属性
+                symbolName: 'polygonFill',
+                //
+                evaluate: properties => {
+                    let color = this._polygonFillFn(map.getZoom(), properties);
+                    if (!Array.isArray(color)) {
+                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
+                    }
+                    if (color.length === 3) {
+                        color.push(255);
+                    }
+                    return color;
+                }
+            },
+            {
+                attrName: 'aOpacity',
+                symbolName: 'polygonOpacity',
+                evaluate: properties => {
+                    const polygonOpacity = this._polygonOpacityFn(map.getZoom(), properties);
+                    u8[0] = polygonOpacity * 255;
+                    return u8[0];
+                }
+            }
+        ];
+    }
+
+    updateSymbol() {
+        super.updateSymbol();
+        this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
+        this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
     }
 
     init() {
