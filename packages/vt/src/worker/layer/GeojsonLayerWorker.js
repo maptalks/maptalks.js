@@ -2,7 +2,6 @@ import Ajax from '../util/Ajax';
 import { log2 } from '../../common/Util';
 import geojsonvt from 'geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
-// import EXTENT from '../../data/extent';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
     /**
@@ -96,7 +95,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             };
             const types = layers[layerId].types;
             types[feature.type] = 1;
-
+            feature.tags['$layer'] = layerId;
+            feature.tags['$type'] = feature.type;
             features.push({
                 type: feature.type,
                 layer: layerId,

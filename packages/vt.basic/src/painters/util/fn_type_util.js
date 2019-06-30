@@ -1,5 +1,5 @@
 import { fillArray } from '../../Util';
-import { isFunctionDefinition } from '@maptalks/function-type';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 const PREFIX = '_fn_type_';
 /**
@@ -100,7 +100,7 @@ function createFnTypeFeatureIndex(features, aPickingId, property, stopValues) {
 function getFnTypePropertyStopValues(stops) {
     const stopValues = [];
     for (let i = 0; i < stops.length; i++) {
-        if (isFunctionDefinition(stops[i][1])) {
+        if (isFunctionDefinition(stops[i][1]) && !interpolated(stops[i][1]).isZoomConstant) {
             stopValues.push(stops[i][0]);
         }
     }

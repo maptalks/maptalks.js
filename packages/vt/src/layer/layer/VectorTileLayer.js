@@ -37,7 +37,7 @@ const defaultOptions = {
     //是否开启无style时的默认绘制功能
     defaultRendering: true,
     //是否限制每帧的 tile mesh creation
-    tileMeshCreationLimitPerFrame: 2,
+    tileMeshCreationLimitPerFrame: 0,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true
