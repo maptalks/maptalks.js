@@ -3,8 +3,9 @@ import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import { isClippedEdge } from './util/util';
 import Point from '@mapbox/point-geometry';
-import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
+import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
+import { isFnTypeSymbol } from '../style/Util';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -56,12 +57,10 @@ export default class LinePack extends VectorPack {
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
-        if (isFunctionDefinition(this.symbolDef['lineWidth']) &&
-            this.symbolDef['lineWidth'].property) {
+        if (isFnTypeSymbol('lineWidth', this.symbolDef)) {
             this._lineWidthFn = interpolated(this.symbolDef['lineWidth']);
         }
-        if (isFunctionDefinition(this.symbolDef['lineColor']) &&
-            this.symbolDef['lineColor'].property) {
+        if (isFnTypeSymbol('lineColor', this.symbolDef)) {
             this._colorFn = piecewiseConstant(this.symbolDef['lineColor']);
         }
     }

@@ -1,3 +1,5 @@
+import { isFunctionDefinition } from '@maptalks/function-type';
+
 export function now() {
     return Date.now();
 }
@@ -142,4 +144,8 @@ export function evaluate(prop, properties, zoom) {
     } else {
         return prop;
     }
+}
+
+export function isFnTypeSymbol(name, symbolDef) {
+    return isFunctionDefinition(symbolDef[name]) && symbolDef[name].property;
 }
