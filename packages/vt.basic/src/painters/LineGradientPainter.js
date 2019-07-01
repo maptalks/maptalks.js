@@ -5,6 +5,8 @@ import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
 import pickingVert from './glsl/line.picking.vert';
 import { setUniformFromSymbol } from '../Util';
+import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { interpolated } from '@maptalks/function-type';
 
 const defaultUniforms = {
     'lineOpacity': 1,
@@ -18,6 +20,11 @@ const defaultUniforms = {
 const MAX_LINE_COUNT = 128;
 
 class LineGradientPainter extends BasicPainter {
+    constructor(...args) {
+        super(...args);
+        this._fnTypeConfig = this._getFnTypeConfig();
+    }
+
     needToRedraw() {
         return this._redraw;
     }
@@ -53,6 +60,7 @@ class LineGradientPainter extends BasicPainter {
             tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
+        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
@@ -91,9 +99,43 @@ class LineGradientPainter extends BasicPainter {
         if (geometry.desc.positionSize === 2) {
             defines['IS_2D_POSITION'] = 1;
         }
+        if (geometry.data.aLineWidth) {
+            defines['HAS_LINE_WIDTH'] = 1;
+        }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
+    }
+
+    preparePaint(...args) {
+        super.preparePaint(...args);
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes);
+    }
+
+    _getFnTypeConfig() {
+        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
+        const map = this.getMap();
+        const u16 = new Uint16Array(1);
+        return [
+            {
+                attrName: 'aLineWidth',
+                symbolName: 'lineWidth',
+                evaluate: properties => {
+                    const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
+                    u16[0] = lineWidth;
+                    return u16[0];
+                }
+            }
+        ];
+    }
+
+    updateSymbol() {
+        super.updateSymbol();
+        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
     }
 
     init() {
