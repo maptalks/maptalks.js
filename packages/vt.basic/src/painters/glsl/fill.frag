@@ -18,7 +18,17 @@ precision mediump float;
     uniform lowp float polygonOpacity;
 #endif
 
+uniform float tileExtent;
+varying vec2 vPosition;
+
 void main() {
+        //当position的x, y超出tileExtent时，丢弃该片元
+    float clip = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
+        sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
+    if (clip == 0.0) {
+        discard;
+    }
+
     #ifdef HAS_PATTERN
         vec4 color = texture2D(polygonPatternFile, vTexCoord);
     #else

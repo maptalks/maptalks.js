@@ -27,7 +27,8 @@ class FillPainter extends BasicPainter {
         const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio
+            tileRatio: geometry.properties.tileRatio,
+            tileExtent: geometry.properties.tileExtent
         };
 
         prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
@@ -191,7 +192,8 @@ class FillPainter extends BasicPainter {
                 },
                 depth: {
                     enable: true,
-                    func: this.sceneConfig.depthFunc || 'always'
+                    range: this.sceneConfig.depthRange,
+                    func: this.sceneConfig.depthFunc || '<'
                 },
                 blend: {
                     enable: true,

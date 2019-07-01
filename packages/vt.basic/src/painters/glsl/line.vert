@@ -102,7 +102,7 @@ void main() {
     // vNormal = aNormal;
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
-    vPosition = position.xy;
+    vPosition = aPosition.xy;
 
     #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
         #ifdef HAS_GRADIENT
