@@ -8,6 +8,7 @@ import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
 import { loadFunctionTypes } from '@maptalks/function-type';
+import { createFilter } from '@maptalks/feature-filter';
 
 //feature index defined in BaseLayerWorker
 export const KEY_IDX = '__fea_idx';
@@ -18,12 +19,12 @@ export const KEY_IDX = '__fea_idx';
 export default class VectorPack {
     constructor(features, symbol, options) {
         //TODO 预先把altitude传到pack里来？
+        this.options = options;
         this.features = this._check(features);
         this.symbolDef = symbol;
         this.symbol = loadFunctionTypes(symbol, () => {
             return [options.zoom];
         });
-        this.options = options;
         this.positionSize = options['only2D'] ? 2 : 3;
         this.styledVectors = [];
     }
@@ -33,6 +34,7 @@ export default class VectorPack {
             return features;
         }
         const first = features[0];
+        let checked;
         if (Array.isArray(first.geometry) && first.properties) {
             let g = first.geometry[0];
             while (Array.isArray(g)) {
@@ -40,26 +42,53 @@ export default class VectorPack {
             }
             if (g instanceof Point) {
                 //a converted one
-                return features;
+                checked = features;
             }
         }
-        const checked = [];
-        if (Array.isArray(first.geometry)) {
-            for (let i = 0; i < features.length; i++) {
-                const feature = features[i];
-                const fea = extend({}, feature);
-                checked.push(convertGeometry(fea));
-            }
-        } else {
-            for (let i = 0; i < features.length; i++) {
-                const feature = features[i];
-                const feas = convert(feature);
-                for (let ii = 0; ii < feas.length; ii++) {
-                    const fea = feas[ii];
-                    fea[KEY_IDX] = feature[KEY_IDX];
-                    checked.push(fea);
+        if (!checked) {
+            checked = [];
+            if (Array.isArray(first.geometry)) {
+                for (let i = 0; i < features.length; i++) {
+                    const feature = features[i];
+                    const fea = extend({}, feature);
+                    checked.push(convertGeometry(fea));
+                }
+            } else {
+                for (let i = 0; i < features.length; i++) {
+                    const feature = features[i];
+                    const feas = convert(feature);
+                    for (let ii = 0; ii < feas.length; ii++) {
+                        const fea = feas[ii];
+                        fea[KEY_IDX] = feature[KEY_IDX];
+                        checked.push(fea);
+                    }
                 }
             }
+        }
+
+        const orders = this.options.order;
+        if (orders) {
+            const orderFilters = [];
+            for (let i = 0; i < orders.length; i++) {
+                orderFilters.push(createFilter(orders[i]));
+            }
+            checked = checked.sort((a, b) => {
+                const l = orderFilters.length;
+                let ia = l;
+                let ib = l;
+                for (let i = 0; i < l; i++) {
+                    if (orderFilters[i](a)) {
+                        ia = i;
+                    }
+                    if (orderFilters[i](b)) {
+                        ib = i;
+                    }
+                    if (ia < l && ib < l) {
+                        break;
+                    }
+                }
+                return ia - ib;
+            });
         }
         return checked;
     }
