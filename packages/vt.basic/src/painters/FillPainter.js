@@ -192,7 +192,7 @@ class FillPainter extends BasicPainter {
                 },
                 depth: {
                     enable: true,
-                    range: this.sceneConfig.depthRange,
+                    range: this.sceneConfig.depthRange || [0, 1],
                     func: this.sceneConfig.depthFunc || '<'
                 },
                 blend: {
