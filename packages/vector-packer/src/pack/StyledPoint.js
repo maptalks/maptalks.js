@@ -3,7 +3,7 @@ import { getMarkerPathBase64, evaluateIconSize, evaluateTextSize } from '../styl
 import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
-import { loadFunctionTypes, interpolated } from '@maptalks/function-type';
+import { loadFunctionTypes, piecewiseConstant } from '@maptalks/function-type';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
@@ -23,16 +23,22 @@ export default class StyledPoint {
 
     _initFnTypes() {
         if (isFnTypeSymbol('textFaceName', this.symbolDef)) {
-            this._textFaceNameFn = interpolated(this.symbolDef['textFaceName']);
+            this._textFaceNameFn = piecewiseConstant(this.symbolDef['textFaceName']);
         }
         if (isFnTypeSymbol('textWeight', this.symbolDef)) {
-            this._textWeightFn = interpolated(this.symbolDef['textWeight']);
+            this._textWeightFn = piecewiseConstant(this.symbolDef['textWeight']);
         }
         if (isFnTypeSymbol('textStyle', this.symbolDef)) {
-            this._textStyleFn = interpolated(this.symbolDef['textStyle']);
+            this._textStyleFn = piecewiseConstant(this.symbolDef['textStyle']);
         }
         if (isFnTypeSymbol('textWrapWidth', this.symbolDef)) {
-            this._textWrapWidthFn = interpolated(this.symbolDef['textWrapWidth']);
+            this._textWrapWidthFn = piecewiseConstant(this.symbolDef['textWrapWidth']);
+        }
+        if (isFnTypeSymbol('textHorizontalAlignment', this.symbolDef)) {
+            this._textHorizontalAlignmentFn = piecewiseConstant(this.symbolDef['textHorizontalAlignment']);
+        }
+        if (isFnTypeSymbol('textVerticalAlignment', this.symbolDef)) {
+            this._textVerticalAlignmentFn = piecewiseConstant(this.symbolDef['textVerticalAlignment']);
         }
     }
 
@@ -59,7 +65,9 @@ export default class StyledPoint {
             const keepUpright = symbol['textKeepUpright'],
                 textAlongLine = symbol['textRotationAlignment'] === 'map' && symbol['textPlacement'] === 'line' && !symbol['isIconText'];
             const glyphs = glyphAtlas.glyphMap[font],
-                textAnchor = getAnchor(symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']),
+                hAlignment = this._textHorizontalAlignmentFn ? this._textHorizontalAlignmentFn(null, this.feature.properties) : symbol['textHorizontalAlignment'],
+                vAlignment = this._textVerticalAlignmentFn ? this._textVerticalAlignmentFn(null, this.feature.properties) : symbol['textVerticalAlignment'],
+                textAnchor = getAnchor(hAlignment, vAlignment),
                 lineHeight = 1.2 * oneEm, //TODO 默认的lineHeight的计算
                 isAllowLetterSpacing = allowsLetterSpacing(text),
                 textLetterSpacing =  isAllowLetterSpacing ? symbol['textLetterSpacing'] / fontScale || 0 : 0,
