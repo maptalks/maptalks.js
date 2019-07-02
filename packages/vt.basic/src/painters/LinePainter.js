@@ -33,6 +33,8 @@ class LinePainter extends BasicPainter {
     }
 
     createMesh(geometry, transform) {
+        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
+
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
         const uniforms = {
@@ -40,8 +42,6 @@ class LinePainter extends BasicPainter {
             tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
-
-        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
 
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
@@ -273,6 +273,7 @@ class LinePainter extends BasicPainter {
                 },
                 depth: {
                     enable: true,
+                    range: this.sceneConfig.depthRange || [0, 1],
                     func: this.sceneConfig.depthFunc || 'always'
                 },
                 blend: {
