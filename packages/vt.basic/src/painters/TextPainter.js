@@ -13,7 +13,7 @@ import linePickingVert from './glsl/text.line.picking.vert';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GLYPH_SIZE, GAMMA_SCALE } from './util/create_text_painter';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib, PREFIX } from './util/fn_type_util';
+import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
@@ -153,6 +153,11 @@ export default class TextPainter extends CollisionPainter {
             if (pack.glyphAtlas) {
                 geometry = super.createGeometry(pack);
                 geometry.properties.hasHalo = pack.properties.hasHalo;
+                const aTextSize = geometry.data.aTextSize;
+                if (aTextSize) {
+                    //for collision
+                    geometry.properties.aTextSize = new aTextSize.constructor(aTextSize);
+                }
             }
         }
         if (!geometry) {
@@ -436,7 +441,7 @@ export default class TextPainter extends CollisionPainter {
         const positionSize = geometry.desc.positionSize;
 
         const { aShape, aOffset, aAnchor } = geometry.properties;
-        const aTextSize = geometry.properties[PREFIX + 'aTextSize'];
+        const aTextSize = geometry.properties['aTextSize'];
         const { level } = mesh.properties;
 
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
@@ -614,7 +619,7 @@ export default class TextPainter extends CollisionPainter {
         const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
         const debugCollision = this.layer.options['debugCollision'];
         // const textSize = mesh.properties.textSize;
-        const aTextSize = geoProps[PREFIX + 'aTextSize'];
+        const aTextSize = geoProps['aTextSize'];
         const textSize = aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize;
 
         const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
