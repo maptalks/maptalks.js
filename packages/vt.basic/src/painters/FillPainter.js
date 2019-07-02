@@ -173,7 +173,7 @@ class FillPainter extends BasicPainter {
                     enable: true,
                     mask: 0xFF,
                     func: {
-                        cmp: '<',
+                        cmp: '<=',
                         ref: (context, props) => {
                             return props.level;
                         },

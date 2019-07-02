@@ -235,7 +235,8 @@ class LineGradientPainter extends BasicPainter {
                 },
                 depth: {
                     enable: true,
-                    func: this.sceneConfig.depthFunc || 'always'
+                    range: this.sceneConfig.depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || '<'
                 },
                 blend: {
                     enable: true,
