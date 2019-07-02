@@ -1,9 +1,9 @@
-import { isNil } from '../style/Util';
+import { isNil, isFnTypeSymbol } from '../style/Util';
 import { getMarkerPathBase64, evaluateIconSize, evaluateTextSize } from '../style/Marker';
 import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
-import { loadFunctionTypes } from '@maptalks/function-type';
+import { loadFunctionTypes, interpolated } from '@maptalks/function-type';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
@@ -12,11 +12,28 @@ export default class StyledPoint {
         //anchor(世界坐标), offset(normalized offset), tex, size(世界坐标), opacity, rotation
         //u_size_scale 当前像素坐标相对世界坐标的大小, u_rotation map的旋转角度(?)
         this.feature = feature;
+        this.symbolDef = symbol;
         this.symbol = loadFunctionTypes(symbol, () => {
             return [options.zoom];
         });
         this.options = options;
         this._thisReplacer = this._replacer.bind(this);
+        this._initFnTypes();
+    }
+
+    _initFnTypes() {
+        if (isFnTypeSymbol('textFaceName', this.symbolDef)) {
+            this._textFaceNameFn = interpolated(this.symbolDef['textFaceName']);
+        }
+        if (isFnTypeSymbol('textWeight', this.symbolDef)) {
+            this._textWeightFn = interpolated(this.symbolDef['textWeight']);
+        }
+        if (isFnTypeSymbol('textStyle', this.symbolDef)) {
+            this._textStyleFn = interpolated(this.symbolDef['textStyle']);
+        }
+        if (isFnTypeSymbol('textWrapWidth', this.symbolDef)) {
+            this._textWrapWidthFn = interpolated(this.symbolDef['textWrapWidth']);
+        }
     }
 
     _replacer(str, key) {
@@ -47,7 +64,8 @@ export default class StyledPoint {
                 isAllowLetterSpacing = allowsLetterSpacing(text),
                 textLetterSpacing =  isAllowLetterSpacing ? symbol['textLetterSpacing'] / fontScale || 0 : 0,
                 textOffset = [symbol['textDx'] / fontScale || 0, symbol['textDy'] / fontScale || 0],
-                textWrapWidth = (symbol['textWrapWidth'] || 10 * oneEm) / fontScale;
+                wrapWidth = this._textWrapWidthFn ? this._textWrapWidthFn(null, this.feature.properties) : symbol['textWrapWidth'],
+                textWrapWidth = (wrapWidth || 10 * oneEm) / fontScale;
             shape = {};
             shape.horizontal = shapeText(
                 text,
@@ -110,8 +128,11 @@ export default class StyledPoint {
         }
 
         if (hasText) {
-            const font = getSDFFont(symbol);
-            const text = resolveText(symbol.textName, this.feature.properties || this.feature.properties);
+            const textFaceName = this._textFaceNameFn ? this._textFaceNameFn(null, this.feature.properties) : symbol['textFaceName'];
+            const textStyle = this._textStyleFn ? this._textStyleFn(null, this.feature.properties) : symbol['textStyle'];
+            const textWeight = this._textWeightFn ? this._textWeightFn(null, this.feature.properties) : symbol['textWeight'];
+            const font = getSDFFont(textFaceName, textStyle, textWeight);
+            const text = resolveText(symbol['textName'], this.feature.properties);
             result.glyph = {
                 font, text
             };

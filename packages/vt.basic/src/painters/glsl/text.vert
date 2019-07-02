@@ -12,7 +12,11 @@ attribute vec2 aTexCoord;
 attribute float aOpacity;
 #endif
 
-uniform float textSize;
+#ifdef HAS_TEXT_SIZE
+    attribute float aTextSize;
+#else
+    uniform float textSize;
+#endif
 uniform float textDx;
 uniform float textDy;
 uniform float textRotation;
@@ -37,11 +41,29 @@ varying float vGammaScale;
 varying float vSize;
 varying float vOpacity;
 
+#ifdef HAS_TEXT_FILL
+    attribute vec4 aTextFill;
+    varying vec4 vTextFill;
+#endif
+
+#ifdef HAS_TEXT_HALO_FILL
+    attribute vec4 aTextHaloFill;
+    varying vec4 vTextHaloFill;
+#endif
+
+#ifdef HAS_TEXT_HALO_RADIUS
+    attribute float aTextHaloRadius;
+    varying float vTextHaloRadius;
+#endif
+
 void main() {
     #ifdef IS_2D_POSITION
         vec3 position = vec3(aPosition, 0.0);
     #else
         vec3 position = aPosition;
+    #endif
+    #ifdef HAS_TEXT_SIZE
+        float textSize = aTextSize;
     #endif
     vec2 shape = aShape / 10.0;
     vec2 texCoord = aTexCoord;
@@ -94,5 +116,17 @@ void main() {
         vOpacity = aOpacity / 255.0;
     #else
         vOpacity = 1.0;
+    #endif
+
+    #ifdef HAS_TEXT_FILL
+        vTextFill = aTextFill / 255.0;
+    #endif
+
+    #ifdef HAS_TEXT_HALO_FILL
+        vTextHaloFill = aTextHaloFill / 255.0;
+    #endif
+
+    #ifdef HAS_TEXT_HALO_RADIUS
+        vTextHaloRadius = aTextHaloRadius;
     #endif
 }

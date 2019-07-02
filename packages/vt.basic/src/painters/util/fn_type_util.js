@@ -1,7 +1,7 @@
 import { fillArray } from '../../Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
-const PREFIX = '_fn_type_';
+export const PREFIX = '_fn_type_';
 /**
  * 如果 symbolDef 有 function-type 类型，则准备需要的数据
  * @param {*} geometry

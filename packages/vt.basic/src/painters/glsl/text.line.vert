@@ -9,7 +9,11 @@ attribute vec2 aOffset;
 attribute float aOpacity;
 #endif
 
-uniform float textSize;
+#ifdef HAS_TEXT_SIZE
+    attribute float aTextSize;
+#else
+    uniform float textSize;
+#endif
 uniform float textDx;
 uniform float textDy;
 
@@ -29,11 +33,31 @@ varying float vGammaScale;
 varying float vSize;
 varying float vOpacity;
 
+
+#ifdef HAS_TEXT_FILL
+    attribute vec4 aTextFill;
+    varying vec4 vTextFill;
+#endif
+
+#ifdef HAS_TEXT_HALO_FILL
+    attribute vec4 aTextHaloFill;
+    varying vec4 vTextHaloFill;
+#endif
+
+#ifdef HAS_TEXT_HALO_RADIUS
+    attribute float aTextHaloRadius;
+    varying float vTextHaloRadius;
+#endif
+
+
 void main() {
     #ifdef IS_2D_POSITION
         vec3 position = vec3(aPosition, 0.0);
     #else
         vec3 position = aPosition;
+    #endif
+    #ifdef HAS_TEXT_SIZE
+        float textSize = aTextSize;
     #endif
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
     float distance = gl_Position.w;
@@ -68,9 +92,21 @@ void main() {
     vTexCoord = texCoord / texSize;
     vSize = textSize;
     #ifdef ENABLE_COLLISION
-    vOpacity = aOpacity / 255.0;
+        vOpacity = aOpacity / 255.0;
     #else
-    vOpacity = 1.0;
+        vOpacity = 1.0;
+    #endif
+
+    #ifdef HAS_TEXT_FILL
+        vTextFill = aTextFill / 255.0;
+    #endif
+
+    #ifdef HAS_TEXT_HALO_FILL
+        vTextHaloFill = aTextHaloFill / 255.0;
+    #endif
+
+    #ifdef HAS_TEXT_HALO_RADIUS
+        vTextHaloRadius = aTextHaloRadius;
     #endif
 }
 

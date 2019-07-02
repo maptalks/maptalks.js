@@ -11,7 +11,6 @@ attribute vec2 aOffset;
 attribute float aOpacity;
 #endif
 
-uniform float textSize;
 uniform float textDx;
 uniform float textDy;
 uniform float textRotation;

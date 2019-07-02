@@ -13,7 +13,9 @@ import linePickingVert from './glsl/text.line.picking.vert';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GLYPH_SIZE, GAMMA_SCALE } from './util/create_text_painter';
-
+import { prepareFnTypeData, updateGeometryFnTypeAttrib, PREFIX } from './util/fn_type_util';
+import { interpolated } from '@maptalks/function-type';
+import Color from 'color';
 
 const shaderFilter0 = mesh => {
     return mesh.uniforms['level'] === 0 && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
@@ -73,6 +75,71 @@ export default class TextPainter extends CollisionPainter {
         //     e.preventDefault();
 
         // }, false);
+        this._fnTypeConfig = this._getFnTypeConfig();
+        this._colorCache = {};
+    }
+
+    _getFnTypeConfig() {
+        this._textFillFn = interpolated(this.symbolDef['textFill']);
+        this._textSizeFn = interpolated(this.symbolDef['textSize']);
+        this._textHaloFillFn = interpolated(this.symbolDef['textHaloFill']);
+        this._textHaloRadiusFn = interpolated(this.symbolDef['textHaloRadius']);
+        const map = this.getMap();
+        const u8 = new Uint8Array(1);
+        return [
+            {
+                //geometry.data 中的属性数据
+                attrName: 'aTextFill',
+                //symbol中的function-type属性
+                symbolName: 'textFill',
+                //
+                evaluate: properties => {
+                    let color = this._textFillFn(map.getZoom(), properties);
+                    if (!Array.isArray(color)) {
+                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
+                    }
+                    if (color.length === 3) {
+                        color.push(255);
+                    }
+                    return color;
+                }
+            },
+            {
+                attrName: 'aTextSize',
+                symbolName: 'textSize',
+                evaluate: properties => {
+                    const size = this._textSizeFn(map.getZoom(), properties);
+                    u8[0] = size;
+                    return u8[0];
+                }
+            },
+            {
+                //geometry.data 中的属性数据
+                attrName: 'aTextHaloFill',
+                //symbol中的function-type属性
+                symbolName: 'textHaloFill',
+                //
+                evaluate: properties => {
+                    let color = this._textHaloFillFn(map.getZoom(), properties);
+                    if (!Array.isArray(color)) {
+                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
+                    }
+                    if (color.length === 3) {
+                        color.push(255);
+                    }
+                    return color;
+                }
+            },
+            {
+                attrName: 'aTextHaloRadius',
+                symbolName: 'textHaloRadius',
+                evaluate: properties => {
+                    const radius = this._textHaloRadiusFn(map.getZoom(), properties);
+                    u8[0] = radius;
+                    return u8[0];
+                }
+            }
+        ];
     }
 
     createGeometry(glData) {
@@ -85,6 +152,7 @@ export default class TextPainter extends CollisionPainter {
             pack = glData[i];
             if (pack.glyphAtlas) {
                 geometry = super.createGeometry(pack);
+                geometry.properties.hasHalo = pack.properties.hasHalo;
             }
         }
         if (!geometry) {
@@ -103,14 +171,29 @@ export default class TextPainter extends CollisionPainter {
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         const symbol = this.getSymbol();
 
+        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
         const meshes = createTextMesh(this.regl, geometry, transform, symbol, enableCollision);
-        if (geometry.desc.positionSize === 2) {
-            meshes.forEach(mesh => {
-                const defines = mesh.defines;
+
+        meshes.forEach(mesh => {
+            const defines = mesh.defines;
+            if (geometry.desc.positionSize === 2) {
                 defines['IS_2D_POSITION'] = 1;
-                mesh.setDefines(defines);
-            });
-        }
+            }
+            if (geometry.data.aTextFill) {
+                defines['HAS_TEXT_FILL'] = 1;
+            }
+            if (geometry.data.aTextSize) {
+                defines['HAS_TEXT_SIZE'] = 1;
+            }
+            if (geometry.data.aTextHaloFill && mesh.material.uniforms.isHalo) {
+                defines['HAS_TEXT_HALO_FILL'] = 1;
+            }
+            if (geometry.data.aTextHaloRadius && mesh.material.uniforms.isHalo) {
+                defines['HAS_TEXT_HALO_RADIUS'] = 1;
+            }
+            mesh.setDefines(defines);
+        });
+
         if (meshes.length) {
             const isLinePlacement = symbol['textPlacement'] === 'line';
             //tags for picking
@@ -126,6 +209,13 @@ export default class TextPainter extends CollisionPainter {
 
     preparePaint(context) {
         super.preparePaint(context);
+
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes);
+
         this._projectedLinesCache = {};
         this._updateLabels(context.timestamp);
     }
@@ -346,6 +436,7 @@ export default class TextPainter extends CollisionPainter {
         const positionSize = geometry.desc.positionSize;
 
         const { aShape, aOffset, aAnchor } = geometry.properties;
+        const aTextSize = geometry.properties[PREFIX + 'aTextSize'];
         const { level } = mesh.properties;
 
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
@@ -377,13 +468,13 @@ export default class TextPainter extends CollisionPainter {
 
         let visible = true;
 
-        const textSize = mesh.properties.textSize;
         const glyphSize = 24;
 
         //updateNormal
         //normal decides whether to flip and vertical
         const firstChrIdx = meshElements[start];
         const lastChrIdx = meshElements[end - 1];
+        const textSize = aTextSize ? aTextSize[firstChrIdx] : mesh.properties.textSize;
         const normal = this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix);
         if (normal === null) {
             resetOffset(aOffset, meshElements, start, end);
@@ -522,7 +613,9 @@ export default class TextPainter extends CollisionPainter {
         const symbol = geoProps.symbol;
         const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
         const debugCollision = this.layer.options['debugCollision'];
-        const textSize = mesh.properties.textSize;
+        // const textSize = mesh.properties.textSize;
+        const aTextSize = geoProps[PREFIX + 'aTextSize'];
+        const textSize = aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize;
 
         const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
 

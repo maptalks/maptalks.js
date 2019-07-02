@@ -11,7 +11,11 @@ attribute vec2 aTexCoord;
 attribute float aOpacity;
 #endif
 
-uniform float textSize;
+#ifdef HAS_TEXT_SIZE
+    attribute float aTextSize;
+#else
+    uniform float textSize;
+#endif
 uniform float textDx;
 uniform float textDy;
 uniform float textRotation;
@@ -38,6 +42,9 @@ void main() {
         vec3 position = vec3(aPosition, 0.0);
     #else
         vec3 position = aPosition;
+    #endif
+    #ifdef HAS_TEXT_SIZE
+        float textSize = aTextSize;
     #endif
     vec2 shape = aShape / 10.0;
     vec2 texCoord = aTexCoord;

@@ -27,6 +27,7 @@ export default class VectorPack {
         });
         this.positionSize = options['only2D'] ? 2 : 3;
         this.styledVectors = [];
+        this.properties = {};
     }
 
     _check(features) {
@@ -69,7 +70,11 @@ export default class VectorPack {
         const orders = this.options.order;
         if (orders) {
             const orderFilters = [];
+            //顺序与
             for (let i = 0; i < orders.length; i++) {
+                if (!orders[i]) {
+                    continue;
+                }
                 orderFilters.push(createFilter(orders[i]));
             }
             checked = checked.sort((a, b) => {
@@ -100,7 +105,7 @@ export default class VectorPack {
         if (!features || !features.length) return Promise.resolve();
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom: this.options.zoom };
-        const symbol = this.symbol;
+        const symbol = this.symbolDef;
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
             this.count++;
@@ -166,6 +171,7 @@ export default class VectorPack {
         if (!pack) {
             return null;
         }
+        pack.properties = this.properties;
         const buffers = pack.buffers;
         delete pack.buffers;
         const vectorPack = {

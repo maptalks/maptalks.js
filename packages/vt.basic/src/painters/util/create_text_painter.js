@@ -49,7 +49,7 @@ export function createTextMesh(regl, geometry, transform, symbol, enableCollisio
         tileResolution: geometry.properties.tileResolution,
         tileRatio: geometry.properties.tileRatio
     };
-    setMeshUniforms(uniforms, symbol);
+    setMeshUniforms(geometry, uniforms, symbol);
 
     let transparent = false;
     if (symbol['textOpacity'] < 1) {
@@ -70,7 +70,7 @@ export function createTextMesh(regl, geometry, transform, symbol, enableCollisio
     mesh.setLocalTransform(transform);
     //设置ignoreCollision，此mesh略掉collision检测
     //halo mesh会进行collision检测，并统一更新elements
-    if (symbol['textHaloRadius']) {
+    if (uniforms['isHalo']) {
         mesh.properties.isHalo = true;
     }
     if (enableCollision) {
@@ -80,7 +80,7 @@ export function createTextMesh(regl, geometry, transform, symbol, enableCollisio
     }
     meshes.push(mesh);
 
-    if (symbol['textHaloRadius']) {
+    if (uniforms['isHalo']) {
         uniforms.isHalo = 0;
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
@@ -158,13 +158,15 @@ function prepareGeometry(geometry, enableCollision) {
     }
 }
 
-function setMeshUniforms(uniforms, symbol) {
+function setMeshUniforms(geometry, uniforms, symbol) {
     setUniformFromSymbol(uniforms, 'textOpacity', symbol, 'textOpacity');
     setUniformFromSymbol(uniforms, 'textFill', symbol, 'textFill', createColorSetter());
     setUniformFromSymbol(uniforms, 'textHaloFill', symbol, 'textHaloFill', createColorSetter());
     setUniformFromSymbol(uniforms, 'textHaloBlur', symbol, 'textHaloBlur');
-    if (symbol['textHaloRadius']) {
+    if (symbol['textHaloRadius'] && !geometry.data['aTextHaloRadius']) {
         setUniformFromSymbol(uniforms, 'textHaloRadius', symbol, 'textHaloRadius');
+        uniforms.isHalo = 1;
+    } else if (geometry.data['aTextHaloRadius'] && geometry.properties.hasHalo) {
         uniforms.isHalo = 1;
     }
     setUniformFromSymbol(uniforms, 'textHaloOpacity', symbol, 'textHaloOpacity');
