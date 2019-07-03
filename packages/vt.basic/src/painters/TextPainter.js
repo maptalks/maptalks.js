@@ -12,10 +12,8 @@ import pickingVert from './glsl/text.picking.vert';
 import linePickingVert from './glsl/text.line.picking.vert';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
-import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GLYPH_SIZE, GAMMA_SCALE } from './util/create_text_painter';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
-import { interpolated } from '@maptalks/function-type';
-import Color from 'color';
+import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GLYPH_SIZE, GAMMA_SCALE, getTextFnTypeConfig } from './util/create_text_painter';
+import { updateGeometryFnTypeAttrib } from './util/fn_type_util';
 
 const shaderFilter0 = mesh => {
     return mesh.uniforms['level'] === 0 && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
@@ -75,89 +73,22 @@ export default class TextPainter extends CollisionPainter {
         //     e.preventDefault();
 
         // }, false);
-        this._fnTypeConfig = this._getFnTypeConfig();
+        this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
         this._colorCache = {};
     }
 
-    _getFnTypeConfig() {
-        this._textFillFn = interpolated(this.symbolDef['textFill']);
-        this._textSizeFn = interpolated(this.symbolDef['textSize']);
-        this._textHaloFillFn = interpolated(this.symbolDef['textHaloFill']);
-        this._textHaloRadiusFn = interpolated(this.symbolDef['textHaloRadius']);
-        const map = this.getMap();
-        const u8 = new Uint8Array(1);
-        return [
-            {
-                //geometry.data 中的属性数据
-                attrName: 'aTextFill',
-                //symbol中的function-type属性
-                symbolName: 'textFill',
-                //
-                evaluate: properties => {
-                    let color = this._textFillFn(map.getZoom(), properties);
-                    if (!Array.isArray(color)) {
-                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
-                    }
-                    if (color.length === 3) {
-                        color.push(255);
-                    }
-                    return color;
-                }
-            },
-            {
-                attrName: 'aTextSize',
-                symbolName: 'textSize',
-                evaluate: properties => {
-                    const size = this._textSizeFn(map.getZoom(), properties);
-                    u8[0] = size;
-                    return u8[0];
-                }
-            },
-            {
-                //geometry.data 中的属性数据
-                attrName: 'aTextHaloFill',
-                //symbol中的function-type属性
-                symbolName: 'textHaloFill',
-                //
-                evaluate: properties => {
-                    let color = this._textHaloFillFn(map.getZoom(), properties);
-                    if (!Array.isArray(color)) {
-                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
-                    }
-                    if (color.length === 3) {
-                        color.push(255);
-                    }
-                    return color;
-                }
-            },
-            {
-                attrName: 'aTextHaloRadius',
-                symbolName: 'textHaloRadius',
-                evaluate: properties => {
-                    const radius = this._textHaloRadiusFn(map.getZoom(), properties);
-                    u8[0] = radius;
-                    return u8[0];
-                }
-            }
-        ];
-    }
 
     createGeometry(glData) {
         if (!glData.length) {
             return null;
         }
+        //pointpack因为可能有splitSymbol，所以返回的glData是个数组，有多个pack
         let geometry;
         let pack;
         for (let i = 0; i < glData.length; i++) {
             pack = glData[i];
             if (pack.glyphAtlas) {
                 geometry = super.createGeometry(pack);
-                geometry.properties.hasHalo = pack.properties.hasHalo;
-                const aTextSize = geometry.data.aTextSize;
-                if (aTextSize) {
-                    //for collision
-                    geometry.properties.aTextSize = new aTextSize.constructor(aTextSize);
-                }
             }
         }
         if (!geometry) {
@@ -176,29 +107,7 @@ export default class TextPainter extends CollisionPainter {
         const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         const symbol = this.getSymbol();
 
-        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
-        const meshes = createTextMesh(this.regl, geometry, transform, symbol, enableCollision);
-
-        meshes.forEach(mesh => {
-            const defines = mesh.defines;
-            if (geometry.desc.positionSize === 2) {
-                defines['IS_2D_POSITION'] = 1;
-            }
-            if (geometry.data.aTextFill) {
-                defines['HAS_TEXT_FILL'] = 1;
-            }
-            if (geometry.data.aTextSize) {
-                defines['HAS_TEXT_SIZE'] = 1;
-            }
-            if (geometry.data.aTextHaloFill && mesh.material.uniforms.isHalo) {
-                defines['HAS_TEXT_HALO_FILL'] = 1;
-            }
-            if (geometry.data.aTextHaloRadius && mesh.material.uniforms.isHalo) {
-                defines['HAS_TEXT_HALO_RADIUS'] = 1;
-            }
-            mesh.setDefines(defines);
-        });
-
+        const meshes = createTextMesh(this.regl, geometry, transform, symbol, this._fnTypeConfig, enableCollision);
         if (meshes.length) {
             const isLinePlacement = symbol['textPlacement'] === 'line';
             //tags for picking
@@ -726,7 +635,7 @@ export default class TextPainter extends CollisionPainter {
 
         this.renderer = new reshader.Renderer(regl);
 
-        const { uniforms, extraCommandProps } = createTextShader(this.layer);
+        const { uniforms, extraCommandProps } = createTextShader(this.layer, this.sceneConfig);
 
         this._shaderAlongLine = new reshader.MeshShader({
             vert: vertAlongLine, frag,

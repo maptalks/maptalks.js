@@ -62,8 +62,8 @@ export function getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRa
     //max
     vec2.set(MAX, Math.max(tl[0], tr[0], bl[0], br[0]), Math.max(tl[1], tr[1], bl[1], br[1]));
     vec4.set(out,
-        projAnchor[0] + MIN[0] + dxdy[0], projAnchor[1] + MIN[1] + dxdy[1],
-        projAnchor[0] + MAX[0] + dxdy[0], projAnchor[1] + MAX[1] + dxdy[1],
+        projAnchor[0] + MIN[0] + dxdy[0], projAnchor[1] + MIN[1] - dxdy[1],
+        projAnchor[0] + MAX[0] + dxdy[0], projAnchor[1] + MAX[1] - dxdy[1],
     );
 }
 

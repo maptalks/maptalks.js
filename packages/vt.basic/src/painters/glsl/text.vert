@@ -17,8 +17,17 @@ attribute float aOpacity;
 #else
     uniform float textSize;
 #endif
-uniform float textDx;
-uniform float textDy;
+
+#ifdef HAS_TEXT_DX
+    attribute float aTextDx;
+#else
+    uniform float textDx;
+#endif
+#ifdef HAS_TEXT_DY
+    attribute float aTextDy;
+#else
+    uniform float textDy;
+#endif
 uniform float textRotation;
 
 uniform float cameraToCenterDistance;
@@ -64,6 +73,12 @@ void main() {
     #endif
     #ifdef HAS_TEXT_SIZE
         float textSize = aTextSize;
+    #endif
+    #ifdef HAS_TEXT_DX
+        float textDx = aTextDx;
+    #endif
+    #ifdef HAS_TEXT_DY
+        float textDy = aTextDy;
     #endif
     vec2 shape = aShape / 10.0;
     vec2 texCoord = aTexCoord;

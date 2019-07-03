@@ -1,5 +1,8 @@
 import { mat4, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter } from '../../Util';
+import { prepareFnTypeData } from './fn_type_util';
+import { interpolated } from '@maptalks/function-type';
+import Color from 'color';
 
 const GAMMA_SCALE = 0.79;
 const GLYPH_SIZE = 24;
@@ -23,7 +26,7 @@ const DEFAULT_UNIFORMS = {
 
 export { DEFAULT_UNIFORMS, GAMMA_SCALE, GLYPH_SIZE };
 
-export function createTextMesh(regl, geometry, transform, symbol, enableCollision) {
+export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision) {
     const meshes = [];
 
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
@@ -37,12 +40,26 @@ export function createTextMesh(regl, geometry, transform, symbol, enableCollisio
     if (symbol['textSize'] === 0 || symbol['textOpacity'] === 0) {
         return meshes;
     }
+    prepareFnTypeData(geometry, geometry.properties.features, symbol.def || symbol, fnTypeConfig);
     geometry.properties.symbol = symbol;
 
 
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
         prepareGeometry(geometry, enableCollision);
+        const { aTextSize, aTextDx, aTextDy } = geometry.data;
+        if (aTextSize) {
+            //for collision
+            geometry.properties.aTextSize = new aTextSize.constructor(aTextSize);
+        }
+        if (aTextDx) {
+            //for collision
+            geometry.properties.aTextDx = new aTextDx.constructor(aTextDx);
+        }
+        if (aTextDy) {
+            //for collision
+            geometry.properties.aTextDy = new aTextDy.constructor(aTextDy);
+        }
     }
 
     const uniforms = {
@@ -96,6 +113,33 @@ export function createTextMesh(regl, geometry, transform, symbol, enableCollisio
         mesh.setLocalTransform(transform);
         meshes.push(mesh);
     }
+
+    meshes.forEach(mesh => {
+        const defines = mesh.defines;
+        if (geometry.desc.positionSize === 2) {
+            defines['IS_2D_POSITION'] = 1;
+        }
+        if (geometry.data.aTextFill) {
+            defines['HAS_TEXT_FILL'] = 1;
+        }
+        if (geometry.data.aTextSize) {
+            defines['HAS_TEXT_SIZE'] = 1;
+        }
+        if (geometry.data.aTextHaloFill && mesh.material.uniforms.isHalo) {
+            defines['HAS_TEXT_HALO_FILL'] = 1;
+        }
+        if (geometry.data.aTextHaloRadius && mesh.material.uniforms.isHalo) {
+            defines['HAS_TEXT_HALO_RADIUS'] = 1;
+        }
+        if (geometry.properties.hasTextDx) {
+            defines['HAS_TEXT_DX'] = 1;
+        }
+        if (geometry.properties.hasTextDy) {
+            defines['HAS_TEXT_DY'] = 1;
+        }
+        mesh.setDefines(defines);
+    });
+
     return meshes;
 }
 
@@ -187,7 +231,7 @@ function setMeshUniforms(geometry, uniforms, symbol) {
     setUniformFromSymbol(uniforms, 'textRotation', symbol, 'textRotation', v => v * Math.PI / 180);
 }
 
-export function createTextShader(layer) {
+export function createTextShader(layer, sceneConfig) {
     const renderer = layer.getRenderer();
     const canvas = renderer.canvas;
     const viewport = {
@@ -277,12 +321,95 @@ export function createTextShader(layer) {
         },
         depth: {
             enable: true,
-            range: this.sceneConfig.depthRange || [0, 1],
-            func: this.sceneConfig.depthFunc || 'always'
+            range: sceneConfig.depthRange || [0, 1],
+            func: sceneConfig.depthFunc || 'always'
         },
     };
     return {
         uniforms,
         extraCommandProps
     };
+}
+
+export function getTextFnTypeConfig(map, symbolDef) {
+    const textFillFn = interpolated(symbolDef['textFill']);
+    const textSizeFn = interpolated(symbolDef['textSize']);
+    const textHaloFillFn = interpolated(symbolDef['textHaloFill']);
+    const textHaloRadiusFn = interpolated(symbolDef['textHaloRadius']);
+    const textDxFn = interpolated(symbolDef['textDx']);
+    const textDyFn = interpolated(symbolDef['textDy']);
+    const colorCache = {};
+    const u8 = new Uint16Array(1);
+    return [
+        {
+            //geometry.data 中的属性数据
+            attrName: 'aTextFill',
+            //symbol中的function-type属性
+            symbolName: 'textFill',
+            //
+            evaluate: properties => {
+                let color = textFillFn(map.getZoom(), properties);
+                if (!Array.isArray(color)) {
+                    color = colorCache[color] = colorCache[color] || Color(color).array();
+                }
+                if (color.length === 3) {
+                    color.push(255);
+                }
+                return color;
+            }
+        },
+        {
+            attrName: 'aTextSize',
+            symbolName: 'textSize',
+            evaluate: properties => {
+                const size = textSizeFn(map.getZoom(), properties);
+                u8[0] = size;
+                return u8[0];
+            }
+        },
+        {
+            //geometry.data 中的属性数据
+            attrName: 'aTextHaloFill',
+            //symbol中的function-type属性
+            symbolName: 'textHaloFill',
+            //
+            evaluate: properties => {
+                let color = textHaloFillFn(map.getZoom(), properties);
+                if (!Array.isArray(color)) {
+                    color = colorCache[color] = colorCache[color] || Color(color).array();
+                }
+                if (color.length === 3) {
+                    color.push(255);
+                }
+                return color;
+            }
+        },
+        {
+            attrName: 'aTextHaloRadius',
+            symbolName: 'textHaloRadius',
+            evaluate: properties => {
+                const radius = textHaloRadiusFn(map.getZoom(), properties);
+                u8[0] = radius;
+                return u8[0];
+            }
+        },
+        {
+            attrName: 'aTextDx',
+            symbolName: 'textDx',
+            evaluate: properties => {
+                const x = textDxFn(map.getZoom(), properties);
+                u8[0] = x;
+                return u8[0];
+            }
+        },
+        {
+            attrName: 'aTextDy',
+            symbolName: 'textDy',
+            evaluate: properties => {
+                const y = textDyFn(map.getZoom(), properties);
+                u8[0] = y;
+                return u8[0];
+            }
+        }
+    ];
 }

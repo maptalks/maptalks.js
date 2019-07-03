@@ -38,7 +38,10 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
             4.0);
     }
 
-    const dxdy = vec2.set(DXDY, symbol['textDx'] || 0, symbol['textDy'] || 0);
+    const { aTextDx, aTextDy } = mesh.geometry.properties;
+    const textDx = aTextDx ? aTextDx[i] : symbol['textDx'];
+    const textDy = aTextDy ? aTextDy[i] : symbol['textDy'];
+    const dxdy = vec2.set(DXDY, textDx || 0, textDy || 0);
 
     if (!isAlongLine) {
         const { aShape } = geoProps;

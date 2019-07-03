@@ -7,7 +7,7 @@ import pickingVert from './glsl/marker.picking.vert';
 import { getIconBox } from './util/get_icon_box';
 import { getLabelBox } from './util/get_label_box';
 import { setUniformFromSymbol, isNil } from '../Util';
-import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GLYPH_SIZE, GAMMA_SCALE } from './util/create_text_painter';
+import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GLYPH_SIZE, GAMMA_SCALE, getTextFnTypeConfig } from './util/create_text_painter';
 
 import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
@@ -52,6 +52,7 @@ class IconPainter extends CollisionPainter {
 
         this.propAllowOverlap = 'markerAllowOverlap';
         this.propIgnorePlacement = 'markerIgnorePlacement';
+        this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
     }
 
     createGeometry(glData) {
@@ -72,8 +73,8 @@ class IconPainter extends CollisionPainter {
             } else if (geometry.properties.glyphAtlas) {
                 const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
                 const symbol = this.getSymbol();
-                symbol['isIconText'] = true;
-                const mesh = textMesh = createTextMesh(this.regl, geometry, transform, symbol, enableCollision);
+                this.symbolDef['isIconText'] = symbol['isIconText'] = true;
+                const mesh = textMesh = createTextMesh(this.regl, geometry, transform, symbol, this._textFnTypeConfig, enableCollision);
                 if (mesh.length) meshes.push(...mesh);
             }
         }
@@ -492,7 +493,7 @@ class IconPainter extends CollisionPainter {
             }
         });
 
-        const { uniforms, extraCommandProps } = createTextShader(this.layer);
+        const { uniforms, extraCommandProps } = createTextShader(this.layer, this.sceneConfig);
         //icon的text在intel gpu下不会引起崩溃，可以关闭模板
         extraCommandProps.stencil.enable = false;
 

@@ -43,7 +43,7 @@ export default class BasicPainter extends Painter {
             iconAtlas,
             glyphAtlas
         };
-
+        extend(geometry.properties, glData.properties);
         return geometry;
     }
 }
