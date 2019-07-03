@@ -55,24 +55,26 @@ function createPainterPlugin(type, Painter) {
         },
 
         paintTile: function (context) {
-            var tileCache = context.tileCache,
+            var layer = context.layer,
+                tileCache = context.tileCache,
                 tileData = context.tileData,
                 tileInfo = context.tileInfo,
                 tileCenter = context.tileCenter,
                 tileTransform = tileData.transform,
                 tileZoom = context.tileZoom,
-                sceneConfig = context.sceneConfig;
+                sceneConfig = context.sceneConfig,
+                pluginIndex = context.pluginIndex;
             var painter = this.painter;
             if (!painter) {
                 return {
                     redraw: false
                 };
             }
-            var key = tileInfo.dupKey;
+            var key = layer.getId() + '-' + pluginIndex + '-' + tileInfo.dupKey;
             let geometry = tileCache.geometry;
             var features = tileData.features;
             if (!geometry) {
-                if (this._throttle(context.layer, key)) {
+                if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
                 var glData = tileData.data;
@@ -103,7 +105,7 @@ function createPainterPlugin(type, Painter) {
             }
             var mesh = this._getMesh(key);
             if (!mesh) {
-                if (this._throttle(context.layer, key)) {
+                if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
                 mesh = painter.createMesh(geometry, tileTransform, { tileCenter, tileZoom });
