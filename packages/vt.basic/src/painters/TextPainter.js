@@ -643,12 +643,16 @@ export default class TextPainter extends CollisionPainter {
             extraCommandProps
         });
         let commandProps = extraCommandProps;
-        if (extraCommandProps && extraCommandProps.stencil && extraCommandProps.stencil.enable) {
+        if (extraCommandProps && extraCommandProps.stencil && extraCommandProps.stencil.func.cmp === '<') {
             //为解决intel gpu crash，stencil可能会被启用
             //但只有line-text渲染才需要，普通文字渲染不用打开stencil
+            // commandProps = extend({}, extraCommandProps);
+            // commandProps.stencil = extend({}, extraCommandProps.stencil);
+            // commandProps.stencil.enable = false;
             commandProps = extend({}, extraCommandProps);
             commandProps.stencil = extend({}, extraCommandProps.stencil);
-            commandProps.stencil.enable = false;
+            commandProps.stencil.func = extend({}, extraCommandProps.stencil.func);
+            commandProps.stencil.func.cmp = '<=';
         }
         this.shader = new reshader.MeshShader({
             vert, frag,

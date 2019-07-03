@@ -288,11 +288,11 @@ export function createTextShader(layer, sceneConfig) {
     const extraCommandProps = {
         viewport,
         stencil: { //fix #94, intel显卡的崩溃和blending关系比较大，开启stencil来避免blending
-            enable: renderer.isEnableWorkAround('win-intel-gpu-crash'),
+            enable: true,
             mask: 0xFF,
             func: {
                 //halo的stencil ref更大，允许文字填充在halo上绘制
-                cmp: '<',
+                cmp: renderer.isEnableWorkAround('win-intel-gpu-crash') ? '<' : '<=',
                 ref: (context, props) => {
                     return props.isHalo + 1;
                 },
