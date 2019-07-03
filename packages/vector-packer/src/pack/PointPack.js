@@ -6,7 +6,7 @@ import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
 import { getGlyphQuads, getIconQuads } from './util/quads';
 import { allowsVerticalWritingMode } from './util/script_detection';
-import { interpolated } from '@maptalks/function-type';
+import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
 import Color from 'color';
 
@@ -140,6 +140,26 @@ export default class PointPack extends VectorPack {
         if (isFnTypeSymbol('textSpacing', this.symbolDef)) {
             this._textSpacingFn = interpolated(this.symbolDef['textSpacing']);
         }
+
+        if (isFnTypeSymbol('markerWidth', this.symbolDef)) {
+            this._markerWidthFn = interpolated(this.symbolDef['markerWidth']);
+        }
+        if (isFnTypeSymbol('markerHeight', this.symbolDef)) {
+            this._markerHeightFn = interpolated(this.symbolDef['markerHeight']);
+        }
+
+        if (isFnTypeSymbol('markerDx', this.symbolDef)) {
+            this._markerDxFn = interpolated(this.symbolDef['markerDx']);
+        }
+        if (isFnTypeSymbol('markerDy', this.symbolDef)) {
+            this._markerDyFn = interpolated(this.symbolDef['markerDy']);
+        }
+        if (isFnTypeSymbol('markerSpacing', this.symbolDef)) {
+            this._markerSpacingFn = interpolated(this.symbolDef['markerSpacing']);
+        }
+        if (isFnTypeSymbol('markerPlacement', this.symbolDef)) {
+            this._markerPlacementFn = piecewiseConstant(this.symbolDef['markerPlacement']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs, glyphReqs) {
@@ -226,7 +246,36 @@ export default class PointPack extends VectorPack {
     }
 
     _getMarkerFnTypeFormats() {
-
+        const formats = [];
+        if (this._markerWidthFn) {
+            formats.push({
+                type: Uint8Array,
+                width: 1,
+                name: 'aMarkerWidth'
+            });
+        }
+        if (this._markerHeightFn) {
+            formats.push({
+                type: Uint8Array,
+                width: 1,
+                name: 'aMarkerHeight'
+            });
+        }
+        if (this._markerDxFn) {
+            formats.push({
+                type: Int8Array,
+                width: 1,
+                name: 'aMarkerDx'
+            });
+        }
+        if (this._markerDyFn) {
+            formats.push({
+                type: Int8Array,
+                width: 1,
+                name: 'aMarkerDy'
+            });
+        }
+        return formats;
     }
 
     createDataPack() {
@@ -258,18 +307,20 @@ export default class PointPack extends VectorPack {
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;
+        const properties = point.feature.properties;
         // const size = point.size;
-        const alongLine = symbol['textPlacement'] === 'line' && !symbol['isIconText'] || symbol['markerPlacement'] === 'line';
+        const alongLine = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
         const isText = symbol['textName'] !== undefined;
         const isVertical = isText && alongLine && allowsVerticalWritingMode(point.getIconAndGlyph().glyph.text) ? 1 : 0;
-        let quads;
 
+        let quads;
         let textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy;
+        let markerWidth, markerHeight, markerDx, markerDy;
+
         if (isText) {
             const font = point.getIconAndGlyph().glyph.font;
             quads = getGlyphQuads(shape.horizontal, alongLine, this.glyphAtlas.positions[font]);
             //function type data
-            const properties = point.feature.properties;
             if (this._textFillFn) {
                 textFill = this._textFillFn(null, properties);
                 if (!Array.isArray(textFill)) {
@@ -302,15 +353,19 @@ export default class PointPack extends VectorPack {
             }
         } else {
             quads = getIconQuads(shape);
-        }
-        if (textHaloRadius > 1) {
-            this.properties['hasHalo'] = 1;
-        }
-        if (Math.abs(textDx) > 1) {
-            this.properties['hasTextDx'] = 1;
-        }
-        if (Math.abs(textDy) > 1) {
-            this.properties['hasTextDy'] = 1;
+
+            if (this._markerWidthFn) {
+                markerWidth = this._markerWidthFn(null, properties);
+            }
+            if (this._markerHeightFn) {
+                markerHeight = this._markerHeightFn(null, properties);
+            }
+            if (this._markerDxFn) {
+                markerDx = this._markerDxFn(null, properties);
+            }
+            if (this._markerDyFn) {
+                markerDy = this._markerDyFn(null, properties);
+            }
         }
         const textCount = quads.length;
         const only2D = this.options['only2D'];
@@ -334,7 +389,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
                 data.push(anchor.x, anchor.y);
                 if (!only2D) {
@@ -347,7 +402,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
                 data.push(anchor.x, anchor.y);
                 if (!only2D) {
@@ -360,7 +415,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
                 data.push(anchor.x, anchor.y);
                 if (!only2D) {
@@ -373,7 +428,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
@@ -408,7 +463,9 @@ export default class PointPack extends VectorPack {
         }
     }
 
-    _fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy) {
+    _fillFnTypeData(data,
+        textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy,
+        markerWidth, markerHeight, markerDx, markerDy) {
         if (this._textFillFn) {
             data.push(...textFill);
         }
@@ -427,6 +484,41 @@ export default class PointPack extends VectorPack {
         if (this._textDyFn) {
             data.push(textDy);
         }
+        if (this._markerWidthFn) {
+            data.push(markerWidth);
+        }
+        if (this._markerHeightFn) {
+            data.push(markerHeight);
+        }
+        if (this._markerDxFn) {
+            data.push(markerDx);
+        }
+        if (this._markerDyFn) {
+            data.push(markerDy);
+        }
+        //update pack properties
+        if (textHaloRadius > 1) {
+            this.properties['hasHalo'] = 1;
+        }
+        if (Math.abs(textDx) > 1) {
+            this.properties['hasTextDx'] = 1;
+        }
+        if (Math.abs(textDy) > 1) {
+            this.properties['hasTextDy'] = 1;
+        }
+
+        if (Math.abs(markerWidth) > 1) {
+            this.properties['hasMarkerWidth'] = 1;
+        }
+        if (Math.abs(markerHeight) > 1) {
+            this.properties['hasMarkerHeight'] = 1;
+        }
+        if (Math.abs(markerDx) > 1) {
+            this.properties['hasMarkerDx'] = 1;
+        }
+        if (Math.abs(markerDy) > 1) {
+            this.properties['hasMarkerDy'] = 1;
+        }
     }
 
     _getAnchors(point, shape, scale) {
@@ -434,7 +526,8 @@ export default class PointPack extends VectorPack {
             type = point.feature.type,
             size = point.size,
             symbol = point.symbol,
-            placement = this._getPlacement(symbol);
+            placement = this._getPlacement(symbol, point);
+        const properties = feature.properties;
 
         let anchors = [];
         const glyphSize = 24;
@@ -443,9 +536,11 @@ export default class PointPack extends VectorPack {
         // textMaxBoxScale = scale * textMaxSize / glyphSize,
         // textMaxBoxScale = 1, //TODO 可能的最大的 textMaxSize / glyphSize
 
-        const spacing = (symbol['markerSpacing'] ||
-            this._textSpacingFn ? this._textSpacingFn(null, point.feature.properties) : symbol['textSpacing'] ||
-            DEFAULT_SPACING) * scale;
+        const spacing = (
+            this._markerSpacingFn ? this._markerSpacingFn(null, properties) : symbol['markerSpacing'] ||
+            this._textSpacingFn ? this._textSpacingFn(null, properties) : symbol['textSpacing'] ||
+            DEFAULT_SPACING
+        ) * scale;
         const EXTENT = this.options.EXTENT;
         if (placement === 'line') {
             let lines = feature.geometry;
@@ -510,7 +605,10 @@ export default class PointPack extends VectorPack {
         return anchors;
     }
 
-    _getPlacement(symbol) {
+    _getPlacement(symbol, point) {
+        if (this._markerPlacementFn) {
+            return this._markerPlacementFn(null, point.feature.properties);
+        }
         return symbol.markerPlacement || symbol.textPlacement;
     }
 }

@@ -2,6 +2,7 @@ import { vec2, vec3 } from '@maptalks/gl';
 import { projectPoint } from './projection';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { clamp } from '../../Util';
+import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT } from '../Constant';
 
 //temparary variables
 const ANCHOR = [], PROJ_ANCHOR = [];
@@ -37,15 +38,18 @@ export function getIconBox(out, mesh, i, matrix, map) {
     // const { aShape, aRotation, aDxDy } = geoProps;
     // const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
 
-    const { aShape, symbol } = geoProps;
-    const dxdy = vec2.set(DXDY, symbol['markerDx'] || 0, symbol['markerDy'] || 0);
+    const { aShape, symbol, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight } = geoProps;
+    const markerDx = aMarkerDx ? aMarkerDx[i] : symbol['markerDx'];
+    const markerDy = aMarkerDy ? aMarkerDy[i] : symbol['markerDy'];
+    const dxdy = vec2.set(DXDY, markerDx || 0, markerDy || 0);
 
     let tl = vec2.set(V2_0, aShape[i * 2] / 10, aShape[i * 2 + 1] / 10),
         tr = vec2.set(V2_1, aShape[i * 2 + 2] / 10, aShape[i * 2 + 3] / 10),
         bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, aShape[i * 2 + 5] / 10),
         br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, aShape[i * 2 + 7] / 10);
 
-    const { markerWidth, markerHeight } = geoProps.symbol;
+    const markerWidth = (aMarkerWidth ? aMarkerWidth[i] : symbol['markerWidth']) || DEFAULT_MARKER_WIDTH;
+    const markerHeight = (aMarkerHeight ? aMarkerHeight[i] : symbol['markerHeight']) || DEFAULT_MARKER_HEIGHT;
     const sizeScale = [markerWidth / ICON_SIZE, markerHeight / ICON_SIZE];
     vec2.mul(tl, tl, sizeScale);
     vec2.mul(tr, tr, sizeScale);

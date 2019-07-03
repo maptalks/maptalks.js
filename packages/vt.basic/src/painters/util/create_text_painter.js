@@ -1,6 +1,6 @@
 import { mat4, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter } from '../../Util';
-import { prepareFnTypeData } from './fn_type_util';
+import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
@@ -50,15 +50,15 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         const { aTextSize, aTextDx, aTextDy } = geometry.data;
         if (aTextSize) {
             //for collision
-            geometry.properties.aTextSize = new aTextSize.constructor(aTextSize);
+            geometry.properties.aTextSize = geometry.properties[PREFIX + 'aTextSize'] || new aTextSize.constructor(aTextSize);
         }
         if (aTextDx) {
             //for collision
-            geometry.properties.aTextDx = new aTextDx.constructor(aTextDx);
+            geometry.properties.aTextDx = geometry.properties[PREFIX + 'aTextDx'] || new aTextDx.constructor(aTextDx);
         }
         if (aTextDy) {
             //for collision
-            geometry.properties.aTextDy = new aTextDy.constructor(aTextDy);
+            geometry.properties.aTextDy = geometry.properties[PREFIX + 'aTextDy'] || new aTextDy.constructor(aTextDy);
         }
     }
 
@@ -339,7 +339,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
     const textDxFn = interpolated(symbolDef['textDx']);
     const textDyFn = interpolated(symbolDef['textDy']);
     const colorCache = {};
-    const u8 = new Uint16Array(1);
+    const u8 = new Int16Array(1);
     return [
         {
             //geometry.data 中的属性数据

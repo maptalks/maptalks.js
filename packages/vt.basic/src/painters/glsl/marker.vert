@@ -12,10 +12,26 @@ attribute vec2 aTexCoord;
 attribute float aOpacity;
 #endif
 
-uniform float markerWidth;
-uniform float markerHeight;
-uniform float markerDx;
-uniform float markerDy;
+#ifdef HAS_MARKER_WIDTH
+    attribute float aMarkerWidth;
+#else
+    uniform float markerWidth;
+#endif
+#ifdef HAS_MARKER_HEIGHT
+    attribute float aMarkerHeight;
+#else
+    uniform float markerHeight;
+#endif
+#ifdef HAS_MARKER_DX
+    attribute float aMarkerDx;
+#else
+    uniform float markerDx;
+#endif
+#ifdef HAS_MARKER_DY
+    attribute float aMarkerDy;
+#else
+    uniform float markerDy;
+#endif
 uniform float markerRotation;
 
 uniform float cameraToCenterDistance;
@@ -41,6 +57,18 @@ void main() {
         vec3 position = vec3(aPosition, 0.0);
     #else
         vec3 position = aPosition;
+    #endif
+    #ifdef HAS_MARKER_WIDTH
+        float markerWidth = aMarkerWidth;
+    #endif
+    #ifdef HAS_MARKER_HEIGHT
+        float markerHeight = aMarkerHeight;
+    #endif
+    #ifdef HAS_MARKER_DX
+        float markerDx = aMarkerDx;
+    #endif
+    #ifdef HAS_MARKER_DY
+        float markerDy = aMarkerDy;
     #endif
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
     float distance = gl_Position.w;

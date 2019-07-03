@@ -12,6 +12,9 @@ import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GLYPH_SIZE, GAMMA_S
 import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
 import textPickingVert from './glsl/text.picking.vert';
+import { prepareFnTypeData, updateGeometryFnTypeAttrib, PREFIX } from './util/fn_type_util';
+import { interpolated } from '@maptalks/function-type';
+import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT } from './Constant';
 
 const BOX_ELEMENT_COUNT = 6;
 
@@ -36,8 +39,8 @@ const defaultUniforms = {
     'pitchWithMap': 0,
     'markerPerspectiveRatio': 0,
     'rotateWithMap': 0,
-    'markerWidth': 15,
-    'markerHeight': 15,
+    'markerWidth': DEFAULT_MARKER_WIDTH,
+    'markerHeight': DEFAULT_MARKER_HEIGHT,
     'markerDx': 0,
     'markerDy': 0,
     'markerRotation': 0
@@ -53,6 +56,55 @@ class IconPainter extends CollisionPainter {
         this.propAllowOverlap = 'markerAllowOverlap';
         this.propIgnorePlacement = 'markerIgnorePlacement';
         this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
+        this._iconFnTypeConfig = this._getIconFnTypeConfig();
+    }
+
+    _getIconFnTypeConfig() {
+        const map = this.getMap();
+        const symbolDef = this.symbolDef;
+        const markerWidthFn = interpolated(symbolDef['markerWidth']);
+        const markerHeightFn = interpolated(symbolDef['markerHeight']);
+        const markerDxFn = interpolated(symbolDef['markerDx']);
+        const markerDyFn = interpolated(symbolDef['markerDy']);
+        const u8 = new Int16Array(1);
+        return [
+            {
+                attrName: 'aMarkerWidth',
+                symbolName: 'markerWidth',
+                evaluate: properties => {
+                    const x = markerWidthFn(map.getZoom(), properties);
+                    u8[0] = x;
+                    return u8[0];
+                }
+            },
+            {
+                attrName: 'aMarkerHeight',
+                symbolName: 'markerHeight',
+                evaluate: properties => {
+                    const x = markerHeightFn(map.getZoom(), properties);
+                    u8[0] = x;
+                    return u8[0];
+                }
+            },
+            {
+                attrName: 'aMarkerDx',
+                symbolName: 'markerDx',
+                evaluate: properties => {
+                    const x = markerDxFn(map.getZoom(), properties);
+                    u8[0] = x;
+                    return u8[0];
+                }
+            },
+            {
+                attrName: 'aMarkerDy',
+                symbolName: 'markerDy',
+                evaluate: properties => {
+                    const y = markerDyFn(map.getZoom(), properties);
+                    u8[0] = y;
+                    return u8[0];
+                }
+            },
+        ];
     }
 
     createGeometry(glData) {
@@ -68,6 +120,24 @@ class IconPainter extends CollisionPainter {
         for (let i = 0; i < geometries.length; i++) {
             const geometry = geometries[i];
             if (geometry.properties.iconAtlas) {
+                prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._iconFnTypeConfig);
+                const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy } = geometry.data;
+                if (aMarkerWidth) {
+                    //for collision
+                    geometry.properties.aMarkerWidth = geometry.properties[PREFIX + 'aMarkerWidth'] || new aMarkerWidth.constructor(aMarkerWidth);
+                }
+                if (aMarkerHeight) {
+                    //for collision
+                    geometry.properties.aMarkerHeight = geometry.properties[PREFIX + 'aMarkerHeight'] || new aMarkerHeight.constructor(aMarkerHeight);
+                }
+                if (aMarkerDx) {
+                    //for collision
+                    geometry.properties.aMarkerDx = geometry.properties[PREFIX + 'aMarkerDx'] || new aMarkerDx.constructor(aMarkerDx);
+                }
+                if (aMarkerDy) {
+                    //for collision
+                    geometry.properties.aMarkerDy = geometry.properties[PREFIX + 'aMarkerDy'] || new aMarkerDy.constructor(aMarkerDy);
+                }
                 const mesh = iconMesh = this._createIconMesh(geometries[i], transform);
                 if (mesh) meshes.push(mesh);
             } else if (geometry.properties.glyphAtlas) {
@@ -156,6 +226,18 @@ class IconPainter extends CollisionPainter {
         if (geometry.desc.positionSize === 2) {
             defines['IS_2D_POSITION'] = 1;
         }
+        if (geometry.data.aMarkerWidth) {
+            defines['HAS_MARKER_WIDTH'] = 1;
+        }
+        if (geometry.data.aMarkerHeight) {
+            defines['HAS_MARKER_HEIGHT'] = 1;
+        }
+        if (geometry.properties.hasMarkerDx) {
+            defines['HAS_MARKER_DX'] = 1;
+        }
+        if (geometry.properties.hasMarkerDy) {
+            defines['HAS_MARKER_DY'] = 1;
+        }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
@@ -163,7 +245,16 @@ class IconPainter extends CollisionPainter {
 
     preparePaint(context) {
         super.preparePaint(context);
+
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        updateGeometryFnTypeAttrib(this._textFnTypeConfig, meshes);
+        updateGeometryFnTypeAttrib(this._iconFnTypeConfig, meshes);
+
         this._updateIconCollision(context.timestamp);
+
     }
 
     callCurrentTileShader(uniforms) {
@@ -235,12 +326,21 @@ class IconPainter extends CollisionPainter {
     }
 
     _updateIconAndText(meshes) {
-        const fn = (textElements, iconElements, textVisibleElements, iconVisibleElements, mesh, start, end, mvpMatrix, iconIndex) => {
-            const boxCount = (end - start) / 6;
-            const visible = this.updateBoxCollisionFading(mesh, textElements, boxCount, start, end, mvpMatrix, iconIndex);
+        const fn = (textElements, iconElements, textVisibleElements, iconVisibleElements, iconMesh, textMesh, start, end, mvpMatrix, iconIndex) => {
+
+            //icon的element值，是text的element值处于text的char count
+            let visible;
+            if (!textMesh) {
+                visible = this.updateBoxCollisionFading(iconMesh, iconElements, 1, start, end, mvpMatrix, iconIndex);
+            } else {
+                const chrCount = (end - start) / BOX_ELEMENT_COUNT;
+                visible = this.updateBoxCollisionFading(textMesh, textElements, chrCount, start, end, mvpMatrix, iconIndex);
+            }
             if (visible) {
-                for (let i = start; i < end; i++) {
-                    textVisibleElements.push(textElements[i]);
+                if (textMesh) {
+                    for (let i = start; i < end; i++) {
+                        textVisibleElements.push(textElements[i]);
+                    }
                 }
                 for (let ii = 0; ii < BOX_ELEMENT_COUNT; ii++) {
                     iconVisibleElements.push(iconElements[iconIndex * BOX_ELEMENT_COUNT + ii]);
@@ -249,27 +349,43 @@ class IconPainter extends CollisionPainter {
         };
         for (let m = 0; m < meshes.length; m++) {
             const iconMesh = meshes[m];
+            if (!iconMesh) {
+                continue;
+            }
             const textMesh = iconMesh._textMesh;
-            const meshKey = textMesh.properties.meshKey;
+            const meshKey = textMesh ? textMesh.properties.meshKey : iconMesh.properties.meshKey;
             this.startMeshCollision(meshKey);
-            const symbol = textMesh.geometry.properties.symbol;
-            textMesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
+            let textGeometry, textElements, textVisibleElements;
+            if (textMesh) {
+                const symbol = textMesh.geometry.properties.symbol;
+                textMesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
+                textGeometry = textMesh.geometry;
+                textElements = textGeometry.properties.elements;
+                textVisibleElements = [];
+            }
+
             const iconGeometry = iconMesh.geometry;
-            const textGeometry = textMesh.geometry;
             const iconElements = iconGeometry.properties.elements;
-            const textElements = textGeometry.properties.elements;
             const iconVisibleElements = [];
-            const textVisibleElements = [];
-            this._forEachLabel(textMesh, textElements, (mesh, start, end, mvpMatrix, index) => {
-                fn(textElements, iconElements, textVisibleElements, iconVisibleElements, mesh, start, end, mvpMatrix, index);
-            });
+            if (textMesh) {
+                this._forEachLabel(textMesh, textElements, (mesh, start, end, mvpMatrix, index) => {
+                    fn(textElements, iconElements, textVisibleElements, iconVisibleElements, iconMesh, textMesh, start, end, mvpMatrix, index);
+                });
+            } else {
+                this._forEachIcon(iconMesh, iconElements, (mesh, start, end, mvpMatrix, index) => {
+                    fn(textElements, iconElements, textVisibleElements, iconVisibleElements, iconMesh, textMesh, start, end, mvpMatrix, index);
+                });
+            }
+
             iconGeometry.setElements(new iconGeometry.properties.elemCtor(iconVisibleElements));
             if (iconGeometry.properties.aOpacity._dirty) {
                 iconGeometry.updateData('aOpacity', iconGeometry.properties.aOpacity);
             }
-            textGeometry.setElements(new textGeometry.properties.elemCtor(textVisibleElements));
-            if (textGeometry.properties.aOpacity._dirty) {
-                textGeometry.updateData('aOpacity', textGeometry.properties.aOpacity);
+            if (textGeometry) {
+                textGeometry.setElements(new textGeometry.properties.elemCtor(textVisibleElements));
+                if (textGeometry.properties.aOpacity._dirty) {
+                    textGeometry.updateData('aOpacity', textGeometry.properties.aOpacity);
+                }
             }
             this.endMeshCollision(meshKey);
         }
@@ -330,7 +446,7 @@ class IconPainter extends CollisionPainter {
         const map = this.getMap();
         const debugCollision = this.layer.options['debugCollision'];
         const iconMesh = mesh._iconMesh;
-        const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
+
         const z = mesh.geometry.properties.z;
         let boxes;
         let hasCollides = false;
@@ -340,6 +456,7 @@ class IconPainter extends CollisionPainter {
             boxes = getIconBox([], mesh, firstBoxIdx, matrix, map);
             hasCollides = this.isCollides(boxes, z) !== 0;
         } else {
+            const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
             boxes = [];
 
             let offscreenCount = 0;
