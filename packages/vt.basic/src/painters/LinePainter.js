@@ -43,6 +43,8 @@ class LinePainter extends BasicPainter {
             tileExtent: geometry.properties.tileExtent
         };
 
+        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
+        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
         setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur');

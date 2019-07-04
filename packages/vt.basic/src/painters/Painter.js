@@ -1,6 +1,7 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes } from '@maptalks/function-type';
+import { extend } from '../Util';
 
 const TEX_CACHE_KEY = '__gl_textures';
 
@@ -214,7 +215,7 @@ class Painter {
         if (this._symbol) {
             return this._symbol;
         }
-        this._symbol = loadFunctionTypes(this.symbolDef, () => {
+        this._symbol = loadFunctionTypes(extend({}, this.symbolDef), () => {
             return [this.layer.getRenderer().getCurrentTileZoom()];
         });
         this._symbol.def = this.symbolDef;
