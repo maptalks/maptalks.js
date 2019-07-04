@@ -720,14 +720,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             renderPlugin
         };
     }
-
+    //TODO 可以把图层合并为只用这三个默认插件绘制
     _getDefaultRenderPlugin(type) {
         let renderPlugin;
         switch (type) {
         case 'native-line':
             renderPlugin = {
                 type: 'native-line',
-                dataConfig: { type: 'native-line', only2D: true }
+                dataConfig: { type: 'native-line', only2D: true },
+                sceneConfig: { depthRange: [0.9998, 0.9998] }
             };
             break;
         case 'native-point':
@@ -739,7 +740,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         case 'fill':
             renderPlugin = {
                 type: 'fill',
-                dataConfig: { type: 'fill', only2D: true }
+                dataConfig: { type: 'fill', only2D: true },
+                sceneConfig: { depthRange: [0.9999, 0.9999] }
             };
             break;
         default:
