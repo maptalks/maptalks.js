@@ -16,6 +16,20 @@ const plugins = production ? [
             }
         }
     })] : [];
+//worker.js中的global可能被webpack替换为全局变量，造成worker代码执行失败，所以这里统一把typeof global替换为typeof undefined
+function removeGlobal() {
+    return {
+        transform(code, id) {
+            if (id.indexOf('worker.js') === -1) return null;
+            const commonjsCode = /typeof global/g;
+            var transformedCode = code.replace(commonjsCode, 'typeof undefined');
+            return {
+                code: transformedCode,
+                map: { mappings: '' }
+            };
+        }
+    };
+}
 
 module.exports = [{
     input: 'src/worker/index.js',
@@ -102,7 +116,8 @@ if (!workerLoaded) {
 }`
     },
     plugins: [
-        babel()
+        babel(),
+        removeGlobal()
     ].concat(plugins),
     watch: {
         include: 'build/**/*.js'
