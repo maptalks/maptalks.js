@@ -1,6 +1,3 @@
-const path = require('path');
-
-const icon = 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png');
 const style = [
     {
         filter: true,
