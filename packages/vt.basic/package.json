@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vt.basic",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "Basic rendering plugin for maptalks VectorTileLayer",
   "main": "dist/maptalks.vt.basic.js",
   "browser": "dist/maptalks.vt.basic.js",
@@ -29,7 +29,7 @@
     "@mapbox/point-geometry": "^0.1.0",
     "@maptalks/function-type": "^1.2.1",
     "@maptalks/gl": "^0.1.0",
-    "@maptalks/vt-plugin": "^0.1.28",
+    "@maptalks/vt-plugin": "^0.1.31",
     "color": "^3.0.0"
   },
   "peerDependencies": {
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "@maptalks/vt": "^0.1.30",
+    "@maptalks/vt": "^0.1.31",
     "babel-eslint": "^9.0.0",
     "electron": "^4.0.1",
     "electron-mocha": "^6.0.4",
