@@ -537,8 +537,8 @@ export default class PointPack extends VectorPack {
         // textMaxBoxScale = 1, //TODO 可能的最大的 textMaxSize / glyphSize
 
         const spacing = (
-            this._markerSpacingFn ? this._markerSpacingFn(null, properties) : symbol['markerSpacing'] ||
-            this._textSpacingFn ? this._textSpacingFn(null, properties) : symbol['textSpacing'] ||
+            (this._markerSpacingFn ? this._markerSpacingFn(null, properties) : symbol['markerSpacing']) ||
+            (this._textSpacingFn ? this._textSpacingFn(null, properties) : symbol['textSpacing']) ||
             DEFAULT_SPACING
         ) * scale;
         const EXTENT = this.options.EXTENT;

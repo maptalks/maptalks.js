@@ -218,11 +218,11 @@ export default class StyledPoint {
         }
 
         if (hasText) {
-            const textFaceName = this._textFaceNameFn ? this._textFaceNameFn(null, this.feature.properties) : symbol['textFaceName'];
-            const textStyle = this._textStyleFn ? this._textStyleFn(null, this.feature.properties) : symbol['textStyle'];
-            const textWeight = this._textWeightFn ? this._textWeightFn(null, this.feature.properties) : symbol['textWeight'];
+            const textFaceName = this._textFaceNameFn ? this._textFaceNameFn(null, properties) : symbol['textFaceName'];
+            const textStyle = this._textStyleFn ? this._textStyleFn(null, properties) : symbol['textStyle'];
+            const textWeight = this._textWeightFn ? this._textWeightFn(null, properties) : symbol['textWeight'];
             const font = getSDFFont(textFaceName, textStyle, textWeight);
-            const text = resolveText(symbol['textName'], this.feature.properties);
+            const text = resolveText(symbol['textName'], properties);
             result.glyph = {
                 font, text
             };
