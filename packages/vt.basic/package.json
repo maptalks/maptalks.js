@@ -27,7 +27,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@mapbox/point-geometry": "^0.1.0",
-    "@maptalks/function-type": "^1.2.0",
+    "@maptalks/function-type": "^1.2.1",
     "@maptalks/gl": "^0.1.0",
     "@maptalks/vt-plugin": "^0.1.28",
     "color": "^3.0.0"
