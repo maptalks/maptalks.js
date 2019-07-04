@@ -60,7 +60,7 @@ function createPainterPlugin(type, Painter) {
                 tileData = context.tileData,
                 tileInfo = context.tileInfo,
                 tileCenter = context.tileCenter,
-                tileTransform = tileData.transform,
+                tileTransform = context.tileTransform,
                 tileZoom = context.tileZoom,
                 sceneConfig = context.sceneConfig,
                 pluginIndex = context.pluginIndex;
@@ -72,11 +72,11 @@ function createPainterPlugin(type, Painter) {
             }
             var key = layer.getId() + '-' + pluginIndex + '-' + tileInfo.dupKey;
             let geometry = tileCache.geometry;
-            var features = tileData.features;
             if (!geometry) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
+                var features = tileData.features;
                 var glData = tileData.data;
                 var data = glData;
                 if (this.painter.colorSymbol && glData) {
@@ -94,15 +94,16 @@ function createPainterPlugin(type, Painter) {
                         geometry.properties.features = features;
                         this._fillCommonProps(geometry, context);
                     }
+                    if (tileCache.excludes !== this._excludes) {
+                        this._filterElements(geometry, tileData.data, context.regl);
+                        tileCache.excludes = this._excludes;
+                    }
                 }
             }
             if (!geometry) {
                 return NO_REDRAW;
             }
-            if (tileCache.excludes !== this._excludes) {
-                this._filterElements(geometry, tileData.data, features, context.regl);
-                tileCache.excludes = this._excludes;
-            }
+
             var mesh = this._getMesh(key);
             if (!mesh) {
                 if (this._throttle(layer, key)) {
@@ -280,12 +281,14 @@ function createPainterPlugin(type, Painter) {
             return this._meshCache[key];
         },
 
-        _filterElements(geometry, glData, features, regl) {
+        _filterElements(geometry, glData, regl) {
             if (Array.isArray(geometry)) {
                 geometry.forEach((g, idx) => {
+                    const { features } = g.properties;
                     this._filterGeoElements(g, glData[idx], features, regl);
                 });
             } else {
+                const { features } = geometry.properties;
                 this._filterGeoElements(geometry, glData, features, regl);
             }
         },

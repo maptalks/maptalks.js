@@ -461,7 +461,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!tileCache[idx]) {
                 tileCache[idx] = {};
             }
-            pluginData[idx].transform = tileTransform;
             const context = {
                 regl : this.regl,
                 layer : this.layer,
@@ -471,12 +470,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache : tileCache[idx],
                 tileData : pluginData[idx],
                 tileCenter: tileInfo.point,
+                tileTransform,
                 tileExtent : tileData.extent,
                 timestamp : this._frameTime,
                 tileInfo,
                 tileZoom : this['_tileZoom']
             };
             const status = plugin.paintTile(context);
+            //插件数据以及经转化为geometry，可以删除原始数据以节省内存
+            pluginData[idx] = 1;
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
