@@ -78,6 +78,5 @@ describe('GeoJSONVectorTileLayer', () => {
         layer2.addTo(map);
     });
 
-    //TODO 增加有root和iconset的style的测试
     //TODO 增加url方式的style的测试
 });

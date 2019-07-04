@@ -104,9 +104,9 @@ class VectorTileLayer extends maptalks.TileLayer {
             return this;
         }
         this.ready = true;
-        if (style.root) {
+        if (style['$root']) {
             let root;
-            root = this._styleRootPath = style.root;
+            root = this._styleRootPath = style['$root'];
             if (root && root[root.length - 1] === '/') {
                 root = root.substring(0, root.length - 1);
             }

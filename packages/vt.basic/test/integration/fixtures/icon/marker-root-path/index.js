@@ -1,0 +1,27 @@
+const path = require('path');
+const data = require('../../data');
+
+const style = {
+    $root: 'file://' + path.resolve(__dirname, '../../../resources/'),
+    style: [
+        {
+            renderPlugin: {
+                type: 'icon',
+                dataConfig: {
+                    type: 'point'
+                },
+                sceneConfig: {
+                    collision: false
+                }
+            },
+            symbol: {
+                markerFile: '{$root}/plane-min.png'
+            }
+        }
+    ]
+};
+
+module.exports = {
+    style,
+    data: data.point
+};
