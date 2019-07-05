@@ -191,8 +191,11 @@ function createPainterPlugin(type, Painter) {
 
         updateSymbol: function () {
             var painter = this.painter;
+            if (!painter) {
+                return;
+            }
             if (painter.shouldDeleteMeshOnUpdateSymbol()) {
-                if (painter && this._meshCache) {
+                if (this._meshCache) {
                     for (var key in this._meshCache) {
                         painter.deleteMesh(this._meshCache[key], true);
                     }

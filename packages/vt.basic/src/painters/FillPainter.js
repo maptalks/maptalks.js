@@ -179,12 +179,7 @@ class FillPainter extends BasicPainter {
                         },
                         mask: 0xFF
                     },
-                    opFront: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    },
-                    opBack: {
+                    op: {
                         fail: 'keep',
                         zfail: 'keep',
                         zpass: 'replace'

@@ -258,7 +258,7 @@ class LinePainter extends BasicPainter {
             extraCommandProps: {
                 viewport,
                 stencil: {
-                    enable: true,
+                    enable: false,
                     mask: 0xFF,
                     func: {
                         cmp: '<=',

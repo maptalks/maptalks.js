@@ -33,7 +33,7 @@ export default class PolygonPack extends VectorPack {
     getFormat(symbol) {
         const format = [
             {
-                type: Int32Array,
+                type: Int16Array,
                 width: this.positionSize,
                 name: 'aPosition'
             }
