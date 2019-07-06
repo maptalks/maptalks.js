@@ -101,9 +101,19 @@ const Ajax = {
                         } else {
                             cb(null, data);
                         }
-                    }).catch(cb);
+                    }).catch(err => {
+                        if (!err.code || err.code !== DOMException.ABORT_ERR) {
+                            console.error(err);
+                            cb(err);
+                        }
+                    });
                 }
-            }).catch(cb);
+            }).catch(err => {
+                if (!err.code || err.code !== DOMException.ABORT_ERR) {
+                    console.error(err);
+                    cb(err);
+                }
+            });
             return controller;
         }
     },
