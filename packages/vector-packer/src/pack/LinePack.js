@@ -79,12 +79,6 @@ export default class LinePack extends VectorPack {
                 width: this.positionSize,
                 name: 'aPosition'
             },
-            //round? + up?
-            {
-                type: Uint8Array,
-                width: 1,
-                name: 'aNormal'
-            },
             //当前点距离aPos的凸起方向
             {
                 type: Int8Array,
@@ -105,6 +99,11 @@ export default class LinePack extends VectorPack {
                     type: Int8Array,
                     width: 2,
                     name: 'aPrevExtrude'
+                },
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aDirection'
                 }
             );
         }
@@ -584,18 +583,21 @@ export default class LinePack extends VectorPack {
 
     addLineVertex(data, point, extrude, round, up, linesofar, prevExtrude, direction = RIGHT_DIRECTION) {
         linesofar *= LINE_DISTANCE_SCALE;
-        data.push(point.x, point.y);
+        const x = (point.x << 1) + (round ? 1 : 0);
+        const y = (point.y << 1) + (up ? 1 : 0);
+        data.push(x, y);
         if (this.positionSize === 3) {
             data.push(0);
         }
         data.push(
-            (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
+            // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             EXTRUDE_SCALE * extrude.x,
             EXTRUDE_SCALE * extrude.y,
             linesofar
         );
         if (this.symbol['linePatternFile']) {
             data.push(prevExtrude.x, prevExtrude.y);
+            data.push(direction === 1 ? 1 : 0);
         }
         if (this._lineWidthFn) {
             data.push(this._feaLineWidth);
@@ -603,7 +605,7 @@ export default class LinePack extends VectorPack {
         if (this._colorFn) {
             data.push(...this._feaColor);
         }
-        this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
+        this.maxPos = Math.max(this.maxPos, Math.abs(x), Math.abs(y));
     }
 
     addElements(e1, e2, e3) {
