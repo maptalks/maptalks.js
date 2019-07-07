@@ -216,7 +216,7 @@ class Painter {
             return this._symbol;
         }
         this._symbol = loadFunctionTypes(extend({}, this.symbolDef), () => {
-            return [this.layer.getRenderer().getCurrentTileZoom()];
+            return [this.getMap().getZoom()];
         });
         this._symbol.def = this.symbolDef;
         return this.getSymbol();
