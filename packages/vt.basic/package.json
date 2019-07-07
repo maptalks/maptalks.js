@@ -14,7 +14,7 @@
     "preversion": "npm test",
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
     "tdd": "cd ../vt && npm run build-dev && cd ../vt.basic && npm run build-dev && electron-mocha --interactive --renderer ./test/**/*.spec.js",
-    "prepare": "npm test && npm run build"
+    "prepare": "npm run build"
   },
   "files": [
     "dist/maptalks.vt.basic.js"
