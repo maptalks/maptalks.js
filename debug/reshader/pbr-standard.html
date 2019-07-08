@@ -189,7 +189,8 @@
             const { data, indices } = generateSphereData();
             const modelMatrix = mat4.identity([]);
             mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
-            const geometry = new reshader.Geometry(data, indices);
+            const geometry = new reshader.Geometry(data, indices, 0, { uv0Attribute: 'aTexCoord0' });
+            geometry.createTangent('aTangent');
             const defines = getGeometryDefines(geometry);
             const mesh = new reshader.Mesh(geometry, material);
             mesh.setLocalTransform(modelMatrix);
