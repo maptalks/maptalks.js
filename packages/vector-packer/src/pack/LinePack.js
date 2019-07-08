@@ -605,7 +605,7 @@ export default class LinePack extends VectorPack {
         if (this._colorFn) {
             data.push(...this._feaColor);
         }
-        this.maxPos = Math.max(this.maxPos, Math.abs(x), Math.abs(y));
+        this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
 
     addElements(e1, e2, e3) {
@@ -613,16 +613,25 @@ export default class LinePack extends VectorPack {
     }
 
     _filterPolygonEdges(elements) {
+        const EXTENT = this.options['EXTENT'];
         const edges = this.elements;
         for (let i = 0; i < edges.length; i += 3) {
-            if (!isClippedEdge(this.data, edges[i], edges[i + 1], this.formatWidth, this.options['EXTENT']) &&
-                !isClippedEdge(this.data, edges[i + 1], edges[i + 2], this.formatWidth, this.options['EXTENT'])) {
+            if (!isClippedLineEdge(this.data, edges[i], edges[i + 1], this.formatWidth, EXTENT) &&
+                !isClippedLineEdge(this.data, edges[i + 1], edges[i + 2], this.formatWidth, EXTENT)) {
                 elements.push(edges[i], edges[i + 1], edges[i + 2]);
             }
         }
     }
 
 }
+
+export function isClippedLineEdge(vertices, i0, i1, width, EXTENT) {
+    const x0 = Math.floor(vertices[i0 * width] * 0.5), y0 = Math.floor(vertices[i0 * width + 1] * 0.5),
+        x1 = Math.floor(vertices[i1 * width] * 0.5), y1 = Math.floor(vertices[i1 * width + 1] * 0.5);
+    return x0 === x1 && (x0 < 0 || x0 > EXTENT) && y0 !== y1 ||
+        y0 === y1 && (y0 < 0 || y0 > EXTENT) && x0 !== x1;
+}
+
 
 /**
  * Calculate the total distance, in tile units, of this tiled line feature
