@@ -7,7 +7,7 @@
     html,body{margin:0px;height:100%;width:100%}
     .container{width:1000px;height:800px}
   </style>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+  <script type="text/javascript" src="http://localhost/maptalks/dist/maptalks.js"></script>
     <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
     <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
     <script type="text/javascript" src="js/dat.gui.min.js"></script>
@@ -94,6 +94,7 @@
                 const speed = 1 / 125; //快门速度
                 const iso = 100; //iso感光度
                 const ev100 = computeEV100(aperture, speed, iso);
+                const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
                 UNIFORMS = {
                     'light_iblDFG': iblMaps.dfgLUT,
                     'light_iblSpecular': iblMaps.prefilterMap,
@@ -106,6 +107,7 @@
                     'ev100': ev100,
                     'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
                     'cameraPosition':camPos,
+                    'iblMaxMipLevel': [mipLevel, 1 << mipLevel]
                 };
                 MatUNIFORMS = {
                     // 'baseColorFactor': [0.9, 0.9, 0.9, 0.3],
@@ -120,7 +122,7 @@
                     // 'normalTexture': NORMAL_TEXTURE,
                     // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
                     // 'baseColorTexture': BASE_COLOR_TEXTURE,
-                    'anisotropy': 0
+                    'anisotropy': 1
                 };
                 initGUI();
                 render();
@@ -189,7 +191,6 @@
             mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
             const geometry = new reshader.Geometry(data, indices);
             const defines = getGeometryDefines(geometry);
-            defines['IBL_MAX_MIP_LEVEL'] = (Math.log(PREFILTER_CUBE_SIZE) / Math.log(2)) + '.0';
             const mesh = new reshader.Mesh(geometry, material);
             mesh.setLocalTransform(modelMatrix);
             mesh.setDefines(defines);

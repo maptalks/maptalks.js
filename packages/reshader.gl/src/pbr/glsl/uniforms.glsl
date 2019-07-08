@@ -36,6 +36,7 @@ struct FrameUniforms {
     mediump float ev100; //TODO
     // ibl
     highp vec3 iblSH[9];
+    mediump vec2 iblMaxMipLevel;
     // user time
     // vec4 userTime,
 };
@@ -52,8 +53,10 @@ uniform mediump float iblLuminance;
 uniform mediump float exposure;
 uniform mediump float ev100;
 uniform highp vec3 iblSH[9];
+uniform mediump vec2 iblMaxMipLevel;
 
 void initFrameUniforms() {
+    frameUniforms.iblMaxMipLevel = iblMaxMipLevel;
     frameUniforms.resolution = resolution;
     frameUniforms.cameraPosition = cameraPosition;
     frameUniforms.time = time;

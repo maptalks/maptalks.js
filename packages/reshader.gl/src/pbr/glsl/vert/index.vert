@@ -46,7 +46,7 @@
         return modelMatrix * mesh_position;
     }
 
-#include <fl_common_material_vert>
+#include <fl_material_inputs_vert>
 #include <fl_common_math_glsl>
 
 #ifdef HAS_SHADOWING

@@ -12,9 +12,6 @@ varying mediump vec3 vertex_worldNormal;
 varying mediump vec3 vertex_worldTangent;
 varying mediump vec3 vertex_worldBitangent;
 #endif
-#if defined(GEOMETRIC_SPECULAR_AA_NORMAL)
-varying highp vec3 vertex_worldNormalCentroid;
-#endif
 #endif
 
 #if defined(HAS_ATTRIBUTE_COLOR)

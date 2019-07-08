@@ -1,18 +1,3 @@
-//------------------------------------------------------------------------------
-// Lighting declarations
-//------------------------------------------------------------------------------
-
-#if defined(TARGET_MOBILE)
-// min roughness such that (MIN_ROUGHNESS^4) > 0 in fp16 (i.e. 2^(-14/4), slightly rounded up)
-#define MIN_ROUGHNESS              0.089
-#define MIN_LINEAR_ROUGHNESS       0.007921
-#else
-#define MIN_ROUGHNESS              0.045
-#define MIN_LINEAR_ROUGHNESS       0.002025
-#endif
-
-#define MAX_CLEAR_COAT_ROUGHNESS   0.6
-
 struct Light {
     vec4 colorIntensity;  // rgb, pre-exposed intensity
     vec3 l;
@@ -22,16 +7,16 @@ struct Light {
 
 struct PixelParams {
     vec3  diffuseColor;
-    float roughness;
+    float perceptualRoughness;
     vec3  f0;
-    float linearRoughness;
+    float roughness;
     vec3  dfg;
     vec3  energyCompensation;
 
 #if defined(MATERIAL_HAS_CLEAR_COAT)
     float clearCoat;
+    float clearCoatPerceptualRoughness;
     float clearCoatRoughness;
-    float clearCoatLinearRoughness;
 #endif
 
 #if defined(MATERIAL_HAS_ANISOTROPY)
@@ -50,3 +35,10 @@ struct PixelParams {
     vec3  subsurfaceColor;
 #endif
 };
+
+float computeMicroShadowing(float NoL, float visibility) {
+    // Chan 2018, "Material Advances in Call of Duty: WWII"
+    float aperture = inversesqrt(1.0 - visibility);
+    float microShadow = saturate(NoL * aperture);
+    return microShadow * microShadow;
+}

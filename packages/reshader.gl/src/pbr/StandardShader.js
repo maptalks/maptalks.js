@@ -99,6 +99,7 @@ class StandardShader extends MeshShader {
                 'light_iblDFG',
                 'light_iblSpecular',
                 'iblSH[9]',
+                'iblMaxMipLevel'
             ].concat(materialUniforms).concat(config.uniforms || []),
             extraCommandProps,
             defines: config.defines

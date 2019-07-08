@@ -15,8 +15,10 @@
 #include <fl_brdf_frag>
 //MaterialInputs结构定义
 //mapatalksgl的Material => MaterialInputs
+#include <fl_common_shading_frag>
+#include <fl_getters_frag>
+#include <fl_material_inputs_frag>
 #include <fl_common_material_frag>
-//构造各类shading_*的值
 #include <fl_shading_params>
 //PixelParams结构定义
 #include <fl_common_lighting_frag>
@@ -25,6 +27,7 @@
 //初始化light相关的uniforms，如light_iblDFG等
 #include <fl_light_uniforms_frag>
 
+#include <fl_ambient_occlusion_frag>
 //IBL灯光的计算逻辑
 #include <fl_light_indirect>
 #include <fl_shading_model_subsurface_frag>

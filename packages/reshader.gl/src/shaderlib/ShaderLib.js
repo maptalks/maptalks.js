@@ -8,7 +8,7 @@ import fbo_picking_vert from './glsl/fbo_picking.vert';
 //webgl 2.0中的函数实现
 import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
 import fl_uniforms_glsl from '../pbr/glsl/uniforms.glsl';
-import fl_common_material_vert from '../pbr/glsl/vert/common_material.vert';
+import fl_material_inputs_vert from '../pbr/glsl/vert/material_inputs.vert';
 import fl_inputs_vert from '..//pbr/glsl/vert/inputs.vert';
 
 import fl_header_frag from '../pbr/glsl/frag/gl_header.frag';
@@ -18,6 +18,9 @@ import fl_brdf_frag from '../pbr/glsl/frag/brdf.frag';
 //构造各类shading_*的值
 import fl_shading_params from '../pbr/glsl/frag/shading_params.frag';
 //MaterialInputs结构定义
+import fl_common_shading_frag from '../pbr/glsl/frag/common_shading.frag';
+import fl_getters_frag from '../pbr/glsl/frag/getters.frag';
+import fl_material_inputs_frag from '../pbr/glsl/frag/material_inputs.frag';
 import fl_common_material_frag from '../pbr/glsl/frag/common_material.frag';
 //PixelParams结构定义
 import fl_common_lighting_frag from '../pbr/glsl/frag/common_lighting.frag';
@@ -26,6 +29,8 @@ import fl_material_uniforms_frag from '../pbr/glsl/frag/gl_material_uniforms.fra
 import fl_light_uniforms_frag from '../pbr/glsl/frag/gl_light_uniforms.frag';
 //IBL灯光的计算逻辑
 import fl_light_indirect from '../pbr/glsl/frag/light_indirect.frag';
+//AO逻辑
+import fl_ambient_occlusion_frag from '../pbr/glsl/frag/ambient_occlusion.frag';
 //有向光的计算逻辑
 import fl_shading_model_standard_frag from '../pbr/glsl/frag/shading_model_standard.frag';
 import fl_shading_model_cloth_frag from '../pbr/glsl/frag/shading_model_cloth.frag';
@@ -50,7 +55,7 @@ const ShaderChunk = {
     fl_uniforms_glsl,
 
     //pbr vertex includes
-    fl_common_material_vert,
+    fl_material_inputs_vert,
     fl_inputs_vert,
 
     //pbr frag includes
@@ -58,10 +63,14 @@ const ShaderChunk = {
     fl_inputs_frag,
     fl_brdf_frag,
     fl_shading_params,
+    fl_common_shading_frag,
+    fl_getters_frag,
+    fl_material_inputs_frag,
     fl_common_material_frag,
     fl_common_lighting_frag,
     fl_material_uniforms_frag,
     fl_light_uniforms_frag,
+    fl_ambient_occlusion_frag,
     fl_light_indirect,
     fl_shading_model_standard_frag,
     fl_shading_model_cloth_frag,

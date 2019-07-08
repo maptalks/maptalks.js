@@ -20,6 +20,10 @@ float computePreExposedIntensity(const highp float intensity, const highp float 
     return intensity * exposure;
 }
 
+void unpremultiply(inout vec4 color) {
+    color.rgb /= max(color.a, FLT_EPS);
+}
+
 //------------------------------------------------------------------------------
 // Tone mapping operations
 //------------------------------------------------------------------------------
