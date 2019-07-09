@@ -79,7 +79,7 @@ export default class TextPainter extends CollisionPainter {
 
 
     createGeometry(glData) {
-        if (!glData.length) {
+        if (!glData || !glData.length) {
             return null;
         }
         //pointpack因为可能有splitSymbol，所以返回的glData是个数组，有多个pack

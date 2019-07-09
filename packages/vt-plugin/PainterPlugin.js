@@ -256,7 +256,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         _generateColorArray: function (features, featureIndexes, indices, vertices) {
-            if (!vertices) {
+            if (!vertices || !features || !features.length) {
                 return null;
             }
             var colors = new Uint8Array(vertices.length);

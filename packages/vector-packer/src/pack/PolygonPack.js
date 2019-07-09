@@ -100,7 +100,7 @@ export default class PolygonPack extends VectorPack {
             }
         }
         if (this._polygonOpacityFn) {
-            dynOpacity = this._polygonOpacityFn(null, feature.properties) || 0;
+            dynOpacity = (this._polygonOpacityFn(null, feature.properties) || 0) * 255;
         }
 
         const uvSize = 256;
