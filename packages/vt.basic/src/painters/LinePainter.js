@@ -18,7 +18,8 @@ const defaultUniforms = {
     'lineDy': 0,
     'lineBlur': 1,
     'lineDasharray': [0, 0, 0, 0],
-    'lineDashColor': [0, 0, 0, 0]
+    'lineDashColor': [0, 0, 0, 0],
+    'lineOffset': 0
 };
 
 
@@ -48,6 +49,7 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
         setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur');
+        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset');
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx');
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy');
 
@@ -208,6 +210,7 @@ class LinePainter extends BasicPainter {
                         'tileResolution',
                         'lineDx',
                         'lineDy',
+                        'lineOffset',
                         'canvasSize'
                     ]
                 },
@@ -253,6 +256,7 @@ class LinePainter extends BasicPainter {
                 'tileExtent',
                 'lineDx',
                 'lineDy',
+                'lineOffset',
                 'canvasSize'
             ],
             extraCommandProps: {
@@ -281,7 +285,9 @@ class LinePainter extends BasicPainter {
                 blend: {
                     enable: true,
                     func: {
-                        src: 'one',
+                        src: (context, props) => {
+                            return props['linePatternFile'] ? 'src alpha' : 'one';
+                        },
                         dst: 'one minus src alpha'
                     },
                     // func : {

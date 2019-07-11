@@ -65,6 +65,7 @@ class LineGradientPainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
         setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur');
+        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset');
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx');
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy');
 

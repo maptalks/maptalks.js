@@ -15,9 +15,6 @@ uniform lowp float lineOpacity;
     uniform sampler2D linePatternFile;
     uniform vec2 linePatternSize;
 
-    varying float vZoomScale;
-    varying vec2 vExtrudeOffset;
-    varying float vDirection;
 #endif
 varying vec2 vNormal;
 varying vec2 vWidth;
@@ -28,6 +25,9 @@ uniform float tileExtent;
 #ifdef HAS_DASHARRAY
     uniform vec4 lineDasharray;
     uniform vec4 lineDashColor;
+#endif
+
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
     varying highp float vLinesofar;
 #endif
 
@@ -54,7 +54,7 @@ void main() {
     #ifdef HAS_PATTERN
         float patternWidth = ceil(linePatternSize.x * vWidth.s * 2.0 / linePatternSize.y);
         //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
-        float x = (vLinesofar * vZoomScale - sign(0.9999 - abs(vDirection)) * vExtrudeOffset.x * vWidth.s) / patternWidth;
+        float x = vLinesofar / patternWidth;
         float y = (vNormal.y + 1.0) / 2.0;
         vec4 color = texture2D(linePatternFile, vec2(x, y));
     #else

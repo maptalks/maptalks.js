@@ -232,6 +232,7 @@ export default class BaseLayerWorker {
 
         const tileSize = this.options.tileSize[0];
         const { extent, glScale, zScale, zoom } = context;
+        const tileRatio = extent / tileSize;
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
             return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1]));
@@ -244,8 +245,8 @@ export default class BaseLayerWorker {
                 zoom
             });
             const symbols = splitPointSymbol(symbol);
-            const scale = extent / tileSize;
-            return Promise.all(symbols.map(s => new PointPack(features, s, options).load(scale)));
+
+            return Promise.all(symbols.map(s => new PointPack(features, s, options).load(tileRatio)));
             // const pack = new PointPack(features, symbol, options);
             // return pack.load(extent / tileSize);
         } else if (type === 'native-point') {
@@ -259,6 +260,7 @@ export default class BaseLayerWorker {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 requestor: this.fetchIconGlyphs.bind(this),
+                tileRatio,
                 zoom
             });
             const pack = new LinePack(features, symbol, options);
