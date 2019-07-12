@@ -4,7 +4,7 @@ import { extend, compileStyle, isNil, isString, isObject } from '../../common/Ut
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 
-const URL_PATTERN = /\{ *(\$root) *\}/g;
+const URL_PATTERN = /(\{\$root\}|\{\$iconset\})/g;
 
 const defaultOptions = {
     renderer: 'gl',
@@ -97,22 +97,32 @@ class VectorTileLayer extends maptalks.TileLayer {
                     throw err;
                 }
                 this.setStyle({
-                    root,
+                    $root: root,
                     style: json
                 });
             });
             return this;
         }
         this.ready = true;
-        if (style['$root']) {
+        if (style['$root'] || style['${iconset}']) {
             let root;
+            let iconset;
             root = this._styleRootPath = style['$root'];
+            iconset = this._styleRootPath = style['$iconset'];
             if (root && root[root.length - 1] === '/') {
                 root = root.substring(0, root.length - 1);
             }
+            if (iconset && iconset[iconset.length - 1] === '/') {
+                iconset = iconset.substring(0, iconset.length - 1);
+            }
             style = style.style || [];
-            this._replacer = function replacer() {
-                return root;
+            this._replacer = function replacer(match) {
+                if (match === '{$root}') {
+                    return root;
+                } else if (match === '{$iconset}') {
+                    return iconset;
+                }
+                return null;
             };
         }
         style = JSON.parse(JSON.stringify(style));
@@ -122,6 +132,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (this._replacer) {
             this._parseStylePath();
         }
+        delete this._replacer;
         this._compileStyle();
         const renderer = this.getRenderer();
         if (renderer) {
