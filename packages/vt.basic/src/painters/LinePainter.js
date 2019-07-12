@@ -123,6 +123,9 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }
+        if (symbol['lineOffset']) {
+            defines['USE_LINE_OFFSET'] = 1;
+        }
         mesh.setDefines(defines);
         return mesh;
     }

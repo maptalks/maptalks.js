@@ -41,6 +41,10 @@ varying vec2 vWidth;
 varying float vGammaScale;
 varying vec2 vPosition;
 
+#ifdef USE_LINE_OFFSET
+    attribute vec2 aExtrudeOffset;
+#endif
+
 #ifdef HAS_LINE_WIDTH
     attribute float aLineWidth;
 #else
@@ -78,11 +82,14 @@ void main() {
     float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
     float outset = gapwidth + halfwidth + sign(halfwidth) * ANTIALIASING;
 
-    vec2 extrude = aExtrude / EXTRUDE_SCALE;
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec2 offset = lineOffset * vNormal.y * extrude;
-    vec2 dist = outset * extrude + offset;
+    #ifdef USE_LINE_OFFSET
+        vec2 offset = lineOffset * (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset);
+        vec2 dist = (outset * aExtrude + offset) / EXTRUDE_SCALE;
+    #else
+        vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
+    #endif
 
     float scale = tileResolution / resolution;
     gl_Position = projViewModelMatrix * vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
@@ -93,7 +100,10 @@ void main() {
 
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
-    vPosition = position.xy + offset * tileRatio;
+    vPosition = position.xy;
+    #ifdef USE_LINE_OFFSET
+        vPosition += tileRatio * offset / EXTRUDE_SCALE;
+    #endif
 
     #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
         #ifdef HAS_GRADIENT

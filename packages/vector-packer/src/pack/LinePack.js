@@ -105,6 +105,15 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
+        if (this.symbol['lineOffset']) {
+            format.push(
+                {
+                    type: Int8Array,
+                    width: 2,
+                    name: 'aExtrudeOffset'
+                }
+            );
+        }
         return format;
     }
 
@@ -507,7 +516,7 @@ export default class LinePack extends VectorPack {
 
         extrude = normal.clone();
         if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, false, distance);
+        this.addLineVertex(layoutVertexArray, currentVertex, normal, extrude, round, false, distance);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -517,7 +526,7 @@ export default class LinePack extends VectorPack {
 
         extrude = normal.mult(-1);
         if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        this.addLineVertex(layoutVertexArray, currentVertex, extrude, round, true, distance);
+        this.addLineVertex(layoutVertexArray, currentVertex, normal.mult(-1), extrude, round, true, distance);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -557,7 +566,7 @@ export default class LinePack extends VectorPack {
 
         if (distancesForScaling) distance = scaleDistance(distance, distancesForScaling);
 
-        this.addLineVertex(this.data, currentVertex, extrude, false, lineTurnsLeft, distance);
+        this.addLineVertex(this.data, currentVertex, extrude, extrude, false, lineTurnsLeft, distance);
         this.e3 = this.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
             this.addElements(this.e1, this.e2, this.e3);
@@ -570,7 +579,7 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    addLineVertex(data, point, extrude, round, up, linesofar) {
+    addLineVertex(data, point, normal, extrude, round, up, linesofar) {
         linesofar *= LINE_DISTANCE_SCALE;
         const x = (point.x << 1) + (round ? 1 : 0);
         const y = (point.y << 1) + (up ? 1 : 0);
@@ -589,6 +598,16 @@ export default class LinePack extends VectorPack {
         }
         if (this._colorFn) {
             data.push(...this._feaColor);
+        }
+        if (this.symbol['lineOffset']) {
+            if (up) {
+                data.push(0, 0);
+            } else {
+                data.push(
+                    EXTRUDE_SCALE * (extrude.x - normal.x),
+                    EXTRUDE_SCALE * (extrude.y - normal.y),
+                );
+            }
         }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
