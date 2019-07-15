@@ -49,7 +49,12 @@ class NativeLinePainter extends Painter {
         return uniforms;
     }
 
+    canStencil() {
+        return true;
+    }
+
     init() {
+        const stencil = this.layer.getRenderer().isEnableTileStencil();
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
@@ -86,11 +91,15 @@ class NativeLinePainter extends Painter {
                 viewport,
                 stencil: {
                     enable: true,
+                    mask: 0xFF,
                     func: {
-                        cmp: '<=',
+                        cmp: () => {
+                            return stencil ? '=' : '<=';
+                        },
                         ref: (context, props) => {
-                            return props.level;
-                        }
+                            return stencil ? props.stencilRef : props.level;
+                        },
+                        mask: 0xFF
                     },
                     op: {
                         fail: 'keep',

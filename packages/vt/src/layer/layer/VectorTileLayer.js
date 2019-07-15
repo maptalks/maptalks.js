@@ -231,6 +231,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     validateStyle() {
+        this._isOnly2D = true;
         this._isDefaultRender = false;
         let styles = this.options.style;
         if (!styles || Array.isArray(styles) && !styles.length) {
@@ -251,11 +252,19 @@ class VectorTileLayer extends maptalks.TileLayer {
                 !Array.isArray(filter)) {
                 throw new Error(`Invalid filter at ${i} : ${JSON.stringify(filter)}`);
             }
+            const dataConfig = styles[i].renderPlugin.dataConfig;
+            if (!dataConfig['only2D']) {
+                this._isOnly2D = false;
+            }
             //TODO 如果定义了renderPlugin就必须定义symbol
         }
     }
     getStyle() {
         return this.options.style;
+    }
+
+    isOnly2D() {
+        return this._isOnly2D;
     }
 
     getCompiledStyle() {

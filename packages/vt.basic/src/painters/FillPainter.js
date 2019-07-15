@@ -132,7 +132,7 @@ class FillPainter extends BasicPainter {
                 return canvas ? canvas.height : 1;
             }
         };
-
+        const stencil = this.layer.getRenderer().isEnableTileStencil();
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
@@ -173,9 +173,11 @@ class FillPainter extends BasicPainter {
                     enable: true,
                     mask: 0xFF,
                     func: {
-                        cmp: '<=',
+                        cmp: () => {
+                            return stencil ? '=' : '<=';
+                        },
                         ref: (context, props) => {
-                            return props.level;
+                            return stencil ? props.stencilRef : props.level;
                         },
                         mask: 0xFF
                     },
@@ -231,6 +233,10 @@ class FillPainter extends BasicPainter {
             viewMatrix, projMatrix,
             resolution
         };
+    }
+
+    canStencil() {
+        return true;
     }
 }
 

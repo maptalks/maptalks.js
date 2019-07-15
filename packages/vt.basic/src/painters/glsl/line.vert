@@ -39,7 +39,9 @@ uniform vec2 canvasSize;
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
-varying vec2 vPosition;
+#ifndef ENABLE_TILE_STENCIL
+    varying vec2 vPosition;
+#endif
 
 #ifdef USE_LINE_OFFSET
     attribute vec2 aExtrudeOffset;
@@ -100,9 +102,11 @@ void main() {
 
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;
-    vPosition = position.xy;
-    #ifdef USE_LINE_OFFSET
-        vPosition += tileRatio * offset / EXTRUDE_SCALE;
+    #ifndef ENABLE_TILE_STENCIL
+        vPosition = position.xy;
+        #ifdef USE_LINE_OFFSET
+            vPosition += tileRatio * offset / EXTRUDE_SCALE;
+        #endif
     #endif
 
     #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)

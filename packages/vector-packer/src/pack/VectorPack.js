@@ -25,6 +25,7 @@ export default class VectorPack {
         this.symbol = loadFunctionTypes(symbol, () => {
             return [options.zoom];
         });
+        //TODO 数据只包含二维数据时，也认为是only2D
         this.positionSize = options['only2D'] ? 2 : 3;
         this.styledVectors = [];
         this.properties = {};

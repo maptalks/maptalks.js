@@ -75,15 +75,7 @@ class Painter {
                 redraw: false
             };
         }
-        // if (this.needStencil) {
-        //     this._stencil(context.quadStencil);
-        // }
 
-        if (this.scene.getMeshes().length) {
-            this.regl.clear({
-                stencil: 0xFF
-            });
-        }
         const uniforms = this.getUniformValues(map);
 
         this.callShader(uniforms, context);
@@ -302,6 +294,10 @@ class Painter {
 
     shouldDeleteMeshOnUpdateSymbol() {
         return true;
+    }
+
+    canStencil() {
+        return false;
     }
 
     _stencil(quadStencil) {

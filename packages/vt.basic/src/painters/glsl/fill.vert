@@ -27,7 +27,9 @@ uniform mat4 projViewModelMatrix;
 
     varying vec2 vTexCoord;
 #endif
-varying vec2 vPosition;
+#ifndef ENABLE_TILE_STENCIL
+    varying vec2 vPosition;
+#endif
 
 void main() {
     #ifdef IS_2D_POSITION
@@ -36,7 +38,9 @@ void main() {
         vec3 position = aPosition;
     #endif
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
-    vPosition = aPosition.xy;
+    #ifndef ENABLE_TILE_STENCIL
+        vPosition = aPosition.xy;
+    #endif
     #ifdef HAS_PATTERN
         float zoomScale = tileResolution / resolution;
         // /32.0 是为提升精度，原数据都 * 32

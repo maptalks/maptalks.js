@@ -19,15 +19,19 @@ precision mediump float;
 #endif
 
 uniform float tileExtent;
-varying vec2 vPosition;
+#ifndef ENABLE_TILE_STENCIL
+    varying vec2 vPosition;
+#endif
 
 void main() {
+    #ifndef ENABLE_TILE_STENCIL
         //当position的x, y超出tileExtent时，丢弃该片元
-    float clip = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
-        sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
-    if (clip == 0.0) {
-        discard;
-    }
+        float clip = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
+            sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
+        if (clip == 0.0) {
+            discard;
+        }
+    #endif
 
     #ifdef HAS_PATTERN
         vec4 color = texture2D(polygonPatternFile, vTexCoord);

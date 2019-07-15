@@ -180,10 +180,11 @@ class LinePainter extends BasicPainter {
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
     }
 
-    init() {
-        //tell parent Painter to run stencil when painting
-        // this.needStencil = true;
+    canStencil() {
+        return true;
+    }
 
+    init() {
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
@@ -223,6 +224,7 @@ class LinePainter extends BasicPainter {
     }
 
     createShader() {
+        const stencil = this.layer.getRenderer().isEnableTileStencil();
         const canvas = this.canvas;
         const viewport = {
             x: 0,
@@ -265,12 +267,14 @@ class LinePainter extends BasicPainter {
             extraCommandProps: {
                 viewport,
                 stencil: {
-                    enable: false,
+                    enable: true,
                     mask: 0xFF,
                     func: {
-                        cmp: '<=',
+                        cmp: () => {
+                            return stencil ? '=' : '<=';
+                        },
                         ref: (context, props) => {
-                            return props.level;
+                            return stencil ? props.stencilRef : props.level;
                         },
                         mask: 0xFF
                     },

@@ -139,9 +139,11 @@ class LineGradientPainter extends BasicPainter {
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
     }
 
+    canStencil() {
+        return true;
+    }
+
     init() {
-        //tell parent Painter to run stencil when painting
-        // this.needStencil = true;
 
         const regl = this.regl;
 
@@ -182,6 +184,7 @@ class LineGradientPainter extends BasicPainter {
     }
 
     createShader() {
+        const stencil = this.layer.getRenderer().isEnableTileStencil();
         const canvas = this.canvas;
         const viewport = {
             x: 0,
@@ -222,9 +225,11 @@ class LineGradientPainter extends BasicPainter {
                     enable: true,
                     mask: 0xFF,
                     func: {
-                        cmp: '<=',
+                        cmp: () => {
+                            return stencil ? '=' : '<=';
+                        },
                         ref: (context, props) => {
-                            return props.level;
+                            return stencil ? props.stencilRef : props.level;
                         },
                         mask: 0xFF
                     },

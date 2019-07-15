@@ -3,6 +3,7 @@ import { mat4, vec3, createREGL } from '@maptalks/gl';
 import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
+import TileStencilRenderer from './stencil/TileStencilRenderer';
 
 const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 
@@ -57,7 +58,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
         plugins[idx].config = this.layer.getStyle()[idx];
         plugins[idx].updateSceneConfig({
-            sceneConfig : sceneConfig
+            sceneConfig: sceneConfig
         });
         this.setToRedraw();
     }
@@ -97,12 +98,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         }
         this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        // this._quadStencil = new maptalks.renderer.QuadStencil(this.gl, new Uint16Array([
-        //     0, EXTENT, 0,
-        //     0, 0, 0,
-        //     EXTENT, EXTENT, 0,
-        //     EXTENT, 0, 0
-        // ]), layer.options['stencil'] === 'debug');
         this._debugPainter = new DebugPainter(this.regl, this.canvas);
         this._prepareWorker();
     }
@@ -113,7 +108,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const attributes = layer.options.glOptions || {
             alpha: true,
             depth: true,
-            antialias : this.layer.options['antialias']
+            antialias: this.layer.options['antialias']
             // premultipliedAlpha : false
         };
         attributes.preserveDrawingBuffer = true;
@@ -122,16 +117,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.gl = this.gl || this._createGLContext(this.canvas, attributes);
         // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
         this.regl = createREGL({
-            gl : this.gl,
+            gl: this.gl,
             attributes,
-            extensions : [
+            extensions: [
                 'ANGLE_instanced_arrays',
                 'OES_texture_float',
                 'OES_texture_float_linear',
                 'OES_element_index_uint',
                 'OES_standard_derivatives'
             ],
-            optionalExtensions : layer.options['glExtensions'] || ['WEBGL_draw_buffers', 'EXT_shader_texture_lod']
+            optionalExtensions: layer.options['glExtensions'] || ['WEBGL_draw_buffers', 'EXT_shader_texture_lod']
         });
     }
 
@@ -222,7 +217,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const useDefault = layer.isDefaultRender();
 
         const glScale = map.getGLScale(tileInfo.z);
-        this._workerConn.loadTile({ tileInfo, glScale, zScale : this._zScale }, (err, data) => {
+        this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale }, (err, data) => {
             if (err) {
                 if (err.status && err.status === 404) {
                     //只处理404
@@ -231,7 +226,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 return;
             }
             if (!data) {
-                this.onTileLoad({ _empty : true }, tileInfo);
+                this.onTileLoad({ _empty: true }, tileInfo);
                 return;
             }
             if (data.canceled) {
@@ -406,11 +401,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 return;
             }
             plugin.startFrame({
-                regl : this.regl,
-                layer : this.layer,
-                gl : this.gl,
-                sceneConfig : plugin.config ? plugin.config.sceneConfig : null,
-                pluginIndex : idx,
+                regl: this.regl,
+                layer: this.layer,
+                gl: this.gl,
+                sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
+                pluginIndex: idx,
                 timestamp
             });
         });
@@ -418,6 +413,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _endFrame(timestamp) {
+        let stenciled = false;
+        const enableTileStencil = this.isEnableTileStencil();
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
@@ -425,14 +422,22 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!plugin || !visible) {
                 return;
             }
+            if (enableTileStencil && !stenciled && plugin.canStencil()) {
+                this._drawTileStencil();
+                stenciled = true;
+            } else if (!enableTileStencil || !plugin.canStencil()) {
+                this.regl.clear({
+                    stencil: 0xFF
+                });
+                stenciled = false;
+            }
             const status = plugin.endFrame({
-                regl : this.regl,
-                layer : this.layer,
-                gl : this.gl,
-                sceneConfig : plugin.config.sceneConfig,
-                pluginIndex : idx,
+                regl: this.regl,
+                layer: this.layer,
+                gl: this.gl,
+                sceneConfig: plugin.config.sceneConfig,
+                pluginIndex: idx,
                 cameraPosition,
-                quadStencil : this._quadStencil,
                 timestamp
             });
             if (status && status.redraw) {
@@ -442,13 +447,66 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
+    _drawTileStencil() {
+        if (!this.isEnableTileStencil()) {
+            return;
+        }
+        const EXTENT = this._EXTENT;
+        let stencilRenderer = this._stencilRenderer;
+        if (!stencilRenderer) {
+            stencilRenderer = this._stencilRenderer = new TileStencilRenderer(this.regl, this.canvas, this.getMap());
+        }
+        stencilRenderer.start();
+        const { tiles, parentTiles, childTiles } = this._stencilTiles;
+        let ref = 0;
+        for (let i = 0; i < parentTiles.length; i++) {
+            const tileInfo = parentTiles[i].info;
+            const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
+            tileInfo.stencilRef = ref;
+            stencilRenderer.add(ref, EXTENT, tileTransform);
+            ref++;
+        }
+        for (let i = 0; i < childTiles.length; i++) {
+            const tileInfo = childTiles[i].info;
+            const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
+            tileInfo.stencilRef = ref;
+            stencilRenderer.add(ref, EXTENT, tileTransform);
+            ref++;
+        }
+        for (let i = 0; i < tiles.length; i++) {
+            const tileInfo = tiles[i].info;
+            const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
+            tileInfo.stencilRef = ref;
+            stencilRenderer.add(ref, EXTENT, tileTransform);
+            ref++;
+        }
+
+        stencilRenderer.render();
+    }
+
+
+    onDrawTileStart(context) {
+        super.onDrawTileStart(context);
+        if (this.isEnableTileStencil()) {
+            this._stencilTiles = context;
+        }
+    }
+
+    isEnableTileStencil() {
+        return this.layer.isOnly2D();
+    }
+
     drawTile(tileInfo, tileData) {
         if (!tileData.loadTime || tileData._empty) return;
         let tileCache = tileData.cache;
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, tileData.extent);
+        if (!this._EXTENT) {
+            //vector tile 的 extent (8192)
+            this._EXTENT = tileData.extent;
+        }
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z);
         const pluginData = tileData.data;
 
         const plugins = this._getFramePlugins(tileData);
@@ -462,19 +520,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache[idx] = {};
             }
             const context = {
-                regl : this.regl,
-                layer : this.layer,
-                gl : this.gl,
-                sceneConfig : plugin.config.sceneConfig,
-                pluginIndex : idx,
-                tileCache : tileCache[idx],
-                tileData : pluginData[idx],
-                tileCenter: tileInfo.point,
+                regl: this.regl,
+                layer: this.layer,
+                gl: this.gl,
+                sceneConfig: plugin.config.sceneConfig,
+                pluginIndex: idx,
+                tileCache: tileCache[idx],
+                tileData: pluginData[idx],
                 tileTransform,
-                tileExtent : tileData.extent,
-                timestamp : this._frameTime,
+                tileExtent: tileData.extent,
+                timestamp: this._frameTime,
                 tileInfo,
-                tileZoom : this['_tileZoom']
+                tileZoom: this['_tileZoom']
             };
             const status = plugin.paintTile(context);
             //插件数据以及经转化为geometry，可以删除原始数据以节省内存
@@ -519,12 +576,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 plugins.forEach((plugin, idx) => {
                     if (plugin) {
                         plugin.deleteTile({
-                            regl : this.regl,
-                            layer : this.layer,
-                            gl : this.gl,
-                            tileCache : tile.image.cache ? tile.image.cache[idx] : {},
-                            tileInfo : tile.info,
-                            tileData : tile.image
+                            pluginIndex: idx,
+                            regl: this.regl,
+                            layer: this.layer,
+                            gl: this.gl,
+                            tileCache: tile.image.cache ? tile.image.cache[idx] : {},
+                            tileInfo: tile.info,
+                            tileData: tile.image
                         });
                     }
                 });
@@ -560,6 +618,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     onRemove() {
+        if (this._stencilRenderer) {
+            this._stencilRenderer.remove();
+        }
         // const map = this.getMap();
         if (this._workerConn) {
             this._workerConn.removeLayer(err => {
@@ -573,9 +634,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this.pickingFBO.destroy();
             }
             delete this.pickingFBO;
-        }
-        if (this._quadStencil) {
-            this._quadStencil.remove();
         }
         if (this._debugPainter) {
             this._debugPainter.remove();
@@ -639,7 +697,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         for (let i = 0; i < names.length; ++i) {
             try {
                 context = canvas.getContext(names[i], options);
-            } catch (e) {}
+            } catch (e) { }
             if (context) {
                 break;
             }
@@ -661,7 +719,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         const pixels = this.regl.read({
-            framebuffer : fbo
+            framebuffer: fbo
         });
 
         const halfHeight = height / 2 | 0;  // the | 0 keeps the result an int
@@ -776,7 +834,8 @@ VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
     const v0 = new Array(3);
     const v1 = new Array(3);
     const v2 = new Array(3);
-    return function (point, z, EXTENT) {
+    return function (point, z) {
+        const EXTENT = this._EXTENT;
         const map = this.getMap();
         const glScale = map.getGLScale(z);
         const tilePos = point;
