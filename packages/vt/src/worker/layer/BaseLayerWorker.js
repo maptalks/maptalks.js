@@ -467,7 +467,10 @@ function splitPointSymbol(symbol) {
         }
     }
     const results = [];
-    if (iconSymbol) results.push(iconSymbol);
+    if (iconSymbol) {
+        iconSymbol['isIconText'] = true;
+        results.push(iconSymbol);
+    }
     if (textSymbol) {
         if (iconSymbol) {
             //用marker的placement和spacing 覆盖文字的

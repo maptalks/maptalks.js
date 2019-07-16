@@ -533,8 +533,6 @@ export default class PointPack extends VectorPack {
         const glyphSize = 24;
         const fontScale = size[0] / glyphSize;
         const textBoxScale = scale * fontScale;
-        // textMaxBoxScale = scale * textMaxSize / glyphSize,
-        // textMaxBoxScale = 1, //TODO 可能的最大的 textMaxSize / glyphSize
 
         const spacing = (
             (this._markerSpacingFn ? this._markerSpacingFn(null, properties) : symbol['markerSpacing']) ||
@@ -552,10 +550,10 @@ export default class PointPack extends VectorPack {
                 const lineAnchors = getAnchors(lines[i],
                     spacing,
                     TEXT_MAX_ANGLE,
-                    shape.vertical || shape.horizontal || shape,
+                    symbol['isIconText'] ? null : shape.vertical || shape.horizontal || shape,
                     null, //shapedIcon,
                     glyphSize,
-                    textBoxScale,
+                    symbol['isIconText'] ? 1 : textBoxScale,
                     1, //bucket.overscaling,
                     EXTENT || Infinity
                 );
@@ -566,9 +564,11 @@ export default class PointPack extends VectorPack {
                     anchors,
                     lineAnchors
                 );
-                for (let ii = 0; ii < lines[i].length; ii++) {
-                    //TODO 0是预留的高度值
-                    this.lineVertex.push(lines[i][ii].x, lines[i][ii].y, 0);
+                if (symbol['textPlacement'] && !symbol['isIconText']) {
+                    for (let ii = 0; ii < lines[i].length; ii++) {
+                        //TODO 0是预留的高度值
+                        this.lineVertex.push(lines[i][ii].x, lines[i][ii].y, 0);
+                    }
                 }
             }
 

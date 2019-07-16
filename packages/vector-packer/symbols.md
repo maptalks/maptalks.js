@@ -4,6 +4,8 @@
 * markerAllowOverlap
 * markerIgnorePlacement
 * markerPerspectiveRatio
+* markerTextFit: 'none', 'width', 'height', 'both'
+* markerTextFitPadding: [0, 0, 0, 0]
 
 * textSpacing
 * textLetterSpacing
