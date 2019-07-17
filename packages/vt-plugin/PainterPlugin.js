@@ -86,9 +86,11 @@ function createPainterPlugin(type, Painter) {
                 if (geometry) {
                     if (Array.isArray(geometry)) {
                         for (let i = 0; i < geometry.length; i++) {
+                            geometry[i].properties.features = features;
                             this._fillCommonProps(geometry[i], context);
                         }
                     } else {
+                        geometry.properties.features = features;
                         this._fillCommonProps(geometry, context);
                     }
                     if (tileCache.excludes !== this._excludes) {
