@@ -162,8 +162,8 @@ export default class StyledPoint {
         const result = {};
         const symbol = this.symbol;
         const properties = this.feature.properties;
-        const markerFile = symbol.markerFile && this._markerFileFn ? this._markerFileFn(null, properties) : symbol.markerFile;
-        const markerType = symbol.markerType && this._markerTypeFn ? this._markerTypeFn(null, properties) : symbol.markerType;
+        const markerFile = this._markerFileFn ? this._markerFileFn(null, properties) : symbol.markerFile;
+        const markerType = this._markerTypeFn ? this._markerTypeFn(null, properties) : symbol.markerType;
         const hasMarker = markerFile || markerType || symbol.markerPath;
         const hasText = !isNil(symbol.textName);
         let size;

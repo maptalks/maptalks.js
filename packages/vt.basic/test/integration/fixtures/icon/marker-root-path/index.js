@@ -15,7 +15,14 @@ const style = {
                 }
             },
             symbol: {
-                markerFile: '{$root}/plane-min.png'
+                markerFile: {
+                    property: 'type',
+                    type: 'categorical',
+                    stops: [
+                        [1, '{$root}/plane-min.png'],
+                        [2, '{$root}/plane-min.png'],
+                    ]
+                }
             }
         }
     ]

@@ -51,8 +51,9 @@ export default class IconRequestor {
                 cb(null, { icons: images, buffers });
             }
         }
-        function onerror() {
+        function onerror(err) {
             console.warn(`failed loading icon(${this.index}) at "${this.url}"`);
+            console.warn(err);
             if (self.options.iconErrorUrl) {
                 this.src = self.options.iconErrorUrl;
             } else {

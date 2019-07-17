@@ -3,6 +3,7 @@ import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { extend, compileStyle, isNil, isString, isObject } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
+import { isFunctionDefinition } from '@maptalks/function-type';
 
 const URL_PATTERN = /(\{\$root\}|\{\$iconset\})/g;
 
@@ -156,11 +157,28 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (symbol.hasOwnProperty(p) && p !== 'textName') {
                 if (isString(symbol[p]) && symbol[p].length > 2) {
                     symbol[p] = symbol[p].replace(URL_PATTERN, this._replacer);
+                } else if (isFunctionDefinition(symbol[p])) {
+                    symbol[p] = this._parseStops(symbol[p]);
                 } else if (isObject(symbol[p])) {
                     this._parseSymbolPath(symbol[p]);
                 }
             }
         }
+    }
+
+    _parseStops(value) {
+        const stops = value.stops;
+        for (let i = 0; i < stops.length; i++) {
+            if (!Array.isArray(stops[i])) {
+                continue;
+            }
+            if (isString(stops[i][1])) {
+                stops[i][1] = stops[i][1].replace(URL_PATTERN, this._replacer);
+            } else if (isFunctionDefinition(stops[i][1])) {
+                stops[i][1] = this._parseStops(stops[i][1]);
+            }
+        }
+        return value;
     }
 
     updateSceneConfig(idx, sceneConfig) {
