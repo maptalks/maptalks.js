@@ -789,7 +789,7 @@ class IconPainter extends CollisionPainter {
         if (isFunctionDefinition(textSizeDef) && !this._textSizeFn) {
             this._textSizeFn = interpolated(textSizeDef);
         }
-        const padding = this.symbol['markerTextFitPadding'] || [0, 0];
+        const padding = this.getSymbol()['markerTextFitPadding'] || [0, 0];
         const zoom = this.getMap().getZoom();
         //textSize是fn-type，实时更新aMarkerHeight或者aMarkerWidth
         const { fitIcons, fitWidthIcons, fitHeightIcons } = props;

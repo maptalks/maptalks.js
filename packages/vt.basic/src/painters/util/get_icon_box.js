@@ -1,7 +1,7 @@
 import { vec2, vec3 } from '@maptalks/gl';
 import { projectPoint } from './projection';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
-import { clamp } from '../../Util';
+import { isNil, clamp } from '../../Util';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, ICON_SIZE } from '../Constant';
 
 //temparary variables
@@ -47,8 +47,14 @@ export function getIconBox(out, mesh, i, matrix, map) {
         bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, aShape[i * 2 + 5] / 10),
         br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, aShape[i * 2 + 7] / 10);
 
-    const markerWidth = (aMarkerWidth ? aMarkerWidth[i] : symbol['markerWidth']) || DEFAULT_MARKER_WIDTH;
-    const markerHeight = (aMarkerHeight ? aMarkerHeight[i] : symbol['markerHeight']) || DEFAULT_MARKER_HEIGHT;
+    let markerWidth = (aMarkerWidth ? aMarkerWidth[i] : symbol['markerWidth']);
+    if (isNil(markerWidth)) {
+        markerWidth = DEFAULT_MARKER_WIDTH;
+    }
+    let markerHeight = (aMarkerHeight ? aMarkerHeight[i] : symbol['markerHeight']);
+    if (isNil(markerHeight)) {
+        markerHeight = DEFAULT_MARKER_HEIGHT;
+    }
     const sizeScale = [markerWidth / ICON_SIZE, markerHeight / ICON_SIZE];
     vec2.mul(tl, tl, sizeScale);
     vec2.mul(tr, tr, sizeScale);
