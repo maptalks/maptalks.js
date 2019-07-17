@@ -12,7 +12,8 @@ const plugins = production ? [
         mangle: {
             properties: {
                 'regex': /^_/,
-                'keep_quoted': true
+                'keep_quoted': true,
+                'reserved': ['on', 'once', 'off']
             }
         }
     })] : [];

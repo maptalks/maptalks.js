@@ -2,7 +2,6 @@ import { mat4, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter } from '../../Util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { interpolated } from '@maptalks/function-type';
-import { GLYPH_SIZE } from '../Constant';
 import Color from 'color';
 
 const GAMMA_SCALE = 0.79;

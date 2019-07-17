@@ -789,7 +789,7 @@ class IconPainter extends CollisionPainter {
         if (isFunctionDefinition(textSizeDef) && !this._textSizeFn) {
             this._textSizeFn = interpolated(textSizeDef);
         }
-        const padding = this.symbol['markerTextFitPadding'];
+        const padding = this.symbol['markerTextFitPadding'] || [0, 0];
         const zoom = this.getMap().getZoom();
         //textSize是fn-type，实时更新aMarkerHeight或者aMarkerWidth
         const { fitIcons, fitWidthIcons, fitHeightIcons } = props;
@@ -809,7 +809,7 @@ class IconPainter extends CollisionPainter {
             const textSize = (this._textSizeFn ? this._textSizeFn(zoom, feature ? feature.feature ? feature.feature.properties : null : null) : textSizeDef) / GLYPH_SIZE;
             if (aMarkerWidth && hasWidth) {
                 //除以10是因为为了增加精度，shader中的aShape乘以了10
-                const width = Math.abs((maxx - minx) / 10 * textSize) + padding[0];
+                const width = Math.abs((maxx - minx) / 10 * textSize) + (padding[0] || 0) * 2;
                 U8[0] = width;
                 if (aMarkerWidth[idx] !== U8[0]) {
                     fillArray(aMarkerWidth, U8[0], idx, idx + BOX_VERTEX_COUNT);
@@ -817,7 +817,7 @@ class IconPainter extends CollisionPainter {
                 }
             }
             if (aMarkerHeight && hasHeight) {
-                const height = Math.abs((maxy - miny) / 10 * textSize) + padding[1];
+                const height = Math.abs((maxy - miny) / 10 * textSize) + (padding[1] || 0) * 2;
                 U8[0] = height;
                 if (aMarkerHeight[idx] !== U8[0]) {
                     fillArray(aMarkerHeight, U8[0], idx, idx + BOX_VERTEX_COUNT);
