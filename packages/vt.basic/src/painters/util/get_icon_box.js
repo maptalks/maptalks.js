@@ -2,7 +2,7 @@ import { vec2, vec3 } from '@maptalks/gl';
 import { projectPoint } from './projection';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { clamp } from '../../Util';
-import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT } from '../Constant';
+import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, ICON_SIZE } from '../Constant';
 
 //temparary variables
 const ANCHOR = [], PROJ_ANCHOR = [];
@@ -11,7 +11,6 @@ const V2_0 = [], V2_1 = [], V2_2 = [], V2_3 = [];
 const DXDY = [];
 
 const AXIS_FACTOR = [1, -1];
-const ICON_SIZE = 24;
 
 export function getIconBox(out, mesh, i, matrix, map) {
     const uniforms = mesh.material.uniforms;

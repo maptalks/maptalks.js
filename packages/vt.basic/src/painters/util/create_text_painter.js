@@ -2,10 +2,10 @@ import { mat4, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter } from '../../Util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { interpolated } from '@maptalks/function-type';
+import { GLYPH_SIZE } from '../Constant';
 import Color from 'color';
 
 const GAMMA_SCALE = 0.79;
-const GLYPH_SIZE = 24;
 
 const DEFAULT_UNIFORMS = {
     'textFill': [0, 0, 0, 1],
@@ -24,7 +24,7 @@ const DEFAULT_UNIFORMS = {
     'textRotation': 0
 };
 
-export { DEFAULT_UNIFORMS, GAMMA_SCALE, GLYPH_SIZE };
+export { DEFAULT_UNIFORMS, GAMMA_SCALE };
 
 export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision) {
     const meshes = [];

@@ -165,7 +165,7 @@ export default class CollisionPainter extends BasicPainter {
             for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
                 aOpacity[i] = value;
             }
-            aOpacity._dirty = true;
+            aOpacity.dirty = true;
         }
     }
 

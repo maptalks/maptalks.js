@@ -3,7 +3,7 @@ import { reshader } from '@maptalks/gl';
 import { extend } from '../Util';
 
 export default class BasicPainter extends Painter {
-    createGeometry(glData) {
+    createGeometry(glData, features) {
         if (!glData) {
             return null;
         }
@@ -41,7 +41,8 @@ export default class BasicPainter extends Painter {
         const geometry = new reshader.Geometry(data, glData.indices, 0, { positionSize: glData.positionSize || 3 });
         geometry.properties = {
             iconAtlas,
-            glyphAtlas
+            glyphAtlas,
+            features
         };
         extend(geometry.properties, glData.properties);
         return geometry;

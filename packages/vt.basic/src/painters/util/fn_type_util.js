@@ -117,16 +117,16 @@ function getFnTypePropertyStopValues(stops) {
 function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
     const { aPickingId, features } = geometry.properties;
     const arr = geometry.properties[PREFIX + attrName];
+    const len = arr.length / aPickingId.length;
     const l = aIndex.length;
     for (let i = 0; i < l; i += 2) {
         const start = aIndex[i];
         const end = aIndex[i + 1];
         const feature = features[aPickingId[start]];
         const properties = feature ? feature.feature ? feature.feature.properties : null : null;
-        const value = evaluate(properties);
+        const value = evaluate(properties, arr[start * len]);
         if (Array.isArray(value)) {
             let dirty = false;
-            const len = value.length;
             for (let ii = 0; ii < len; ii++) {
                 if (arr[start * len + ii] !== value[ii]) {
                     dirty = true;
@@ -137,16 +137,16 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
                 for (let iii = start * len; iii < end * len; iii += len) {
                     arr.set(value, iii);
                 }
-                arr._dirty = true;
+                arr.dirty = true;
             }
         } else if (arr[start] !== value) {
             fillArray(arr, value, start, end);
-            arr._dirty = true;
+            arr.dirty = true;
         }
 
     }
-    if (arr._dirty) {
+    if (arr.dirty) {
         geometry.updateData(attrName, arr);
-        arr._dirty = false;
+        arr.dirty = false;
     }
 }

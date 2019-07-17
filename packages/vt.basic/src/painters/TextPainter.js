@@ -12,8 +12,9 @@ import pickingVert from './glsl/text.picking.vert';
 import linePickingVert from './glsl/text.line.picking.vert';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
-import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GLYPH_SIZE, GAMMA_SCALE, getTextFnTypeConfig } from './util/create_text_painter';
+import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig } from './util/create_text_painter';
 import { updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { GLYPH_SIZE } from './Constant';
 
 const shaderFilter0 = mesh => {
     return mesh.uniforms['level'] === 0 && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
@@ -210,13 +211,13 @@ export default class TextPainter extends CollisionPainter {
                 }
                 this._updateLineLabel(mesh, planeMatrix);
                 const { aOffset, aOpacity } = geometry.properties;
-                if (aOffset._dirty) {
+                if (aOffset.dirty) {
                     geometry.updateData('aOffset', aOffset);
-                    aOffset._dirty = false;
+                    aOffset.dirty = false;
                 }
-                if (aOpacity && aOpacity._dirty) {
+                if (aOpacity && aOpacity.dirty) {
                     geometry.updateData('aOpacity', aOpacity);
-                    aOpacity._dirty = false;
+                    aOpacity.dirty = false;
                 }
                 if (enableCollision) {
                     this.endMeshCollision(meshKey);
@@ -228,7 +229,7 @@ export default class TextPainter extends CollisionPainter {
                 this._forEachLabel(mesh, elements, (mesh, start, end, mvpMatrix, labelIndex) => {
                     fn(elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex);
                 });
-                if (aOpacity && aOpacity._dirty) {
+                if (aOpacity && aOpacity.dirty) {
                     geometry.updateData('aOpacity', aOpacity);
                 }
 
@@ -500,7 +501,7 @@ export default class TextPainter extends CollisionPainter {
                 //*10 是为了保留小数点做的精度修正
                 if (aOffset[2 * (vertexStart + ii)] !== INT16[0] ||
                     aOffset[2 * (vertexStart + ii) + 1] !== INT16[1]) {
-                    aOffset._dirty = true;
+                    aOffset.dirty = true;
                     //乘以十是为了提升shader中offset的精度
                     aOffset[2 * (vertexStart + ii)] = INT16[0];
                     aOffset[2 * (vertexStart + ii) + 1] = INT16[1];
@@ -826,7 +827,7 @@ function resetOffset(aOffset, meshElements, start, end) {
         for (let ii = 0; ii < 4; ii++) {
             if (aOffset[2 * (vertexStart + ii)] ||
                 aOffset[2 * (vertexStart + ii) + 1]) {
-                aOffset._dirty = true;
+                aOffset.dirty = true;
                 aOffset[2 * (vertexStart + ii)] = 0;
                 aOffset[2 * (vertexStart + ii) + 1] = 0;
             }

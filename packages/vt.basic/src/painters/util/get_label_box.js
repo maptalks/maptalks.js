@@ -2,6 +2,7 @@ import { vec2, vec3 } from '@maptalks/gl';
 import { projectPoint } from './projection';
 import { clamp } from '../../Util';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
+import { GLYPH_SIZE } from '../Constant';
 
 //temparary variables
 const ANCHOR = [], PROJ_ANCHOR = [];
@@ -19,7 +20,7 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
     const symbol = geoProps.symbol;
     const isAlongLine = (symbol['textPlacement'] === 'line' && !symbol['isIconText']);
 
-    const glyphSize = 24;
+    const glyphSize = GLYPH_SIZE;
 
     const positionSize = mesh.geometry.desc.positionSize;
     const aAnchor = geoProps.aAnchor;
