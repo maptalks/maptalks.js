@@ -127,14 +127,17 @@ class IconPainter extends CollisionPainter {
 
     createGeometry(glData, features) {
         if (!glData || !glData.length) {
-            return null;
+            return [];
         }
         const geometries = glData.sort(sorting).map(data => super.createGeometry(data, features));
         const iconGeometry = geometries[0];
         this._prepareIconGeometry(iconGeometry);
         const textGeometry = geometries[1];
         if (textGeometry) {
-            const labelIndex = buildLabelIndex(iconGeometry, textGeometry);
+            const labelIndex = buildLabelIndex(iconGeometry, textGeometry, this.symbolDef['markerTextFit']);
+            if (!iconGeometry.getElements().length) {
+                return [];
+            }
             iconGeometry.properties.labelIndex = labelIndex;
             if (this.symbolDef['markerTextFit'] && this.symbolDef['markerTextFit'] !== 'none') {
                 const labelShape = buildLabelShape(iconGeometry, textGeometry);
@@ -871,13 +874,18 @@ function sorting(a) {
     return 1;
 }
 
-function buildLabelIndex(iconGeometry, textGeometry) {
+function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
+    let markerTextFitFn;
+    if (isFunctionDefinition(markerTextFit)) {
+        markerTextFitFn = interpolated(markerTextFit);
+    }
     const labelIndex = [];
     const iconElements = iconGeometry.getElements();
     const textElements = textGeometry.getElements();
     const iconIds = iconGeometry.data.aPickingId;
     const textIds = textGeometry.data.aPickingId;
     const textCounts = textGeometry.data.aCount;
+    const features = iconGeometry.properties.features;
 
     let textId = textElements[0];
     let currentLabel = {
@@ -886,10 +894,13 @@ function buildLabelIndex(iconGeometry, textGeometry) {
         end: textCounts[textId] * BOX_ELEMENT_COUNT
     };
     let count = 0;
+    const unused = [];
     //遍历所有的icon，当icon和aPickingId和text的相同时，则认为是同一个icon + text，并记录它的序号
     for (let i = 0; i < iconElements.length; i += BOX_ELEMENT_COUNT) {
         const idx = iconElements[i];
         const pickingId = iconIds[idx];
+        const feature = features[pickingId];
+        const textFit = markerTextFitFn ? markerTextFitFn(null, feature.properties) : markerTextFit;
         if (pickingId === currentLabel.pickingId) {
             labelIndex[count++] = [currentLabel.start, currentLabel.end];
             const start = currentLabel.end;
@@ -897,8 +908,31 @@ function buildLabelIndex(iconGeometry, textGeometry) {
             currentLabel.start = start;
             currentLabel.end = start + textCounts[textId] * BOX_ELEMENT_COUNT;
             currentLabel.pickingId = textIds[textId];
+        } else if (textFit && textFit !== 'none') {
+            //如果icon设置了markerTextFit，但没有label，则从elements中去掉这个icon
+            for (let ii = i; ii < i + BOX_ELEMENT_COUNT; ii++) {
+                unused.push(ii);
+            }
         } else {
             labelIndex[count++] = [-1, -1];
+        }
+    }
+    if (unused.length) {
+        if (unused.length === iconElements.length) {
+            iconGeometry.setElements([]);
+        } else {
+            const elements = [];
+            let cur = 0;
+            let delIndex = unused[cur];
+            for (let i = 0; i < iconElements.length; i++) {
+                if (i < delIndex) {
+                    elements.push(iconElements[i]);
+                } else if (i === delIndex) {
+                    cur++;
+                    delIndex = unused[cur];
+                }
+            }
+            iconGeometry.setElements(new iconElements.constructor(elements));
         }
     }
     return labelIndex;
