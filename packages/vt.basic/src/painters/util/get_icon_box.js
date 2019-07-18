@@ -11,6 +11,7 @@ const V2_0 = [], V2_1 = [], V2_2 = [], V2_3 = [];
 const DXDY = [];
 
 const AXIS_FACTOR = [1, -1];
+const SIZE_SCALE = [1, 1];
 
 export function getIconBox(out, mesh, i, matrix, map) {
     const uniforms = mesh.material.uniforms;
@@ -55,7 +56,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
     if (isNil(markerHeight)) {
         markerHeight = DEFAULT_MARKER_HEIGHT;
     }
-    const sizeScale = [markerWidth / ICON_SIZE, markerHeight / ICON_SIZE];
+    const sizeScale = vec2.set(SIZE_SCALE, markerWidth / ICON_SIZE, markerHeight / ICON_SIZE);
     vec2.mul(tl, tl, sizeScale);
     vec2.mul(tr, tr, sizeScale);
     vec2.mul(bl, bl, sizeScale);
@@ -70,12 +71,14 @@ export function getIconBox(out, mesh, i, matrix, map) {
     //   3.2 如果pitchWidthMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
     //4. 将最终计算结果与dxdy相加
     const mapRotation = map.getBearing() * Math.PI / 180;
-    const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+    if (mapRotation * uniforms['rotateWithMap'] || rotation) {
+        const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
 
-    tl = vec2.transformMat2(tl, tl, shapeMatrix);
-    tr = vec2.transformMat2(tr, tr, shapeMatrix);
-    bl = vec2.transformMat2(bl, bl, shapeMatrix);
-    br = vec2.transformMat2(br, br, shapeMatrix);
+        tl = vec2.transformMat2(tl, tl, shapeMatrix);
+        tr = vec2.transformMat2(tr, tr, shapeMatrix);
+        bl = vec2.transformMat2(bl, bl, shapeMatrix);
+        br = vec2.transformMat2(br, br, shapeMatrix);
+    }
 
     vec2.multiply(tl, tl, AXIS_FACTOR);
     vec2.multiply(tr, tr, AXIS_FACTOR);

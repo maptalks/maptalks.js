@@ -74,6 +74,7 @@ export default class IconRequestor {
                 delete symbol.markerVerticalAlignment;
                 delete symbol.markerDx;
                 delete symbol.markerDy;
+                delete symbol.markerPlacement;
                 marker.setSymbol(symbol);
                 const sprite = marker['_getSprite']();
                 if (sprite) {
