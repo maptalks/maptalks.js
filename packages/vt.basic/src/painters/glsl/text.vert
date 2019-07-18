@@ -7,7 +7,6 @@
 #endif
 attribute vec2 aShape;
 attribute vec2 aTexCoord;
-//uint8
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif

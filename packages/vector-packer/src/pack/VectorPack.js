@@ -109,8 +109,11 @@ export default class VectorPack {
         const symbol = this.symbolDef;
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
-            this.count++;
             const styledVector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
+            if (!styledVector) {
+                continue;
+            }
+            this.count++;
             styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
             vectors.push(styledVector);
         }

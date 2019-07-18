@@ -140,6 +140,9 @@ export default class PointPack extends VectorPack {
         if (isFnTypeSymbol('textSpacing', this.symbolDef)) {
             this._textSpacingFn = interpolated(this.symbolDef['textSpacing']);
         }
+        if (isFnTypeSymbol('textPlacement', this.symbolDef)) {
+            this._textPlacementFn = interpolated(this.symbolDef['textPlacement']);
+        }
 
         if (isFnTypeSymbol('markerWidth', this.symbolDef)) {
             this._markerWidthFn = interpolated(this.symbolDef['markerWidth']);
@@ -607,7 +610,10 @@ export default class PointPack extends VectorPack {
 
     _getPlacement(symbol, point) {
         if (this._markerPlacementFn) {
-            return this._markerPlacementFn(null, point.feature.properties);
+            return this._markerPlacementFn(null, point.feature && point.feature.properties);
+        }
+        if (this._textPlacementFn) {
+            return this._textPlacementFn(null, point.feature && point.feature.properties);
         }
         return symbol.markerPlacement || symbol.textPlacement;
     }

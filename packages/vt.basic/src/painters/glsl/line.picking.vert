@@ -9,27 +9,48 @@
 // there are also "special" normals that have a bigger length (of up to 126 in
 // this case).
 // #define scale 63.0
-#define EXTRUDE_SCALE 63.0;//0.0078740157
+// EXTRUDE_SCALE = 1 / 127.0
+//0.0078740157
+#define EXTRUDE_SCALE 63.0;
+#define MAX_LINE_DISTANCE 65535.0
 
 #ifdef IS_2D_POSITION
     attribute vec2 aPosition;
 #else
     attribute vec3 aPosition;
 #endif
-attribute float aNormal;
 attribute vec2 aExtrude;
-// attribute float aLinesofar;
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+    attribute float aLinesofar;
+    varying highp float vLinesofar;
+#endif
 
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
-uniform float lineWidth;
 uniform mat4 projViewModelMatrix;
 uniform float tileResolution;
 uniform float resolution;
 uniform float tileRatio; //EXTENT / tileSize
 uniform float lineDx;
 uniform float lineDy;
+uniform float lineOffset;
 uniform vec2 canvasSize;
+
+varying vec2 vNormal;
+
+#ifndef ENABLE_TILE_STENCIL
+    varying vec2 vPosition;
+#endif
+
+#ifdef USE_LINE_OFFSET
+    attribute vec2 aExtrudeOffset;
+#endif
+
+#ifdef HAS_LINE_WIDTH
+    attribute float aLineWidth;
+#else
+    uniform float lineWidth;
+#endif
 
 #include <fbo_picking_vert>
 
@@ -37,19 +58,31 @@ void main() {
     #ifdef IS_2D_POSITION
         vec3 position = vec3(aPosition, 0.0);
     #else
-        vec3 position = aPosition;
+        vec3 position = vec3(aPosition);
     #endif
+    position.xy = floor(position.xy * 0.5);
+
+    vNormal = aPosition.xy - 2.0 * position.xy;
+    vNormal.y = vNormal.y * 2.0 - 1.0;
+
     float gapwidth = lineGapWidth / 2.0;
+    #ifdef HAS_LINE_WIDTH
+        float lineWidth = aLineWidth;
+    #endif
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
 
     float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
     float outset = gapwidth + halfwidth + sign(halfwidth) * ANTIALIASING;
 
-    vec2 extrude = aExtrude;
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec2 dist = outset * extrude / EXTRUDE_SCALE;
+    #ifdef USE_LINE_OFFSET
+        vec2 offset = lineOffset * (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset);
+        vec2 dist = (outset * aExtrude + offset) / EXTRUDE_SCALE;
+    #else
+        vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
+    #endif
 
     float scale = tileResolution / resolution;
     gl_Position = projViewModelMatrix * vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
