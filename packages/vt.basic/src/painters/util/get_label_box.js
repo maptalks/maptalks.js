@@ -1,11 +1,9 @@
 import { vec2, vec3 } from '@maptalks/gl';
-import { projectPoint } from './projection';
 import { clamp } from '../../Util';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { GLYPH_SIZE } from '../Constant';
 
 //temparary variables
-const ANCHOR = [], PROJ_ANCHOR = [];
 const MAT2 = [];
 const V2_0 = [], V2_1 = [], V2_2 = [], V2_3 = [];
 
@@ -13,7 +11,7 @@ const DXDY = [];
 
 const AXIS_FACTOR = [1, -1];
 
-export function getLabelBox(out, mesh, textSize, i, matrix, map) {
+export function getLabelBox(out, anchor, projAnchor, mesh, textSize, i, matrix, map) {
     const uniforms = mesh.material.uniforms;
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties;
@@ -21,11 +19,6 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
     const isAlongLine = (symbol['textPlacement'] === 'line' && !symbol['isIconText']);
 
     const glyphSize = GLYPH_SIZE;
-
-    const positionSize = mesh.geometry.desc.positionSize;
-    const aAnchor = geoProps.aAnchor;
-    const anchor = vec3.set(ANCHOR, aAnchor[i * positionSize], aAnchor[i * positionSize + 1], positionSize === 2 ? 0 : aAnchor[i * positionSize + 2]);
-    const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
 
     const cameraDistance = projAnchor[2];
 
@@ -51,19 +44,22 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
             bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, aShape[i * 2 + 5] / 10),
             br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, aShape[i * 2 + 7] / 10);
 
-        vec2.scale(tl, tl, textSize / glyphSize);
-        vec2.scale(tr, tr, textSize / glyphSize);
-        vec2.scale(bl, bl, textSize / glyphSize);
-        vec2.scale(br, br, textSize / glyphSize);
+        const textScale = textSize / glyphSize;
+        vec2.scale(tl, tl, textScale);
+        vec2.scale(tr, tr, textScale);
+        vec2.scale(bl, bl, textScale);
+        vec2.scale(br, br, textScale);
 
         let textRotation = symbol['textRotation'] || 0;
-
         const mapRotation = !isAlongLine ? map.getBearing() * Math.PI / 180 : 0;
-        const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
-        tl = vec2.transformMat2(tl, tl, shapeMatrix);
-        tr = vec2.transformMat2(tr, tr, shapeMatrix);
-        bl = vec2.transformMat2(bl, bl, shapeMatrix);
-        br = vec2.transformMat2(br, br, shapeMatrix);
+        if (textRotation || mapRotation) {
+            const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+            tl = vec2.transformMat2(tl, tl, shapeMatrix);
+            tr = vec2.transformMat2(tr, tr, shapeMatrix);
+            bl = vec2.transformMat2(bl, bl, shapeMatrix);
+            br = vec2.transformMat2(br, br, shapeMatrix);
+        }
+
         //1. 获得shape的tl, tr, bl, 和br
         //2. 计算旋转矩阵: shapeMatrix
         //3. 计算最终的shape
@@ -109,3 +105,8 @@ export function getLabelBox(out, mesh, textSize, i, matrix, map) {
     return out;
 }
 
+export function getAnchor(out, mesh, i) {
+    const positionSize = mesh.geometry.desc.positionSize;
+    const aAnchor = mesh.geometry.properties.aAnchor;
+    return vec3.set(out, aAnchor[i * positionSize], aAnchor[i * positionSize + 1], positionSize === 2 ? 0 : aAnchor[i * positionSize + 2]);
+}

@@ -5,7 +5,8 @@ import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.picking.vert';
 import { getIconBox } from './util/get_icon_box';
-import { getLabelBox } from './util/get_label_box';
+import { getAnchor, getLabelBox } from './util/get_label_box';
+import { projectPoint } from './util/projection';
 import { setUniformFromSymbol, isNil, fillArray } from '../Util';
 import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GAMMA_SCALE, getTextFnTypeConfig } from './util/create_text_painter';
 
@@ -50,6 +51,7 @@ const defaultUniforms = {
 //temparary variables
 const PROJ_MATRIX = [];
 const U8 = new Uint16Array(1);
+const ANCHOR = [], PROJ_ANCHOR = [];
 
 class IconPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
@@ -496,10 +498,13 @@ class IconPainter extends CollisionPainter {
         const textSize = textMesh.properties.textSize;
 
         const textElements = textMesh.geometry.properties.elements;
+
+        const anchor = getAnchor(ANCHOR, textMesh, textElements[textStart]);
+        const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
         //insert every character's box into collision index
         for (let j = textStart; j < textEnd; j += 6) {
             //use int16array to save some memory
-            const box = getLabelBox([], textMesh, textSize, textElements[j], matrix, map);
+            const box = getLabelBox([], anchor, projAnchor, textMesh, textSize, textElements[j], matrix, map);
             boxes.push(box);
             const collides = this.isCollides(box, z);
             if (collides === 1) {

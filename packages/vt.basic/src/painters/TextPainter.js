@@ -3,7 +3,7 @@ import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
 import { getCharOffset } from './util/get_char_offset';
 import { projectLine } from './util/projection';
-import { getLabelBox } from './util/get_label_box';
+import { getAnchor, getLabelBox } from './util/get_label_box';
 import { getLabelNormal } from './util/get_label_normal';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
@@ -534,6 +534,9 @@ export default class TextPainter extends CollisionPainter {
 
         const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
 
+        const anchor = getAnchor(ANCHOR, mesh, elements[start]);
+        const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
+
         let hasCollides = false;
         const charCount = boxCount;
         const boxes = [];
@@ -546,8 +549,8 @@ export default class TextPainter extends CollisionPainter {
             // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
             const firstChrIdx = elements[start],
                 lastChrIdx = elements[start + charCount * 6 - 6];
-            const tlBox = getLabelBox(BOX0, mesh, textSize, firstChrIdx, matrix, map),
-                brBox = getLabelBox(BOX1, mesh, textSize, lastChrIdx, matrix, map);
+            const tlBox = getLabelBox(BOX0, anchor, projAnchor, mesh, textSize, firstChrIdx, matrix, map),
+                brBox = getLabelBox(BOX1, anchor, projAnchor, mesh, textSize, lastChrIdx, matrix, map);
             const box = BOX;
             box[0] = Math.min(tlBox[0], brBox[0]);
             box[1] = Math.min(tlBox[1], brBox[1]);
@@ -568,7 +571,7 @@ export default class TextPainter extends CollisionPainter {
             //insert every character's box into collision index
             for (let j = start; j < start + charCount * 6; j += 6) {
                 //use int16array to save some memory
-                const box = getLabelBox(BOX, mesh, textSize, elements[j], matrix, map);
+                const box = getLabelBox(BOX, anchor, projAnchor, mesh, textSize, elements[j], matrix, map);
                 boxes.push(box.slice(0));
                 const collides = this.isCollides(box, geoProps.z);
                 if (collides === 1) {
