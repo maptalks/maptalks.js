@@ -68,9 +68,6 @@ export default class Geometry {
         this.data = buffers;
 
         if (this.elements && !isNumber(this.elements)) {
-            if (!this.elements.destroy) {
-                this._elementLength = this.elements.length;
-            }
             this.elements = this.elements.destroy ? this.elements : regl.elements({
                 primitive: this.getPrimitive(),
                 data: this.elements,
@@ -150,11 +147,7 @@ export default class Geometry {
         this.count = count === undefined ? getElementLength(elements) : count;
 
         if (e.destroy) {
-            if (this._elementLength && this._elementLength >= elements.length) {
-                this.elements = e.subdata(elements);
-            } else {
-                this.elements = e(elements);
-            }
+            this.elements = e(elements);
         } else {
             this.elements = elements;
         }
