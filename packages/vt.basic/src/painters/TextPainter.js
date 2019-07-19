@@ -293,7 +293,7 @@ export default class TextPainter extends CollisionPainter {
             if (!enableCollision) {
                 return;
             }
-            const boxCount = (end - start) / 6;
+            const boxCount = (end - start) / BOX_ELEMENT_COUNT;
             visible = this.updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {

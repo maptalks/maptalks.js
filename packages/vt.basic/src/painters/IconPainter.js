@@ -360,7 +360,15 @@ class IconPainter extends CollisionPainter {
 
     _updateIconAndText(meshes) {
         const fn = (textElements, iconElements, textVisibleElements, iconVisibleElements, iconMesh, textMesh, start, end, mvpMatrix, iconIndex) => {
-
+            // const labelIndex = iconMesh.geometry.properties.labelIndex[iconIndex];
+            // if (labelIndex[0] !== -1) {
+            //     const idx = textElements[labelIndex[0]];
+            //     const pickingId = textMesh.geometry.properties.aPickingId[idx];
+            //     const feature = textMesh.geometry.properties.features[pickingId];
+            //     if (feature && feature.feature.properties.name === '中一路隧道') {
+            //         debugger
+            //     }
+            // }
             //icon的element值，是text的element值处于text的char count
             const visible = this.updateBoxCollisionFading(iconMesh, iconElements, 1, start, end, mvpMatrix, iconIndex);
 
@@ -459,7 +467,7 @@ class IconPainter extends CollisionPainter {
 
         // debugger
         //icon and text
-        const firstBoxIdx = elements[boxIndex * BOX_ELEMENT_COUNT];
+        const firstBoxIdx = elements[start];
         const iconBox = getIconBox([], mesh, firstBoxIdx, matrix, map);
         boxes.push(iconBox);
         const collides = this.isCollides(iconBox, z);
@@ -496,13 +504,12 @@ class IconPainter extends CollisionPainter {
                 boxes
             };
         }
-
-        const charCount = textMesh.geometry.properties.aCount[textStart];
+        const textElements = textMesh.geometry.properties.elements;
+        const idx = textElements[textStart];
+        const charCount = (textEnd - textStart) / BOX_ELEMENT_COUNT;
         const textSize = textMesh.properties.textSize;
 
-        const textElements = textMesh.geometry.properties.elements;
-
-        const anchor = getAnchor(ANCHOR, textMesh, textElements[textStart]);
+        const anchor = getAnchor(ANCHOR, textMesh, idx);
         const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
         //insert every character's box into collision index
         for (let j = textStart; j < textEnd; j += 6) {
