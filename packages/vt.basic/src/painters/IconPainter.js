@@ -137,15 +137,16 @@ class IconPainter extends CollisionPainter {
         this._prepareIconGeometry(iconGeometry);
         const textGeometry = geometries[1];
         if (textGeometry) {
-            const labelIndex = buildLabelIndex(iconGeometry, textGeometry, this.symbolDef['markerTextFit']);
+            const markerTextFit = this.symbolDef['markerTextFit'];
+            const labelIndex = buildLabelIndex(iconGeometry, textGeometry, markerTextFit);
             if (!iconGeometry.getElements().length) {
                 return [];
             }
-            if (!labelIndex.length) {
+            if (markerTextFit === 'none' && !labelIndex.length) {
                 return [iconGeometry];
             }
             iconGeometry.properties.labelIndex = labelIndex;
-            if (this.symbolDef['markerTextFit'] && this.symbolDef['markerTextFit'] !== 'none') {
+            if (markerTextFit && markerTextFit !== 'none') {
                 const labelShape = buildLabelShape(iconGeometry, textGeometry);
                 if (labelShape.length) {
                     iconGeometry.properties.labelShape = labelShape;
@@ -893,6 +894,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     if (isFunctionDefinition(markerTextFit)) {
         markerTextFitFn = interpolated(markerTextFit);
     }
+    const isTextFit = markerTextFit !== 'none';
     const labelIndex = [];
     const iconElements = iconGeometry.getElements();
     const textElements = textGeometry.getElements();
@@ -907,7 +909,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
         start: 0,
         end: textCounts[textId] * BOX_ELEMENT_COUNT
     };
-
+    let labelVisitEnd = false;
     let hasLabel = false;
     let count = 0;
     const unused = [];
@@ -915,23 +917,29 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     for (let i = 0; i < iconElements.length; i += BOX_ELEMENT_COUNT) {
         const idx = iconElements[i];
         const pickingId = iconIds[idx];
-        //label的pickingId比icon的小，说明当前文字没有icon，则往前找到下一个label pickingId比当前icon大的label
-        while (currentLabel.pickingId < pickingId && currentLabel.end < textElements.length) {
-            const start = currentLabel.end;
-            const textId = textElements[start];
-            currentLabel.start = start;
-            currentLabel.end = start + textCounts[textId] * BOX_ELEMENT_COUNT;
-            currentLabel.pickingId = textIds[textId];
+        if (!labelVisitEnd) {
+            //label的pickingId比icon的小，说明当前文字没有icon，则往前找到下一个label pickingId比当前icon大的label
+            while (currentLabel.pickingId < pickingId && currentLabel.end < textElements.length) {
+                const start = currentLabel.end;
+                const textId = textElements[start];
+                currentLabel.start = start;
+                currentLabel.end = start + textCounts[textId] * BOX_ELEMENT_COUNT;
+                currentLabel.pickingId = textIds[textId];
+            }
         }
-        if (currentLabel.pickingId < pickingId) {
-            //后面的icon都没有label，直接填充labelIndex并退出
-            if (!hasLabel) {
-                return [];
+        if (!labelVisitEnd && currentLabel.pickingId < pickingId) {
+            //后面的icon都没有label
+            labelVisitEnd = true;
+            if (!isTextFit) {
+                //如果不是textfit, 直接填充labelIndex并退出
+                if (!hasLabel) {
+                    return [];
+                }
+                for (let ii = i; ii < iconElements.length; ii += BOX_ELEMENT_COUNT) {
+                    labelIndex[count++] = [-1, -1];
+                }
+                return labelIndex;
             }
-            for (let ii = i; ii < iconElements.length; ii += BOX_ELEMENT_COUNT) {
-                labelIndex[count++] = [-1, -1];
-            }
-            return labelIndex;
         }
         const feature = features[pickingId];
         const textFit = markerTextFitFn ? markerTextFitFn(null, feature.properties) : markerTextFit;
@@ -952,7 +960,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
             labelIndex[count++] = [-1, -1];
         }
     }
-    if (!hasLabel) {
+    if (!isTextFit && !hasLabel) {
         return [];
     }
     if (unused.length) {
