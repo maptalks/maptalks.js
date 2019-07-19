@@ -131,12 +131,18 @@ class IconPainter extends CollisionPainter {
         }
         const geometries = glData.sort(sorting).map(data => super.createGeometry(data, features));
         const iconGeometry = geometries[0];
+        if (!iconGeometry || !iconGeometry.getElements().length) {
+            return [];
+        }
         this._prepareIconGeometry(iconGeometry);
         const textGeometry = geometries[1];
         if (textGeometry) {
             const labelIndex = buildLabelIndex(iconGeometry, textGeometry, this.symbolDef['markerTextFit']);
             if (!iconGeometry.getElements().length) {
                 return [];
+            }
+            if (!labelIndex.length) {
+                return [iconGeometry];
             }
             iconGeometry.properties.labelIndex = labelIndex;
             if (this.symbolDef['markerTextFit'] && this.symbolDef['markerTextFit'] !== 'none') {
@@ -146,6 +152,7 @@ class IconPainter extends CollisionPainter {
                     this._prepareTextFit(iconGeometry, textGeometry);
                 }
             }
+
         }
         return geometries;
     }
@@ -895,26 +902,47 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     const features = iconGeometry.properties.features;
 
     let textId = textElements[0];
-    let currentLabel = {
+    const currentLabel = {
         pickingId: textIds[textId],
         start: 0,
         end: textCounts[textId] * BOX_ELEMENT_COUNT
     };
+
+    let hasLabel = false;
     let count = 0;
     const unused = [];
     //遍历所有的icon，当icon和aPickingId和text的相同时，则认为是同一个icon + text，并记录它的序号
     for (let i = 0; i < iconElements.length; i += BOX_ELEMENT_COUNT) {
         const idx = iconElements[i];
         const pickingId = iconIds[idx];
+        //label的pickingId比icon的小，说明当前文字没有icon，则往前找到下一个label pickingId比当前icon大的label
+        while (currentLabel.pickingId < pickingId && currentLabel.end < textElements.length) {
+            const start = currentLabel.end;
+            const textId = textElements[start];
+            currentLabel.start = start;
+            currentLabel.end = start + textCounts[textId] * BOX_ELEMENT_COUNT;
+            currentLabel.pickingId = textIds[textId];
+        }
+        if (currentLabel.pickingId < pickingId) {
+            //后面的icon都没有label，直接填充labelIndex并退出
+            if (!hasLabel) {
+                return [];
+            }
+            for (let ii = i; ii < iconElements.length; ii += BOX_ELEMENT_COUNT) {
+                labelIndex[count++] = [-1, -1];
+            }
+            return labelIndex;
+        }
         const feature = features[pickingId];
         const textFit = markerTextFitFn ? markerTextFitFn(null, feature.properties) : markerTextFit;
         if (pickingId === currentLabel.pickingId) {
             labelIndex[count++] = [currentLabel.start, currentLabel.end];
             const start = currentLabel.end;
-            let textId = textElements[start];
+            const textId = textElements[start];
             currentLabel.start = start;
             currentLabel.end = start + textCounts[textId] * BOX_ELEMENT_COUNT;
             currentLabel.pickingId = textIds[textId];
+            hasLabel = true;
         } else if (textFit && textFit !== 'none') {
             //如果icon设置了markerTextFit，但没有label，则从elements中去掉这个icon
             for (let ii = i; ii < i + BOX_ELEMENT_COUNT; ii++) {
@@ -923,6 +951,9 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
         } else {
             labelIndex[count++] = [-1, -1];
         }
+    }
+    if (!hasLabel) {
+        return [];
     }
     if (unused.length) {
         if (unused.length === iconElements.length) {
