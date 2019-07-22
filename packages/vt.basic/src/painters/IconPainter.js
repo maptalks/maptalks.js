@@ -942,7 +942,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
             }
         }
         const feature = features[pickingId];
-        const textFit = markerTextFitFn ? markerTextFitFn(null, feature.properties) : markerTextFit;
+        const textFit = markerTextFitFn ? markerTextFitFn(null, feature && feature.feature && feature.feature.properties) : markerTextFit;
         if (pickingId === currentLabel.pickingId) {
             labelIndex[count++] = [currentLabel.start, currentLabel.end];
             const start = currentLabel.end;

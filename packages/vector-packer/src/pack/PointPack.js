@@ -187,6 +187,9 @@ export default class PointPack extends VectorPack {
                 glyphReqs.options = { isCharsCompact: false };
             }
         }
+        if (!iconGlyph.icon && !iconGlyph.glyph) {
+            return null;
+        }
         return point;
     }
 

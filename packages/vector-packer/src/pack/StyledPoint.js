@@ -22,6 +22,9 @@ export default class StyledPoint {
     }
 
     _initFnTypes() {
+        if (isFnTypeSymbol('textName', this.symbolDef)) {
+            this._textNameFn = piecewiseConstant(this.symbolDef['textName']);
+        }
         if (isFnTypeSymbol('textFaceName', this.symbolDef)) {
             this._textFaceNameFn = piecewiseConstant(this.symbolDef['textFaceName']);
         }
@@ -218,14 +221,17 @@ export default class StyledPoint {
         }
 
         if (hasText) {
+            const textName = this._textNameFn ? this._textNameFn(null, properties) : symbol['textName'];
             const textFaceName = this._textFaceNameFn ? this._textFaceNameFn(null, properties) : symbol['textFaceName'];
             const textStyle = this._textStyleFn ? this._textStyleFn(null, properties) : symbol['textStyle'];
             const textWeight = this._textWeightFn ? this._textWeightFn(null, properties) : symbol['textWeight'];
             const font = getSDFFont(textFaceName, textStyle, textWeight);
-            const text = resolveText(symbol['textName'], properties);
-            result.glyph = {
-                font, text
-            };
+            const text = resolveText(textName, properties);
+            if (text && text.length) {
+                result.glyph = {
+                    font, text
+                };
+            }
         }
         this.iconGlyph = result;
         return result;
