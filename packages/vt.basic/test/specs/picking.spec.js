@@ -85,6 +85,35 @@ describe('picking specs', () => {
             runner(options, coord, expected, true, done);
         });
 
+        it('should pick an icon with text', done => {
+            const options = {
+                data: data.point,
+                style: [
+                    {
+                        renderPlugin: {
+                            type: 'icon',
+                            dataConfig: {
+                                type: 'point'
+                            },
+                            sceneConfig: {
+                                collision: false
+                            }
+                        },
+                        symbol: {
+                            markerFile: ICON_PATH,
+                            markerDx: -100,
+                            textName: 'ABC'
+                        }
+                    }
+                ],
+                pickingGeometry: true,
+                pickingPoint: true
+            };
+            const coord = [0.5, 0.5];
+            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, -368, 0], 'type': 'icon' }];
+            runner(options, coord, expected, true, done);
+        });
+
         it('should pick a icon on a rotated map', done => {
             const options = {
                 data: data.point,
