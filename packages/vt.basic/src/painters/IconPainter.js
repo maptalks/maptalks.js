@@ -704,8 +704,19 @@ class IconPainter extends CollisionPainter {
             this._textPicking.filter = mesh => {
                 return !!mesh.geometry.properties.glyphAtlas;
             };
-            //TODO pick(x,y)方法实现text的identify
         }
+    }
+
+    pick(x, y, tolerance) {
+        let result = super.pick(x, y, tolerance);
+        if (result) {
+            return result;
+        }
+        const iconPicking = this.picking;
+        this.picking = this._textPicking;
+        result = super.pick(x, y, tolerance);
+        this.picking = iconPicking;
+        return result;
     }
 
     getUniformValues(map) {
