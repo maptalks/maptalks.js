@@ -131,44 +131,34 @@ class IconPainter extends CollisionPainter {
         }
         const geometries = glData.sort(sorting).map(data => super.createGeometry(data, features));
         const iconGeometry = geometries[0];
-        if (!iconGeometry || !iconGeometry.getElements().length) {
+        // if (!iconGeometry || !iconGeometry.getElements().length) {
+        //     return [];
+        // }
+        prepareFnTypeData(iconGeometry, iconGeometry.properties.features, this.symbolDef, this._iconFnTypeConfig);
+        const textGeometry = geometries[1];
+        const markerTextFit = this.symbolDef['markerTextFit'];
+        const labelIndex = buildLabelIndex(iconGeometry, textGeometry, markerTextFit);
+        if (!iconGeometry.getElements().length) {
             return [];
         }
-        this._prepareIconGeometry(iconGeometry);
-        const textGeometry = geometries[1];
-        if (textGeometry) {
-            const markerTextFit = this.symbolDef['markerTextFit'];
-            const labelIndex = buildLabelIndex(iconGeometry, textGeometry, markerTextFit);
-            if (!iconGeometry.getElements().length) {
-                return [];
-            }
-            if (markerTextFit === 'none' && !labelIndex.length) {
-                return [iconGeometry];
-            }
-            iconGeometry.properties.labelIndex = labelIndex;
-            if (markerTextFit && markerTextFit !== 'none') {
-                const labelShape = buildLabelShape(iconGeometry, textGeometry);
-                if (labelShape.length) {
-                    iconGeometry.properties.labelShape = labelShape;
-                    this._prepareTextFit(iconGeometry, textGeometry);
-                }
-            }
-
+        if (markerTextFit === 'none' && !labelIndex.length) {
+            return [iconGeometry];
         }
+        iconGeometry.properties.labelIndex = labelIndex;
+        const hasTextFit = labelIndex.length && markerTextFit && markerTextFit !== 'none';
+        this._prepareIconGeometry(iconGeometry);
+        if (hasTextFit && textGeometry) {
+            const labelShape = buildLabelShape(iconGeometry, textGeometry);
+            if (labelShape.length) {
+                iconGeometry.properties.labelShape = labelShape;
+                this._fillTextFitData(iconGeometry, textGeometry);
+            }
+        }
+
         return geometries;
     }
 
     _prepareIconGeometry(iconGeometry) {
-        prepareFnTypeData(iconGeometry, iconGeometry.properties.features, this.symbolDef, this._iconFnTypeConfig);
-        const hasMarkerTextFit = this.symbolDef['markerTextFit'] && this.symbolDef['markerTextFit'] !== 'none';
-        if (hasMarkerTextFit) {
-            if (iconGeometry.data.aMarkerWidth) {
-                iconGeometry.data.aMarkerWidth = new Uint16Array(iconGeometry.data.aMarkerWidth);
-            }
-            if (iconGeometry.data.aMarkerHeight) {
-                iconGeometry.data.aMarkerHeight = new Uint16Array(iconGeometry.data.aMarkerHeight);
-            }
-        }
         const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy } = iconGeometry.data;
         if (aMarkerWidth) {
             //for collision
@@ -739,7 +729,7 @@ class IconPainter extends CollisionPainter {
         };
     }
 
-    _prepareTextFit(iconGeometry) {
+    _fillTextFitData(iconGeometry) {
         //1. markerTextFit 是否是 fn-type，如果是，则遍历features创建 fitIcons, fitWidthIcons, fitHeightIcons
         //2. 检查data中是否存在aMarkerWidth或aMarkerHeight，如果没有则添加
         //3. 如果textSize是zoomConstant，说明 markerWidth和markerHeight是静态的，提前计算，未来无需再更新
@@ -794,16 +784,28 @@ class IconPainter extends CollisionPainter {
         }
         const { aMarkerWidth, aMarkerHeight, aPickingId } = props;
         const count = aPickingId.length;
-        if (!aMarkerWidth && hasWidth) {
-            props.aMarkerWidth = props[PREFIX + 'aMarkerWidth'] || new Uint16Array(count);
-            if (!iconGeometry.data.aMarkerWidth) {
+        if (hasWidth) {
+            //把aMarkerWidth从Uint8Array改为Uint16Array，因为text-fit后的宽度很可能超过255
+            if (!aMarkerWidth) {
+                props.aMarkerWidth = new Uint16Array(count);
                 iconGeometry.data.aMarkerWidth = new Uint16Array(count);
+            } else {
+                const arr = iconGeometry.data.aMarkerWidth;
+                //在 fn-type 中已经创建
+                iconGeometry.data.aMarkerWidth = new Uint16Array(arr);
+                props.aMarkerWidth = props[PREFIX + 'aMarkerWidth'] = new Uint16Array(arr);
             }
+
         }
-        if (!aMarkerHeight && hasHeight) {
-            props.aMarkerHeight = props[PREFIX + 'aMarkerHeight'] || new Uint16Array(count);
-            if (!iconGeometry.data.aMarkerHeight) {
+        if (hasHeight) {
+            if (!aMarkerHeight) {
+                props.aMarkerHeight = new Uint16Array(count);
                 iconGeometry.data.aMarkerHeight = new Uint16Array(count);
+            } else {
+                const arr = iconGeometry.data.aMarkerHeight;
+                //在 fn-type 中已经创建
+                iconGeometry.data.aMarkerHeight = new Uint16Array(arr);
+                props.aMarkerHeight = props[PREFIX + 'aMarkerHeight'] = new Uint16Array(arr);
             }
         }
 
@@ -908,18 +910,27 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     const isTextFit = markerTextFit !== 'none';
     const labelIndex = [];
     const iconElements = iconGeometry.getElements();
-    const textElements = textGeometry.getElements();
     const iconIds = iconGeometry.data.aPickingId;
-    const textIds = textGeometry.data.aPickingId;
-    const textCounts = textGeometry.data.aCount;
+
+    let textElements, textIds, textCounts;
+    if (textGeometry) {
+        textElements = textGeometry.getElements();
+        textIds = textGeometry.data.aPickingId;
+        textCounts = textGeometry.data.aCount;
+    }
+
     const features = iconGeometry.properties.features;
 
-    let textId = textElements[0];
-    const currentLabel = {
-        pickingId: textIds[textId],
-        start: 0,
-        end: textCounts[textId] * BOX_ELEMENT_COUNT
-    };
+    let currentLabel;
+    if (textGeometry) {
+        let textId = textElements[0];
+        currentLabel = {
+            pickingId: textIds[textId],
+            start: 0,
+            end: textCounts[textId] * BOX_ELEMENT_COUNT
+        };
+    }
+
     let labelVisitEnd = false;
     let hasLabel = false;
     let count = 0;
@@ -928,7 +939,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     for (let i = 0; i < iconElements.length; i += BOX_ELEMENT_COUNT) {
         const idx = iconElements[i];
         const pickingId = iconIds[idx];
-        if (!labelVisitEnd) {
+        if (!labelVisitEnd && currentLabel) {
             //label的pickingId比icon的小，说明当前文字没有icon，则往前找到下一个label pickingId比当前icon大的label
             while (currentLabel.pickingId < pickingId && currentLabel.end < textElements.length) {
                 const start = currentLabel.end;
@@ -938,7 +949,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
                 currentLabel.pickingId = textIds[textId];
             }
         }
-        if (!labelVisitEnd && currentLabel.pickingId < pickingId) {
+        if (!labelVisitEnd && currentLabel && currentLabel.pickingId < pickingId) {
             //后面的icon都没有label
             labelVisitEnd = true;
             if (!isTextFit) {
@@ -954,7 +965,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
         }
         const feature = features[pickingId];
         const textFit = markerTextFitFn ? markerTextFitFn(null, feature && feature.feature && feature.feature.properties) : markerTextFit;
-        if (pickingId === currentLabel.pickingId) {
+        if (currentLabel && pickingId === currentLabel.pickingId) {
             labelIndex[count++] = [currentLabel.start, currentLabel.end];
             const start = currentLabel.end;
             const textId = textElements[start];
@@ -970,9 +981,6 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
         } else {
             labelIndex[count++] = [-1, -1];
         }
-    }
-    if (!isTextFit && !hasLabel) {
-        return [];
     }
     if (unused.length) {
         if (unused.length === iconElements.length) {
@@ -991,6 +999,9 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
             }
             iconGeometry.setElements(new iconElements.constructor(elements));
         }
+    }
+    if (!hasLabel) {
+        return [];
     }
     return labelIndex;
 }
