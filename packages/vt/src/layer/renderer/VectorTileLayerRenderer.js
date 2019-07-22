@@ -451,39 +451,35 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!this.isEnableTileStencil()) {
             return;
         }
-        const EXTENT = this._EXTENT;
         let stencilRenderer = this._stencilRenderer;
         if (!stencilRenderer) {
             stencilRenderer = this._stencilRenderer = new TileStencilRenderer(this.regl, this.canvas, this.getMap());
         }
         stencilRenderer.start();
         const { tiles, parentTiles, childTiles } = this._stencilTiles;
-        let ref = 0;
-        for (let i = 0; i < parentTiles.length; i++) {
-            const tileInfo = parentTiles[i].info;
-            const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
-            tileInfo.stencilRef = ref;
-            stencilRenderer.add(ref, EXTENT, tileTransform);
+        let ref = 1;
+        for (let i = 0; i < childTiles.length; i++) {
+            this._addTileStencil(childTiles[i].info, ref);
             ref++;
         }
-        for (let i = 0; i < childTiles.length; i++) {
-            const tileInfo = childTiles[i].info;
-            const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
-            tileInfo.stencilRef = ref;
-            stencilRenderer.add(ref, EXTENT, tileTransform);
+        for (let i = 0; i < parentTiles.length; i++) {
+            this._addTileStencil(parentTiles[i].info, ref);
             ref++;
         }
         for (let i = 0; i < tiles.length; i++) {
-            const tileInfo = tiles[i].info;
-            const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
-            tileInfo.stencilRef = ref;
-            stencilRenderer.add(ref, EXTENT, tileTransform);
+            this._addTileStencil(tiles[i].info, ref);
             ref++;
         }
 
         stencilRenderer.render();
     }
 
+    _addTileStencil(tileInfo, ref) {
+        const EXTENT = this._EXTENT;
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
+        tileInfo.stencilRef = ref;
+        this._stencilRenderer.add(ref, EXTENT, tileTransform);
+    }
 
     onDrawTileStart(context) {
         super.onDrawTileStart(context);

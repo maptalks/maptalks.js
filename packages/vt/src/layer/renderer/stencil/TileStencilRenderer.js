@@ -54,10 +54,10 @@ export default class TileStencilRenderer {
      * @param {Number} extent - vector tile extent: 4096 or 8192
      * @param {Number[]} transform - tile transform matrix
      */
-    add(ref, extent, transform) {
+    add(ref, EXTENT, transform) {
         const mesh = this._getMesh(transform);
         mesh.setUniform('ref', ref);
-        vec3.set(V, extent, extent, extent);
+        vec3.set(V, EXTENT, EXTENT, 1);
         const matrix = mesh.localTransform;
         mat4.fromScaling(matrix, V);
         mat4.mul(matrix, transform, matrix);
