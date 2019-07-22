@@ -784,8 +784,8 @@ class IconPainter extends CollisionPainter {
         }
         const { aMarkerWidth, aMarkerHeight, aPickingId } = props;
         const count = aPickingId.length;
+        //把aMarkerWidth和aMarkerHeight从Uint8Array改为Uint16Array，因为text-fit后的宽度或高度很可能超过255
         if (hasWidth) {
-            //把aMarkerWidth从Uint8Array改为Uint16Array，因为text-fit后的宽度很可能超过255
             if (!aMarkerWidth) {
                 props.aMarkerWidth = new Uint16Array(count);
                 iconGeometry.data.aMarkerWidth = new Uint16Array(count);
@@ -793,7 +793,10 @@ class IconPainter extends CollisionPainter {
                 const arr = iconGeometry.data.aMarkerWidth;
                 //在 fn-type 中已经创建
                 iconGeometry.data.aMarkerWidth = new Uint16Array(arr);
-                props.aMarkerWidth = props[PREFIX + 'aMarkerWidth'] = new Uint16Array(arr);
+                props.aMarkerWidth = new Uint16Array(arr);
+                if (props[PREFIX + 'aMarkerWidth']) {
+                    props[PREFIX + 'aMarkerWidth'] = props.aMarkerWidth;
+                }
             }
 
         }
@@ -805,7 +808,10 @@ class IconPainter extends CollisionPainter {
                 const arr = iconGeometry.data.aMarkerHeight;
                 //在 fn-type 中已经创建
                 iconGeometry.data.aMarkerHeight = new Uint16Array(arr);
-                props.aMarkerHeight = props[PREFIX + 'aMarkerHeight'] = new Uint16Array(arr);
+                props.aMarkerHeight = new Uint16Array(arr);
+                if (props[PREFIX + 'aMarkerHeight']) {
+                    props[PREFIX + 'aMarkerHeight'] = props.aMarkerHeight;
+                }
             }
         }
 
