@@ -196,6 +196,7 @@ class LineGradientPainter extends BasicPainter {
                 return canvas ? canvas.height : 1;
             }
         };
+        const depthRange = this.sceneConfig.depthRange;
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
@@ -241,8 +242,8 @@ class LineGradientPainter extends BasicPainter {
                 },
                 depth: {
                     enable: true,
-                    range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<'
+                    range: depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || (depthRange ? '<=' : 'always')
                 },
                 blend: {
                     enable: true,

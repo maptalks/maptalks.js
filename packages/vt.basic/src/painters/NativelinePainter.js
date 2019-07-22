@@ -81,7 +81,7 @@ class NativeLinePainter extends Painter {
                 }
             }
         ];
-
+        const depthRange = this.sceneConfig.depthRange;
         const config = {
             vert,
             frag,
@@ -109,8 +109,8 @@ class NativeLinePainter extends Painter {
                 },
                 depth: {
                     enable: true,
-                    range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<'
+                    range: depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || (depthRange ? '<=' : 'always')
                 },
                 blend: {
                     enable: true,

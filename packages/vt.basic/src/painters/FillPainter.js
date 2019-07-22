@@ -133,6 +133,7 @@ class FillPainter extends BasicPainter {
             }
         };
         const stencil = this.layer.getRenderer().isEnableTileStencil();
+        const depthRange = this.sceneConfig.depthRange;
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
@@ -189,8 +190,8 @@ class FillPainter extends BasicPainter {
                 },
                 depth: {
                     enable: true,
-                    range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<='
+                    range: depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || (depthRange ? '<=' : 'always')
                 },
                 blend: {
                     enable: true,
