@@ -158,6 +158,15 @@ class Extent {
         return e._add.apply(e, arguments);
     }
 
+    _scale(s) {
+        this._dirty = true;
+        this['xmin'] *= s;
+        this['ymin'] *= s;
+        this['xmax'] *= s;
+        this['ymax'] *= s;
+        return this;
+    }
+
     _sub(p) {
         this._dirty = true;
         if (!isNil(p.x)) {
@@ -311,12 +320,16 @@ class Extent {
             c = new this._clazz(c);
         }
         if (proj) {
-            c = proj.project(c);
+            if (c.x !== undefined) {
+                c = proj.project(c);
+            } else if (c.xmin !== undefined) {
+                this._project(c);
+            }
         }
-        return (c.x >= this.pxmin) &&
-            (c.x <= this.pxmax) &&
-            (c.y >= this.pymin) &&
-            (c.y <= this.pymax);
+        return ((c.x || c.pxmin || 0) >= this.pxmin) &&
+            ((c.x || c.pxmax || 0) <= this.pxmax) &&
+            ((c.y || c.pymin || 0) >= this.pymin) &&
+            ((c.y || c.pymax || 0) <= this.pymax);
     }
 
     /**
