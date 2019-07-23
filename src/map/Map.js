@@ -618,6 +618,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isNaN(zoom) || isNil(zoom)) {
             return this;
         }
+        zoom = +zoom;
         if (this._loaded && this.options['zoomAnimation'] && options['animation']) {
             this._zoomAnimation(zoom);
         } else {
@@ -649,6 +650,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         if (maxZoom !== null && maxZoom < this._zoomLevel) {
             this.setZoom(maxZoom);
+            maxZoom = +maxZoom;
         }
         this.options['maxZoom'] = maxZoom;
         return this;
@@ -672,6 +674,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     setMinZoom(minZoom) {
         if (minZoom !== null) {
+            minZoom = +minZoom;
             const viewMinZoom = this._spatialReference.getMinZoom();
             if (minZoom < viewMinZoom) {
                 minZoom = viewMinZoom;
