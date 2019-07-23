@@ -14,18 +14,22 @@
 //--------------------------
 
 #ifdef ENABLE_PICKING
-#ifdef USE_PICKING_ID
-attribute float aPickingId;
-varying float vPickingId;
+#if USE_PICKING_ID == 1 // USE_PICKING_ID == 1 时读取attributes
+attribute float aPickingId; // USE_PICKING_ID == 2 时读取uniforms
+#elif USE_PICKING_ID == 2
+uniform float uPickingId;
 #endif
+varying float vPickingId;
 varying float vFbo_picking_viewZ;
 varying float vFbo_picking_visible;
 #endif
 
 void fbo_picking_setData(float viewPosZ, bool visible) {
     #ifdef ENABLE_PICKING
-    #ifdef USE_PICKING_ID
-        vPickingId = aPickingId;
+    #if USE_PICKING_ID == 1
+       vPickingId = aPickingId;
+    #elif USE_PICKING_ID == 2
+        vPickingId = uPickingId;
     #endif
         vFbo_picking_viewZ = viewPosZ;
     #endif
