@@ -1,6 +1,17 @@
 import { isNil, isNumber } from '../core/util';
 import Coordinate from './Coordinate';
+import Point from './Point';
 import Size from './Size';
+
+//temparary variables
+const TEMP_POINT0 = new Point(0, 0);
+const TEMP_COORD0 = new Coordinate(0, 0);
+const TEMP_COORD1 = new Coordinate(0, 0);
+const MINMAX = [];
+/* eslint-disable prefer-const */
+let TEMP_EXTENT;
+/* eslint-enable prefer-const */
+const TEMP_COMBINE = [];
 
 /**
  * Represent a bounding box on the map, a rectangular geographical area with minimum and maximum coordinates. <br>
@@ -66,28 +77,26 @@ class Extent {
             isNumber(p3) &&
             isNumber(p4)) {
             if (projection) {
-                this['xmin'] = p1;
-                this['ymin'] = p2;
-                this['xmax'] = p3;
-                this['ymax'] = p4;
+                this.set(p1, p2, p3, p4);
             } else {
-                this['xmin'] = Math.min(p1, p3);
-                this['ymin'] = Math.min(p2, p4);
-                this['xmax'] = Math.max(p1, p3);
-                this['ymax'] = Math.max(p2, p4);
+                this.set(
+                    Math.min(p1, p3),
+                    Math.min(p2, p4),
+                    Math.max(p1, p3),
+                    Math.max(p2, p4)
+                );
             }
             return;
         } else if (Array.isArray(p1)) {
             if (projection) {
-                this['xmin'] = p1[0];
-                this['ymin'] = p1[1];
-                this['xmax'] = p1[2];
-                this['ymax'] = p1[3];
+                this.set(p1[0], p1[1], p1[2], p1[3]);
             } else {
-                this['xmin'] = Math.min(p1[0], p1[2]);
-                this['ymin'] = Math.min(p1[1], p1[3]);
-                this['xmax'] = Math.max(p1[0], p1[2]);
-                this['ymax'] = Math.max(p1[1], p1[3]);
+                this.set(
+                    Math.min(p1[0], p1[2]),
+                    Math.min(p1[1], p1[3]),
+                    Math.max(p1[0], p1[2]),
+                    Math.max(p1[1], p1[3])
+                );
             }
         } else if (isNumber(p1.x) &&
             isNumber(p2.x) &&
@@ -95,10 +104,7 @@ class Extent {
             isNumber(p2.y)) {
             //Constructor 2: two coordinates
             if (projection) {
-                this['xmin'] = p1.x;
-                this['ymin'] = p1.y;
-                this['xmax'] = p2.x;
-                this['ymax'] = p2.y;
+                this.set(p1.x, p1.y, p2.x, p2.y);
             } else {
                 if (p1.x > p2.x) {
                     this['xmin'] = p2.x;
@@ -120,10 +126,7 @@ class Extent {
             isNumber(p1['xmax']) &&
             isNumber(p1['ymin']) &&
             isNumber(p1['ymax'])) {
-            this['xmin'] = p1['xmin'];
-            this['ymin'] = p1['ymin'];
-            this['xmax'] = p1['xmax'];
-            this['ymax'] = p1['ymax'];
+            this.set(p1['xmin'], p1['ymin'], p1['xmax'], p1['ymax']);
         }
     }
 
@@ -260,10 +263,10 @@ class Extent {
      * @return {Boolean}
      */
     isValid() {
-        return isNumber(this['xmin']) &&
-            isNumber(this['ymin']) &&
-            isNumber(this['xmax']) &&
-            isNumber(this['ymax']);
+        return !isNil(this['xmin']) &&
+            !isNil(this['ymin']) &&
+            !isNil(this['xmax']) &&
+            !isNil(this['ymax']);
     }
 
     /**
@@ -316,12 +319,17 @@ class Extent {
         }
         this._project(this);
         const proj = this.projection;
-        if (Array.isArray(c)) {
-            c = new this._clazz(c);
-        }
         if (proj) {
             if (c.x !== undefined) {
-                c = proj.project(c);
+                const coord = TEMP_COORD0;
+                if (Array.isArray(c)) {
+                    coord.x = c[0];
+                    coord.y = c[1];
+                } else {
+                    coord.x = c.x;
+                    coord.y = c.y;
+                }
+                c = proj.project(coord, coord);
             } else if (c.xmin !== undefined) {
                 this._project(c);
             }
@@ -356,57 +364,53 @@ class Extent {
         return new Size(this.getWidth(), this.getHeight());
     }
 
+    set(xmin, ymin, xmax, ymax) {
+        this.xmin = xmin;
+        this.ymin = ymin;
+        this.xmax = xmax;
+        this.ymax = ymax;
+        return this;
+    }
+
     __combine(extent) {
-        if (!(extent instanceof this.constructor)) {
-            extent = new this.constructor(extent, extent);
+        if (extent.x !== undefined) {
+            TEMP_EXTENT.xmin = TEMP_EXTENT.xmax = extent.x;
+            TEMP_EXTENT.ymin = TEMP_EXTENT.ymax = extent.y;
+            extent = TEMP_EXTENT;
         }
         this._project(extent);
         this._project(this);
-        let xmin = this['pxmin'];
-        if (!isNumber(xmin)) {
+        const inited = isNumber(this['pxmin']);
+        let xmin, ymin, xmax, ymax;
+        if (!inited) {
             xmin = extent['pxmin'];
-        } else if (isNumber(extent['pxmin'])) {
-            if (xmin > extent['pxmin']) {
-                xmin = extent['pxmin'];
-            }
-        }
-
-        let xmax = this['pxmax'];
-        if (!isNumber(xmax)) {
-            xmax = extent['pxmax'];
-        } else if (isNumber(extent['pxmax'])) {
-            if (xmax < extent['pxmax']) {
-                xmax = extent['pxmax'];
-            }
-        }
-
-        let ymin = this['pymin'];
-        if (!isNumber(ymin)) {
             ymin = extent['pymin'];
-        } else if (isNumber(extent['pymin'])) {
-            if (ymin > extent['pymin']) {
-                ymin = extent['pymin'];
-            }
-        }
-
-        let ymax = this['pymax'];
-        if (!isNumber(ymax)) {
+            xmax = extent['pxmax'];
             ymax = extent['pymax'];
-        } else if (isNumber(extent['pymax'])) {
-            if (ymax < extent['pymax']) {
-                ymax = extent['pymax'];
-            }
+        } else {
+            xmin = Math.min(this['pxmin'], extent['pxmin']);
+            ymin = Math.min(this['pymin'], extent['pymin']);
+            xmax = Math.max(this['pxmax'], extent['pxmax']);
+            ymax = Math.max(this['pymax'], extent['pymax']);
         }
         const proj = this.projection;
         if (proj) {
-            const min = proj.unproject(new this._clazz(xmin, ymin)),
-                max = proj.unproject(new this._clazz(xmax, ymax));
+            TEMP_COORD0.x = xmin;
+            TEMP_COORD0.y = ymin;
+            TEMP_COORD1.x = xmax;
+            TEMP_COORD1.y = ymax;
+            const min = proj.unproject(TEMP_COORD0, TEMP_COORD0),
+                max = proj.unproject(TEMP_COORD1, TEMP_COORD1);
             xmin = min.x;
             ymin = min.y;
             xmax = max.x;
             ymax = max.y;
         }
-        return [xmin, ymin, xmax, ymax];
+        TEMP_COMBINE[0] = xmin;
+        TEMP_COMBINE[1] = ymin;
+        TEMP_COMBINE[2] = xmax;
+        TEMP_COMBINE[3] = ymax;
+        return TEMP_COMBINE;
     }
 
     _combine(extent) {
@@ -414,10 +418,7 @@ class Extent {
             return this;
         }
         const ext = this.__combine(extent);
-        this['xmin'] = ext[0];
-        this['ymin'] = ext[1];
-        this['xmax'] = ext[2];
-        this['ymax'] = ext[3];
+        this.set(ext[0], ext[1], ext[2], ext[3]);
         this._dirty = true;
         return this;
     }
@@ -444,12 +445,16 @@ class Extent {
         if (!this.intersects(extent)) {
             return null;
         }
-        let min = new this._clazz(Math.max(this['pxmin'], extent['pxmin']), Math.max(this['pymin'], extent['pymin'])),
-            max = new this._clazz(Math.min(this['pxmax'], extent['pxmax']), Math.min(this['pymax'], extent['pymax']));
+        TEMP_COORD0.x = Math.max(this['pxmin'], extent['pxmin']);
+        TEMP_COORD0.y = Math.max(this['pymin'], extent['pymin']);
+        TEMP_COORD1.x = Math.min(this['pxmax'], extent['pxmax']);
+        TEMP_COORD1.y = Math.min(this['pymax'], extent['pymax']);
+        let min = TEMP_COORD0,
+            max = TEMP_COORD1;
         const proj = this.projection;
         if (proj) {
-            min = proj.unproject(min);
-            max = proj.unproject(max);
+            min = proj.unproject(min, min);
+            max = proj.unproject(max, max);
         }
         return new this.constructor(min, max, proj);
     }
@@ -535,12 +540,22 @@ class Extent {
      * @param  {Function} fn convert function on each point
      * @return {Extent}
      */
-    convertTo(fn) {
+    convertTo(fn, out) {
         if (!this.isValid()) {
             return null;
         }
-        const e = new this.constructor();
-        const coord = new this._clazz(this.xmin, this.ymax);
+        const e = out || new this.constructor();
+        if (out) {
+            e.xmin = e.ymin = e.xmax = e.ymax = 0;
+        }
+        let coord;
+        if (this._clazz === Coordinate) {
+            coord = TEMP_COORD0;
+        } else if (this._clazz === Point) {
+            coord = TEMP_POINT0;
+        }
+        coord.x = this.xmin;
+        coord.y = this.ymax;
         e._combine(fn(coord));
         coord.x = this.xmax;
         e._combine(fn(coord));
@@ -560,8 +575,13 @@ class Extent {
             //FIXME a rare but potential bug:
             //An extent may be projected by multiple projection
             if (ext._dirty) {
-                let minmax = [new Coordinate(ext.xmax, ext.ymin), new Coordinate(ext.xmin, ext.ymax)];
-                minmax = proj.projectCoords(minmax);
+                TEMP_COORD0.x = ext.xmax;
+                TEMP_COORD0.y = ext.ymin;
+                TEMP_COORD1.x = ext.xmin;
+                TEMP_COORD1.y = ext.ymax;
+                MINMAX[0] = TEMP_COORD0;
+                MINMAX[1] = TEMP_COORD1;
+                const minmax = proj.projectCoords(MINMAX);
                 const min = minmax[0],
                     max = minmax[1];
                 ext.pxmin = Math.min(min.x, max.x);
@@ -578,5 +598,7 @@ class Extent {
         }
     }
 }
+
+TEMP_EXTENT = new Extent(0, 0, 0, 0);
 
 export default Extent;

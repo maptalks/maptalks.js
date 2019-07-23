@@ -1,5 +1,6 @@
 import Map from './Map';
 import Point from '../geo/Point';
+import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set } from '../core/util/vec3';
 import { clamp, interpolate, wrap } from '../core/util';
@@ -8,6 +9,7 @@ import Browser from '../core/Browser';
 
 const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;
+const TEMP_COORD = new Coordinate(0, 0);
 
 /*!
  * contains code from mapbox-gl-js
@@ -209,11 +211,11 @@ Map.include(/** @lends Map.prototype */{
      */
     _pointToContainerPoint: function () {
         const a = [0, 0, 0];
-        return function (point, zoom, altitude = 0) {
-            point = this._pointToPoint(point, zoom);
+        return function (point, zoom, altitude = 0, out) {
+            point = this._pointToPoint(point, zoom, out);
             if (this.isTransforming() || altitude) {
                 //convert altitude at zoom to current zoom
-                altitude *= this.getResolution(zoom) / this.getResolution();
+                altitude *= this._getResolution(zoom) / this._getResolution();
                 const scale = this._glScale;
                 set(a, point.x * scale, point.y * scale, altitude * scale);
 
@@ -223,10 +225,21 @@ Map.include(/** @lends Map.prototype */{
                 const w2 = this.width / 2, h2 = this.height / 2;
                 t[0] = (t[0] * w2) + w2;
                 t[1] = -(t[1] * h2) + h2;
+                if (out) {
+                    out.x = t[0];
+                    out.y = t[1];
+                    return out;
+                }
                 return new Point(t[0], t[1]);
             } else {
-                const centerPoint = this._prjToPoint(this._getPrjCenter());
-                return point._sub(centerPoint)._add(this.width / 2, this.height / 2);
+                const centerPoint = this._prjToPoint(this._getPrjCenter(), null, TEMP_COORD);
+                if (out) {
+                    out.x = point.x;
+                    out.y = point.y;
+                } else {
+                    out = point;
+                }
+                return out._sub(centerPoint)._add(this.width / 2, this.height / 2);
             }
         };
     }(),
@@ -259,7 +272,7 @@ Map.include(/** @lends Map.prototype */{
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
             coord1 = [0, 0, 0, 1];
-        return function (p, zoom) {
+        return function (p, zoom, out) {
             if (this.isTransforming()) {
                 const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
                 set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
@@ -278,11 +291,18 @@ Map.include(/** @lends Map.prototype */{
                 const z1 = coord1[2];
 
                 const t = z0 === z1 ? 0 : (0 - z0) / (z1 - z0);
-
-                const point = new Point(interpolate(x0, x1, t), interpolate(y0, y1, t))._multi(1 / this._glScale);
-                return ((zoom === undefined || this.getZoom() === zoom) ? point : this._pointToPointAtZoom(point, zoom));
+                const x = interpolate(x0, x1, t);
+                const y = interpolate(y0, y1, t);
+                if (out) {
+                    out.x = x;
+                    out.y = y;
+                } else {
+                    out = new Point(x, y);
+                }
+                out._multi(1 / this._glScale);
+                return ((zoom === undefined || this.getZoom() === zoom) ? out : this._pointToPointAtZoom(out, zoom, out));
             }
-            const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom),
+            const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom, out),
                 scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
             const x = scale * (p.x - this.width / 2),
                 y = scale * (p.y - this.height / 2);

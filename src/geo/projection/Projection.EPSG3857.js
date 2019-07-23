@@ -25,7 +25,7 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
     metersPerDegree: 6378137 * Math.PI / 180,
     maxLatitude: 85.0511287798,
 
-    project: function (lnglat) {
+    project: function (lnglat, out) {
         const rad = this.rad,
             metersPerDegree = this.metersPerDegree,
             max = this.maxLatitude;
@@ -37,10 +37,17 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
         } else {
             c = Math.log(Math.tan((90 + lat) * rad / 2)) / rad;
         }
-        return new Coordinate(lng * metersPerDegree, c * metersPerDegree);
+        const x = lng * metersPerDegree;
+        const y = c * metersPerDegree;
+        if (out) {
+            out.x = x;
+            out.y = y;
+            return out;
+        }
+        return new Coordinate(x, y);
     },
 
-    unproject: function (pLnglat) {
+    unproject: function (pLnglat, out) {
         const x = pLnglat.x,
             y = pLnglat.y;
         const rad = this.rad,
@@ -52,6 +59,13 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
             c = y / metersPerDegree;
             c = (2 * Math.atan(Math.exp(c * rad)) - Math.PI / 2) / rad;
         }
-        return new Coordinate(wrap(x / metersPerDegree, -180, 180), wrap(c, -this.maxLatitude, this.maxLatitude));
+        const rx = wrap(x / metersPerDegree, -180, 180);
+        const ry = wrap(c, -this.maxLatitude, this.maxLatitude);
+        if (out) {
+            out.x = rx;
+            out.y = ry;
+            return out;
+        }
+        return new Coordinate(rx, ry);
     }
 }, WGS84Sphere);

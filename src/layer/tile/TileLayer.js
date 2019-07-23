@@ -1,6 +1,7 @@
 import { IS_NODE, isNil, isNumber, isArrayHasData, isFunction, isInteger } from '../../core/util';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
+import Point from '../../geo/Point';
 import PointExtent from '../../geo/PointExtent';
 import TileConfig from './tileinfo/TileConfig';
 import TileSystem from './tileinfo/TileSystem';
@@ -81,7 +82,13 @@ const options = {
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
-const MAX_VISIBLE_SIZE = 5;
+// const MAX_VISIBLE_SIZE = 5;
+
+const TEMP_POINT = new Point(0, 0);
+const TEMP_POINT0 = new Point(0, 0);
+const TEMP_POINT1 = new Point(0, 0);
+const TEMP_POINT2 = new Point(0, 0);
+const TEMP_POINT_EXTENT = new PointExtent();
 
 /**
  * @classdesc
@@ -306,9 +313,10 @@ class TileLayer extends Layer {
             mapSR = map.getSpatialReference(),
             res = sr.getResolution(zoom);
 
-        const extent2d = containerExtent.convertTo(c => map._containerPointToPoint(c)),
-            innerExtent2D = this._getInnerExtent(z, containerExtent, extent2d)._add(offset);
+        const extent2d = containerExtent.convertTo(c => map._containerPointToPoint(c, undefined, TEMP_POINT));
+        const innerExtent2D = this._getInnerExtent(z, containerExtent, extent2d)._add(offset);
         extent2d._add(offset);
+        const offsetExtent2D = extent2d.sub(offset);
 
         const maskExtent = this._getMask2DExtent();
         if (maskExtent) {
@@ -316,19 +324,24 @@ class TileLayer extends Layer {
             if (!intersection) {
                 return emptyGrid;
             }
-            containerExtent = intersection.convertTo(c => map._pointToContainerPoint(c));
+            containerExtent = intersection.convertTo(c => map._pointToContainerPoint(c, undefined, 0, TEMP_POINT));
         }
 
         //Get description of center tile including left and top offset
-        const prjCenter = map._containerPointToPrj(containerExtent.getCenter());
+        const prjCenter = map._containerPointToPrj(containerExtent.getCenter(), TEMP_POINT2);
         let c;
         if (hasOffset) {
             c = this._project(map._pointToPrj(map._prjToPoint(prjCenter)._add(offset)));
         } else {
             c = this._project(prjCenter);
         }
-        const pmin = this._project(map._pointToPrj(extent2d.getMin())),
-            pmax = this._project(map._pointToPrj(extent2d.getMax()));
+
+        TEMP_POINT0.x = extent2d.xmin;
+        TEMP_POINT0.y = extent2d.ymin;
+        TEMP_POINT1.x = extent2d.xmax;
+        TEMP_POINT1.y = extent2d.ymax;
+        const pmin = this._project(map._pointToPrj(TEMP_POINT0, undefined, TEMP_POINT0));
+        const pmax = this._project(map._pointToPrj(TEMP_POINT1, undefined, TEMP_POINT1));
 
         const centerTile = tileConfig.getTileIndex(c, res),
             ltTile = tileConfig.getTileIndex(pmin, res),
@@ -345,13 +358,26 @@ class TileLayer extends Layer {
             scale = this._getTileConfig().tileSystem.scale;
         const tiles = [], extent = new PointExtent();
         for (let i = -(left); i <= right; i++) {
+            let metVisibleTile = false;
             for (let j = -(top); j <= bottom; j++) {
                 const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']);
                 if (idx.out) {
                     continue;
                 }
-                const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res),
+                let hasCachedInfo = false;
+                const tileId = this._getTileId(idx, zoom); //unique id of the tile
+                let tileInfo = renderer.isTileCachedOrLoading(tileId);
+                if (tileInfo) {
+                    tileInfo = tileInfo.info;
+                    hasCachedInfo = true;
+                }
+                let p;
+                if (tileInfo) {
+                    p = tileInfo.point0;
+                } else {
+                    const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
                     p = map._prjToPoint(this._unproject(pnw), z);
+                }
                 let width, height;
                 if (sr === mapSR) {
                     width = tileSize.width;
@@ -374,8 +400,12 @@ class TileLayer extends Layer {
                 if (hasOffset) {
                     p._sub(offset);
                 }
-                const tileExtent = new PointExtent(p, p.add(width, height)),
+                if (!tileInfo) {
+                    const tileExtent = new PointExtent(p.x, p.y, p.x + width, p.y + height);
                     tileInfo = {
+                        //reserve point caculated by tileConfig
+                        //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
+                        'point0': p.add(offset)._sub(dx, dy),
                         'point': p,
                         'z': z,
                         'x' : idx.x,
@@ -383,27 +413,36 @@ class TileLayer extends Layer {
                         'extent2d' : tileExtent,
                         'mask' : maskID
                     };
-                if (innerExtent2D.intersects(tileExtent) || !innerExtent2D.equals(extent2d.sub(offset)) && this._isTileInExtent(tileInfo, containerExtent)) {
+                }
+
+                const tileExtent = tileInfo.extent2d;
+                if (innerExtent2D.intersects(tileExtent) || !innerExtent2D.equals(offsetExtent2D) && this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
-                        tileInfo.point._add(offset);
-                        tileInfo.extent2d._add(offset);
+                        tileInfo.point = p._add(offset);
+                        tileInfo.extent2d.set(p.x, p.y, p.x + width, p.y + height);
+                        tileInfo.extent2d = tileExtent._add(offset);
                     }
-                    tileInfo['size'] = [width, height];
-                    tileInfo['dupKey'] = z + ',' + p.round().toArray().join() + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
-                    tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
-                    tileInfo['layer'] = layerId;
-                    if (!renderer || !renderer.isTileCachedOrLoading(tileInfo.id)) {
-                        //getTileUrl is expensive, save it when tile is being processed by renderer
+                    if (!hasCachedInfo) {
+                        tileInfo['size'] = [width, height];
+                        const point0 = tileInfo.point0;
+                        tileInfo['dupKey'] = z + ',' + Math.round(point0.x) + ',' + Math.round(point0.y) + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
+                        tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
+                        tileInfo['layer'] = layerId;
                         tileInfo['url'] = this.getTileUrl(idx.x, idx.y, zoom);
                     }
                     tiles.push(tileInfo);
                     extent._combine(tileExtent);
+                    metVisibleTile = true;
+                } else if (metVisibleTile) {
+                    //因为瓦片分布规律是 [看不见][看得见][看不见]
+                    //所以遇到看得见的瓦片后，遇到了第一个看不见的瓦片，后续瓦片都看不见了，无需继续遍历
+                    break;
                 }
             }
         }
 
         //sort tiles according to tile's distance to center
-        const center = map._containerPointToPoint(containerExtent.getCenter(), z)._add(offset);
+        const center = map._containerPointToPoint(containerExtent.getCenter(), z, TEMP_POINT)._add(offset);
         tiles.sort(function (a, b) {
             return a.point.distanceTo(center) - b.point.distanceTo(center);
         });
@@ -426,7 +465,7 @@ class TileLayer extends Layer {
             cw  = containerExtent.getWidth() / 2 * scale,
             h = Math.abs(Math.cos(bearing) * ch) || ch,
             w  = Math.abs(Math.sin(bearing) * ch) || cw;
-        return new PointExtent(center.sub(w, h), center.add(w, h));
+        return new PointExtent(center.x - w, center.y - h, center.x + w, center.y + h);
     }
 
     _getTileOffset(z) {
@@ -443,25 +482,25 @@ class TileLayer extends Layer {
 
     _getTileId(idx, zoom, id) {
         //id is to mark GroupTileLayer's child layers
-        return [id || this.getId(), idx.idy, idx.idx, zoom].join('__');
+        return `${id || this.getId()}__${idx.idy}__${idx.idx}__${zoom}`;//].join('__');
     }
 
 
-    _project(pcoord) {
+    _project(pcoord, out) {
         const map = this.getMap();
         const sr = this.getSpatialReference();
         if (sr !== map.getSpatialReference()) {
-            return sr.getProjection().project(map.getProjection().unproject(pcoord));
+            return sr.getProjection().project(map.getProjection().unproject(pcoord, out), out);
         } else {
             return pcoord;
         }
     }
 
-    _unproject(pcoord) {
+    _unproject(pcoord, out) {
         const map = this.getMap();
         const sr = this.getSpatialReference();
         if (sr !== map.getSpatialReference()) {
-            return map.getProjection().project(sr.getProjection().unproject(pcoord));
+            return map.getProjection().project(sr.getProjection().unproject(pcoord, out), out);
         } else {
             return pcoord;
         }
@@ -516,11 +555,15 @@ class TileLayer extends Layer {
         if (!map) {
             return false;
         }
-        const tileZoom = tileInfo.z;
-        const tileExtent = tileInfo.extent2d.convertTo(c => map._pointToContainerPoint(c, tileZoom));
-        if (tileExtent.getWidth() < MAX_VISIBLE_SIZE || tileExtent.getHeight() < MAX_VISIBLE_SIZE) {
-            return false;
+        if (!this._convertPointCallback) {
+            this._convertPointCallback = convertPoint.bind(this);
         }
+        const tileZoom = tileInfo.z;
+        this._coordTileZoom = tileZoom;
+        const tileExtent = tileInfo.extent2d.convertTo(this._convertPointCallback, TEMP_POINT_EXTENT);
+        // if (tileExtent.getWidth() < MAX_VISIBLE_SIZE || tileExtent.getHeight() < MAX_VISIBLE_SIZE) {
+        //     return false;
+        // }
         return extent.intersects(tileExtent);
     }
 
@@ -542,3 +585,7 @@ TileLayer.registerJSONType('TileLayer');
 TileLayer.mergeOptions(options);
 
 export default TileLayer;
+
+function convertPoint(c) {
+    return this.getMap()._pointToContainerPoint(c, this._coordTileZoom, 0, TEMP_POINT);
+}
