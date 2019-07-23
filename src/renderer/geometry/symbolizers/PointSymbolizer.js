@@ -39,7 +39,9 @@ class PointSymbolizer extends CanvasSymbolizer {
     }
 
     _getRenderPoints() {
-        return this.getPainter().getRenderPoints(this.getPlacement());
+        const painter = this.getPainter();
+        const placement = painter.isSpriting() ? 'point' : this.getPlacement();
+        return this.getPainter().getRenderPoints(placement);
     }
 
     /**
