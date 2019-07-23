@@ -14,8 +14,10 @@
 //--------------------------
 
 #ifdef ENABLE_PICKING
-#if USE_PICKING_ID == 1 // USE_PICKING_ID == 1 时读取attributes
-attribute float aPickingId; // USE_PICKING_ID == 2 时读取uniforms
+//USE_PICKING_ID == 1 时读取attributes
+#if USE_PICKING_ID == 1
+attribute float aPickingId;
+//USE_PICKING_ID == 2 时读取uniforms
 #elif USE_PICKING_ID == 2
 uniform float uPickingId;
 #endif
