@@ -138,8 +138,9 @@ class TileLayer extends Layer {
      * @param {Number} z - zoom
      * @return {Object[]} tile descriptors
      */
-    getTiles(z) {
+    getTiles(z, parentLayer) {
         const map = this.getMap();
+        const parentRenderer = parentLayer && parentLayer.getRenderer();
         const mapExtent = map.getContainerExtent();
         const tileGrids = [];
         let count = 0;
@@ -152,7 +153,7 @@ class TileLayer extends Layer {
             map.getPitch() <= minPitchToCascade ||
             !isNil(minZoom) && tileZoom <= minZoom
         ) {
-            const currentTiles = this._getTiles(tileZoom, mapExtent);
+            const currentTiles = this._getTiles(tileZoom, mapExtent, undefined, parentRenderer);
             if (currentTiles) {
                 count += currentTiles.tiles.length;
                 tileGrids.push(currentTiles);
@@ -164,12 +165,12 @@ class TileLayer extends Layer {
 
         const visualHeight = Math.floor(map._getVisualHeight(minPitchToCascade));
         const extent0 = new PointExtent(0, map.height - visualHeight, map.width, map.height);
-        const currentTiles = this._getTiles(tileZoom, extent0, 0);
+        const currentTiles = this._getTiles(tileZoom, extent0, 0, parentRenderer);
         count += currentTiles ? currentTiles.tiles.length : 0;
 
         const extent1 = new PointExtent(0, mapExtent.ymin, map.width, extent0.ymin);
         const d = map.getSpatialReference().getZoomDirection();
-        const parentTiles = this._getTiles(tileZoom - d, extent1, 1);
+        const parentTiles = this._getTiles(tileZoom - d, extent1, 1, parentRenderer);
         count += parentTiles ? parentTiles.tiles.length : 0;
 
         tileGrids.push(currentTiles, parentTiles);
@@ -280,7 +281,7 @@ class TileLayer extends Layer {
         return zoom;
     }
 
-    _getTiles(z, containerExtent, maskID) {
+    _getTiles(z, containerExtent, maskID, parentRenderer) {
         // rendWhenReady = false;
         const map = this.getMap();
         const zoom = z + this.options['zoomOffset'];
@@ -353,7 +354,7 @@ class TileLayer extends Layer {
             bottom = Math.ceil(Math.abs(centerTile.y - rbTile.y)),
             right = Math.ceil(Math.abs(centerTile.x - rbTile.x));
         const layerId = this.getId(),
-            renderer = this.getRenderer(),
+            renderer = this.getRenderer() || parentRenderer,
             tileSize = this.getTileSize(),
             scale = this._getTileConfig().tileSystem.scale;
         const tiles = [], extent = new PointExtent();
@@ -366,7 +367,7 @@ class TileLayer extends Layer {
                 }
                 let hasCachedInfo = false;
                 const tileId = this._getTileId(idx, zoom); //unique id of the tile
-                let tileInfo = renderer.isTileCachedOrLoading(tileId);
+                let tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
                 if (tileInfo) {
                     tileInfo = tileInfo.info;
                     hasCachedInfo = true;

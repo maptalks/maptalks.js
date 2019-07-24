@@ -380,7 +380,7 @@ class Extent {
         }
         this._project(extent);
         this._project(this);
-        const inited = isNumber(this['pxmin']);
+        const inited = isNumber(this.pxmin);
         let xmin, ymin, xmax, ymax;
         if (!inited) {
             xmin = extent['pxmin'];
@@ -414,7 +414,7 @@ class Extent {
     }
 
     _combine(extent) {
-        if (!extent) {
+        if (!extent || extent.isValid && !extent.isValid()) {
             return this;
         }
         const ext = this.__combine(extent);
@@ -429,7 +429,7 @@ class Extent {
      * @returns {Extent} extent combined
      */
     combine(extent) {
-        if (!extent) {
+        if (!extent || extent.isValid && !extent.isValid()) {
             return this;
         }
         const ext = this.__combine(extent);

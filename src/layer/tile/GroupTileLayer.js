@@ -98,7 +98,7 @@ class GroupTileLayer extends TileLayer {
             if (!layer.options['visible']) {
                 continue;
             }
-            const childGrid = layer.getTiles(z);
+            const childGrid = layer.getTiles(z, this);
             if (!childGrid || childGrid.count === 0) {
                 continue;
             }
