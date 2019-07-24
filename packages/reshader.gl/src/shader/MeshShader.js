@@ -1,6 +1,6 @@
 import Shader from './Shader.js';
 import { isNumber } from '../common/Util.js';
-import { InstancedMesh } from '../index.js';
+import InstancedMesh from '../InstancedMesh.js';
 
 class MeshShader extends Shader {
 
