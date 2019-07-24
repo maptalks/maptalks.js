@@ -22,6 +22,14 @@ const registerSymbolizers = [
 
 let testCanvas;
 
+const TEMP_POINT0 = new Point(0, 0);
+const TEMP_PAINT_EXTENT = new PointExtent();
+const TEMP_EXTENT = new PointExtent();
+const TEMP_FIXED_EXTENT = new PointExtent();
+const TEMP_CLIP_EXTENT0 = new PointExtent();
+const TEMP_CLIP_EXTENT1 = new PointExtent();
+// const TEMP_CONTAINER_EXTENT = new PointExtent();
+
 /**
  * @classdesc
  * Painter class for all geometry types except the collection types.
@@ -175,8 +183,7 @@ class Painter extends Class {
     }
 
     _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement) {
-        const cExtent = this.getContainerExtent();
-        if (!cExtent) {
+        if (this._aboveCamera()) {
             return null;
         }
         const map = this.getMap(),
@@ -259,21 +266,22 @@ class Painter extends Class {
 
     _clip(points, altitude) {
         const map = this.getMap(),
-            geometry = this.geometry,
-            glZoom = map.getGLZoom();
+            geometry = this.geometry;
         let lineWidth = this.getSymbol()['lineWidth'];
         if (!isNumber(lineWidth)) {
             lineWidth = 4;
         }
-        const containerExtent = map.getContainerExtent();
-        let extent2D = containerExtent.expand(lineWidth).convertTo(p => map._containerPointToPoint(p, glZoom));
+        let extent2D = map._get2DExtent(undefined, TEMP_CLIP_EXTENT0)._expand(lineWidth);
+        // let extent2D = containerExtent._expand(lineWidth).convertTo(p => map._containerPointToPoint(p, glZoom, TEMP_POINT0), containerExtent);
         if (map.getPitch() > 0 && altitude) {
             const c = map.cameraLookAt;
             const pos = map.cameraPosition;
             //add [1px, 1px] towards camera's lookAt
-            extent2D = extent2D.combine(new Point(pos)._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
+            TEMP_POINT0.x = pos.x;
+            TEMP_POINT0.y = pos.y;
+            extent2D = extent2D._combine(TEMP_POINT0._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
         }
-        const e = this.get2DExtent();
+        const e = this.get2DExtent(null, TEMP_CLIP_EXTENT1);
         let clipPoints = points;
         if (e.within(extent2D)) {
             // if (this.geometry.getJSONType() === 'LineString') {
@@ -387,7 +395,7 @@ class Painter extends Class {
             return;
         }
         //reduce geos to paint when drawOnInteracting
-        if (extent && !extent.intersects(this.get2DExtent(renderer.resources))) {
+        if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {
             return;
         }
         const map = this.getMap();
@@ -513,7 +521,7 @@ class Painter extends Class {
         }
     }
 
-    get2DExtent(resources) {
+    get2DExtent(resources, out) {
         this._verifyProjection();
         const map = this.getMap();
         resources = resources || this.getLayer()._getRenderer().resources;
@@ -534,31 +542,35 @@ class Painter extends Class {
                 extent._zoom = zoom;
             }
         }
+        if (out) {
+            out.set(this._extent2D['xmin'], this._extent2D['ymin'], this._extent2D['xmax'], this._extent2D['ymax']);
+            out._add(this._fixedExtent);
+            return out;
+        }
         return this._extent2D.add(this._fixedExtent);
     }
 
-    getContainerExtent() {
+    getContainerExtent(out) {
+        if (this._aboveCamera()) {
+            return null;
+        }
         this._verifyProjection();
         const map = this.getMap();
         const zoom = map.getZoom();
-        const glScale = map.getGLScale();
+        const glScale = map._glScale;
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
-            this.get2DExtent();
+            this.get2DExtent(null, TEMP_EXTENT);
         }
         const altitude = this.getMinAltitude();
-        const frustumAlt = map.getFrustumAltitude();
-        if (altitude && frustumAlt && frustumAlt < altitude) {
-            return null;
-        }
-        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude / glScale));
+        const extent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, altitude / glScale, TEMP_POINT0), out);
         const maxAltitude = this.getMaxAltitude();
         if (maxAltitude !== altitude) {
-            const extent2 = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, maxAltitude / glScale));
+            const extent2 = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, maxAltitude / glScale, TEMP_POINT0), TEMP_EXTENT);
             extent._combine(extent2);
         }
         const layer = this.geometry.getLayer();
         if (this.geometry.type === 'LineString' && maxAltitude && layer.options['drawAltitude']) {
-            const groundExtent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, 0));
+            const groundExtent = this._extent2D.convertTo(c => map._pointToContainerPoint(c, zoom, 0, TEMP_POINT0), TEMP_EXTENT);
             extent._combine(groundExtent);
         }
         if (extent) {
@@ -571,11 +583,18 @@ class Painter extends Class {
         return extent;
     }
 
+    _aboveCamera() {
+        const altitude = this.getMinAltitude();
+        const map = this.getMap();
+        const frustumAlt = map.getFrustumAltitude();
+        return altitude && frustumAlt && frustumAlt < altitude;
+    }
+
     getFixedExtent() {
         const map = this.getMap();
         const zoom = map.getZoom();
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
-            this.get2DExtent();
+            this.get2DExtent(null, TEMP_FIXED_EXTENT);
         }
         return this._fixedExtent;
     }

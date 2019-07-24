@@ -23,6 +23,7 @@ import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
 
+const TEMP_POINT = new Point(0, 0);
 
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
@@ -1769,9 +1770,22 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {PointExtent}
      * @private
      */
-    _get2DExtent(zoom) {
+    _get2DExtent(zoom, out) {
+        let cached;
+        if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
+            cached = this._mapExtent2D;
+        } else if (zoom === this.getGLZoom() && this._mapGlExtent2D) {
+            cached = this._mapGlExtent2D;
+        }
+        if (cached) {
+            if (out) {
+                out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
+                return out;
+            }
+            return cached.copy();
+        }
         const cExtent = this.getContainerExtent();
-        return cExtent.convertTo(c => this._containerPointToPoint(c, zoom));
+        return cExtent.convertTo(c => this._containerPointToPoint(c, zoom, TEMP_POINT), out);
     }
 
     /**
@@ -2102,8 +2116,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      */
     _getResolution(zoom) {
+        if ((zoom === undefined || zoom === this._zoomLevel) && this._mapRes !== undefined) {
+            return this._mapRes;
+        }
         if (isNil(zoom)) {
-            zoom = this.getZoom();
+            zoom = this._zoomLevel;
         }
         return this._spatialReference.getResolution(zoom);
     }

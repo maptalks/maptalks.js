@@ -188,6 +188,10 @@ Map.include(/** @lends Map.prototype */{
     },
 
     getFrustumAltitude() {
+        return this._frustumAltitude;
+    },
+
+    _calcFrustumAltitude() {
         const pitch = 90 - this.getPitch();
         let fov = this.getFov() / 2;
         const cameraAlt = this.cameraPosition ? this.cameraPosition[2] : 0;
@@ -232,7 +236,7 @@ Map.include(/** @lends Map.prototype */{
                 }
                 return new Point(t[0], t[1]);
             } else {
-                const centerPoint = this._prjToPoint(this._getPrjCenter(), null, TEMP_COORD);
+                const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
                 if (out) {
                     out.x = point.x;
                     out.y = point.y;
@@ -330,6 +334,9 @@ Map.include(/** @lends Map.prototype */{
             m1 = Browser.ie9 ? null : createMat4();
         return function () {
             // get pixel size of map
+            this._mapRes = this.getResolution();
+            this._mapExtent2D = this._get2DExtent();
+            this._mapGlExtent2D = this._get2DExtent(this.getGLZoom());
             if (Browser.ie9) {
                 return;
             }
@@ -355,6 +362,7 @@ Map.include(/** @lends Map.prototype */{
             // matrix for screen point => world point
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
             this.domCssMatrix = this._calcDomMatrix();
+            this._frustumAltitude = this._calcFrustumAltitude();
         };
     }(),
 

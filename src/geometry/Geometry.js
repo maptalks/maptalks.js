@@ -337,9 +337,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      *
      * @returns {PointExtent}
      */
-    getContainerExtent() {
+    getContainerExtent(out) {
         const painter = this._getPainter();
-        return painter ? painter.getContainerExtent() : null;
+        return painter ? painter.getContainerExtent(out) : null;
     }
 
     /**
