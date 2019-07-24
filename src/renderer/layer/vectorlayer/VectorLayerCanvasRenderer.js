@@ -1,6 +1,9 @@
 import { getExternalResources } from '../../../core/util/resource';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
+import PointExtent from '../../../geo/PointExtent';
+
+const TEMP_EXTENT = new PointExtent();
 
 /**
  * @classdesc
@@ -122,8 +125,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return;
         }
 
-        const painter = geo._getPainter(),
-            extent2D = painter.get2DExtent(this.resources);
+        const painter = geo._getPainter();
+        const extent2D = painter.get2DExtent(this.resources, TEMP_EXTENT);
         if (!extent2D || !extent2D.intersects(this._displayExtent)) {
             return;
         }

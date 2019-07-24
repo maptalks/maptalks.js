@@ -542,6 +542,9 @@ class Painter extends Class {
                 extent._zoom = zoom;
             }
         }
+        if (!this._extent2D) {
+            return null;
+        }
         if (out) {
             out.set(this._extent2D['xmin'], this._extent2D['ymin'], this._extent2D['xmax'], this._extent2D['ymax']);
             out._add(this._fixedExtent);
