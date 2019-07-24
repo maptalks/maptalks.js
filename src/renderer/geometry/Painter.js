@@ -272,7 +272,6 @@ class Painter extends Class {
             lineWidth = 4;
         }
         let extent2D = map._get2DExtent(undefined, TEMP_CLIP_EXTENT0)._expand(lineWidth);
-        // let extent2D = containerExtent._expand(lineWidth).convertTo(p => map._containerPointToPoint(p, glZoom, TEMP_POINT0), containerExtent);
         if (map.getPitch() > 0 && altitude) {
             const c = map.cameraLookAt;
             const pos = map.cameraPosition;
@@ -293,16 +292,17 @@ class Painter extends Class {
                 altitude : altitude
             };
         }
+        const glExtent2D = map._get2DExtent(map.getGLZoom(), TEMP_CLIP_EXTENT0)._expand(lineWidth / map._glScale);
         const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
         if (geometry.getShell && this.geometry.getHoles && !smoothness) {
             // clip the polygon to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipPolygon(points, extent2D);
+                clipPoints = clipPolygon(points, glExtent2D);
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    const part = clipPolygon(points[i], extent2D);
+                    const part = clipPolygon(points[i], glExtent2D);
                     if (part.length) {
                         clipPoints.push(part);
                     }
@@ -311,11 +311,11 @@ class Painter extends Class {
         } else if (geometry.getJSONType() === 'LineString') {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipLine(points, extent2D, false, !!smoothness);
+                clipPoints = clipLine(points, glExtent2D, false, !!smoothness);
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    pushIn(clipPoints, clipLine(points[i], extent2D, false, !!smoothness));
+                    pushIn(clipPoints, clipLine(points[i], glExtent2D, false, !!smoothness));
                 }
             }
             //interpolate line's segment's altitude if altitude is an array

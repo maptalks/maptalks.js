@@ -2118,6 +2118,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     _getResolution(zoom) {
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapRes !== undefined) {
             return this._mapRes;
+        } else if (zoom === this.getGLZoom() && this._mapGlRes !== undefined) {
+            return this._mapGlRes;
         }
         if (isNil(zoom)) {
             zoom = this._zoomLevel;

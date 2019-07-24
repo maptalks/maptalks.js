@@ -334,12 +334,14 @@ Map.include(/** @lends Map.prototype */{
             m1 = Browser.ie9 ? null : createMat4();
         return function () {
             // get pixel size of map
-            this._mapRes = this.getResolution();
-            this._mapExtent2D = this._get2DExtent();
-            this._mapGlExtent2D = this._get2DExtent(this.getGLZoom());
             if (Browser.ie9) {
                 return;
             }
+            //必须先删除缓存的常用值，否则后面计算常用值时，会循环引用造成错误
+            delete this._mapRes;
+            delete this._mapGlRes;
+            delete this._mapExtent2D;
+            delete this._mapGlExtent2D;
             const size = this.getSize();
             const w = size.width || 1,
                 h = size.height || 1;
@@ -363,6 +365,11 @@ Map.include(/** @lends Map.prototype */{
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
             this.domCssMatrix = this._calcDomMatrix();
             this._frustumAltitude = this._calcFrustumAltitude();
+            //缓存常用的值
+            this._mapRes = this._getResolution();
+            this._mapGlRes = this._getResolution(this.getGLZoom());
+            this._mapExtent2D = this._get2DExtent();
+            this._mapGlExtent2D = this._get2DExtent(this.getGLZoom());
         };
     }(),
 
