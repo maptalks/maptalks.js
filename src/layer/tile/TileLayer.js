@@ -358,10 +358,19 @@ class TileLayer extends Layer {
             tileSize = this.getTileSize(),
             scale = this._getTileConfig().tileSystem.scale;
         const tiles = [], extent = new PointExtent();
-        for (let i = -(left); i <= right; i++) {
-            let metVisibleTile = false;
-            for (let j = -(top); j <= bottom; j++) {
-                const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], i, j, res, this.options['repeatWorld']);
+        for (let i = -top; i <= bottom; i++) {
+            let j = -left;
+            let leftVisitEnd = -Infinity;
+            let rightVisitEnd = false;
+            while (j >= leftVisitEnd && j <= right) {
+                const idx = tileConfig.getNeighorTileIndex(centerTile['x'], centerTile['y'], j, i, res, this.options['repeatWorld']);
+                if (leftVisitEnd === -Infinity) {
+                    //从左往右遍历中
+                    j++;
+                } else {
+                    //从右往左遍历中
+                    j--;
+                }
                 if (idx.out) {
                     continue;
                 }
@@ -417,7 +426,8 @@ class TileLayer extends Layer {
                 }
 
                 const tileExtent = tileInfo.extent2d;
-                if (innerExtent2D.intersects(tileExtent) || !innerExtent2D.equals(offsetExtent2D) && this._isTileInExtent(tileInfo, containerExtent)) {
+                if (rightVisitEnd || innerExtent2D.intersects(tileExtent) ||
+                    !innerExtent2D.equals(offsetExtent2D) && this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
                         tileInfo.point = p._add(offset);
                         tileInfo.extent2d.set(p.x, p.y, p.x + width, p.y + height);
@@ -433,11 +443,14 @@ class TileLayer extends Layer {
                     }
                     tiles.push(tileInfo);
                     extent._combine(tileExtent);
-                    metVisibleTile = true;
-                } else if (metVisibleTile) {
-                    //因为瓦片分布规律是 [看不见][看得见][看不见]
-                    //所以遇到看得见的瓦片后，遇到了第一个看不见的瓦片，后续瓦片都看不见了，无需继续遍历
-                    break;
+                    if (leftVisitEnd === -Infinity) {
+                        //从左往右第一次遇到可视的瓦片，改为从右往左遍历
+                        leftVisitEnd = j;
+                        j = right;
+                    } else if (!rightVisitEnd) {
+                        //从右往左第一次遇到可视瓦片，之后的瓦片全部可视
+                        rightVisitEnd = true;
+                    }
                 }
             }
         }
@@ -483,7 +496,7 @@ class TileLayer extends Layer {
 
     _getTileId(idx, zoom, id) {
         //id is to mark GroupTileLayer's child layers
-        return `${id || this.getId()}__${idx.idy}__${idx.idx}__${zoom}`;//].join('__');
+        return `${id || this.getId()}-${idx.idy}-${idx.idx}-${zoom}`;//].join('__');
     }
 
 
@@ -552,10 +565,6 @@ class TileLayer extends Layer {
     }
 
     _isTileInExtent(tileInfo, extent) {
-        const map = this.getMap();
-        if (!map) {
-            return false;
-        }
         if (!this._convertPointCallback) {
             this._convertPointCallback = convertPoint.bind(this);
         }
