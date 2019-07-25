@@ -137,6 +137,10 @@ class CanvasRenderer extends Class {
 
     }
 
+    isLoadingResource() {
+        return this._loadingResource;
+    }
+
     isRenderComplete() {
         return !!this._renderComplete;
     }

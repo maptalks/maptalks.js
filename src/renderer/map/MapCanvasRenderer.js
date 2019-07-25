@@ -108,13 +108,14 @@ class MapCanvasRenderer extends MapRenderer {
                 }
                 this.setLayerCanvasUpdated();
             }
-            delete renderer.__shouldZoomTransform;
+            const transformMatrix = renderer.__zoomTransformMatrix;
+            delete renderer.__zoomTransformMatrix;
             if (!needsRedraw) {
                 if (isCanvas && isInteracting) {
                     if (map.isZooming() && !map.getPitch()) {
                         // transform layer's current canvas when zooming
                         renderer.prepareRender();
-                        renderer.__shouldZoomTransform = true;
+                        renderer.__zoomTransformMatrix = this._zoomMatrix;
                     } else if (map.getPitch() || map.isRotating()) {
                         // when map is pitching or rotating, clear the layer canvas
                         // otherwise, leave layer's canvas unchanged
@@ -139,6 +140,11 @@ class MapCanvasRenderer extends MapRenderer {
             } else {
                 // map is not interacting, call layer's render
                 renderer.render(framestamp);
+                //地图缩放完以后，如果下一次render需要载入资源，仍需要设置transformMatrix
+                //防止在资源载入完成之前，缺少transformMatrix导致的绘制错误
+                if (isCanvas && transformMatrix && renderer.isLoadingResource()) {
+                    renderer.__zoomTransformMatrix = transformMatrix;
+                }
             }
 
             if (isCanvas) {
@@ -217,7 +223,7 @@ class MapCanvasRenderer extends MapRenderer {
             // then:
             // transform layer's current canvas when zooming
             renderer.prepareRender();
-            renderer.__shouldZoomTransform = true;
+            renderer.__zoomTransformMatrix = this._zoomMatrix;
         } else if (map.getPitch() || map.isRotating()) {
             // when map is pitching or rotating, clear the layer canvas
             // otherwise, leave layer's canvas unchanged
@@ -609,11 +615,10 @@ class MapCanvasRenderer extends MapRenderer {
         if (layer.options['cssFilter']) {
             ctx.filter = layer.options['cssFilter'];
         }
-        const matrix = this._zoomMatrix;
-        const shouldTransform = !!layer._getRenderer().__shouldZoomTransform;
         const renderer = layer.getRenderer();
+        const matrix = renderer.__zoomTransformMatrix;
         const clipped = renderer.clipCanvas(this.context);
-        if (matrix && shouldTransform) {
+        if (matrix) {
             ctx.save();
             ctx.setTransform.apply(ctx, matrix);
         }
@@ -632,7 +637,7 @@ class MapCanvasRenderer extends MapRenderer {
         }*/
 
         ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, width, height);
-        if (matrix && shouldTransform) {
+        if (matrix) {
             ctx.restore();
         }
         if (clipped) {
