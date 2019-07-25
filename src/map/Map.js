@@ -721,7 +721,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
-        return this.getScale(zoom) / this.getScale(this.getGLZoom());
+        return this._getResolution(zoom) / this._getResolution(this.getGLZoom());
     }
 
     /**

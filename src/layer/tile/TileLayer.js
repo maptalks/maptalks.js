@@ -587,6 +587,10 @@ class TileLayer extends Layer {
         delete this._tileConfig;
         delete this._defaultTileConfig;
         delete this._sr;
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.clear();
+        }
     }
 }
 
