@@ -1,7 +1,9 @@
-import { extend, wrap } from '../../core/util';
+import { extend, wrap, sign } from '../../core/util';
 import Common from './Projection';
 import Coordinate from '../Coordinate';
 import { WGS84Sphere } from '../measurer';
+
+const delta = 1E-7;
 
 /**
  * Well-known projection used by Google maps or Open Street Maps, aka Mercator Projection.<br>
@@ -48,10 +50,10 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
     },
 
     unproject: function (pLnglat, out) {
-        const x = pLnglat.x,
-            y = pLnglat.y;
-        const rad = this.rad,
-            metersPerDegree = this.metersPerDegree;
+        const rad = this.rad;
+        const metersPerDegree = this.metersPerDegree;
+        let x = pLnglat.x / metersPerDegree;
+        const y = pLnglat.y;
         let c;
         if (y === 0) {
             c = 0;
@@ -59,7 +61,13 @@ export default extend({}, Common, /** @lends projection.EPSG3857 */ {
             c = y / metersPerDegree;
             c = (2 * Math.atan(Math.exp(c * rad)) - Math.PI / 2) / rad;
         }
-        const rx = wrap(x / metersPerDegree, -180, 180);
+        if (Math.abs(Math.abs(x) - 180) < delta) {
+            x = sign(x) * 180;
+        }
+        if (Math.abs(Math.abs(c) - this.maxLatitude) < delta) {
+            c = sign(c) * this.maxLatitude;
+        }
+        const rx = wrap(x, -180, 180);
         const ry = wrap(c, -this.maxLatitude, this.maxLatitude);
         if (out) {
             out.x = rx;

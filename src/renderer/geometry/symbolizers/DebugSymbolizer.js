@@ -42,7 +42,7 @@ export default class DebugSymbolizer extends PointSymbolizer {
         for (let i = 0; i < points.length; i++) {
             const p = points[i];
             if (!isNil(id)) {
-                Canvas.fillText(ctx, id, p.add(8, -4), color);
+                Canvas.fillText(ctx, id, p.x + 8, p.y - 4, color);
             }
             const c = [];
             for (let ii = 0; ii < cross.length; ii++) {

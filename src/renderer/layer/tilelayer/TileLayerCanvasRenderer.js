@@ -13,6 +13,8 @@ import LruCache from '../../../core/util/LruCache';
 import Canvas from '../../../core/Canvas';
 
 const TEMP_POINT = new Point(0, 0);
+const TEMP_POINT1 = new Point(0, 0);
+const TEMP_POINT2 = new Point(0, 0);
 
 /**
  * @classdesc
@@ -485,9 +487,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.fillStyle = color;
             ctx.strokeWidth = 10;
             ctx.font = '15px monospace';
-            Canvas2D.rectangle(ctx, cp, { width: w, height: h }, 1, 0);
-            Canvas2D.fillText(ctx, 'x:' + xyz[2] + ', y:' + xyz[1] + ', z:' + xyz[3], cp.add(10, 20), color);
-            Canvas2D.drawCross(ctx, cp._add(w / 2, h / 2), 2, color);
+            Canvas2D.rectangle(ctx, x, y, { width: w, height: h }, 1, 0);
+            Canvas2D.fillText(ctx, 'x:' + xyz[2] + ', y:' + xyz[1] + ', z:' + xyz[3], x + 10, y + 20, color);
+            Canvas2D.drawCross(ctx, x + w / 2, y + h / 2, 2, color);
             ctx.restore();
         }
         if (transformed) {
@@ -508,8 +510,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            pmin = layer._project(map._pointToPrj(min, info.z)),
-            pmax = layer._project(map._pointToPrj(max, info.z));
+            pmin = layer._project(map._pointToPrj(min, info.z, TEMP_POINT1), TEMP_POINT1),
+            pmax = layer._project(map._pointToPrj(max, info.z, TEMP_POINT2), TEMP_POINT2);
         const zoomDiff = 2;
         for (let i = 1; i < zoomDiff; i++) {
             this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
