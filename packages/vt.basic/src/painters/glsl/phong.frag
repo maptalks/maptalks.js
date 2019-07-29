@@ -33,16 +33,24 @@ uniform Light light;
 
 uniform float opacity;
 
+
 #ifdef USE_EXTRUSION_OPACITY
     uniform vec2 extrusionOpacityRange;
     uniform float extrusionOpacityStep;
     varying float vExtrusionOpacity;
 #endif
 
-//光源
+uniform float tileExtent;
+varying vec2 vPosition;
 
 void main()
 {
+    //当position的x, y超出tileExtent时，丢弃该片元
+    // float clip = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
+    //     sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
+    // if (clip == 0.0) {
+    //     discard;
+    // }
     // -------------- 光照 ----------------------
     //环境光
     vec3 ambient = vColor * light.ambient * material.ambient;

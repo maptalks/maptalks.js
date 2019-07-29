@@ -18,6 +18,7 @@ varying vec3 vColor;
     attribute float aExtrusionOpacity;
     varying float vExtrusionOpacity;
 #endif
+varying vec2 vPosition;
 
 /**
  * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
@@ -45,4 +46,5 @@ void main()
     #ifdef USE_EXTRUSION_OPACITY
         vExtrusionOpacity = aExtrusionOpacity;
     #endif
+    vPosition = aPosition.xy;
 }

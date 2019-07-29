@@ -67,6 +67,7 @@ class PhongPainter extends Painter {
             castShadow: false,
             picking: true
         });
+        mesh.setUniform('tileExtent', geometry.properties.tileExtent);
         if (this.sceneConfig.animation) {
             SCALE[2] = 0.01;
             const mat = [];

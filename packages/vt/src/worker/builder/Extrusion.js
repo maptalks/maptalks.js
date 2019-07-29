@@ -122,6 +122,8 @@ export function buildExtrudeFaces(
         const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
         const height = heightProperty ? getHeightValue(feature.properties, heightProperty, defaultHeight) * altitudeScale : altitude;
 
+        const verticeCount = vertices.length;
+
         let start = offset;
         let holes = [];
         for (let i = 0, l = geometry.length; i < l; i++) {
@@ -156,9 +158,9 @@ export function buildExtrudeFaces(
                 offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
             }
         }
-        // need to buildUniqueVertex
-        const count = indices.length - featIndexes.length;
-        for (let i = 0; i < count; i++) {
+
+        const count = vertices.length - verticeCount;
+        for (let i = 0; i < count / 3; i++) {
             featIndexes.push(feature[KEY_IDX] || r);
         }
     }
@@ -168,7 +170,6 @@ export function buildExtrudeFaces(
         vertices : new Int16Array(vertices),        // vertexes
         indices,                                    // indices for drawElements
         featureIndexes : new feaCtor(featIndexes)   // vertex index of each feature
-        // clipEdges : new Uint8Array(clipEdges)
     };
     if (uvs) {
         data.uvs = new Float32Array(uvs);
