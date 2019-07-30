@@ -28,7 +28,8 @@ const options = {
     'cacheSvgOnCanvas': Browser.gecko,
     'enableAltitude' : false,
     'altitudeProperty' : 'altitude',
-    'drawAltitude' : false
+    'drawAltitude' : false,
+    'markerLimitOnZooming': 30
 };
 
 /**

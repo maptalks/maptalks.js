@@ -2,6 +2,8 @@ import { getExternalResources } from '../../../core/util/resource';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
+import Point from '../../../geo/Point';
+import Marker from '../../../geometry/Marker';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -81,11 +83,17 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return;
         }
         this._updateDisplayExtent();
+        this._sortMarkersOnZooming();
+        const markers = this._markersOnZooming;
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
-            if (!this._geosToDraw[i].isVisible()) {
+            const geo = this._geosToDraw[i];
+            if (!geo.isVisible()) {
                 continue;
             }
-            this._geosToDraw[i]._paint(this._displayExtent);
+            if ((geo instanceof Marker) && markers && !markers[i]) {
+                continue;
+            }
+            geo._paint(this._displayExtent);
         }
     }
 
@@ -117,6 +125,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     prepareToDraw() {
         this._hasPoint = false;
         this._geosToDraw = [];
+        this._markersToDraw = [];
+        this._markersIdx = [];
     }
 
     checkGeo(geo) {
@@ -134,10 +144,21 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._hasPoint = true;
         }
         this._geosToDraw.push(geo);
+        if (geo instanceof Marker) {
+            this._markersToDraw.push(this._geosToDraw.length - 1);
+        }
+    }
+
+    onZoomStart(zoom, origin) {
+        const map = this.getMap();
+        this._zoomOrigin = origin || new Point(map.width / 2, map.height / 2);
+        super.onZoomStart.apply(this, arguments);
     }
 
     onZoomEnd() {
         delete this.canvasExtent2D;
+        delete this._markersOnZooming;
+        delete this._zoomOrigin;
         super.onZoomEnd.apply(this, arguments);
     }
 
@@ -153,6 +174,32 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this.layer._styleGeometry(param['target']);
         }
         super.onGeometryPropertiesChange(param);
+    }
+
+    _sortMarkersOnZooming() {
+        const map = this.getMap();
+        if (!this._isLimitMarkerOnZooming() || this._markersOnZooming) {
+            return;
+        }
+
+        const center = map.containerPointToCoord(this._zoomOrigin);
+
+        this._markersToDraw.sort((a, b) => {
+            const marker0 = this._geosToDraw[a];
+            const marker1 = this._geosToDraw[b];
+            return distanceTo(marker0.getCoordinates(), center) - distanceTo(marker1.getCoordinates(), center);
+        });
+        const limit = this.layer.options['markerLimitOnZooming'];
+        const sortedMarkers = this._markersOnZooming = {};
+        for (let i = 0; i < limit; i++) {
+            sortedMarkers[this._markersToDraw[i]] = 1;
+        }
+    }
+
+    _isLimitMarkerOnZooming() {
+        const map = this.getMap();
+        const limit = this.layer.options['markerLimitOnZooming'];
+        return map.isZooming() && this._zoomOrigin && limit > 0 && limit < this._markersToDraw.length;
     }
 
     _updateDisplayExtent() {
@@ -179,3 +226,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 VectorLayer.registerRenderer('canvas', VectorLayerRenderer);
 
 export default VectorLayerRenderer;
+
+function distanceTo(a, b) {
+    const x = a.x - b.x,
+        y = a.y - b.y;
+    return Math.sqrt(x * x + y * y);
+}
