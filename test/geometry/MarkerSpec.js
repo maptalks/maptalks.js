@@ -546,6 +546,10 @@ describe('Geometry.Marker', function () {
         });
 
         it('rotate image marker with map', function (done) {
+            if (maptalks.Browser.ie) {
+                done();
+                return;
+            }
             map.setBearing(45);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
@@ -633,6 +637,10 @@ describe('Geometry.Marker', function () {
         });
 
         it('rotate text marker with map', function (done) {
+            if (maptalks.Browser.ie) {
+                done();
+                return;
+            }
             map.setBearing(45);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
