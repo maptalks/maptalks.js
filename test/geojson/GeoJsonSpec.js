@@ -195,4 +195,24 @@ describe('GeoJSON', function () {
 
     });
 
+    describe('foreach call back', function () {
+
+        it('FeatureCollection', function () {
+            var fJsons = featureCollectionGeoJSON['features'];
+            var features = maptalks.GeoJSON.toGeometry(featureCollectionGeoJSON, function (geometry) {
+                geometry.config('zIndex', 0);
+            });
+            for (var i = 0; i < features.length; i++) {
+                expect(features[i].options['zIndex']).to.be.eql(0);
+            }
+        });
+
+        it('evaluate point', function () {
+            var point = maptalks.GeoJSON.toGeometry(geoJSONs[0], function (geometry) {
+                geometry.config('zIndex', 0);
+            });
+            expect(point.options['zIndex']).to.be.eql(0);
+        });
+    });
+
 });
