@@ -176,6 +176,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete opts['layers'];
         super(opts);
 
+        /**
+         * @property {String}  - Version of library
+         * @constant
+         * @static
+         */
         this.VERSION = Map.VERSION;
 
         Object.defineProperty(this, 'id', {
@@ -2001,6 +2006,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} [zoom=undefined]  - zoom level
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @return {Point}  2D point
+     * @function
      * @example
      * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
      */
@@ -2019,6 +2025,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} zoom  - point's zoom level
      * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
      * @return {Coordinate} coordinate
+     * @function
      * @example
      * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
      */
@@ -2038,6 +2045,7 @@ Map.include(/** @lends Map.prototype */{
      * @param {Coordinate} coordinate
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @return {Point}
+     * @function
      */
     coordinateToViewPoint: function () {
         const COORD = new Coordinate(0, 0);
@@ -2052,6 +2060,7 @@ Map.include(/** @lends Map.prototype */{
      * @param {Point} viewPoint
      * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
      * @return {Coordinate}
+     * @function
      */
     viewPointToCoordinate: function () {
         const COORD = new Coordinate(0, 0);
@@ -2067,6 +2076,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} [zoom=undefined]  - zoom level
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @return {Point}
+     * @function
      */
     coordinateToContainerPoint: function () {
         const COORD = new Coordinate(0, 0);
@@ -2081,6 +2091,7 @@ Map.include(/** @lends Map.prototype */{
      * @param {Point}
      * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
      * @return {Coordinate}
+     * @function
      */
     containerPointToCoordinate: function () {
         const COORD = new Coordinate(0, 0);
@@ -2094,6 +2105,7 @@ Map.include(/** @lends Map.prototype */{
      * Converts a container point extent to the geographic extent.
      * @param  {PointExtent} containerExtent - containeproints extent
      * @return {Extent}  geographic extent
+     * @function
      */
     containerToExtent: function () {
         const POINT0 = new Point(0, 0);
@@ -2114,6 +2126,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} xDist - distance on X axis.
      * @param  {Number} yDist - distance on Y axis.
      * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
+     * @function
      */
     distanceToPixel: function () {
         const POINT0 = new Point(0, 0);
@@ -2141,6 +2154,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} yDist - distance on Y axis.
      * @param  {Number} zoom - point's zoom
      * @return {Point}
+     * @function
      */
     distanceToPoint: function () {
         const POINT = new Point(0, 0);
@@ -2165,6 +2179,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} width - pixel width
      * @param  {Number} height - pixel height
      * @return {Number}  distance - Geographical distance
+     * @function
      */
     pixelToDistance: function () {
         const COORD0 = new Coordinate(0, 0);
@@ -2189,6 +2204,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} dy - distance on Y axis.
      * @param  {Number} zoom - point's zoom
      * @return {Number} distance
+     * @function
      */
     pointToDistance: function () {
         const POINT = new Point(0, 0);
@@ -2212,6 +2228,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} px           - pixel distance on X axis
      * @param  {Number} py           - pixel distance on Y axis
      * @return {Coordinate} Result coordinate
+     * @function
      */
     locateByPoint: function () {
         const POINT = new Point(0, 0);
@@ -2226,6 +2243,7 @@ Map.include(/** @lends Map.prototype */{
      * @param {Number} zoom - zoom
      * @return {PointExtent}
      * @private
+     * @function
      */
     _get2DExtent: function () {
         const POINT = new Point(0, 0);
@@ -2253,6 +2271,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {PointExtent} extent2D - view points extent
      * @return {Extent}  geographic extent
      * @protected
+     * @function
      */
     _pointToExtent: function () {
         const COORD0 = new Coordinate(0, 0);
@@ -2279,6 +2298,7 @@ Map.include(/** @lends Map.prototype */{
      * Get the offset in current frame and the next frame
      * @return {Point} view point offset
      * @private
+     * @function
      */
     _getViewPointFrameOffset: function () {
         const POINT = new Point(0, 0);
@@ -2302,6 +2322,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Coordinate} [out=undefined]  - optional coordinate to receive result
      * @return {Coordinate}
      * @private
+     * @function
      */
     _viewPointToPrj: function () {
         const POINT = new Point(0, 0);
@@ -2317,6 +2338,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @return {Point}
      * @private
+     * @function
      */
     _prjToContainerPoint: function () {
         const POINT = new Point(0, 0);
@@ -2330,6 +2352,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Coordinate} pCoordinate
      * @return {Point}
      * @private
+     * @function
      */
     _prjToViewPoint: function () {
         const POINT = new Point(0, 0);

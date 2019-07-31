@@ -212,6 +212,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} [altitude=0]  target's altitude in 2d point system at target zoom
      * @return {Point}       containerPoint at current zoom
      * @private
+     * @function
      */
     _pointToContainerPoint: function () {
         const a = [0, 0, 0];
@@ -271,6 +272,7 @@ Map.include(/** @lends Map.prototype */{
      * @param  {Number} zoom target zoom, current zoom in default
      * @return {Point}      2d point at target zoom
      * @private
+     * @function
      */
     _containerPointToPoint: function () {
         const cp = [0, 0, 0],
