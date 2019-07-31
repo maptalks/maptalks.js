@@ -23,8 +23,6 @@ import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
 
-const TEMP_POINT = new Point(0, 0);
-
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
@@ -1219,152 +1217,79 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return null;
     }
 
-
-    /**
-     * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
-     * The 2D point's coordinate system's origin is the same with map's origin.
-     * Usually used in plugin development.
-     * @param  {Coordinate} coordinate - coordinate
-     * @param  {Number} [zoom=undefined]       - zoom level
-     * @return {Point}  2D point
-     * @example
-     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
-     */
-    coordinateToPoint(coordinate, zoom) {
-        const prjCoord = this.getProjection().project(coordinate);
-        return this._prjToPoint(prjCoord, zoom);
-    }
-
     /**
      * shorter alias for coordinateToPoint
      */
-    coordToPoint(coordinate, zoom) {
-        return this.coordinateToPoint(coordinate, zoom);
-    }
-
-    /**
-     * Converts a 2D point in current zoom or a specific zoom to a coordinate.
-     * Usually used in plugin development.
-     * @param  {Point} point - 2D point
-     * @param  {Number} zoom  - point's zoom level
-     * @return {Coordinate} coordinate
-     * @example
-     * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
-     */
-    pointToCoordinate(point, zoom) {
-        const prjCoord = this._pointToPrj(point, zoom);
-        return this.getProjection().unproject(prjCoord);
+    coordToPoint(coordinate, zoom, out) {
+        return this.coordinateToPoint(coordinate, zoom, out);
     }
 
     /**
      * shorter alias for pointToCoordinate
      */
-    pointToCoord(point, zoom) {
-        return this.pointToCoordinate(point, zoom);
-    }
-
-    /**
-     * Converts a geographical coordinate to view point.<br>
-     * A view point is a point relative to map's mapPlatform panel's position. <br>
-     * Usually used in plugin development.
-     * @param {Coordinate} coordinate
-     * @return {Point}
-     */
-    coordinateToViewPoint(coordinate) {
-        return this._prjToViewPoint(this.getProjection().project(coordinate));
+    pointToCoord(point, zoom, out) {
+        return this.pointToCoordinate(point, zoom, out);
     }
 
     /**
      * shorter alias for coordinateToViewPoint
      */
-    coordToViewPoint(coordinate) {
-        return this.coordinateToViewPoint(coordinate);
-    }
-
-    /**
-     * Converts a view point to the geographical coordinate.
-     * Usually used in plugin development.
-     * @param {Point} viewPoint
-     * @return {Coordinate}
-     */
-    viewPointToCoordinate(viewPoint) {
-        return this.getProjection().unproject(this._viewPointToPrj(viewPoint));
+    coordToViewPoint(coordinate, out) {
+        return this.coordinateToViewPoint(coordinate, out);
     }
 
     /**
      * shorter alias for viewPointToCoordinate
      */
-    viewPointToCoord(viewPoint) {
-        return this.viewPointToCoordinate(viewPoint);
-    }
-
-    /**
-     * Convert a geographical coordinate to the container point. <br>
-     *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Coordinate}                - coordinate
-     * @param  {Number} [zoom=undefined]  - zoom level
-     * @return {Point}
-     */
-    coordinateToContainerPoint(coordinate, zoom) {
-        const pCoordinate = this.getProjection().project(coordinate);
-        return this._prjToContainerPoint(pCoordinate, zoom);
+    viewPointToCoord(viewPoint, out) {
+        return this.viewPointToCoordinate(viewPoint, out);
     }
 
     /**
      * shorter alias for coordinateToContainerPoint
      */
-    coordToContainerPoint(coordinate, zoom) {
-        return this.coordinateToContainerPoint(coordinate, zoom);
+    coordToContainerPoint(coordinate, zoom, out) {
+        return this.coordinateToContainerPoint(coordinate, zoom, out);
     }
 
-    /**
-     * Converts a container point to geographical coordinate.
-     * @param {Point}
-     * @return {Coordinate}
-     */
-    containerPointToCoordinate(containerPoint) {
-        const pCoordinate = this._containerPointToPrj(containerPoint);
-        return this.getProjection().unproject(pCoordinate);
-    }
 
     /**
      * shorter alias for containerPointToCoordinate
      */
-    containerPointToCoord(containerPoint) {
-        return this.containerPointToCoordinate(containerPoint);
+    containerPointToCoord(containerPoint, out) {
+        return this.containerPointToCoordinate(containerPoint, out);
     }
 
     /**
      * Converts a container point to the view point.
      * Usually used in plugin development.
      * @param {Point}
+     * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    containerPointToViewPoint(containerPoint) {
-        return containerPoint.sub(this.getViewPoint());
+    containerPointToViewPoint(containerPoint, out) {
+        if (out) {
+            out.set(containerPoint.x, containerPoint.y);
+        } else {
+            out = containerPoint.copy();
+        }
+        return out._sub(this.getViewPoint());
     }
 
     /**
      * Converts a view point to the container point.
      * Usually used in plugin development.
      * @param {Point}
+     * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    viewPointToContainerPoint(viewPoint) {
-        return viewPoint.add(this.getViewPoint());
-    }
-
-    /**
-     * Converts a container point extent to the geographic extent.
-     * @param  {PointExtent} containerExtent - containeproints extent
-     * @return {Extent}  geographic extent
-     */
-    containerToExtent(containerExtent) {
-        const extent2D = new PointExtent(
-            this._containerPointToPoint(containerExtent.getMin()),
-            this._containerPointToPoint(containerExtent.getMax())
-        );
-        return this._pointToExtent(extent2D);
+    viewPointToContainerPoint(viewPoint, out) {
+        if (out) {
+            out.set(viewPoint.x, viewPoint.y);
+        } else {
+            out = viewPoint.copy();
+        }
+        return out._add(this.getViewPoint());
     }
 
     /**
@@ -1410,87 +1335,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
-    /**
-     * Converts geographical distances to the pixel length.<br>
-     * The value varis with difference zoom level.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
-     */
-    distanceToPixel(xDist, yDist, zoom) {
-        const projection = this.getProjection();
-        if (!projection) {
-            return null;
-        }
-        const scale = this.getScale() / this.getScale(zoom);
-        const center = this.getCenter(),
-            target = projection.locate(center, xDist, yDist);
-        const p0 = this.coordToContainerPoint(center),
-            p1 = this.coordToContainerPoint(target);
-        p1._sub(p0)._multi(scale)._abs();
-        return new Size(p1.x, p1.y);
-    }
 
-    /**
-     * Converts geographical distances to the 2d point length.<br>
-     * The value varis with difference zoom level.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @param  {Number} zoom - point's zoom
-     * @return {Point}
-     */
-    distanceToPoint(xDist, yDist, zoom) {
-        const projection = this.getProjection();
-        if (!projection) {
-            return null;
-        }
-        const center = this.getCenter(),
-            target = projection.locate(center, xDist, yDist);
-        const p0 = this.coordToPoint(center, zoom),
-            p1 = this.coordToPoint(target, zoom);
-        p1._sub(p0)._abs();
-        return p1;
-    }
-
-    /**
-     * Converts pixel size to geographical distance.
-     *
-     * @param  {Number} width - pixel width
-     * @param  {Number} height - pixel height
-     * @return {Number}  distance - Geographical distance
-     */
-    pixelToDistance(width, height) {
-        const projection = this.getProjection();
-        if (!projection) {
-            return null;
-        }
-        const fullExt = this.getFullExtent();
-        const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
-        const target = new Point(this.width / 2 + width, this.height / 2 + d * height);
-        const coord = this.containerPointToCoord(target);
-        return projection.measureLength(this.getCenter(), coord);
-    }
-
-    /**
-     * Converts 2d point distances to geographic length.<br>
-     *
-     * @param  {Number} dx - distance on X axis.
-     * @param  {Number} dy - distance on Y axis.
-     * @param  {Number} zoom - point's zoom
-     * @return {Number} distance
-     */
-    pointToDistance(dx, dy, zoom) {
-        const projection = this.getProjection();
-        if (!projection) {
-            return null;
-        }
-        const c = this._prjToPoint(this._getPrjCenter(), zoom);
-        c._add(dx, dy);
-        const target = this.pointToCoord(c, zoom);
-        return projection.measureLength(this.getCenter(), target);
-    }
 
     /**
      * Computes the coordinate from the given meter distance.
@@ -1503,17 +1348,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this.getProjection()._locate(new Coordinate(coordinate), dx, dy);
     }
 
-    /**
-     * Computes the coordinate from the given pixel distance.
-     * @param  {Coordinate} coordinate - source coordinate
-     * @param  {Number} px           - pixel distance on X axis
-     * @param  {Number} py           - pixel distance on Y axis
-     * @return {Coordinate} Result coordinate
-     */
-    locateByPoint(coordinate, px, py) {
-        const point = this.coordToContainerPoint(coordinate);
-        return this.containerPointToCoord(point._add(px, py));
-    }
 
     /**
      * Return map's main panel
@@ -1764,50 +1598,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 
-    /**
-     * Get map's extent in view points.
-     * @param {Number} zoom - zoom
-     * @return {PointExtent}
-     * @private
-     */
-    _get2DExtent(zoom, out) {
-        let cached;
-        if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
-            cached = this._mapExtent2D;
-        } else if (zoom === this.getGLZoom() && this._mapGlExtent2D) {
-            cached = this._mapGlExtent2D;
-        }
-        if (cached) {
-            if (out) {
-                out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
-                return out;
-            }
-            return cached.copy();
-        }
-        const cExtent = this.getContainerExtent();
-        return cExtent.convertTo(c => this._containerPointToPoint(c, zoom, TEMP_POINT), out);
-    }
-
-    /**
-     * Converts a view point extent to the geographic extent.
-     * @param  {PointExtent} extent2D - view points extent
-     * @return {Extent}  geographic extent
-     * @protected
-     */
-    _pointToExtent(extent2D) {
-        const min2d = extent2D.getMin(),
-            max2d = extent2D.getMax();
-        const fullExtent = this.getFullExtent();
-        const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
-        const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
-        const min = new Coordinate(minx, miny),
-            max = new Coordinate(maxx, maxy);
-        return new Extent(
-            this.pointToCoord(min),
-            this.pointToCoord(max),
-            this.getProjection()
-        );
-    }
 
     //remove a layer from the layerList
     _removeLayer(layer, layerList) {
@@ -2085,24 +1875,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return panelOffset;
     }
 
-    /**
-     * When moving map, map's center is updated in real time, but platform will be moved in the next frame to keep syncing with other layers
-     * Get the offset in current frame and the next frame
-     * @return {Point} view point offset
-     * @private
-     */
-    _getViewPointFrameOffset() {
-        // when zooming, view point is not updated, and container is being transformed with matrix.
-        // so ignore the frame offset
-        if (this.isZooming()) {
-            return null;
-        }
-        const pcenter = this._getPrjCenter();
-        if (this._mapViewCoord && !this._mapViewCoord.equals(pcenter)) {
-            return this._prjToContainerPoint(this._mapViewCoord).sub(this._prjToContainerPoint(pcenter));
-        }
-        return null;
-    }
 
     _resetMapViewPoint() {
         this._mapViewPoint = new Point(0, 0);
@@ -2206,52 +1978,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out), undefined, out);
     }
 
-    /**
-     * transform view point to geographical projected coordinate
-     * @param  {Point} viewPoint
-     * @return {Coordinate}
-     * @private
-     */
-    _viewPointToPrj(viewPoint) {
-        return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint));
-    }
-
-    /**
-     * transform geographical projected coordinate to container point
-     * @param  {Coordinate} pCoordinate
-     * @return {Point}
-     * @private
-     */
-    _prjToContainerPoint(pCoordinate, zoom) {
-        return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom), zoom);
-    }
-
-    /**
-     * transform geographical projected coordinate to view point
-     * @param  {Coordinate} pCoordinate
-     * @return {Point}
-     * @private
-     */
-    _prjToViewPoint(pCoordinate) {
-        const containerPoint = this._prjToContainerPoint(pCoordinate);
-        return this._containerPointToViewPoint(containerPoint);
-    }
-
-    //destructive containerPointToViewPoint
-    _containerPointToViewPoint(containerPoint) {
-        if (!containerPoint) {
-            return null;
-        }
-        return containerPoint._sub(this.getViewPoint());
-    }
-
-    _viewPointToPoint(viewPoint, zoom) {
-        return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint), zoom);
-    }
-
-    _pointToViewPoint(point, zoom) {
-        return this._prjToViewPoint(this._pointToPrj(point, zoom));
-    }
 
     /* eslint no-extend-native: 0 */
     _callOnLoadHooks() {
@@ -2264,6 +1990,370 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
     }
 }
+
+Map.include(/** @lends Map.prototype */{
+
+    /**
+     * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
+     * The 2D point's coordinate system's origin is the same with map's origin.
+     * Usually used in plugin development.
+     * @param  {Coordinate} coordinate - coordinate
+     * @param  {Number} [zoom=undefined]  - zoom level
+     * @param  {Point} [out=undefined]    - optional point to receive result
+     * @return {Point}  2D point
+     * @example
+     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
+     */
+    coordinateToPoint: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (coordinate, zoom, out) {
+            const prjCoord = this.getProjection().project(coordinate, COORD);
+            return this._prjToPoint(prjCoord, zoom, out);
+        };
+    }(),
+
+    /**
+     * Converts a 2D point in current zoom or a specific zoom to a coordinate.
+     * Usually used in plugin development.
+     * @param  {Point} point - 2D point
+     * @param  {Number} zoom  - point's zoom level
+     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
+     * @return {Coordinate} coordinate
+     * @example
+     * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
+     */
+    pointToCoordinate: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (point, zoom, out) {
+            const prjCoord = this._pointToPrj(point, zoom, COORD);
+            return this.getProjection().unproject(prjCoord, out);
+        };
+    }(),
+
+
+    /**
+     * Converts a geographical coordinate to view point.<br>
+     * A view point is a point relative to map's mapPlatform panel's position. <br>
+     * Usually used in plugin development.
+     * @param {Coordinate} coordinate
+     * @param  {Point} [out=undefined]    - optional point to receive result
+     * @return {Point}
+     */
+    coordinateToViewPoint: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (coordinate, out) {
+            return this._prjToViewPoint(this.getProjection().project(coordinate, COORD), out);
+        };
+    }(),
+
+    /**
+     * Converts a view point to the geographical coordinate.
+     * Usually used in plugin development.
+     * @param {Point} viewPoint
+     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
+     * @return {Coordinate}
+     */
+    viewPointToCoordinate: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (viewPoint, out) {
+            return this.getProjection().unproject(this._viewPointToPrj(viewPoint, COORD), out);
+        };
+    }(),
+
+    /**
+     * Convert a geographical coordinate to the container point. <br>
+     *  A container point is a point relative to map container's top-left corner. <br>
+     * @param {Coordinate}                - coordinate
+     * @param  {Number} [zoom=undefined]  - zoom level
+     * @param  {Point} [out=undefined]    - optional point to receive result
+     * @return {Point}
+     */
+    coordinateToContainerPoint: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (coordinate, zoom, out) {
+            const pCoordinate = this.getProjection().project(coordinate, COORD);
+            return this._prjToContainerPoint(pCoordinate, zoom, out);
+        };
+    }(),
+
+    /**
+     * Converts a container point to geographical coordinate.
+     * @param {Point}
+     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
+     * @return {Coordinate}
+     */
+    containerPointToCoordinate: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (containerPoint, out) {
+            const pCoordinate = this._containerPointToPrj(containerPoint, COORD);
+            return this.getProjection().unproject(pCoordinate, out);
+        };
+    }(),
+
+    /**
+     * Converts a container point extent to the geographic extent.
+     * @param  {PointExtent} containerExtent - containeproints extent
+     * @return {Extent}  geographic extent
+     */
+    containerToExtent: function () {
+        const POINT0 = new Point(0, 0);
+        const POINT1 = new Point(0, 0);
+        return function (containerExtent) {
+            const extent2D = new PointExtent(
+                this._containerPointToPoint(containerExtent.getMin(POINT0), undefined, POINT0),
+                this._containerPointToPoint(containerExtent.getMax(POINT1), undefined, POINT1)
+            );
+            return this._pointToExtent(extent2D);
+        };
+    }(),
+
+    /**
+     * Converts geographical distances to the pixel length.<br>
+     * The value varis with difference zoom level.
+     *
+     * @param  {Number} xDist - distance on X axis.
+     * @param  {Number} yDist - distance on Y axis.
+     * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
+     */
+    distanceToPixel: function () {
+        const POINT0 = new Point(0, 0);
+        const POINT1 = new Point(0, 0);
+        return function (xDist, yDist, zoom) {
+            const projection = this.getProjection();
+            if (!projection) {
+                return null;
+            }
+            const scale = this.getScale() / this.getScale(zoom);
+            const center = this.getCenter(),
+                target = projection.locate(center, xDist, yDist);
+            const p0 = this.coordToContainerPoint(center, undefined, POINT0),
+                p1 = this.coordToContainerPoint(target, undefined, POINT1);
+            p1._sub(p0)._multi(scale)._abs();
+            return new Size(p1.x, p1.y);
+        };
+    }(),
+
+    /**
+     * Converts geographical distances to the 2d point length.<br>
+     * The value varis with difference zoom level.
+     *
+     * @param  {Number} xDist - distance on X axis.
+     * @param  {Number} yDist - distance on Y axis.
+     * @param  {Number} zoom - point's zoom
+     * @return {Point}
+     */
+    distanceToPoint: function () {
+        const POINT = new Point(0, 0);
+        return function (xDist, yDist, zoom) {
+            const projection = this.getProjection();
+            if (!projection) {
+                return null;
+            }
+            const center = this.getCenter(),
+                target = projection.locate(center, xDist, yDist);
+            const p0 = this.coordToPoint(center, zoom, POINT),
+                p1 = this.coordToPoint(target, zoom);
+            p1._sub(p0)._abs();
+            return p1;
+        };
+    }(),
+
+
+    /**
+     * Converts pixel size to geographical distance.
+     *
+     * @param  {Number} width - pixel width
+     * @param  {Number} height - pixel height
+     * @return {Number}  distance - Geographical distance
+     */
+    pixelToDistance: function () {
+        const COORD0 = new Coordinate(0, 0);
+        const COORD1 = new Coordinate(0, 0);
+        return function (width, height) {
+            const projection = this.getProjection();
+            if (!projection) {
+                return null;
+            }
+            const fullExt = this.getFullExtent();
+            const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
+            const target = COORD0.set(this.width / 2 + width, this.height / 2 + d * height);
+            const coord = this.containerPointToCoord(target, COORD1);
+            return projection.measureLength(this.getCenter(), coord);
+        };
+    }(),
+
+    /**
+     * Converts 2d point distances to geographic length.<br>
+     *
+     * @param  {Number} dx - distance on X axis.
+     * @param  {Number} dy - distance on Y axis.
+     * @param  {Number} zoom - point's zoom
+     * @return {Number} distance
+     */
+    pointToDistance: function () {
+        const POINT = new Point(0, 0);
+        const COORD = new Coordinate(0, 0);
+        return function (dx, dy, zoom) {
+            const projection = this.getProjection();
+            if (!projection) {
+                return null;
+            }
+            const c = this._prjToPoint(this._getPrjCenter(), zoom, POINT);
+            c._add(dx, dy);
+            const target = this.pointToCoord(c, zoom, COORD);
+            return projection.measureLength(this.getCenter(), target);
+        };
+    }(),
+
+
+    /**
+     * Computes the coordinate from the given pixel distance.
+     * @param  {Coordinate} coordinate - source coordinate
+     * @param  {Number} px           - pixel distance on X axis
+     * @param  {Number} py           - pixel distance on Y axis
+     * @return {Coordinate} Result coordinate
+     */
+    locateByPoint: function () {
+        const POINT = new Point(0, 0);
+        return function (coordinate, px, py) {
+            const point = this.coordToContainerPoint(coordinate, undefined, POINT);
+            return this.containerPointToCoord(point._add(px, py));
+        };
+    }(),
+
+    /**
+     * Get map's extent in view points.
+     * @param {Number} zoom - zoom
+     * @return {PointExtent}
+     * @private
+     */
+    _get2DExtent: function () {
+        const POINT = new Point(0, 0);
+        return function (zoom, out) {
+            let cached;
+            if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
+                cached = this._mapExtent2D;
+            } else if (zoom === this.getGLZoom() && this._mapGlExtent2D) {
+                cached = this._mapGlExtent2D;
+            }
+            if (cached) {
+                if (out) {
+                    out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
+                    return out;
+                }
+                return cached.copy();
+            }
+            const cExtent = this.getContainerExtent();
+            return cExtent.convertTo(c => this._containerPointToPoint(c, zoom, POINT), out);
+        };
+    }(),
+
+    /**
+     * Converts a view point extent to the geographic extent.
+     * @param  {PointExtent} extent2D - view points extent
+     * @return {Extent}  geographic extent
+     * @protected
+     */
+    _pointToExtent: function () {
+        const COORD0 = new Coordinate(0, 0);
+        const COORD1 = new Coordinate(0, 0);
+        return function (extent2D) {
+            const min2d = extent2D.getMin(),
+                max2d = extent2D.getMax();
+            const fullExtent = this.getFullExtent();
+            const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
+            const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
+            const min = min2d.set(minx, miny);
+            const max = max2d.set(maxx, maxy);
+            return new Extent(
+                this.pointToCoord(min, undefined, COORD0),
+                this.pointToCoord(max, undefined, COORD1),
+                this.getProjection()
+            );
+        };
+    }(),
+
+
+    /**
+     * When moving map, map's center is updated in real time, but platform will be moved in the next frame to keep syncing with other layers
+     * Get the offset in current frame and the next frame
+     * @return {Point} view point offset
+     * @private
+     */
+    _getViewPointFrameOffset: function () {
+        const POINT = new Point(0, 0);
+        return function () {
+            // when zooming, view point is not updated, and container is being transformed with matrix.
+            // so ignore the frame offset
+            if (this.isZooming()) {
+                return null;
+            }
+            const pcenter = this._getPrjCenter();
+            if (this._mapViewCoord && !this._mapViewCoord.equals(pcenter)) {
+                return this._prjToContainerPoint(this._mapViewCoord)._sub(this._prjToContainerPoint(pcenter, undefined, POINT));
+            }
+            return null;
+        };
+    }(),
+
+    /**
+     * transform view point to geographical projected coordinate
+     * @param  {Point} viewPoint
+     * @param  {Coordinate} [out=undefined]  - optional coordinate to receive result
+     * @return {Coordinate}
+     * @private
+     */
+    _viewPointToPrj: function () {
+        const POINT = new Point(0, 0);
+        return function (viewPoint, out) {
+            return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint, POINT), out);
+        };
+    }(),
+
+    /**
+     * transform geographical projected coordinate to container point
+     * @param  {Coordinate} pCoordinate
+     * @param  {Number} zoom target zoom
+     * @param  {Point} [out=undefined]    - optional point to receive result
+     * @return {Point}
+     * @private
+     */
+    _prjToContainerPoint: function () {
+        const POINT = new Point(0, 0);
+        return function (pCoordinate, zoom, out) {
+            return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom, POINT), zoom, 0, out);
+        };
+    }(),
+
+    /**
+     * transform geographical projected coordinate to view point
+     * @param  {Coordinate} pCoordinate
+     * @return {Point}
+     * @private
+     */
+    _prjToViewPoint: function () {
+        const POINT = new Point(0, 0);
+        return function (pCoordinate, out) {
+            const containerPoint = this._prjToContainerPoint(pCoordinate, undefined, POINT);
+            return this.containerPointToViewPoint(containerPoint, out);
+        };
+    }(),
+
+    _viewPointToPoint: function () {
+        const POINT = new Point(0, 0);
+        return function (viewPoint, zoom, out) {
+            return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint, POINT), zoom, out);
+        };
+    }(),
+
+    _pointToViewPoint: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (point, zoom, out) {
+            return this._prjToViewPoint(this._pointToPrj(point, zoom, COORD), out);
+        };
+    }(),
+
+});
 
 Map.mergeOptions(options);
 

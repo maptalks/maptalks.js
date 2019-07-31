@@ -418,7 +418,7 @@ class OverlayLayer extends Layer {
             hits = [];
         const map = this.getMap();
         const point = map.coordToPoint(coordinate);
-        const cp = map._pointToContainerPoint(point);
+        const cp = map._pointToContainerPoint(point, undefined, 0, point);
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {

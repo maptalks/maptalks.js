@@ -276,8 +276,7 @@ class Painter extends Class {
             const c = map.cameraLookAt;
             const pos = map.cameraPosition;
             //add [1px, 1px] towards camera's lookAt
-            TEMP_POINT0.x = pos.x;
-            TEMP_POINT0.y = pos.y;
+            TEMP_POINT0.set(pos.x, pos.y);
             extent2D = extent2D._combine(TEMP_POINT0._add(sign(c[0] - pos[0]), sign(c[1] - pos[1])));
         }
         const e = this.get2DExtent(null, TEMP_CLIP_EXTENT1);

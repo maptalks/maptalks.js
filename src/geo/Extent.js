@@ -7,6 +7,12 @@ import Size from './Size';
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_COORD0 = new Coordinate(0, 0);
 const TEMP_COORD1 = new Coordinate(0, 0);
+const TEMP_COORD2 = new Coordinate(0, 0);
+const TEMP_COORD3 = new Coordinate(0, 0);
+const TEMP_COORD4 = new Coordinate(0, 0);
+const TEMP_COORD5 = new Coordinate(0, 0);
+const TEMP_COORD6 = new Coordinate(0, 0);
+const TEMP_COORD7 = new Coordinate(0, 0);
 const MINMAX = [];
 /* eslint-disable prefer-const */
 let TEMP_EXTENT;
@@ -235,26 +241,43 @@ class Extent {
 
     /**
      * Get the minimum point
+     * @params {Coorindate} [out=undefined] - optional point to receive result
      * @return {Coordinate}
      */
-    getMin() {
+    getMin(out) {
+        if (out) {
+            out.set(this['xmin'], this['ymin']);
+            return out;
+        }
         return new this._clazz(this['xmin'], this['ymin']);
     }
 
     /**
      * Get the maximum point
+     * @params {Coorindate} [out=undefined] - optional point to receive result
      * @return {Coordinate}
      */
-    getMax() {
+    getMax(out) {
+        if (out) {
+            out.set(this['xmax'], this['ymax']);
+            return out;
+        }
         return new this._clazz(this['xmax'], this['ymax']);
     }
 
     /**
      * Get center of the extent.
+     * @params {Coorindate} [out=undefined] - optional point to receive result
      * @return {Coordinate}
      */
-    getCenter() {
-        return new this._clazz((this['xmin'] + this['xmax']) / 2, (this['ymin'] + this['ymax']) / 2);
+    getCenter(out) {
+        const x = (this['xmin'] + this['xmax']) / 2;
+        const y = (this['ymin'] + this['ymax']) / 2;
+        if (out) {
+            out.set(x, y);
+            return out;
+        }
+        return new this._clazz(x, y);
     }
 
     /**
@@ -395,12 +418,10 @@ class Extent {
         }
         const proj = this.projection;
         if (proj) {
-            TEMP_COORD0.x = xmin;
-            TEMP_COORD0.y = ymin;
-            TEMP_COORD1.x = xmax;
-            TEMP_COORD1.y = ymax;
-            const min = proj.unproject(TEMP_COORD0, TEMP_COORD0),
-                max = proj.unproject(TEMP_COORD1, TEMP_COORD1);
+            TEMP_COORD1.set(xmin, ymin);
+            TEMP_COORD2.set(xmax, ymax);
+            const min = proj.unproject(TEMP_COORD1, TEMP_COORD1),
+                max = proj.unproject(TEMP_COORD2, TEMP_COORD2);
             xmin = min.x;
             ymin = min.y;
             xmax = max.x;
@@ -445,12 +466,12 @@ class Extent {
         if (!this.intersects(extent)) {
             return null;
         }
-        TEMP_COORD0.x = Math.max(this['pxmin'], extent['pxmin']);
-        TEMP_COORD0.y = Math.max(this['pymin'], extent['pymin']);
-        TEMP_COORD1.x = Math.min(this['pxmax'], extent['pxmax']);
-        TEMP_COORD1.y = Math.min(this['pymax'], extent['pymax']);
-        let min = TEMP_COORD0,
-            max = TEMP_COORD1;
+        TEMP_COORD3.x = Math.max(this['pxmin'], extent['pxmin']);
+        TEMP_COORD3.y = Math.max(this['pymin'], extent['pymin']);
+        TEMP_COORD4.x = Math.min(this['pxmax'], extent['pxmax']);
+        TEMP_COORD4.y = Math.min(this['pymax'], extent['pymax']);
+        let min = TEMP_COORD3,
+            max = TEMP_COORD4;
         const proj = this.projection;
         if (proj) {
             min = proj.unproject(min, min);
@@ -550,7 +571,7 @@ class Extent {
         }
         let coord;
         if (this._clazz === Coordinate) {
-            coord = TEMP_COORD0;
+            coord = TEMP_COORD5;
         } else if (this._clazz === Point) {
             coord = TEMP_POINT0;
         }
@@ -575,12 +596,10 @@ class Extent {
             //FIXME a rare but potential bug:
             //An extent may be projected by multiple projection
             if (ext._dirty) {
-                TEMP_COORD0.x = ext.xmax;
-                TEMP_COORD0.y = ext.ymin;
-                TEMP_COORD1.x = ext.xmin;
-                TEMP_COORD1.y = ext.ymax;
-                MINMAX[0] = TEMP_COORD0;
-                MINMAX[1] = TEMP_COORD1;
+                TEMP_COORD6.set(ext.xmax, ext.ymin);
+                TEMP_COORD7.set(ext.xmin, ext.ymax);
+                MINMAX[0] = TEMP_COORD6;
+                MINMAX[1] = TEMP_COORD7;
                 const minmax = proj.projectCoords(MINMAX);
                 const min = minmax[0],
                     max = minmax[1];

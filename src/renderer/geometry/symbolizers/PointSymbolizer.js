@@ -1,6 +1,10 @@
 import { computeDegree } from '../../../core/util';
 import PointExtent from '../../../geo/PointExtent';
+import Point from '../../../geo/Point';
 import CanvasSymbolizer from './CanvasSymbolizer';
+
+const TEMP_POINT0 = new Point(0, 0);
+const TEMP_POINT1 = new Point(0, 0);
 
 /**
  * @classdesc
@@ -82,8 +86,8 @@ class PointSymbolizer extends CanvasSymbolizer {
         let p0 = rotations[i][0], p1 = rotations[i][1];
         if (map.isTransforming()) {
             const maxZoom = map.getGLZoom();
-            p0 = map._pointToContainerPoint(rotations[i][0], maxZoom);
-            p1 = map._pointToContainerPoint(rotations[i][1], maxZoom);
+            p0 = map._pointToContainerPoint(rotations[i][0], maxZoom, 0, TEMP_POINT0);
+            p1 = map._pointToContainerPoint(rotations[i][1], maxZoom, 0, TEMP_POINT1);
         }
         return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
     }
