@@ -526,6 +526,10 @@ describe('Geometry.Marker', function () {
         });
 
         it('vector path marker color with identity', function (done) {
+            if (maptalks.Browser.ie) {
+                done();
+                return;
+            }
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
                     'markerType': 'path',
@@ -547,9 +551,14 @@ describe('Geometry.Marker', function () {
                 }
             });
             var layer = new maptalks.VectorLayer('vector', marker);
-            layer.once('layerload', function () {
-                expect(layer).to.be.painted(0, -3, [255, 255, 0]);
-                done();
+            var count = 0;
+            layer.on('layerload', function () {
+                count++;
+                if (count === 2) {
+                    expect(layer).to.be.painted(0, -3, [255, 255, 0]);
+                    done();
+                }
+
             })
                 .addTo(map);
 
