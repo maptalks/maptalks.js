@@ -1,10 +1,16 @@
 import Eventable from './common/Eventable.js';
-import { extend } from './common/Util.js';
 import AbstractTexture from './AbstractTexture.js';
 
 class Material {
     constructor(uniforms = {}, defaultUniforms) {
-        this.uniforms = extend({}, defaultUniforms || {}, uniforms);
+        this.uniforms = uniforms;
+        if (defaultUniforms) {
+            for (const p in defaultUniforms) {
+                if (defaultUniforms.hasOwnProperty(p) && uniforms[p] === undefined) {
+                    uniforms[p] = defaultUniforms[p];
+                }
+            }
+        }
         this._dirtyUniforms = 'texture';
         this.dirtyDefines = true;
         this._reglUniforms = {};
