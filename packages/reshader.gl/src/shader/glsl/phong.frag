@@ -1,6 +1,6 @@
 
 precision mediump float;
-varying vec2 TexCoords;
+varying vec2 vTexCoords;
 uniform float materialShininess;//反光度，即影响镜面高光的散射/半径
 uniform float opacity;
 uniform float ambientStrength;
@@ -16,16 +16,27 @@ varying vec3 vNormal;
 varying vec4 vFragPos;
 uniform vec3 viewPos;
 
+#ifdef USE_INSTANCE
+    varying vec4 vInstanceColor;
+#endif
+
 #ifdef USE_BASECOLORTEXTURE
-uniform sampler2D sample;
+    uniform sampler2D sample;
 #endif
 void main() {
     //环境光
-    // float ambientStrength = 0.5;
     #ifdef USE_BASECOLORTEXTURE
-    vec3 ambient = ambientStrength * lightAmbient.xyz * texture2D(sample, TexCoords).rgb;
+        #ifdef USE_INSTANCE
+            vec3 ambient = ambientStrength * vInstanceColor.xyz * texture2D(sample, vTexCoords).rgb;
+        #else
+            vec3 ambient = ambientStrength * lightAmbient.xyz * texture2D(sample, vTexCoords).rgb;
+        #endif
     #else
-    vec3 ambient = ambientStrength * lightAmbient.xyz;
+        #ifdef USE_INSTANCE
+            vec3 ambient = ambientStrength * vInstanceColor.xyz ;
+        #else
+            vec3 ambient = ambientStrength * lightAmbient.xyz;
+        #endif
     #endif
 
 
@@ -34,15 +45,15 @@ void main() {
     vec3 lightDir = vec3(normalize(lightPosition -vec3(vFragPos)));
     float diff = max(dot(norm, lightDir), 0.0);
     #ifdef USE_BASECOLORTEXTURE
-    vec3 diffuse = lightDiffuse.xyz * diff *texture2D(sample, TexCoords).rgb;
+        vec3 diffuse = lightDiffuse.xyz * diff * texture2D(sample, vTexCoords).rgb;
     #else
-    vec3 diffuse = lightDiffuse.xyz * diff;
+        vec3 diffuse = lightDiffuse.xyz * diff;
     #endif
 
     //镜面反色光
     vec3 viewDir = vec3(normalize(viewPos -vec3(vFragPos)));
     // vec3 reflectDir = reflect(-lightDir, norm);
-    vec3 halfwayDir = normalize(lightDir+viewDir);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(norm, halfwayDir), 0.0), materialShininess);
     vec3 specular = specularStrength * lightSpecular.xyz * spec;
 

@@ -2,7 +2,8 @@
 import vsm_shadow_vert from './glsl/vsm_shadow.vert';
 import vsm_shadow_frag from './glsl/vsm_shadow.frag';
 import fbo_picking_vert from './glsl/fbo_picking.vert';
-
+//instance.vert
+import instance_vert from '../shader/glsl/instance.vert';
 
 
 //webgl 2.0中的函数实现
@@ -78,7 +79,8 @@ const ShaderChunk = {
     fl_light_directional,
     fl_shading_lit,
     fl_gl_post_process_frag,
-    fl_main
+    fl_main,
+    instance_vert
 };
 /* eslint-enable camelcase */
 

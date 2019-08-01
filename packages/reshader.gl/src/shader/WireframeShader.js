@@ -52,6 +52,7 @@ class WireframeShader extends MeshShader {
                 'squeezeMin',
                 'squeezeMax',
                 'opacity',
+                'projViewMatrix',
                 {
                     name : 'projViewModelMatrix',
                     type : 'function',
@@ -64,5 +65,4 @@ class WireframeShader extends MeshShader {
         });
     }
 }
-
 export default WireframeShader;

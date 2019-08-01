@@ -36,7 +36,13 @@ export default class InstancedMesh extends Mesh {
             buffer = buf;
         }
         if (buffer) {
-            buffer.buffer.subdata(data);
+            const bytesPerElement = this._getBytesPerElement(buffer.buffer._buffer.dtype);
+            const len = buffer.buffer._buffer.byteLength / bytesPerElement;
+            if (len >= data.length && bytesPerElement >= (data.BYTES_PER_ELEMENT || 0)) {
+                buffer.buffer.subdata(data);
+            } else {
+                buffer.buffer(data);
+            }
             this.instancedData[name] = buffer;
         }
         return this;
@@ -70,5 +76,25 @@ export default class InstancedMesh extends Mesh {
         extend(props, this.instancedData);
         props.instances = this.instanceCount;
         return props;
+    }
+
+    _getBytesPerElement(dtype) {
+        switch (dtype) {
+        case 0x1400:
+            return 1;
+        case 0x1401:
+            return 1;
+        case 0x1402:
+            return 2;
+        case 0x1403:
+            return 2;
+        case 0x1404:
+            return 4;
+        case 0x1405:
+            return 4;
+        case 0x1406:
+            return 4;
+        }
+        throw new Error('unsupported data type: ' + dtype);
     }
 }
