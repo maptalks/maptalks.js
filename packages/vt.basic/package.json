@@ -28,7 +28,7 @@
   "dependencies": {
     "@mapbox/point-geometry": "^0.1.0",
     "@maptalks/function-type": "^1.2.2",
-    "@maptalks/gl": "^0.1.0",
+    "@maptalks/gl": "^0.2.0",
     "@maptalks/vt-plugin": "^0.1.39",
     "color": "^3.0.0"
   },
