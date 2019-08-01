@@ -21,12 +21,12 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
      */
     code: 'BAIDU',
 
-    project: function (p) {
-        return this.convertLL2MC(p);
+    project: function (p, out) {
+        return this.convertLL2MC(p, out);
     },
 
-    unproject: function (p) {
-        return this.convertMC2LL(p);
+    unproject: function (p, out) {
+        return this.convertMC2LL(p, out);
     }
 }, BaiduSphere, {
     EARTHRADIUS: 6370996.81,
@@ -49,23 +49,18 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
         [-0.0003218135878613132, 111320.7020701615, 0.00369383431289, 823725.6402795718, 0.46104986909093, 2351.343141331292, 1.58060784298199, 8.77738589078284, 0.37238884252424, 7.45]
     ],
 
-    convertMC2LL: function (cB) {
-        const cC = {
-            x: Math.abs(cB.x),
-            y: Math.abs(cB.y)
-        };
+    convertMC2LL: function (cB, out) {
         let cE;
         for (let cD = 0, len = this.MCBAND.length; cD < len; cD++) {
-            if (cC.y >= this.MCBAND[cD]) {
+            if (Math.abs(cB.y) >= this.MCBAND[cD]) {
                 cE = this.MC2LL[cD];
                 break;
             }
         }
-        const T = this.convertor(cB, cE);
-        const result = new Coordinate(T.x, T.y);
-        return result;
+        const T = this.convertor(cB, cE, out);
+        return T;
     },
-    convertLL2MC: function (T) {
+    convertLL2MC: function (T, out) {
         let cD, cC, len;
         T.x = this.getLoop(T.x, -180, 180);
         T.y = this.getRange(T.y, -74, 74);
@@ -84,11 +79,10 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
                 }
             }
         }
-        const cE = this.convertor(T, cD);
-        const result = new Coordinate(cE.x, cE.y);
-        return result;
+        const cE = this.convertor(T, cD, out);
+        return cE;
     },
-    convertor: function (cC, cD) {
+    convertor: function (cC, cD, out) {
         if (!cC || !cD) {
             return null;
         }
@@ -100,6 +94,11 @@ export default extend({}, Common, /** @lends projection.BAIDU */ {
             cD[8] * cB * cB * cB * cB * cB * cB;
         T *= (cC.x < 0 ? -1 : 1);
         cE *= (cC.y < 0 ? -1 : 1);
+        if (out) {
+            out.x = T;
+            out.y = cE;
+            return out;
+        }
         return new Coordinate(T, cE);
     },
     toRadians: function (T) {

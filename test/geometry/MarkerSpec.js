@@ -524,6 +524,45 @@ describe('Geometry.Marker', function () {
             });
             expect(layer).to.be.painted(52, 0);
         });
+
+        it('vector path marker color with identity', function (done) {
+            if (maptalks.Browser.ie) {
+                done();
+                return;
+            }
+            var marker = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    'markerType': 'path',
+                    'markerPath': [{
+                        'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M3,9 a5,5 0,1,0,0,-0.9Z',
+                        'fill': '#DE3333'
+                    }],
+                    'markerPathWidth': 16,
+                    'markerPathHeight': 23,
+                    'markerWidth'  : 8,
+                    'markerHeight' : 20,
+                    'markerFill': {
+                        type: 'identity',
+                        property: 'color'
+                    }
+                },
+                properties: {
+                    color: '#ff0'
+                }
+            });
+            var layer = new maptalks.VectorLayer('vector', marker);
+            var count = 0;
+            layer.on('layerload', function () {
+                count++;
+                if (count === 2) {
+                    expect(layer).to.be.painted(0, -3, [255, 255, 0]);
+                    done();
+                }
+
+            })
+                .addTo(map);
+
+        });
     });
 
     describe('marker rotation', function () {
@@ -546,6 +585,10 @@ describe('Geometry.Marker', function () {
         });
 
         it('rotate image marker with map', function (done) {
+            if (maptalks.Browser.ie) {
+                done();
+                return;
+            }
             map.setBearing(45);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
@@ -633,6 +676,10 @@ describe('Geometry.Marker', function () {
         });
 
         it('rotate text marker with map', function (done) {
+            if (maptalks.Browser.ie) {
+                done();
+                return;
+            }
             map.setBearing(45);
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {

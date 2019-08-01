@@ -16,6 +16,7 @@ import OverlayLayer from './OverlayLayer';
  * @property {Boolean} [options.altitudeProperty=altitude] - geometry's altitude property name, if enableAltitude is true, "altitude" by default
  * @property {Boolean} [options.drawAltitude=false]  - whether to draw altitude: a vertical line for marker, a vertical polygon for line
  * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
+ * @property {Number} [options.markerLimitOnZooming=30] - limit markers to draw when zooming for better performance, set to 0 to unlimit it.
  * @memberOf VectorLayer
  * @instance
  */
@@ -28,7 +29,8 @@ const options = {
     'cacheSvgOnCanvas': Browser.gecko,
     'enableAltitude' : false,
     'altitudeProperty' : 'altitude',
-    'drawAltitude' : false
+    'drawAltitude' : false,
+    'markerLimitOnZooming': 30
 };
 
 /**

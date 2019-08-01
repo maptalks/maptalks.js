@@ -1,4 +1,3 @@
-import { emptyImageUrl } from '../../../core/util';
 import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
@@ -29,21 +28,18 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     drawTile(tileInfo, tileImage) {
         const map = this.getMap();
-        if (!tileInfo || !map) {
-            return;
-        }
-        if (tileImage.src === emptyImageUrl) {
+        if (!tileInfo || !map || !tileImage) {
             return;
         }
 
-        const scale = map.getGLScale(tileInfo.z),
+        const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z),
             w = tileInfo.size[0] * scale,
             h = tileInfo.size[1] * scale;
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
         if (!this._gl()) {
-            // fall back to canvas 2D
+            // fall back to canvas 2D, which is faster
             super.drawTile(tileInfo, tileImage);
             return;
         }
@@ -147,7 +143,8 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             //in GroupGLLayer
             return true;
         }
-        return this.getMap() && !!this.getMap().getPitch() || this.layer && !!this.layer.options['fragmentShader'];
+        const map = this.getMap();
+        return map && (map.getPitch() || map.getBearing()) || this.layer && !!this.layer.options['fragmentShader'];
     }
 
     deleteTile(tile) {

@@ -1,6 +1,9 @@
 import { now } from '../core/util';
 import CanvasLayer from './CanvasLayer';
 import CanvasLayerRenderer from '../renderer/layer/canvaslayer/CanvasLayerRenderer';
+import Point from '../geo/Point';
+
+const TEMP_POINT = new Point(0, 0);
 /**
  * @property {Object} options                  - configuration options
  * @property {Boolean} [options.animation=true]       - if the layer is an animated layer
@@ -53,7 +56,7 @@ class ParticleLayer extends CanvasLayer {
         if (view.maskExtent) {
             extent = view.extent.intersection(view.maskExtent);
         }
-        extent = extent.convertTo(c => map._pointToContainerPoint(c));
+        extent = extent.convertTo(c => map._pointToContainerPoint(c, undefined, 0, TEMP_POINT));
         const e = 2 * Math.PI;
         for (let i = 0, l = points.length; i < l; i++) {
             const pos = points[i].point;

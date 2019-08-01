@@ -32,11 +32,15 @@ class Transformation {
      * @param  {Number} scale                              - transform scale
      * @return {Point} 2d point.
      */
-    transform(coordinates, scale) {
-        return new Point(
-            this.matrix[0] * (coordinates.x - this.matrix[2]) / scale,
-            this.matrix[1] * (coordinates.y - this.matrix[3]) / scale
-        );
+    transform(coordinates, scale, out) {
+        const x = this.matrix[0] * (coordinates.x - this.matrix[2]) / scale;
+        const y = this.matrix[1] * (coordinates.y - this.matrix[3]) / scale;
+        if (out) {
+            out.x = x;
+            out.y = y;
+            return out;
+        }
+        return new Point(x, y);
     }
 
     /**
@@ -45,11 +49,15 @@ class Transformation {
      * @param  {Number} scale           - transform scale
      * @return {Coordinate}  projected coordinate.
      */
-    untransform(point, scale) {
-        return new Coordinate(
-            point.x * scale / this.matrix[0] + this.matrix[2],
-            point.y * scale / this.matrix[1] + this.matrix[3]
-        );
+    untransform(point, scale, out) {
+        const x = point.x * scale / this.matrix[0] + this.matrix[2];
+        const y = point.y * scale / this.matrix[1] + this.matrix[3];
+        if (out) {
+            out.x = x;
+            out.y = y;
+            return out;
+        }
+        return new Coordinate(x, y);
     }
 }
 

@@ -1,4 +1,4 @@
-import { extend, isNil, isObject, isInteger, hasOwn, sign } from '../../core/util';
+import { extend, isNil, isObject, hasOwn, sign } from '../../core/util';
 import Coordinate from '../../geo/Coordinate';
 import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
@@ -215,7 +215,7 @@ export default class SpatialReference {
             z = this._resolutions.length - 1;
         }
         const res = this._resolutions[z];
-        if (!isInteger(zoom) && z !== this._resolutions.length - 1) {
+        if (z !== zoom && zoom > 0 && z < this._resolutions.length - 1) {
             const next = this._resolutions[z + 1];
             return res + (next - res) * (zoom - z);
         }

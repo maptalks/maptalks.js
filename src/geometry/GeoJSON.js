@@ -33,6 +33,7 @@ const GeoJSON = {
     /**
      * Convert one or more GeoJSON objects to geometry
      * @param  {String|Object|Object[]} geoJSON - GeoJSON objects or GeoJSON string
+     * @param  {Function} [foreachFn=undefined] - callback function for each geometry
      * @return {Geometry|Geometry[]} a geometry array when input is a FeatureCollection
      * @example
      * var collection = {
@@ -70,16 +71,16 @@ const GeoJSON = {
      *      ]
      *  }
      *  // A geometry array.
-     *  const geometries = GeoJSON.toGeometry(collection);
+     *  const geometries = GeoJSON.toGeometry(collection, geometry => { geometry.config('draggable', true); });
      */
-    toGeometry: function (geoJSON) {
+    toGeometry: function (geoJSON, foreachFn) {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }
         if (Array.isArray(geoJSON)) {
             const resultGeos = [];
             for (let i = 0, len = geoJSON.length; i < len; i++) {
-                const geo = GeoJSON._convert(geoJSON[i]);
+                const geo = GeoJSON._convert(geoJSON[i], foreachFn);
                 if (Array.isArray(geo)) {
                     pushIn(resultGeos, geo);
                 } else {
@@ -88,7 +89,7 @@ const GeoJSON = {
             }
             return resultGeos;
         } else {
-            const resultGeo = GeoJSON._convert(geoJSON);
+            const resultGeo = GeoJSON._convert(geoJSON, foreachFn);
             return resultGeo;
         }
 
@@ -100,7 +101,7 @@ const GeoJSON = {
      * @return {Geometry}
      * @private
      */
-    _convert: function (json) {
+    _convert: function (json, foreachFn) {
         if (!json || isNil(json['type'])) {
             return null;
         }
@@ -108,7 +109,7 @@ const GeoJSON = {
         const type = json['type'];
         if (type === 'Feature') {
             const g = json['geometry'];
-            const geometry = GeoJSON._convert(g);
+            const geometry = GeoJSON._convert(g, foreachFn);
             if (!geometry) {
                 return null;
             }
@@ -120,22 +121,33 @@ const GeoJSON = {
             if (!features) {
                 return null;
             }
-            const result = GeoJSON.toGeometry(features);
-            return result;
+            return GeoJSON.toGeometry(features, foreachFn);
         } else if (['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon'].indexOf(type) >= 0) {
             const clazz = (type === 'Point' ? 'Marker' : type);
-            return new types[clazz](json['coordinates']);
+            const result = new types[clazz](json['coordinates']);
+            if (foreachFn) {
+                foreachFn(result);
+            }
+            return result;
         } else if (type === 'GeometryCollection') {
             const geometries = json['geometries'];
             if (!isArrayHasData(geometries)) {
-                return new GeometryCollection();
+                const result = new GeometryCollection();
+                if (foreachFn) {
+                    foreachFn(result);
+                }
+                return result;
             }
             const mGeos = [];
             const size = geometries.length;
             for (let i = 0; i < size; i++) {
                 mGeos.push(GeoJSON._convert(geometries[i]));
             }
-            return new GeometryCollection(mGeos);
+            const result = new GeometryCollection(mGeos);
+            if (foreachFn) {
+                foreachFn(result);
+            }
+            return result;
         }
         return null;
     }

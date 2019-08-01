@@ -30,6 +30,18 @@ class Position {
     }
 
     /**
+     * Set point or coordinate's x, y value
+     * @params {Number} x - x value
+     * @params {Number} y - y value
+     * @return {Coordinate|Point} this
+     */
+    set(x, y) {
+        this.x = x;
+        this.y = y;
+        return this;
+    }
+
+    /**
      * Return abs value of the point
      * @return {Coordinate|Point} abs point
      */

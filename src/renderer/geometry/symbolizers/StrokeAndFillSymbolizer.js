@@ -4,6 +4,9 @@ import Coordinate from '../../../geo/Coordinate';
 import PointExtent from '../../../geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
+const TEMP_COORD0 = new Coordinate(0, 0);
+const TEMP_COORD1 = new Coordinate(0, 0);
+
 export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
 
     static test(symbol, geometry) {
@@ -101,15 +104,17 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         this._extMin.y = extent['ymin'];
         this._extMax.x = extent['xmax'];
         this._extMax.y = extent['ymax'];
-        const min = map._prjToPoint(this._extMin),
-            max = map._prjToPoint(this._extMax);
+        const min = map._prjToPoint(this._extMin, undefined, TEMP_COORD0),
+            max = map._prjToPoint(this._extMax, undefined, TEMP_COORD1);
         if (!this._pxExtent) {
             this._pxExtent = new PointExtent(min, max);
         } else {
-            this._pxExtent['xmin'] = Math.min(min.x, max.x);
-            this._pxExtent['xmax'] = Math.max(min.x, max.x);
-            this._pxExtent['ymin'] = Math.min(min.y, max.y);
-            this._pxExtent['ymax'] = Math.max(min.y, max.y);
+            this._pxExtent.set(
+                Math.min(min.x, max.x),
+                Math.min(min.y, max.y),
+                Math.max(min.x, max.x),
+                Math.max(min.y, max.y)
+            );
         }
         return this._pxExtent;
     }

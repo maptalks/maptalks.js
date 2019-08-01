@@ -12,6 +12,10 @@ import Point from '../../../geo/Point';
 import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
 
+const TEMP_POINT = new Point(0, 0);
+const TEMP_POINT1 = new Point(0, 0);
+const TEMP_POINT2 = new Point(0, 0);
+
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for TileLayers
@@ -163,7 +167,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     isTileCachedOrLoading(tileId) {
-        return this.tilesLoading[tileId] || this.tilesInView[tileId] || this.tileCache.has(tileId);
+        return this.tilesLoading[tileId] || this.tilesInView[tileId] || this.tileCache.get(tileId);
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders) {
@@ -445,7 +449,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileSize = tileInfo.size,
             zoom = map.getZoom(),
             ctx = this.context,
-            cp = map._pointToContainerPoint(point, tileZoom),
+            cp = map._pointToContainerPoint(point, tileZoom, 0, TEMP_POINT),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
         const opacity = this.getTileOpacity(tileImage);
@@ -461,8 +465,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             y = cp.y;
         let w = tileSize[0], h = tileSize[1];
         if (transformed) {
-            w++;
-            h++;
+            w += 0.5;
+            h += 0.5;
             ctx.save();
             ctx.translate(x, y);
             if (bearing) {
@@ -476,17 +480,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         Canvas2D.image(ctx, tileImage, x, y, w, h);
         if (this.layer.options['debug']) {
-            const p = new Point(x, y),
-                color = this.layer.options['debugOutline'],
-                xyz = tileId.split('__');
+            const color = this.layer.options['debugOutline'],
+                xyz = tileId.split('-');
             ctx.save();
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
             ctx.strokeWidth = 10;
             ctx.font = '15px monospace';
-            Canvas2D.rectangle(ctx, p, tileSize, 1, 0);
-            Canvas2D.fillText(ctx, 'x:' + xyz[2] + ', y:' + xyz[1] + ', z:' + xyz[3], p.add(10, 20), color);
-            Canvas2D.drawCross(ctx, p.add(w / 2, h / 2), 2, color);
+            Canvas2D.rectangle(ctx, x, y, { width: w, height: h }, 1, 0);
+            Canvas2D.fillText(ctx, 'x:' + xyz[2] + ', y:' + xyz[1] + ', z:' + xyz[3], x + 10, y + 20, color);
+            Canvas2D.drawCross(ctx, x + w / 2, y + h / 2, 2, color);
             ctx.restore();
         }
         if (transformed) {
@@ -507,8 +510,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            pmin = layer._project(map._pointToPrj(min, info.z)),
-            pmax = layer._project(map._pointToPrj(max, info.z));
+            pmin = layer._project(map._pointToPrj(min, info.z, TEMP_POINT1), TEMP_POINT1),
+            pmax = layer._project(map._pointToPrj(max, info.z, TEMP_POINT2), TEMP_POINT2);
         const zoomDiff = 2;
         for (let i = 1; i < zoomDiff; i++) {
             this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);

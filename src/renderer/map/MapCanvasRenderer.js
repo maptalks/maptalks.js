@@ -109,13 +109,14 @@ class MapCanvasRenderer extends MapRenderer {
                 }
                 this.setLayerCanvasUpdated();
             }
-            delete renderer.__shouldZoomTransform;
+            const transformMatrix = renderer.__zoomTransformMatrix;
+            delete renderer.__zoomTransformMatrix;
             if (!needsRedraw) {
                 if (isCanvas && isInteracting) {
                     if (map.isZooming() && !map.getPitch()) {
                         // transform layer's current canvas when zooming
                         renderer.prepareRender();
-                        renderer.__shouldZoomTransform = true;
+                        renderer.__zoomTransformMatrix = this._zoomMatrix;
                     } else if (map.getPitch() || map.isRotating()) {
                         // when map is pitching or rotating, clear the layer canvas
                         // otherwise, leave layer's canvas unchanged
@@ -140,6 +141,11 @@ class MapCanvasRenderer extends MapRenderer {
             } else {
                 // map is not interacting, call layer's render
                 renderer.render(framestamp);
+                //地图缩放完以后，如果下一次render需要载入资源，仍需要设置transformMatrix
+                //防止在资源载入完成之前，缺少transformMatrix导致的绘制错误
+                if (isCanvas && transformMatrix && renderer.isLoadingResource()) {
+                    renderer.__zoomTransformMatrix = transformMatrix;
+                }
             }
 
             if (isCanvas) {
@@ -218,7 +224,7 @@ class MapCanvasRenderer extends MapRenderer {
             // then:
             // transform layer's current canvas when zooming
             renderer.prepareRender();
-            renderer.__shouldZoomTransform = true;
+            renderer.__zoomTransformMatrix = this._zoomMatrix;
         } else if (map.getPitch() || map.isRotating()) {
             // when map is pitching or rotating, clear the layer canvas
             // otherwise, leave layer's canvas unchanged
@@ -610,11 +616,10 @@ class MapCanvasRenderer extends MapRenderer {
         if (layer.options['cssFilter']) {
             ctx.filter = layer.options['cssFilter'];
         }
-        const matrix = this._zoomMatrix;
-        const shouldTransform = !!layer._getRenderer().__shouldZoomTransform;
         const renderer = layer.getRenderer();
+        const matrix = renderer.__zoomTransformMatrix;
         const clipped = renderer.clipCanvas(this.context);
-        if (matrix && shouldTransform) {
+        if (matrix) {
             ctx.save();
             ctx.setTransform.apply(ctx, matrix);
         }
@@ -627,13 +632,13 @@ class MapCanvasRenderer extends MapRenderer {
             this.context.strokeStyle = outlineColor;
             this.context.fillStyle = outlineColor;
             this.context.lineWidth = 10;
-            Canvas2D.rectangle(ctx, point, layerImage.size, 1, 0);
+            Canvas2D.rectangle(ctx, point.x, point.y, layerImage.size, 1, 0);
             ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
                 point.x + 18, point.y + 18);
         }*/
 
         ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, width, height);
-        if (matrix && shouldTransform) {
+        if (matrix) {
             ctx.restore();
         }
         if (clipped) {
@@ -653,7 +658,7 @@ class MapCanvasRenderer extends MapRenderer {
             if (isFunction(cross)) {
                 cross(ctx, p);
             } else {
-                Canvas2D.drawCross(this.context, p, 2, '#f00');
+                Canvas2D.drawCross(this.context, p.x, p.y, 2, '#f00');
             }
         }
     }

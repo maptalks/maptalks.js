@@ -21,10 +21,20 @@ export default extend({}, Common, /** @lends projection.EPSG4326 */ {
      * @constant
      */
     code: 'EPSG:4326',
-    project: function (p) {
+    project: function (p, out) {
+        if (out) {
+            out.x = p.x;
+            out.y = p.y;
+            return out;
+        }
         return new Coordinate(p);
     },
-    unproject: function (p) {
+    unproject: function (p, out) {
+        if (out) {
+            out.x = p.x;
+            out.y = p.y;
+            return out;
+        }
         return new Coordinate(p);
     }
 }, WGS84Sphere);

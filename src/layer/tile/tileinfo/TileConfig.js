@@ -104,7 +104,7 @@ class TileConfig {
      * @param  {Number} zoomLevel
      * @return {Object}  tile's neighbor index
      */
-    getNeighorTileIndex(tileX, tileY, offsetX, offsetY, res, isRepeatWorld) {
+    getNeighorTileIndex(tileX, tileY, offsetX, offsetY, res, repeatWorld) {
         const tileSystem = this.tileSystem;
         let x = (tileX + tileSystem['scale']['x'] * offsetX);
         let y = (tileY - tileSystem['scale']['y'] * offsetY);
@@ -113,30 +113,35 @@ class TileConfig {
         const idy = y;
 
         const ext = this._getTileFullIndex(res);
-        if (isRepeatWorld) {
-            //caculate tile index to request in url in repeated world.
-            if (ext['xmax'] === ext['xmin']) {
-                x = ext['xmin'];
-            } else if (x < ext['xmin']) {
-                x = ext['xmax'] - (ext['xmin'] - x) % (ext['xmax'] - ext['xmin']);
-                if (x === ext['xmax']) {
+        if (repeatWorld) {
+            if (repeatWorld === true || repeatWorld === 'x') {
+                //caculate tile index to request in url in repeated world.
+                if (ext['xmax'] === ext['xmin']) {
                     x = ext['xmin'];
+                } else if (x < ext['xmin']) {
+                    x = ext['xmax'] - (ext['xmin'] - x) % (ext['xmax'] - ext['xmin']);
+                    if (x === ext['xmax']) {
+                        x = ext['xmin'];
+                    }
+                } else if (x >= ext['xmax']) {
+                    x = ext['xmin'] + (x - ext['xmin']) % (ext['xmax'] - ext['xmin']);
                 }
-            } else if (x >= ext['xmax']) {
-                x = ext['xmin'] + (x - ext['xmin']) % (ext['xmax'] - ext['xmin']);
             }
 
-            if (ext['ymax'] === ext['ymin']) {
-                y = ext['ymin'];
-            } else if (y >= ext['ymax']) {
-                y = ext['ymin'] + (y - ext['ymin']) % (ext['ymax'] - ext['ymin']);
-            } else if (y < ext['ymin']) {
-                y = ext['ymax'] - (ext['ymin'] - y) % (ext['ymax'] - ext['ymin']);
-                if (y === ext['ymax']) {
+            if (repeatWorld === true || repeatWorld === 'y') {
+                if (ext['ymax'] === ext['ymin']) {
                     y = ext['ymin'];
+                } else if (y >= ext['ymax']) {
+                    y = ext['ymin'] + (y - ext['ymin']) % (ext['ymax'] - ext['ymin']);
+                } else if (y < ext['ymin']) {
+                    y = ext['ymax'] - (ext['ymin'] - y) % (ext['ymax'] - ext['ymin']);
+                    if (y === ext['ymax']) {
+                        y = ext['ymin'];
+                    }
                 }
             }
-        } else if (x < ext['xmin'] || x > ext['xmax'] || y > ext['ymax'] || y < ext['ymin']) {
+        }
+        if (x < ext['xmin'] || x > ext['xmax'] || y > ext['ymax'] || y < ext['ymin']) {
             out = true;
         }
         return {
