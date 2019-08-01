@@ -171,7 +171,8 @@ export default class FBORayPicking {
             extraCommandProps
         });
         const defines1 = {
-            'ENABLE_PICKING' : 1
+            'ENABLE_PICKING' : 1,
+            'USE_PICKING_ID' : 1
         };
         if (this._defines) {
             for (const p in this._defines) {
