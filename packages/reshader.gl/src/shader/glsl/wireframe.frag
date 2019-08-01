@@ -25,6 +25,10 @@ uniform float squeezeMax;
 uniform vec4 stroke;
 uniform vec4 fill;
 uniform float opacity;
+
+#ifdef USE_INSTANCE
+  varying vec4 vInstanceColor;
+#endif
 #extension GL_OES_standard_derivatives : enable
 
 const float PI = 3.14159265;
@@ -77,14 +81,19 @@ vec4 getStyledWireframe (vec3 barycentric) {
   float edge = 1.0 - aastep(computedThickness, d);
 
   // now compute the final color of the mesh
+  #ifdef USE_INSTANCE
+    vec4 strokeColor = vInstanceColor;
+  #else
+    vec4 strokeColor = stroke;
+  #endif
   vec4 outColor = vec4(0.0);
   if (seeThrough) {
-    outColor = vec4(stroke.xyz, edge);
+    outColor = vec4(strokeColor.xyz, edge);
     if (insideAltColor && !gl_FrontFacing) {
        outColor.rgb = fill.xyz;
     }
   } else {
-    vec3 mainStroke = mix(fill.xyz, stroke.xyz, edge);
+    vec3 mainStroke = mix(fill.xyz, strokeColor.xyz, edge);
     outColor.a = fill.a;
     if (dualStroke) {
       float inner = 1.0 - aastep(secondThickness, d);

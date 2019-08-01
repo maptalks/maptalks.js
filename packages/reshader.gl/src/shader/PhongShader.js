@@ -23,6 +23,7 @@ class PhongShader extends MeshShader {
                 'ambientStrength',
                 'specularStrength',
                 'materialShininess',
+                'projViewMatrix',
                 'opacity',
                 'sample',
                 'lightPosition',
