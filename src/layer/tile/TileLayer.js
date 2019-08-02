@@ -384,7 +384,7 @@ class TileLayer extends Layer {
                 }
                 let p;
                 if (tileInfo) {
-                    p = tileInfo.point0;
+                    p = tileInfo.point0.copy();
                 } else {
                     const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
                     p = map._prjToPoint(this._unproject(pnw, TEMP_POINT3), z);
@@ -396,8 +396,8 @@ class TileLayer extends Layer {
                 } else {
                     const pse = tileConfig.getTilePrjSE(idx.x, idx.y, res),
                         pp = map._prjToPoint(this._unproject(pse, TEMP_POINT3), z, TEMP_POINT3);
-                    width = Math.abs(Math.round(pp.x - p.x));
-                    height = Math.abs(Math.round(pp.y - p.y));
+                    width = Math.ceil(Math.abs(pp.x - p.x));
+                    height = Math.ceil(Math.abs(pp.y - p.y));
                 }
                 const dx = scale.x * (idx.idx - idx.x) * width,
                     dy = -scale.y * (idx.idy - idx.y) * height;
@@ -431,8 +431,8 @@ class TileLayer extends Layer {
                     !innerExtent2D.equals(offsetExtent2D) && this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
                         tileInfo.point = p._add(offset);
-                        tileInfo.extent2d.set(p.x, p.y, p.x + width, p.y + height);
-                        tileInfo.extent2d = tileExtent._add(offset);
+                        tileExtent.set(p.x, p.y, p.x + width, p.y + height);
+                        tileExtent._add(offset);
                     }
                     if (!hasCachedInfo) {
                         tileInfo['size'] = [width, height];
