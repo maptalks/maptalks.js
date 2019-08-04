@@ -384,7 +384,8 @@ class TileLayer extends Layer {
                 }
                 let p;
                 if (tileInfo) {
-                    p = tileInfo.point0.copy();
+                    const { point0 } = tileInfo;
+                    p = tileInfo.point.set(point0.x, point0.y);
                 } else {
                     const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
                     p = map._prjToPoint(this._unproject(pnw, TEMP_POINT3), z);
@@ -430,8 +431,8 @@ class TileLayer extends Layer {
                 if (rightVisitEnd || innerExtent2D.intersects(tileExtent) ||
                     !innerExtent2D.equals(offsetExtent2D) && this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
-                        tileInfo.point = p._add(offset);
                         tileExtent.set(p.x, p.y, p.x + width, p.y + height);
+                        tileInfo.point = p._add(offset);
                         tileExtent._add(offset);
                     }
                     if (!hasCachedInfo) {

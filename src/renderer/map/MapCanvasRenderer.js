@@ -631,7 +631,7 @@ class MapCanvasRenderer extends MapRenderer {
             this.context.strokeStyle = outlineColor;
             this.context.fillStyle = outlineColor;
             this.context.lineWidth = 10;
-            Canvas2D.rectangle(ctx, point.x, point.y, layerImage.size, 1, 0);
+            Canvas2D.rectangle(ctx, point, layerImage.size, 1, 0);
             ctx.fillText([layer.getId(), point.toArray().join(), layerImage.size.toArray().join(), canvasImage.width + ',' + canvasImage.height].join(' '),
                 point.x + 18, point.y + 18);
         }*/

@@ -350,10 +350,10 @@ const Canvas = {
         if (shadowBlur && drawHalo) {
             ctx.shadowBlur = ctx.shadowOffsetX = ctx.shadowOffsetY = 0;
         }
-        Canvas.fillText(ctx, text, pt.x, pt.y);
+        Canvas.fillText(ctx, text, pt);
         if (gco) {
             ctx.globalCompositeOperation = gco;
-            Canvas.fillText(ctx, text, pt.x, pt.y, fill);
+            Canvas.fillText(ctx, text, pt, fill);
             if (shadowBlur) {
                 ctx.shadowBlur = shadowBlur;
                 ctx.shadowOffsetX = shadowOffsetX;
@@ -362,12 +362,12 @@ const Canvas = {
         }
     },
 
-    fillText(ctx, text, x, y, rgba) {
+    fillText(ctx, text, pt, rgba) {
         ctx.canvas._drawn = true;
         if (rgba) {
             ctx.fillStyle = rgba;
         }
-        ctx.fillText(text, Math.round(x), Math.round(y));
+        ctx.fillText(text, Math.round(pt.x), Math.round(pt.y));
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
@@ -807,8 +807,9 @@ const Canvas = {
         Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
     },
 
-    rectangle(ctx, x, y, size, lineOpacity, fillOpacity) {
+    rectangle(ctx, pt, size, lineOpacity, fillOpacity) {
         // pt = pt._round();
+        const { x, y } = pt;
         ctx.beginPath();
         ctx.rect(x, y, size['width'], size['height']);
         Canvas.fillCanvas(ctx, fillOpacity, x, y);
