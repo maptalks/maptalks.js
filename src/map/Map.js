@@ -28,6 +28,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
  * @property {Boolean} [options.seamlessZoom=false]             - whether to use seamless zooming mode
  * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
+ * @property {Number}  [options.zoomOrigin=null]                - zoom origin in container point, e.g. [400, 300]
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
@@ -83,6 +84,7 @@ const options = {
     'centerCross': false,
 
     'zoomInCenter' : false,
+    'zoomOrigin' : null,
     'zoomAnimation': (function () {
         return !IS_NODE;
     })(),
