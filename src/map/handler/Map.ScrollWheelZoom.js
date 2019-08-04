@@ -34,12 +34,12 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     _onWheelScroll(evt) {
+        preventDefault(evt);
+        stopPropagation(evt);
         const map = this.target;
         if (map._ignoreEvent(evt) || !map.options['zoomable']) {
             return false;
         }
-        preventDefault(evt);
-        stopPropagation(evt);
         const container = map._containerDOM;
         const origin = map._checkZoomOrigin(getEventContainerPoint(evt, container));
         if (map.options['seamlessZoom']) {
