@@ -28,6 +28,9 @@ Map.include(/** @lends Map.prototype */{
         if (!origin || this.options['zoomInCenter']) {
             origin = new Point(this.width / 2, this.height / 2);
         }
+        if (this.options['zoomOrigin']) {
+            origin = new Point(this.options['zoomOrigin']);
+        }
         return origin;
     },
 

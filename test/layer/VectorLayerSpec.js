@@ -127,7 +127,26 @@ describe('VectorLayer.Spec', function () {
                 map.zoomOut();
             });
             expect(function () {
-                layer.addGeometry(geometries, true);
+                layer.addGeometry(geometries);
+            }).to.not.throwException();
+        });
+
+        it('all type of geometry in seamlessZoom', function (done) {
+            map.config('seamlessZoom', true);
+            layer.on('forceRenderOnZooming', true);
+            layer.on('drawImmediate', true);
+            var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
+            map.on('zoomend', function () {
+                done();
+            });
+            var count = 0;
+            layer.on('layerload', function () {
+                count++;
+                map.zoomOut();
+
+            });
+            expect(function () {
+                layer.addGeometry(geometries);
             }).to.not.throwException();
         });
 

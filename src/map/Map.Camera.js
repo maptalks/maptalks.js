@@ -397,10 +397,13 @@ Map.include(/** @lends Map.prototype */{
 
     _calcDomMatrix: function () {
         const m = Browser.ie9 ? null : createMat4(),
+            m1 = Browser.ie9 ? null : createMat4(),
             minusY = [1, -1, 1],
             arr = [0, 0, 0];
         return function () {
-            const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+            const width = this.width || 1;
+            const height = this.height || 1;
+            const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * height;
             mat4.scale(m, this.projMatrix, minusY);
             mat4.translate(m, m, set(arr, 0, 0, -cameraToCenterDistance));//[0, 0, cameraToCenterDistance]
             if (this._pitch) {
@@ -409,8 +412,8 @@ Map.include(/** @lends Map.prototype */{
             if (this._angle) {
                 mat4.rotateZ(m, m, this._angle);
             }
-            const m1 = createMat4();
-            mat4.scale(m1, m1, set(arr, this.width / 2, -this.height / 2, 1)); //[this.width / 2, -this.height / 2, 1]
+            mat4.identity(m1);
+            mat4.scale(m1, m1, set(arr, width / 2, -height / 2, 1)); //[this.width / 2, -this.height / 2, 1]
             return mat4.multiply(this.domCssMatrix || createMat4(), m1, m);
         };
     }(),

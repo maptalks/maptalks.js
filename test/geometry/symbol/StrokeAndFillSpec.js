@@ -49,7 +49,7 @@ describe('StrokeAndFillSpec', function () {
         });
 
         it('line pattern', function (done) {
-            var line = new maptalks.LineString([center, center.add(0.0001, 0)], {
+            var line = new maptalks.LineString([center, center.add(0, -0.0001)], {
                 symbol:{
                     'linePatternFile' : 'resources/pattern2.png',
                     'lineOpacity' : 1,
@@ -60,7 +60,7 @@ describe('StrokeAndFillSpec', function () {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function () {
-                expect(v).not.to.be.painted(0, 0, [0, 0, 0]);
+                expect(v).to.be.painted(0, 0);
                 done();
             });
             v.addGeometry(line);
@@ -79,7 +79,7 @@ describe('StrokeAndFillSpec', function () {
             });
             var v = new maptalks.VectorLayer('v').addTo(map);
             v.once('layerload', function () {
-                expect(v).not.to.be.painted(0, 0, [255, 255, 255]);
+                expect(v).to.be.painted(0, 0);
                 done();
             });
             v.addGeometry(line);

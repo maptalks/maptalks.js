@@ -125,7 +125,7 @@ class Zoom extends Control {
             const map = this.getMap();
             let zoom = map.getZoom();
             if (!isInteger(zoom)) {
-                zoom = Math.round(zoom * 10) / 10;
+                zoom = Math.floor(zoom * 10) / 10;
             }
             this._levelDOM.innerHTML = zoom;
         }

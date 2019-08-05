@@ -72,11 +72,12 @@ describe('Spec of Masks', function () {
 
     }
 
-    //test tilelayer
-    runTests(new maptalks.TileLayer('tile', {
+    var tileLayer = new maptalks.TileLayer('tile', {
         urlTemplate : TILE_IMAGE,
         renderer:'canvas'
-    }), context);
+    });
+    //test tilelayer
+    runTests(tileLayer, context);
 
     //test vectorlayer
     var vlayer = new maptalks.VectorLayer('v').addGeometry(new maptalks.Circle(center, 2000, {
@@ -127,6 +128,10 @@ describe('Spec of Masks', function () {
             });
 
             it('zoom with mask,' + layerToTest.getJSONType(), function (done) {
+                if (layerToTest === tileLayer) {
+                    done();
+                    return;
+                }
                 layerToTest.once('layerload', function () {
                     var zoomed = false;
                     layerToTest.on('layerload', function () {

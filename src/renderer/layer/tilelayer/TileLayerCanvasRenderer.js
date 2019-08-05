@@ -487,8 +487,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.fillStyle = color;
             ctx.strokeWidth = 10;
             ctx.font = '15px monospace';
-            Canvas2D.rectangle(ctx, x, y, { width: w, height: h }, 1, 0);
-            Canvas2D.fillText(ctx, 'x:' + xyz[2] + ', y:' + xyz[1] + ', z:' + xyz[3], x + 10, y + 20, color);
+            const point = new Point(x, y);
+            Canvas2D.rectangle(ctx, point, { width: w, height: h }, 1, 0);
+            Canvas2D.fillText(ctx, 'x:' + xyz[2] + ', y:' + xyz[1] + ', z:' + xyz[3], point._add(10, 20), color);
             Canvas2D.drawCross(ctx, x + w / 2, y + h / 2, 2, color);
             ctx.restore();
         }
