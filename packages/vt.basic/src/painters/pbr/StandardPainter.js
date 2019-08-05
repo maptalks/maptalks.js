@@ -451,7 +451,10 @@ class StandardPainter extends Painter {
         const speed = lightConfig.camera.speed || 1 / 125; //快门速度
         const iso = lightConfig.camera.iso || 100; //iso感光度
         const ev100 = computeEV100(aperture, speed, iso);
+        //TODO prefilter_cube_size被固定为512，直接计算mipLevel
+        const mipLevel = Math.log(512) / Math.log(2);
         const uniforms = {
+            'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
             'light_iblDFG': iblMaps.dfgLUT,
             'light_iblSpecular': iblMaps.prefilterMap,
             'iblSH': iblMaps.sh,
