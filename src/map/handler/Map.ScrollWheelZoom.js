@@ -191,7 +191,7 @@ class MapScrollWheelZoomHandler extends Handler {
 
 Map.mergeOptions({
     'scrollWheelZoom': true,
-    'seamlessZoom': false
+    'seamlessZoom': true
 });
 
 Map.addOnLoadHook('addHandler', 'scrollWheelZoom', MapScrollWheelZoomHandler);
