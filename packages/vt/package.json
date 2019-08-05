@@ -45,7 +45,7 @@
     "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/vector-tile": "^1.3.0",
     "@maptalks/feature-filter": "^1.0.0",
-    "@maptalks/gl": "^0.2.1",
+    "@maptalks/gl": "^0.2.2",
     "@maptalks/tbn-packer": "^1.2.1",
     "@maptalks/vector-packer": "^0.1.49",
     "color": "^3.0.0",
