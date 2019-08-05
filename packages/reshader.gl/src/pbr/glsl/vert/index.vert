@@ -157,9 +157,6 @@
             vertex_worldNormal = material.worldNormal;
         #endif
 
-        // #if defined(HAS_SHADOWING) && defined(HAS_DIRECTIONAL_LIGHTING)
-        //     vertex_lightSpacePosition = getLightSpacePosition(vertex_worldPosition, vertex_worldNormal);
-        // #endif
 
 
         gl_Position =  projViewModelMatrix * mesh_position;

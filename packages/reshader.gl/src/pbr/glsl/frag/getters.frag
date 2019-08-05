@@ -61,11 +61,6 @@ float getNdotV() {
     return shading_NoV;
 }
 
-#if defined(HAS_SHADOWING) && defined(HAS_DIRECTIONAL_LIGHTING)
-highp vec3 getLightSpacePosition() {
-    return vertex_lightSpacePosition.xyz * (1.0 / vertex_lightSpacePosition.w);
-}
-#endif
 
 #if defined(MATERIAL_HAS_DOUBLE_SIDED_CAPABILITY)
 bool isDoubleSided() {
