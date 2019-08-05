@@ -465,8 +465,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             y = cp.y;
         let w = tileSize[0], h = tileSize[1];
         if (transformed) {
-            w += 0.5;
-            h += 0.5;
+            w += 0.1;
+            h += 0.1;
             ctx.save();
             ctx.translate(x, y);
             if (bearing) {
@@ -482,6 +482,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (this.layer.options['debug']) {
             const color = this.layer.options['debugOutline'],
                 xyz = tileId.split('-');
+            const length = xyz.length;
             ctx.save();
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
@@ -489,7 +490,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.font = '15px monospace';
             const point = new Point(x, y);
             Canvas2D.rectangle(ctx, point, { width: w, height: h }, 1, 0);
-            Canvas2D.fillText(ctx, 'x:' + xyz[2] + ', y:' + xyz[1] + ', z:' + xyz[3], point._add(10, 20), color);
+            Canvas2D.fillText(ctx, 'x:' + xyz[length - 3] + ', y:' + xyz[length - 2] + ', z:' + xyz[length - 1], point._add(10, 20), color);
             Canvas2D.drawCross(ctx, x + w / 2, y + h / 2, 2, color);
             ctx.restore();
         }
