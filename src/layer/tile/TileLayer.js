@@ -390,24 +390,22 @@ class TileLayer extends Layer {
                     const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
                     p = map._prjToPoint(this._unproject(pnw, TEMP_POINT3), z);
                 }
+                // FIXME: 根据临近瓦片平铺计算
+                p._round();
                 let width, height;
                 if (sr === mapSR) {
                     width = tileSize.width;
                     height = tileSize.height;
                 } else {
                     const pse = tileConfig.getTilePrjSE(idx.x, idx.y, res),
-                        pp = map._prjToPoint(this._unproject(pse, TEMP_POINT3), z, TEMP_POINT3);
-                    width = Math.ceil(Math.abs(pp.x - p.x));
-                    height = Math.ceil(Math.abs(pp.y - p.y));
+                        pp = map._prjToPoint(this._unproject(pse, TEMP_POINT3), z, TEMP_POINT3)._round();
+                    width = Math.abs(pp.x - p.x);
+                    height = Math.abs(pp.y - p.y);
                 }
                 const dx = scale.x * (idx.idx - idx.x) * width,
                     dy = -scale.y * (idx.idy - idx.y) * height;
                 if (dx || dy) {
                     p._add(dx, dy);
-                }
-                if (sr !== mapSR) {
-                    width++; //plus 1 to prevent white gaps
-                    height++;
                 }
                 if (hasOffset) {
                     p._sub(offset);
