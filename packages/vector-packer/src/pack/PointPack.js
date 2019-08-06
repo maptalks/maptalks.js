@@ -503,26 +503,26 @@ export default class PointPack extends VectorPack {
             data.push(markerDy);
         }
         //update pack properties
-        if (textHaloRadius > 1) {
+        if (textHaloRadius > 0) {
             this.properties['hasHalo'] = 1;
         }
-        if (Math.abs(textDx) > 1) {
+        if (Math.abs(textDx) > 0) {
             this.properties['hasTextDx'] = 1;
         }
-        if (Math.abs(textDy) > 1) {
+        if (Math.abs(textDy) > 0) {
             this.properties['hasTextDy'] = 1;
         }
 
-        if (Math.abs(markerWidth) > 1) {
+        if (Math.abs(markerWidth) > 0) {
             this.properties['hasMarkerWidth'] = 1;
         }
-        if (Math.abs(markerHeight) > 1) {
+        if (Math.abs(markerHeight) > 0) {
             this.properties['hasMarkerHeight'] = 1;
         }
-        if (Math.abs(markerDx) > 1) {
+        if (Math.abs(markerDx) > 0) {
             this.properties['hasMarkerDx'] = 1;
         }
-        if (Math.abs(markerDy) > 1) {
+        if (Math.abs(markerDy) > 0) {
             this.properties['hasMarkerDy'] = 1;
         }
     }

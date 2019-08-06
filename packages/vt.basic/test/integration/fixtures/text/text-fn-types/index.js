@@ -56,7 +56,7 @@ const style = [
                 type: 'categorical',
                 default: 0,
                 stops: [
-                    [2, 2]
+                    [2, 1]
                 ]
             },
             textHaloFill: {
