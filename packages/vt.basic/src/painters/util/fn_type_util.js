@@ -49,7 +49,13 @@ export function updateGeometryFnTypeAttrib(config, meshes) {
         const { attrName, evaluate } = config[c];
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
+            if (!mesh) {
+                continue;
+            }
             const geometry = mesh.geometry;
+            if (!geometry) {
+                continue;
+            }
             const { aPickingId } = geometry.properties;
             const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
             if (!aPickingId || !aIndex) {
