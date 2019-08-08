@@ -171,28 +171,19 @@ function prepareGeometry(geometry, enableCollision) {
             data: new Int16Array(aShape.length)
         };
         geometry.properties.aOffset = new Int16Array(aShape.length);
+    }
 
-        if (enableCollision) {
-            //非line placement时
-            geometry.data.aOpacity = {
-                usage: 'dynamic',
-                data: new Uint8Array(aShape.length / 2)
-            };
-            geometry.properties.aOpacity = new Uint8Array(aShape.length / 2);
-        }
-
-
-    } else if (enableCollision) {
-        const aOpacity = geometry.properties.aOpacity = new Uint8Array(vertexCount);
-        for (let i = 0; i < aOpacity.length; i++) {
-            aOpacity[i] = 0;
-        }
-        //非line placement时
+    if (enableCollision) {
         geometry.data.aOpacity = {
             usage: 'dynamic',
-            // data: new Uint8Array(aOpacity.length)
-            data: new Uint8Array(aOpacity)
+            data: new Uint8Array(vertexCount)
         };
+        geometry.properties.aOpacity = new Uint8Array(vertexCount);
+
+        const { aTextHaloRadius } = geometry.data;
+        if (aTextHaloRadius && !geometry.properties.aTextHaloRadius) {
+            geometry.properties.aTextHaloRadius = geometry.properties[PREFIX + 'aTextHaloRadius'] || new aTextHaloRadius.constructor(aTextHaloRadius);
+        }
     }
 
     if (isLinePlacement || enableCollision) {

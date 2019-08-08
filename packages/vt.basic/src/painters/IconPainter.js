@@ -397,6 +397,7 @@ class IconPainter extends CollisionPainter {
             if (textMesh) {
                 const symbol = textMesh.geometry.properties.symbol;
                 textMesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
+                textMesh.properties.textHaloRadius = !isNil(symbol['textHaloRadius']) ? symbol['textHaloRadius'] : DEFAULT_UNIFORMS['textHaloRadius'];
                 textGeometry = textMesh.geometry;
                 textElements = textGeometry.properties.elements;
                 textVisibleElements = [];
@@ -505,14 +506,17 @@ class IconPainter extends CollisionPainter {
         const textElements = textMesh.geometry.properties.elements;
         const idx = textElements[textStart];
         const charCount = (textEnd - textStart) / BOX_ELEMENT_COUNT;
-        const textSize = textMesh.properties.textSize;
+
+        const { aTextSize, aTextHaloRadius } = textMesh.geometry.properties;
+        const textSize = aTextSize ? aTextSize[idx] : mesh.properties.textSize;
+        const textHaloRadius = aTextHaloRadius ? aTextHaloRadius[idx] : mesh.properties.textHaloRadius;
 
         const anchor = getAnchor(ANCHOR, textMesh, idx);
         const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
         //insert every character's box into collision index
         for (let j = textStart; j < textEnd; j += 6) {
             //use int16array to save some memory
-            const box = getLabelBox([], anchor, projAnchor, textMesh, textSize, textElements[j], matrix, map);
+            const box = getLabelBox([], anchor, projAnchor, textMesh, textSize, textHaloRadius, textElements[j], matrix, map);
             boxes.push(box);
             const collides = this.isCollides(box, z);
             if (collides === 1) {

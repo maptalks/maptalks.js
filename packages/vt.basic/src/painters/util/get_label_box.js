@@ -3,6 +3,8 @@ import { clamp } from '../../Util';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { GLYPH_SIZE } from '../Constant';
 
+const TEXT_BOX_MARGIN = 1;
+
 //temparary variables
 const MAT2 = [];
 const V2_0 = [], V2_1 = [], V2_2 = [], V2_3 = [];
@@ -11,7 +13,7 @@ const DXDY = [];
 
 const AXIS_FACTOR = [1, -1];
 
-export function getLabelBox(out, anchor, projAnchor, mesh, textSize, i, matrix, map) {
+export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRadius, i, matrix, map) {
     const uniforms = mesh.material.uniforms;
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties;
@@ -102,6 +104,11 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, i, matrix, 
             getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);
         }
     }
+    textHaloRadius = textHaloRadius || 0;
+    out[0] -= textHaloRadius + TEXT_BOX_MARGIN;
+    out[1] -= textHaloRadius + TEXT_BOX_MARGIN;
+    out[2] += textHaloRadius + TEXT_BOX_MARGIN;
+    out[3] += textHaloRadius + TEXT_BOX_MARGIN;
     return out;
 }
 

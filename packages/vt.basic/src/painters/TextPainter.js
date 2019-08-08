@@ -197,6 +197,7 @@ export default class TextPainter extends CollisionPainter {
             const geometry = mesh.geometry;
             const symbol = geometry.properties.symbol;
             mesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
+            mesh.properties.textHaloRadius = !isNil(symbol['textHaloRadius']) ? symbol['textHaloRadius'] : DEFAULT_UNIFORMS['textHaloRadius'];
 
             // const idx = geometry.properties.aPickingId[0];
             // console.log(`图层:${geometry.properties.features[idx].feature.layer},数据数量：${geometry.count / BOX_ELEMENT_COUNT}`);
@@ -529,8 +530,9 @@ export default class TextPainter extends CollisionPainter {
         const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
         const debugCollision = this.layer.options['debugCollision'];
         // const textSize = mesh.properties.textSize;
-        const aTextSize = geoProps['aTextSize'];
+        const { aTextSize, aTextHaloRadius } = geoProps;
         const textSize = aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize;
+        const haloRadius = aTextHaloRadius ? aTextHaloRadius[elements[start]] : mesh.properties.textHaloRadius;
 
         const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
 
@@ -549,8 +551,8 @@ export default class TextPainter extends CollisionPainter {
             // 可以直接用第一个字的tl和最后一个字的br生成box，以减少box数量
             const firstChrIdx = elements[start],
                 lastChrIdx = elements[start + charCount * 6 - 6];
-            const tlBox = getLabelBox(BOX0, anchor, projAnchor, mesh, textSize, firstChrIdx, matrix, map),
-                brBox = getLabelBox(BOX1, anchor, projAnchor, mesh, textSize, lastChrIdx, matrix, map);
+            const tlBox = getLabelBox(BOX0, anchor, projAnchor, mesh, textSize, haloRadius, firstChrIdx, matrix, map),
+                brBox = getLabelBox(BOX1, anchor, projAnchor, mesh, textSize, haloRadius, lastChrIdx, matrix, map);
             const box = BOX;
             box[0] = Math.min(tlBox[0], brBox[0]);
             box[1] = Math.min(tlBox[1], brBox[1]);
@@ -571,7 +573,7 @@ export default class TextPainter extends CollisionPainter {
             //insert every character's box into collision index
             for (let j = start; j < start + charCount * 6; j += 6) {
                 //use int16array to save some memory
-                const box = getLabelBox(BOX, anchor, projAnchor, mesh, textSize, elements[j], matrix, map);
+                const box = getLabelBox(BOX, anchor, projAnchor, mesh, textSize, haloRadius, elements[j], matrix, map);
                 boxes.push(box.slice(0));
                 const collides = this.isCollides(box, geoProps.z);
                 if (collides === 1) {
