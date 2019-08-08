@@ -132,13 +132,20 @@ export default class CollisionPainter extends BasicPainter {
         let fadingOpacity = 1;
         let isFading = false;
         if (this.sceneConfig.fading) {
-            fadingOpacity = this._getBoxFading(visible, this._getBoxTimestamps(meshKey), boxIndex, level);
-            if (fadingOpacity > 0) {
-                visible = true;
-            }
-            isFading = this.isBoxFading(meshKey, boxIndex);
-            if (isFading) {
-                this.setToRedraw();
+            const stamps = this._getBoxTimestamps(meshKey);
+            fadingOpacity = this._getBoxFading(visible, stamps, boxIndex, level);
+            if (level <= 2) {
+                if (fadingOpacity > 0) {
+                    visible = true;
+                }
+                isFading = this.isBoxFading(meshKey, boxIndex);
+                if (isFading) {
+                    this.setToRedraw();
+                }
+            } else if (!visible) {
+                //未解决zoom in 过程中，大量box挤在一起，造成的用户体验不佳的问题
+                //当瓦片层级与当前层级相差较大，则跳过fading阶段，立即隐藏有collision的box
+                this._markFadingCollided(stamps, boxIndex);
             }
         }
 
@@ -266,6 +273,15 @@ export default class CollisionPainter extends BasicPainter {
             this._fadingRecords[key] = {};
         }
         return this._fadingRecords[key];
+    }
+
+    _markFadingCollided(stamps, index) {
+        if (!stamps) {
+            return;
+        }
+        const framestamp = this.layer.getRenderer().getFrameTimestamp();
+        const { fadingDuration } = this.sceneConfig;
+        stamps[index] = framestamp - fadingDuration - 1;
     }
 
     deleteMesh(meshes, keepGeometry) {
