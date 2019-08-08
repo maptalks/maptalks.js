@@ -14,6 +14,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._initPlugins();
         this.ready = false;
         this._styleCounter = 0;
+        this._requestingMVT = {};
     }
 
     getWorkerConnection() {
@@ -212,94 +213,114 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     loadTile(tileInfo) {
-        const map = this.getMap();
+        const { url } = tileInfo;
+        if (!this._requestingMVT[url]) {
+            const map = this.getMap();
+            const glScale = map.getGLScale(tileInfo.z);
+            this._requestingMVT[url] = [tileInfo];
+            this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale }, this._onReceiveMVTData.bind(this, url));
+        } else {
+            this._requestingMVT[url].push(tileInfo);
+        }
+        return {};
+    }
+
+    _onReceiveMVTData(url, err, data) {
         const layer = this.layer;
         const useDefault = layer.isDefaultRender();
-
-        const glScale = map.getGLScale(tileInfo.z);
-        this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale }, (err, data) => {
-            if (err) {
-                if (err.status && err.status === 404) {
-                    //只处理404
+        const tiles = this._requestingMVT[url];
+        delete this._requestingMVT[url];
+        if (err) {
+            if (err.status && err.status === 404) {
+                //只处理404
+                for (let i = 0; i < tiles.length; i++) {
+                    const tileInfo = tiles[i];
                     this.onTileError(EMPTY_VECTOR_TILE, tileInfo);
                 }
-                return;
+
             }
-            if (!data) {
+            return;
+        }
+        if (!data) {
+            for (let i = 0; i < tiles.length; i++) {
+                const tileInfo = tiles[i];
                 this.onTileLoad({ _empty: true }, tileInfo);
-                return;
             }
-            if (data.canceled) {
-                return;
+            return;
+        }
+        if (data.canceled) {
+            return;
+        }
+        if (data.style !== this._styleCounter) {
+            //返回的是上一个style的tileData
+            return;
+        }
+        let needCompile = false;
+        //restore features for plugin data
+        const features = data.features;
+        const layers = [];
+        //iterate plugins
+        for (let i = 0; i < data.data.length; i++) {
+            const pluginData = data.data[i]; // { data, featureIndex }
+            if (!pluginData || !pluginData.styledFeatures.length) {
+                continue;
             }
-            if (data.style !== this._styleCounter) {
-                //返回的是上一个style的tileData
-                return;
+            const { style, isUpdated } = this._updatePluginIfNecessary(i, pluginData);
+            if (isUpdated) { needCompile = true; }
+
+            if (useDefault) {
+                layers.push(pluginData.data.layer);
             }
-            let needCompile = false;
-            //restore features for plugin data
-            const features = data.features;
-            const layers = [];
-            //iterate plugins
-            for (let i = 0; i < data.data.length; i++) {
-                const pluginData = data.data[i]; // { data, featureIndex }
-                if (!pluginData || !pluginData.styledFeatures.length) {
+
+            const symbol = style.symbol;
+            const feaIndexes = pluginData.styledFeatures;
+            //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
+            //这样featureIndexes中的序号能从pFeatures取得正确的数据
+            const pFeatures = new Array(features.length);
+            if (features.length) {
+                //[feature index, style index]
+                for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
+                    let feature = features[feaIndexes[ii]];
+                    if (layer.options['features'] === 'id' && layer.getFeature) {
+                        feature = layer.getFeature(feature);
+                        feature.layer = i;
+                    }
+                    pFeatures[feaIndexes[ii]] = {
+                        feature,
+                        symbol
+                    };
+                }
+            }
+            delete pluginData.styledFeatures;
+            pluginData.features = pFeatures;
+        }
+        if (needCompile) {
+            layer._compileStyle();
+        }
+
+        const tileZoom = tiles[0].z;
+        const schema = this.layer.getDataSchema(tileZoom);
+        this._updateSchema(schema, data.schema);
+
+        delete data.features;
+        if (useDefault && data.data.length !== layers.length) {
+            //因为默认绘制时，renderPlugin是以tileData中的图层顺序初始化的
+            //当某个图层data为空时，需要将它从tileData中剔除，否则layer的renderPlugin就无法对应到数据
+            const oldData = data.data;
+            data.data = [];
+            for (let i = 0; i < oldData.length; i++) {
+                if (!oldData[i] || !oldData[i].features) {
                     continue;
                 }
-                const { style, isUpdated } = this._updatePluginIfNecessary(i, pluginData);
-                if (isUpdated) { needCompile = true; }
-
-                if (useDefault) {
-                    layers.push(pluginData.data.layer);
-                }
-
-                const symbol = style.symbol;
-                const feaIndexes = pluginData.styledFeatures;
-                //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
-                //这样featureIndexes中的序号能从pFeatures取得正确的数据
-                const pFeatures = new Array(features.length);
-                if (features.length) {
-                    //[feature index, style index]
-                    for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
-                        let feature = features[feaIndexes[ii]];
-                        if (layer.options['features'] === 'id' && layer.getFeature) {
-                            feature = layer.getFeature(feature);
-                            feature.layer = i;
-                        }
-                        pFeatures[feaIndexes[ii]] = {
-                            feature,
-                            symbol
-                        };
-                    }
-                }
-                delete pluginData.styledFeatures;
-                pluginData.features = pFeatures;
+                data.data.push(oldData[i]);
             }
-            if (needCompile) {
-                layer._compileStyle();
-            }
+        }
+        data.layers = layers;
+        for (let i = 0; i < tiles.length; i++) {
+            const tileInfo = tiles[i];
 
-            const tileZoom = tileInfo.z;
-            const schema = this.layer.getDataSchema(tileZoom);
-            this._updateSchema(schema, data.schema);
-
-            delete data.features;
-            if (useDefault && data.data.length !== layers.length) {
-                //因为默认绘制时，renderPlugin是以tileData中的图层顺序初始化的
-                //当某个图层data为空时，需要将它从tileData中剔除，否则layer的renderPlugin就无法对应到数据
-                const oldData = data.data;
-                data.data = [];
-                for (let i = 0; i < oldData.length; i++) {
-                    if (!oldData[i] || !oldData[i].features) {
-                        continue;
-                    }
-                    data.data.push(oldData[i]);
-                }
-            }
-            data.layers = layers;
             this.onTileLoad(data, tileInfo);
-        });
-        return {};
+        }
     }
 
     _updateSchema(target, source) {

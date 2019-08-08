@@ -115,11 +115,13 @@ function createPainterPlugin(type, Painter) {
                             mesh[i].properties.tileTransform = tileTransform;
                             mesh[i].properties.createTime = context.timestamp;
                             mesh[i].properties.meshKey = key + '-' + i;
+                            mesh[i].properties.tileInfo = tileInfo;
                         }
                     } else {
                         mesh.properties.tileTransform = tileTransform;
                         mesh.properties.createTime = context.timestamp;
                         mesh.properties.meshKey = key;
+                        mesh.properties.tileInfo = tileInfo;
                     }
                     if (sceneConfig.animation) {
                         mesh._animationTime = context.timestamp;
@@ -146,7 +148,7 @@ function createPainterPlugin(type, Painter) {
                             Object.defineProperty(m.material.uniforms, 'stencilRef', {
                                 enumerable: true,
                                 get: function () {
-                                    return m.geometry.properties.tileInfo ? m.geometry.properties.tileInfo.stencilRef : 255;
+                                    return m.properties.tileInfo ? m.properties.tileInfo.stencilRef : 255;
                                 }
                             });
                         }
@@ -163,7 +165,7 @@ function createPainterPlugin(type, Painter) {
                         Object.defineProperty(mesh.material.uniforms, 'stencilRef', {
                             enumerable: true,
                             get: function () {
-                                return mesh.geometry.properties.tileInfo ? mesh.geometry.properties.tileInfo.stencilRef : 255;
+                                return mesh.properties.tileInfo ? mesh.properties.tileInfo.stencilRef : 255;
                             }
                         });
                     }
@@ -203,8 +205,6 @@ function createPainterPlugin(type, Painter) {
             geometry.properties.tileRatio = tileRatio;
             geometry.properties.z = tileInfo.z;
             geometry.properties.tileExtent = context.tileExtent;
-            geometry.properties.tileInfo = tileInfo;
-
         },
 
         updateSceneConfig: function (context) {
