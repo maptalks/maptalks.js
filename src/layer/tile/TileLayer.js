@@ -358,6 +358,7 @@ class TileLayer extends Layer {
         const layerId = this.getId(),
             renderer = this.getRenderer() || parentRenderer,
             scale = this._getTileConfig().tileSystem.scale;
+        const visited = {};
         const tiles = [], extent = new PointExtent();
         for (let i = -top; i <= bottom; i++) {
             let j = -left;
@@ -377,7 +378,11 @@ class TileLayer extends Layer {
                 }
                 let hasCachedInfo = false;
                 const tileId = this._getTileId(idx, zoom); //unique id of the tile
-                let tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
+                let tileInfo;
+                if (!visited[tileId]) {
+                    tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
+                    visited[tileId] = 1;
+                }
                 if (tileInfo) {
                     tileInfo = tileInfo.info;
                     hasCachedInfo = true;
@@ -433,8 +438,7 @@ class TileLayer extends Layer {
                     }
                     if (!hasCachedInfo) {
                         tileInfo['size'] = [width, height];
-                        const point0 = tileInfo.point0;
-                        tileInfo['dupKey'] = z + ',' + Math.round(point0.x) + ',' + Math.round(point0.y) + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
+                        tileInfo['dupKey'] = z + ',' + idx.idx + ',' + idx.idy + ',' + idx.x + ',' + idx.y + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
                         tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
                         tileInfo['layer'] = layerId;
                         tileInfo['url'] = this.getTileUrl(idx.x, idx.y, zoom);
