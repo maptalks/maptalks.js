@@ -293,7 +293,8 @@ export function createTextShader(layer, sceneConfig) {
                 //halo的stencil ref更大，允许文字填充在halo上绘制
                 cmp: renderer.isEnableWorkAround('win-intel-gpu-crash') ? '<' : '<=',
                 ref: (context, props) => {
-                    return props.level + (props.isHalo || 0) + 1;
+                    //level * 2 以避免相邻level的halo和非halo产生相同的ref
+                    return props.level * 2 + (props.isHalo || 0) + 1;
                 },
                 mask: 0xFF
             },
