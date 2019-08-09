@@ -746,9 +746,9 @@ export default class TextPainter extends CollisionPainter {
     }
 
     getUniformValues(map) {
-        const projViewMatrix = map.projViewMatrix,
-            cameraToCenterDistance = map.cameraToCenterDistance,
-            canvasSize = [this.canvas.width, this.canvas.height];
+        const projViewMatrix = map.projViewMatrix;
+        const cameraToCenterDistance = map.cameraToCenterDistance;
+        const canvasSize = [map.width, map.height];
         //手动构造map的x与z轴的三维旋转矩阵
         //http://planning.cs.uiuc.edu/node102.html
         // const pitch = map.getPitch(),

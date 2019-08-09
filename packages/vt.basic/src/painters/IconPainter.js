@@ -714,9 +714,9 @@ class IconPainter extends CollisionPainter {
     }
 
     getUniformValues(map) {
-        const projViewMatrix = map.projViewMatrix,
-            cameraToCenterDistance = map.cameraToCenterDistance,
-            canvasSize = [this.canvas.width, this.canvas.height];
+        const projViewMatrix = map.projViewMatrix;
+        const cameraToCenterDistance = map.cameraToCenterDistance;
+        const canvasSize = [map.width, map.height];
         return {
             mapPitch: map.getPitch() * Math.PI / 180,
             mapRotation: map.getBearing() * Math.PI / 180,
