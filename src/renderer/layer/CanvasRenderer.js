@@ -460,6 +460,7 @@ class CanvasRenderer extends Class {
         if (!this.canvas) {
             this.createCanvas();
             this.createContext();
+            this.layer.onCanvasCreate();
             /**
              * canvascreate event, fired when canvas created.
              *
