@@ -107,7 +107,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             return this;
         }
         this.options['style'] = style;
-        if (style['$root'] || style['${iconset}']) {
+        if (style['$root'] || style['$iconset']) {
             let root;
             let iconset;
             root = this._styleRootPath = style['$root'];
@@ -153,7 +153,6 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (this._replacer) {
             this._parseStylePath();
         }
-        delete this._replacer;
         this._compileStyle();
         const renderer = this.getRenderer();
         if (renderer) {
@@ -226,9 +225,14 @@ class VectorTileLayer extends maptalks.TileLayer {
             }
             if (res.type === 'ambient') {
                 const regl = this.getRenderer().regl;
+                const url = res.url;
+                if (this._replacer) {
+                    res = extend({}, res);
+                    res.url = url.replace(URL_PATTERN, this._replacer);
+                }
                 return loadAmbientTexture(res, regl).then(maps => {
                     return {
-                        url: res.url,
+                        url: url,
                         type: res.type,
                         resource: maps
                     };
