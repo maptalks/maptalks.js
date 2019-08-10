@@ -46,15 +46,15 @@ describe('vector tile integration specs', () => {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (GENERATE_MODE) {
-                    if (generated) {
-                        return;
-                    }
-                    generated = true;
                     //生成fixtures
                     const dataURL = canvas.toDataURL();
                     // remove Base64 stuff from the Image
                     const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
-                    fs.writeFile(expectedPath, base64Data, 'base64', done);
+                    fs.writeFile(expectedPath, base64Data, 'base64', () => {});
+                    if (!generated) {
+                        generated = true;
+                        done();
+                    }
                 } else {
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
