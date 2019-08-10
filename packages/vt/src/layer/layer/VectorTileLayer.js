@@ -142,7 +142,8 @@ class VectorTileLayer extends maptalks.TileLayer {
                 this._loadingStyleRes = style['resources'];
             }
         }
-        if (!Array.isArray(style)) {
+        if (!Array.isArray(style) && !style.plugins) {
+            //有plugins说明是个compressed style
             style = style.style || [];
         }
         style = JSON.parse(JSON.stringify(style));
