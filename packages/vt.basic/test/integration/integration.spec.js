@@ -37,6 +37,7 @@ describe('vector tile integration specs', () => {
             style.debugCollision = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             let count = 0;
+            let generated = false;
             layer.on('layerload', () => {
                 count++;
                 if (count <= 1) {
@@ -45,6 +46,10 @@ describe('vector tile integration specs', () => {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (GENERATE_MODE) {
+                    if (generated) {
+                        return;
+                    }
+                    generated = true;
                     //生成fixtures
                     const dataURL = canvas.toDataURL();
                     // remove Base64 stuff from the Image
