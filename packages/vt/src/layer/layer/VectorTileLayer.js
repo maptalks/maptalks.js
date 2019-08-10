@@ -430,7 +430,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     _disposeResources(resources) {
         //删除全局资源
         for (let i = 0; i < resources.length; i++) {
-            const res = resources[i];
+            const res = resources[i].resource;
             if (res.destroy) {
                 res.destroy();
             } else {
