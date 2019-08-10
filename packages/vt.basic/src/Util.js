@@ -98,3 +98,13 @@ export function fillArray(arr, value, start, end) {
         }
     }
 }
+
+/**
+ * Whether val is a number and not a NaN.
+ * @param  {Object}  val - val
+ * @return {Boolean}
+ * @memberOf Util
+ */
+export function isNumber(val) {
+    return (typeof val === 'number') && !isNaN(val);
+}

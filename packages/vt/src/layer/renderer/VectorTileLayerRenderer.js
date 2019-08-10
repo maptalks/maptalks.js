@@ -11,7 +11,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     constructor(layer) {
         super(layer);
-        this._initPlugins();
         this.ready = false;
         this._styleCounter = 0;
         this._requestingMVT = {};
@@ -175,8 +174,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     draw(timestamp) {
         const layer = this.layer;
         this.prepareCanvas();
-        if (!this.ready || !layer.ready ||
-            !layer.isDefaultRender() && (!this.plugins || !this.plugins.length)) {
+        if (!this.ready || !layer.ready) {
+            this.completeRender();
+            return;
+        }
+        if (!this.plugins) {
+            this._initPlugins();
+        }
+        if (!layer.isDefaultRender() && (!this.plugins || !this.plugins.length)) {
             this.completeRender();
             return;
         }
@@ -205,10 +210,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     drawOnInteracting(event, timestamp) {
-        if (!this.ready) {
-            this.completeRender();
-            return;
-        }
         this.draw(timestamp);
     }
 

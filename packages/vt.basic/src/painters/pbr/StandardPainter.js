@@ -1,6 +1,6 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import { extend } from '../../Util';
+import { extend, isNumber } from '../../Util';
 import Painter from '../Painter';
 import ShadowMapPass from './ShadowMapPass.js';
 import { setUniformFromSymbol } from '../../Util';
@@ -308,14 +308,20 @@ class StandardPainter extends Painter {
     }
 
     _createIBLMaps(hdr) {
+        const config = this.sceneConfig.lights.ambient.resource;
         if (this.iblMaps) {
             this._disposeIblMaps();
         }
         const regl = this.regl;
-        return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+        const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: hdr.getREGLTexture(regl),
+            ignoreSH: !!config['sh'],
             // prefilterCubeSize : 256
         });
+        if (config['sh']) {
+            maps.sh = config['sh'];
+        }
+        return maps;
     }
 
     _updateMaterial() {
@@ -380,14 +386,17 @@ class StandardPainter extends Painter {
     }
 
     _initCubeLight() {
-        const cubeLightConfig = this.sceneConfig.lights && this.sceneConfig.lights.ambient;
-        if (cubeLightConfig) {
-            if (!cubeLightConfig.url && !cubeLightConfig.data) {
-                throw new Error('Must provide url or data(ArrayBuffer) for ambient cube light');
-            }
-            const cached = cubeLightConfig.url && this.getCachedTexture(cubeLightConfig.url);
+        const config = this.sceneConfig.lights && this.sceneConfig.lights.ambient && this.sceneConfig.lights.ambient.resource;
+        if (isNumber(config)) {
+            //从图层的全局resources中读取
+            const { resource } = this.layer.getStyleResource(config);
+            this.iblMaps = this._createIBLMapFromResource(resource);
+            return;
+        } else if (config.url || config.data) {
+            //a url
+            const cached = config.url && this.getCachedTexture(config.url);
             const props = {
-                url: cubeLightConfig.url,
+                url: config.url,
                 arrayBuffer: true,
                 hdr: true,
                 type: 'float',
@@ -401,12 +410,12 @@ class StandardPainter extends Painter {
                     props.data = cached;
                 }
             }
-            this._isIBLRecreated = !!cubeLightConfig.data;
-            if (!props.data && cubeLightConfig.data) {
-                let data = cubeLightConfig.data;
-                if (cubeLightConfig.data instanceof ArrayBuffer) {
+            this._isIBLRecreated = !!config.data;
+            if (!props.data && config.data) {
+                let data = config.data;
+                if (config.data instanceof ArrayBuffer) {
                     // HDR raw data
-                    data = reshader.HDR.parseHDR(cubeLightConfig.data);
+                    data = reshader.HDR.parseHDR(config.data);
                     props.data = data.pixels;
                     props.width = data.width;
                     props.height = data.height;
@@ -422,7 +431,17 @@ class StandardPainter extends Painter {
             this._hdr.once('disposed', this._bindDisposeCachedTexture);
             //生成ibl纹理
             this.iblMaps = this._createIBLMaps(this._hdr);
+            return;
         }
+    }
+
+    _createIBLMapFromResource(resource) {
+        const { prefilterMap, dfgLUT, sh } = resource;
+        return {
+            prefilterMap,
+            dfgLUT,
+            sh
+        };
     }
 
     getUniformValues(map) {
@@ -495,11 +514,16 @@ class StandardPainter extends Painter {
         if (!this.iblMaps) {
             return;
         }
-        for (const p in this.iblMaps) {
-            if (this.iblMaps[p].destroy) {
-                this.iblMaps[p].destroy();
+        const resource = this.sceneConfig.lights.ambient.resource;
+        if (!isNumber(resource)) {
+            //如果是数字，说明是图层定义的全局resource中的资源，不能dispose
+            for (const p in this.iblMaps) {
+                if (this.iblMaps[p].destroy) {
+                    this.iblMaps[p].destroy();
+                }
             }
         }
+
         delete this.iblMaps;
     }
 

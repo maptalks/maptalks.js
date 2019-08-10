@@ -4,6 +4,8 @@ import { extend, compileStyle, isNil, isString, isObject } from '../../common/Ut
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import { isFunctionDefinition } from '@maptalks/function-type';
+import Promise from '../../common/Promise';
+import { loadAmbientTexture } from './Loaders';
 
 const URL_PATTERN = /(\{\$root\}|\{\$iconset\})/g;
 
@@ -77,8 +79,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             altitudeProperty: this.options['altitudeProperty'],
             tileSize: this.options['tileSize'],
             baseRes: map.getResolution(map.getGLZoom()),
-            //default render时，this.options.style有可能被default render设值
-            style: this.isDefaultRender() ? [] : !Array.isArray(this.options.style) ? [] : this.options.style,
+            //default render时，this._vtStyle有可能被default render设值
+            style: this.isDefaultRender() ? [] : !Array.isArray(this._vtStyle) ? [] : this._vtStyle,
             features: this.options.features,
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry']
@@ -104,7 +106,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             });
             return this;
         }
-        this.ready = true;
+        this.options['style'] = style;
         if (style['$root'] || style['${iconset}']) {
             let root;
             let iconset;
@@ -116,7 +118,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (iconset && iconset[iconset.length - 1] === '/') {
                 iconset = iconset.substring(0, iconset.length - 1);
             }
-            style = style.style || [];
             this._replacer = function replacer(match) {
                 if (match === '{$root}') {
                     return root;
@@ -126,9 +127,27 @@ class VectorTileLayer extends maptalks.TileLayer {
                 return null;
             };
         }
+        this.ready = true;
+        if (style['resources']) {
+            const renderer = this.getRenderer();
+            if (renderer && renderer.regl) {
+                this._loadStyleResources(style['resources']).then(() => {
+                    style = style.style || [];
+                    this.setStyle(style);
+                });
+                return this;
+            } else {
+                this.ready = false;
+                //先记录styles，renderer初始化后再加载
+                this._loadingStyleRes = style['resources'];
+            }
+        }
+        if (!Array.isArray(style)) {
+            style = style.style || [];
+        }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
-        this.options['style'] = style;
+        this._vtStyle = style;
         this.validateStyle();
         if (this._replacer) {
             this._parseStylePath();
@@ -142,8 +161,21 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
+    onCanvasCreate() {
+        super.onCanvasCreate();
+        if (this._loadingStyleRes) {
+            this._loadStyleResources(this._loadingStyleRes).then(() => {
+                this.getRenderer().setToRedraw();
+            });
+        }
+    }
+
+    getStyleResource(index) {
+        return this._vtStyleResources && this._vtStyleResources[index];
+    }
+
     _parseStylePath() {
-        const styles = this.options.style;
+        const styles = this._vtStyle;
         for (let i = 0; i < styles.length; i++) {
             const { symbol } = styles[i];
             if (symbol) {
@@ -181,8 +213,49 @@ class VectorTileLayer extends maptalks.TileLayer {
         return value;
     }
 
+    _loadStyleResources(resources) {
+        const vtResources = this._vtStyleResources;
+        const promises = resources.map(res => {
+            if (vtResources) {
+                for (let i = 0; i < vtResources.length; i++) {
+                    if (vtResources[i].url === res.url) {
+                        return vtResources[i];
+                    }
+                }
+            }
+            if (res.type === 'ambient') {
+                const regl = this.getRenderer().regl;
+                return loadAmbientTexture(res, regl).then(maps => {
+                    return {
+                        url: res.url,
+                        type: res.type,
+                        resource: maps
+                    };
+                });
+            }
+            //TODO 其他类型的资源加载
+            return null;
+        });
+        return Promise.all(promises).then(resources => {
+            delete this._loadingStyleRes;
+            this.ready = true;
+            const unused = [];
+            if (this._vtStyleResources) {
+                for (let i = 0; i < this._vtStyleResources.length; i++) {
+                    const res = this._vtStyleResources[i];
+                    if (res && resources.indexOf(res) === -1) {
+                        unused.push(res);
+                    }
+                }
+            }
+            this._disposeResources(unused);
+            this._vtStyleResources = resources;
+            return resources;
+        });
+    }
+
     updateSceneConfig(idx, sceneConfig) {
-        extend(this.options.style[idx].sceneConfig, sceneConfig);
+        extend(this._vtStyle[idx].sceneConfig, sceneConfig);
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.updateSceneConfig(idx, sceneConfig);
@@ -191,7 +264,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     updateSymbol(idx, symbol) {
-        const style = this.options.style[idx];
+        const style = this._vtStyle[idx];
         if (!style) {
             throw new Error(`No style defined at ${idx}`);
         }
@@ -236,7 +309,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         update();
 
         if (needRefresh) {
-            this.setStyle(this.options.style);
+            this.setStyle(this._vtStyle);
         } else {
             this._compileStyle();
             renderer.updateSymbol(idx);
@@ -251,13 +324,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     validateStyle() {
         this._isOnly2D = true;
         this._isDefaultRender = false;
-        let styles = this.options.style;
+        let styles = this._vtStyle;
         if (!styles || Array.isArray(styles) && !styles.length) {
             this._isDefaultRender = true;
-            styles = this.options.style = [];
+            styles = this._vtStyle = [];
         }
         if (!Array.isArray(styles)) {
-            styles = this.options.style = [styles];
+            styles = this._vtStyle = [styles];
         }
         for (let i = 0; i < styles.length; i++) {
             let filter = styles[i].filter;
@@ -278,7 +351,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
     }
     getStyle() {
-        return this.options.style;
+        return this._vtStyle;
     }
 
     isOnly2D() {
@@ -340,6 +413,31 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._schema[z];
     }
 
+    onRemove() {
+        super.onRemove();
+        if (this._vtStyleResources) {
+            this._disposeResources(this._vtStyleResources);
+            delete this._vtStyleResources;
+            delete this._loadingStyleRes;
+        }
+    }
+
+    _disposeResources(resources) {
+        //删除全局资源
+        for (let i = 0; i < resources.length; i++) {
+            const res = resources[i];
+            if (res.destroy) {
+                res.destroy();
+            } else {
+                for (const p in res) {
+                    if (res[p] && res[p].destroy) {
+                        res[p].destroy();
+                    }
+                }
+            }
+        }
+    }
+
     static fromJSON(layerJSON) {
         if (!layerJSON || layerJSON['type'] !== 'VectorTileLayer') {
             return null;
@@ -349,7 +447,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _compileStyle() {
-        const styles = this.options.style;
+        const styles = this._vtStyle;
         if (!styles) {
             return;
         }
