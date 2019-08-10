@@ -47,25 +47,31 @@ export function createIBLMaps(regl, config = {}) {
     } else {
         const cube = regl.cube(...envTexture);
         envMap = createSkybox(regl, cube, envCubeSize);
+        cube.destroy();
     }
 
     const prefilterMap = createPrefilterCube(regl, envMap, prefilterCubeSize, sampleSize, roughnessLevels);
 
     const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
-    const faces = getEnvmapPixels(regl, envMap, envCubeSize);
-    const sh = coefficients(faces, envCubeSize, 4);
+    let sh;
+    if (!config.ignoreSH) {
+        const faces = getEnvmapPixels(regl, envMap, envCubeSize);
+        sh = coefficients(faces, envCubeSize, 4);
+    }
 
     // const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
 
-    return {
+    const maps = {
         envMap,
-        // irradianceMap,
         prefilterMap,
-        dfgLUT,
-        // sh: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        sh
+        dfgLUT
     };
+
+    if (sh) {
+        maps['sh'] = sh;
+    }
+    return maps;
 }
 
 function createSkybox(regl, cubemap, envCubeSize) {
@@ -174,12 +180,7 @@ function createEquirectangularMapCube(regl, texture, size) {
     return envMapFBO;
 }
 
-//因webgl限制，framebufferTexImage2D无法指定mip level
-//故改用以下步骤生成:
-//参考代码：
-//https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/ibl_specular_textured.cpp#L290
-//https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
-function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
+function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
     //1. 生成NormalDistribution采样的LUT
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
@@ -248,6 +249,18 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
         tmpFBO.resize(size);
     }
 
+    tmpFBO.destroy();
+    return mipmap;
+}
+
+//因webgl限制，framebufferTexImage2D无法指定mip level
+//故改用以下步骤生成:
+//参考代码：
+//https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/ibl_specular_textured.cpp#L290
+//https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
+function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
+    const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels);
+
     const prefilterMapFBO = regl.cube({
         radius : SIZE,
         min : 'linear mipmap linear',
@@ -255,7 +268,7 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
         // wrap : 'clamp',
         faces : mipmap
     });
-    tmpFBO.destroy();
+
 
     return prefilterMapFBO;
 }
@@ -381,4 +394,3 @@ function hammersley(i, sampleSize) {
 
     return { x, y };
 }
-
