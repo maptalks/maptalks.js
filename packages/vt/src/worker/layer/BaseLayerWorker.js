@@ -111,6 +111,9 @@ export default class BaseLayerWorker {
         ];
         for (let i = 0; i < pluginConfigs.length; i++) {
             const pluginConfig = pluginConfigs[i];
+            if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
+                continue;
+            }
             const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.filter, features, i);
 
             if (!tileFeatures.length) {

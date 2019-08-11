@@ -115,13 +115,11 @@ function createPainterPlugin(type, Painter) {
                             mesh[i].properties.tileTransform = tileTransform;
                             mesh[i].properties.createTime = context.timestamp;
                             mesh[i].properties.meshKey = key + '-' + i;
-                            mesh[i].properties.tileInfo = tileInfo;
                         }
                     } else {
                         mesh.properties.tileTransform = tileTransform;
                         mesh.properties.createTime = context.timestamp;
                         mesh.properties.meshKey = key;
-                        mesh.properties.tileInfo = tileInfo;
                     }
                     if (sceneConfig.animation) {
                         mesh._animationTime = context.timestamp;
@@ -148,7 +146,7 @@ function createPainterPlugin(type, Painter) {
                             Object.defineProperty(m.material.uniforms, 'stencilRef', {
                                 enumerable: true,
                                 get: function () {
-                                    return m.properties.tileInfo ? m.properties.tileInfo.stencilRef : 255;
+                                    return m.properties.tile ? m.properties.tile.stencilRef : 255;
                                 }
                             });
                         }
@@ -165,7 +163,7 @@ function createPainterPlugin(type, Painter) {
                         Object.defineProperty(mesh.material.uniforms, 'stencilRef', {
                             enumerable: true,
                             get: function () {
-                                return mesh.properties.tileInfo ? mesh.properties.tileInfo.stencilRef : 255;
+                                return mesh.properties.tile ? mesh.properties.tile.stencilRef : 255;
                             }
                         });
                     }
