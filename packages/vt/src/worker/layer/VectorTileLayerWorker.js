@@ -63,11 +63,12 @@ export default class VectorTileLayerWorker extends LayerWorker {
 
     abortTile(url, cb) {
         const xhr = this.requests[url];
+        delete this.requests[url];
         //需要先从requests中删除url，再abort，触发cancel逻辑, 否则会被当成xhr的error处理掉
-        super.abortTile(url, cb);
         if (xhr) {
             xhr.abort();
         }
+        cb();
     }
 
     onRemove() {

@@ -215,21 +215,30 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     loadTile(tileInfo) {
         const { url } = tileInfo;
-        if (!this._requestingMVT[url]) {
+        const cached = this._requestingMVT[url];
+        if (!cached) {
             const map = this.getMap();
             const glScale = map.getGLScale(tileInfo.z);
-            this._requestingMVT[url] = [tileInfo];
+            this._requestingMVT[url] = {
+                keys: {},
+                tiles: [tileInfo]
+            };
+            this._requestingMVT[url].keys[tileInfo.dupKey] = 1;
             this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale }, this._onReceiveMVTData.bind(this, url));
-        } else {
-            this._requestingMVT[url].push(tileInfo);
+        } else if (!cached.keys[tileInfo.dupKey]) {
+            cached.tiles.push(tileInfo);
+            cached.keys[tileInfo.dupKey] = 1;
         }
         return {};
     }
 
     _onReceiveMVTData(url, err, data) {
+        if (!this._requestingMVT[url]) {
+            return;
+        }
         const layer = this.layer;
         const useDefault = layer.isDefaultRender();
-        const tiles = this._requestingMVT[url];
+        const { tiles } = this._requestingMVT[url];
         delete this._requestingMVT[url];
         if (err) {
             if (err.status && err.status === 404) {
@@ -614,6 +623,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this._workerConn && tileInfo && tileInfo.url) {
             this._workerConn.abortTile(tileInfo.url);
         }
+        delete this._requestingMVT[tileInfo.url];
         super.abortTileLoading(tileImage, tileInfo);
     }
 
