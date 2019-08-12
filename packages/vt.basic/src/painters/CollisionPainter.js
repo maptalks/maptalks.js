@@ -103,11 +103,11 @@ export default class CollisionPainter extends BasicPainter {
         const { level, meshKey, tile } = mesh.properties;
         const layer = this.layer;
         //没有缩放，且没在fading时，禁止父级瓦片的绘制，避免不正常的闪烁现象
-        if (this.shouldIgnoreBgTiles() && !layer.getRenderer().isCurrentTile(tile.dupKey)) {
+        if (this.shouldIgnoreBgTiles() && !layer.getRenderer().isCurrentTile(tile.id)) {
             return false;
         }
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
-        if (this.shouldLimitBox(tile.dupKey) && boxIndex > layer.options['boxLimitOnZoomout']) {
+        if (this.shouldLimitBox(tile.id) && boxIndex > layer.options['boxLimitOnZoomout']) {
             return false;
         }
         const map = this.getMap();
@@ -134,7 +134,7 @@ export default class CollisionPainter extends BasicPainter {
         let isFading = false;
         if (this.sceneConfig.fading) {
             const stamps = this._getBoxTimestamps(meshKey);
-            fadingOpacity = this._getBoxFading(tile.dupKey, visible, stamps, boxIndex, level);
+            fadingOpacity = this._getBoxFading(tile.id, visible, stamps, boxIndex, level);
             if (level <= 2) {
                 if (fadingOpacity > 0) {
                     visible = true;
@@ -207,7 +207,7 @@ export default class CollisionPainter extends BasicPainter {
         }
     }
 
-    _getBoxFading(tileDupKey, visible, stamps, index, level) {
+    _getBoxFading(tileId, visible, stamps, index, level) {
         //level大于0，不fading
         const { fadingDuration, fadingDelay } = this.sceneConfig;
         const renderer = this.layer.getRenderer();
@@ -217,7 +217,7 @@ export default class CollisionPainter extends BasicPainter {
         if (!boxTimestamp) {
             const zooming = this.getMap().isZooming();
             // if (visible && level === 0 && this._zoomFading === undefined) {
-            if (visible && renderer.isCurrentTile(tileDupKey) && !zooming) {
+            if (visible && renderer.isCurrentTile(tileId) && !zooming) {
                 //第一次显示
                 stamps[index] = timestamp + fadingDelay;
             }
@@ -329,14 +329,14 @@ export default class CollisionPainter extends BasicPainter {
         if (map.isOffscreen(box)) {
             return -1;
         }
-        const isBackground = layer.getRenderer().isCurrentTile(tileInfo.dupKey);
+        const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
         const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
         return +collisionIndex.collides(box);
     }
 
     insertCollisionBox(box, tileInfo) {
         const layer = this.layer;
-        const isBackground = layer.getRenderer().isCurrentTile(tileInfo.dupKey);
+        const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
         const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
         collisionIndex.insertBox(box.slice(0));
     }

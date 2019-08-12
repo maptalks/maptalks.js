@@ -317,11 +317,11 @@ class Painter {
         const painted = {};
         for (let i = 0; i < stencils.length; i++) {
             const mesh = stencils[i].mesh;
-            let id = painted[mesh.properties.tile.dupKey];
+            let id = painted[mesh.properties.tile.id];
             if (id === undefined) {
                 mat4.multiply(MAT, projViewMatrix, stencils[i].transform);
                 id = this._stencilHelper.write(quadStencil, MAT);
-                painted[mesh.properties.tile.dupKey] = id;
+                painted[mesh.properties.tile.id] = id;
             }
             // stencil ref value
             mesh.setUniform('ref', id);

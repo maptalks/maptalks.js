@@ -313,7 +313,7 @@ function createPainterPlugin(type, Painter) {
             var tileInfo = context.tileInfo;
             var layer = context.layer;
             var pluginIndex = context.pluginIndex;
-            return layer.getId() + '-' + pluginIndex + '-' + tileInfo.dupKey;
+            return layer.getId() + '-' + pluginIndex + '-' + tileInfo.id;
         },
 
         _getMesh: function (key) {

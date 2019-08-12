@@ -18,22 +18,22 @@ import { GLYPH_SIZE } from './Constant';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isCurrentTile(mesh.properties.tile.dupKey) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
+    return renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
 };
 
 const shaderFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isCurrentTile(mesh.properties.tile.dupKey) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
+    return !renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
 };
 
 const shaderLineFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isCurrentTile(mesh.properties.tile.dupKey) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
+    return renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
 };
 
 const shaderLineFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isCurrentTile(mesh.properties.tile.dupKey) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
+    return !renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
 };
 
 //label box 或 icon box 对应的element数量
@@ -198,8 +198,8 @@ export default class TextPainter extends CollisionPainter {
         // console.log(meshes.map(m => m.properties.meshKey));
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
-            const tileKey = mesh.properties.tile.dupKey;
-            if (mesh.properties.isHalo || !mesh.isValid() || !this.layer.getRenderer().isCurrentTile(tileKey) && this.shouldIgnoreBgTiles()) {
+            const tileId = mesh.properties.tile.id;
+            if (mesh.properties.isHalo || !mesh.isValid() || !this.layer.getRenderer().isCurrentTile(tileId) && this.shouldIgnoreBgTiles()) {
                 //halo和正文共享的同一个geometry，无需更新
                 continue;
             }
@@ -260,7 +260,7 @@ export default class TextPainter extends CollisionPainter {
         //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
         //aNormal在两种情况都要实时计算更新
 
-        if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(mesh.properties.tile.dupKey)) {
+        if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(mesh.properties.tile.id)) {
             geometry.setElements([]);
             return;
         }
@@ -362,10 +362,10 @@ export default class TextPainter extends CollisionPainter {
 
         const { aShape, aOffset, aAnchor } = geometry.properties;
         const aTextSize = geometry.properties['aTextSize'];
-        const { level, tile } = mesh.properties;
+        const { tile } = mesh.properties;
 
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
-        if (this.shouldLimitBox(tile.dupKey, true) && labelIndex > this.layer.options['boxLimitOnZoomout']) {
+        if (this.shouldLimitBox(tile.id, true) && labelIndex > this.layer.options['boxLimitOnZoomout']) {
             if (!enableCollision) {
                 resetOffset(aOffset, meshElements, start, end);
             }

@@ -228,11 +228,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 keys: {},
                 tiles: [tileInfo]
             };
-            this._requestingMVT[url].keys[tileInfo.dupKey] = 1;
+            this._requestingMVT[url].keys[tileInfo.id] = 1;
             this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale }, this._onReceiveMVTData.bind(this, url));
-        } else if (!cached.keys[tileInfo.dupKey]) {
+        } else if (!cached.keys[tileInfo.id]) {
             cached.tiles.push(tileInfo);
-            cached.keys[tileInfo.dupKey] = 1;
+            cached.keys[tileInfo.id] = 1;
         }
         return {};
     }
@@ -522,7 +522,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const { tiles } = context;
         this._currentTiles = {};
         for (let i = 0; i < tiles.length; i++) {
-            this._currentTiles[tiles[i].info.dupKey] = 1;
+            this._currentTiles[tiles[i].info.id] = 1;
         }
         if (this.isEnableTileStencil()) {
             this._stencilTiles = context;
