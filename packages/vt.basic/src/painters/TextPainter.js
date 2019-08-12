@@ -296,11 +296,8 @@ export default class TextPainter extends CollisionPainter {
             // if (!collision || this.isCachedCollisionStale(meshKey)) {
             //     visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
             // }
-            if (!visible) {
+            if (!visible || !enableCollision) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
-                return;
-            }
-            if (!enableCollision) {
                 return;
             }
             const boxCount = (end - start) / BOX_ELEMENT_COUNT;
@@ -406,7 +403,7 @@ export default class TextPainter extends CollisionPainter {
             //normal返回null说明计算过程中有文字visible是false，直接退出
             return false;
         }
-
+        const onlyOne = lastChrIdx - firstChrIdx <= 3;
         const uniforms = mesh.material.uniforms;
         const isPitchWithMap = uniforms['pitchWithMap'] === 1;
         const flip = Math.floor(normal / 2);
@@ -467,9 +464,9 @@ export default class TextPainter extends CollisionPainter {
             //every character has 4 vertice, and 6 indexes
             const vertexStart = meshElements[j];
             let offset;
-            if (!flip && j === start) {
+            if (!flip && j === start && !onlyOne) {
                 offset = FIRST_CHAROFFSET;
-            } else if (!flip && j === end - BOX_ELEMENT_COUNT) {
+            } else if (!flip && j === end - BOX_ELEMENT_COUNT && !onlyOne) {
                 offset = LAST_CHAROFFSET;
             } else {
                 offset = getCharOffset(CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
