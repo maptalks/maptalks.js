@@ -213,6 +213,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.draw(timestamp);
     }
 
+
+    isCurrentTile(key) {
+        return this._currentTiles[key];
+    }
+
     loadTile(tileInfo) {
         const { url } = tileInfo;
         const cached = this._requestingMVT[url];
@@ -514,6 +519,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     onDrawTileStart(context) {
         super.onDrawTileStart(context);
+        const { tiles } = context;
+        this._currentTiles = {};
+        for (let i = 0; i < tiles.length; i++) {
+            this._currentTiles[tiles[i].info.dupKey] = 1;
+        }
         if (this.isEnableTileStencil()) {
             this._stencilTiles = context;
         }

@@ -457,19 +457,19 @@ class IconPainter extends CollisionPainter {
         const debugCollision = this.layer.options['debugCollision'];
         const textMesh = mesh._textMesh;
 
-        const z = mesh.geometry.properties.z;
+        const { tile, meshKey } = mesh.properties;
         const boxes = [];
         let offscreenCount = 0;
 
         let hasCollides = false;
-        const isFading = this.isBoxFading(mesh.properties.meshKey, boxIndex);
+        const isFading = this.isBoxFading(meshKey, boxIndex);
 
         // debugger
         //icon and text
         const firstBoxIdx = elements[start];
         const iconBox = getIconBox([], mesh, firstBoxIdx, matrix, map);
         boxes.push(iconBox);
-        const collides = this.isCollides(iconBox, z);
+        const collides = this.isCollides(iconBox, tile);
         if (collides === 1) {
             hasCollides = true;
             if (!isFading && !debugCollision) {
@@ -518,7 +518,7 @@ class IconPainter extends CollisionPainter {
             //use int16array to save some memory
             const box = getLabelBox([], anchor, projAnchor, textMesh, textSize, textHaloRadius, textElements[j], matrix, map);
             boxes.push(box);
-            const collides = this.isCollides(box, z);
+            const collides = this.isCollides(box, tile);
             if (collides === 1) {
                 hasCollides = true;
                 if (!isFading && !debugCollision) {

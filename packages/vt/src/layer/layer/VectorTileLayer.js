@@ -23,7 +23,7 @@ const defaultOptions = {
     stencil: false,
     features: true,
     schema: false,
-    cascadeTiles: false,
+    cascadeTiles: true,
     collision: true,
     picking: true,
     pickingPoint: false,
