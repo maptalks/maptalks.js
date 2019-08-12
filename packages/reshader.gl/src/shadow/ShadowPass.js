@@ -15,6 +15,9 @@ class ShadowPass {
     }
 
     render(scene, { cameraProjViewMatrix, lightDir, farPlane }) {
+        if (!this.isSupported()) {
+            return null;
+        }
         const lightProjViewMatrix = this._renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane);
         return {
             lightProjViewMatrix,
@@ -34,6 +37,10 @@ class ShadowPass {
             this.blurFBO.resize(width, height);
         }
         return this;
+    }
+
+    isSupported() {
+        return this._supported;
     }
 
     _renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane) {
@@ -82,6 +89,11 @@ class ShadowPass {
 
     _init() {
         const regl = this.renderer.regl;
+        this._supported = regl.hasExtension('oes_texture_float_linear');
+        if (!this.isSupported()) {
+            console.warn('WebGL oes_texture_float_linear extension is not supported, shadow rendering is disabled.');
+            return;
+        }
         const width = this.width,
             height = this.height;
         this.depthTex = regl.texture({

@@ -5,13 +5,12 @@ const options = {
     renderer : 'gl',
     antialias : true,
     extensions : [
-        // 'ANGLE_instanced_arrays',
+        'ANGLE_instanced_arrays',
         'OES_texture_float',
-        'OES_texture_float_linear',
         'OES_element_index_uint',
         'OES_standard_derivatives'
     ],
-    optionalExtensions : ['WEBGL_draw_buffers', 'EXT_shader_texture_lod'],
+    optionalExtensions : ['WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear'],
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true
