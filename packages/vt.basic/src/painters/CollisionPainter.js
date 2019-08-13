@@ -115,18 +115,29 @@ export default class CollisionPainter extends BasicPainter {
 
 
         let collision = this._getCachedCollision(meshKey, boxIndex);
-        let visible = false;
-        let isUpdate = false;
-        if (!collision || this._isCachedCollisionStale(meshKey)) {
-            //没有collision，或collision已经过期
-            isUpdate = true;
+        if (this._isCachedCollisionStale(meshKey)) {
+            collision = null;
         }
-        if (isUpdate && this._canProceed) {
-            const now = performance.now();
-            collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
-            map.collisionFrameTime += performance.now() - now;
+        let visible = false;
+        if (!collision) {
+            if (this._canProceed) {
+                const now = performance.now();
+                collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
+                map.collisionFrameTime += performance.now() - now;
 
-            this._setCollisionCache(meshKey, boxIndex, collision);
+                this._setCollisionCache(meshKey, boxIndex, collision);
+            }
+        } else if (collision.boxes) {
+            //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
+            const { boxes } = collision;
+            let collides = false;
+            for (let i = 0; i < boxes.length; i++) {
+                if (this.isCollides(boxes[i], tile)) {
+                    collides = true;
+                    break;
+                }
+            }
+            collision.collides = collides;
         }
         visible = collision && collision.collides === false;
 
@@ -155,7 +166,7 @@ export default class CollisionPainter extends BasicPainter {
         }
 
         if (visible || isFading) {
-            if (this._canProceed && !symbol[this.propIgnorePlacement] && collision.boxes) {
+            if (!symbol[this.propIgnorePlacement] && collision && collision.boxes) {
                 this._fillCollisionIndex(collision.boxes, mesh);
             }
         }
@@ -323,21 +334,23 @@ export default class CollisionPainter extends BasicPainter {
      * @param {Number} meshTileZoom - mesh's tile zoom
      * @returns {Number} 1: 存在; 0: 不存在; 0: 在屏幕之外
      */
-    isCollides(box, tileInfo) {
+    isCollides(box/*, tileInfo*/) {
         const layer = this.layer,
             map = layer.getMap();
         if (map.isOffscreen(box)) {
             return -1;
         }
-        const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
-        const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
+        // const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
+        // const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
+        const collisionIndex = layer.getCollisionIndex();
         return +collisionIndex.collides(box);
     }
 
-    insertCollisionBox(box, tileInfo) {
+    insertCollisionBox(box/*, tileInfo*/) {
         const layer = this.layer;
-        const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
-        const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
+        // const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
+        // const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
+        const collisionIndex = layer.getCollisionIndex();
         collisionIndex.insertBox(box.slice(0));
     }
 
