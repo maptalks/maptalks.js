@@ -129,6 +129,7 @@
         function drawScene() {
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.cameraPosition = camPos;
             UNIFORMS.projViewMatrix = projViewMatrix;
@@ -136,12 +137,13 @@
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.projViewMatrix = projViewMatrix;
             UNIFORMS.time = Date.now() / 1000;
+            UNIFORMS.iblMaxMipLevel = [mipLevel, 1 << mipLevel]
             renderer.render(
                 SHADER,
                 UNIFORMS,
                 SCENE
             );
-            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            // reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
             requestAnimationFrame(drawScene);
         }
 
@@ -168,11 +170,25 @@
         }
 
         function createMaps(hdr) {
-            return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+            const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
                 envCubeSize: PREFILTER_CUBE_SIZE,
-                prefilterCubeSize: 512
+                prefilterCubeSize: 512,
+                ignoreSH: true
             });
+
+            maps.sh = [
+                [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
+                [-0.004491398110985756, -0.0062361168675124645, -0.005997033789753914],
+                [0.02749081887304783, 0.057795193046331406, 0.1145947203040123],
+                [0.03964025899767876, 0.03352731838822365, 0.020897403359413147],
+                [-0.005459152162075043, -0.008918278850615025, -0.011838626116514206],
+                [0.017447197809815407, 0.016732292249798775, 0.012003022246062756],
+                [-0.003052285173907876, -0.00440911715850234, -0.004788860213011503],
+                [0.01575229875743389, 0.017373336479067802, 0.015197779051959515],
+                [0.018414868041872978, 0.027235284447669983, 0.030140453949570656]
+            ];
+            return maps;
         }
 
         function getGLTFScene() {
