@@ -1,6 +1,6 @@
 import { getWorkerSourcePath } from './Worker';
 
-const hardwareConcurrency = window.navigator.hardwareConcurrency || 4;
+const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.hardwareConcurrency || 4) : 0;
 const workerCount = Math.max(Math.floor(hardwareConcurrency / 2), 1);
 
 /**
@@ -11,7 +11,7 @@ const workerCount = Math.max(Math.floor(hardwareConcurrency / 2), 1);
 export default class WorkerPool {
     constructor() {
         this.active = {};
-        this.workerCount = window.MAPTALKS_WORKER_COUNT || workerCount;
+        this.workerCount = typeof window !== 'undefined' ? (window.MAPTALKS_WORKER_COUNT || workerCount) : 0;
     }
 
     acquire(id) {
