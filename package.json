@@ -30,8 +30,8 @@
     "lint": "eslint src/**/*.js test/**/*.js",
     "postversion": "gulp zip",
     "pretest": "npm run lint && npm run build-test",
-    "prepublish": "npm run build",
-    "prepare": "npm run lint",
+    "prepare": "npm run build",
+    "preversion": "npm run lint",
     "report-coverage": "codecov",
     "test": "gulp test --cov",
     "version": "npm run build"
