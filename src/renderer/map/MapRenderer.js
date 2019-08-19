@@ -43,10 +43,18 @@ class MapRenderer extends Class {
         if (offset.x === 0 && offset.y === 0) {
             return this;
         }
-        const pos = this.map.offsetPlatform().add(offset)._round();
         const panels = this.map._panels;
-        offsetDom(panels.back, pos);
-        offsetDom(panels.front, pos);
+        const hasFront = panels.back.layerDOM.childElementCount;
+        const hasBack = panels.front.layerDOM.childElementCount;
+        if (hasFront || hasBack) {
+            const pos = this.map.offsetPlatform().add(offset)._round();
+            if (hasBack) {
+                offsetDom(panels.back, pos);
+            }
+            if (hasFront) {
+                offsetDom(panels.front, pos);
+            }
+        }
         return this;
     }
 

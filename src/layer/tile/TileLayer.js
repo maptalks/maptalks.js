@@ -438,8 +438,9 @@ class TileLayer extends Layer {
                     }
                     if (!hasCachedInfo) {
                         tileInfo['size'] = [width, height];
-                        tileInfo['dupKey'] = z + ',' + idx.idx + ',' + idx.idy + ',' + idx.x + ',' + idx.y + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
-                        tileInfo['id'] = this._getTileId(idx, zoom); //unique id of the tile
+                        // tileInfo['dupKey'] = z + ',' + idx.idx + ',' + idx.idy + ',' + idx.x + ',' + idx.y + ',' + width + ',' + height + ',' + layerId; //duplicate key of the tile
+                        tileInfo['id'] = tileId; //unique id of the tile
+                        tileInfo['dupKey'] = tileId; // for compatibility of old plugins
                         tileInfo['layer'] = layerId;
                         tileInfo['url'] = this.getTileUrl(idx.x, idx.y, zoom);
                     }

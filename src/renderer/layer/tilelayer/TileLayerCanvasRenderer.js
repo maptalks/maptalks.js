@@ -109,12 +109,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     }
                 }
                 if (!tileLoading) continue;
-                if (checkedTiles[tile.dupKey]) {
+                if (checkedTiles[tileId]) {
                     continue;
                 }
 
-                checkedTiles[tile.dupKey] = 1;
-                if (placeholder && !placeholderKeys[tile.dupKey]) {
+                checkedTiles[tileId] = 1;
+                if (placeholder && !placeholderKeys[tileId]) {
                     //tell gl renderer not to bind gl buffer with image
                     tile.cache = false;
                     placeholders.push({
@@ -122,26 +122,26 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         info : tile
                     });
 
-                    placeholderKeys[tile.dupKey] = 1;
+                    placeholderKeys[tileId] = 1;
                 }
 
                 const parentTile = this._findParentTile(tile);
                 if (parentTile) {
-                    const dupKey = parentTile.info.dupKey;
-                    if (parentKeys[dupKey] === undefined) {
-                        parentKeys[dupKey] = parentTiles.length;
+                    const parentId = parentTile.info.id;
+                    if (parentKeys[parentId] === undefined) {
+                        parentKeys[parentId] = parentTiles.length;
                         parentTiles.push(parentTile);
                     }/* else {
                         //replace with parentTile of above tiles
-                        parentTiles[parentKeys[dupKey]] = parentTile;
+                        parentTiles[parentKeys[parentId]] = parentTile;
                     } */
-                } else {
+                } else if (!parentTiles.length) {
                     const children = this._findChildTiles(tile);
                     if (children.length) {
                         children.forEach(c => {
-                            if (!childKeys[c.info.dupKey]) {
+                            if (!childKeys[c.info.id]) {
                                 childTiles.push(c);
-                                childKeys[c.info.dupKey] = 1;
+                                childKeys[c.info.id] = 1;
                             }
                         });
                     }
@@ -149,6 +149,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
 
+        if (parentTiles.length) {
+            childTiles.length = 0;
+            this._childTiles.length = 0;
+        }
         this._drawTiles(tiles, parentTiles, childTiles, placeholders);
         if (!loadingCount) {
             if (!loading) {
@@ -180,7 +184,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this._childTiles = childTiles;
         }
 
-        const context = { tiles, parentTiles, childTiles };
+        const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles };
         this.onDrawTileStart(context);
 
         this._parentTiles.forEach(t => this._drawTileAndCache(t));

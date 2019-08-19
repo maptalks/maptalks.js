@@ -500,9 +500,11 @@ class MapCanvasRenderer extends MapRenderer {
 
         mapAllLayers.appendChild(backStatic);
         back.appendChild(backLayer);
+        back.layerDOM = backLayer;
         mapAllLayers.appendChild(back);
         mapAllLayers.appendChild(canvasContainer);
         front.appendChild(frontLayer);
+        front.layerDOM = frontLayer;
         mapAllLayers.appendChild(frontStatic);
         mapAllLayers.appendChild(front);
         front.appendChild(ui);
