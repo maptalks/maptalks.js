@@ -70,6 +70,8 @@ class MapCanvasRenderer extends MapRenderer {
         const offset = map._getViewPointFrameOffset();
         if (offset) {
             map.offsetPlatform(offset);
+        } else if (this.domChanged()) {
+            this.offsetPlatform(null, true);
         }
     }
 
@@ -501,9 +503,12 @@ class MapCanvasRenderer extends MapRenderer {
 
         mapAllLayers.appendChild(backStatic);
         back.appendChild(backLayer);
+        back.layerDOM = backLayer;
         mapAllLayers.appendChild(back);
         mapAllLayers.appendChild(canvasContainer);
         front.appendChild(frontLayer);
+        front.layerDOM = frontLayer;
+        front.uiDOM = ui;
         mapAllLayers.appendChild(frontStatic);
         mapAllLayers.appendChild(front);
         front.appendChild(ui);

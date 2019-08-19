@@ -36,18 +36,52 @@ class MapRenderer extends Class {
      * @param  {Point} offset
      * @return {this}
      */
-    offsetPlatform(offset) {
+    offsetPlatform(offset, force) {
         if (!this.map._panels.front) {
             return this;
         }
-        if (offset.x === 0 && offset.y === 0) {
+        if (!force && offset.x === 0 && offset.y === 0) {
             return this;
         }
-        const pos = this.map.offsetPlatform().add(offset)._round();
         const panels = this.map._panels;
-        offsetDom(panels.back, pos);
-        offsetDom(panels.front, pos);
+        const hasFront = this._frontCount = panels.back.layerDOM.childElementCount;
+        const hasBack = this._backCount = panels.front.layerDOM.childElementCount;
+        const hasUI = this._uiCount = panels.front.uiDOM.childElementCount;
+        if (hasFront || hasBack || hasUI) {
+            let pos = this.map.offsetPlatform();
+            if (offset) {
+                pos = pos.add(offset)._round();
+            } else {
+                pos = pos.round();
+            }
+            if (hasBack) {
+                offsetDom(panels.back, pos);
+            }
+            if (hasFront || hasUI) {
+                offsetDom(panels.front, pos);
+            }
+        }
         return this;
+    }
+
+    domChanged() {
+        const panels = this.map._panels;
+        if (!panels.front) {
+            return false;
+        }
+        const frontCount = panels.back.layerDOM.childElementCount;
+        if (this._frontCount === undefined || this._frontCount !== frontCount) {
+            return true;
+        }
+        const backCount = panels.front.layerDOM.childElementCount;
+        if (this._backCount === undefined || this._backCount !== backCount) {
+            return true;
+        }
+        const uiCount = panels.front.uiDOM.childElementCount;
+        if (this._uiCount === undefined || this._uiCount !== uiCount) {
+            return true;
+        }
+        return false;
     }
 
     resetContainer() {

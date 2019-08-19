@@ -234,11 +234,8 @@ class MapGeometryEventsHandler extends Handler {
         };
         const callback = fireGeometryEvent.bind(this);
 
-        if (this._queryIdentifyTimeout) {
-            cancelAnimFrame(this._queryIdentifyTimeout);
-        }
         if (eventType === 'mousemove' || eventType === 'touchmove') {
-            this._queryIdentifyTimeout = requestAnimFrame(() => {
+            this._queryIdentifyTimeout = map.getRenderer().callInNextFrame(() => {
                 if (map.isInteracting()) {
                     return;
                 }
