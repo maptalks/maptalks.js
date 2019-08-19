@@ -25,7 +25,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._styleCounter++;
             this.clear();
             this._clearPlugin();
-            this._workerConn.updateStyle(this.layer.getStyle(), err => {
+            this._workerConn.updateStyle(this.layer._getComputedStyle(), err => {
                 if (err) throw new Error(err);
                 this._initPlugins();
                 this.setToRedraw();
@@ -56,7 +56,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
 
-        plugins[idx].config = this.layer.getStyle()[idx];
+        plugins[idx].config = this.layer._getComputedStyle()[idx];
         plugins[idx].updateSceneConfig({
             sceneConfig: sceneConfig
         });
@@ -365,7 +365,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const layer = this.layer;
         let isUpdated = false;
         let style;
-        const layerStyles = layer.getStyle();
+        const layerStyles = layer._getComputedStyle();
         const useDefault = layer.isDefaultRender();
         if (useDefault) {
             //没有定义任何图层，采用图层默认的plugin渲染
@@ -629,10 +629,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     abortTileLoading(tileImage, tileInfo) {
-        if (this._workerConn && tileInfo && tileInfo.url) {
-            this._workerConn.abortTile(tileInfo.url);
+        if (tileInfo && tileInfo.url) {
+            if (this._workerConn) {
+                this._workerConn.abortTile(tileInfo.url);
+            }
+            delete this._requestingMVT[tileInfo.url];
         }
-        delete this._requestingMVT[tileInfo.url];
         super.abortTileLoading(tileImage, tileInfo);
     }
 
@@ -697,7 +699,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _initPlugins() {
-        const styles = this.layer.getStyle() || [];
+        const styles = this.layer._getComputedStyle() || [];
         if (!Array.isArray(styles)) {
             return;
         }

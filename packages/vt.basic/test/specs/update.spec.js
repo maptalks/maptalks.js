@@ -81,6 +81,7 @@ describe('update style specs', () => {
             layer.updateSymbol(0, {
                 lineColor: '#0f0'
             });
+            assert(layer.options.style[0].symbol.lineColor === '#0f0');
         });
     });
 

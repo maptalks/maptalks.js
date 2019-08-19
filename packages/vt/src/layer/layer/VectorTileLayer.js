@@ -277,6 +277,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             symbol = JSON.parse(JSON.stringify(symbol));
             this._parseSymbolPath(symbol);
         }
+        const self = this;
         const target = style.symbol;
         function update() {
             for (const p in symbol) {
@@ -292,6 +293,11 @@ class VectorTileLayer extends maptalks.TileLayer {
                     }
                 }
             }
+            let styles = self.options.style;
+            if (!Array.isArray(styles)) {
+                styles = styles.style;
+            }
+            styles[idx].symbol = JSON.parse(JSON.stringify(target));
         }
 
         const renderer = this.getRenderer();
@@ -355,7 +361,16 @@ class VectorTileLayer extends maptalks.TileLayer {
             //TODO 如果定义了renderPlugin就必须定义symbol
         }
     }
+
     getStyle() {
+        return JSON.parse(JSON.stringify(this.options.style));
+    }
+
+    getComputedStyle() {
+        return JSON.parse(JSON.stringify(this._vtStyle));
+    }
+
+    _getComputedStyle() {
         return this._vtStyle;
     }
 
