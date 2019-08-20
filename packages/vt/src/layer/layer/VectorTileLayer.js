@@ -158,6 +158,19 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (renderer) {
             renderer.setStyle();
         }
+        /**
+         * setstyle event.
+         *
+         * @event VectorTileLayer#setstyle
+         * @type {Object}
+         * @property {String} type - setstyle
+         * @property {VectorTileLayer} target - layer
+         * @property {Object|Object[]} style - style to set
+         */
+        this.fire('setstyle', {
+            'style': this.getStyle(),
+            'computedStyle': this.getComputedStyle()
+        });
         return this;
     }
 
