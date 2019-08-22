@@ -14,7 +14,9 @@ class MeshShader extends Shader {
                 }
                 continue;
             }
-            if (!meshes[i].geometry.count || !this.filter(meshes[i])) {
+            if (!meshes[i].geometry.getDrawCount() || !this.filter(meshes[i])) {
+                //此处regl有个潜在的bug:
+                //如果count为0的geometry不过滤掉，regl生成的函数中，bind的texture不会执行unbind
                 if (i === l - 1 && preCommand && props.length) {
                     preCommand(props);
                 }
