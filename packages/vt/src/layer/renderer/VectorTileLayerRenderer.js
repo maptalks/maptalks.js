@@ -4,6 +4,7 @@ import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
+import { extend } from '../../common/Util';
 
 const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 
@@ -121,11 +122,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             attributes,
             extensions: [
                 'ANGLE_instanced_arrays',
-                'OES_texture_float',
                 'OES_element_index_uint',
                 'OES_standard_derivatives'
             ],
-            optionalExtensions: layer.options['glExtensions'] || ['WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear']
+            optionalExtensions: layer.options['glExtensions'] || ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear']
         });
     }
 
@@ -212,9 +212,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.draw(timestamp);
     }
 
+    isCurrentTile(id) {
+        return !!(this._currentTiles && this._currentTiles[id]);
+    }
 
-    isCurrentTile(key) {
-        return this._currentTiles[key];
+    isBackTile(id) {
+        return !!(this._bgTiles && this._bgTiles[id]);
     }
 
     loadTile(tileInfo) {
@@ -332,8 +335,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         data.layers = layers;
         for (let i = 0; i < tiles.length; i++) {
             const tileInfo = tiles[i];
-
-            this.onTileLoad(data, tileInfo);
+            this.onTileLoad(i === 0 ? data : copyTileData(data), tileInfo);
         }
     }
 
@@ -518,10 +520,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     onDrawTileStart(context) {
         super.onDrawTileStart(context);
-        const { tiles } = context;
+        const { tiles, childTiles, parentTiles } = context;
         this._currentTiles = {};
+        this._bgTiles = {};
         for (let i = 0; i < tiles.length; i++) {
             this._currentTiles[tiles[i].info.id] = 1;
+        }
+        for (let i = 0; i < childTiles.length; i++) {
+            this._bgTiles[childTiles[i].info.id] = 1;
+        }
+        for (let i = 0; i < parentTiles.length; i++) {
+            this._bgTiles[parentTiles[i].info.id] = 1;
         }
         if (this.isEnableTileStencil()) {
             this._stencilTiles = context;
@@ -937,4 +946,11 @@ function isWinIntelGPU(gl) {
         }
     }
     return false;
+}
+
+function copyTileData(data) {
+    const arrays = extend({}, data.data);
+    const tileData = extend({}, data);
+    tileData.data = arrays;
+    return tileData;
 }

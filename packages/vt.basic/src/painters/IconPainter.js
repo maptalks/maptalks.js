@@ -407,7 +407,7 @@ class IconPainter extends CollisionPainter {
             const iconElements = iconGeometry.properties.elements;
             const iconVisibleElements = [];
 
-            this._forEachIcon(iconMesh, iconElements, (mesh, start, end, mvpMatrix, index) => {
+            this.forEachBox(iconMesh, iconElements, (mesh, start, end, mvpMatrix, index) => {
                 fn(textElements, iconElements, textVisibleElements, iconVisibleElements, iconMesh, textMesh, start, end, mvpMatrix, index);
             });
 
@@ -429,21 +429,20 @@ class IconPainter extends CollisionPainter {
         }
     }
 
-    setCollisionOpacity(mesh, allElements, aOpacity, value, start, end, boxIndex) {
-        super.setCollisionOpacity(mesh, allElements, aOpacity, value, start, end, boxIndex);
+    setCollisionOpacity(mesh, allElements, value, start, end, boxIndex) {
+        super.setCollisionOpacity(mesh, allElements, value, start, end);
         const textMesh = mesh._textMesh;
         if (textMesh) {
             //icon and text
             const textElements = textMesh.geometry.properties.elements;
-            aOpacity = textMesh.geometry.properties.aOpacity;
             const [textStart, textEnd] = mesh.geometry.properties.labelIndex[boxIndex];
             if (textStart !== -1) {
-                super.setCollisionOpacity(textMesh, textElements, aOpacity, value, textStart, textEnd, boxIndex);
+                super.setCollisionOpacity(textMesh, textElements, value, textStart, textEnd);
             }
         }
     }
 
-    _forEachIcon(mesh, elements, fn) {
+    forEachBox(mesh, elements, fn) {
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         let index = 0;

@@ -4,12 +4,14 @@ import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
 import { clamp } from '../Util';
+// import { getLabelContent } from './util/get_label_content';
 
 const DEFAULT_SCENE_CONFIG = {
     collision: true,
     fading: true,
     fadingDuration: 16 * 14,
-    fadingDelay: 300
+    fadeInDelay: 100,
+    fadeOutDelay: 100
 };
 const MESH_ANCHOR_KEY = '__meshAnchorKey';
 const UINT8 = new Uint8Array(1);
@@ -73,6 +75,9 @@ export default class CollisionPainter extends BasicPainter {
 
     _canProceedCollision() {
         const map = this.getMap();
+        if (!map.isInteracting()) {
+            return true;
+        }
         const limit = this.layer.options['collisionFrameLimit'];
         return map.collisionFrameTime <= limit;
     }
@@ -102,50 +107,64 @@ export default class CollisionPainter extends BasicPainter {
     updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
         const { level, meshKey, tile } = mesh.properties;
         const layer = this.layer;
-        //没有缩放，且没在fading时，禁止父级瓦片的绘制，避免不正常的闪烁现象
-        if (this.shouldIgnoreBgTiles() && !layer.getRenderer().isCurrentTile(tile.id)) {
+        const renderer = layer.getRenderer();
+        if (this.shouldIgnoreBgTiles() && !renderer.isCurrentTile(tile.id)) {
             return false;
         }
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
         if (this.shouldLimitBox(tile.id) && boxIndex > layer.options['boxLimitOnZoomout']) {
             return false;
         }
-        const map = this.getMap();
-        const { symbol, aOpacity } = mesh.geometry.properties;
-
-
-        let collision = this._getCachedCollision(meshKey, boxIndex);
-        if (this._isCachedCollisionStale(meshKey)) {
-            collision = null;
+        if (this.isEnableUniquePlacement() && this._isReplacedPlacement(meshKey, boxIndex)) {
+            return false;
         }
+        const { symbol } = mesh.geometry.properties;
+
         let visible = false;
-        if (!collision) {
-            if (this._canProceed) {
+        let collision = this._getCachedCollision(meshKey, boxIndex);
+        //如果不允许proceed，则沿用缓存的 collision
+        if (this._canProceed) {
+            if (!this._isCachedCollisionStale(meshKey)) {
+                collision = null;
+            }
+
+            if (!collision) {
+                const map = this.getMap();
                 const now = performance.now();
                 collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
                 map.collisionFrameTime += performance.now() - now;
 
                 this._setCollisionCache(meshKey, boxIndex, collision);
-            }
-        } else if (collision.boxes) {
-            //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
-            const { boxes } = collision;
-            let collides = false;
-            for (let i = 0; i < boxes.length; i++) {
-                if (this.isCollides(boxes[i], tile)) {
-                    collides = true;
-                    break;
+            } else if (collision.boxes) {
+                //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
+                const { boxes } = collision;
+                let collides = false;
+                for (let i = 0; i < boxes.length; i++) {
+                    if (this.isCollides(boxes[i], tile)) {
+                        collides = true;
+                        break;
+                    }
                 }
+                collision.collides = collides;
             }
-            collision.collides = collides;
         }
+
+        const stamps = this._getBoxTimestamps(meshKey);
+        // const current = stamps[boxIndex];
+        // if (getLabelContent(mesh, allElements[start]) === '湖北') {
+        //     console.log('湖北', renderer.isCurrentTile(tile.id), collision && collision.collides, stamps[boxIndex]);
+        // }
         visible = collision && collision.collides === false;
 
         let fadingOpacity = 1;
         let isFading = false;
         if (this.sceneConfig.fading) {
-            const stamps = this._getBoxTimestamps(meshKey);
-            fadingOpacity = this._getBoxFading(tile.id, visible, stamps, boxIndex, level);
+            if (renderer.isCurrentTile(tile.id)) {
+                delete mesh._fadeOutStartTime;
+            }
+            // const stamps = this._getBoxTimestamps(meshKey);
+            fadingOpacity = this._getBoxFading(tile.id, visible, stamps, boxIndex);
+            //level <= 2，或者level较大，但存在unique placement时，就不直接隐藏
             if (level <= 2) {
                 if (fadingOpacity > 0) {
                     visible = true;
@@ -158,29 +177,68 @@ export default class CollisionPainter extends BasicPainter {
                 //未解决zoom in 过程中，大量box挤在一起，造成的用户体验不佳的问题
                 //当瓦片层级与当前层级相差较大，则跳过fading阶段，立即隐藏有collision的box
                 this._markFadingCollided(stamps, boxIndex);
+                fadingOpacity = 0;
             }
-        }
+            if (visible) {
+                const fadeOutStart = mesh._fadeOutStartTime;
+                if (fadeOutStart && fadingOpacity === 1 && stamps[boxIndex] > 0) {
+                    // console.log(fadingOpacity);
+                    const { fadeOutDelay, fadingDuration } = this.sceneConfig;
+                    const timestamp = renderer.getFrameTimestamp();
+                    const zoomEndFading = clamp(1 - (timestamp - fadeOutStart - fadeOutDelay) / fadingDuration, 0, 1);
+                    fadingOpacity *= zoomEndFading;
+                    if (zoomEndFading > 0) {
+                        this.setToRedraw();
+                    }
+                    // if (getLabelContent(mesh, allElements[start]) === '湖北') {
+                    //     console.log('湖北', visible, mesh.uniforms.level, fadingOpacity, zoomEndFading);
+                    // }
+                }
+            }
 
-        if (this._canProceed && collision && layer.options['debugCollision']) {
+        } else {
+            stamps[boxIndex] = visible ? 1 : -1;
+        }
+        if (renderer.isCurrentTile(tile.id) && this._canProceed && collision && layer.options['debugCollision']) {
             this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
         }
 
         if (visible || isFading) {
-            if (!symbol[this.propIgnorePlacement] && collision && collision.boxes) {
+            if (this._canProceed && !symbol[this.propIgnorePlacement] && collision && collision.boxes) {
+                // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
+                //     console.log(renderer.getFrameTimestamp(), meshKey, JSON.stringify(collision.boxes));
+                // }
                 this._fillCollisionIndex(collision.boxes, mesh);
             }
         }
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
-            this.setCollisionOpacity(mesh, allElements, aOpacity, opacity, start, end, boxIndex);
+            this.setCollisionOpacity(mesh, allElements, opacity, start, end);
         }
+        // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
+        //     console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
+        // }
         return visible;
     }
 
-    setCollisionOpacity(mesh, allElements, aOpacity, value, start, end) {
+    isMeshIterable() {
+        return true;
+    }
+
+    setCollisionOpacity(mesh, allElements, value, start, end) {
         const vertexIndexStart = allElements[start];
+        const vertexIndexEnd = allElements[end - 1];
+        this._updateOpacityData(mesh, value, vertexIndexStart, vertexIndexEnd);
+    }
+
+    _updateOpacityData(mesh, value, start, end) {
+        const { aOpacity } = mesh.geometry.properties;
+        if (!aOpacity) {
+            return;
+        }
+        const vertexIndexStart = start;
         if (aOpacity[vertexIndexStart] !== value) {
-            const vertexIndexEnd = allElements[end - 1];
+            const vertexIndexEnd = end;
             for (let i = vertexIndexStart; i <= vertexIndexEnd; i++) {
                 aOpacity[i] = value;
             }
@@ -218,19 +276,19 @@ export default class CollisionPainter extends BasicPainter {
         }
     }
 
-    _getBoxFading(tileId, visible, stamps, index, level) {
+    _getBoxFading(tileId, visible, stamps, index) {
         //level大于0，不fading
-        const { fadingDuration, fadingDelay } = this.sceneConfig;
+        const { fadingDuration, fadeInDelay, fadeOutDelay } = this.sceneConfig;
         const renderer = this.layer.getRenderer();
         const timestamp = renderer.getFrameTimestamp();
         let boxTimestamp = stamps[index];
         let fadingOpacity = visible ? 1 : 0;
         if (!boxTimestamp) {
-            const zooming = this.getMap().isZooming();
+            // const zooming = this.getMap().isZooming();
             // if (visible && level === 0 && this._zoomFading === undefined) {
-            if (visible && renderer.isCurrentTile(tileId) && !zooming) {
+            if (visible && renderer.isCurrentTile(tileId)/* && !zooming*/) {
                 //第一次显示
-                stamps[index] = timestamp + fadingDelay;
+                stamps[index] = timestamp + fadeInDelay;
             }
             return 0;
         }
@@ -260,14 +318,14 @@ export default class CollisionPainter extends BasicPainter {
             //显示fading开始
             if (boxTimestamp < 0) {
                 //显示fading起点，记录时间戳
-                stamps[index] = boxTimestamp = timestamp + fadingDelay;
+                stamps[index] = boxTimestamp = timestamp + fadeInDelay;
             }
             fadingOpacity = (timestamp - boxTimestamp) / fadingDuration;
         } else {
             //消失fading开始
             if (boxTimestamp > 0) {
                 //消失fading起点，记录时间戳
-                stamps[index] = boxTimestamp = -(timestamp + fadingDelay);
+                stamps[index] = boxTimestamp = -(timestamp + fadeOutDelay);
             }
             fadingOpacity = 1 - (timestamp + boxTimestamp) / fadingDuration;
         }
@@ -275,9 +333,9 @@ export default class CollisionPainter extends BasicPainter {
         if (fadingOpacity < 0 || fadingOpacity > 1) {
             fadingOpacity = clamp(fadingOpacity, 0, 1);
         }
-        if (level > 0 && this._zoomFading >= 0) {
-            fadingOpacity *= this._zoomFading;
-        }
+        // if (level > 0 && this._zoomFading >= 0) {
+        //     fadingOpacity *= this._zoomFading;
+        // }
         return fadingOpacity;
     }
 
@@ -294,8 +352,9 @@ export default class CollisionPainter extends BasicPainter {
         }
         const framestamp = this.layer.getRenderer().getFrameTimestamp();
         const { fadingDuration } = this.sceneConfig;
-        stamps[index] = framestamp - fadingDuration - 1;
+        stamps[index] = -(framestamp - fadingDuration - 1);
     }
+
 
     deleteMesh(meshes, keepGeometry) {
         if (!meshes) {
@@ -351,7 +410,7 @@ export default class CollisionPainter extends BasicPainter {
         // const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
         // const collisionIndex = isBackground ? layer.getBackgroundCollisionIndex() : layer.getCollisionIndex();
         const collisionIndex = layer.getCollisionIndex();
-        collisionIndex.insertBox(box.slice(0));
+        collisionIndex.insertBox(box);
     }
 
     /**
@@ -402,10 +461,16 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     preparePaint(context) {
-        if (this._zoomFading >= 0 && this._zoomMeshes) {
+        this._prepareZoomEndMeshes();
+        if (this._zoomEndMeshes) {
             this._updateZoomMeshesLevel();
-            this.scene.addMesh(this._zoomMeshes);
+            if (this._zoomEndMeshes) {
+                this.scene.addMesh(this._zoomEndMeshes);
+            }
+            this._updateUniquePlacements();
+            this.setToRedraw();
         }
+        this._mergeUniquePlacements(this.scene.getMeshes());
         super.preparePaint(context);
         this._startCollision();
     }
@@ -429,14 +494,12 @@ export default class CollisionPainter extends BasicPainter {
             return;
         }
         this.callBackgroundTileShader(uniforms);
-        if (this._zoomFading >= 0) {
-            this.setToRedraw();
-        }
     }
 
     shouldIgnoreBgTiles() {
+        // return false;
         const map = this.getMap();
-        return !map.isZooming() && this._zoomFading === undefined;
+        return !map.isZooming() && !this._zoomEndMeshes;
     }
 
     shouldLimitBox(tileKey, ignoreZoomOut) {
@@ -448,40 +511,20 @@ export default class CollisionPainter extends BasicPainter {
             (map.isZooming() || this._zoomEndTimestamp !== undefined && !renderer.isCurrentTile(tileKey));
     }
 
-    startFrame({ timestamp }) {
+    _prepareZoomEndMeshes() {
         const map = this.getMap();
-        const { fadingDuration } = this.sceneConfig;
         const zooming = map.isZooming();
         if (!zooming && this._zooming) {
             //记录zoom结束的时间戳
-            this._zoomEndTimestamp = timestamp;
-            // console.log('zoom end frame');
+            const renderer = this.layer.getRenderer();
+            this._zoomEndMeshes = this.scene.getMeshes().filter(m => !renderer.isCurrentTile(m.properties.tile.id));
         } else if (zooming && !this._zooming) {
-            // debugger
             this._preRes = map.getResolution();
         }
         this._zooming = zooming;
-        //zoom结束后的fading逻辑
-        const timeElapsed = timestamp - (this._zoomEndTimestamp || 0);
-        if (timeElapsed < fadingDuration) {
-            //处于fading中
-            this._zoomFading = 1 - timeElapsed / fadingDuration;
-        } else if (this._zoomEndTimestamp) {
-            //fading结束后第一帧
-            delete this._zoomFading;
-            delete this._zoomMeshes;
-            delete this._zoomEndTimestamp;
-            delete this._preRes;
-            delete this._zoomingOut;
-            // console.log('fading ended');
-        }
         if (zooming) {
-            //记录zooming过程中的meshes
-            this._zoomMeshes = this.scene.getMeshes();
-
             this._zoomingOut = this._preRes && map.getResolution() > this._preRes;
         }
-        super.startFrame();
     }
 
     _renderCollisionBox() {
@@ -550,6 +593,14 @@ export default class CollisionPainter extends BasicPainter {
                 viewport,
                 depth: {
                     enable: false,
+                },
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 'src alpha',
+                        dst: 'one minus src alpha'
+                    },
+                    equation: 'add'
                 }
             }
         });
@@ -557,14 +608,173 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _updateZoomMeshesLevel() {
-        const tileZoom = this.layer.getRenderer().getCurrentTileZoom();
-        for (let i = 0; i < this._zoomMeshes.length; i++) {
-            const mesh = this._zoomMeshes[i];
+        const { fadeOutDelay, fadingDuration } = this.sceneConfig;
+        const renderer = this.layer.getRenderer();
+        const tileZoom = renderer.getCurrentTileZoom();
+        const timestamp = renderer.getFrameTimestamp();
+        const meshes = [];
+        for (let i = 0; i < this._zoomEndMeshes.length; i++) {
+            const mesh = this._zoomEndMeshes[i];
             const tileInfo = mesh.properties.tile;
+            if (!mesh._fadeOutStartTime && !renderer.isBackTile(tileInfo.id)) {
+                mesh._fadeOutStartTime = timestamp;
+            }
             //需要更新zoom meshes 的level，让他们改为在background阶段绘制
             const level = (tileInfo.z - tileZoom) > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
             mesh.properties.level = level;
             mesh.setUniform('level', level);
+            if (renderer.isCurrentTile(tileInfo.id) ||
+                mesh._fadeOutStartTime && (timestamp - mesh._fadeOutStartTime > fadeOutDelay + fadingDuration)) {
+                delete mesh._fadeOutStartTime;
+                // console.log(timestamp, 'removed');
+                continue;
+            }
+            meshes.push(mesh);
+        }
+        delete this._zoomEndMeshes;
+        if (meshes.length) {
+            this._zoomEndMeshes = meshes;
+        }/* else {
+            console.log(context.timestamp, 'zoomEndMeshes are removed');
+        }*/
+    }
+
+    isEnableUniquePlacement() {
+        return this.sceneConfig['uniquePlacement'] !== false;
+    }
+
+
+    _updateUniquePlacements() {
+        if (!this.isEnableUniquePlacement()) {
+            return;
+        }
+        const meshes = this.scene.getMeshes();
+        const fn = (mesh, start, end, matrix, boxIndex) => {
+            //初始化label，
+            const elements = mesh.geometry.properties.elements;
+            let placements = mesh.geometry.properties.uniquePlacements;
+            if (!placements) {
+                placements = mesh.geometry.properties.uniquePlacements = [];
+            }
+            if (!placements[boxIndex]) {
+                const key = this.getUniqueEntryKey(mesh, elements[start]);
+                placements[boxIndex] = {
+                    key,
+                    index: boxIndex,
+                    start: elements[start],
+                    end: elements[end - 1]
+                };
+            }
+        };
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            if (!this.isMeshIterable(mesh)) {
+                continue;
+            }
+            this.forEachBox(mesh, mesh.geometry.properties.elements, fn);
         }
     }
+
+    _mergeUniquePlacements(meshes) {
+        if (!this.isEnableUniquePlacement()) {
+            return;
+        }
+        this._replacedPlacements = {};
+        // const renderer = this.layer.getRenderer();
+        meshes = meshes.sort(sortByLevel);
+        const scale = this.getMap().getGLScale();
+        const allPlacements = {};
+        // let hubeiKey;
+        // const keys = [];
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            if (!this.isMeshIterable(mesh)) {
+                continue;
+            }
+            const { uniquePlacements } = mesh.geometry.properties;
+            if (!uniquePlacements) {
+                continue;
+            }
+
+            for (let j = 0; j < uniquePlacements.length; j++) {
+                if (!uniquePlacements[j]) {
+                    continue;
+                }
+                const { key, index/*, start*/ } = uniquePlacements[j];
+
+                const uKey = getUniqueKey(key, scale);
+                // if (getLabelContent(mesh, start) === 'Indonesia') {
+                //     keys.push(uKey);
+                //     if (!hubeiKey) {
+                //         hubeiKey = uKey;
+                //     } else if (hubeiKey !== uKey) {
+                //         console.log('Indonesia miss', hubeiKey, uKey);
+                //     }
+                // }
+                if (!allPlacements[uKey]) {
+                    allPlacements[uKey] = [{
+                        index,
+                        mesh
+                    }];
+                } else {
+                    const stamps = this._getBoxTimestamps(mesh.properties.meshKey);
+                    if (stamps[index] === undefined) {
+                        const placement = allPlacements[uKey][0];
+                        const parentMesh = placement.mesh;
+                        const parentKey = parentMesh.properties.meshKey;
+                        const parentIndex = placement.index;
+                        const parentStamps = this._getBoxTimestamps(parentKey);
+                        stamps[index] = parentStamps[parentIndex];
+                        this._replacedPlacements[parentKey] = this._replacedPlacements[parentKey] || {};
+                        this._replacedPlacements[parentKey][parentIndex] = 1;
+                    } else {
+                        const placements = allPlacements[uKey];
+                        let changed = false;
+                        let max = stamps[index];
+                        for (let i = 0; i < placements.length; i++) {
+                            const parentKey = placements[i].mesh.properties.meshKey;
+                            const parentIndex = placements[i].index;
+                            this._replacedPlacements[parentKey] = this._replacedPlacements[parentKey] || {};
+                            this._replacedPlacements[parentKey][parentIndex] = 1;
+                            const pStamps = this._getBoxTimestamps(parentKey);
+                            if (pStamps[placements[i].index] !== max) {
+                                changed = true;
+                                if (Math.abs(pStamps[parentIndex]) > Math.abs(max)) {
+                                    max = pStamps[parentIndex];
+                                }
+                            }
+                        }
+
+                        if (changed) {
+                            for (let i = 0; i < placements.length; i++) {
+                                const pStamps = this._getBoxTimestamps(placements[i].mesh.properties.meshKey);
+                                pStamps[placements[i].index] = max;
+                            }
+                            stamps[index] = max;
+                        }
+                        placements.push({
+                            index, mesh
+                        });
+                    }
+                }
+            }
+        }
+        // if (keys.length >= 3) {
+        //     console.log(`湖北的keys:[${keys.join()}]`);
+        // }
+    }
+
+    _isReplacedPlacement(meshKey, index) {
+        return this._replacedPlacements[meshKey] && this._replacedPlacements[meshKey][index];
+    }
+}
+
+const UNIQUE_TOLERANCE = 14;
+function getUniqueKey(key, scale) {
+    return Math.round(key[0] / scale / UNIQUE_TOLERANCE) * Math.round(key[1] / scale / UNIQUE_TOLERANCE) *
+        (key[2] ? Math.round(key[2] / UNIQUE_TOLERANCE) : 1) + '-' + key[3];
+}
+
+function sortByLevel(m0, m1) {
+    return m1.uniforms['level'] - m0.uniforms['level'];
 }

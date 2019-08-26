@@ -171,10 +171,10 @@ export default class StyledPoint {
         const hasText = !isNil(symbol.textName);
         let size;
         if (hasMarker) {
-            size = evaluateIconSize(symbol, this.feature.properties, zoom);
+            size = evaluateIconSize(symbol, properties, zoom);
         }
         if (hasText) {
-            size = evaluateTextSize(symbol, this.feature.properties, zoom);
+            size = evaluateTextSize(symbol, properties, zoom);
         }
         this.size = size;
         if (hasMarker) {
@@ -227,6 +227,8 @@ export default class StyledPoint {
             const textWeight = this._textWeightFn ? this._textWeightFn(null, properties) : symbol['textWeight'];
             const font = getSDFFont(textFaceName, textStyle, textWeight);
             const text = resolveText(textName, properties);
+            //在TextPainter中能通过feature.properties['$label']直接取得标签内容
+            this.feature.properties['$label'] = text;
             if (text && text.length) {
                 result.glyph = {
                     font, text
