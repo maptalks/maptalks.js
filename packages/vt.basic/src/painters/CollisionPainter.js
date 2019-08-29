@@ -138,12 +138,21 @@ export default class CollisionPainter extends BasicPainter {
             } else if (collision.boxes) {
                 //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
                 const { boxes } = collision;
-                let collides = false;
+                let collides = 0;
+                let offscreenCount = 0;
                 for (let i = 0; i < boxes.length; i++) {
-                    if (this.isCollides(boxes[i], tile)) {
-                        collides = true;
-                        break;
+                    if (!collides) {
+                        const boxCollides = this.isCollides(boxes[i], tile);
+                        if (boxCollides === -1) {
+                            offscreenCount++;
+                        } else if (boxCollides === 1) {
+                            collides = 1;
+                            break;
+                        }
                     }
+                }
+                if (offscreenCount === boxes.length) {
+                    collides = -1;
                 }
                 collision.collides = collides;
             }
@@ -154,7 +163,7 @@ export default class CollisionPainter extends BasicPainter {
         // if (getLabelContent(mesh, allElements[start]) === '湖北') {
         //     console.log('湖北', renderer.isCurrentTile(tile.id), collision && collision.collides, stamps[boxIndex]);
         // }
-        visible = collision && collision.collides === false;
+        visible = collision && collision.collides === 0;
 
         let fadingOpacity = 1;
         let isFading = false;
@@ -213,7 +222,7 @@ export default class CollisionPainter extends BasicPainter {
         }
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
-            this.setCollisionOpacity(mesh, allElements, opacity, start, end);
+            this.setCollisionOpacity(mesh, allElements, opacity, start, end, boxIndex);
         }
         // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
         //     console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
@@ -261,7 +270,7 @@ export default class CollisionPainter extends BasicPainter {
         }
         const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
         if (symbol[this.propAllowOverlap]) {
-            collision.collides = false;
+            collision.collides = 0;
         }
         return collision;
     }
@@ -467,9 +476,8 @@ export default class CollisionPainter extends BasicPainter {
             if (this._zoomEndMeshes) {
                 this.scene.addMesh(this._zoomEndMeshes);
             }
-            this._updateUniquePlacements();
-            this.setToRedraw();
         }
+        this._updateUniquePlacements();
         this._mergeUniquePlacements(this.scene.getMeshes());
         super.preparePaint(context);
         this._startCollision();
@@ -656,14 +664,19 @@ export default class CollisionPainter extends BasicPainter {
             if (!placements) {
                 placements = mesh.geometry.properties.uniquePlacements = [];
             }
-            if (!placements[boxIndex]) {
-                const key = this.getUniqueEntryKey(mesh, elements[start]);
-                placements[boxIndex] = {
-                    key,
-                    index: boxIndex,
-                    start: elements[start],
-                    end: elements[end - 1]
-                };
+            if (placements[boxIndex] === undefined) {
+                const key = this.getUniqueEntryKey(mesh, elements[start], boxIndex);
+                // console.log(key, mesh.uniforms.level);
+                if (!key) {
+                    placements[boxIndex] = null;
+                } else {
+                    placements[boxIndex] = {
+                        key,
+                        index: boxIndex,
+                        start: elements[start],
+                        end: elements[end - 1]
+                    };
+                }
             }
         };
         for (let i = 0; i < meshes.length; i++) {
@@ -680,7 +693,6 @@ export default class CollisionPainter extends BasicPainter {
             return;
         }
         this._replacedPlacements = {};
-        // const renderer = this.layer.getRenderer();
         meshes = meshes.sort(sortByLevel);
         const scale = this.getMap().getGLScale();
         const allPlacements = {};
@@ -688,9 +700,6 @@ export default class CollisionPainter extends BasicPainter {
         // const keys = [];
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
-            if (!this.isMeshIterable(mesh)) {
-                continue;
-            }
             const { uniquePlacements } = mesh.geometry.properties;
             if (!uniquePlacements) {
                 continue;
@@ -700,9 +709,13 @@ export default class CollisionPainter extends BasicPainter {
                 if (!uniquePlacements[j]) {
                     continue;
                 }
+                const meshKey = mesh.properties.meshKey;
                 const { key, index/*, start*/ } = uniquePlacements[j];
+                const stamps = this._getBoxTimestamps(meshKey);
 
                 const uKey = getUniqueKey(key, scale);
+
+                // console.log(uKey, mesh.uniforms.level);
                 // if (getLabelContent(mesh, start) === 'Indonesia') {
                 //     keys.push(uKey);
                 //     if (!hubeiKey) {
@@ -711,70 +724,89 @@ export default class CollisionPainter extends BasicPainter {
                 //         console.log('Indonesia miss', hubeiKey, uKey);
                 //     }
                 // }
-                if (!allPlacements[uKey]) {
-                    allPlacements[uKey] = [{
-                        index,
-                        mesh
-                    }];
+                const placements = allPlacements[uKey];
+                if (!placements) {
+                    //用纯数组比对象性能更好
+                    allPlacements[uKey] = [
+                        mesh,
+                        stamps,
+                        index
+                    ];
                 } else {
-                    const stamps = this._getBoxTimestamps(mesh.properties.meshKey);
-                    if (stamps[index] === undefined) {
-                        const placement = allPlacements[uKey][0];
-                        const parentMesh = placement.mesh;
-                        const parentKey = parentMesh.properties.meshKey;
-                        const parentIndex = placement.index;
-                        const parentStamps = this._getBoxTimestamps(parentKey);
-                        stamps[index] = parentStamps[parentIndex];
-                        this._replacedPlacements[parentKey] = this._replacedPlacements[parentKey] || {};
-                        this._replacedPlacements[parentKey][parentIndex] = 1;
-                    } else {
-                        const placements = allPlacements[uKey];
-                        let changed = false;
-                        let max = stamps[index];
-                        for (let i = 0; i < placements.length; i++) {
-                            const parentKey = placements[i].mesh.properties.meshKey;
-                            const parentIndex = placements[i].index;
-                            this._replacedPlacements[parentKey] = this._replacedPlacements[parentKey] || {};
-                            this._replacedPlacements[parentKey][parentIndex] = 1;
-                            const pStamps = this._getBoxTimestamps(parentKey);
-                            if (pStamps[placements[i].index] !== max) {
-                                changed = true;
-                                if (Math.abs(pStamps[parentIndex]) > Math.abs(max)) {
-                                    max = pStamps[parentIndex];
-                                }
-                            }
-                        }
-
-                        if (changed) {
-                            for (let i = 0; i < placements.length; i++) {
-                                const pStamps = this._getBoxTimestamps(placements[i].mesh.properties.meshKey);
-                                pStamps[placements[i].index] = max;
-                            }
-                            stamps[index] = max;
-                        }
-                        placements.push({
-                            index, mesh
-                        });
-                    }
+                    const len = placements.length;
+                    const parentMesh = placements[len - 3];
+                    const parentKey = parentMesh.properties.meshKey;
+                    const parentStamps = placements[len - 2];
+                    const parentIndex = placements[len - 1];
+                    this._replacedPlacements[parentKey] = this._replacedPlacements[parentKey] || {};
+                    this._replacedPlacements[parentKey][parentIndex] = 1;
+                    this._updatePlacementStamps(stamps, index, parentStamps, parentIndex);
+                    placements.push(mesh, stamps, index);
                 }
             }
         }
+
+        for (const key in allPlacements) {
+            const placements = allPlacements[key];
+            if (placements.length <= 2 * 3) {
+                continue;
+            }
+            const len = placements.length;
+            const lastStamps = placements[len - 2];
+            const lastIndex = placements[len - 1];
+            const lastTimestamp = lastStamps[lastIndex];
+            // if (lastTimestamp === undefined) {
+            //     continue;
+            // }
+            const firstStamps = placements[1];
+            const firstIndex = placements[2];
+            if (firstStamps[firstIndex] !== lastTimestamp) {
+                for (let i = 0; i < len - 2 * 3; i += 3) {
+                    const stamps = placements[i + 1];
+                    const index = placements[i + 2];
+                    stamps[index] = lastTimestamp;
+                }
+            }
+        }
+        // console.log('end-----------');
         // if (keys.length >= 3) {
         //     console.log(`湖北的keys:[${keys.join()}]`);
         // }
     }
 
+    _updatePlacementStamps(stamps, index, parentStamps, parentIndex) {
+        if (parentStamps[parentIndex] !== undefined) {
+            if (stamps[index] === undefined) {
+                stamps[index] = parentStamps[parentIndex];
+            } else {
+                let max = stamps[index];
+                if (Math.abs(parentStamps[parentIndex]) > Math.abs(max)) {
+                    stamps[index] = parentStamps[parentIndex];
+                } else {
+                    parentStamps[parentIndex] = stamps[index];
+                }
+            }
+        } else if (stamps[index] !== undefined) {
+            parentStamps[parentIndex] = stamps[index];
+        }
+    }
+
     _isReplacedPlacement(meshKey, index) {
-        return this._replacedPlacements[meshKey] && this._replacedPlacements[meshKey][index];
+        return this._replacedPlacements && this._replacedPlacements[meshKey] && this._replacedPlacements[meshKey][index];
     }
 }
 
-const UNIQUE_TOLERANCE = 14;
+const UNIQUE_TOLERANCE = 8;
 function getUniqueKey(key, scale) {
     return Math.round(key[0] / scale / UNIQUE_TOLERANCE) * Math.round(key[1] / scale / UNIQUE_TOLERANCE) *
         (key[2] ? Math.round(key[2] / UNIQUE_TOLERANCE) : 1) + '-' + key[3];
 }
 
 function sortByLevel(m0, m1) {
-    return m1.uniforms['level'] - m0.uniforms['level'];
+    const r = m1.uniforms['level'] - m0.uniforms['level'];
+    if (r === 0) {
+        return m0.properties.meshKey.localeCompare(m1.properties.meshKey);
+    } else {
+        return r;
+    }
 }

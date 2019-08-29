@@ -5,10 +5,8 @@ import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.picking.vert';
 import { getIconBox } from './util/get_icon_box';
-import { getAnchor, getLabelBox } from './util/get_label_box';
-import { projectPoint } from './util/projection';
 import { setUniformFromSymbol, isNil, fillArray } from '../Util';
-import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GAMMA_SCALE, getTextFnTypeConfig } from './util/create_text_painter';
+import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 
 import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
@@ -20,20 +18,24 @@ import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from './Const
 const BOX_ELEMENT_COUNT = 6;
 const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 
-const ICON_FILTER = mesh => {
-    return mesh.uniforms['level'] === 0 && !!mesh.geometry.properties.iconAtlas;
+const ICON_FILTER = function (mesh) {
+    const renderer = this.layer.getRenderer();
+    return renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.iconAtlas;
 };
 
-const ICON_FILTER_N = mesh => {
-    return mesh.uniforms['level'] > 0 && !!mesh.geometry.properties.iconAtlas;
+const ICON_FILTER_N = function (mesh) {
+    const renderer = this.layer.getRenderer();
+    return !renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.iconAtlas;
 };
 
-const TEXT_FILTER = mesh => {
-    return mesh.uniforms['level'] === 0 && !!mesh.geometry.properties.glyphAtlas;
+const TEXT_FILTER = function (mesh) {
+    const renderer = this.layer.getRenderer();
+    return renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.glyphAtlas;
 };
 
-const TEXT_FILTER_N = mesh => {
-    return mesh.uniforms['level'] > 0 && !!mesh.geometry.properties.glyphAtlas;
+const TEXT_FILTER_N = function (mesh) {
+    const renderer = this.layer.getRenderer();
+    return !renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.glyphAtlas;
 };
 
 const defaultUniforms = {
@@ -51,7 +53,6 @@ const defaultUniforms = {
 //temparary variables
 const PROJ_MATRIX = [];
 const U8 = new Uint16Array(1);
-const ANCHOR = [], PROJ_ANCHOR = [];
 
 class IconPainter extends CollisionPainter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
@@ -61,6 +62,12 @@ class IconPainter extends CollisionPainter {
         this.propIgnorePlacement = 'markerIgnorePlacement';
         this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
         this._iconFnTypeConfig = this._getIconFnTypeConfig();
+        this.isLabelCollides = isLabelCollides.bind(this);
+
+        this._iconFilter0 = ICON_FILTER.bind(this);
+        this._iconFilter1 = ICON_FILTER_N.bind(this);
+        this._textFilter0 = TEXT_FILTER.bind(this);
+        this._textFilter1 = TEXT_FILTER_N.bind(this);
     }
 
     _getIconFnTypeConfig() {
@@ -323,19 +330,25 @@ class IconPainter extends CollisionPainter {
     }
 
     callCurrentTileShader(uniforms) {
-        this.shader.filter = ICON_FILTER;
+        this.shader.filter = this._iconFilter0;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        this._textShader.filter = TEXT_FILTER;
+        this._textShader.filter = this._textFilter0;
         this.renderer.render(this._textShader, uniforms, this.scene);
     }
 
     callBackgroundTileShader(uniforms) {
-        this.shader.filter = ICON_FILTER_N;
+        this.shader.filter = this._iconFilter1;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        this._textShader.filter = TEXT_FILTER_N;
+        this._textShader.filter = this._textFilter1;
         this.renderer.render(this._textShader, uniforms, this.scene);
+    }
+
+    isMeshIterable(mesh) {
+        const { id } = mesh.properties.tile;
+        //halo和正文共享的同一个geometry，无需更新
+        return !!mesh.geometry.properties.iconAtlas && !(this.shouldIgnoreBgTiles() && !this.layer.getRenderer().isCurrentTile(id));
     }
 
 
@@ -348,7 +361,7 @@ class IconPainter extends CollisionPainter {
         if (!enableCollision) {
             return;
         }
-        let meshes = this.scene.getMeshes().filter(mesh => !!mesh.geometry.properties.iconAtlas);
+        let meshes = this.scene.getMeshes();
         if (!meshes || !meshes.length) {
             return;
         }
@@ -385,9 +398,10 @@ class IconPainter extends CollisionPainter {
                 }
             }
         };
+        meshes = meshes.sort(sortByLevel);
         for (let m = 0; m < meshes.length; m++) {
             const iconMesh = meshes[m];
-            if (!iconMesh) {
+            if (!iconMesh || !this.isMeshIterable(iconMesh)) {
                 continue;
             }
             const textMesh = iconMesh._textMesh;
@@ -453,93 +467,40 @@ class IconPainter extends CollisionPainter {
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
         const map = this.getMap();
-        const debugCollision = this.layer.options['debugCollision'];
         const textMesh = mesh._textMesh;
 
-        const { tile, meshKey } = mesh.properties;
-        const boxes = [];
-        let offscreenCount = 0;
-
-        let hasCollides = false;
-        const isFading = this.isBoxFading(meshKey, boxIndex);
-
+        const { tile } = mesh.properties;
         // debugger
         //icon and text
         const firstBoxIdx = elements[start];
         const iconBox = getIconBox([], mesh, firstBoxIdx, matrix, map);
-        boxes.push(iconBox);
         const collides = this.isCollides(iconBox, tile);
-        if (collides === 1) {
-            hasCollides = true;
-            if (!isFading && !debugCollision) {
-                return {
-                    collides: true,
-                    boxes
-                };
-            }
-        } else if (collides === -1) {
-            //offscreen
-            offscreenCount++;
-        }
-        if (!textMesh) {
-            if (offscreenCount === 1) {
-                hasCollides = true;
-            }
-            return {
-                collides: hasCollides,
-                boxes
-            };
-        }
+        const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
 
-        const labelIndex = mesh.geometry.properties.labelIndex[boxIndex];
-        const [textStart, textEnd] = labelIndex;
-        if (textStart === -1) {
-            if (offscreenCount === 1) {
-                hasCollides = true;
-            }
+        if (!textMesh || !labelIndex || labelIndex && labelIndex[0] === -1) {
             return {
-                collides: hasCollides,
-                boxes
+                collides,
+                boxes: [iconBox]
             };
         }
+        const [textStart, textEnd] = labelIndex;
+        let hasCollides = collides === 1 ? 1 : 0;
         const textElements = textMesh.geometry.properties.elements;
-        const idx = textElements[textStart];
         const charCount = (textEnd - textStart) / BOX_ELEMENT_COUNT;
 
-        const { aTextSize, aTextHaloRadius } = textMesh.geometry.properties;
-        const textSize = aTextSize ? aTextSize[idx] : mesh.properties.textSize;
-        const textHaloRadius = aTextHaloRadius ? aTextHaloRadius[idx] : mesh.properties.textHaloRadius;
-
-        const anchor = getAnchor(ANCHOR, textMesh, idx);
-        const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
-        //insert every character's box into collision index
-        for (let j = textStart; j < textEnd; j += 6) {
-            //use int16array to save some memory
-            const box = getLabelBox([], anchor, projAnchor, textMesh, textSize, textHaloRadius, textElements[j], matrix, map);
-            boxes.push(box);
-            const collides = this.isCollides(box, tile);
-            if (collides === 1) {
-                hasCollides = true;
-                if (!isFading && !debugCollision) {
-                    return {
-                        collides: true,
-                        boxes
-                    };
-                }
-            } else if (collides === -1) {
-                //offscreen
-                offscreenCount++;
+        const textCollision = this.isLabelCollides(collides, textMesh, textElements, charCount, textStart, textEnd, matrix);
+        if (!hasCollides) {
+            if (textCollision.collides === -1 && collides === -1) {
+                hasCollides = -1;
+            } else if (textCollision.collides === 1) {
+                hasCollides = 1;
             }
         }
-        if (offscreenCount === charCount + 1) {
-            //所有的文字都offscreen时，可认为存在碰撞
-            hasCollides = true;
-        }
-
+        textCollision.boxes.push(iconBox);
 
         return {
             collides: hasCollides,
-            boxes
+            boxes: textCollision.boxes
         };
     }
 
@@ -902,6 +863,19 @@ class IconPainter extends CollisionPainter {
             }
         }
     }
+
+    getUniqueEntryKey(mesh, idx, boxIndex) {
+        if (!mesh._textMesh) {
+            return null;
+        }
+        const { labelIndex } = mesh.geometry.properties;
+        const [textStart] = labelIndex[boxIndex];
+        if (textStart === -1) {
+            return null;
+        }
+        const { elements } = mesh._textMesh.geometry.properties;
+        return getLabelEntryKey(mesh._textMesh, elements[textStart]);
+    }
 }
 
 function sorting(a) {
@@ -1052,6 +1026,15 @@ function buildLabelShape(iconGeometry, textGeometry) {
         return [];
     }
     return labelShape;
+}
+
+function sortByLevel(m0, m1) {
+    const r = m0.uniforms['level'] - m1.uniforms['level'];
+    if (r === 0) {
+        return m0.properties.meshKey.localeCompare(m1.properties.meshKey);
+    } else {
+        return r;
+    }
 }
 
 export default IconPainter;

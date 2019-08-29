@@ -1,8 +1,11 @@
-import { mat4, reshader } from '@maptalks/gl';
+import { mat4, vec4, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter } from '../../Util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
+import { getAnchor, getLabelBox } from './get_label_box';
+import { projectPoint } from './projection';
+import { getLabelContent } from './get_label_content';
 
 const GAMMA_SCALE = 0.79;
 
@@ -403,4 +406,110 @@ export function getTextFnTypeConfig(map, symbolDef) {
             }
         }
     ];
+}
+
+const BOX0 = [], BOX1 = [];
+const ANCHOR = [], PROJ_ANCHOR = [];
+
+export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, end, matrix/*, boxIndex*/) {
+    const map = this.getMap();
+    const geoProps = mesh.geometry.properties;
+    const symbol = geoProps.symbol;
+    const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
+    const { aTextSize, aTextHaloRadius, aShape } = geoProps;
+    const textSize = aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize;
+    const haloRadius = aTextHaloRadius ? aTextHaloRadius[elements[start]] : mesh.properties.textHaloRadius;
+
+    const anchor = getAnchor(ANCHOR, mesh, elements[start]);
+    const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
+
+    const charCount = boxCount;
+    const boxes = [];
+    //1, 获取每个label的collision boxes
+    //2, 将每个box在collision index中测试
+    //   2.1 如果不冲突，则显示label
+    //   2.2 如果冲突，则隐藏label
+    if (!isLinePlacement && mesh.material.uniforms['rotateWithMap'] !== 1 && !symbol['textRotation']) {
+        // 既没有沿线绘制，也没有随地图旋转时，文字本身也没有旋转时，只需为每行文字生成一个box即可
+        // 遍历文字的aShape.y，发生变化时，说明新行开始，用第一个字的tl和最后一个字的br生成box
+        let firstChrIdx = elements[start];
+        let currentShapeY = aShape[firstChrIdx * 2 + 1];
+        for (let i = start; i < end; i += 6) {
+            const chrIdx = elements[i];
+            const shapeY = aShape[chrIdx * 2 + 1];
+            if (currentShapeY !== shapeY || i === end - 6) {
+                const lastChrIdx = elements[(i === end - 6 ? i : i - 6)];
+                const tlBox = getLabelBox(BOX0, anchor, projAnchor, mesh, textSize, haloRadius, firstChrIdx, matrix, map),
+                    brBox = getLabelBox(BOX1, anchor, projAnchor, mesh, textSize, haloRadius, lastChrIdx, matrix, map);
+                const box = [];
+                box[0] = Math.min(tlBox[0], brBox[0]);
+                box[1] = Math.min(tlBox[1], brBox[1]);
+                box[2] = Math.max(tlBox[2], brBox[2]);
+                box[3] = Math.max(tlBox[3], brBox[3]);
+                boxes.push(box);
+                firstChrIdx = elements[i];
+                currentShapeY = shapeY;
+                if (!hasCollides && this.isCollides(box, mesh.properties.tile)) {
+                    hasCollides = 1;
+                }
+            }
+        }
+    } else {
+        let offscreenCount = 0;
+        //insert every character's box into collision index
+        for (let j = start; j < start + charCount * 6; j += 6) {
+            //use int16array to save some memory
+            const box = getLabelBox([], anchor, projAnchor, mesh, textSize, haloRadius, elements[j], matrix, map);
+            boxes.push(box);
+            if (!hasCollides) {
+                const collides = this.isCollides(box, mesh.properties.tile);
+                if (collides === 1) {
+                    hasCollides = 1;
+                } else if (collides === -1) {
+                    //offscreen
+                    offscreenCount++;
+                }
+            }
+        }
+        if (offscreenCount === charCount) {
+            //所有的文字都offscreen时，可认为存在碰撞
+            hasCollides = -1;
+        }
+    }
+    return {
+        collides: hasCollides,
+        boxes
+    };
+}
+
+export function getLabelEntryKey(mesh, idx) {
+    const label = getLabelContent(mesh, idx);
+    if (!label) {
+        return null;
+    }
+    return getEntryKey(mesh, idx, label);
+}
+
+
+const ENTRY_ANCHOR = [];
+const ENTRY_WORLD_POS = [];
+function getEntryKey(mesh, idx, label) {
+    if (!label) {
+        return null;
+    }
+    const matrix = mesh.localTransform;
+    const anchor = getAnchor(ENTRY_ANCHOR, mesh, idx);
+    vec4.set(ENTRY_WORLD_POS, anchor[0], anchor[1], anchor[2], 1);
+    const point = vec4.transformMat4(ENTRY_WORLD_POS, ENTRY_WORLD_POS, matrix);
+    //误差容许有5个像素
+    // const point = vec4.scale(ENTRY_WORLD_POS, ENTRY_WORLD_POS);
+    // const posKey = Math.floor(point[0]) * Math.floor(point[1]) + (point[2] ? ('-' + Math.floor(point[2])) : '');
+    let codeSum = 0;
+    for (let i = 0; i < label.length; i++) {
+        codeSum += label.charCodeAt(i);
+    }
+    // if (getLabelContent(mesh, idx) === '湖北') {
+    //     console.log('湖北', Math.floor(point[0]), Math.floor(point[1]), Math.floor(point[2]), codeSum);
+    // }
+    return [Math.floor(point[0]), Math.floor(point[1]), Math.floor(point[2]), codeSum];
 }
