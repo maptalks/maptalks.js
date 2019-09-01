@@ -258,6 +258,15 @@ export default class TextPainter extends CollisionPainter {
         return !mesh.properties.isHalo && mesh.isValid() && !(this.shouldIgnoreBgTiles() && !this.layer.getRenderer().isCurrentTile(id));
     }
 
+    isMeshUniquePlaced(mesh) {
+        if (!this.isMeshIterable(mesh)) {
+            return false;
+        }
+        const geometry = mesh.geometry;
+        const { symbol }  = geometry.properties;
+        return symbol['textPlacement'] !== 'line';
+    }
+
     getUniqueEntryKey(mesh, idx) {
         return getLabelEntryKey(mesh, idx);
     }

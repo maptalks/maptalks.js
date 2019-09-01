@@ -42,7 +42,7 @@ void main() {
 
     lowp vec4 color = textFill;
     highp float gamma = EDGE_GAMMA / (fontScale * gammaScale);
-    lowp float buff = 192.0 / 256.0;//(256.0 - 64.0) / 256.0;
+    lowp float buff = 185.0 / 256.0;//(256.0 - 64.0) / 256.0;
     if (isHalo == 1) {
         #ifdef HAS_TEXT_HALO_FILL
             vec4 textHaloFill = vTextHaloFill;
@@ -57,9 +57,9 @@ void main() {
     }
 
     float dist = texture2D(texture, vTexCoord).a;
-    highp float gammaScaled = gamma * vGammaScale;
+    highp float gammaScaled = gamma * vGammaScale * 0.7;
 
-    float alpha = clamp(smoothstep(buff - gammaScaled, buff + gammaScaled, dist) * 1.2, 0.0, 1.0);
+    float alpha = clamp(smoothstep(buff - gammaScaled, buff + gammaScaled, dist), 0.0, 1.0);
     // float alpha = smoothstep(buff - gammaScaled, buff + gammaScaled, dist);
     // gl_FragColor = vec4(textFill.rgb, alpha * textFill.a);
     gl_FragColor = color * (alpha * textOpacity * vOpacity);

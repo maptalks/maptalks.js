@@ -160,8 +160,9 @@ export default class CollisionPainter extends BasicPainter {
 
         const stamps = this._getBoxTimestamps(meshKey);
         // const current = stamps[boxIndex];
-        // if (getLabelContent(mesh, allElements[start]) === '湖北') {
-        //     console.log('湖北', renderer.isCurrentTile(tile.id), collision && collision.collides, stamps[boxIndex]);
+        // if (getLabelContent(mesh, allElements[start]) === '汉阳大道') {
+        //     // console.log('湖北', renderer.isCurrentTile(tile.id), collision && collision.collides, stamps[boxIndex]);
+        //     console.log('汉阳大道', tile.z, collision && collision.collides, stamps[boxIndex]);
         // }
         visible = collision && collision.collides === 0;
 
@@ -208,7 +209,7 @@ export default class CollisionPainter extends BasicPainter {
         } else {
             stamps[boxIndex] = visible ? 1 : -1;
         }
-        if (renderer.isCurrentTile(tile.id) && this._canProceed && collision && layer.options['debugCollision']) {
+        if (/*renderer.isCurrentTile(tile.id) && */this._canProceed && collision && layer.options['debugCollision']) {
             this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
         }
 
@@ -224,8 +225,9 @@ export default class CollisionPainter extends BasicPainter {
             const opacity = UINT8[0] = fadingOpacity * 255;
             this.setCollisionOpacity(mesh, allElements, opacity, start, end, boxIndex);
         }
-        // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
-        //     console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
+        // if (getLabelContent(mesh, allElements[start]) === '太字湖路') {
+        //     // console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
+        //     console.log(visible, 'level:' + mesh.uniforms.level, boxIndex, fadingOpacity, meshKey);
         // }
         return visible;
     }
@@ -651,6 +653,9 @@ export default class CollisionPainter extends BasicPainter {
         return this.sceneConfig['uniquePlacement'] !== false;
     }
 
+    isMeshUniquePlaced(mesh) {
+        return this.isMeshIterable(mesh);
+    }
 
     _updateUniquePlacements() {
         if (!this.isEnableUniquePlacement()) {
@@ -681,7 +686,7 @@ export default class CollisionPainter extends BasicPainter {
         };
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
-            if (!this.isMeshIterable(mesh)) {
+            if (!this.isMeshUniquePlaced(mesh)) {
                 continue;
             }
             this.forEachBox(mesh, mesh.geometry.properties.elements, fn);

@@ -16,7 +16,7 @@ const defaultUniforms = {
     'lineGapWidth': 0,
     'lineDx': 0,
     'lineDy': 0,
-    'lineBlur': 1,
+    'lineBlur': 0.4,
     'lineDasharray': [0, 0, 0, 0],
     'lineDashColor': [0, 0, 0, 0],
     'lineOffset': 0
