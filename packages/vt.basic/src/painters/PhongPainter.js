@@ -194,13 +194,13 @@ class PhongPainter extends Painter {
                     // color: [0, 0, 0, 0]
                 },
                 viewport,
-                // polygonOffset: {
-                //     enable: true,
-                //     offset: {
-                //         factor: -100,
-                //         units: -100
-                //     }
-                // }
+                polygonOffset: {
+                    enable: true,
+                    offset: {
+                        factor: -(this.pluginIndex + 1),
+                        units: -(this.pluginIndex + 1)
+                    }
+                }
             }
         };
 

@@ -10,7 +10,7 @@ const DEFAULT_SCENE_CONFIG = {
     collision: true,
     fading: true,
     fadingDuration: 16 * 14,
-    fadeInDelay: 100,
+    fadeInDelay: 600,
     fadeOutDelay: 100
 };
 const MESH_ANCHOR_KEY = '__meshAnchorKey';
@@ -104,7 +104,7 @@ export default class CollisionPainter extends BasicPainter {
         return MESH_ANCHORS;
     }
 
-    updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
+    updateBoxCollisionFading(boxVisible, mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
         const { level, meshKey, tile } = mesh.properties;
         const layer = this.layer;
         const renderer = layer.getRenderer();
@@ -119,11 +119,14 @@ export default class CollisionPainter extends BasicPainter {
             return false;
         }
         const { symbol } = mesh.geometry.properties;
+        //为了解决缩小地图时，大量文字会突然挤在一起
+
+        const canProceed = (this._zoomingOut && !renderer.isCurrentTile(tile.id) || this._canProceed);
 
         let visible = false;
         let collision = this._getCachedCollision(meshKey, boxIndex);
         //如果不允许proceed，则沿用缓存的 collision
-        if (this._canProceed) {
+        if (boxVisible && canProceed) {
             if (!this._isCachedCollisionStale(meshKey)) {
                 collision = null;
             }
@@ -164,7 +167,7 @@ export default class CollisionPainter extends BasicPainter {
         //     // console.log('湖北', renderer.isCurrentTile(tile.id), collision && collision.collides, stamps[boxIndex]);
         //     console.log('汉阳大道', tile.z, collision && collision.collides, stamps[boxIndex]);
         // }
-        visible = collision && collision.collides === 0;
+        visible = boxVisible && collision && collision.collides === 0;
 
         let fadingOpacity = 1;
         let isFading = false;
@@ -209,12 +212,12 @@ export default class CollisionPainter extends BasicPainter {
         } else {
             stamps[boxIndex] = visible ? 1 : -1;
         }
-        if (/*renderer.isCurrentTile(tile.id) && */this._canProceed && collision && layer.options['debugCollision']) {
+        if (/*renderer.isCurrentTile(tile.id) && */collision && layer.options['debugCollision']) {
             this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
         }
 
         if (visible || isFading) {
-            if (this._canProceed && !symbol[this.propIgnorePlacement] && collision && collision.boxes) {
+            if (canProceed && !symbol[this.propIgnorePlacement] && collision && collision.boxes) {
                 // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
                 //     console.log(renderer.getFrameTimestamp(), meshKey, JSON.stringify(collision.boxes));
                 // }
@@ -229,7 +232,7 @@ export default class CollisionPainter extends BasicPainter {
         //     // console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
         //     console.log(visible, 'level:' + mesh.uniforms.level, boxIndex, fadingOpacity, meshKey);
         // }
-        return visible;
+        return visible && fadingOpacity > 0;
     }
 
     isMeshIterable() {
@@ -522,6 +525,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _prepareZoomEndMeshes() {
+        delete this._zoomingOut;
         const map = this.getMap();
         const zooming = map.isZooming();
         if (!zooming && this._zooming) {

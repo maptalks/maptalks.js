@@ -288,7 +288,7 @@ class LinePainter extends BasicPainter {
                 depth: {
                     enable: true,
                     range: depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || (depthRange ? '<=' : 'always')
+                    func: this.sceneConfig.depthFunc || (depthRange ? '<' : 'always')
                 },
                 blend: {
                     enable: true,
@@ -306,6 +306,13 @@ class LinePainter extends BasicPainter {
                     // },
                     equation: 'add'
                 },
+                polygonOffset: {
+                    enable: true,
+                    offset: {
+                        factor: -(this.pluginIndex + 1),
+                        units: -(this.pluginIndex + 1)
+                    }
+                }
             }
         });
     }

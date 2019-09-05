@@ -182,7 +182,7 @@ export default class TextPainter extends CollisionPainter {
         const fn = (elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex) => {
             // debugger
             const boxCount = (end - start) / 6;
-            const visible = this.updateBoxCollisionFading(mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
+            const visible = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(elements[i]);
@@ -315,12 +315,12 @@ export default class TextPainter extends CollisionPainter {
             // if (!collision || this.isCachedCollisionStale(meshKey)) {
             //     visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
             // }
-            if (!visible || !enableCollision) {
+            if (!enableCollision) {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 return;
             }
             const boxCount = (end - start) / BOX_ELEMENT_COUNT;
-            visible = this.updateBoxCollisionFading(mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
+            visible = this.updateBoxCollisionFading(visible, mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(allElements[i]);

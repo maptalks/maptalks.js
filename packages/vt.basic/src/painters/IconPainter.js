@@ -381,7 +381,7 @@ class IconPainter extends CollisionPainter {
             //     }
             // }
             //icon的element值，是text的element值处于text的char count
-            const visible = this.updateBoxCollisionFading(iconMesh, iconElements, 1, start, end, mvpMatrix, iconIndex);
+            const visible = this.updateBoxCollisionFading(true, iconMesh, iconElements, 1, start, end, mvpMatrix, iconIndex);
 
             if (visible) {
                 if (textMesh) {

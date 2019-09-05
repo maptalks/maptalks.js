@@ -98,12 +98,17 @@ function createFnTypeFeatureIndex(features, aPickingId, property, stopValues) {
     }
     return aIndex;
 }
+
+const EMPTY_ARR = [];
 /**
  * 获取function-type属性中stops中所有的可能的值，即获取下例中的 ['secondary', 'expressway']
  * stops: [['secondary', 1], ['expressway', 2]]
  * @param {Array} stops
  */
 function getFnTypePropertyStopValues(stops) {
+    if (!stops) {
+        return EMPTY_ARR;
+    }
     const stopValues = [];
     for (let i = 0; i < stops.length; i++) {
         if (isFunctionDefinition(stops[i][1]) && !interpolated(stops[i][1]).isZoomConstant) {

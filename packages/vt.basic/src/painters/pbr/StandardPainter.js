@@ -241,16 +241,33 @@ class StandardPainter extends Painter {
                     face: 'back'
                 },
                 stencil: {
-                    enable: false
+                    enable: true,
+                    func: {
+                        cmp: '<=',
+                        ref: (context, props) => {
+                            return props.level;
+                        },
+                        // mask: 0xff
+                    },
+                    opFront: {
+                        fail: 'keep',
+                        zfail: 'keep',
+                        zpass: 'replace'
+                    },
+                    opBack: {
+                        fail: 'keep',
+                        zfail: 'keep',
+                        zpass: 'keep'
+                    }
                 },
-                viewport
-                // polygonOffset: {
-                //     enable: true,
-                //     offset: {
-                //         factor: -100,
-                //         units: -100
-                //     }
-                // }
+                viewport,
+                polygonOffset: {
+                    enable: true,
+                    offset: {
+                        factor: -(this.pluginIndex + 1),
+                        units: -(this.pluginIndex + 1)
+                    }
+                }
             }
         };
 
