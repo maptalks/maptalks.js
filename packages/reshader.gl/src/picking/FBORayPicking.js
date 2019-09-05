@@ -249,9 +249,8 @@ export default class FBORayPicking {
         y = Math.round(y);
 
         const fbo = this._fbo;
-
-        if (x < 0 || x > fbo.width ||
-            y < 0 || y > fbo.height) {
+        if (x <= 2 || x >= fbo.width - 2 ||
+            y <= 2 || y >= fbo.height - 2) {
             return {
                 pickingId : null,
                 meshId : null,
