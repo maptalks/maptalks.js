@@ -1,4 +1,5 @@
 import { vec2, vec3, vec4, mat2, mat4, reshader } from '@maptalks/gl';
+import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
 import { getCharOffset } from './util/get_char_offset';
@@ -82,6 +83,10 @@ export default class TextPainter extends CollisionPainter {
         this._lineFilter0 = shaderLineFilter0.bind(this);
         this._lineFilter1 = shaderLineFilterN.bind(this);
         this.isLabelCollides = isLabelCollides.bind(this);
+        const symbolDef = this.symbolDef;
+        if (isFunctionDefinition(symbolDef['textName'])) {
+            this._textNameFn = interpolated(symbolDef['textName']);
+        }
     }
 
 
@@ -111,10 +116,9 @@ export default class TextPainter extends CollisionPainter {
     }
 
     createMesh(geometry, transform) {
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
         const symbol = this.getSymbol();
 
-        const meshes = createTextMesh(this.regl, geometry, transform, symbol, this._fnTypeConfig, enableCollision);
+        const meshes = createTextMesh(this.regl, geometry, transform, symbol, this._fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
         if (meshes.length) {
             const isLinePlacement = symbol['textPlacement'] === 'line';
             //tags for picking
@@ -189,7 +193,7 @@ export default class TextPainter extends CollisionPainter {
                 }
             }
         };
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        const enableCollision = this.isEnableCollision();
 
         // console.log('meshes数量', meshes.length, '字符数量', meshes.reduce((v, mesh) => {
         //     return v + mesh.geometry.count / BOX_ELEMENT_COUNT;
@@ -304,7 +308,7 @@ export default class TextPainter extends CollisionPainter {
             const out = new Array(line.length);
             line = this._projectLine(out, line, matrix, map.width, map.height);
         }
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        const enableCollision = this.isEnableCollision();
         let visibleElements = enableCollision ? [] : allElements;
 
         this.forEachBox(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
@@ -347,7 +351,8 @@ export default class TextPainter extends CollisionPainter {
     forEachBox(mesh, elements, fn) {
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
-        const { aPickingId, aCount } = mesh.geometry.properties;
+        const { aPickingId, aCount, features } = mesh.geometry.properties;
+        const enableUniquePlacement = this.isEnableUniquePlacement();
 
         let index = 0;
 
@@ -358,6 +363,17 @@ export default class TextPainter extends CollisionPainter {
             idx = elements[i];
             //pickingId发生变化，新的feature出现
             if (aPickingId[idx] !== current || i === elements.length) {
+                const feature = features[current] && features[current].feature;
+                if (enableUniquePlacement && this.isMeshUniquePlaced(mesh) && feature && !feature.label) {
+                    const properties = feature.properties || {};
+                    properties['$layer'] = feature.layer;
+                    properties['$type'] = feature.type;
+                    const textName = this._textNameFn ? this._textNameFn(null, properties) : this.getSymbol()['textName'];
+                    const label = resolveText(textName, properties);
+                    delete properties['$layer'];
+                    delete properties['$type'];
+                    feature.label = label;
+                }
                 const end = i/*  === elements.length - 6 ? elements.length : i */;
                 const charCount = aCount[elements[start]];
                 for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
@@ -371,7 +387,7 @@ export default class TextPainter extends CollisionPainter {
 
     // start and end is the start and end index of a label
     _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix, labelIndex) {
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        const enableCollision = this.isEnableCollision();
         const map = this.getMap();
         const geometry = mesh.geometry;
         const positionSize = geometry.desc.positionSize;

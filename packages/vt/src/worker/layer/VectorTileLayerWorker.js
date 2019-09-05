@@ -40,8 +40,8 @@ export default class VectorTileLayerWorker extends LayerWorker {
                         feature = tile.layers[layer].feature(i);
 
                         types[feature.type] = 1;
-                        feature.properties['$layer'] = layer;
-                        feature.properties['$type'] = feature.type;
+                        // feature.properties['$layer'] = layer;
+                        // feature.properties['$type'] = feature.type;
                         features.push({
                             type : feature.type,
                             layer : layer,

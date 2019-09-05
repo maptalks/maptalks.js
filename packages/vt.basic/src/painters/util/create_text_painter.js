@@ -28,7 +28,7 @@ const DEFAULT_UNIFORMS = {
 
 export { DEFAULT_UNIFORMS, GAMMA_SCALE };
 
-export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision) {
+export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision, enableUniquePlacement) {
     const meshes = [];
 
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
@@ -48,7 +48,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
 
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
-        prepareGeometry(geometry, enableCollision);
+        prepareGeometry(geometry, enableCollision || enableUniquePlacement);
         const { aTextSize, aTextDx, aTextDy } = geometry.data;
         if (aTextSize) {
             //for collision

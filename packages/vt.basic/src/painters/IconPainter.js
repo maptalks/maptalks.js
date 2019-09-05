@@ -194,10 +194,9 @@ class IconPainter extends CollisionPainter {
                 const mesh = iconMesh = this._createIconMesh(geometries[i], transform);
                 if (mesh) meshes.push(mesh);
             } else if (geometry.properties.glyphAtlas) {
-                const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
                 const symbol = this.getSymbol();
                 this.symbolDef['isIconText'] = symbol['isIconText'] = true;
-                const mesh = textMesh = createTextMesh(this.regl, geometry, transform, symbol, this._textFnTypeConfig, enableCollision);
+                const mesh = textMesh = createTextMesh(this.regl, geometry, transform, symbol, this._textFnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
                 if (mesh.length) meshes.push(...mesh);
             }
         }
@@ -208,7 +207,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _createIconMesh(geometry, transform) {
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        const enableCollision = this.isEnableCollision();
         if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
             return null;
         }
@@ -224,7 +223,7 @@ class IconPainter extends CollisionPainter {
         };
 
         //!geometry.properties.aAnchor 以避免重复创建collision数据
-        if (enableCollision && !geometry.properties.aAnchor) {
+        if ((enableCollision || this.isEnableUniquePlacement()) && !geometry.properties.aAnchor) {
             const { aPosition, aShape } = geometry.data;
             const vertexCount = geometry.data.aPosition.length / geometry.desc.positionSize;
             //initialize opacity array
@@ -357,8 +356,7 @@ class IconPainter extends CollisionPainter {
      * @param {Number} timestamp
      */
     _updateIconCollision(/* timestamp */) {
-        const enableCollision = this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
-        if (!enableCollision) {
+        if (!this.isEnableCollision()) {
             return;
         }
         let meshes = this.scene.getMeshes();
@@ -446,7 +444,7 @@ class IconPainter extends CollisionPainter {
     setCollisionOpacity(mesh, allElements, value, start, end, boxIndex) {
         super.setCollisionOpacity(mesh, allElements, value, start, end);
         const textMesh = mesh._textMesh;
-        if (textMesh) {
+        if (textMesh && mesh.geometry.properties.labelIndex) {
             //icon and text
             const textElements = textMesh.geometry.properties.elements;
             const [textStart, textEnd] = mesh.geometry.properties.labelIndex[boxIndex];
@@ -811,8 +809,13 @@ class IconPainter extends CollisionPainter {
                 return;
             }
             const pickingId = aPickingId[idx];
-            const feature = features[pickingId];
-            const textSize = (this._textSizeFn ? this._textSizeFn(zoom, feature ? feature.feature ? feature.feature.properties : null : null) : textSizeDef) / GLYPH_SIZE;
+            const feature = features[pickingId] && features[pickingId].feature;
+            const properties = feature && feature.properties || {};
+            properties['$layer'] = feature && feature.layer;
+            properties['$type'] = feature && feature.layer;
+            const textSize = (this._textSizeFn ? this._textSizeFn(zoom, properties) : textSizeDef) / GLYPH_SIZE;
+            delete properties['$layer'];
+            delete properties['$type'];
             if (aMarkerWidth && hasWidth) {
                 //除以10是因为为了增加精度，shader中的aShape乘以了10
                 const width = Math.abs((maxx - minx) / 10 * textSize) + (padding[0] || 0) * 2;
@@ -946,8 +949,13 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
                 return labelIndex;
             }
         }
-        const feature = features[pickingId];
-        const textFit = markerTextFitFn ? markerTextFitFn(null, feature && feature.feature && feature.feature.properties) : markerTextFit;
+        const feature = features[pickingId] && features[pickingId].feature;
+        const properties = feature && feature.properties || {};
+        properties['$layer'] = feature && feature.layer;
+        properties['$type'] = feature && feature.type;
+        const textFit = markerTextFitFn ? markerTextFitFn(null, properties) : markerTextFit;
+        delete properties['$layer'];
+        delete properties['$type'];
         if (currentLabel && pickingId === currentLabel.pickingId) {
             labelIndex[count++] = [currentLabel.start, currentLabel.end];
             const start = currentLabel.end;

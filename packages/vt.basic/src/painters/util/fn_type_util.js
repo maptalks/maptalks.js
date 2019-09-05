@@ -68,7 +68,7 @@ export function updateGeometryFnTypeAttrib(config, meshes) {
 
 function isFnTypeFeature(feature, property, stopValues) {
     for (let i = 0; i < stopValues.length; i++) {
-        if (property[0] === '$' && feature[property.substring(0)] === stopValues[i] ||
+        if (property[0] === '$' && feature[property.substring(1)] === stopValues[i] ||
             feature.properties[property] === stopValues[i]) {
             return true;
         }
@@ -134,8 +134,12 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
         const start = aIndex[i];
         const end = aIndex[i + 1];
         const feature = features[aPickingId[start]];
-        const properties = feature ? feature.feature ? feature.feature.properties : null : null;
+        const properties = feature && feature.feature && feature.feature.properties || {};
+        properties['$layer'] = feature && feature.feature && feature.feature.layer;
+        properties['$type'] = feature && feature.feature && feature.feature.type;
         const value = evaluate(properties, arr[start * len]);
+        delete properties['$layer'];
+        delete properties['$type'];
         if (Array.isArray(value)) {
             let dirty = false;
             for (let ii = 0; ii < len; ii++) {

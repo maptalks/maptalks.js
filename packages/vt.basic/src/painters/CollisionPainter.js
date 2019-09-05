@@ -653,6 +653,10 @@ export default class CollisionPainter extends BasicPainter {
         }*/
     }
 
+    isEnableCollision() {
+        return this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+    }
+
     isEnableUniquePlacement() {
         return this.sceneConfig['uniquePlacement'] !== false;
     }

@@ -214,7 +214,12 @@ export default class VectorPack {
         let maxFeaIndex = 0;
         for (let i = 0, l = vectors.length; i < l; i++) {
             const eleCount = data.length;
+            const properties = vectors[i].feature && vectors[i].feature.properties;
+            properties['$layer'] = vectors[i].feature.layer;
+            properties['$type'] = vectors[i].feature.type;
             this.placeVector(vectors[i], scale, formatWidth);
+            delete properties['$layer'];
+            delete properties['$type'];
             const count = (data.length - eleCount) / formatWidth;
             //fill feature index of every data
             for (let ii = 0; ii < count; ii++) {

@@ -96,8 +96,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             const types = layers[layerId].types;
             types[feature.type] = 1;
             feature.tags = feature.tags || {};
-            feature.tags['$layer'] = layerId;
-            feature.tags['$type'] = feature.type;
+            // feature.tags['$layer'] = layerId;
+            // feature.tags['$type'] = feature.type;
             features.push({
                 type: feature.type,
                 layer: layerId,
