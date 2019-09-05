@@ -493,17 +493,20 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             stencilRenderer = this._stencilRenderer = new TileStencilRenderer(this.regl, this.canvas, this.getMap());
         }
         stencilRenderer.start();
-        const { tiles, parentTiles, childTiles } = this._stencilTiles;
+        const { tiles } = this._stencilTiles;
+        let { parentTiles, childTiles } = this._stencilTiles;
         let ref = 1;
+        childTiles = childTiles.sort(sortByLevel);
         for (let i = 0; i < childTiles.length; i++) {
             this._addTileStencil(childTiles[i].info, ref);
             ref++;
         }
+        parentTiles = parentTiles.sort(sortByLevel);
         for (let i = 0; i < parentTiles.length; i++) {
             this._addTileStencil(parentTiles[i].info, ref);
             ref++;
         }
-        for (let i = 0; i < tiles.length; i++) {
+        for (let i = tiles.length - 1; i >= 0; i--) {
             this._addTileStencil(tiles[i].info, ref);
             ref++;
         }
@@ -953,4 +956,9 @@ function copyTileData(data) {
     const tileData = extend({}, data);
     tileData.data = arrays;
     return tileData;
+}
+
+//z小的排在后面
+function sortByLevel(m0, m1) {
+    return m1.info.z - m0.info.z;
 }
