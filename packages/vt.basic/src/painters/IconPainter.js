@@ -308,8 +308,9 @@ class IconPainter extends CollisionPainter {
                 this._updateMarkerFitSize(geometry);
             }
         }
-        updateGeometryFnTypeAttrib(this._textFnTypeConfig, meshes);
-        updateGeometryFnTypeAttrib(this._iconFnTypeConfig, meshes);
+        const z = this.getMap().getZoom();
+        updateGeometryFnTypeAttrib(this._textFnTypeConfig, meshes, z);
+        updateGeometryFnTypeAttrib(this._iconFnTypeConfig, meshes, z);
 
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;

@@ -72,7 +72,7 @@ class FillPainter extends BasicPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes);
+        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
     _getFnTypeConfig() {

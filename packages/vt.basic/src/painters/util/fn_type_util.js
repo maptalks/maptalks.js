@@ -44,7 +44,7 @@ export function prepareFnTypeData(geometry, features, symbolDef, config) {
  * @param {Object} config
  * @param {Array} meshes
  */
-export function updateGeometryFnTypeAttrib(config, meshes) {
+export function updateGeometryFnTypeAttrib(config, meshes, z) {
     for (let c = 0; c < config.length; c++) {
         const { attrName, evaluate } = config[c];
         for (let i = 0; i < meshes.length; i++) {
@@ -61,7 +61,11 @@ export function updateGeometryFnTypeAttrib(config, meshes) {
             if (!aPickingId || !aIndex) {
                 continue;
             }
+            if (geometry._fnDataZoom === z) {
+                continue;
+            }
             updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
+            geometry._fnDataZoom = z;
         }
     }
 }
@@ -133,13 +137,20 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
     for (let i = 0; i < l; i += 2) {
         const start = aIndex[i];
         const end = aIndex[i + 1];
-        const feature = features[aPickingId[start]];
-        const properties = feature && feature.feature && feature.feature.properties || {};
-        properties['$layer'] = feature && feature.feature && feature.feature.layer;
-        properties['$type'] = feature && feature.feature && feature.feature.type;
+        let feature = features[aPickingId[start]];
+        if (!feature || !feature.feature) {
+            continue;
+        }
+        feature = feature.feature;
+        const properties = feature.properties || {};
+        if (properties['$layer'] === undefined) {
+            if (!feature.properties) {
+                feature.properties = properties;
+            }
+            properties['$layer'] = feature.layer;
+            properties['$type'] = feature.type;
+        }
         const value = evaluate(properties, arr[start * len]);
-        delete properties['$layer'];
-        delete properties['$type'];
         if (Array.isArray(value)) {
             let dirty = false;
             for (let ii = 0; ii < len; ii++) {

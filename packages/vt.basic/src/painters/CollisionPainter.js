@@ -705,7 +705,20 @@ export default class CollisionPainter extends BasicPainter {
         if (!this.isEnableUniquePlacement()) {
             return;
         }
+        let changed = !this._mergedMeshes;
+        if (!changed) {
+            for (let i = 0; i < meshes.length; i++) {
+                if (!this._mergedMeshes[meshes[i].properties.meshKey]) {
+                    changed = true;
+                    break;
+                }
+            }
+        }
+        if (!changed) {
+            return;
+        }
         this._replacedPlacements = {};
+        this._mergedMeshes = {};
         meshes = meshes.sort(sortByLevel);
         const scale = this.getMap().getGLScale();
         const allPlacements = {};
@@ -713,16 +726,16 @@ export default class CollisionPainter extends BasicPainter {
         // const keys = [];
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
+            const { meshKey } = mesh.properties;
+            this._mergedMeshes[meshKey] = 1;
             const { uniquePlacements } = mesh.geometry.properties;
             if (!uniquePlacements) {
                 continue;
             }
-
             for (let j = 0; j < uniquePlacements.length; j++) {
                 if (!uniquePlacements[j]) {
                     continue;
                 }
-                const meshKey = mesh.properties.meshKey;
                 const { key, index/*, start*/ } = uniquePlacements[j];
                 const stamps = this._getBoxTimestamps(meshKey);
 
@@ -809,7 +822,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 }
 
-const UNIQUE_TOLERANCE = 8;
+const UNIQUE_TOLERANCE = 12;
 function getUniqueKey(key, scale) {
     return Math.round(key[0] / scale / UNIQUE_TOLERANCE) * Math.round(key[1] / scale / UNIQUE_TOLERANCE) *
         (key[2] ? Math.round(key[2] / UNIQUE_TOLERANCE) : 1) + '-' + key[3];

@@ -506,6 +506,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._addTileStencil(parentTiles[i].info, ref);
             ref++;
         }
+        //默认情况下瓦片是按照level从小到大排列的，所以倒序排列，让level较小的tile最后画（优先级最高）
         for (let i = tiles.length - 1; i >= 0; i--) {
             this._addTileStencil(tiles[i].info, ref);
             ref++;
