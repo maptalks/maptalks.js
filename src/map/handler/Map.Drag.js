@@ -132,7 +132,7 @@ class MapDragHandler extends Handler {
 
         this._clear();
 
-        if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map.getCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
+        if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map._getPrjCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
             t = 5 * t * (Math.abs(dx) + Math.abs(dy)) / 500;
             map.panBy(new Point(dx, dy), { 'duration' : t });
         } else {

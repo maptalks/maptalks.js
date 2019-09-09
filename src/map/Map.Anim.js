@@ -55,13 +55,19 @@ Map.include(/** @lends Map.prototype */{
             props = {};
         let empty = true;
         for (const p in view) {
-            if (hasOwn(view, p) && !isNil(currView[p])) {
+            if (hasOwn(view, p) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
                     const from = new Coordinate(currView[p]).toFixed(7),
-                        to = new Coordinate(view[p]).toFixed(7);
+                        to = (view[p] instanceof Coordinate) ? view[p] : new Coordinate(view[p]).toFixed(7);
                     if (!from.equals(to)) {
                         props['center'] = [from, to];
+                    }
+                } else if (p === 'prjCenter') {
+                    const from = this._getPrjCenter();
+                    const to = (view[p] instanceof Coordinate) ? view[p] : new Coordinate(view[p]);
+                    if (!from.equals(to)) {
+                        props['prjCenter'] = [from, to];
                     }
                 } else if (currView[p] !== view[p] && p !== 'around') {
                     props[p] = [currView[p], view[p]];
@@ -98,6 +104,10 @@ Map.include(/** @lends Map.prototype */{
                     const center = frame.styles['center'];
                     this._setPrjCenter(projection.project(center));
                     this.onMoving(this._parseEventFromCoord(this.getCenter()));
+                } else if (frame.styles['prjCenter']) {
+                    const center = frame.styles['prjCenter'];
+                    this._setPrjCenter(center);
+                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
                 }
                 if (!isNil(frame.styles['zoom'])) {
                     this.onZooming(frame.styles['zoom'], zoomOrigin);
@@ -122,6 +132,8 @@ Map.include(/** @lends Map.prototype */{
                 if (!player._interupted) {
                     if (props['center']) {
                         this._setPrjCenter(projection.project(props['center'][1]));
+                    } else if (props['prjCenter']) {
+                        this._setPrjCenter(props['prjCenter'][1]);
                     }
                     if (!isNil(props['pitch'])) {
                         this.setPitch(props['pitch'][1]);
@@ -185,6 +197,16 @@ Map.include(/** @lends Map.prototype */{
                 endCoord = props['center'][1];
             }
             this.onMoveEnd(this._parseEventFromCoord(endCoord));
+        } else if (props['prjCenter']) {
+            let endCoord;
+            if (player._interupted) {
+                endCoord = this._getPrjCenter();
+            } else {
+                endCoord = props['prjCenter'][1];
+            }
+            const event = this._parseEventFromCoord(this.getProjection().unproject(endCoord));
+            event['point2d'] = this._prjToPoint(endCoord);
+            this.onMoveEnd(event);
         }
         if (!isNil(props['zoom'])) {
             if (player._interupted) {
