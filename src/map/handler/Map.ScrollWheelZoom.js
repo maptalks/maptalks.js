@@ -146,7 +146,7 @@ class MapScrollWheelZoomHandler extends Handler {
             this._startZoom = map.getZoom();
         }
         const duration = 90;
-        map.animateTo({
+        map._animateTo({
             'zoom' : nextZoom - this._delta * 1 / 2,
             'around' : this._origin
         }, {
@@ -162,7 +162,7 @@ class MapScrollWheelZoomHandler extends Handler {
                 //finish zooming if target zoom hits min/max
                 nextZoom === map.getMaxZoom() || nextZoom === map.getMinZoom()) {
 
-                map.animateTo({
+                map._animateTo({
                     'zoom' : nextZoom,
                     'around' : this._origin
                 }, {

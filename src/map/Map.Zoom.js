@@ -41,7 +41,7 @@ Map.include(/** @lends Map.prototype */{
         const endScale = this._getResolution(this._startZoomVal) / this._getResolution(nextZoom);
         const duration = this.options['zoomAnimationDuration'] * Math.abs(endScale - startScale) / Math.abs(endScale - 1);
         this._frameZoom = this._startZoomVal;
-        this.animateTo({
+        this._animateTo({
             'zoom' : nextZoom,
             'around' : origin
         }, {

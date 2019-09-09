@@ -877,7 +877,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
         const center = extent.getCenter();
         if (typeof (options['animation']) === 'undefined' || options['animation'])
-            return this.animateTo({
+            return this._animateTo({
                 center,
                 zoom
             }, {

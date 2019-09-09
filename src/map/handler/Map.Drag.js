@@ -59,7 +59,7 @@ class MapDragHandler extends Handler {
         } else if (this.target.options['dragPan']) {
             this._mode = 'move';
         }
-        this.target._stopAnim(this.target._animPlayer);
+        this.target._stopAnim(this.target._mapAnimPlayer);
         preventDefault(param['domEvent']);
     }
 
@@ -207,7 +207,7 @@ class MapDragHandler extends Handler {
         map.onDragRotateEnd(param);
         if (Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
             const bearing = map.getBearing();
-            map.animateTo({
+            map._animateTo({
                 'bearing' : bearing + this._db / 2
             }, {
                 'easing'  : 'out',
