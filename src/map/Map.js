@@ -439,7 +439,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         center = new Coordinate(center);
-        if (!this._verifyExtent(center)) {
+        const projection = this.getProjection();
+        const pcenter = projection.project(center);
+        if (!this._verifyExtent(pcenter)) {
             return this;
         }
         if (!this._loaded) {
@@ -447,9 +449,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         this.onMoveStart();
-        const projection = this.getProjection();
-        const _pcenter = projection.project(center);
-        this._setPrjCenter(_pcenter);
+        this._setPrjCenter(pcenter);
         this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
         return this;
     }
@@ -538,12 +538,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (extent) {
             const maxExt = new Extent(extent, this.getProjection());
             this.options['maxExtent'] = maxExt;
-            const center = this.getCenter();
-            if (!this._verifyExtent(center)) {
-                this.panTo(maxExt.getCenter());
+            if (!this._verifyExtent(this._getPrjCenter())) {
+                this._panTo(this._prjMaxExtent().getCenter());
             }
+            const projection = this.getProjection();
+            this._prjMaxExtent = maxExt.convertTo(c => projection.project(c));
         } else {
             delete this.options['maxExtent'];
+            delete this._prjMaxExtent;
         }
         return this;
     }
@@ -875,7 +877,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
         const center = extent.getCenter();
         if (typeof (options['animation']) === 'undefined' || options['animation'])
-            return this.animateTo({
+            return this._animateTo({
                 center,
                 zoom
             }, {
@@ -1428,7 +1430,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @fires Map#movestart
      */
     onMoveStart(param) {
-        this._originCenter = this.getCenter();
+        this._originCenter = this._getPrjCenter();
         this._moving = true;
         this._trySetCursor('move');
         /**
@@ -1475,12 +1477,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
-        if (!this._verifyExtent(this.getCenter())) {
+        if (!this._verifyExtent(this._getPrjCenter())) {
             let moveTo = this._originCenter;
             if (!this._verifyExtent(moveTo)) {
                 moveTo = this.getMaxExtent().getCenter();
             }
-            this.panTo(moveTo);
+            this._panTo(moveTo);
         }
     }
 
@@ -1842,15 +1844,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
-    _verifyExtent(center) {
-        if (!center) {
+    _verifyExtent(prjCenter) {
+        if (!prjCenter) {
             return false;
         }
-        const maxExt = this.getMaxExtent();
+        const maxExt = this._prjMaxExtent;
         if (!maxExt) {
             return true;
         }
-        return maxExt.contains(center);
+        return maxExt.contains(prjCenter);
     }
 
     /**

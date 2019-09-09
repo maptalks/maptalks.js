@@ -53,9 +53,11 @@ describe('#MapPan', function () {
     });
 
     it('panBy without animation', function (done) {
-        var offset = { x: 20, y: 20 };
+        map.setBearing(90);
+        var offset = { x: 20, y: 0 };
         map.once('moveend', function () {
-            expect(map.getCenter()).not.to.be.eql(center);
+            expect(+map.getCenter().x.toFixed(6)).to.be.eql(center.x);
+            expect(map.getCenter().y).not.to.be.eql(center.y);
             done();
         });
         map.panBy(offset, { 'animation' : false });

@@ -59,7 +59,7 @@ class MapDragHandler extends Handler {
         } else if (this.target.options['dragPan']) {
             this._mode = 'move';
         }
-        this.target._stopAnim(this.target._animPlayer);
+        this.target._stopAnim(this.target._mapAnimPlayer);
         preventDefault(param['domEvent']);
     }
 
@@ -132,7 +132,7 @@ class MapDragHandler extends Handler {
 
         this._clear();
 
-        if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map.getCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
+        if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map._getPrjCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
             t = 5 * t * (Math.abs(dx) + Math.abs(dy)) / 500;
             map.panBy(new Point(dx, dy), { 'duration' : t });
         } else {
@@ -207,7 +207,7 @@ class MapDragHandler extends Handler {
         map.onDragRotateEnd(param);
         if (Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
             const bearing = map.getBearing();
-            map.animateTo({
+            map._animateTo({
                 'bearing' : bearing + this._db / 2
             }, {
                 'easing'  : 'out',

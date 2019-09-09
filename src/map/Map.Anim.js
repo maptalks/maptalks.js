@@ -4,20 +4,20 @@ import Point from '../geo/Point';
 import Map from './Map';
 import { isNil, isFunction, hasOwn } from '../core/util';
 
-function equalView(view1, view2) {
-    for (const p in view1) {
-        if (hasOwn(view1, p)) {
-            if (p === 'center') {
-                if (view1[p][0] !== view2[p][0] || view1[p][1] !== view2[p][1]) {
-                    return false;
-                }
-            } else if (view1[p] !== view2[p]) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
+// function equalView(view1, view2) {
+//     for (const p in view1) {
+//         if (hasOwn(view1, p)) {
+//             if (p === 'center') {
+//                 if (view1[p][0] !== view2[p][0] || view1[p][1] !== view2[p][1]) {
+//                     return false;
+//                 }
+//             } else if (view1[p] !== view2[p]) {
+//                 return false;
+//             }
+//         }
+//     }
+//     return true;
+// }
 
 Map.include(/** @lends Map.prototype */{
 
@@ -45,7 +45,7 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map}         this
      */
     animateTo(view, options = {}, step) {
-        this._stopAnim(this._animPlayer);
+        // this._stopAnim(this._animPlayer);
         if (isFunction(options)) {
             step = options;
             options = {};
@@ -55,13 +55,19 @@ Map.include(/** @lends Map.prototype */{
             props = {};
         let empty = true;
         for (const p in view) {
-            if (hasOwn(view, p) && !isNil(currView[p])) {
+            if (hasOwn(view, p) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
                     const from = new Coordinate(currView[p]).toFixed(7),
                         to = new Coordinate(view[p]).toFixed(7);
                     if (!from.equals(to)) {
                         props['center'] = [from, to];
+                    }
+                } else if (p === 'prjCenter') {
+                    const from = new Coordinate(this._getPrjCenter());
+                    const to = new Coordinate(view[p]);
+                    if (!from.equals(to)) {
+                        props['prjCenter'] = [from, to];
                     }
                 } else if (currView[p] !== view[p] && p !== 'around') {
                     props[p] = [currView[p], view[p]];
@@ -71,8 +77,17 @@ Map.include(/** @lends Map.prototype */{
         if (empty) {
             return null;
         }
+        if (this._animPlayer) {
+            if (this._isInternalAnimation) {
+                this._animPlayer.pause();
+                this._prevAnimPlayer = this._animPlayer;
+            } else {
+                delete this._prevAnimPlayer;
+                this._stopAnim(this._animPlayer);
+            }
+        }
         const zoomOrigin = view['around'] || new Point(this.width / 2, this.height / 2);
-        let preView = this.getView();
+        // let preView = this.getView();
         const renderer = this._getRenderer(),
             framer = function (fn) {
                 renderer.callInNextFrame(fn);
@@ -88,15 +103,19 @@ Map.include(/** @lends Map.prototype */{
                 return;
             }
             if (player.playState === 'running') {
-                const view = this.getView();
-                if (!options['continueOnViewChanged'] && !equalView(view, preView)) {
-                    // map's view is updated by another operation, animation should stop
-                    this._stopAnim(player);
-                    return;
-                }
+                // const view = this.getView();
+                // if (!options['continueOnViewChanged'] && !equalView(view, preView)) {
+                //     // map's view is updated by another operation, animation should stop
+                //     this._stopAnim(player);
+                //     return;
+                // }
                 if (frame.styles['center']) {
                     const center = frame.styles['center'];
                     this._setPrjCenter(projection.project(center));
+                    this.onMoving(this._parseEventFromCoord(this.getCenter()));
+                } else if (frame.styles['prjCenter']) {
+                    const center = frame.styles['prjCenter'];
+                    this._setPrjCenter(center);
                     this.onMoving(this._parseEventFromCoord(this.getCenter()));
                 }
                 if (!isNil(frame.styles['zoom'])) {
@@ -108,7 +127,7 @@ Map.include(/** @lends Map.prototype */{
                 if (!isNil(frame.styles['bearing'])) {
                     this.setBearing(frame.styles['bearing']);
                 }
-                preView = this.getView();
+                // preView = this.getView();
                 /**
                  * fired when map is animating.  (panning, zooming, rotating)
                  *
@@ -122,6 +141,8 @@ Map.include(/** @lends Map.prototype */{
                 if (!player._interupted) {
                     if (props['center']) {
                         this._setPrjCenter(projection.project(props['center'][1]));
+                    } else if (props['prjCenter']) {
+                        this._setPrjCenter(props['prjCenter'][1]);
                     }
                     if (!isNil(props['pitch'])) {
                         this.setPitch(props['pitch'][1]);
@@ -131,7 +152,7 @@ Map.include(/** @lends Map.prototype */{
                     }
                 }
                 this._endAnim(player, props, zoomOrigin, options);
-                preView = this.getView();
+                // preView = this.getView();
             }
             if (step) {
                 step(frame);
@@ -141,6 +162,13 @@ Map.include(/** @lends Map.prototype */{
         this._startAnim(props, zoomOrigin);
 
         return player;
+    },
+
+    _animateTo(view, options = {}, step) {
+        this._isInternalAnimation = true;
+        this._mapAnimPlayer = this.animateTo(view, options, step);
+        delete this._isInternalAnimation;
+        return this._mapAnimPlayer;
     },
 
     /**
@@ -177,6 +205,9 @@ Map.include(/** @lends Map.prototype */{
         if (player === this._animPlayer) {
             delete this._animPlayer;
         }
+        if (player === this._mapAnimPlayer) {
+            delete this._mapAnimPlayer;
+        }
         if (props['center']) {
             let endCoord;
             if (player._interupted) {
@@ -185,6 +216,16 @@ Map.include(/** @lends Map.prototype */{
                 endCoord = props['center'][1];
             }
             this.onMoveEnd(this._parseEventFromCoord(endCoord));
+        } else if (props['prjCenter']) {
+            let endCoord;
+            if (player._interupted) {
+                endCoord = this._getPrjCenter();
+            } else {
+                endCoord = props['prjCenter'][1];
+            }
+            const event = this._parseEventFromCoord(this.getProjection().unproject(endCoord));
+            event['point2d'] = this._prjToPoint(endCoord);
+            this.onMoveEnd(event);
         }
         if (!isNil(props['zoom'])) {
             if (player._interupted) {
@@ -202,6 +243,10 @@ Map.include(/** @lends Map.prototype */{
             //https://github.com/maptalks/maptalks.js/issues/732
             //fix blank map when pitch changes to 0
             this.getRenderer().setToRedraw();
+        }
+        if (this._prevAnimPlayer) {
+            this._animPlayer = this._prevAnimPlayer;
+            this._prevAnimPlayer.play();
         }
     },
 
@@ -231,9 +276,22 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _stopAnim(player) {
-        if (player && player.playState !== 'finished') {
+        if (!player) {
+            return;
+        }
+        if (player.playState !== 'finished') {
             player._interupted = true;
-            player.finish();
+            player.cancel();
+        }
+        if (player === this._animPlayer && this._prevAnimPlayer) {
+            this._animPlayer = this._prevAnimPlayer;
+            this._prevAnimPlayer.play();
+        }
+        if (player === this._animPlayer) {
+            delete this._animPlayer;
+        }
+        if (player === this._mapAnimPlayer) {
+            delete this._mapAnimPlayer;
         }
     }
 });

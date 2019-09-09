@@ -90,7 +90,7 @@ Map.include(/** @lends Map.prototype */ {
     _zoomToView(view, options) {
         const old = this.getView();
         if (options['animation']) {
-            this.animateTo(view, {
+            this._animateTo(view, {
                 'duration' : options['duration']
             }, frame => {
                 if (frame.state.playState === 'finished') {

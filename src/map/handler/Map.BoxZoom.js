@@ -45,7 +45,7 @@ class MapBoxZoomHander extends Handler {
 
         const extent = new Extent(center, map.locateByPoint(center, w, h), map.getProjection());
         const zoom = map.getFitZoom(extent);
-        map.animateTo({
+        map._animateTo({
             center : extent.getCenter(),
             zoom : zoom
         });

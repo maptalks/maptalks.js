@@ -404,18 +404,18 @@ describe('Map.Spec', function () {
             var extent = map.getExtent();
             map.setMaxExtent(extent);
             map.setZoom(map.getZoom() - 3, { animation : false });
+            map.once('animateend', function () {
+                expect(map.getCenter().toArray()).not.to.be.eql(center);
+                map.once('moveend', function () {
+                    expect(map.getCenter().toArray()).to.be.eql(center);
+                    done();
+                });
+            });
             map.animateTo({
                 zoom : map.getZoom()  - 2,
                 around : map.getContainerExtent().getMax()
             }, {
-                duration : 120
-            });
-            map.once('animateend', function () {
-                expect(map.getCenter().toArray()).not.to.be.eql(center);
-                map.on('moveend', function () {
-                    expect(map.getCenter().toArray()).to.be.eql(center);
-                    done();
-                });
+                duration : 30
             });
         });
     });
