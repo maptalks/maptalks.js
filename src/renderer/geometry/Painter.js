@@ -498,7 +498,8 @@ class Painter extends Class {
 
     _prepareShadow(ctx, symbol) {
         if (symbol['shadowBlur']) {
-            ctx.shadowBlur = symbol['shadowBlur'];
+            //Ignore shadows when hit detection
+            ctx.shadowBlur = (this.isHitTesting() ? 0 : symbol['shadowBlur']);
             ctx.shadowColor = symbol['shadowColor'] || '#000';
             ctx.shadowOffsetX = symbol['shadowOffsetX'] || 0;
             ctx.shadowOffsetY = symbol['shadowOffsetY'] || 0;

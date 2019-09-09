@@ -5,6 +5,7 @@ import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
 import Map from '../../map/Map';
+import VectorLayer from './../../layer/VectorLayer';
 
 /**
  * @classdesc
@@ -209,9 +210,9 @@ class MapCanvasRenderer extends MapRenderer {
             renderer.render(framestamp);
         } else if (renderer.drawOnInteracting &&
             (layer === map.getBaseLayer() || inTime ||
-            map.isZooming() && layer.options['forceRenderOnZooming'] ||
-            map.isMoving() && layer.options['forceRenderOnMoving'] ||
-            map.isRotating() && layer.options['forceRenderOnRotating'])
+                map.isZooming() && layer.options['forceRenderOnZooming'] ||
+                map.isMoving() && layer.options['forceRenderOnMoving'] ||
+                map.isRotating() && layer.options['forceRenderOnRotating'])
         ) {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
@@ -415,7 +416,7 @@ class MapCanvasRenderer extends MapRenderer {
         this._cancelFrameLoop();
     }
 
-    hitDetect(point) {
+    hitDetect(point, coordinate) {
         const map = this.map;
         if (!map || !map.options['hitDetect'] || map.isInteracting()) {
             return;
@@ -424,6 +425,7 @@ class MapCanvasRenderer extends MapRenderer {
         let cursor = 'default';
         const limit = map.options['hitDetectLimit'] || 0;
         let counter = 0;
+        let isHit = false;
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             if (layer.isEmpty && layer.isEmpty()) {
@@ -436,8 +438,25 @@ class MapCanvasRenderer extends MapRenderer {
             if (renderer.isBlank && renderer.isBlank()) {
                 continue;
             }
+            // renderer.hitDetect(point)) .  This can't ignore the shadows.
             if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
-                cursor = layer.options['cursor'] || 'pointer';
+                //VectorLayer Hit detection
+                if (layer instanceof VectorLayer) {
+                    map.identify({
+                        coordinate,
+                        layers: [layer]
+                    }, (geos) => {
+                        if (geos && geos.length) {
+                            cursor = layer.options['cursor'] || 'pointer';
+                            isHit = true;
+                        }
+                    })
+                } else {
+                    // Other layers retain the original logic
+                    isHit = true;
+                }
+            }
+            if (isHit) {
                 break;
             }
             counter++;
@@ -803,7 +822,7 @@ class MapCanvasRenderer extends MapRenderer {
             cancelAnimFrame(this._hitDetectFrame);
         }
         this._hitDetectFrame = requestAnimFrame(() => {
-            this.hitDetect(param['containerPoint']);
+            this.hitDetect(param['containerPoint'], param['coordinate']);
         });
     }
 
