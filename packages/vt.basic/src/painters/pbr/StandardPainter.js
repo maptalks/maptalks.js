@@ -64,7 +64,7 @@ class StandardPainter extends Painter {
             mesh.setLocalTransform(mesh.properties.tileTransform);
         }
         if (mesh.material !== this.material) {
-            mesh.material = this.material;
+            mesh.setMaterial(this.material);
         }
         this.scene.addMesh(mesh);
         if (this._shadowScene) {
@@ -114,15 +114,9 @@ class StandardPainter extends Painter {
     }
 
     updateSceneConfig(config) {
-        const keys = Object.keys(config);
-        if (keys.length === 1 && keys[0] === 'material') {
-            this.sceneConfig.material = config.material;
-            this._updateMaterial();
-        } else {
-            extend(this.sceneConfig, config);
-            this.init();
-            this.setToRedraw();
-        }
+        extend(this.sceneConfig, config);
+        this.init();
+        this.setToRedraw();
     }
 
     startFrame() {
@@ -404,6 +398,9 @@ class StandardPainter extends Painter {
 
     _initCubeLight() {
         const config = this.sceneConfig.lights && this.sceneConfig.lights.ambient && this.sceneConfig.lights.ambient.resource;
+        if (config === undefined) {
+            return;
+        }
         if (isNumber(config)) {
             //从图层的全局resources中读取
             const { resource } = this.layer.getStyleResource(config);
@@ -482,23 +479,33 @@ class StandardPainter extends Painter {
     _getLightUniforms() {
         const iblMaps = this.iblMaps;
         const lightConfig = this.sceneConfig.lights;
-
         const aperture = lightConfig.camera.aperture || 16; //光圈
         const speed = lightConfig.camera.speed || 1 / 125; //快门速度
         const iso = lightConfig.camera.iso || 100; //iso感光度
         const ev100 = computeEV100(aperture, speed, iso);
-        //TODO prefilter_cube_size被固定为512，直接计算mipLevel
-        const mipLevel = Math.log(512) / Math.log(2);
-        const uniforms = {
-            'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
-            'light_iblDFG': iblMaps.dfgLUT,
-            'light_iblSpecular': iblMaps.prefilterMap,
-            'iblSH': iblMaps.sh,
-            'iblLuminance': lightConfig.ambient.luminance || 12000,
-            'exposure': ev100toExposure(ev100),
-            'ev100': ev100,
-            'sun': [1, 1, 1, -1],
-        };
+
+        let uniforms;
+        if (iblMaps) {
+            //TODO prefilter_cube_size被固定为512，直接计算mipLevel
+            const mipLevel = Math.log(512) / Math.log(2);
+            uniforms = {
+                'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
+                'light_iblDFG': iblMaps.dfgLUT,
+                'light_iblSpecular': iblMaps.prefilterMap,
+                'iblSH': iblMaps.sh,
+                'iblLuminance': lightConfig.ambient.luminance || 12000,
+                'exposure': ev100toExposure(ev100),
+                'ev100': ev100,
+                'sun': [1, 1, 1, -1],
+            };
+        } else {
+            uniforms = {
+                'light_ambientColor': lightConfig.ambient.color || [0.05, 0.05, 0.05],
+                'exposure': ev100toExposure(ev100),
+                'ev100': ev100,
+                'sun': [1, 1, 1, -1]
+            };
+        }
 
         if (lightConfig.directional) {
             uniforms['lightColorIntensity'] = [...(lightConfig.directional.color || [1, 1, 1]), lightConfig.directional.intensity || 30000];
@@ -510,9 +517,11 @@ class StandardPainter extends Painter {
     _getDefines() {
         const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
         const lightConfig = this.sceneConfig.lights;
-        const defines = {
-            'IBL_MAX_MIP_LEVEL': (Math.log(lightConfig.ambient.prefilterCubeSize || 256) / Math.log(2)) + '.0'
-        };
+        const defines = {};
+        if (lightConfig.ambient && lightConfig.ambient.resource !== undefined) {
+            defines['HAS_IBL_LIGHTING'] = 1;
+            defines['IBL_MAX_MIP_LEVEL'] = (Math.log(lightConfig.ambient.prefilterCubeSize || 256) / Math.log(2)) + '.0';
+        }
         if (shadowEnabled) {
             defines['HAS_SHADOWING'] = 1;
         }
