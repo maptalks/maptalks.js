@@ -98,6 +98,7 @@ class StandardShader extends MeshShader {
 
                 'light_iblDFG',
                 'light_iblSpecular',
+                'light_ambientColor',
                 'iblSH[9]',
                 'iblMaxMipLevel'
             ].concat(materialUniforms).concat(config.uniforms || []),

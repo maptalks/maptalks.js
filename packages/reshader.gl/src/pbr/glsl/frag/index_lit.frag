@@ -30,7 +30,9 @@
 
 #include <fl_ambient_occlusion_frag>
 //IBL灯光的计算逻辑
+#if defined(HAS_IBL_LIGHTING)
 #include <fl_light_indirect>
+#endif
 #include <fl_shading_model_standard_frag>
 //有向光的计算逻辑
 #include <fl_light_directional>

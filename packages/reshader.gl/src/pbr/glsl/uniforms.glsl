@@ -49,27 +49,31 @@ uniform highp float time;
 uniform mediump vec4 lightColorIntensity;
 uniform mediump vec4 sun;
 uniform highp vec3 lightDirection;
-uniform mediump float iblLuminance;
 uniform mediump float exposure;
 uniform mediump float ev100;
-uniform highp vec3 iblSH[9];
-uniform mediump vec2 iblMaxMipLevel;
+#if defined(HAS_IBL_LIGHTING)
+    uniform mediump float iblLuminance;
+    uniform highp vec3 iblSH[9];
+    uniform mediump vec2 iblMaxMipLevel;
+#endif
 
 void initFrameUniforms() {
-    frameUniforms.iblMaxMipLevel = iblMaxMipLevel;
     frameUniforms.resolution = resolution;
     frameUniforms.cameraPosition = cameraPosition;
     frameUniforms.time = time;
     frameUniforms.lightColorIntensity = lightColorIntensity * vec4(1.0, 1.0, 1.0, exposure);
-    frameUniforms.sun = sun;
     frameUniforms.lightDirection = normalize(lightDirection);
-    frameUniforms.iblLuminance = iblLuminance * exposure;
+    frameUniforms.sun = sun;
     frameUniforms.exposure = exposure;
     frameUniforms.ev100 = ev100;
+#if defined(HAS_IBL_LIGHTING)
+    frameUniforms.iblMaxMipLevel = iblMaxMipLevel;
+    frameUniforms.iblLuminance = iblLuminance * exposure;
     for (int i = 0; i < 9; i++)
     {
         frameUniforms.iblSH[i] = iblSH[i];
     }
+#endif
     // frameUniforms.iblSH = iblSH;
     frameUniforms.shadowBias = vec3(0.0, 0.0, 0.0);
 }

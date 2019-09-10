@@ -76,6 +76,9 @@ class Shader {
                 //     2 : 'value'
                 // }
                 let values = context[p];
+                if (!values) {
+                    continue;
+                }
                 if (desc[p].fn) {
                     // an array function
                     values = desc[p].fn(context, props);

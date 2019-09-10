@@ -19,6 +19,12 @@ class Mesh {
         this._dirtyUniforms = true;
     }
 
+    setMaterial(material) {
+        this.material = material;
+        this._dirtyUniforms = true;
+        return this;
+    }
+
     setParent() {
         this.parent = parent;
         return this;
