@@ -268,7 +268,27 @@ class TileLayer extends Layer {
             return map.getSpatialReference();
         }
         this._sr = this._sr || new SpatialReference(this.options['spatialReference']);
+        if (this._srMinZoom === undefined) {
+            this._srMinZoom = this._sr.getMinZoom();
+            this._srMaxZoom = this._sr.getMaxZoom();
+        }
         return this._sr;
+    }
+
+    getMinZoom() {
+        const sr = this.getSpatialReference();
+        if (sr !== this.getMap().getSpatialReference()) {
+            return Math.max(super.getMinZoom(), this._srMinZoom);
+        }
+        return super.getMinZoom();
+    }
+
+    getMaxZoom() {
+        const sr = this.getSpatialReference();
+        if (sr !== this.getMap().getSpatialReference()) {
+            return Math.min(super.getMaxZoom(), this._srMaxZoom);
+        }
+        return super.getMaxZoom();
     }
 
     _getTileZoom(zoom) {
