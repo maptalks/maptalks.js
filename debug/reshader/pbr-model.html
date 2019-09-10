@@ -143,7 +143,7 @@
                 UNIFORMS,
                 SCENE
             );
-            // reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
             requestAnimationFrame(drawScene);
         }
 
@@ -160,6 +160,9 @@
                         enable: true,
                         face: 'back'
                     }
+                },
+                defines: {
+                    'HAS_IBL_LIGHTING': 1
                 }
             });
             const scenePromise = getGLTFScene();
@@ -192,12 +195,12 @@
         }
 
         function getGLTFScene() {
-            var url = 'gltf/DamagedHelmet.glb';
-            return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
-                const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
-            // const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
-            // return gltf.Ajax.getJSON(url, {}).then((json) => {
-            //     const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
+            // var url = 'gltf/DamagedHelmet.glb';
+            // return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
+            //     const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
+            const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
+            return gltf.Ajax.getJSON(url, {}).then((json) => {
+                const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
                 return loader.load().then(gltfData => {
                     const transformMat = mat4.identity([]);
                     mat4.rotate(transformMat, transformMat, 90 * Math.PI / 180, [1, 0, 0]);
@@ -226,7 +229,6 @@
                                 mesh.primitives.forEach(primitive => {
                                     const modelGeometry = createGeometry(primitive);
                                     const defines = getGeometryDefines(modelGeometry);
-                                    defines['IBL_MAX_MIP_LEVEL'] = (Math.log(PREFILTER_CUBE_SIZE) / Math.log(2)) + '.0';
                                     let uniforms = {};
                                     if (primitive.material) {
                                         const textures = primitive.material.pbrMetallicRoughness;
