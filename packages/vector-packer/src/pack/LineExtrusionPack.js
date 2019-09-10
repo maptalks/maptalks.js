@@ -70,7 +70,7 @@ export default class LineExtrusionPack extends LinePack {
         }
     }
 
-    addLineVertex(data, point, extrude, round, up, linesofar) {
+    addLineVertex(data, point, normal, extrude, round, up, linesofar) {
         // debugger
         const tileScale = this.options['EXTENT'] / this.options['tileSize'];
         const lineWidth = this.symbol['lineWidth'] / 2 * tileScale;
@@ -94,6 +94,7 @@ export default class LineExtrusionPack extends LinePack {
         //  down0 |____| down1
         // const { vertexLength } = this;
         const formatWidth = this.formatWidth; //x, y, height, linesofar, up
+        //*2 是因为不同于 LinePack, LineExtrusionPack 在addLineVertex方法中会为每个端点插入两个vertex (0和height)
         const up = this.data[e3 * 2 * formatWidth + 4];
         if (up) {
             if (this.options['top'] !== false) {

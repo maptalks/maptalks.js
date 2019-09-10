@@ -579,6 +579,7 @@ export default class LinePack extends VectorPack {
         }
     }
 
+    //参数会影响LineExtrusionPack中的addLineVertex方法
     addLineVertex(data, point, normal, extrude, round, up, linesofar) {
         linesofar *= LINE_DISTANCE_SCALE;
         const x = (point.x << 1) + (round ? 1 : 0);
@@ -600,9 +601,16 @@ export default class LinePack extends VectorPack {
             data.push(...this._feaColor);
         }
         if (this.symbol['lineOffset']) {
+            //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向
+            //vNormal.y在up时为1， 在down时为-1，vert中的计算逻辑如下：
+            //offsetExtrude = (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset)
             if (up) {
+                //up时，offsetExtrude = aExtrude
                 data.push(0, 0);
             } else {
+                //normal是该方法传入的normal参数
+                //down时，offsetExtrude = aExtrude - normal - normal)，
+                // 因为aExtrude和normal垂直，根据矢量减法，extrude - normal - normal = -extrude
                 data.push(
                     EXTRUDE_SCALE * (extrude.x - normal.x),
                     EXTRUDE_SCALE * (extrude.y - normal.y),
