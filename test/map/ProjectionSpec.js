@@ -193,7 +193,7 @@ describe('Map.Projection', function () {
                 projection:'baidu'
             });
             map.options['minZoom'] = null;
-            expect(map.getMinZoom()).to.be.eql(3);
+            expect(map.getMinZoom()).to.be.eql(0);
             expect(map.getProjection().code).to.be.eql('BAIDU');
             expect(map.getCenter()).to.closeTo(center);
         });
