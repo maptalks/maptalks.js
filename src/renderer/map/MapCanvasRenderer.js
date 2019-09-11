@@ -5,7 +5,6 @@ import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
 import Map from '../../map/Map';
-import VectorLayer from './../../layer/VectorLayer';
 
 /**
  * @classdesc
@@ -416,7 +415,7 @@ class MapCanvasRenderer extends MapRenderer {
         this._cancelFrameLoop();
     }
 
-    hitDetect(point, coordinate) {
+    hitDetect(point) {
         const map = this.map;
         if (!map || !map.options['hitDetect'] || map.isInteracting()) {
             return;
@@ -425,7 +424,6 @@ class MapCanvasRenderer extends MapRenderer {
         let cursor = 'default';
         const limit = map.options['hitDetectLimit'] || 0;
         let counter = 0;
-        let isHit = false;
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             if (layer.isEmpty && layer.isEmpty()) {
@@ -439,24 +437,12 @@ class MapCanvasRenderer extends MapRenderer {
                 continue;
             }
             // renderer.hitDetect(point)) .  This can't ignore the shadows.
+            /**
+             * TODO
+             *  This requires a better way to judge
+             */
             if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
-                //VectorLayer Hit detection
-                if (layer instanceof VectorLayer) {
-                    map.identify({
-                        coordinate,
-                        layers: [layer]
-                    }, (geos) => {
-                        if (geos && geos.length) {
-                            cursor = layer.options['cursor'] || 'pointer';
-                            isHit = true;
-                        }
-                    })
-                } else {
-                    // Other layers retain the original logic
-                    isHit = true;
-                }
-            }
-            if (isHit) {
+                cursor = layer.options['cursor'] || 'pointer';
                 break;
             }
             counter++;
@@ -822,7 +808,7 @@ class MapCanvasRenderer extends MapRenderer {
             cancelAnimFrame(this._hitDetectFrame);
         }
         this._hitDetectFrame = requestAnimFrame(() => {
-            this.hitDetect(param['containerPoint'], param['coordinate']);
+            this.hitDetect(param['containerPoint']);
         });
     }
 
