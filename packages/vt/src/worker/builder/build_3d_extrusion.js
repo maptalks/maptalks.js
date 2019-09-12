@@ -1,6 +1,6 @@
 import { getIndexArrayType } from '../../common/Util';
 import { buildExtrudeFaces } from './Extrusion';
-import { buildUniqueVertex, buildShadowVolume } from './Build';
+// import { buildUniqueVertex, buildShadowVolume } from './Build';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 
@@ -15,8 +15,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         heightProperty,
         defaultHeight,
         normal, tangent,
-        uv, uvSize,
-        shadowVolume, shadowDir,
+        uv, uvScale,
         top
     } = dataConfig;
     const faces = buildExtrudeFaces(
@@ -30,35 +29,26 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         {
             top,
             uv: uv || tangent, //tangent也需要计算uv
-            uvSize : uvSize || [128, 128],
+            uvSize : uvScale ? [128 * uvScale[0], 128 * uvScale[1]] : [128, 128],
             //>> needed by uv computation
-            glScale,
+            glScale: glScale * (extent / tileSize),
             //用于白模侧面的uv坐标v的计算
             // zScale用于将meter转为gl point值
             // (extent / tileSize)用于将gl point转为瓦片内坐标
-            vScale : zScale * (extent / tileSize)
+            vScale : zScale * (extent / tileSize) * (extent / tileSize)
             //<<
         });
     const buffers = [];
 
-    let oldIndices;
-    if (shadowVolume) {
-        oldIndices = faces.indices;
-    }
     //in buildUniqueVertex, indices will be updated
     const l = faces.indices.length;
     const ctor = getIndexArrayType(l);
     const indices = new ctor(faces.indices);
     delete faces.indices;
-    buffers.push(indices.buffer);
-
-    const uniqueFaces = buildUniqueVertex({ vertices : faces.vertices, featureIndexes: faces.featureIndexes }, indices, { 'vertices' : { size : 3 }, 'featureIndexes' : { size : 1 }});
-    faces.vertices = uniqueFaces.vertices;
-    faces.featureIndexes = uniqueFaces.featureIndexes;
-    buffers.push(faces.vertices.buffer, faces.featureIndexes.buffer);
+    buffers.push(indices.buffer, faces.vertices.buffer, faces.featureIndexes.buffer);
 
     // debugger
-    if (tangent || normal || shadowVolume) {
+    if (tangent || normal) {
         const normals = buildNormals(faces.vertices, indices);
         faces.normals = normals;
     }
@@ -76,11 +66,6 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
     }
     if (faces.uvs) {
         buffers.push(faces.uvs.buffer);
-    }
-    if (shadowVolume) {
-        const shadowVolume = buildShadowVolume(faces.vertices, oldIndices, indices, faces.normals, faces.featureIndexes, shadowDir);
-        faces.shadowVolume = shadowVolume;
-        buffers.push(shadowVolume.vertices.buffer, shadowVolume.indices.buffer, shadowVolume.indexes.buffer);
     }
     return {
         data : {

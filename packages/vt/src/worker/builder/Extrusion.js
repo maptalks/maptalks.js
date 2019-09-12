@@ -31,29 +31,15 @@ export function buildExtrudeFaces(
         generateTop = !!top;
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
-
     function fillData(start, offset, holes, height) {
         // debugger
-        const count = offset - start;
-
         const top = vertices.slice(start, offset);
-        //fill bottom vertexes
-        // const bottom = vertices.subarray(offset, offset + count);
-        // if (top.length > bottom.length) {
-        //     debugger
-        // }
-        // bottom.set(top);
-        for (let i = 2, l = count; i < l; i += 3) {
-            vertices[offset + i - 2] = top[i - 2]; //top[i] is altitude
-            vertices[offset + i - 1] = top[i - 1]; //top[i] is altitude
-            vertices[offset + i] = top[i] - height; //top[i] is altitude
-        }
 
         //just ignore bottom faces never appear in sight
         if (generateTop) {
             const triangles = earcut(top, holes, 3); //vertices, holes, dimension(2|3)
             if (triangles.length === 0) {
-                return offset + count;
+                return offset;
             }
             //TODO caculate earcut deviation
 
@@ -75,14 +61,46 @@ export function buildExtrudeFaces(
             //top face indices
             pushIn(indices, triangles);
             if (generateUV) {
-                buildFaceUV(uvs, vertices, triangles, [uvSize[0] / glScale, uvSize[1] / glScale]);
+                // debugger
+                buildFaceUV(start, offset, uvs, vertices, uvSize[0] / glScale, uvSize[1] / glScale);
             }
         }
+        const count = offset - start;
+
+        //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
+        //top vertexes
+        for (let i = 2, l = count; i < l; i += 3) {
+            vertices[offset + i - 2] = top[i - 2];
+            vertices[offset + i - 1] = top[i - 1];
+            vertices[offset + i - 0] = top[i];
+        }
+        offset += count;
+        //bottom vertexes
+        for (let i = 2, l = count; i < l; i += 3) {
+            vertices[offset + i - 2] = top[i - 2];
+            vertices[offset + i - 1] = top[i - 1];
+            vertices[offset + i - 0] = top[i] - height;
+        }
+        offset += count;
+        //top vertexes
+        for (let i = 2, l = count; i < l; i += 3) {
+            vertices[offset + i - 2] = top[i - 2];
+            vertices[offset + i - 1] = top[i - 1];
+            vertices[offset + i - 0] = top[i];
+        }
+        offset += count;
+        //bottom vertexes
+        for (let i = 2, l = count; i < l; i += 3) {
+            vertices[offset + i - 2] = top[i - 2];
+            vertices[offset + i - 1] = top[i - 1];
+            vertices[offset + i - 0] = top[i] - height;
+        }
+        offset += count;
 
         if (height > 0) {
             //side face indices
             const s = indices.length;
-            const startIdx = start / 3;
+            const startIdx = (start + count) / 3;
             const vertexCount = count / 3;
             let ringStartIdx = startIdx, current, next, isClipped;
             for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
@@ -99,16 +117,21 @@ export function buildExtrudeFaces(
                 if (isClipped) {
                     continue;
                 }
+                if (i % 2 === 1) {
+                    //加上 2 * vertexCount，使用与 i % 2 === 0 时，不同的另一组端点，以避免共端点
+                    current += 2 * vertexCount;
+                    next += 2 * vertexCount;
+                }
                 //top[i], bottom[i], top[i + 1]
                 indices.push(current + vertexCount, current, next);
                 //bottom[i + 1], top[i + 1], bottom[i]
                 indices.push(next, next + vertexCount, current + vertexCount);
             }
             if (generateUV) {
-                buildSideUV(uvs, vertices, indices.slice(s, indices.length), [uvSize[0] / glScale, uvSize[1] / vScale]); //convert uvSize[1] to meter
+                buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize[0] / glScale, uvSize[1] / vScale); //convert uvSize[1] to meter
             }
         }
-        return offset + count;
+        return offset;
     }
 
 

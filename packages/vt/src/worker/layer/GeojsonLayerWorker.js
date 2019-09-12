@@ -54,7 +54,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             // debugger
             this.index = geojsonvt(data, this.options.geojsonvt || {
                 maxZoom: 24,  // max zoom to preserve detail on; can't be higher than 24
-                tolerance: 3, // simplification tolerance (higher means simpler)
+                tolerance: this.options.extent / this.options.tileSize[0] * 1.2, // simplification tolerance (higher means simpler)
                 extent: this.options.extent, // tile extent (both width and height)
                 buffer: this.options.tileBuffer || 64,	  // tile buffer on each side
                 debug: 0,      // logging level (0 to disable, 1 or 2)
