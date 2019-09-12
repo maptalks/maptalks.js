@@ -3,14 +3,13 @@ import { GLContext } from '@maptalks/fusiongl';
 
 const options = {
     renderer : 'gl',
-    antialias : true,
+    antialias : false,
     extensions : [
         'ANGLE_instanced_arrays',
-        'OES_texture_float',
         'OES_element_index_uint',
         'OES_standard_derivatives'
     ],
-    optionalExtensions : ['WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear'],
+    optionalExtensions : ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear'],
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true
