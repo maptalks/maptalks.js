@@ -209,9 +209,9 @@ class MapCanvasRenderer extends MapRenderer {
             renderer.render(framestamp);
         } else if (renderer.drawOnInteracting &&
             (layer === map.getBaseLayer() || inTime ||
-            map.isZooming() && layer.options['forceRenderOnZooming'] ||
-            map.isMoving() && layer.options['forceRenderOnMoving'] ||
-            map.isRotating() && layer.options['forceRenderOnRotating'])
+                map.isZooming() && layer.options['forceRenderOnZooming'] ||
+                map.isMoving() && layer.options['forceRenderOnMoving'] ||
+                map.isRotating() && layer.options['forceRenderOnRotating'])
         ) {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
@@ -436,6 +436,11 @@ class MapCanvasRenderer extends MapRenderer {
             if (renderer.isBlank && renderer.isBlank()) {
                 continue;
             }
+            // renderer.hitDetect(point)) .  This can't ignore the shadows.
+            /**
+             * TODO
+             *  This requires a better way to judge
+             */
             if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
                 cursor = layer.options['cursor'] || 'pointer';
                 break;
