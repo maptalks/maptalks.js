@@ -9,8 +9,9 @@ var NO_REDRAW = {
     redraw: false
 };
 
-var THROTTLE_KEY = '__vt_plugin_mesh_throttle';
+var EMPTY_ARRAY = [];
 
+var THROTTLE_KEY = '__vt_plugin_mesh_throttle';
 /**
  * Create a VT Plugin with a given painter
  */
@@ -52,6 +53,14 @@ function createPainterPlugin(type, Painter) {
                 return painter.render(context);
             }
             return null;
+        },
+
+        getShadowMeshes() {
+            var painter = this.painter;
+            if (!painter || !painter.getShadowMeshes) {
+                return EMPTY_ARRAY;
+            }
+            return painter.getShadowMeshes();
         },
 
         paintTile: function (context) {

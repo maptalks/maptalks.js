@@ -2,16 +2,11 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, isNumber } from '../../Util';
 import Painter from '../Painter';
-import ShadowMapPass from './ShadowMapPass.js';
 import { setUniformFromSymbol } from '../../Util';
 
 const SCALE = [1, 1, 1];
 
 class StandardPainter extends Painter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
-        // this.colorSymbol = 'polygonFill';
-    }
 
     createGeometry(glData) {
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
@@ -67,64 +62,16 @@ class StandardPainter extends Painter {
             mesh.setMaterial(this.material);
         }
         this.scene.addMesh(mesh);
-        if (this._shadowScene) {
-            // 如果shadow mesh已经存在， 则优先用它
-            const shadowMesh = mesh;
-            this._shadowScene.addMesh(shadowMesh);
-        }
     }
 
-    paint(context) {
-        const layer = this.layer;
-        const map = layer.getMap();
-        if (!map) {
-            return {
-                redraw: false
-            };
-        }
-
-        const uniforms = this.getUniformValues(map);
-
-        if (this._shadowPass) {
-            this._transformGround(layer);
-            const { fbo } = this._shadowPass.pass1({
-                layer,
-                uniforms,
-                scene: this._shadowScene,
-                groundScene: this._groundScene
-            });
-            if (this.sceneConfig.shadow.debug) {
-                // this.debugFBO(shadowConfig.debug[0], depthFBO);
-                this.debugFBO(this.sceneConfig.shadow.debug[1], fbo);
-            }
-        }
-
-        //记录与阴影合并后的uniforms，super.paint中调用getUniformValues时，直接返回
-        this._mergedUniforms = uniforms;
-
-        const status = super.paint(context);
-
-        if (this._shadowPass) {
-            this._shadowPass.pass2();
-        }
-
-        delete this._mergedUniforms;
-
-        return status;
+    getShadowMeshes() {
+        return this.scene.getMeshes();
     }
 
     updateSceneConfig(config) {
         extend(this.sceneConfig, config);
         this.init();
         this.setToRedraw();
-    }
-
-    startFrame() {
-        super.startFrame();
-        if (this._shadowScene) {
-            this._shadowScene.clear();
-            this._shadowScene.addMesh(this._ground);
-        }
     }
 
     deleteMesh(meshes, keepGeometry) {
@@ -153,17 +100,7 @@ class StandardPainter extends Painter {
         if (this._emptyCube) {
             this._emptyCube.destroy();
         }
-        if (this._shadowScene) {
-            this._shadowScene.clear();
-        }
         this.material.dispose();
-        if (this._ground) {
-            this._ground.geometry.dispose();
-            this._ground.dispose();
-        }
-        if (this._shadowPass) {
-            this._shadowPass.delete();
-        }
         if (this._hdr) {
             this._hdr.dispose();
         }
@@ -174,19 +111,9 @@ class StandardPainter extends Painter {
         this._updateMaterial();
     }
 
-    _transformGround() {
-        const layer = this.layer;
-        const map = layer.getMap();
-        // console.log(layer.getRenderer()._getMeterScale());
-        const extent = map['_get2DExtent'](map.getGLZoom());
-        const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
-        const localTransform = this._ground.localTransform;
-        mat4.identity(localTransform);
-        mat4.translate(localTransform, localTransform, map.cameraLookAt);
-        mat4.scale(localTransform, localTransform, [scaleX, scaleY, 1]);
-    }
-
-    init() {
+    init(context) {
+        //保存context，updateSceneConfig时读取
+        this._context = this._context || context;
         if (!this.sceneConfig.lights) {
             this.sceneConfig.lights = {};
         }
@@ -196,8 +123,6 @@ class StandardPainter extends Painter {
 
         this._initHDR();
         const regl = this.regl;
-
-        const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
 
         this.renderer = new reshader.Renderer(regl);
 
@@ -212,24 +137,10 @@ class StandardPainter extends Painter {
             }
         };
 
-        if (shadowEnabled && this.sceneConfig.lights && this.sceneConfig.lights.directional) {
-            const planeGeo = new reshader.Plane();
-            planeGeo.generateBuffers(regl);
-            this._ground = new reshader.Mesh(planeGeo);
-            this._groundScene = new reshader.Scene([this._ground]);
-
-            this._shadowScene = new reshader.Scene();
-            this._shadowScene.addMesh(this._ground);
-            //默认阴影用vsm来实现
-            this._shadowPass = new ShadowMapPass(this.sceneConfig, this.renderer, viewport);
-        }
-
-
         const config = {
-            uniforms: this._shadowPass ? this._shadowPass.getUniforms() : null,
-            defines: this._getDefines(),
+            uniforms: this._context.shadow && this._context.shadow.uniformDeclares || null,
+            defines: this._getDefines(this._context.shadow && this._context.shadow.defines),
             extraCommandProps: {
-                //enable cullFace
                 cull: {
                     enable: true,
                     face: 'back'
@@ -458,15 +369,12 @@ class StandardPainter extends Painter {
         };
     }
 
-    getUniformValues(map) {
-        if (this._mergedUniforms) {
-            return this._mergedUniforms;
-        }
+    getUniformValues(map, context) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
             cameraPosition = map.cameraPosition;
         const lightUniforms = this._getLightUniforms();
-        return extend({
+        const uniforms = extend({
             viewMatrix,
             projMatrix,
             projViewMatrix: map.projViewMatrix,
@@ -474,6 +382,10 @@ class StandardPainter extends Painter {
             resolution: [map.width, map.height, 1 / map.width, 1 / map.height],
             time: 0
         }, lightUniforms);
+        if (context.shadow && context.shadow.renderUniforms) {
+            extend(uniforms, context.shadow.renderUniforms);
+        }
+        return uniforms;
     }
 
     _getLightUniforms() {
@@ -486,7 +398,6 @@ class StandardPainter extends Painter {
 
         let uniforms;
         if (iblMaps) {
-            //TODO prefilter_cube_size被固定为512，直接计算mipLevel
             const mipLevel = Math.log(512) / Math.log(2);
             uniforms = {
                 'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
@@ -514,25 +425,20 @@ class StandardPainter extends Painter {
         return uniforms;
     }
 
-    _getDefines() {
-        const shadowEnabled = this.sceneConfig.shadow && this.sceneConfig.shadow.enable;
+    _getDefines(shadowDefines) {
         const lightConfig = this.sceneConfig.lights;
         const defines = {};
         if (lightConfig.ambient && lightConfig.ambient.resource !== undefined) {
             defines['HAS_IBL_LIGHTING'] = 1;
             defines['IBL_MAX_MIP_LEVEL'] = (Math.log(lightConfig.ambient.prefilterCubeSize || 256) / Math.log(2)) + '.0';
         }
-        if (shadowEnabled) {
-            defines['HAS_SHADOWING'] = 1;
+        if (shadowDefines) {
+            extend(defines, shadowDefines);
         }
         if (lightConfig.directional) {
             defines['HAS_DIRECTIONAL_LIGHTING'] = 1;
         }
 
-        if (this._shadowPass) {
-            const shadowDefines = this._shadowPass.getDefines();
-            extend(defines, shadowDefines);
-        }
         return defines;
     }
 

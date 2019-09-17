@@ -31,7 +31,6 @@ class Painter {
         this.loginTextureCache();
         const styles = this.layer.getCompiledStyle();
         this.symbolDef = styles[pluginIndex].symbol;
-        this.init();
     }
 
     getMap() {
@@ -61,6 +60,10 @@ class Painter {
     }
 
     render(context) {
+        if (!this._inited) {
+            this.init(context);
+            this._inited = true;
+        }
         this.preparePaint(context);
         return this.paint(context);
     }
@@ -76,7 +79,7 @@ class Painter {
             };
         }
 
-        const uniforms = this.getUniformValues(map);
+        const uniforms = this.getUniformValues(map, context);
 
         this.callShader(uniforms, context);
 

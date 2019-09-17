@@ -7,6 +7,7 @@ import TileStencilRenderer from './stencil/TileStencilRenderer';
 import { extend } from '../../common/Util';
 
 const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
+const EMPTY_ARRAY = [];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -93,8 +94,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const inGroup = this.canvas.gl && this.canvas.gl.wrap;
         if (inGroup) {
             this.gl = this.canvas.gl.wrap();
+            this.regl = this.canvas.gl.regl;
+        } else {
+            this._createREGLContext();
         }
-        this._createREGLContext();
         if (inGroup) {
             this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         }
@@ -125,7 +128,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 'OES_element_index_uint',
                 'OES_standard_derivatives'
             ],
-            optionalExtensions: layer.options['glExtensions'] || ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear']
+            optionalExtensions: layer.options['glExtensions'] ||
+                ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear']
         });
     }
 
@@ -166,11 +170,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     checkResources() {
-        const result = [];
+        const result = EMPTY_ARRAY;
         return result;
     }
 
-    draw(timestamp) {
+    draw(timestamp, parentContext) {
         const layer = this.layer;
         this.prepareCanvas();
         if (!this.ready || !layer.ready) {
@@ -192,7 +196,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._zScale = this._getCentiMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this._startFrame(timestamp);
         super.draw(timestamp);
-        this._endFrame(timestamp);
+        this._endFrame(timestamp, parentContext);
         if (layer.options['debug']) {
             const mat = [];
             const projViewMatrix = this.getMap().projViewMatrix;
@@ -208,8 +212,26 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return this._frameTime;
     }
 
-    drawOnInteracting(event, timestamp) {
-        this.draw(timestamp);
+    drawOnInteracting(event, timestamp, parentContext) {
+        this.draw(timestamp, parentContext);
+    }
+
+    getShadowMeshes() {
+        const meshes = [];
+        const plugins = this._getFramePlugins();
+        plugins.forEach((plugin, idx) => {
+            const visible = this._isVisible(idx);
+            if (!plugin || !visible) {
+                return;
+            }
+            const shadowMeshes = plugin.getShadowMeshes();
+            if (Array.isArray(shadowMeshes)) {
+                for (let i = 0; i < shadowMeshes.length; i++) {
+                    meshes.push(shadowMeshes[i]);
+                }
+            }
+        });
+        return meshes;
     }
 
     isCurrentTile(id) {
@@ -449,7 +471,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.getMap().collisionFrameTime = 0;
     }
 
-    _endFrame(timestamp) {
+    _endFrame(timestamp, parentContext) {
         let stenciled = false;
         const enableTileStencil = this.isEnableTileStencil();
         const cameraPosition = this.getMap().cameraPosition;
@@ -468,7 +490,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 });
                 stenciled = false;
             }
-            const status = plugin.endFrame({
+            const context = {
                 regl: this.regl,
                 layer: this.layer,
                 gl: this.gl,
@@ -476,7 +498,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 pluginIndex: idx,
                 cameraPosition,
                 timestamp
-            });
+            };
+            if (parentContext) {
+                extend(context, parentContext);
+            }
+            const status = plugin.endFrame(context);
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
