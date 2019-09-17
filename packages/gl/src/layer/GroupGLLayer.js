@@ -1,5 +1,8 @@
 import * as maptalks from 'maptalks';
 import { GLContext } from '@maptalks/fusiongl';
+import ShadowPass from './shadow/ShadowPass';
+import * as reshader from '@maptalks/reshader.gl';
+import createREGL from '@maptalks/regl';
 
 const options = {
     renderer : 'gl',
@@ -43,6 +46,19 @@ export default class GroupGLLayer extends maptalks.Layer {
         this.layers = layers || [];
         this._checkChildren();
         this._layerMap = {};
+    }
+
+    setSceneConfig(sceneConfig) {
+        this.options.sceneConfig = sceneConfig;
+        return this;
+    }
+
+    getSceneConfig() {
+        return JSON.parse(JSON.stringify(this.options.sceneConfig));
+    }
+
+    _getSceneConfig() {
+        return this.options.sceneConfig;
     }
 
     /**
@@ -209,6 +225,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
+        if (!this._replaceChildDraw) {
+            this.forEachRenderer((renderer) => {
+                renderer.draw = this._buildDrawFn(renderer.draw);
+                renderer.drawOnInteracting = this._buildDrawFn(renderer.drawOnInteracting);
+            });
+            this._replaceChildDraw = true;
+        }
         this.prepareRender();
         this.prepareCanvas();
         this.forEachRenderer((renderer, layer) => {
@@ -317,6 +340,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
         this.glCtx = gl.wrap();
         this.canvas.gl = this.gl;
+        this._reglGL = gl.wrap();
+        this._regl = createREGL({
+            gl: this._reglGL,
+            attributes,
+            extensions: [
+                'ANGLE_instanced_arrays',
+                'OES_element_index_uint',
+                'OES_standard_derivatives'
+            ],
+            optionalExtensions: layer.options['glExtensions'] || ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear']
+        });
+        this.gl.regl = this._regl;
     }
 
     _initGL() {
@@ -397,6 +432,75 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this.canvas.pickingFBO.destroy();
         }
         super.onRemove();
+    }
+
+    _buildDrawFn(drawMethod) {
+        const parent = this;
+        return function (timestamp) {
+            if (timestamp !== parent._contextFrameTime) {
+                parent._drawContext = parent._prepareDrawContext();
+                parent._contextFrameTime = timestamp;
+            }
+            return drawMethod.call(this, timestamp, parent._drawContext);
+        };
+    }
+
+    _prepareDrawContext() {
+        const context = {
+        };
+        const shadowContext = this._getShadowContext();
+        if (shadowContext) {
+            context.shadow = shadowContext;
+        }
+        return context;
+    }
+
+    _getShadowContext(fbo) {
+        const sceneConfig =  this.layer._getSceneConfig();
+        if (!sceneConfig.shadow || !sceneConfig.shadow.enable) {
+            if (this._shadowPass) {
+                this._shadowPass.delete();
+                delete this._shadowPass;
+            }
+            return null;
+        }
+        if (!this._shadowPass) {
+            this._shadowPass = new ShadowPass(this._regl, sceneConfig, this.layer);
+        }
+        const context = {
+            config: sceneConfig.shadow,
+            defines: this._shadowPass.getDefines(),
+            uniformDeclares: this._shadowPass.getUniformDeclares()
+        };
+        context.renderUniforms = this._renderShadow(fbo);
+        return context;
+    }
+
+    _renderShadow(fbo) {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const meshes = [];
+        this.forEachRenderer(renderer => {
+            if (!renderer.getShadowMeshes) {
+                return;
+            }
+            const shadowMeshes = renderer.getShadowMeshes();
+            if (Array.isArray(shadowMeshes)) {
+                for (let i = 0; i < shadowMeshes.length; i++) {
+                    meshes.push(shadowMeshes[i]);
+                }
+            }
+        });
+        // if (!meshes.length) {
+        //     return null;
+        // }
+        if (!this._shadowScene) {
+            this._shadowScene = new reshader.Scene();
+        }
+        this._shadowScene.setMeshes(meshes);
+        const map = this.getMap();
+        const lightDirection = sceneConfig.shadow.lightDirection || [1, 1, -1];
+        const shadowContext = this._shadowPass.render(map.projMatrix, map.viewMatrix, lightDirection, this._shadowScene, fbo);
+        return shadowContext;
     }
 }
 

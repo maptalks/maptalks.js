@@ -20,10 +20,10 @@ class ShadowDisplayShader extends MeshShader {
                         return projViewModelMatrix;
                     }
                 },
-                'vsm_shadow_lightProjViewModelMatrix',
-                'vsm_shadow_shadowMap',
-                'vsm_shadow_threshold', //默认0.5
-                'color', 'vsm_shadow_opacity'
+                'shadow_lightProjViewModelMatrix',
+                'shadow_shadowMap',
+                'esm_shadow_threshold', //默认0.5
+                'color', 'shadow_opacity'
             ],
             defines : defines || {
                 'USE_ESM': 1

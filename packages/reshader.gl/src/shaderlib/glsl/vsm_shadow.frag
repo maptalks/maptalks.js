@@ -2,8 +2,8 @@
 // 阴影着色
 //
 //
-// uniform sampler2D vsm_shadow_shadowMap 深度纹理
-// uniform float vsm_shadow_opacity 阴影透明度
+// uniform sampler2D shadow_shadowMap 深度纹理
+// uniform float shadow_opacity 阴影透明度
 //
 //
 // void shadow_computeShadow()
@@ -14,11 +14,13 @@
 // float shadow = shadow_computeShadow();
 //--------------------------
 
-uniform sampler2D vsm_shadow_shadowMap;
-uniform float vsm_shadow_opacity;
-uniform float vsm_shadow_threshold;
+uniform sampler2D shadow_shadowMap;
+uniform float shadow_opacity;
+#if defined(USE_ESM) || defined(USE_VSM_ESM)
+    uniform float esm_shadow_threshold;
+#endif
 
-varying vec4 vsm_shadow_vLightSpacePos;
+varying vec4 shadow_vLightSpacePos;
 
 float esm(vec3 projCoords, vec4 shadowTexel) {
     // vec2 uv = projCoords.xy;
@@ -28,7 +30,7 @@ float esm(vec3 projCoords, vec4 shadowTexel) {
 
     depth = exp(-c * min(compare - depth, 0.05));
     // depth = exp(c * depth) * exp(-c * compare);
-    return clamp(depth, vsm_shadow_threshold, 1.0);
+    return clamp(depth, esm_shadow_threshold, 1.0);
 }
 
 float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
@@ -67,15 +69,15 @@ float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
         float coeff = vsm_coeff;
     #endif
 
-    return 1.0 - (1.0 - coeff) * vsm_shadow_opacity;
+    return 1.0 - (1.0 - coeff) * shadow_opacity;
 }
 
 float shadow_computeShadow() {
     // 执行透视除法
-    vec3 projCoords = vsm_shadow_vLightSpacePos.xyz / vsm_shadow_vLightSpacePos.w;
+    vec3 projCoords = shadow_vLightSpacePos.xyz / shadow_vLightSpacePos.w;
     // 变换到[0,1]的范围
     projCoords = projCoords * 0.5 + 0.5;
     if(projCoords.z >= 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) return 1.0;
-    return shadow_computeShadow_coeff(vsm_shadow_shadowMap, projCoords);
+    return shadow_computeShadow_coeff(shadow_shadowMap, projCoords);
 
 }

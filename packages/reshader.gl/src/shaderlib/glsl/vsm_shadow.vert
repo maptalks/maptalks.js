@@ -2,7 +2,7 @@
 // 阴影相关的变量计算
 //
 //
-// uniform mat4 vsm_shadow_lightProjViewModelMatrix 有向光源的projView矩阵， ortho projection * view matrix * model matrix
+// uniform mat4 shadow_lightProjViewModelMatrix 有向光源的projView矩阵， ortho projection * view matrix * model matrix
 //
 //
 // void shadow_computeShadowPars(vec4 worldPos)
@@ -14,10 +14,10 @@
 // shadow_computeShadowPars(worldPos);
 //--------------------------
 
-uniform mat4 vsm_shadow_lightProjViewModelMatrix;
+uniform mat4 shadow_lightProjViewModelMatrix;
 
-varying vec4 vsm_shadow_vLightSpacePos;
+varying vec4 shadow_vLightSpacePos;
 
 void shadow_computeShadowPars(vec4 position) {
-    vsm_shadow_vLightSpacePos = vsm_shadow_lightProjViewModelMatrix * position;
+    shadow_vLightSpacePos = shadow_lightProjViewModelMatrix * position;
 }
