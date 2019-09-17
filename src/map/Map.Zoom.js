@@ -52,6 +52,9 @@ Map.include(/** @lends Map.prototype */{
 
     onZoomStart(nextZoom, origin) {
         if (!this.options['zoomable'] || this.isZooming()) { return; }
+        if (this._mapAnimPlayer) {
+            this._stopAnim(this._mapAnimPlayer);
+        }
         this._zooming = true;
         this._startZoomVal = this.getZoom();
         this._startZoomCoord = this._containerPointToPrj(origin);

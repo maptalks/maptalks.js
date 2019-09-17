@@ -165,6 +165,9 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _animateTo(view, options = {}, step) {
+        if (this._mapAnimPlayer) {
+            this._stopAnim(this._mapAnimPlayer);
+        }
         this._isInternalAnimation = true;
         this._mapAnimPlayer = this.animateTo(view, options, step);
         delete this._isInternalAnimation;
