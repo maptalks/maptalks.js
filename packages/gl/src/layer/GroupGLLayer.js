@@ -3,6 +3,7 @@ import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowPass';
 import * as reshader from '@maptalks/reshader.gl';
 import createREGL from '@maptalks/regl';
+import PostProcess from './postprocess/PostProcess.js';
 
 const options = {
     renderer : 'gl',
@@ -12,7 +13,7 @@ const options = {
         'OES_element_index_uint',
         'OES_standard_derivatives'
     ],
-    optionalExtensions : ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear'],
+    optionalExtensions : ['OES_texture_float', 'WEBGL_depth_texture', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear'],
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true
@@ -244,6 +245,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             renderer.render.apply(renderer, args);
         });
+        this._postProcess();
         this['_toRedraw'] = false;
     }
 
@@ -261,6 +263,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             renderer.drawOnInteracting.apply(renderer, args);
         });
+        this._postProcess();
         this['_toRedraw'] = false;
     }
 
@@ -380,12 +383,22 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         // only clear main framebuffer
         gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+        if (this._targetFBO) {
+            this._regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
+                stencil: 0xFF,
+                framebuffer: this._targetFBO
+            });
+        }
     }
 
     resizeCanvas() {
         super.resizeCanvas();
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        if (this._targetFBO) {
+            this._targetFBO.resize(this.canvas.width, this.canvas.height);
+        }
         this.forEachRenderer(renderer => {
             if (renderer.canvas) {
                 renderer.resizeCanvas();
@@ -448,7 +461,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _prepareDrawContext() {
         const context = {
         };
-        const shadowContext = this._getShadowContext();
+        const framebuffer = this._getFramebufferTarget();
+        if (framebuffer) {
+            context.renderTarget = framebuffer;
+        }
+        const shadowContext = this._getShadowContext(framebuffer && framebuffer.fbo);
         if (shadowContext) {
             context.shadow = shadowContext;
         }
@@ -501,6 +518,70 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const lightDirection = sceneConfig.shadow.lightDirection || [1, 1, -1];
         const shadowContext = this._shadowPass.render(map.projMatrix, map.viewMatrix, lightDirection, this._shadowScene, fbo);
         return shadowContext;
+    }
+
+    _getFramebufferTarget() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig.postProcess;
+        if (!config || !this._isPostProcessEnabled()) {
+            if (this._targetFBO) {
+                this._targetFBO.destroy();
+            }
+            return null;
+        }
+        const depthTexture = config.ssao && config.ssao.enable;
+        const colorCount = config.bloom && config.bloom.enable ? 2 : 1;
+        if (!this._targetFBO) {
+            const regl = this._regl;
+            const color = regl.texture({
+                min: 'linear',
+                mag: 'linear',
+                type: 'uint8',
+                width: this.canvas.width,
+                height: this.canvas.height
+            });
+            this._targetFBO = regl.framebuffer({
+                width: this.canvas.width,
+                height: this.canvas.height,
+                colors: [color],
+                // colorType: 'float',
+                depthTexture: !!depthTexture,
+                colorCount,
+                colorFormat: 'rgba' //TODO 是否能改成rgb?
+            });
+        }
+        return {
+            bloom: config.bloom && config.bloom.enable1,
+            fbo: this._targetFBO
+        };
+    }
+
+    _postProcess() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig.postProcess;
+        if (!config || !config.enable) {
+            return;
+        }
+        if (!this._postProcessor) {
+            this._postProcessor = new PostProcess(this._regl, this._targetFBO);
+        }
+        if (config.antialias && config.antialias.enable) {
+            this._postProcessor.antialias(true);
+        }
+    }
+
+    _isPostProcessEnabled() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig.postProcess;
+        if (!config.enable) {
+            return false;
+        }
+        for (const p in config) {
+            if (config[p] && config[p].enable) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

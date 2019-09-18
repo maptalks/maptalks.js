@@ -24,6 +24,7 @@ export { default as Shader } from './shader/Shader.js';
 export { default as MeshShader } from './shader/MeshShader.js';
 export { default as WireframeShader } from './shader/WireframeShader.js';
 export { default as PhongShader } from './shader/PhongShader.js';
+export { default as FxaaShader } from './shader/FxaaShader.js';
 
 import * as SkyboxHelper from './skybox/SkyboxHelper.js';
 export { SkyboxHelper };

@@ -7,12 +7,16 @@ const quadVertices = new Float32Array([
     -1.0,  1.0, 0.0,
     -1.0, -1.0, 0.0,
     1.0,  1.0, 0.0,
+    1.0,  1.0, 0.0,
+    -1.0, -1.0, 0.0,
     1.0, -1.0, 0.0,
 ]);
 const quadTexcoords = new Float32Array([
     0.0, 1.0,
     0.0, 0.0,
     1.0, 1.0,
+    1.0, 1.0,
+    0.0, 0.0,
     1.0, 0.0,
 ]);
 
@@ -46,7 +50,7 @@ class QuadShader extends MeshShader {
             null,
             quadVertices.length / 3,
             {
-                primitive : 'triangle strip'
+                primitive : 'triangles'
             }
         );
         geometry.generateBuffers(regl);

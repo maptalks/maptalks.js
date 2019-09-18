@@ -77,7 +77,7 @@ class ShadowPass {
             renderer.render(
                 this.boxBlurShader,
                 {
-                    textureSize : [this.depthTex.width, this.depthTex.height],
+                    resolution : [this.depthTex.width, this.depthTex.height],
                     textureSource : this.depthTex
                 },
                 null,

@@ -1,13 +1,13 @@
-import boxBlurFrag from './glsl/box_blur.frag';
-import boxBlurVert from './glsl/box_blur.vert';
-import QuadShader from '../shader/QuadShader.js';
+import frag from './glsl/box_blur.frag';
+import vert from './glsl/quad.vert';
+import QuadShader from './QuadShader.js';
 
 class BoxBlurShader extends QuadShader {
 
     constructor({ blurOffset }) {
         super({
-            vert : boxBlurVert, frag : boxBlurFrag,
-            uniforms : ['textureSource', 'textureSize'],
+            vert, frag,
+            uniforms : ['textureSource', 'resolution'],
             defines : {
                 'BOXBLUR_OFFSET' : blurOffset || 2
             }
