@@ -212,6 +212,10 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _parseStops(value) {
+        const defaultValue = value['default'];
+        if (isString(defaultValue)) {
+            value['default'] = defaultValue.replace(URL_PATTERN, this._replacer);
+        }
         const stops = value.stops;
         for (let i = 0; i < stops.length; i++) {
             if (!Array.isArray(stops[i])) {
