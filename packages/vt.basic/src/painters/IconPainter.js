@@ -873,7 +873,14 @@ class IconPainter extends CollisionPainter {
             return null;
         }
         const { labelIndex } = mesh.geometry.properties;
-        const [textStart] = labelIndex[boxIndex];
+        if (!labelIndex) {
+            return null;
+        }
+        const textIndexes = labelIndex[boxIndex];
+        if (!textIndexes) {
+            return null;
+        }
+        const [textStart] = textIndexes;
         if (textStart === -1) {
             return null;
         }

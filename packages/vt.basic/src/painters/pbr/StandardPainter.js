@@ -382,7 +382,7 @@ class StandardPainter extends Painter {
             resolution: [map.width, map.height, 1 / map.width, 1 / map.height],
             time: 0
         }, lightUniforms);
-        if (context.shadow && context.shadow.renderUniforms) {
+        if (context && context.shadow && context.shadow.renderUniforms) {
             extend(uniforms, context.shadow.renderUniforms);
         }
         return uniforms;
