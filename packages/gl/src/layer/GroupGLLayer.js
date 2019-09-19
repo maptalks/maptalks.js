@@ -563,10 +563,20 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         if (!this._postProcessor) {
-            this._postProcessor = new PostProcess(this._regl, this._targetFBO);
+            const viewport = {
+                x: 0,
+                y: 0,
+                width: () => {
+                    return this.canvas.width;
+                },
+                height: () => {
+                    return this.canvas.height;
+                }
+            };
+            this._postProcessor = new PostProcess(this._regl, viewport, this._targetFBO);
         }
         if (config.antialias && config.antialias.enable) {
-            this._postProcessor.antialias(true);
+            this._postProcessor.fxaa();
         }
     }
 

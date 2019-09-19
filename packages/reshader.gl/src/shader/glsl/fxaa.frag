@@ -1053,9 +1053,7 @@ FxaaFloat4 FxaaPixelShader(
 #endif
 
 void main() {
-
     gl_FragColor = FxaaPixelShader(
-    vTexCoord, vec4(0.0), textureSource, textureSource, textureSource, 1.0 / resolution, vec4(0.0), vec4(0.0), vec4(0.0), 0.75, 0.166, 0.0833, 0.0, 0.0, 0.0, vec4(0.0)
+        vTexCoord, vec4(0.0), textureSource, textureSource, textureSource, 1.0 / resolution, vec4(0.0), vec4(0.0), vec4(0.0), 0.75, 0.166, 0.0833, 0.0, 0.0, 0.0, vec4(0.0)
     );
-    // gl_FragColor.a = texture2D(textureSource, vTexCoord).a;
 }

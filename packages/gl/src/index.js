@@ -9,3 +9,4 @@ export {
 export { createREGL, reshader };
 export { default as GroupGLLayer } from './layer/GroupGLLayer';
 export { GLContext } from '@maptalks/fusiongl';
+import './map/MapPostProcess.js';

@@ -1,12 +1,12 @@
 import QuadShader from './QuadShader.js';
 import vert from './glsl/quad.vert';
-import frag from './glsl/fxaa.frag';
+import frag from './glsl/postprocess.frag';
 
-class FxaaShader extends QuadShader {
+class PostProcessShader extends QuadShader {
     constructor(viewport) {
         super({
             vert, frag,
-            uniforms : ['textureSource', 'resolution'],
+            uniforms : ['enableVignette', 'enableGrain', 'textureSource', 'resolution', 'timeGrain', 'grainFactor', 'lensRadius', 'frameMod'],
             extraCommandProps: {
                 viewport
             }
@@ -14,8 +14,8 @@ class FxaaShader extends QuadShader {
     }
 
     getMeshCommand(regl, mesh) {
-        if (!this.commands['fxaa']) {
-            this.commands['fxaa'] = this.createREGLCommand(
+        if (!this.commands['postprocess']) {
+            this.commands['postprocess'] = this.createREGLCommand(
                 regl,
                 null,
                 mesh.getAttributes(),
@@ -23,8 +23,8 @@ class FxaaShader extends QuadShader {
                 mesh.getElements()
             );
         }
-        return this.commands['fxaa'];
+        return this.commands['postprocess'];
     }
 }
 
-export default FxaaShader;
+export default PostProcessShader;
