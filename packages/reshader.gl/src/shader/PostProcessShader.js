@@ -6,7 +6,16 @@ class PostProcessShader extends QuadShader {
     constructor(viewport) {
         super({
             vert, frag,
-            uniforms : ['enableVignette', 'enableGrain', 'textureSource', 'resolution', 'timeGrain', 'grainFactor', 'lensRadius', 'frameMod'],
+            uniforms : [
+                //common uniforms
+                'textureSource', 'resolution',
+                //filmic grain uniforms
+                'enableGrain', 'timeGrain', 'grainFactor',
+                //vignette uniforms
+                'enableVignette', 'lensRadius', 'frameMod',
+                //color lut uniforms
+                'enableLut', 'lookupTable'
+            ],
             extraCommandProps: {
                 viewport
             }

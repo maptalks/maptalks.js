@@ -5,6 +5,7 @@ import PostProcess from '../layer/postprocess/PostProcess.js';
 let postCanvas;
 let regl;
 let texture;
+let emptyLutTexture;
 let postProcess;
 const CLEAR_COLOR = {
     color: [0, 0, 0, 0]
@@ -64,15 +65,47 @@ function doPostProcess(renderer, canvas) {
     if (vignetteConfig.enable === undefined) {
         vignetteConfig.enable = true;
     }
+    const lutConfig = config.colorLUT || DEFAULT_CONFIG;
+    if (lutConfig.enable === undefined) {
+        lutConfig.enable = true;
+    }
+    if (!renderer._postProcessContext) {
+        renderer._postProcessContext = {};
+    }
+    const context = renderer._postProcessContext;
+    if (lutConfig.enable) {
+        const url = lutConfig.lut;
+        if (!context['lutTexture'] || context['lutTexture'].url !== url) {
+            const image = new Image();
+            image.onload = function () {
+                const texInfo = {
+                    data: image,
+                    min: 'linear',
+                    mag: 'linear'
+                };
+                const texture = context['lutTexture'] ? context['lutTexture'].texture(texInfo) : regl.texture(texInfo);
+                context['lutTexture'] = {
+                    url,
+                    texture
+                };
+                renderer.setLayerCanvasUpdated();
+            };
+            image.src = url;
+        }
+    }
     const uniforms = {
         'enableGrain': +!!grainConfig.enable,
-        'enableVignette': +!!vignetteConfig.enable,
         'grainFactor': grainConfig.factor === undefined ? 0.15 : grainConfig.factor,
         'timeGrain': performance.now(),
+
+        'enableVignette': +!!vignetteConfig.enable,
         'lensRadius': vignetteConfig.lensRadius || [0.8, 0.25],
-        'frameMod': 1
+        'frameMod': 1,
+
+        'enableLut': +!!lutConfig.enable,
+        'lookupTable': context['lutTexture'] ? context['lutTexture'].texture : emptyLutTexture
     };
-    postProcess.run(uniforms, texture({
+    postProcess.postprocess(uniforms, texture({
         width: postCanvas.width,
         height: postCanvas.height,
         data: canvas,
@@ -117,5 +150,6 @@ function createContext(width, height) {
         width,
         height
     });
+    emptyLutTexture = regl.texture();
     postProcess = new PostProcess(regl, viewport);
 }

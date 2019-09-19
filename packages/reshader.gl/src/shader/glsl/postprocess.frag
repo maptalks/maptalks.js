@@ -7,6 +7,7 @@ uniform sampler2D textureSource;
 
 uniform float enableVignette;
 uniform float enableGrain;
+uniform float enableLut;
 
 //grain
 uniform float timeGrain;
@@ -14,7 +15,10 @@ uniform float grainFactor;
 //vegeneet
 uniform vec2 lensRadius;
 uniform float frameMod;
+//color lut
+uniform sampler2D lookupTable;
 
+//----------------grain------------------
 float pseudoRandom(const in vec2 fragCoord) {
     vec3 p3 = fract(vec3(fragCoord.xyx) * .1031);
     p3 += dot(p3, p3.yzx + 19.19);
@@ -33,7 +37,7 @@ vec4 grain(const in vec4 color) {
     return vec4(mix(color.rgb, color.rgb * (color.rgb + (1.0 - color.rgb) * 2.0 * factor), grainFactor), color.a);
 }
 
-//--------------------------------------
+//----------------vigenett----------------
 float linearTosRGB(const in float color) {
     return  color < 0.0031308 ? color * 12.92 : 1.055 * pow(color, 1.0/2.4) - 0.055;
 }
@@ -91,8 +95,47 @@ vec4 vignette(const in vec4 color) {
 // vec4 sharpen() {
 //     return sharpen( (texture2D(TextureInput, (min(vTexCoord, 1.0 - 1e+0 / resolution.xy)) * uTextureInputRatio)));
 // }
+//--------------------color lut----------------
+// MIT license, from https://github.com/mattdesl/glsl-lut
+vec4 lookup(in vec4 textureColor, in sampler2D lookupTable) {
+    mediump float blueColor = textureColor.b * 63.0;
+
+    mediump vec2 quad1;
+    quad1.y = floor(floor(blueColor) / 8.0);
+    quad1.x = floor(blueColor) - (quad1.y * 8.0);
+
+    mediump vec2 quad2;
+    quad2.y = floor(ceil(blueColor) / 8.0);
+    quad2.x = ceil(blueColor) - (quad2.y * 8.0);
+
+    highp vec2 texPos1;
+    texPos1.x = (quad1.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.r);
+    texPos1.y = (quad1.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.g);
+
+    #ifdef LUT_FLIP_Y
+        texPos1.y = 1.0-texPos1.y;
+    #endif
+
+    highp vec2 texPos2;
+    texPos2.x = (quad2.x * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.r);
+    texPos2.y = (quad2.y * 0.125) + 0.5/512.0 + ((0.125 - 1.0/512.0) * textureColor.g);
+
+    #ifdef LUT_FLIP_Y
+        texPos2.y = 1.0-texPos2.y;
+    #endif
+
+    lowp vec4 newColor1 = texture2D(lookupTable, texPos1);
+    lowp vec4 newColor2 = texture2D(lookupTable, texPos2);
+
+    lowp vec4 newColor = mix(newColor1, newColor2, fract(blueColor));
+    return newColor;
+}
+
 void main() {
     vec4 color = texture2D(textureSource, vTexCoord);
+    if (enableLut == 1.0) {
+        color = lookup(color, lookupTable);
+    }
     // color = sharpen(color);
     if (enableVignette == 1.0) {
         color = vignette(color);
