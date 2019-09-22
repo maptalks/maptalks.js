@@ -7,16 +7,16 @@
 #endif
 
 vec3 sampleSunAreaLight(const vec3 lightDirection) {
-#if defined(SUN_AS_AREA_LIGHT)
-    if (frameUniforms.sun.w >= 0.0) {
-        // simulate sun as disc area light
-        float LoR = dot(lightDirection, shading_reflected);
-        float d = frameUniforms.sun.x;
-        highp vec3 s = shading_reflected - LoR * lightDirection;
-        return LoR < d ?
-                normalize(lightDirection * d + normalize(s) * frameUniforms.sun.y) : shading_reflected;
-    }
-#endif
+// #if defined(SUN_AS_AREA_LIGHT)
+//     if (frameUniforms.sun.w >= 0.0) {
+//         // simulate sun as disc area light
+//         float LoR = dot(lightDirection, shading_reflected);
+//         float d = frameUniforms.sun.x;
+//         highp vec3 s = shading_reflected - LoR * lightDirection;
+//         return LoR < d ?
+//                 normalize(lightDirection * d + normalize(s) * frameUniforms.sun.y) : shading_reflected;
+//     }
+// #endif
     return lightDirection;
 }
 

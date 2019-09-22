@@ -31,7 +31,7 @@ const DEFAULT_UNIFORMS = {
 
     postLightingColor: [0, 0, 0, 0],
 
-    HAS_TONE_MAPPING: 1,
+    HAS_TONE_MAPPING: 0,
 
     GAMMA_CORRECT_INPUT: 1,
 

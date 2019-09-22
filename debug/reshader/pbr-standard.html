@@ -92,10 +92,11 @@
                 // CLEAR_COAT_NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[9]));
                 const aperture = 16; //光圈
                 const speed = 1 / 125; //快门速度
-                const iso = 100; //iso感光度
+                const iso = 800; //iso感光度
                 const ev100 = computeEV100(aperture, speed, iso);
                 const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
                 UNIFORMS = {
+                    'light_ambientColor': [0.5, 0.5, 0.5],
                     'light_iblDFG': iblMaps.dfgLUT,
                     'light_iblSpecular': iblMaps.prefilterMap,
                     'iblSH': iblMaps.sh,
@@ -111,10 +112,11 @@
                 };
                 MatUNIFORMS = {
                     // 'baseColorFactor': [0.9, 0.9, 0.9, 0.3],
-                    'baseColorFactor': [0.660, 0.609, 0.526, 1],
-                    'metallicFactor' : 1,
-                    'roughnessFactor' : 0.65,
-                    'reflectance': 0.47,
+                    // 'baseColorFactor': [0.660, 0.609, 0.526, 1],
+                    'baseColorFactor': [255 / 255, 255 / 255, 255 / 255, 1],
+                    'metallicFactor' : 0,
+                    'roughnessFactor' : 0.6,
+                    'reflectance': 0.5,
                     'clearCoat': 0,
                     // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
                     'clearCoatRoughness': 0.3,
@@ -122,7 +124,7 @@
                     // 'normalTexture': NORMAL_TEXTURE,
                     // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
                     // 'baseColorTexture': BASE_COLOR_TEXTURE,
-                    'anisotropy': 1
+                    'anisotropy': 0
                 };
                 initGUI();
                 render();
@@ -301,6 +303,8 @@
         function getGeometryDefines(geometry) {
             const defines = SHADER.getGeometryDefines(geometry);
             defines['HAS_DIRECTIONAL_LIGHTING'] = 1;
+            defines['HAS_IBL_LIGHTING'] = 1;
+            defines['HAS_TONE_MAPPING'] = 1;
             return defines;
         }
 

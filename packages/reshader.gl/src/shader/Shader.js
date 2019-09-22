@@ -70,23 +70,21 @@ class Shader {
                 //an array uniform's value
                 const name = p, len = desc[p].length;
                 // change uniform value to the following form as regl requires:
-                // foo : {
-                //     0 : 'value',
-                //     1 : 'value',
-                //     2 : 'value'
-                // }
+                // foo[0]: 'value'
+                // foo[1]: 'value'
+                // foo[2]: 'value'
                 let values = context[p];
-                if (!values) {
-                    continue;
-                }
                 if (desc[p].fn) {
                     // an array function
                     values = desc[p].fn(context, props);
                 }
+                if (!values) {
+                    continue;
+                }
                 if (values.length !== len) {
                     throw new Error(`${name} uniform's length is not ${len}`);
                 }
-                uniforms[name] = {};
+                uniforms[name] = uniforms[name] || {};
                 for (let i = 0; i < len; i++) {
                     uniforms[name][`${i}`] = values[i];
                 }

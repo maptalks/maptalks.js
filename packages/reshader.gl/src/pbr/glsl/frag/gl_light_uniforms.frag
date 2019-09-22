@@ -10,6 +10,6 @@
         return vec3(0.0);
     }
     void evaluateIBL(const MaterialInputs material, const PixelParams pixel, inout vec3 color) {
-        color += light_ambientColor;
+        color += light_ambientColor * frameUniforms.iblLuminance;
     }
 #endif

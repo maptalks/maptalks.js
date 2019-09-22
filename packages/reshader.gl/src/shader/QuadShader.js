@@ -21,6 +21,17 @@ const quadTexcoords = new Float32Array([
 ]);
 
 class QuadShader extends MeshShader {
+    constructor(config) {
+        config.extraCommandProps = config.extraCommandProps || {};
+        if (!config.extraCommandProps.depth) {
+            //disable depth
+            config.extraCommandProps.depth = {
+                enable: false
+            };
+        }
+        super(config);
+    }
+
     draw(regl) {
         if (!this._quadMesh) {
             this._createQuadMesh(regl);

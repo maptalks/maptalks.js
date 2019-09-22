@@ -20,7 +20,7 @@ const DEFAULT_UNIFORMS = {
 
     postLightingColor: [0, 0, 0, 0],
 
-    HAS_TONE_MAPPING: 1,
+    HAS_TONE_MAPPING: 0,
 
     thickness: 0.5,           // default: 0.5
     subsurfacePower: 12.234,     // default: 12.234

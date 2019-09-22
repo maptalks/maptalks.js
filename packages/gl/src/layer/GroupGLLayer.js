@@ -13,7 +13,7 @@ const options = {
         'OES_element_index_uint',
         'OES_standard_derivatives'
     ],
-    optionalExtensions : ['OES_texture_float', 'WEBGL_depth_texture', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear'],
+    optionalExtensions : ['OES_texture_float', 'WEBGL_depth_texture', /*'WEBGL_draw_buffers', */'EXT_shader_texture_lod', 'OES_texture_float_linear'],
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true
@@ -51,6 +51,10 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     setSceneConfig(sceneConfig) {
         this.options.sceneConfig = sceneConfig;
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
         return this;
     }
 
@@ -161,6 +165,19 @@ export default class GroupGLLayer extends maptalks.Layer {
             layer._doRemove();
             layer.off('show hide', this._onLayerShowHide, this);
         });
+        if (this._targetFBO) {
+            //TODO 需要检查fbo中的depth texture和color texture是否被清除
+            this._targetFBO.destroy();
+            delete this._targetFBO;
+        }
+        if (this._postProcessor) {
+            this._postProcessor.delete();
+            delete this._postProcessor;
+        }
+        if (this._shadowPass) {
+            this._shadowPass.delete();
+            delete this._shadowPass;
+        }
         delete this._layerMap;
         super.onRemove();
     }
@@ -331,7 +348,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const attributes = layer.options['glOptions'] || {
             alpha: true,
             depth: true,
-            stencil : true
+            stencil: true
         };
         attributes.preserveDrawingBuffer = true;
         attributes.antialias = layer.options['antialias'];
@@ -347,12 +364,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._regl = createREGL({
             gl: this._reglGL,
             attributes,
-            extensions: [
-                'ANGLE_instanced_arrays',
-                'OES_element_index_uint',
-                'OES_standard_derivatives'
-            ],
-            optionalExtensions: layer.options['glExtensions'] || ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear']
+            extensions: layer.options['extensions'],
+            optionalExtensions: layer.options['optionalExtensions']
         });
         this.gl.regl = this._regl;
     }
@@ -474,7 +487,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _getShadowContext(fbo) {
         const sceneConfig =  this.layer._getSceneConfig();
-        if (!sceneConfig.shadow || !sceneConfig.shadow.enable) {
+        if (!sceneConfig || !sceneConfig.shadow || !sceneConfig.shadow.enable) {
             if (this._shadowPass) {
                 this._shadowPass.delete();
                 delete this._shadowPass;
@@ -522,14 +535,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _getFramebufferTarget() {
         const sceneConfig =  this.layer._getSceneConfig();
-        const config = sceneConfig.postProcess;
+        const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !this._isPostProcessEnabled()) {
             if (this._targetFBO) {
                 this._targetFBO.destroy();
             }
             return null;
         }
-        const depthTexture = config.ssao && config.ssao.enable;
         const colorCount = config.bloom && config.bloom.enable ? 2 : 1;
         if (!this._targetFBO) {
             const regl = this._regl;
@@ -540,15 +552,27 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 width: this.canvas.width,
                 height: this.canvas.height
             });
-            this._targetFBO = regl.framebuffer({
+            const fboInfo = {
                 width: this.canvas.width,
                 height: this.canvas.height,
                 colors: [color],
-                // colorType: 'float',
-                depthTexture: !!depthTexture,
+                stencil: false,
                 colorCount,
                 colorFormat: 'rgba' //TODO 是否能改成rgb?
-            });
+            };
+            if (config && config.ssao && config.ssao.enable) {
+                const depthBuffer = regl.texture({
+                    min: 'nearest',
+                    mag: 'nearest',
+                    mipmap: false,
+                    type: 'uint16',
+                    width: this.canvas.width,
+                    height: this.canvas.height,
+                    format: 'depth'
+                });
+                fboInfo.depth = depthBuffer;
+            }
+            this._targetFBO = regl.framebuffer(fboInfo);
         }
         return {
             bloom: config.bloom && config.bloom.enable1,
@@ -558,7 +582,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _postProcess() {
         const sceneConfig =  this.layer._getSceneConfig();
-        const config = sceneConfig.postProcess;
+        const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !config.enable) {
             return;
         }
@@ -575,9 +599,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             };
             this._postProcessor = new PostProcess(this._regl, viewport, this._targetFBO);
         }
-        if (config.antialias && config.antialias.enable) {
-            this._postProcessor.fxaa();
-        }
+        const map = this.layer.getMap();
+        this._postProcessor.layer({
+            enableSSAO: +!!(config.ssao && config.ssao.enable),
+            enableFXAA: +!!(config.antialias && config.antialias.enable),
+            enableToneMapping: +!!(config.toneMapping && config.toneMapping.enable),
+            projMatrix: map.projMatrix,
+            cameraNear: map.cameraNear,
+            cameraFar: map.cameraFar,
+            ssaoBias: config.ssao && config.ssao.bias || 0.005,
+            ssaoRadius: config.ssao && config.ssao.radius || 0.3,
+            ssaoPower: config.ssao && config.ssao.power || 0,
+        });
     }
 
     _isPostProcessEnabled() {

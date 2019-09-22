@@ -43,6 +43,8 @@ import fl_shading_lit from '../pbr/glsl/frag/shading_lit.frag';
 import fl_gl_post_process_frag from '../pbr/glsl/frag/gl_post_process.frag';
 //main
 import fl_main from '../pbr/glsl/frag/main.frag';
+//ssao
+import ssao_frag from '../shader/glsl/ssao.frag';
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -80,7 +82,10 @@ const ShaderChunk = {
     fl_shading_lit,
     fl_gl_post_process_frag,
     fl_main,
-    instance_vert
+
+    instance_vert,
+
+    ssao_frag
 };
 /* eslint-enable camelcase */
 

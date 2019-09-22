@@ -20,7 +20,7 @@ const DEFAULT_UNIFORMS = {
 
     postLightingColor: [0, 0, 0, 0],
 
-    HAS_TONE_MAPPING: 1,
+    HAS_TONE_MAPPING: 0,
 
     sheenColor: [-1, -1, -1],          // default: sqrt(baseColor)
     subsurfaceColor: undefined,     // default: float3(0.0)

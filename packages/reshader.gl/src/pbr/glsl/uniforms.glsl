@@ -51,8 +51,8 @@ uniform mediump vec4 sun;
 uniform highp vec3 lightDirection;
 uniform mediump float exposure;
 uniform mediump float ev100;
+uniform mediump float iblLuminance;
 #if defined(HAS_IBL_LIGHTING)
-    uniform mediump float iblLuminance;
     uniform highp vec3 iblSH[9];
     uniform mediump vec2 iblMaxMipLevel;
 #endif
@@ -66,9 +66,10 @@ void initFrameUniforms() {
     frameUniforms.sun = sun;
     frameUniforms.exposure = exposure;
     frameUniforms.ev100 = ev100;
+    frameUniforms.iblLuminance = iblLuminance * exposure;
+
 #if defined(HAS_IBL_LIGHTING)
     frameUniforms.iblMaxMipLevel = iblMaxMipLevel;
-    frameUniforms.iblLuminance = iblLuminance * exposure;
     for (int i = 0; i < 9; i++)
     {
         frameUniforms.iblSH[i] = iblSH[i];
