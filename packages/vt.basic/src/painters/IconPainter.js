@@ -385,7 +385,7 @@ class IconPainter extends CollisionPainter {
             if (visible) {
                 if (textMesh) {
                     const labelIndex = iconMesh.geometry.properties.labelIndex[iconIndex];
-                    if (labelIndex[0] !== -1) {
+                    if (labelIndex && labelIndex[0] !== -1) {
                         const [textStart, textEnd] = labelIndex;
                         for (let i = textStart; i < textEnd; i++) {
                             textVisibleElements.push(textElements[i]);
@@ -448,7 +448,11 @@ class IconPainter extends CollisionPainter {
         if (textMesh && mesh.geometry.properties.labelIndex) {
             //icon and text
             const textElements = textMesh.geometry.properties.elements;
-            const [textStart, textEnd] = mesh.geometry.properties.labelIndex[boxIndex];
+            const labelIndex = mesh.geometry.properties.labelIndex;
+            if (!labelIndex || !labelIndex[boxIndex]) {
+                return;
+            }
+            const [textStart, textEnd] = labelIndex[boxIndex];
             if (textStart !== -1) {
                 super.setCollisionOpacity(textMesh, textElements, value, textStart, textEnd);
             }
@@ -587,7 +591,7 @@ class IconPainter extends CollisionPainter {
                     // color: [0, 0, 0, 0]
                 },
                 depth: {
-                    enable: true,
+                    enable: false,
                     range: this.sceneConfig.depthRange || [0, 1],
                     func: this.sceneConfig.depthFunc || 'always'
                 },

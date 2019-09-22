@@ -58,7 +58,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
 
-        plugins[idx].config = this.layer._getComputedStyle()[idx];
+        plugins[idx].config = this.layer._getComputedStyle()[idx].renderPlugin;
         plugins[idx].updateSceneConfig({
             sceneConfig: sceneConfig
         });

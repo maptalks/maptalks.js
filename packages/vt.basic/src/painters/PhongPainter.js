@@ -176,7 +176,7 @@ class PhongPainter extends Painter {
                     opBack: {
                         fail: 'keep',
                         zfail: 'keep',
-                        zpass: 'keep'
+                        zpass: 'replace'
                     }
                 },
                 sample: {

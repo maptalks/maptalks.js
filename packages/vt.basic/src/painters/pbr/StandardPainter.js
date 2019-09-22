@@ -162,7 +162,7 @@ class StandardPainter extends Painter {
                     opBack: {
                         fail: 'keep',
                         zfail: 'keep',
-                        zpass: 'keep'
+                        zpass: 'replace'
                     }
                 },
                 viewport,
@@ -309,7 +309,7 @@ class StandardPainter extends Painter {
 
     _initCubeLight() {
         const config = this.sceneConfig.lights && this.sceneConfig.lights.ambient && this.sceneConfig.lights.ambient.resource;
-        if (config === undefined) {
+        if (!config && config !== 0) {
             return;
         }
         if (isNumber(config)) {
@@ -393,7 +393,7 @@ class StandardPainter extends Painter {
         const lightConfig = this.sceneConfig.lights;
         const aperture = lightConfig.camera.aperture || 16; //光圈
         const speed = lightConfig.camera.speed || 1 / 125; //快门速度
-        const iso = lightConfig.camera.iso || 100; //iso感光度
+        const iso = lightConfig.camera.iso || 280; //iso感光度
         const ev100 = computeEV100(aperture, speed, iso);
 
         let uniforms;
@@ -412,6 +412,7 @@ class StandardPainter extends Painter {
         } else {
             uniforms = {
                 'light_ambientColor': lightConfig.ambient.color || [0.05, 0.05, 0.05],
+                'iblLuminance': lightConfig.ambient.luminance || 12000,
                 'exposure': ev100toExposure(ev100),
                 'ev100': ev100,
                 'sun': [1, 1, 1, -1]
@@ -428,7 +429,7 @@ class StandardPainter extends Painter {
     _getDefines(shadowDefines) {
         const lightConfig = this.sceneConfig.lights;
         const defines = {};
-        if (lightConfig.ambient && lightConfig.ambient.resource !== undefined) {
+        if (lightConfig.ambient && (lightConfig.ambient.resource || lightConfig.ambient.resource === 0)) {
             defines['HAS_IBL_LIGHTING'] = 1;
             defines['IBL_MAX_MIP_LEVEL'] = (Math.log(lightConfig.ambient.prefilterCubeSize || 256) / Math.log(2)) + '.0';
         }
