@@ -32,21 +32,26 @@ import * as SkyboxHelper from './skybox/SkyboxHelper.js';
 export { SkyboxHelper };
 
 import * as PBRHelper from './pbr/PBRHelper.js';
-import LitMaterial from './pbr/LitMaterial.js';
-import LitShader from './pbr/LitShader';
-import ClothMaterial from './pbr/ClothMaterial.js';
-import ClothShader from './pbr/ClothShader';
-import SubsurfaceMaterial from './pbr/SubsurfaceMaterial.js';
-import SubsurfaceShader from './pbr/SubsurfaceShader';
+// import LitMaterial from './pbr/LitMaterial.js';
+// import LitShader from './pbr/LitShader';
+// import ClothMaterial from './pbr/ClothMaterial.js';
+// import ClothShader from './pbr/ClothShader';
+// import SubsurfaceMaterial from './pbr/SubsurfaceMaterial.js';
+// import SubsurfaceShader from './pbr/SubsurfaceShader';
+import StandardMaterial from './pbr/StandardMaterial.js';
+import StandardShader from './pbr/StandardShader';
 
 const pbr = {
     PBRHelper,
-    LitShader,
-    LitMaterial,
-    ClothShader,
-    ClothMaterial,
-    SubsurfaceShader,
-    SubsurfaceMaterial
+    StandardMaterial,
+    StandardShader
+
+    // LitShader,
+    // LitMaterial,
+    // ClothShader,
+    // ClothMaterial,
+    // SubsurfaceShader,
+    // SubsurfaceMaterial
 };
 
 export { pbr };
