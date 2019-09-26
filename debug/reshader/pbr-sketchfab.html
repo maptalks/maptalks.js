@@ -100,7 +100,7 @@
                 // CLEAR_COAT_NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[9]));
                 const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
                 UNIFORMS = {
-                    'uSketchfabLight0_diffuse': [1, 1, 1, 1],
+                    'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
                     'sIntegrateBRDF': iblMaps.dfgLUT,
                     'sSpecularPBR': iblMaps.prefilterMap,
                     'uDiffuseSPH': iblMaps.sh,
@@ -111,9 +111,12 @@
                     'uSketchfabLight0_viewDirection': [1, 0, -1]
                 };
                 MatUNIFORMS = {
-                    'uBaseColorFactor': [255 / 255, 255 / 255, 255 / 255, 1]
+                    'uAlbedo': [255 / 255, 255 / 255, 255 / 255, 1],
+                    'uRoughnessPBRFactor': 0,
+                    'uEnvironmentExposure': 1,
+
                 };
-                initGUI();
+                // initGUI();
                 render();
             });
         }
@@ -130,6 +133,7 @@
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.projMatrix = projMatrix;
             UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.uCameraPosition = camPos;
             renderer.render(
                 SHADER,
                 UNIFORMS,
@@ -173,6 +177,7 @@
             const material = new reshader.pbr.StandardMaterial(MatUNIFORMS);
 
             const { data, indices } = generateSphereData();
+            delete data.aTangent;
             const modelMatrix = mat4.identity([]);
             mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
             const geometry = new reshader.Geometry(data, indices, 0, { uv0Attribute: 'aTexCoord0' });
@@ -379,6 +384,6 @@
 
 
     </script>
-    <script type="text/javascript" src="js/initGui.js"></script>
+
   </body>
 </html>

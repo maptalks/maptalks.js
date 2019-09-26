@@ -106,6 +106,7 @@ class StandardShader extends MeshShader {
                 //     }
                 // },
                 'uEmitColor',
+                'uAlbedoPBR',
                 'uAlbedoPBRFactor', //1
                 'uAnisotropyDirection', //0
                 'uAnisotropyFactor', //1
@@ -117,7 +118,7 @@ class StandardShader extends MeshShader {
                 'uEmitColorFactor', //1
                 'uEnvironmentExposure', //2
                 'uFrameMod', //
-                'uGlossinessPBRFactor', //0.4
+                'uRoughnessPBRFactor', //0.4
                 'uMetalnessPBRFactor', //0
                 'uNormalMapFactor', //1
                 'uRGBMRange', //7
@@ -135,9 +136,11 @@ class StandardShader extends MeshShader {
                 'uNormalMapFlipY', //1
                 'uOutputLinear', //1
                 'uEnvironmentTransform', //0.5063, -0.0000, 0.8624, 0.6889, 0.6016, -0.4044, -0.5188, 0.7988, 0.3046
-                'Texture0', //albedo color
-                // 'Texture15', //shadow
-                'Texture1', //normal
+                'uAlbedoTexture', //albedo color
+                'uNormalTexture',
+                'uOcclusionTexture',
+                'uMetallicRoughnessTexture',
+                'uEmitTexture',
                 'sIntegrateBRDF',
                 'sSpecularPBR',
                 'uNearFar', //unused
@@ -174,7 +177,11 @@ class StandardShader extends MeshShader {
     }
 
     getGeometryDefines(geometry) {
-        return {};
+        const defines = {};
+        if (geometry.data[this.tangentAttribute]) {
+            defines['HAS_TANGENT'] = 1;
+        }
+        return defines;
     }
 }
 

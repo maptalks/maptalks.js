@@ -2,7 +2,7 @@ import Material from '../Material.js';
 import { mat3 } from 'gl-matrix';
 
 const DEFAULT_UNIFORMS = {
-    'uBaseColorFactor': [1, 1, 1, 1],
+    'uAlbedoPBR': [1, 1, 1, 1],
     'uEmitColor': [0, 0, 0],
 
     'uAlbedoPBRFactor': 1, //1
@@ -34,9 +34,12 @@ const DEFAULT_UNIFORMS = {
     'uNormalMapFlipY': 1, //1
     'uOutputLinear': 1, //1
     'uEnvironmentTransform': mat3.identity([]), //0.5063, -0.0000, 0.8624, 0.6889, 0.6016, -0.4044, -0.5188, 0.7988, 0.3046
-    'Texture0': null, //albedo color
-    // 'Texture15', //shadow
-    'Texture1': null, //normal
+    'uAlbedoTexture': null, //albedo color
+    'uNormalTexture': null,
+    'uOcclusionTexture': null,
+    'uMetallicRoughnessTexture': null,
+    'uEmitTexture': null,
+
     // 'sIntegrateBRDF': null,
     // 'sSpecularPBR': null,
     // 'uNearFar', //unused
@@ -68,9 +71,39 @@ class StandardMaterial extends Material {
     }
 
     createDefines() {
-        return {};
+        const uniforms = this.uniforms;
+        const defines = {
+        };
+        if (uniforms['uAlbedoTexture']) {
+            defines['HAS_ALBEDO_MAP'] = 1;
+        }
+        if (uniforms['uMetallicRoughnessTexture']) {
+            defines['HAS_METALLICROUGHNESS_MAP'] = 1;
+        }
+        if (uniforms['uOcclusionTexture']) {
+            defines['HAS_AO_MAP'] = 1;
+        }
+        if (uniforms['uEmitTexture']) {
+            defines['HAS_EMISSIVE_MAP'] = 1;
+        }
+        if (uniforms['uNormalTexture']) {
+            defines['HAS_NORMAL_MAP'] = 1;
+        }
+        if (defines['HAS_ALBEDO_MAP'] ||
+            defines['HAS_METALLICROUGHNESS_MAP'] ||
+            defines['HAS_AO_MAP'] ||
+            defines['HAS_EMISSIVE_MAP'] ||
+            defines['HAS_NORMAL_MAP']) {
+            defines['HAS_MAP'] = 1;
+        }
+        if (uniforms['HAS_TONE_MAPPING']) {
+            defines['HAS_TONE_MAPPING'] = 1;
+        }
+        if (uniforms['GAMMA_CORRECT_INPUT']) {
+            defines['GAMMA_CORRECT_INPUT'] = 1;
+        }
+        return defines;
     }
-
 }
 
 export default StandardMaterial;
