@@ -1,9 +1,8 @@
 import { GEOJSON_TYPES } from '../core/Constants';
-import { isNil, UID, isObject } from '../core/util';
+import { isNil, UID, isObject, extend, isFunction } from '../core/util';
 import Extent from '../geo/Extent';
 import PointExtent from '../geo/PointExtent';
 import { Geometry, LineString, Curve } from '../geometry';
-import { isFunction } from '../core/util';
 import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import Layer from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
@@ -182,7 +181,10 @@ class OverlayLayer extends Layer {
     /**
      * Adds one or more geometries to the layer
      * @param {Geometry|Geometry[]} geometries - one or more geometries
-     * @param {Boolean} [fitView=false]  - automatically set the map to a fit center and zoom for the geometries
+     * @param {Boolean|Object} [fitView=false]  - automatically set the map to a fit center and zoom for the geometries
+     * @param {String} [fitView.easing=out]  - default animation type
+     * @param {Number} [fitView.duration=map.options.zoomAnimationDuration]  - default animation time
+     * @param {Function} [fitView.step=null]  - step function during animation, animation frame as the parameter
      * @return {OverlayLayer} this
      */
     addGeometry(geometries, fitView) {
@@ -196,7 +198,7 @@ class OverlayLayer extends Layer {
             const last = arguments[count - 1];
             geometries = Array.prototype.slice.call(arguments, 0, count - 1);
             fitView = last;
-            if (isObject(last)) {
+            if (last && isObject(last) && (('type' in last) || last instanceof Geometry)) {
                 geometries.push(last);
                 fitView = false;
             }
@@ -206,7 +208,7 @@ class OverlayLayer extends Layer {
         }
         this._initCache();
         let extent;
-        if (fitView === true) {
+        if (fitView) {
             extent = new Extent();
         }
         this._toSort = this._maxZIndex > 0;
@@ -231,11 +233,22 @@ class OverlayLayer extends Layer {
             }
         }
         const map = this.getMap();
-        if (map) {
+        if (map && extent && !isNil(extent.xmin)) {
             this._getRenderer().onGeometryAdd(geos);
-            if (fitView === true && !isNil(extent.xmin)) {
-                const z = map.getFitZoom(extent);
-                map.setCenterAndZoom(extent.getCenter(), z);
+            const center = extent.getCenter();
+            const z = map.getFitZoom(extent);
+
+            if (isObject(fitView)) {
+                const step = isFunction(fitView.step) ? fitView.step : () => undefined;
+                map.animateTo({
+                    center,
+                    zoom: z,
+                }, extend({
+                    duration: map.options.zoomAnimationDuration,
+                    easing: 'out',
+                }, fitView), step);
+            } else if (fitView === true) {
+                map.setCenterAndZoom(center, z);
             }
         }
         /**
