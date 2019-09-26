@@ -13,10 +13,11 @@ vec4 Tangent;
 // uniform float uDisplay2D;//0
 // uniform float uPointSize;//1070.9412
 uniform mat3 uModelNormalMatrix;
-uniform mat3 uModelViewNormalMatrix;
+// uniform mat3 uModelViewNormalMatrix;
 uniform mat4 uModelMatrix;
 uniform mat4 uModelViewMatrix;
-uniform mat4 uProjectionMatrix;
+// uniform mat4 uProjectionMatrix;
+uniform mat4 uProjViewModelMatrix;
 // uniform mat4 uViewMatrix;
 // uniform vec2 uGlobalTexRatio;
 // uniform vec2 uGlobalTexSize;
@@ -25,7 +26,8 @@ varying vec3 vViewNormal;
 varying vec3 vModelNormal;
 varying vec3 vModelVertex;
 varying vec2 vTexCoord6;
-varying vec4 vViewTangent;
+// varying vec4 vViewTangent;
+varying vec4 vModelTangent;
 varying vec4 vViewVertex;
 #define SHADER_NAME PBR_Opaque(glass)
 
@@ -62,11 +64,12 @@ void main() {
     vModelVertex = (uModelMatrix * vec4(localVertex, 1.0)).xyz;
     vec3 localNormal = Normal;
     vModelNormal = uModelNormalMatrix * localNormal;
-    vViewNormal = uModelViewNormalMatrix * localNormal;
+    // vViewNormal = uModelViewNormalMatrix * localNormal;
     vec4 localTangent = Tangent;
-    vViewTangent = vec4(uModelViewNormalMatrix * localTangent.xyz, localTangent.w);
-    vViewVertex = uModelViewMatrix * vec4(localVertex, 1.0);
-    gl_Position = uProjectionMatrix * vViewVertex;
+    // vViewTangent = vec4(uModelViewNormalMatrix * localTangent.xyz, localTangent.w);
+    vModelTangent = vec4(uModelNormalMatrix * localTangent.xyz, sign(aTangent.w));
+    // vViewVertex = uModelViewMatrix * vec4(localVertex, 1.0);
+    gl_Position = uProjViewModelMatrix * vec4(localVertex, 1.0);
     // mat4 jitteredProjection = uProjectionMatrix;
     // jitteredProjection[2].xy += (1.0 - uDisplay2D) * (uHalton.xy * uGlobalTexRatio.xy / uGlobalTexSize.xy);
     // gl_Position = jitteredProjection * vViewVertex;

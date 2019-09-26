@@ -3,11 +3,13 @@ import { mat3 } from 'gl-matrix';
 
 const DEFAULT_UNIFORMS = {
     'uBaseColorFactor': [1, 1, 1, 1],
+    'uEmitColor': [0, 0, 0],
+
     'uAlbedoPBRFactor': 1, //1
     'uAnisotropyDirection': 0, //0
-    'uAnisotropyFactor': 1, //1
+    'uAnisotropyFactor': 0, //1
     'uClearCoatF0': 0.04, //0.04
-    'uClearCoatFactor': 1, //1
+    'uClearCoatFactor': 0, //1
     'uClearCoatIor': 1.4, //1.4
     'uClearCoatRoughnessFactor': 0.04, //0.04
     'uClearCoatThickness': 5, //5
