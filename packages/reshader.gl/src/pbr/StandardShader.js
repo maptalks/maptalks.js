@@ -140,7 +140,7 @@ class StandardShader extends MeshShader {
                 'uNormalTexture',
                 'uOcclusionTexture',
                 'uMetallicRoughnessTexture',
-                'uEmitTexture',
+                'uEmissiveTexture',
                 'sIntegrateBRDF',
                 'sSpecularPBR',
                 'uNearFar', //unused

@@ -14,9 +14,8 @@ const DEFAULT_UNIFORMS = {
     'uClearCoatRoughnessFactor': 0.04, //0.04
     'uClearCoatThickness': 5, //5
     'uEmitColorFactor': 1, //1
-    'uEnvironmentExposure': 2, //2
     // 'uFrameMod', //
-    'uGlossinessPBRFactor': 0.4, //0.4
+    'uRoughnessPBRFactor': 0.4, //0.4
     'uMetalnessPBRFactor': 0, //0
     'uNormalMapFactor': 1, //1
     'uRGBMRange': 7, //7
@@ -31,14 +30,14 @@ const DEFAULT_UNIFORMS = {
     // 'uAnisotropyFlipXY', //unused
     // 'uDrawOpaque', //unused
     'uEmitMultiplicative': 0, //0
-    'uNormalMapFlipY': 1, //1
+    'uNormalMapFlipY': 0, //1
     'uOutputLinear': 1, //1
     'uEnvironmentTransform': mat3.identity([]), //0.5063, -0.0000, 0.8624, 0.6889, 0.6016, -0.4044, -0.5188, 0.7988, 0.3046
     'uAlbedoTexture': null, //albedo color
     'uNormalTexture': null,
     'uOcclusionTexture': null,
     'uMetallicRoughnessTexture': null,
-    'uEmitTexture': null,
+    'uEmissiveTexture': null,
 
     // 'sIntegrateBRDF': null,
     // 'sSpecularPBR': null,
@@ -83,7 +82,7 @@ class StandardMaterial extends Material {
         if (uniforms['uOcclusionTexture']) {
             defines['HAS_AO_MAP'] = 1;
         }
-        if (uniforms['uEmitTexture']) {
+        if (uniforms['uEmissiveTexture']) {
             defines['HAS_EMISSIVE_MAP'] = 1;
         }
         if (uniforms['uNormalTexture']) {

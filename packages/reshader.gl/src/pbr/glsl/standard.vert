@@ -3,7 +3,7 @@
 
 attribute vec3 aPosition;
 #if defined(HAS_MAP)
-    attribute vec2 aTexCoord;
+    attribute vec2 aTexCoord0;
 #endif
 #if defined(HAS_TANGENT)
     attribute vec4 aTangent;
@@ -64,7 +64,7 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
 
 void main() {
     #if defined(HAS_MAP)
-        vTexCoord = aTexCoord;
+        vTexCoord = aTexCoord0;
     #endif
 
     #if defined(HAS_TANGENT)

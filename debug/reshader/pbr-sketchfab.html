@@ -343,44 +343,6 @@
             translate * Math.cos(roll) * Math.cos(-pitch)];
         }
 
-       window.changeMaterialUniforms = function(key, value) {
-            SCENE.getMeshes().forEach(mesh => {
-               mesh.getMaterial().uniforms[key] = value;
-            });
-        }
-        //根据快门参数，计算ev100
-        window.computeEV100 = function(aperture, shutterSpeed, ISO) {
-            // log2((N^2*S)/(t*100))
-            return Math.log2(((aperture * aperture) * 100.0) / (shutterSpeed * ISO));
-        }
-
-        window.EV100toExposure = function(EV100) {
-            return 1.0 / (1.2 * Math.pow(2.0, EV100));
-        }
-
-        function linearToSRGB(c) {
-            return (c <= 0.0031308) ? c * 12.92 : (Math.pow(Math.abs(c), 1.0 / 2.4) * 1.055) - 0.055;
-        }
-
-        function fromLinear(color) {
-            return [
-                linearToSRGB(color[0]),
-                linearToSRGB(color[1]),
-                linearToSRGB(color[2])
-            ];
-        }
-
-        function sRGBtoLinear(c) {
-            return (c <= 0.04045) ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-        }
-
-        function toLinear(color) {
-            return [
-                sRGBtoLinear(color[0]),
-                sRGBtoLinear(color[1]),
-                sRGBtoLinear(color[2])
-            ];
-        }
 
 
     </script>
