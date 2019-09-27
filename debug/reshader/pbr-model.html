@@ -195,12 +195,12 @@
         }
 
         function getGLTFScene() {
-            // var url = 'gltf/DamagedHelmet.glb';
-            // return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
-            //     const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
-            const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
-            return gltf.Ajax.getJSON(url, {}).then((json) => {
-                const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
+            var url = 'gltf/DamagedHelmet.glb';
+            return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
+                const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
+            // const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
+            // return gltf.Ajax.getJSON(url, {}).then((json) => {
+            //     const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
                 return loader.load().then(gltfData => {
                     const transformMat = mat4.identity([]);
                     mat4.rotate(transformMat, transformMat, 90 * Math.PI / 180, [1, 0, 0]);

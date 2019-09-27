@@ -70,10 +70,10 @@ void main() {
     #if defined(HAS_TANGENT)
         vec3 t;
         toTangentFrame(aTangent, Normal, t);
-        Tangent = vec4(t, sign(aTangent.w));
-        vec4 localTangent = Tangent;
+        // Tangent = vec4(t, aTangent.w);
+        // vec4 localTangent = Tangent;
         // vViewTangent = vec4(uModelViewNormalMatrix * localTangent.xyz, localTangent.w);
-        vModelTangent = vec4(uModelNormalMatrix * localTangent.xyz, sign(aTangent.w));
+        vModelTangent = vec4(uModelNormalMatrix * t, aTangent.w);
     #else
         Normal = aNormal;
     #endif

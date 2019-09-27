@@ -16,7 +16,7 @@
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
-        const PREFILTER_CUBE_SIZE = 512;
+        const PREFILTER_CUBE_SIZE = 256;
         const { createREGL, mat4, reshader } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -26,6 +26,12 @@
         // });
 
         const regl = createREGL({
+            attributes: {
+                alpha: true,
+                stencil: true,
+                depth: true,
+                antialias: false,
+            },
             canvas : canvas,
             // gl,
             extensions : [
@@ -152,8 +158,8 @@
         function createMaps(hdr) {
             const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
-                envCubeSize: PREFILTER_CUBE_SIZE,
-                prefilterCubeSize: 512,
+                envCubeSize: 512,
+                prefilterCubeSize: PREFILTER_CUBE_SIZE,
                 ignoreSH: true
             });
 
