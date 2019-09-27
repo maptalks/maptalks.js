@@ -2,8 +2,12 @@
 import vsm_shadow_vert from './glsl/vsm_shadow.vert';
 import vsm_shadow_frag from './glsl/vsm_shadow.frag';
 import fbo_picking_vert from './glsl/fbo_picking.vert';
+import invert_matrix from '../shader/glsl/invert_matrix.vert';
+import get_output from '../shader/glsl/output.vert';
 //instance.vert
 import instance_vert from '../shader/glsl/instance.vert';
+//skin.vert
+import skin_vert from '../shader/glsl/skin.vert';
 
 
 //webgl 2.0中的函数实现
@@ -82,9 +86,10 @@ const ShaderChunk = {
     fl_shading_lit,
     fl_gl_post_process_frag,
     fl_main,
-
+    invert_matrix,
+    get_output,
     instance_vert,
-
+    skin_vert,
     ssao_frag
 };
 /* eslint-enable camelcase */
