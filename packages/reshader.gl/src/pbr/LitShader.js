@@ -1,5 +1,5 @@
 import litFrag from './glsl/frag/index_lit.frag';
-import StandardShader from './StandardShader.js';
+import StandardShader from './FLStandardShader.js';
 
 const UNIFORMS = [
     'material.baseColorTexture',

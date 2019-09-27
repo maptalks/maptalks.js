@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sketchfab Frag</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1000px;height:800px}
+  </style>
+  <script type="text/javascript" src="http://localhost/maptalks/dist/maptalks.js"></script>
+    <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+    <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/dat.gui.min.js"></script>
+  <body>
+    <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
+    <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
+    <script>
+        function myTest() {
+            const modelMatrix = [1, -0.0000, 0.0000, 0, 0.0000, 0, 1, 0, 0.0000, -1, -0.0000, 0, -34.5294, 143.0380, -523.5370, 1];
+            const modelNormalMatrix = maptalksgl.mat3.fromMat4([], modelMatrix);
+            console.log(modelNormalMatrix);
+        }
+        myTest();
+    </script>
+    <script type="module">
+        import sphereData from './common/sphere.js';
+        const PREFILTER_CUBE_SIZE = 512;
+        const { createREGL, mat3, mat4, reshader } = maptalksgl;
+        const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
+
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_texture_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod',
+            ]
+        });
+        let iblMaps;
+        let mouseDown = false;
+        let roll = Math.PI;
+        let pitch = 0.0;
+        let translate = 4.0;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        const loader = new reshader.ResourceLoader(regl.texture(2));
+        const renderer = new reshader.Renderer(regl);
+        let camPos = [0, 0, -4];
+        let SCENE = null;
+        let SHADER;
+        window.UNIFORMS = null;
+        window.MatUNIFORMS = null;
+        let NORMAL_TEXTURE;
+        let ROUGHNESS_METALLIC_TEXTURE;
+        let BASE_COLOR_TEXTURE;
+        let CLEAR_COAT_NORMAL_TEXTURE;
+
+        function main() {
+            const skyboxTextures = [
+                "./ibl/resources/skybox/right.jpg",
+                "./ibl/resources/skybox/left.jpg",
+                "./ibl/resources/skybox/top.jpg",
+                "./ibl/resources/skybox/bottom.jpg",
+                "./ibl/resources/skybox/back.jpg",
+                "./ibl/resources/skybox/front.jpg"
+            ];
+
+            //载入天空盒纹理图片
+            const promises = skyboxTextures.map(url => new Promise(function (resolve, reject) {
+                const img = new Image();
+                img.onload = function () {
+                    resolve(img);
+                };
+                img.src = url;
+            }));
+
+            const textures = [
+                // "./ibl/resources/rusted_iron/normal.png",
+                "./ibl/resources/rusted_iron/609-normal.jpg",
+                "./ibl/resources/rusted_iron/occulusionRoughnessMetallicMap-1024.png",
+                "./ibl/resources/rusted_iron/albedo.png",
+                // "./ibl/resources/rusted_iron/normal.png",
+            ];
+
+            promises.push(...textures.map(url => new Promise(function (resolve, reject) {
+                const img = new Image();
+                img.onload = function () {
+                    resolve(img);
+                };
+                img.src = url;
+            })));
+
+            Promise.all(promises).then(images => {
+                iblMaps = createMaps(images.slice(0, 6));
+                NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[6]));
+                ROUGHNESS_METALLIC_TEXTURE = new reshader.Texture2D(regl.texture(images[7]));
+                BASE_COLOR_TEXTURE = new reshader.Texture2D(regl.texture(images[8]));
+                // CLEAR_COAT_NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[9]));
+                const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+                UNIFORMS = {
+                    'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
+                    'sIntegrateBRDF': iblMaps.dfgLUT,
+                    'sSpecularPBR': iblMaps.prefilterMap,
+                    'uDiffuseSPH': iblMaps.sh,
+                    'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
+                    'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
+                    'lightColorIntensity': [1, 1, 1, 30000],
+                    'sun': [1, 1, 1, -1],
+                    'uSketchfabLight0_viewDirection': [1, 0, -1]
+                };
+                MatUNIFORMS = {
+                    'uAlbedo': [255 / 255, 255 / 255, 255 / 255, 1],
+                    'uRoughnessPBRFactor': 0,
+                    'uEnvironmentExposure': 1,
+
+                };
+                // initGUI();
+                render();
+            });
+        }
+        main();
+        function render() {
+            //绘制gltf模型
+            // drawGLTFModel();
+            drawSphere();
+        }
+        function drawScene() {
+            const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
+            const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            UNIFORMS.modelMatrix = mat4.identity([]);
+            UNIFORMS.viewMatrix = viewMatrix;
+            UNIFORMS.projMatrix = projMatrix;
+            UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.uCameraPosition = camPos;
+            renderer.render(
+                SHADER,
+                UNIFORMS,
+                SCENE
+            );
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            requestAnimationFrame(drawScene);
+        }
+
+        function drawSphere() {
+            SHADER = new reshader.pbr.StandardShader();
+            SCENE = getScene();
+            drawScene();
+        }
+        function drawGLTFModel() {
+            SHADER = new reshader.pbr.StandardShader({
+                positionAttribute : 'POSITION',
+                normalAttribute : 'NORMAL',
+                tangentAttribute : 'TANGENT',
+                colorAttribute : 'COLOR_0',
+                uv0Attribute : 'TEXCOORD_0',
+                uv1Attribute : 'TEXCOORD_1'
+            });
+            const scenePromise = getScene();
+            scenePromise.then(scene => {
+                SCENE = scene;
+                drawScene();
+            });
+        }
+
+        function createMaps(hdr) {
+            return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+                envTexture : hdr,
+                envCubeSize: 256,
+                prefilterCubeSize: PREFILTER_CUBE_SIZE
+            });
+        }
+        function getScene() {
+            const meshes = [];
+            //创建纹理
+            const material = new reshader.pbr.StandardMaterial(MatUNIFORMS);
+
+            const { data, indices } = generateSphereData();
+            delete data.aTangent;
+            const modelMatrix = mat4.identity([]);
+            mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 0.4]);
+            const geometry = new reshader.Geometry(data, indices, 0, { uv0Attribute: 'aTexCoord0' });
+            geometry.createTangent('aTangent');
+            const defines = getGeometryDefines(geometry);
+            const mesh = new reshader.Mesh(geometry, material);
+            mesh.setLocalTransform(modelMatrix);
+            mesh.setDefines(defines);
+            meshes.push(mesh);
+            return new reshader.Scene(meshes);
+        }
+
+        function generateSphereData() {
+            const data = {
+                'aPosition' : sphereData.vertices,
+                'aNormal' : sphereData.normals,
+                'aTexCoord0' : sphereData.textures,
+                'aTangent': sphereData.tangents
+            };
+
+            const indices = sphereData.indices;
+            return { data, indices };
+        }
+
+        function _getScene() {
+            var url = 'gltf/MetalRoughSpheres/MetalRoughSpheres.gltf';
+            return gltf.Ajax.getJSON(url, {}).then((json) => {
+                const loader = new gltf.GLTFLoader('gltf/MetalRoughSpheres', json);
+                return loader.load().then(gltfData => {
+                    console.log(gltfData);
+                    const transformMat = mat4.identity([]);
+                    mat4.rotate(transformMat, transformMat, 45 * Math.PI / 180, [0, 1, 0]);
+                    mat4.scale(transformMat, transformMat, [60, 60, 60]);
+                    const modelMeshes = [];
+                    const nodes = gltfData.scenes[0].nodes;
+                    nodes.forEach((node, i) => {
+                        if (!node.meshes && !node.children) {
+                            return;
+                        }
+                        let meshes = null;
+                        if (node.children) {
+                            meshes = extractMesh(node.children);
+                        } else if (node.meshes) {
+                            meshes = node.meshes;
+                        }
+                        meshes.forEach(mesh => {
+                            mesh.primitives.forEach(primitive => {
+                                const modelGeometry = createGeometry(primitive);
+                                const defines = getGeometryDefines(modelGeometry);
+                                const material = new reshader.pbr.LitMaterial({
+                                    metallicFactor : 1,
+                                    roughnessFactor : 0,
+                                    reflectance: 1
+                                });
+                                //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
+                                const modelMesh = new reshader.Mesh(modelGeometry, material);
+                                modelMeshes.push(modelMesh);
+                                modelMesh.setLocalTransform(transformMat);
+                                modelMesh.setDefines(defines);
+                            });
+                        });
+                    });
+                    const scene = new reshader.Scene(modelMeshes);
+                    return scene;
+                });
+            });
+        }
+        function extractMesh(children) {
+            //TODO
+            //children里面可能由很多mesh，后面还需要完善
+            for (let i = 0; i < children.length; i++) {
+                if (children[i].meshes) {
+                    return children[i].meshes;
+                }
+            }
+            return [];
+        }
+        function createGeometry(primitive) {
+            const attributes = {};
+            for (const attr in primitive.attributes) {
+                attributes[attr] =  primitive.attributes[attr].array;
+            }
+            delete attributes['TEXCOORD_0'];
+            const modelGeometry = new reshader.Geometry(
+                attributes,
+                primitive.indices,
+                0,
+                {
+                    //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
+                    primitive : (typeof primitive.mode === 'number') ? MODES[primitive.mode] : primitive.mode,
+                    positionAttribute : 'POSITION',
+                }
+            );
+            return modelGeometry;
+        }
+
+        function getViewProjection(cameraPos, aspect) {
+            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 0.1, 200);
+            //const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            var xRotation = mat4.create();
+            mat4.rotateY(xRotation, xRotation, roll);
+            var yRotation = mat4.create();
+            mat4.rotateX(yRotation, yRotation, pitch);
+            var viewMatrix = mat4.create();
+            mat4.multiply(viewMatrix, yRotation, xRotation);
+            viewMatrix[14] = -translate;
+            return {
+                viewMatrix,
+                projMatrix
+            };
+        }
+        function getGeometryDefines(geometry) {
+            const defines = SHADER.getGeometryDefines(geometry);
+            return defines;
+        }
+
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.onmousemove = function(ev) { handleMouseMove(ev); };
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+
+        function handleMouseDown(ev) {
+            mouseDown = true;
+            lastMouseX = ev.clientX;
+            lastMouseY = ev.clientY;
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+            updateCamera();
+        }
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+
+        function updateCamera() {
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+        }
+
+
+
+    </script>
+
+  </body>
+</html>

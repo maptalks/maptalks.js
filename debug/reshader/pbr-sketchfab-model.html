@@ -16,7 +16,7 @@
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
-        const PREFILTER_CUBE_SIZE = 512;
+        const PREFILTER_CUBE_SIZE = 256;
         const { createREGL, mat4, reshader } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -26,6 +26,12 @@
         // });
 
         const regl = createREGL({
+            attributes: {
+                alpha: true,
+                stencil: true,
+                depth: true,
+                antialias: false,
+            },
             canvas : canvas,
             // gl,
             extensions : [
@@ -49,7 +55,6 @@
         let SCENE = null;
         let SHADER;
         window.UNIFORMS = null;
-        window.MatUNIFORMS = null;
         let NORMAL_TEXTURE;
         let ROUGHNESS_METALLIC_TEXTURE;
         let BASE_COLOR_TEXTURE;
@@ -83,40 +88,21 @@
 
             Promise.all(promises).then(images => {
                 iblMaps = createMaps(images.slice(0, 6));
-                // CLEAR_COAT_NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[9]));
-                const aperture = 16; //光圈
-                const speed = 1 / 125; //快门速度
-                const iso = 100; //iso感光度
-                const ev100 = computeEV100(aperture, speed, iso);
+                const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
                 UNIFORMS = {
-                    'light_iblDFG': iblMaps.dfgLUT,
-                    'light_iblSpecular': iblMaps.prefilterMap,
-                    'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
-                    'cameraPosition':camPos,
-                    'iblSH': iblMaps.sh,
-                    'lightColorIntensity': [0.98, 0.92, 0.89, 30000],
-                    'sun': [1, 1, 1, -1],
-                    'lightDirection': [1, 1, -1],
-                    'iblLuminance': 8000,
-                    'exposure': EV100toExposure(ev100),
-                    'ev100': ev100,
+                    // 'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
+
+                    'uEnvironmentExposure': 1, //2
+                    'uSketchfabLight0_diffuse': [1, 1, 1, 1],
+                    'sIntegrateBRDF': iblMaps.dfgLUT,
+                    'sSpecularPBR': iblMaps.prefilterMap,
+                    'uDiffuseSPH': iblMaps.sh,
+                    'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
+                    'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
+                    'lightColorIntensity': [1, 1, 1, 30000],
+                    'uSketchfabLight0_viewDirection': [1, 0, -1]
                 };
-                MatUNIFORMS = {
-                    // 'baseColorFactor': [0.9, 0.9, 0.9, 0.3],
-                    'baseColorFactor': [0.660, 0.609, 0.526, 1],
-                    'metallicFactor' : 1,
-                    'roughnessFactor' : 0.65,
-                    'reflectance': 0.47,
-                    'clearCoat': 0,
-                    // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
-                    'clearCoatRoughness': 0.3,
-                    // 'clearCoatIorChange': false,
-                    // 'normalTexture': NORMAL_TEXTURE,
-                    // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-                    // 'baseColorTexture': BASE_COLOR_TEXTURE,
-                    'anisotropy': 0
-                };
-                initGUI();
+                // initGUI();
                 render();
             });
         }
@@ -130,14 +116,11 @@
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
             const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+            // UNIFORMS.modelMatrix = mat4.identity([]);
             UNIFORMS.viewMatrix = viewMatrix;
-            UNIFORMS.cameraPosition = camPos;
+            UNIFORMS.projMatrix = projMatrix;
             UNIFORMS.projViewMatrix = projViewMatrix;
-            UNIFORMS.time = Date.now() / 1000;
-            UNIFORMS.viewMatrix = viewMatrix;
-            UNIFORMS.projViewMatrix = projViewMatrix;
-            UNIFORMS.time = Date.now() / 1000;
-            UNIFORMS.iblMaxMipLevel = [mipLevel, 1 << mipLevel]
+            UNIFORMS.uCameraPosition = camPos;
             renderer.render(
                 SHADER,
                 UNIFORMS,
@@ -148,7 +131,7 @@
         }
 
         function drawGLTFModel() {
-            SHADER = new reshader.pbr.LitShader({
+            SHADER = new reshader.pbr.StandardShader({
                 positionAttribute : 'POSITION',
                 normalAttribute : 'NORMAL',
                 tangentAttribute : 'TANGENT',
@@ -162,7 +145,7 @@
                     }
                 },
                 defines: {
-                    'HAS_IBL_LIGHTING': 1
+                    // 'HAS_IBL_LIGHTING': 1
                 }
             });
             const scenePromise = getGLTFScene();
@@ -175,8 +158,8 @@
         function createMaps(hdr) {
             const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
-                envCubeSize: PREFILTER_CUBE_SIZE,
-                prefilterCubeSize: 512,
+                envCubeSize: 512,
+                prefilterCubeSize: PREFILTER_CUBE_SIZE,
                 ignoreSH: true
             });
 
@@ -233,38 +216,38 @@
                                     if (primitive.material) {
                                         const textures = primitive.material.pbrMetallicRoughness;
                                         if (textures.baseColorTexture) {
-                                            uniforms.baseColorTexture = toTexture(textures.baseColorTexture);
+                                            uniforms.uAlbedoTexture = toTexture(textures.baseColorTexture);
                                         } else if (textures.baseColorFactor) {
-                                            uniforms.baseColorFactor = textures.baseColorFactor;
+                                            uniforms.uAlbedoPBR = textures.baseColorFactor;
                                         }
                                         if (textures.metallicRoughnessTexture) {
-                                            uniforms.metallicRoughnessTexture = toTexture(textures.metallicRoughnessTexture);
+                                            uniforms.uMetallicRoughnessTexture = toTexture(textures.metallicRoughnessTexture);
                                         } else {
                                             if (textures.metallicFactor !== undefined) {
-                                                uniforms.metallicFactor = textures.metallicFactor;
+                                                uniforms.uMetalnessPBRFactor = textures.metallicFactor;
                                             }
                                             if (textures.roughnessFactor !== undefined) {
-                                                uniforms.roughnessFactor = textures.roughnessFactor;
+                                                uniforms.uRoughnessPBRFactor = textures.roughnessFactor;
                                             }
                                         }
 
                                         if (primitive.material.normalTexture) {
-                                            uniforms.normalTexture = toTexture(primitive.material.normalTexture);
+                                            uniforms.uNormalTexture = toTexture(primitive.material.normalTexture);
                                         }
                                         if (primitive.material.occlusionTexture) {
-                                            uniforms.occlusionTexture = toTexture(primitive.material.occlusionTexture);
+                                            uniforms.uOcclusionTexture = toTexture(primitive.material.occlusionTexture);
                                         }
                                         if (primitive.material.emissiveTexture) {
-                                            uniforms.emissiveTexture = toTexture(primitive.material.emissiveTexture);
+                                            uniforms.uEmissiveTexture = toTexture(primitive.material.emissiveTexture);
                                         }
                                     } else {
                                         uniforms = {
-                                            metallicFactor : 1,
-                                            roughnessFactor : 0,
-                                            reflectance: 1
+                                            uMetalnessPBRFactor : 1,
+                                            uRoughnessPBRFactor : 0
                                         };
                                     }
-                                    const material = new reshader.pbr.LitMaterial(uniforms);
+                                    // uniforms['uOutputLinear'] = 0;
+                                    const material = new reshader.pbr.StandardMaterial(uniforms);
                                     //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
                                     const modelMesh = new reshader.Mesh(modelGeometry, material);
                                     modelMeshes.push(modelMesh);
@@ -384,45 +367,6 @@
             translate * Math.cos(roll) * Math.cos(-pitch)];
         }
 
-       window.changeMaterialUniforms = function(key, value) {
-            SCENE.getMeshes().forEach(mesh => {
-               mesh.getMaterial().uniforms[key] = value;
-            });
-        }
-        //根据快门参数，计算ev100
-        window.computeEV100 = function(aperture, shutterSpeed, ISO) {
-            // log2((N^2*S)/(t*100))
-            return Math.log2(((aperture * aperture) * 100.0) / (shutterSpeed * ISO));
-        }
-
-        window.EV100toExposure = function(EV100) {
-            return 1.0 / (1.2 * Math.pow(2.0, EV100));
-        }
-
-        function linearToSRGB(c) {
-            return (c <= 0.0031308) ? c * 12.92 : (Math.pow(Math.abs(c), 1.0 / 2.4) * 1.055) - 0.055;
-        }
-
-        function fromLinear(color) {
-            return [
-                linearToSRGB(color[0]),
-                linearToSRGB(color[1]),
-                linearToSRGB(color[2])
-            ];
-        }
-
-        function sRGBtoLinear(c) {
-            return (c <= 0.04045) ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-        }
-
-        function toLinear(color) {
-            return [
-                sRGBtoLinear(color[0]),
-                sRGBtoLinear(color[1]),
-                sRGBtoLinear(color[2])
-            ];
-        }
-
         function request(url, cb) {
             const image = new Image();
             image.onload = () => {
@@ -464,6 +408,5 @@
             return mat4.fromRotationTranslationScale([], q, v, s)
         }
     </script>
-    <script type="text/javascript" src="js/initGui.js"></script>
   </body>
 </html>
