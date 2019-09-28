@@ -167,7 +167,8 @@ class LinePainter extends BasicPainter {
                 symbolName: 'lineWidth',
                 evaluate: properties => {
                     const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
-                    u16[0] = lineWidth;
+                    //乘以2是为了解决 #190
+                    u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
                 }
             }

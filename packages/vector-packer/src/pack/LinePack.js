@@ -600,7 +600,8 @@ export default class LinePack extends VectorPack {
             linesofar
         );
         if (this._lineWidthFn) {
-            data.push(this._feaLineWidth);
+            //乘以2是为了解决 #190
+            data.push(Math.round(this._feaLineWidth * 2));
         }
         if (this._colorFn) {
             data.push(...this._feaColor);
@@ -647,28 +648,17 @@ export default class LinePack extends VectorPack {
         }
         const filtered = [];
         const EXTENT = this.options['EXTENT'];
-        let hit = false;
         let preOut = true;
         let i;
-        let seg = [];
         for (i = 0; i < line.length - 1; i++) {
             const out = isOutSegment(line[i], line[i + 1], EXTENT);
-            if (out && !hit) {
-                continue;
-            }
             if (out && preOut) {
-                seg.push(line[i]);
                 continue;
-            }
-            hit = true;
-            if (seg.length) {
-                filtered.push(...seg);
-                seg.length = 0;
             }
             filtered.push(line[i]);
             preOut = out;
         }
-        if (filtered[filtered.length - 1] === line[i - 1]) {
+        if (!preOut) {
             filtered.push(line[i]);
         }
         return filtered;

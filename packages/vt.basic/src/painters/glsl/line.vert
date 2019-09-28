@@ -76,7 +76,8 @@ void main() {
 
     float gapwidth = lineGapWidth / 2.0;
     #ifdef HAS_LINE_WIDTH
-        float lineWidth = aLineWidth;
+        //除以2.0是为了解决 #190
+        float lineWidth = aLineWidth / 2.0;
     #endif
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
