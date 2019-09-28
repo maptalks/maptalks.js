@@ -221,7 +221,6 @@ export default class VectorPack {
             const properties = vectors[i].feature && vectors[i].feature.properties;
             properties['$layer'] = vectors[i].feature.layer;
             properties['$type'] = vectors[i].feature.type;
-            debugger
             if (this._visibleFn && this._visibleFn.isZoomConstant && !this._visibleFn(null, properties)) {
                 delete properties['$layer'];
                 delete properties['$type'];
