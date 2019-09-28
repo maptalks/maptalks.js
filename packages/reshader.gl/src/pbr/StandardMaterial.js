@@ -2,6 +2,9 @@ import Material from '../Material.js';
 import { mat3 } from 'gl-matrix';
 
 const DEFAULT_UNIFORMS = {
+    'uvScale': [1, 1],
+    'uvOffset': [0, 0],
+
     'uAlbedoPBR': [1, 1, 1, 1],
     'uEmitColor': [0, 0, 0],
 

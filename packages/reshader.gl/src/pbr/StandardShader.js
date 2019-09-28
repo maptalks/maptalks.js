@@ -105,6 +105,7 @@ class StandardShader extends MeshShader {
                 //         return props['projMatrix'];
                 //     }
                 // },
+                'uvScale', 'uvOffset',
                 'uEmitColor',
                 'uAlbedoPBR',
                 'uAlbedoPBRFactor', //1

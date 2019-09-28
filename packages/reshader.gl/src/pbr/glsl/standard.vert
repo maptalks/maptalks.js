@@ -1,9 +1,11 @@
 #define SHADER_NAME PBR
-// precision highp float;
+precision highp float;
 
 attribute vec3 aPosition;
 #if defined(HAS_MAP)
     attribute vec2 aTexCoord0;
+    uniform vec2 uvScale;
+    uniform vec2 uvOffset;
 #endif
 #if defined(HAS_TANGENT)
     attribute vec4 aTangent;
@@ -64,7 +66,7 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
 
 void main() {
     #if defined(HAS_MAP)
-        vTexCoord = aTexCoord0;
+        vTexCoord = (aTexCoord0 + uvOffset) * uvScale;
     #endif
 
     #if defined(HAS_TANGENT)
