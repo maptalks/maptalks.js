@@ -227,6 +227,9 @@ export default class VectorPack {
             }
             maxFeaIndex = Math.max(maxFeaIndex, vectors[i].featureIdx);
         }
+        if (!elements.length) {
+            return null;
+        }
         const ArrType = getIndexArrayType(maxFeaIndex);
         featureIndexes = new ArrType(featureIndexes);
 

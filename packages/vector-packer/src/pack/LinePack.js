@@ -139,12 +139,12 @@ export default class LinePack extends VectorPack {
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            this._feaLineWidth = this._lineWidthFn(null, feature.properties) || 0;
+            this._feaLineWidth = this._lineWidthFn(this.options['zoom'], feature.properties) || 0;
         } else {
             this._feaLineWidth = this.symbol['lineWidth'];
         }
         if (this._colorFn) {
-            this._feaColor = this._colorFn(null, feature.properties) || [0, 0, 0, 0];
+            this._feaColor = this._colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 0];
             if (!Array.isArray(this._feaColor)) {
                 this._feaColor = Color(this._feaColor).array();
             }
@@ -155,7 +155,11 @@ export default class LinePack extends VectorPack {
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
-            this._addLine(lines[i], feature, join, cap, miterLimit, roundLimit);
+            let line = lines[i];
+            if (!isPolygon) {
+                line = this._filterLine(line);
+            }
+            this._addLine(line, feature, join, cap, miterLimit, roundLimit);
             if (isPolygon) {
                 this._filterPolygonEdges(elements);
                 this.elements = [];
@@ -167,7 +171,7 @@ export default class LinePack extends VectorPack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const needExtraVertex = this.symbol['linePatternFile'] ||  this.symbol['lineDasharray'];
+        const needExtraVertex = this.symbol['linePatternFile'] || hasDasharray(this.symbol['lineDasharray']);
         const tileRatio = this.options.tileRatio;
         //TODO overscaling的含义？
         const EXTENT = this.options.EXTENT;
@@ -335,7 +339,8 @@ export default class LinePack extends VectorPack {
             if (i > first && i < len - 1) {
                 //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 if (needExtraVertex || prevVertex && outOfExtent(prevVertex, EXTENT)) {
-                    const back = prevNormal.mag() * tanHalfAngle;
+                    //back不能超过normal的x或者y，否则会出现绘制错误
+                    const back = Math.min(prevNormal.mag() * tanHalfAngle, Math.abs(prevNormal.x), Math.abs(prevNormal.y));
                     const backDist = back * this._feaLineWidth / 2 * tileRatio;
                     if (backDist < this.distance) {
                         this.distance -= backDist;
@@ -466,7 +471,7 @@ export default class LinePack extends VectorPack {
                 //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
                 //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 //端点往前移动forward距离，以免新端点和lineJoin产生重叠
-                const forward = nextNormal.mag() * tanHalfAngle;
+                const forward = Math.min(nextNormal.mag() * tanHalfAngle, Math.abs(nextNormal.x), Math.abs(nextNormal.y));
                 this.addCurrentVertex(currentVertex, this.distance, nextNormal, forward, forward, false, lineDistances);
                 if (distanceChanged) {
                     //抵消前一个extra端点时对distance的修改
@@ -635,6 +640,44 @@ export default class LinePack extends VectorPack {
         }
     }
 
+
+    _filterLine(line) {
+        if (line.length <= 1) {
+            return line;
+        }
+        const filtered = [];
+        const EXTENT = this.options['EXTENT'];
+        let hit = false;
+        let preOut = true;
+        let i;
+        let seg = [];
+        for (i = 0; i < line.length - 1; i++) {
+            const out = isOutSegment(line[i], line[i + 1], EXTENT);
+            if (out && !hit) {
+                continue;
+            }
+            if (out && preOut) {
+                seg.push(line[i]);
+                continue;
+            }
+            hit = true;
+            if (seg.length) {
+                filtered.push(...seg);
+                seg.length = 0;
+            }
+            filtered.push(line[i]);
+            preOut = out;
+        }
+        if (filtered[filtered.length - 1] === line[i - 1]) {
+            filtered.push(line[i]);
+        }
+        return filtered;
+    }
+}
+
+function isOutSegment(p0, p1, EXTENT) {
+    return p0.x < 0 && p1.x < 0 || p0.x > EXTENT && p1.x > EXTENT ||
+        p0.y < 0 && p1.y < 0 || p0.y > EXTENT && p1.y > EXTENT;
 }
 
 export function isClippedLineEdge(vertices, i0, i1, width, EXTENT) {
@@ -685,4 +728,16 @@ function scaleDistance(tileDistance/* : number */, stats/* : Object */) {
 
 function outOfExtent(vertex, EXTENT) {
     return vertex.x < 0 || vertex.x > EXTENT || vertex.y < 0 || vertex.y > EXTENT;
+}
+
+function hasDasharray(dash) {
+    if (!Array.isArray(dash)) {
+        return false;
+    }
+    for (let i = 0; i < dash.length; i++) {
+        if (dash[i]) {
+            return true;
+        }
+    }
+    return false;
 }
