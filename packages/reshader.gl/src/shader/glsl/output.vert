@@ -1,19 +1,19 @@
 #include <invert_matrix>
-#ifdef USE_INSTANCE
+#ifdef HAS_INSTANCE
     #include <instance_vert>
     varying vec4 vInstanceColor;
 #endif
 
-#ifdef USE_SKIN
+#ifdef HAS_SKIN
     #include <skin_vert>
 #endif
 
-#ifdef USE_MORPH
+#ifdef HAS_MORPH
     attribute vec3 POSITION_0;
     attribute vec3 POSITION_1;
     attribute vec3 POSITION_2;
     attribute vec3 POSITION_3;
-    #ifdef USE_MORPHNORMALS
+    #ifdef HAS_MORPHNORMALS
         attribute vec3 NORMAL_0;
         attribute vec3 NORMAL_1;
         attribute vec3 NORMAL_2;
@@ -28,16 +28,16 @@ struct FrameUniforms {
 } frameUniforms;
 
 mat4 getModelMatrix() {
-    #ifdef USE_INSTANCE
+    #ifdef HAS_INSTANCE
         vInstanceColor = instance_getInstanceColor();
         mat4 attributeMatrix = instance_getAttributeMatrix();
-        #ifdef USE_SKIN
+        #ifdef HAS_SKIN
             mat4 worldMatrix = attributeMatrix * skin_getSkinMatrix();
         #else
             mat4 worldMatrix = attributeMatrix;
         #endif
     #else
-        #ifdef USE_SKIN
+        #ifdef HAS_SKIN
             mat4 worldMatrix =  modelMatrix * skin_getSkinMatrix();
         #else
             mat4 worldMatrix = modelMatrix;
@@ -47,7 +47,7 @@ mat4 getModelMatrix() {
 }
 
 vec4 getPosition(vec3 aPosition) {
-    #ifdef USE_MORPH
+    #ifdef HAS_MORPH
         vec4 POSITION = vec4(aPosition + weights.x * POSITION_0 + weights.y * POSITION_1 + weights.z * POSITION_2 + weights.w * POSITION_3, 1.0);
    #else
         vec4 POSITION = vec4(aPosition, 1.0);
@@ -62,7 +62,7 @@ mat4 getNormalMatrix(mat4 worldMatrix) {
 }
 
 vec4 getNormal(vec3 NORMAL) {
-    #ifdef USE_MORPHNORMALS
+    #ifdef HAS_MORPHNORMALS
         vec4 normal = vec4(NORMAL + weights.x * NORMAL_0 + weights.y * NORMAL_1 + weights.z * NORMAL_2 + weights.w * NORMAL_3, 1.0);
     #else
         vec4 normal = vec4(NORMAL, 1.0);

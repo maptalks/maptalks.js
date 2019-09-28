@@ -147,7 +147,7 @@ export default class FBORayPicking {
         }
         const defines = {
             'ENABLE_PICKING' : 1,
-            'USE_PICKING_ID' : 1
+            'HAS_PICKING_ID' : 1
         };
         if (this._defines) {
             for (const p in this._defines) {
@@ -172,7 +172,7 @@ export default class FBORayPicking {
         });
         const defines1 = {
             'ENABLE_PICKING' : 1,
-            'USE_PICKING_ID' : 1
+            'HAS_PICKING_ID' : 1
         };
         if (this._defines) {
             for (const p in this._defines) {

@@ -1,5 +1,5 @@
 import { vec3, vec4 } from 'gl-matrix';
-import { packTangentFrame, buildTangents } from '@maptalks/tbn-packer';
+import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-packer';
 import { isNumber, extend, isArray } from './common/Util';
 import BoundingBox from './BoundingBox';
 
@@ -243,6 +243,11 @@ export default class Geometry {
             packTangentFrame(q, n, t);
             vec4.copy(aTangent.subarray(i, i + 4), q);
         }
+    }
+
+    createNormal(name = 'aNormal') {
+        const vertices = this.data[this.desc.positionAttribute];
+        this.data[name] = buildNormals(vertices, this.elements);
     }
 
     /**
