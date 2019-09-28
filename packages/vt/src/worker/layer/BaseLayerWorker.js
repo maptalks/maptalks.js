@@ -483,5 +483,13 @@ function splitPointSymbol(symbol) {
         }
         results.push(textSymbol);
     }
+    if (symbol['visible'] !== undefined) {
+        if (iconSymbol) {
+            iconSymbol['visible'] = symbol['visible'];
+        }
+        if (textSymbol) {
+            textSymbol['visible'] = symbol['visible'];
+        }
+    }
     return results;
 }

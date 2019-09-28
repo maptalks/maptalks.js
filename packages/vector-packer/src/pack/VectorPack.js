@@ -7,8 +7,9 @@ import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } fr
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
-import { loadFunctionTypes } from '@maptalks/function-type';
+import { loadFunctionTypes, interpolated } from '@maptalks/function-type';
 import { createFilter } from '@maptalks/feature-filter';
+import { isFnTypeSymbol } from '../style/Util';
 
 //feature index defined in BaseLayerWorker
 export const KEY_IDX = '__fea_idx';
@@ -29,6 +30,9 @@ export default class VectorPack {
         this.positionSize = options['only2D'] ? 2 : 3;
         this.styledVectors = [];
         this.properties = {};
+        if (isFnTypeSymbol('visible', this.symbolDef)) {
+            this._visibleFn = interpolated(this.symbolDef['visible']);
+        }
     }
 
     _check(features) {
@@ -217,6 +221,12 @@ export default class VectorPack {
             const properties = vectors[i].feature && vectors[i].feature.properties;
             properties['$layer'] = vectors[i].feature.layer;
             properties['$type'] = vectors[i].feature.type;
+            debugger
+            if (this._visibleFn && this._visibleFn.isZoomConstant && !this._visibleFn(null, properties)) {
+                delete properties['$layer'];
+                delete properties['$type'];
+                continue;
+            }
             this.placeVector(vectors[i], scale, formatWidth);
             delete properties['$layer'];
             delete properties['$type'];
