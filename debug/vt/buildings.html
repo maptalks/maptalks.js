@@ -5,63 +5,72 @@
   <meta charset="utf-8">
   <title>pbr-buildings</title>
 
-  <link rel="stylesheet" href="http://localhost/maptalks/dist/maptalks.css" />
+  <link rel="stylesheet" href="/maptalks/dist/maptalks.css" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="screen.css" />
   <!-- 需要用 maptalks worker 分支下的版本 -->
-  <script src="http://localhost/maptalks/dist/maptalks.js"></script>
-  <script src="http://localhost/maptalksgl/dist/maptalksgl-dev.js"></script>
+  <script src="/maptalks/dist/maptalks.js"></script>
+  <script src="/maptalksgl/dist/maptalksgl-dev.js"></script>
   <script src="buildings.js"></script>
   <script src="../../packages/vt/dist/maptalks.vt.js"></script>
   <script src="../../packages/vt.basic/dist/maptalks.vt.basic.js"></script>
-  <script src="js/stats.min.js"></script>
   <script src="js/dat.gui.min.js"></script>
 </head>
 
 <body>
 
   <div id="main">
-    <div id="map2" style="width:100%;height:1000px;background-color:#ddd;"></div>
+    <div id="map2" style="position:absolute;top:80px;width:100%;height:1000px;background-color:#fff;"></div>
     <!-- <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas> -->
 
   </div>
 
   <script>
-    var stats = new Stats();
-    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-    document.body.appendChild( stats.dom );
-    window.MAPTALKS_VT_WORKER_COUNT = 1;
-
-
-    var osm = new maptalks.TileLayer('osm', {
-        crossOrigin : 'anonymous',
-        // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        subdomains: ['a','b','c','d'],
-        attribution : '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        //   subdomains: ['a','b','c','d'],
-        //   attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
-      });
-
+    var accessToken = 'pk.eyJ1IjoiemhlbmZ1IiwiYSI6ImNqamY2OXF0azA1M3kzdnF0enRoZm83aXQifQ.WpJebxPjCnmszaxHDRBrtw';
     var map = new maptalks.Map('map2', {
       center: [13.416935229170008, 52.529564137540376],
-      zoom: 15,
+      zoom: 11,
       pitch : 45,
+      // baseLayer: new maptalks.MapboxVectorTileLayer('vt', {
+      //   urlTemplate: 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=' + accessToken,
+      //   background: [0.925,0.878,0.792,1],
+      //   style: 'mbtiles.json'
+      // }),
+      "center":[13.414627196474385,52.52909578112681],"zoom":16.309955844160633,"pitch":52.20000000000007,"bearing":0,
+      "center":[13.418531244478004,52.533396361654326],"zoom":18.582413946875466,"pitch":52.20000000000007,"bearing":0,
 
-      "center":[13.422091481252892,52.53081935839131],"zoom":17,"pitch":45,"bearing":0,
+      //纽约
+      "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":52.80000000000042,"bearing":-15.59999999999991,
 
-      "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
+      // "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
-      //阴影有裂缝
-      "center":[13.414905354183702,52.52913153292073],"zoom":20,"pitch":33.00000000000021,"bearing":145.20000000000005,
+      // //阴影有裂缝
+      // "center":[13.414905354183702,52.52913153292073],"zoom":20,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
       // bearing : -42,
       // baseLayer: osm
     });
+
+    const mapPostProcessConfig = {
+      enable: false,
+      filmicGrain: {
+        enable: true,
+        factor: 0.15
+      },
+      vignette: {
+        enable: true
+      },
+      colorLUT: {
+        enable: true,
+        // lut: './lookup_miss_etikate.png'
+        lut: './lookup.png'
+      }
+    };
+    // map.setPostProcessConfig(mapPostProcessConfig);
+
     var id = 0;
     var data = buildings.reduce(function (v, b) {
       for (let i = 0, l = b.features.length; i < l; i++) {
@@ -74,28 +83,19 @@
       "features" : []
     })
 
-
-    map.on('framestart', e => {
-      stats.begin();
-    });
-
-    map.on('frameend', e => {
-      stats.end();
-    });
-
     console.log(data.features.length);
 
     const renderPlugin = {
-        type : 'subsurface',
+        type : 'lit',
         dataConfig : {
           type : '3d-extrusion',
-          altitudeProperty : 'levels',
-          altitudeScale : 5,
+          altitudeProperty : 'height',
+          altitudeScale : 1,
           defaultAltitude : 1,
           normal : true,
           uv : true,
-          uvSize : [128 / 50, 128 / 50],
-          tangent: true
+          uvScale : [1, 1],
+          // tangent: true
           // shadowVolume : true,
           // shadowDir : [-1, -1, 0]
         },
@@ -105,7 +105,7 @@
             type : 'esm',
             // type : 'stencil',
             enable : true,
-            quality : 'medium',
+            quality : 'high',
             opacity : 0.7,
             color : [0, 0, 0],
             blurOffset : 1,
@@ -113,105 +113,148 @@
           },
           lights : {
             ambient: {
-              url: 'resources/windowStudio.hdr',
-              luminance: 12000
+              resource: 0,
+              // color: [0.05, 0.05, 0.05],
+              exposure: 2
             },
             directional: {
               color : [1, 1, 1],
               direction : [0, 1, 1],
-              intensity: 30000
+              // intensity: 80000
             }
           }
         }
       };
-
+      // #E9E7EC
     const litMaterial = {
-      'baseColorFactor': [0.560, 0.570, 0.580, 1],
+      'baseColor': [233, 231, 236],
+      'baseColorFactor': [233 / 255, 231 / 255, 236 / 255, 1],
       'metallicFactor' : 0,
-      'roughnessFactor' : 0.7,
+      'roughnessFactor' : 0.598,
       'reflectance': 0.5,
       'clearCoat': 0,
       // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
       'clearCoatRoughness': 0.5,
       // 'clearCoatIorChange': false,
-      'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-      'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
-      'anisotropy': 0,
-      'uvScale': [0.5, 0.5],  //纹理坐标的缩放比例
+      // 'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/not-power-of-2.jpg',
+      // 'anisotropy': 0,
+      'uvScale': [1, 1],  //纹理坐标的缩放比例
+      'uvScaleFactor': 1,
       'uvOffset': [0, 0]      //纹理坐标的偏移量
     };
 
-    const clothMaterial = {
-      'roughnessFactor' : 1,
-      // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/normals/3.jpg',
-      // 'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
-      // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-      // 'baseColorTexture': BASE_COLOR_TEXTURE,
-      'baseColorFactor': [61 / 255, 120 / 255, 12 / 255, 1],
-      'subsurfaceColor': [0, 0, 0],
-      'uvScale': [0.4, 0.4]
-    };
-
-    const subsurfaceMaterial = {
-      'roughnessFactor' : 1,
-      // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
-      // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-      // 'baseColorTexture': BASE_COLOR_TEXTURE,
-      'baseColor': [61, 120, 12],
-      'baseColorFactor': [61 / 255, 120 / 255, 12 / 255, 1],
-      'subsurface': [255, 255, 255],
-      'subsurfaceColor': [1, 1, 1],
-      'uvScale': [0.3, 0.3],
-      'thickness': 0.5,
-      'subsurfacePower': 12.234
-    };
-
-    const style =  [
-      {
-        filter : true,
-        renderPlugin,
-        symbol: {
-          material: subsurfaceMaterial,
-          polygonOpacity: 1,
-          polygonFill: {
-            property : 'levels',
-            stops : [
-              [5, '#f00'],
-              [3, '#fff700'],
-              [1, '#fff']
-            ]
+    const style =  {
+      $root: '.',
+      resources: [
+        {
+          type: 'ambient',
+          url: '{$root}/resources/autumn_ground.hdr',
+          sh: [
+            [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
+            [-0.004491398110985756, -0.0062361168675124645, -0.005997033789753914],
+            [0.02749081887304783, 0.057795193046331406, 0.1145947203040123],
+            [0.03964025899767876, 0.03352731838822365, 0.020897403359413147],
+            [-0.005459152162075043, -0.008918278850615025, -0.011838626116514206],
+            [0.017447197809815407, 0.016732292249798775, 0.012003022246062756],
+            [-0.003052285173907876, -0.00440911715850234, -0.004788860213011503],
+            [0.01575229875743389, 0.017373336479067802, 0.015197779051959515],
+            [0.018414868041872978, 0.027235284447669983, 0.030140453949570656]
+          ]
+        }
+      ],
+      style: [
+        {
+          filter : true,
+          renderPlugin,
+          symbol: {
+            material: litMaterial,
+            polygonOpacity: 1,
+            polygonFill: {
+              property : 'levels',
+              stops : [
+                [5, '#f00'],
+                [3, '#fff700'],
+                [1, '#fff']
+              ]
+            }
           }
         }
-      }
-    ];
+      ]
+    };
 
     // test tile clipping mask
-    var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
-      debug : false,
-      // canvas: debugCanvas,
-      data: data,
-      hitDetect : false,
-      pickingPoint: true
-    });
-    layer.setStyle(style);
+    // var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
+    //   debug : false,
+    //   // canvas: debugCanvas,
+    //   data: data,
+    //   hitDetect : false,
+    //   antialias: false,
+    //   pickingPoint: true
+    // });
+    // layer.setStyle(style);
+
+    style.style[0].filter = [
+      "==",
+      "$layer",
+      "building"
+    ];
+
+    var layer = new maptalks.MapboxVectorTileLayer('buildings', {
+      urlTemplate: 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=' + accessToken,
+      style
+    })
 
     // map.on('click', function (e) {
     //   alert(JSON.stringify(layer.identify(e.coordinate)));
     // });
-
+    const sceneConfig = {
+      shadow : {
+        type : 'esm',
+        // type : 'stencil',
+        enable : true,
+        quality : 'high',
+        opacity : 0.7,
+        color : [0, 0, 0],
+        blurOffset : 1,
+        lightDirection : [0, 1, 1]
+        // debug : ['shadow', 'shadow2']
+      },
+      postProcess: {
+        enable: true,
+        antialias: {
+          enable: true
+        },
+        ssao: {
+          enable: false
+        }
+      }
+    };
     // map.addLayer(layer);
-    new maptalks.GroupGLLayer('group', [layer]).addTo(map);
+    new maptalks.GroupGLLayer('group', [layer], { antialias: false, sceneConfig }).addTo(map);
+
+    var bearing = 0;
+    var paused = false;
+    function changeView() {
+      map.setBearing(bearing++);
+      if (!paused) {
+        requestAnimationFrame(changeView);
+      }
+    }
+
+    // changeView();
 
     map.on('click', e => {
-      console.log(JSON.stringify(layer.identify(e.coordinate)));
+      console.log(JSON.stringify(map.getBaseLayer().identify(e.coordinate)));
     });
 
     initGUI();
 
     function initGUI() {
       const gui = new dat.GUI( { width: 250 } );
-      const options = style[0].symbol.material;
+      const options = style.style[0].symbol.material;
+      options.colorLUT = true;
       if (options['metallicFactor'] !== undefined) {
         gui.add(options, 'metallicFactor', 0, 1).onChange(function(value){
           updateMaterial('metallicFactor', value);
@@ -246,7 +289,13 @@
           updateMaterial('subsurface', value);
         });
       }
-
+      gui.add(options, 'uvScaleFactor', 0.1, 5, 0.1).onChange(function(value){
+        updateMaterial('uvScale', [1 / value, 1 / value]);
+      });
+      gui.add(options, 'colorLUT').onChange(function (value) {
+        mapPostProcessConfig.colorLUT.enable = value;
+        map.setPostProcessConfig(mapPostProcessConfig);
+      });
     }
 
     function updateMaterial(key, value) {

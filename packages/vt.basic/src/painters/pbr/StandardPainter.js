@@ -176,7 +176,7 @@ class StandardPainter extends Painter {
             }
         };
 
-        this.shader = this.getShader(config);
+        this.shader = new reshader.pbr.StandardShader(config);
 
         this._bindedOnTextureLoad = this._onTextureLoad.bind(this);
         this._bindDisposeCachedTexture = this.disposeCachedTexture.bind(this);
@@ -304,7 +304,7 @@ class StandardPainter extends Painter {
                 }
             }
         }
-        this.material = this.getMaterial(material);
+        this.material = new reshader.pbr.StandardMaterial(material);
     }
 
     _initCubeLight() {
@@ -378,9 +378,7 @@ class StandardPainter extends Painter {
             viewMatrix,
             projMatrix,
             projViewMatrix: map.projViewMatrix,
-            cameraPosition,
-            resolution: [map.width, map.height, 1 / map.width, 1 / map.height],
-            time: 0
+            uCameraPosition: cameraPosition
         }, lightUniforms);
         if (context && context.shadow && context.shadow.renderUniforms) {
             extend(uniforms, context.shadow.renderUniforms);
@@ -391,55 +389,50 @@ class StandardPainter extends Painter {
     _getLightUniforms() {
         const iblMaps = this.iblMaps;
         const lightConfig = this.sceneConfig.lights;
-        const aperture = lightConfig.camera.aperture || 16; //光圈
-        const speed = lightConfig.camera.speed || 1 / 125; //快门速度
-        const iso = lightConfig.camera.iso || 280; //iso感光度
-        const ev100 = computeEV100(aperture, speed, iso);
-
         let uniforms;
         if (iblMaps) {
-            const mipLevel = Math.log(512) / Math.log(2);
+            const PREFILTER_CUBE_SIZE = 256;
+            const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
             uniforms = {
-                'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
-                'light_iblDFG': iblMaps.dfgLUT,
-                'light_iblSpecular': iblMaps.prefilterMap,
-                'iblSH': iblMaps.sh,
-                'iblLuminance': lightConfig.ambient.luminance || 12000,
-                'exposure': ev100toExposure(ev100),
-                'ev100': ev100,
-                'sun': [1, 1, 1, -1],
+                'uEnvironmentExposure': lightConfig.ambient.exposure || 1, //2
+                'sIntegrateBRDF': iblMaps.dfgLUT,
+                'sSpecularPBR': iblMaps.prefilterMap,
+                'uDiffuseSPH': iblMaps.sh,
+                'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
+                'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
+
+
+                // 'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
+                // 'light_iblDFG': iblMaps.dfgLUT,
+                // 'light_iblSpecular': iblMaps.prefilterMap,
+                // 'iblSH': iblMaps.sh,
+                // 'iblLuminance': lightConfig.ambient.luminance || 12000,
+                // 'exposure': ev100toExposure(ev100),
+                // 'ev100': ev100,
+                // 'sun': [1, 1, 1, -1],
             };
         } else {
-            uniforms = {
-                'light_ambientColor': lightConfig.ambient.color || [0.05, 0.05, 0.05],
-                'iblLuminance': lightConfig.ambient.luminance || 12000,
-                'exposure': ev100toExposure(ev100),
-                'ev100': ev100,
-                'sun': [1, 1, 1, -1]
-            };
+            // uniforms = {
+            //     'light_ambientColor': lightConfig.ambient.color || [0.05, 0.05, 0.05],
+            //     'iblLuminance': lightConfig.ambient.luminance || 12000,
+            //     'exposure': ev100toExposure(ev100),
+            //     'ev100': ev100,
+            //     'sun': [1, 1, 1, -1]
+            // };
         }
 
         if (lightConfig.directional) {
-            uniforms['lightColorIntensity'] = [...(lightConfig.directional.color || [1, 1, 1]), lightConfig.directional.intensity || 30000];
-            uniforms['lightDirection'] = lightConfig.directional.direction || [1, 1, -1];
+            uniforms['uSketchfabLight0_diffuse'] = [...(lightConfig.directional.color || [1, 1, 1]), 1];
+            uniforms['uSketchfabLight0_viewDirection'] = lightConfig.directional.direction || [1, 1, -1];
         }
         return uniforms;
     }
 
     _getDefines(shadowDefines) {
-        const lightConfig = this.sceneConfig.lights;
         const defines = {};
-        if (lightConfig.ambient && (lightConfig.ambient.resource || lightConfig.ambient.resource === 0)) {
-            defines['HAS_IBL_LIGHTING'] = 1;
-            defines['IBL_MAX_MIP_LEVEL'] = (Math.log(lightConfig.ambient.prefilterCubeSize || 256) / Math.log(2)) + '.0';
-        }
         if (shadowDefines) {
             extend(defines, shadowDefines);
         }
-        if (lightConfig.directional) {
-            defines['HAS_DIRECTIONAL_LIGHTING'] = 1;
-        }
-
         return defines;
     }
 
@@ -463,16 +456,6 @@ class StandardPainter extends Painter {
     shouldDeleteMeshOnUpdateSymbol() {
         return false;
     }
-}
-
-//根据快门参数，计算ev100
-function computeEV100(aperture, shutterSpeed, ISO) {
-    // log2((N^2*S)/(t*100))
-    return Math.log2(((aperture * aperture) * 100.0) / (shutterSpeed * ISO));
-}
-
-function ev100toExposure(EV100) {
-    return 1.0 / (1.2 * Math.pow(2.0, EV100));
 }
 
 export default StandardPainter;
