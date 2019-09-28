@@ -104,6 +104,10 @@ export default class NativePointPack extends VectorPack {
         return anchors;
     }
 
+
+    hasElements() {
+        return false;
+    }
 }
 
 function isOut(point, extent) {
