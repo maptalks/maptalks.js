@@ -26,7 +26,7 @@ uniform vec4 stroke;
 uniform vec4 fill;
 uniform float opacity;
 
-#ifdef USE_INSTANCE
+#ifdef HAS_INSTANCE
   varying vec4 vInstanceColor;
 #endif
 #extension GL_OES_standard_derivatives : enable
@@ -81,7 +81,7 @@ vec4 getStyledWireframe (vec3 barycentric) {
   float edge = 1.0 - aastep(computedThickness, d);
 
   // now compute the final color of the mesh
-  #ifdef USE_INSTANCE
+  #ifdef HAS_INSTANCE
     vec4 strokeColor = vInstanceColor;
   #else
     vec4 strokeColor = stroke;

@@ -28,6 +28,9 @@ export { default as FxaaShader } from './shader/FxaaShader.js';
 export { default as SsaoPass } from './shader/SsaoPass.js';
 export { default as PostProcessShader } from './shader/PostProcessShader.js';
 
+import * as GLTFHelper  from './GLTFHelper.js';
+export { GLTFHelper };
+
 import * as SkyboxHelper from './skybox/SkyboxHelper.js';
 export { SkyboxHelper };
 

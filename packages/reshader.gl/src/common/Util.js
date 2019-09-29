@@ -19,6 +19,10 @@ export function isNil(obj) {
     return obj == null;
 }
 
+export function defined(obj) {
+    return !isNil(obj);
+}
+
 /**
  * Check whether the object is a function
  * @param {Object} obj
@@ -123,4 +127,27 @@ export function isArray(arr) {
         (arr instanceof Uint8ClampedArray) ||
         (arr instanceof Float32Array) ||
         (arr instanceof Float64Array);
+}
+
+/**
+ * Performs a linear interpolation between two number's
+ *
+ * @param out the receiving vector
+ * @param a the first operand
+ * @param b the second operand
+ * @param t interpolation amount, in the range [0-1], between the two inputs
+ * @returns out
+ */
+export function lerp(out, a, b, t) {
+    for (let i = 0; i < out.length; i++) {
+        out[i] = a[i] + t * (b[i] - a[i]);
+    }
+    return out;
+}
+
+export function set(out, input) {
+    for (let i = 0; i < out.length; i++) {
+        out[i] = input[i];
+    }
+    return out;
 }
