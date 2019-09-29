@@ -61,7 +61,7 @@ class StandardPainter extends Painter {
         if (mesh.material !== this.material) {
             mesh.setMaterial(this.material);
         }
-        this.scene.addMesh(mesh);
+        super.addMesh(mesh, progress);
     }
 
     getShadowMeshes() {

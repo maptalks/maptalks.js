@@ -32,7 +32,6 @@ export function buildExtrudeFaces(
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
     function fillData(start, offset, holes, height) {
-        // debugger
         const top = vertices.slice(start, offset);
 
         //just ignore bottom faces never appear in sight
@@ -96,7 +95,7 @@ export function buildExtrudeFaces(
             vertices[offset + i - 0] = top[i] - height;
         }
         offset += count;
-
+        // debugger
         if (height > 0) {
             //side face indices
             const s = indices.length;
@@ -117,7 +116,7 @@ export function buildExtrudeFaces(
                 if (isClipped) {
                     continue;
                 }
-                if (i % 2 === 1) {
+                if ((i - startIdx) % 2 === 1) {
                     //加上 2 * vertexCount，使用与 i % 2 === 0 时，不同的另一组端点，以避免共端点
                     current += 2 * vertexCount;
                     next += 2 * vertexCount;

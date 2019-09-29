@@ -86,6 +86,9 @@ function createPainterPlugin(type, Painter) {
                 }
                 var features = tileData.features;
                 var glData = tileData.data;
+                if (!glData) {
+                    return NO_REDRAW;
+                }
                 var data = glData;
                 if (this.painter.colorSymbol && glData) {
                     var colors = this._generateColorArray(features, glData.data.aPickingId, glData.indices, glData.data.aPosition);
