@@ -14,7 +14,7 @@ class Material {
             }
         }
         this._dirtyUniforms = 'texture';
-        this.dirtyDefines = true;
+        this._dirtyDefines = true;
         this._reglUniforms = {};
         this.refCount = 0;
         this._bindedOnTextureComplete = this._onTextureComplete.bind(this);
@@ -39,7 +39,7 @@ class Material {
     }
 
     isDirty() {
-        return this._dirtyUniforms || this.dirtyDefines;
+        return this._dirtyUniforms || this._dirtyDefines;
     }
 
     /**
@@ -47,7 +47,7 @@ class Material {
      * @return {Object}
      */
     getDefines() {
-        if (!this.dirtyDefines) {
+        if (!this._dirtyDefines) {
             return this._defines;
         }
         if (this.createDefines) {
@@ -55,7 +55,7 @@ class Material {
         } else {
             this._defines = {};
         }
-        this.dirtyDefines = false;
+        this._dirtyDefines = false;
         return this._defines;
     }
 

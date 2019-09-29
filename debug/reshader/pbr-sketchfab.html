@@ -108,12 +108,12 @@
                     'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
                     'lightColorIntensity': [1, 1, 1, 30000],
                     'sun': [1, 1, 1, -1],
-                    'uSketchfabLight0_viewDirection': [1, 0, -1]
+                    'uSketchfabLight0_viewDirection': [1, 0, -1],
+                    'uEnvironmentExposure': 1,
                 };
                 MatUNIFORMS = {
                     'uAlbedo': [255 / 255, 255 / 255, 255 / 255, 1],
                     'uRoughnessPBRFactor': 0.3,
-                    'uEnvironmentExposure': 1,
                     'uAnisotropyFactor': 1,
                     'uClearCoatFactor': 1
 
@@ -124,8 +124,6 @@
         }
         main();
         function render() {
-            //绘制gltf模型
-            // drawGLTFModel();
             drawSphere();
         }
         function drawScene() {
@@ -149,21 +147,6 @@
             SHADER = new reshader.pbr.StandardShader();
             SCENE = getScene();
             drawScene();
-        }
-        function drawGLTFModel() {
-            SHADER = new reshader.pbr.StandardShader({
-                positionAttribute : 'POSITION',
-                normalAttribute : 'NORMAL',
-                tangentAttribute : 'TANGENT',
-                colorAttribute : 'COLOR_0',
-                uv0Attribute : 'TEXCOORD_0',
-                uv1Attribute : 'TEXCOORD_1'
-            });
-            const scenePromise = getScene();
-            scenePromise.then(scene => {
-                SCENE = scene;
-                drawScene();
-            });
         }
 
         function createMaps(hdr) {
@@ -204,77 +187,6 @@
             return { data, indices };
         }
 
-        function _getScene() {
-            var url = 'gltf/MetalRoughSpheres/MetalRoughSpheres.gltf';
-            return gltf.Ajax.getJSON(url, {}).then((json) => {
-                const loader = new gltf.GLTFLoader('gltf/MetalRoughSpheres', json);
-                return loader.load().then(gltfData => {
-                    console.log(gltfData);
-                    const transformMat = mat4.identity([]);
-                    mat4.rotate(transformMat, transformMat, 45 * Math.PI / 180, [0, 1, 0]);
-                    mat4.scale(transformMat, transformMat, [60, 60, 60]);
-                    const modelMeshes = [];
-                    const nodes = gltfData.scenes[0].nodes;
-                    nodes.forEach((node, i) => {
-                        if (!node.meshes && !node.children) {
-                            return;
-                        }
-                        let meshes = null;
-                        if (node.children) {
-                            meshes = extractMesh(node.children);
-                        } else if (node.meshes) {
-                            meshes = node.meshes;
-                        }
-                        meshes.forEach(mesh => {
-                            mesh.primitives.forEach(primitive => {
-                                const modelGeometry = createGeometry(primitive);
-                                const defines = getGeometryDefines(modelGeometry);
-                                const material = new reshader.pbr.LitMaterial({
-                                    metallicFactor : 1,
-                                    roughnessFactor : 0,
-                                    reflectance: 1
-                                });
-                                //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
-                                const modelMesh = new reshader.Mesh(modelGeometry, material);
-                                modelMeshes.push(modelMesh);
-                                modelMesh.setLocalTransform(transformMat);
-                                modelMesh.setDefines(defines);
-                            });
-                        });
-                    });
-                    const scene = new reshader.Scene(modelMeshes);
-                    return scene;
-                });
-            });
-        }
-        function extractMesh(children) {
-            //TODO
-            //children里面可能由很多mesh，后面还需要完善
-            for (let i = 0; i < children.length; i++) {
-                if (children[i].meshes) {
-                    return children[i].meshes;
-                }
-            }
-            return [];
-        }
-        function createGeometry(primitive) {
-            const attributes = {};
-            for (const attr in primitive.attributes) {
-                attributes[attr] =  primitive.attributes[attr].array;
-            }
-            delete attributes['TEXCOORD_0'];
-            const modelGeometry = new reshader.Geometry(
-                attributes,
-                primitive.indices,
-                0,
-                {
-                    //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
-                    primitive : (typeof primitive.mode === 'number') ? MODES[primitive.mode] : primitive.mode,
-                    positionAttribute : 'POSITION',
-                }
-            );
-            return modelGeometry;
-        }
 
         function getViewProjection(cameraPos, aspect) {
             const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 0.1, 200);

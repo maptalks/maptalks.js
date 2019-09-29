@@ -22,6 +22,7 @@ class Mesh {
     setMaterial(material) {
         this.material = material;
         this._dirtyUniforms = true;
+        this.dirtyDefines = true;
         return this;
     }
 

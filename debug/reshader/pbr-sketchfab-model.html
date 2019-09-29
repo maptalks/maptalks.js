@@ -30,7 +30,7 @@
                 alpha: true,
                 stencil: true,
                 depth: true,
-                antialias: true,
+                antialias: false,
             },
             canvas : canvas,
             // gl,
@@ -99,7 +99,7 @@
                     'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
                     'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
                     'uSketchfabLight0_diffuse': [1, 1, 1, 1],
-                    'uSketchfabLight0_viewDirection': [1, 0, -1]
+                    'uSketchfabLight0_viewDirection': [1, -1, -1]
                 };
                 // initGUI();
                 render();
@@ -177,12 +177,12 @@
         }
 
         function getGLTFScene() {
-            // var url = 'gltf/DamagedHelmet.glb';
-            // return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
-            //     const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
-            const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
-            return gltf.Ajax.getJSON(url, {}).then((json) => {
-                const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
+            var url = 'gltf/DamagedHelmet.glb';
+            return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
+                const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
+            // const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
+            // return gltf.Ajax.getJSON(url, {}).then((json) => {
+            //     const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
                 return loader.load().then(gltfData => {
                     const transformMat = mat4.identity([]);
                     mat4.rotate(transformMat, transformMat, 90 * Math.PI / 180, [1, 0, 0]);
