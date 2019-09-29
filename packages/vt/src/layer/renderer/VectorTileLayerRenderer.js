@@ -150,6 +150,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     clearCanvas() {
         super.clearCanvas();
+        if (!this.regl) {
+            return;
+        }
         //这里必须通过regl来clear，如果直接调用webgl context的clear，则brdf的texture会被设为0
         if (this.glOptions.depth) {
             this.regl.clear({

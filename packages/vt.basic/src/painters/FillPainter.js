@@ -35,9 +35,9 @@ class FillPainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity');
 
-        if (symbol.polygonPatternFile) {
+        const iconAtlas = geometry.properties.iconAtlas;
+        if (symbol.polygonPatternFile && iconAtlas) {
             uniforms.tileCenter = tileCenter.toArray();
-            const iconAtlas = geometry.properties.iconAtlas;
             uniforms.polygonPatternFile = iconAtlas;
             uniforms.patternSize = [iconAtlas.width, iconAtlas.height];
             uniforms.uvScale = iconAtlas ? [256 / iconAtlas.width, 256 / iconAtlas.height] : [1, 1];

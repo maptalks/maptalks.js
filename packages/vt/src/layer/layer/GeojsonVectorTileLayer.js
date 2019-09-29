@@ -35,6 +35,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             });
             return this;
         }
+        this.options.data = data;
         this.features = data;
         this._generateIdMap();
         const renderer = this.getRenderer();
@@ -42,7 +43,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             renderer.clear();
             const workerConn = renderer.getWorkerConnection();
             if (workerConn) {
-                workerConn.setData(data, () => {
+                workerConn.setData(this.features, () => {
                     renderer.setToRedraw();
                 });
             }

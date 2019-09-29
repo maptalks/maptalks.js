@@ -39,6 +39,17 @@ describe('GeoJSONVectorTileLayer', () => {
         assert.ok(points.features[0].id === undefined);
     });
 
+    it('should can setData', () => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+        }).addTo(map);
+        layer.setData(points);
+        assert.ok(layer.options.data === points);
+        //TODO 改为多图层后，getData返回的数据格式可能会有改变
+        assert.equal(layer.getData().features.length, points.features.length);
+        assert.ok(points.features[0].id === undefined);
+    });
+
+
     it('should fire workerready event', (done) => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: points
