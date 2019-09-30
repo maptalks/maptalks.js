@@ -17,7 +17,6 @@ export default class Skin {
                 Float32Array.BYTES_PER_ELEMENT * 16 * i,
                 16));
         }
-        // this.jointTexture = jointTexture;
         this.jointTextureSize = [4, 6];
     }
 
