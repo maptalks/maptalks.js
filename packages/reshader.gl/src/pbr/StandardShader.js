@@ -108,6 +108,7 @@ class StandardShader extends MeshShader {
                 'uvScale', 'uvOffset',
                 'uEmitColor',
                 'uAlbedoPBR',
+
                 'uAlbedoPBRFactor', //1
                 'uAnisotropyDirection', //0
                 'uAnisotropyFactor', //1

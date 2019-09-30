@@ -10,6 +10,7 @@ import dfgVS from './glsl/helper/dfg.vert';
 import coefficients from 'cubemap-sh';
 import skyboxFrag from '../skybox/skybox.frag';
 
+
 // import irradianceFS from './glsl/helper/irradiance_convolution.frag';
 /**
  * {
