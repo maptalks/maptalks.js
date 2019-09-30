@@ -59,6 +59,18 @@ class Material {
         return this._defines;
     }
 
+    createDefines() {
+        const uniforms = this.uniforms;
+        const defines = {};
+        if (uniforms['jointTexture']) {
+            defines['HAS_SKIN'] = 1;
+        }
+        if (uniforms['weights']) {
+            defines['HAS_MORPH'] = 1;
+        }
+        return defines;
+    }
+
     getUniforms(regl) {
         if (!this._dirtyUniforms) {
             return this._reglUniforms;

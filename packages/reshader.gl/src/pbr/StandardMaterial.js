@@ -73,9 +73,8 @@ class StandardMaterial extends Material {
     }
 
     createDefines() {
+        const defines = super.createDefines();
         const uniforms = this.uniforms;
-        const defines = {
-        };
         if (uniforms['uAlbedoTexture']) {
             defines['HAS_ALBEDO_MAP'] = 1;
         }

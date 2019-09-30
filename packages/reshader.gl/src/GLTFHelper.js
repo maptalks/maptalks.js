@@ -9,8 +9,8 @@ export function getArrayBuffer(url, options) {
     return gltf.Ajax.getArrayBuffer(url, options);
 }
 
-export function exportGLTFPack(gltf) {
-    const gltfpack = new GLTFPack(gltf);
+export function exportGLTFPack(gltf, regl) {
+    const gltfpack = new GLTFPack(gltf, regl);
     return gltfpack;
 }
 

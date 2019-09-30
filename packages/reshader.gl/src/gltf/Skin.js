@@ -2,7 +2,7 @@ import { mat4 } from 'gl-matrix';
 
 const globalWorldInverse = [];
 export default class Skin {
-    constructor(joints, inverseBindMatrixData) {
+    constructor(joints, inverseBindMatrixData, jointTexture) {
         this.joints = joints;
         this.inverseBindMatrices = [];
         this.jointMatrices = [];
@@ -17,6 +17,7 @@ export default class Skin {
                 Float32Array.BYTES_PER_ELEMENT * 16 * i,
                 16));
         }
+        this.jointTexture = jointTexture;
         this.jointTextureSize = [4, 6];
     }
 

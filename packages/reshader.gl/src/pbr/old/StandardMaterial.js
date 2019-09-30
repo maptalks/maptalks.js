@@ -31,8 +31,8 @@ class StandardMaterial extends Material {
     }
 
     createDefines() {
+        const defines = super.createDefines();
         const uniforms = this.uniforms;
-        const defines = {};
         if (uniforms['albedoMap']) {
             defines['USE_ALBEDO_MAP'] = 1;
         }

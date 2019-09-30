@@ -5,6 +5,7 @@
 #endif
 
 #ifdef HAS_SKIN
+    uniform int skinAnimation;
     #include <skin_vert>
 #endif
 
@@ -32,13 +33,23 @@ mat4 getModelMatrix() {
         vInstanceColor = instance_getInstanceColor();
         mat4 attributeMatrix = instance_getAttributeMatrix();
         #ifdef HAS_SKIN
-            mat4 worldMatrix = attributeMatrix * skin_getSkinMatrix();
+            mat4 worldMatrix;
+            if (skinAnimation == 1) {
+                worldMatrix = attributeMatrix * skin_getSkinMatrix();
+            } else {
+                worldMatrix = attributeMatrix;
+            }
         #else
             mat4 worldMatrix = attributeMatrix;
         #endif
     #else
         #ifdef HAS_SKIN
-            mat4 worldMatrix =  modelMatrix * skin_getSkinMatrix();
+            mat4 worldMatrix;
+            if (skinAnimation == 1) {
+                worldMatrix = modelMatrix * skin_getSkinMatrix();
+            } else {
+                worldMatrix = modelMatrix;
+            }
         #else
             mat4 worldMatrix = modelMatrix;
         #endif

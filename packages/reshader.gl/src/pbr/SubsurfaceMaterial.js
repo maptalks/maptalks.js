@@ -36,11 +36,10 @@ class ClothMaterial extends Material {
     }
 
     createDefines() {
+        const defines = super.createDefines();
         const uniforms = this.uniforms;
-        const defines = {
-            'SHADING_MODEL_SUBSURFACE': 1,
-            'BLEND_MODE_TRANSPARENT': 1
-        };
+        defines['SHADING_MODEL_SUBSURFACE'] = 1;
+        defines['BLEND_MODE_TRANSPARENT'] = 1;
         if (uniforms['baseColorTexture']) {
             defines['MATERIAL_HAS_BASECOLOR_MAP'] = 1;
         }
