@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/reshader.gl",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "A shader centric WebGL engine based on regl",
   "module": "dist/reshadergl.es.js",
   "jsnext:main": "dist/reshadergl.es.js",
@@ -22,11 +22,11 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
+    "@maptalks/gltf-loader": "^0.2.0",
     "@maptalks/tbn-packer": "^1.2.1",
     "cubemap-sh": "0.2.1",
     "gl-matrix": "^2.6.1",
-    "zousan": "^2.3.3",
-    "@maptalks/gltf-loader": "^0.2.0"
+    "zousan": "^2.3.3"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
