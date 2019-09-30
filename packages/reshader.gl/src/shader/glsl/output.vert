@@ -20,7 +20,7 @@
         attribute vec3 NORMAL_2;
         attribute vec3 NORMAL_3;
     #endif
-    uniform vec4 weights;
+    uniform vec4 morphWeights;
 #endif
 
 struct FrameUniforms {
@@ -59,7 +59,7 @@ mat4 getModelMatrix() {
 
 vec4 getPosition(vec3 aPosition) {
     #ifdef HAS_MORPH
-        vec4 POSITION = vec4(aPosition + weights.x * POSITION_0 + weights.y * POSITION_1 + weights.z * POSITION_2 + weights.w * POSITION_3, 1.0);
+        vec4 POSITION = vec4(aPosition + morphWeights.x * POSITION_0 + morphWeights.y * POSITION_1 + morphWeights.z * POSITION_2 + morphWeights.w * POSITION_3, 1.0);
    #else
         vec4 POSITION = vec4(aPosition, 1.0);
     #endif
@@ -74,7 +74,7 @@ mat4 getNormalMatrix(mat4 worldMatrix) {
 
 vec4 getNormal(vec3 NORMAL) {
     #ifdef HAS_MORPHNORMALS
-        vec4 normal = vec4(NORMAL + weights.x * NORMAL_0 + weights.y * NORMAL_1 + weights.z * NORMAL_2 + weights.w * NORMAL_3, 1.0);
+        vec4 normal = vec4(NORMAL + morphWeights.x * NORMAL_0 + morphWeights.y * NORMAL_1 + morphWeights.z * NORMAL_2 + morphWeights.w * NORMAL_3, 1.0);
     #else
         vec4 normal = vec4(NORMAL, 1.0);
     #endif

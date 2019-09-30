@@ -150,7 +150,7 @@ export default class GLTFPack {
             materialUniforms.jointTexture = node.skin.jointTexture;
         }
         if (node.morphWeights) {
-            materialUniforms.weights = node.morphWeights;
+            materialUniforms.morphWeights = node.morphWeights;
         }
         if (material) {
             const pbrMetallicRoughness = material.pbrMetallicRoughness;
