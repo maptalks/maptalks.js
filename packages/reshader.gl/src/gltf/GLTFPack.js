@@ -2,7 +2,7 @@ import { mat4 } from 'gl-matrix';
 import { defined, isNumber } from '../common/Util';
 import Skin from './Skin';
 import TRS from './TRS';
-import AnimationClip from './AnimationClip';
+import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
 
 const animMatrix = [];
@@ -54,7 +54,7 @@ export default class GLTFPack {
 
     updateAnimation(time, loop, speed) {
         const json = this.gltf;
-        timespan = json.animations ? AnimationClip.getTimeSpan(json) : null;
+        timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
         const animTime = (loop ? (time * 0.001) % (timespan.max - timespan.min) : time * 0.001) * speed;
         json.scenes[0].nodes.forEach(node => {
             this._updateNodeMatrix(animTime, node);
@@ -86,7 +86,7 @@ export default class GLTFPack {
                 this._updateNodeMatrix(time, child, nodeMatrix);
             });
         }
-        AnimationClip.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
+        gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
         node.trs.decompose(animMatrix);
         if (node.weights) {
             for (let i = 0; i < node.weights.length; i++) {
