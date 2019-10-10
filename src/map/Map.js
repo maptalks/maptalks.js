@@ -783,11 +783,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Caculate the zoom level that contains the given extent with the maximum zoom level possible.
      * @param {Extent} extent
-     * @param  {Number} fromZoom
      * @param  {Boolean} isFraction - can return fractional zoom
      * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getFitZoom(extent, fromZoom, isFraction) {
+    getFitZoom(extent, isFraction) {
         if (!extent || !(extent instanceof Extent)) {
             return this._zoomLevel;
         }
@@ -803,7 +802,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             scaleY = size['height'] / h;
         const scale = this.getSpatialReference().getZoomDirection() < 0 ?
             Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
-        const zoom = this.getZoomForScale(scale, fromZoom, isFraction);
+        const zoom = this.getZoomForScale(scale, null, isFraction);
         return zoom;
     }
 
