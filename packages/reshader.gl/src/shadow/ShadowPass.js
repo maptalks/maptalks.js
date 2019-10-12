@@ -89,17 +89,20 @@ class ShadowPass {
 
     _init() {
         const regl = this.renderer.regl;
-        this._supported = regl.hasExtension('oes_texture_float_linear');
+        this._supported = regl.hasExtension('OES_texture_half_float_linear') || regl.hasExtension('oes_texture_float_linear');
         if (!this.isSupported()) {
-            console.warn('WebGL oes_texture_float_linear extension is not supported, shadow rendering is disabled.');
+            console.warn('WebGL oes_texture_float_linear or OES_texture_half_float_linear extension is not supported, shadow rendering is disabled.');
             return;
         }
+        //half_float能显著提升纹理读取速度
+        const type = (regl.hasExtension('OES_texture_half_float') &&
+            regl.hasExtension('OES_texture_half_float_linear')) ? 'float16' : 'float';
         const width = this.width,
             height = this.height;
         this.depthTex = regl.texture({
             width, height,
             format : 'rgb',
-            type : 'float',
+            type,
             min : 'linear',
             mag : 'linear',
         });
@@ -115,7 +118,7 @@ class ShadowPass {
         this.blurTex = regl.texture({
             width, height,
             format : 'rgb',
-            type : 'float',
+            type,
             min : 'linear',
             mag : 'linear'
         });

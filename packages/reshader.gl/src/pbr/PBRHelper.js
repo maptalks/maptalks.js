@@ -304,11 +304,12 @@ function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
         DFG_CACHE[key] = distro;
     }
 
+    const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
     const distributionMap = regl.texture({
         data : distro,
         width : roughnessLevels,
         height : sampleSize,
-        type : 'float',
+        type,
         min : 'nearest',
         mag : 'nearest'
     });
@@ -317,7 +318,7 @@ function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     const quadTexBuf = regl.buffer(quadTexcoords);
     const fbo = regl.framebuffer({
         radius : size,
-        type : 'float',
+        type,
         min : 'nearest',
         mag : 'nearest'
     });
