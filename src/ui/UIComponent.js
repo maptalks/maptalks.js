@@ -1,4 +1,4 @@
-import { extend } from '../core/util';
+import { extend, isFunction } from '../core/util';
 import { trim } from '../core/util/strings';
 import {
     on,
@@ -599,6 +599,18 @@ class UIComponent extends Eventable(Class) {
         } else {
             return 'translate(' + p.x + 'px,' + p.y + 'px)';
         }
+    }
+
+    /*
+     *
+     * @param {Geometry||ui.UIMarker} owner
+     * @return {Boolean}
+     */
+    static isSupport(owner) {
+        if (owner && isFunction(owner.on) && isFunction(owner.off) && isFunction(owner.getCenter)) {
+            return true;
+        }
+        return false;
     }
 }
 

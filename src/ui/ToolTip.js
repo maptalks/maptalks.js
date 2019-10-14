@@ -1,8 +1,5 @@
 import { createEl } from '../core/util/dom';
-import { isFunction } from '../core/util/common';
-import { Geometry } from '../geometry';
 import UIComponent from './UIComponent';
-import UIMarker from './UIMarker';
 
 
 /**
@@ -51,7 +48,7 @@ class ToolTip extends UIComponent {
      * @fires UIComponent#add
      */
     addTo(owner) {
-        if (owner instanceof Geometry || owner instanceof UIMarker || (owner && isFunction(owner.on) && isFunction(owner.off))) {
+        if (ToolTip.isSupport(owner)) {
             owner.on('mousemove', this.onMouseMove, this);
             owner.on('mouseout', this.onMouseOut, this);
             return super.addTo(owner);
