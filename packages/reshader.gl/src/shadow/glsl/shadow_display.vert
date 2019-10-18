@@ -1,6 +1,10 @@
 attribute vec3 aPosition;
 
-uniform mat4 projViewModelMatrix;
+uniform mat4 projMatrix;
+
+uniform mat4 modelViewMatrix;
+uniform vec2 halton;
+uniform vec2 globalTexSize;
 
 varying vec4 vPosition;
 
@@ -9,7 +13,12 @@ varying vec4 vPosition;
 void main() {
     vec4 pos = vec4(aPosition, 1.);
 
-    gl_Position = projViewModelMatrix * pos;
+    vec4 viewVertex = modelViewMatrix * pos;
+    mat4 jitteredProjection = projMatrix;
+    jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
+    gl_Position = jitteredProjection * viewVertex;
+
+    // gl_Position = projViewModelMatrix * pos;
     vPosition = gl_Position;
 
     shadow_computeShadowPars(pos);

@@ -27,10 +27,10 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 // ----------------------------------------------------------------------------
 vec3 ImportanceSampleGGX(float Xi, vec3 N, float roughness)
 {
-    vec3 H = texture2D(distributionMap, vec2(roughness, Xi)).rgb;
+    vec3 H = texture2D(distributionMap, vec2(roughness, Xi)).xyz;
 
     // from tangent-space H vector to world-space sample vector
-    vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+    vec3 up        = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
     vec3 tangent   = normalize(cross(up, N));
     vec3 bitangent = cross(N, tangent);
 
@@ -54,7 +54,7 @@ void main()
     {
         // generates a sample vector that's biased towards the preferred alignment direction (importance sampling).
         vec3 H = ImportanceSampleGGX(float(i) / float(SAMPLE_COUNT), N, roughness);
-        vec3 L  = normalize(2.0 * dot(V, H) * H - V);
+        vec3 L = normalize(2.0 * dot(V, H) * H - V);
 
         float NdotL = max(dot(N, L), 0.0);
         if(NdotL > 0.0)
@@ -81,6 +81,7 @@ void main()
     prefilteredColor = prefilteredColor / totalWeight;
 
     gl_FragColor = vec4(prefilteredColor, 1.0);
+    // gl_FragColor = textureCube(environmentMap, vWorldPos, 5.0);
     // gl_FragColor = vec4(totalWeight, 0.0, 0.0, 1.0);
-    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    // gl_FragColor = vec4(vec3(roughness), 1.0);
 }

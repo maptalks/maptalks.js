@@ -117,7 +117,7 @@ export default class GLTFPack {
         if (node.skin) {
             const skin = node.skin;
             node.trs = new TRS();
-            node.skin = new Skin(skin.joints, skin.inverseBindMatrices.array, this.regl.texture());
+            node.skin = new Skin(this.regl, skin.joints, skin.inverseBindMatrices.array);
         }
 
         if (node.weights) {
