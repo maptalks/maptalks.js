@@ -29,6 +29,12 @@ class QuadShader extends MeshShader {
                 enable: false
             };
         }
+        if (!config.extraCommandProps.stencil) {
+            //disable stencil
+            config.extraCommandProps.stencil = {
+                enable: false
+            };
+        }
         super(config);
     }
 

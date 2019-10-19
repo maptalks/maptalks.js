@@ -22,6 +22,7 @@ uniform float shadow_opacity;
 
 varying vec4 shadow_vLightSpacePos;
 
+#if defined(USE_ESM) || defined(USE_VSM_ESM)
 float esm(vec3 projCoords, vec4 shadowTexel) {
     // vec2 uv = projCoords.xy;
     float compare = projCoords.z;
@@ -32,7 +33,9 @@ float esm(vec3 projCoords, vec4 shadowTexel) {
     // depth = exp(c * depth) * exp(-c * compare);
     return clamp(depth, esm_shadow_threshold, 1.0);
 }
+#endif
 
+#if defined(USE_VSM) || defined(USE_VSM_ESM)
 float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
 
     vec2 moments = shadowTexel.rg;
@@ -50,6 +53,7 @@ float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
     float p_max = variance / (variance + d * d);
     return p_max;
 }
+#endif
 
 float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
     vec2 uv = projCoords.xy;

@@ -24,7 +24,7 @@
     </script>
     <script type="module">
         import sphereData from './common/sphere.js';
-        const PREFILTER_CUBE_SIZE = 512;
+        const PREFILTER_CUBE_SIZE = 256;
         const { createREGL, mat3, mat4, reshader } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -64,7 +64,13 @@
                 "./ibl/resources/skybox/top.jpg",
                 "./ibl/resources/skybox/bottom.jpg",
                 "./ibl/resources/skybox/back.jpg",
-                "./ibl/resources/skybox/front.jpg"
+                "./ibl/resources/skybox/front.jpg",
+                // "./ibl/resources/color_box/right.jpg",
+                // "./ibl/resources/color_box/left.jpg",
+                // "./ibl/resources/color_box/top.jpg",
+                // "./ibl/resources/color_box/bottom.jpg",
+                // "./ibl/resources/color_box/back.jpg",
+                // "./ibl/resources/color_box/front.jpg"
             ];
 
             //载入天空盒纹理图片
@@ -100,6 +106,8 @@
                 // CLEAR_COAT_NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[9]));
                 const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
                 UNIFORMS = {
+                    'uGlobalTexSize': [canvas.width, canvas.height],
+                    'uHalton': [0, 0],
                     'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
                     'sIntegrateBRDF': iblMaps.dfgLUT,
                     'sSpecularPBR': iblMaps.prefilterMap,
@@ -114,11 +122,11 @@
                 MatUNIFORMS = {
                     'uAlbedo': [255 / 255, 255 / 255, 255 / 255, 1],
                     'uRoughnessPBRFactor': 0.3,
-                    'uAnisotropyFactor': 1,
-                    'uClearCoatFactor': 1
-
+                    'uAnisotropyFactor': 0,
+                    'uClearCoatFactor': 0,
+                    'uMetalnessPBRFactor': 1
                 };
-                // initGUI();
+                initGUI();
                 render();
             });
         }
@@ -134,6 +142,9 @@
             UNIFORMS.projMatrix = projMatrix;
             UNIFORMS.projViewMatrix = projViewMatrix;
             UNIFORMS.uCameraPosition = camPos;
+            for (const p in MatUNIFORMS) {
+                SCENE.getMeshes()[0].material.set(p, MatUNIFORMS[p]);
+            }
             renderer.render(
                 SHADER,
                 UNIFORMS,
@@ -257,8 +268,22 @@
             translate * Math.cos(roll) * Math.cos(-pitch)];
         }
 
+        function initGUI() {
+            var gui = new dat.GUI( { width: 600 } );
+            const config = {
+                roughness: 0.3,
+                metalness: 1
+            };
 
-
+            var metallicFactorController = gui.add(config, 'metalness', 0, 1, 0.001);
+            metallicFactorController.onChange(function(value){
+                MatUNIFORMS['uMetalnessPBRFactor'] = value;
+            });
+            var roughnessFactorController = gui.add(config, "roughness", 0, 1, 0.001);
+            roughnessFactorController.onChange(function(value){
+                MatUNIFORMS['uRoughnessPBRFactor'] = value;
+            });
+        }
     </script>
 
   </body>

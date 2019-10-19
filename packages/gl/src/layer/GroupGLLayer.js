@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import { mat4 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowPass';
 import * as reshader from '@maptalks/reshader.gl';
@@ -13,7 +14,11 @@ const options = {
         'OES_element_index_uint',
         'OES_standard_derivatives'
     ],
-    optionalExtensions : ['OES_texture_float', 'WEBGL_depth_texture', /*'WEBGL_draw_buffers', */'EXT_shader_texture_lod', 'OES_texture_float_linear'],
+    optionalExtensions : [
+        'OES_texture_half_float', 'OES_texture_half_float_linear',
+        'OES_texture_float', 'OES_texture_float_linear',
+        'WEBGL_depth_texture', /*'WEBGL_draw_buffers', */'EXT_shader_texture_lod'
+    ],
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true
@@ -166,10 +171,10 @@ export default class GroupGLLayer extends maptalks.Layer {
             layer.off('show hide', this._onLayerShowHide, this);
         });
         if (this._targetFBO) {
-            //TODO 需要检查fbo中的depth texture和color texture是否被清除
             this._targetFBO.destroy();
             delete this._targetFBO;
         }
+        delete this._targetFBO;
         if (this._postProcessor) {
             this._postProcessor.delete();
             delete this._postProcessor;
@@ -472,8 +477,20 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _prepareDrawContext() {
-        const context = {
-        };
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        const hasJitter = config && config.taa && config.taa.enable;
+        const context = {};
+        if (hasJitter) {
+            this._jitter = this._jitter || [];
+            if (!this._jitGetter) {
+                this._jitGetter = new reshader.Jitter();
+            }
+            context['jitter'] = this._jitGetter.getJitter(this._jitter);
+            this._jitGetter.frame();
+        } else {
+            delete this._jitter;
+        }
         const framebuffer = this._getFramebufferTarget();
         if (framebuffer) {
             context.renderTarget = framebuffer;
@@ -529,7 +546,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._shadowScene.setMeshes(meshes);
         const map = this.getMap();
         const lightDirection = sceneConfig.shadow.lightDirection || [1, 1, -1];
-        const shadowContext = this._shadowPass.render(map.projMatrix, map.viewMatrix, lightDirection, this._shadowScene, fbo);
+        const shadowContext = this._shadowPass.render(map.projMatrix, map.viewMatrix, lightDirection, this._shadowScene, this._jitter, fbo);
         return shadowContext;
     }
 
@@ -540,50 +557,74 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (this._targetFBO) {
                 this._targetFBO.destroy();
             }
+            delete this._targetFBO;
             return null;
         }
-        const colorCount = config.bloom && config.bloom.enable ? 2 : 1;
         if (!this._targetFBO) {
             const regl = this._regl;
-            const color = regl.texture({
-                min: 'linear',
-                mag: 'linear',
-                type: 'uint8',
-                width: this.canvas.width,
-                height: this.canvas.height
-            });
-            const fboInfo = {
-                width: this.canvas.width,
-                height: this.canvas.height,
-                colors: [color],
-                stencil: false,
-                colorCount,
-                colorFormat: 'rgba' //TODO 是否能改成rgb?
-            };
-            if (config && config.ssao && config.ssao.enable) {
-                const depthBuffer = regl.texture({
-                    min: 'nearest',
-                    mag: 'nearest',
-                    mipmap: false,
-                    type: 'uint16',
-                    width: this.canvas.width,
-                    height: this.canvas.height,
-                    format: 'depth'
-                });
-                fboInfo.depth = depthBuffer;
-            }
-            this._targetFBO = regl.framebuffer(fboInfo);
+            const info = this._createFBOInfo(config);
+            this._depthTex = info.depth;
+            this._targetFBO = regl.framebuffer(info);
         }
         return {
-            bloom: config.bloom && config.bloom.enable1,
+            bloom: config.bloom && config.bloom.enable,
             fbo: this._targetFBO
         };
     }
 
+    _createFBOInfo(config, depthTex) {
+        const regl = this._regl;
+        // const colorCount = config.bloom && config.bloom.enable ? 2 : 1;
+        const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        const width = this.canvas.width, height = this.canvas.height;
+        const color = regl.texture({
+            min: 'nearest',
+            mag: 'nearest',
+            type,
+            width,
+            height
+        });
+        const fboInfo = {
+            width,
+            height,
+            colors: [color],
+            stencil: false,
+            // colorCount,
+            colorFormat: 'rgba'
+        };
+        const needDepth = config && (config.ssao && config.ssao.enable || config.taa && config.taa.enable);
+        //depth(stencil) buffer 是可以共享的
+        if (needDepth) {
+            const depthBuffer = depthTex || regl.texture({
+                min: 'nearest',
+                mag: 'nearest',
+                mipmap: false,
+                type: 'uint16',
+                width,
+                height,
+                format: 'depth'
+            });
+            fboInfo.depth = depthBuffer;
+        } else {
+            const renderbuffer = depthTex || regl.renderbuffer({
+                width,
+                height,
+                format: 'depth stencil'
+            });
+            fboInfo.depthStencil = renderbuffer;
+        }
+        return fboInfo;
+    }
+
     _postProcess() {
+        if (!this._targetFBO) {
+            this._displayShadow();
+            return;
+        }
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !config.enable) {
+            this._displayShadow();
             return;
         }
         if (!this._postProcessor) {
@@ -597,19 +638,36 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     return this.canvas.height;
                 }
             };
-            this._postProcessor = new PostProcess(this._regl, viewport, this._targetFBO);
+            this._postProcessor = new PostProcess(this._regl, viewport);
         }
+        let tex = this._targetFBO.color[0];
         const map = this.layer.getMap();
-        this._postProcessor.layer({
+        const enableTAA = config && config.taa && config.taa.enable;
+        if (enableTAA) {
+            tex = this._postProcessor.taa(tex, this._depthTex, {
+                projViewMatrix: map.projViewMatrix,
+                prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
+                cameraWorldMatrix: map.cameraWorldMatrix,
+                fov: map.getFov() * Math.PI / 180,
+                jitter: this._jitter || [0, 0],
+                near: map.cameraNear,
+                far: map.cameraFar
+            });
+            if (!this._prevProjViewMatrix) {
+                this._prevProjViewMatrix = new Array(16);
+            }
+            mat4.copy(this._prevProjViewMatrix, map.projViewMatrix);
+        }
+        this._displayShadow();
+        this._postProcessor.layer(tex, this._depthTex, {
             enableSSAO: +!!(config.ssao && config.ssao.enable),
             enableFXAA: +!!(config.antialias && config.antialias.enable),
             enableToneMapping: +!!(config.toneMapping && config.toneMapping.enable),
-            projMatrix: map.projMatrix,
             cameraNear: map.cameraNear,
             cameraFar: map.cameraFar,
             ssaoBias: config.ssao && config.ssao.bias || 0.005,
             ssaoRadius: config.ssao && config.ssao.radius || 0.3,
-            ssaoPower: config.ssao && config.ssao.power || 0,
+            ssaoPower: config.ssao && config.ssao.power || 0
         });
     }
 

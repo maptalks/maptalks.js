@@ -23,13 +23,13 @@ vec4 Tangent;
 
 // uniform mat3 uModelViewNormalMatrix;
 uniform mat4 uModelMatrix;
-// uniform mat4 uModelViewMatrix;
-// uniform mat4 uProjectionMatrix;
-uniform mat4 uProjViewModelMatrix;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uProjectionMatrix;
+// uniform mat4 uProjViewModelMatrix;
 // uniform mat4 uViewMatrix;
 // uniform vec2 uGlobalTexRatio;
-// uniform vec2 uGlobalTexSize;
-// uniform vec4 uHalton;
+uniform vec2 uGlobalTexSize;
+uniform vec2 uHalton;
 
 uniform mat3 uModelNormalMatrix;
 
@@ -37,6 +37,7 @@ uniform mat3 uModelNormalMatrix;
 varying vec3 vModelNormal;
 #if defined(HAS_TANGENT)
     varying vec4 vModelTangent;
+    varying vec3 vModelBiTangent;
 #endif
 
 varying vec3 vModelVertex;
@@ -86,12 +87,16 @@ void main() {
     vec3 localNormal = Normal;
     vModelNormal = uModelNormalMatrix * localNormal;
 
+    #if defined(HAS_TANGENT)
+        vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);
+    #endif
+
     // vViewNormal = uModelViewNormalMatrix * localNormal;
 
-    // vViewVertex = uModelViewMatrix * vec4(localVertex, 1.0);
-    gl_Position = uProjViewModelMatrix * localVertex;
-    // mat4 jitteredProjection = uProjectionMatrix;
-    // jitteredProjection[2].xy += (1.0 - uDisplay2D) * (uHalton.xy * uGlobalTexRatio.xy / uGlobalTexSize.xy);
-    // gl_Position = jitteredProjection * vViewVertex;
+    vec4 viewVertex = uModelViewMatrix * localVertex;
+    // gl_Position = uProjectionMatrix * uModelViewMatrix * localVertex;
+    mat4 jitteredProjection = uProjectionMatrix;
+    jitteredProjection[2].xy += uHalton.xy / uGlobalTexSize.xy;
+    gl_Position = jitteredProjection * viewVertex;
     // gl_PointSize = min(64.0, max(1.0, -uPointSize / vViewVertex.z));
 }

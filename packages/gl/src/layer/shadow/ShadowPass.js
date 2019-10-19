@@ -78,7 +78,7 @@ class VSMShadowPass {
         return defines;
     }
 
-    render(projMatrix, viewMatrix, lightDirection, scene, framebuffer) {
+    render(projMatrix, viewMatrix, lightDirection, scene, halton, framebuffer) {
         this._transformGround();
         const map = this._layer.getMap();
         const shadowConfig = this.sceneConfig.shadow;
@@ -111,24 +111,9 @@ class VSMShadowPass {
             smap = this._shadowMap;
             // fbo = this._blurFBO;
         }
-
-
-        const ground = this._ground;
-        const groundLightProjViewModelMatrix = this._groundLightProjViewModelMatrix || [];
-        //display ground shadows
-        this.renderer.render(this._shadowDisplayShader, {
-            'modelMatrix': ground.localTransform,
-            'projMatrix': projMatrix,
-            'viewMatrix': viewMatrix,
-            'shadow_lightProjViewModelMatrix': mat4.multiply(groundLightProjViewModelMatrix, matrix, ground.localTransform),
-            'shadow_shadowMap': smap,
-            'esm_shadow_threshold': this._esmShadowThreshold,
-            'shadow_opacity': shadowConfig.opacity,
-            'color': shadowConfig.color || [0, 0, 0],
-            'opacity': !shadowConfig.opacity && shadowConfig.opacity !== 0 ? 1 : shadowConfig.opacity
-        }, this._groundScene, framebuffer);
-
-
+        this._projMatrix = projMatrix;
+        this._viewMatrix = viewMatrix;
+        this.displayShadow(halton, framebuffer);
         const uniforms = {
             'shadow_lightProjViewMatrix': matrix,
             'shadow_shadowMap': smap,
@@ -137,6 +122,28 @@ class VSMShadowPass {
         };
 
         return uniforms;
+    }
+
+    displayShadow(halton, framebuffer) {
+        const matrix = this._lightProjViewMatrix;
+        const shadowConfig = this.sceneConfig.shadow;
+        const ground = this._ground;
+        const groundLightProjViewModelMatrix = this._groundLightProjViewModelMatrix || [];
+        const canvas = this._layer.getRenderer().canvas;
+        //display ground shadows
+        this.renderer.render(this._shadowDisplayShader, {
+            'halton': halton || [0, 0],
+            'globalTexSize': [canvas.width, canvas.height],
+            'modelMatrix': ground.localTransform,
+            'projMatrix': this._projMatrix,
+            'viewMatrix': this._viewMatrix,
+            'shadow_lightProjViewModelMatrix': mat4.multiply(groundLightProjViewModelMatrix, matrix, ground.localTransform),
+            'shadow_shadowMap': this._shadowMap,
+            'esm_shadow_threshold': this._esmShadowThreshold,
+            'shadow_opacity': shadowConfig.opacity,
+            'color': shadowConfig.color || [0, 0, 0],
+            'opacity': !shadowConfig.opacity && shadowConfig.opacity !== 0 ? 1 : shadowConfig.opacity
+        }, this._groundScene, framebuffer);
     }
 
     delete() {

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PBR-GLTF</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1400px;height:1000px;background-color: #000}
+  </style>
+  <script type="text/javascript" src="http://localhost/maptalks/dist/maptalks.js"></script>
+    <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+    <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/dat.gui.min.js"></script>
+  <body>
+    <canvas id="canvas" width=1400 height=1000 class="container"></canvas>
+    <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
+    <script type="module">
+        import sphereData from './common/sphere.js';
+        const PREFILTER_CUBE_SIZE = 256;
+        const { createREGL, mat4, reshader, vec2 } = maptalksgl;
+        const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
+
+        // const gl = canvas.getContext('webgl', {
+        //     alpha: true,
+        //     // antialias: false
+        // });
+
+        const regl = createREGL({
+            attributes: {
+                alpha: true,
+                stencil: true,
+                depth: true,
+                antialias: false,
+            },
+            canvas : canvas,
+            // gl,
+            extensions : [
+                'OES_texture_float',
+                'OES_texture_half_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod',
+                'WEBGL_depth_texture'
+            ]
+        });
+        let iblMaps;
+        let mouseDown = false;
+        let roll = Math.PI;
+        let pitch = 0.0;
+        let translate = 4.0;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        const loader = new reshader.ResourceLoader(regl.texture(2));
+        const renderer = new reshader.Renderer(regl);
+        let camPos = [-1, -2, 4];
+        let SCENE = null;
+        let SHADER;
+        window.UNIFORMS = null;
+        let NORMAL_TEXTURE;
+        let ROUGHNESS_METALLIC_TEXTURE;
+        let BASE_COLOR_TEXTURE;
+        let CLEAR_COAT_NORMAL_TEXTURE;
+        let paused = false;
+
+        function main() {
+            // const skyboxTextures = [
+            //     // "./ibl/resources/skybox/right.jpg",
+            //     // "./ibl/resources/skybox/left.jpg",
+            //     // "./ibl/resources/skybox/top.jpg",
+            //     // "./ibl/resources/skybox/bottom.jpg",
+            //     // "./ibl/resources/skybox/back.jpg",
+            //     // "./ibl/resources/skybox/front.jpg"
+            //     "./ibl/resources/skybox_bridge/posx.jpg",
+            //     "./ibl/resources/skybox_bridge/negx.jpg",
+            //     "./ibl/resources/skybox_bridge/posy.jpg",
+            //     "./ibl/resources/skybox_bridge/negy.jpg",
+            //     "./ibl/resources/skybox_bridge/posz.jpg",
+            //     "./ibl/resources/skybox_bridge/negz.jpg"
+            // ];
+
+            // //载入天空盒纹理图片
+            // const promises = skyboxTextures.map(url => new Promise(function (resolve, reject) {
+            //     const img = new Image();
+            //     img.onload = function () {
+            //         resolve(img);
+            //     };
+            //     img.src = url;
+            // }));
+
+            const loader = new reshader.ResourceLoader();
+            const hdr = new reshader.Texture2D(
+                {
+                    url: 'ibl/resources/industrial_room.hdr',
+                    arrayBuffer: true,
+                    hdr: true,
+                    type: 'float',
+                    format: 'rgba',
+                    flipY: true
+                },
+                loader
+            );
+
+            hdr.once('complete', () => {
+                iblMaps = createMaps(hdr.getREGLTexture(regl));
+                const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+                UNIFORMS = {
+                    // 'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
+                    'uGlobalTexSize': [canvas.width, canvas.height],
+                    'uHalton': [0, 0],
+                    'uEnvironmentExposure': 2, //2
+                    'sIntegrateBRDF': iblMaps.dfgLUT,
+                    'sSpecularPBR': iblMaps.prefilterMap,
+                    'uDiffuseSPH': iblMaps.sh,
+                    'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
+                    'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
+                    'uSketchfabLight0_diffuse': [1.4192, 1.3973, 1.4269, 1],
+                    'uSketchfabLight0_viewDirection': [0.6170, -0.6895, -0.3793]
+                };
+                // initGUI();
+                render();
+            });
+        }
+        main();
+        function render() {
+            //绘制gltf模型
+            drawGLTFModel();
+            // drawSphere();
+        }
+        const color = regl.texture({
+            min: 'nearest',
+            mag: 'nearest',
+            type: 'uint8',
+            width: canvas.width,
+            height: canvas.height,
+        });
+        const fbo = regl.framebuffer({
+            width: canvas.width,
+            height: canvas.height,
+            colors: [color],
+            colorFormat: 'rgba',
+            colorCount: 1,
+            depthTexture: true,
+            stencil: false
+        });
+        const emptyTexture = regl.texture();
+        let taaPass, fxaaShader, jitter;
+        function drawScene() {
+            if (paused) {
+                requestAnimationFrame(drawScene);
+                return;
+            }
+            const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
+            const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            const cameraWorldMatrix = mat4.invert([], viewMatrix);
+            const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+            const prevProjViewMatrix = projViewMatrix;
+            // UNIFORMS.modelMatrix = mat4.identity([]);
+            UNIFORMS.viewMatrix = viewMatrix;
+            UNIFORMS.projMatrix = projMatrix;
+            UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.uCameraPosition = camPos;
+            // UNIFORMS.modelMatrix = mat4.identity([]);
+            UNIFORMS.viewMatrix = viewMatrix;
+            UNIFORMS.projMatrix = projMatrix;
+            UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.uCameraPosition = camPos;
+            const halton = jitter.getJitter([]);
+            UNIFORMS.uHalton = halton;
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
+                framebuffer: fbo
+            });
+            renderer.render(
+                SHADER,
+                UNIFORMS,
+                SCENE,
+                fbo
+            );
+            const output = taaPass.render(
+                projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200, fbo.color[0], fbo.depth
+            );
+            jitter.frame();
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1
+            });
+            renderer.render(fxaaShader, {
+                'enableFXAA': 1,
+                'enableSSAO': 0,
+                'enableToneMapping': 0,
+                'textureSource': output,
+                'resolution': [canvas.width, canvas.height],
+                'ssaoTexture': emptyTexture,
+                'cameraNear': 0.1,
+                'cameraFar': 200
+            });
+            // reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            requestAnimationFrame(drawScene);
+        }
+
+        function drawGLTFModel() {
+            const viewport = {
+                x: 0,
+                y: 0,
+                width: canvas.width,
+                height: canvas.height
+            };
+            taaPass = new reshader.TaaPass(renderer, viewport);
+            fxaaShader = new reshader.FxaaShader(viewport);
+            jitter = new reshader.Jitter();
+            SHADER = new reshader.pbr.StandardShader({
+                positionAttribute : 'POSITION',
+                normalAttribute : 'NORMAL',
+                tangentAttribute : 'TANGENT',
+                colorAttribute : 'COLOR_0',
+                uv0Attribute : 'TEXCOORD_0',
+                uv1Attribute : 'TEXCOORD_1',
+                extraCommandProps: {
+                    cull: {
+                        enable: true,
+                        face: 'back'
+                    }
+                },
+                defines: {
+                    // 'HAS_IBL_LIGHTING': 1
+                }
+            });
+            const scenePromise = getGLTFScene();
+            scenePromise.then(scene => {
+                SCENE = scene;
+                drawScene();
+            });
+        }
+
+        function createMaps(hdr) {
+            const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
+                envTexture : hdr,
+                envCubeSize: 512,
+                prefilterCubeSize: PREFILTER_CUBE_SIZE,
+                // ignoreSH: true
+            });
+
+            // maps.sh = [
+            //     [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
+            //     [-0.004491398110985756, -0.0062361168675124645, -0.005997033789753914],
+            //     [0.02749081887304783, 0.057795193046331406, 0.1145947203040123],
+            //     [0.03964025899767876, 0.03352731838822365, 0.020897403359413147],
+            //     [-0.005459152162075043, -0.008918278850615025, -0.011838626116514206],
+            //     [0.017447197809815407, 0.016732292249798775, 0.012003022246062756],
+            //     [-0.003052285173907876, -0.00440911715850234, -0.004788860213011503],
+            //     [0.01575229875743389, 0.017373336479067802, 0.015197779051959515],
+            //     [0.018414868041872978, 0.027235284447669983, 0.030140453949570656]
+            // ];
+            return maps;
+        }
+
+        function getGLTFScene() {
+            var url = 'gltf/box_out/box.gltf';
+            return gltf.Ajax.getJSON(url, {}).then((json) => {
+                const loader = new gltf.GLTFLoader('gltf/box_out/', json, { requestImage : request });
+            // const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
+            // return gltf.Ajax.getJSON(url, {}).then((json) => {
+            //     const loader = new gltf.GLTFLoader('gltf/FlightHelmet', json);
+                return loader.load().then(gltfData => {
+                    const transformMat = mat4.identity([]);
+                    mat4.rotate(transformMat, transformMat, 90 * Math.PI / 180, [1, 0, 0]);
+                    // mat4.scale(transformMat, transformMat, [60, 60, 60]);
+                    const modelMeshes = [];
+                    for (let i = 0; i < gltfData.scenes.length; i++) {
+                        const scene = gltfData.scenes[i];
+                        const nodes = scene.nodes;
+                        nodes.forEach((node, i) => {
+                            if (!node.meshes && !node.children) {
+                                return;
+                            }
+                            let meshes = null;
+                            if (node.children) {
+                                meshes = extractMesh(node.children);
+                            } else if (node.meshes) {
+                                meshes = [
+                                    {
+                                        mesh: node.meshes[0],
+                                        matrix: getNodeTransformation(node)
+                                    }
+                                ];
+                            }
+                            // debugger
+                            meshes.forEach(({ mesh, matrix }) => {
+                                mesh.primitives.forEach(primitive => {
+                                    const modelGeometry = createGeometry(primitive);
+                                    const defines = getGeometryDefines(modelGeometry);
+                                    defines['HAS_TONE_MAPPING'] = 1;
+                                    let uniforms = {};
+                                    if (primitive.material) {
+                                        const textures = primitive.material.pbrMetallicRoughness;
+                                        if (textures.baseColorTexture) {
+                                            uniforms.uAlbedoTexture = toTexture(textures.baseColorTexture);
+                                        } else if (textures.baseColorFactor) {
+                                            uniforms.uAlbedoPBR = textures.baseColorFactor;
+                                        }
+                                        if (textures.metallicRoughnessTexture) {
+                                            uniforms.uMetallicRoughnessTexture = toTexture(textures.metallicRoughnessTexture);
+                                        } else {
+                                            if (textures.metallicFactor !== undefined) {
+                                                uniforms.uMetalnessPBRFactor = textures.metallicFactor;
+                                            }
+                                            if (textures.roughnessFactor !== undefined) {
+                                                uniforms.uRoughnessPBRFactor = textures.roughnessFactor;
+                                            }
+                                        }
+
+                                        if (primitive.material.normalTexture) {
+                                            uniforms.uNormalTexture = toTexture(primitive.material.normalTexture);
+                                        }
+                                        if (primitive.material.occlusionTexture) {
+                                            uniforms.uOcclusionTexture = toTexture(primitive.material.occlusionTexture);
+                                        }
+                                        if (primitive.material.emissiveTexture) {
+                                            uniforms.uEmissiveTexture = toTexture(primitive.material.emissiveTexture);
+                                        }
+                                    } else {
+                                        uniforms = {
+                                            uMetalnessPBRFactor : 1,
+                                            uRoughnessPBRFactor : 0
+                                        };
+                                    }
+                                    // uniforms['uOutputLinear'] = 0;
+                                    const material = new reshader.pbr.StandardMaterial(uniforms);
+                                    //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
+                                    const modelMesh = new reshader.Mesh(modelGeometry, material);
+                                    modelMeshes.push(modelMesh);
+                                    modelMesh.setLocalTransform(matrix);
+                                    modelMesh.setDefines(defines);
+                                });
+                            });
+                        });
+                    }
+
+                    const scene = new reshader.Scene(modelMeshes);
+                    return scene;
+                });
+            });
+        }
+        function extractMesh(children) {
+            const meshes = [];
+            for (let i = 0; i < children.length; i++) {
+                if (children[i].meshes) {
+                    meshes.push({
+                        mesh: children[i].meshes[0],
+                        matrix: getNodeTransformation(children[i])
+                    });
+                }
+            }
+            return meshes;
+        }
+        function createGeometry(primitive) {
+            const attributes = {};
+            for (const attr in primitive.attributes) {
+                attributes[attr] =  primitive.attributes[attr].array;
+            }
+            // delete attributes['TEXCOORD_0'];
+            const modelGeometry = new reshader.Geometry(
+                attributes,
+                primitive.indices,
+                0,
+                {
+                    //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
+                    primitive : (typeof primitive.mode === 'number') ? MODES[primitive.mode] : primitive.mode,
+                    positionAttribute : 'POSITION',
+                    normalAttribute: 'NORMAL',
+                    uv0Attribute: 'TEXCOORD_0'
+                }
+            );
+            modelGeometry.createTangent('TANGENT');
+            return modelGeometry;
+        }
+
+        function getViewProjection(cameraPos, aspect) {
+            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 0.1, 200);
+            const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            // console.log(cameraPos, viewMatrix);
+            // console.log(viewMatrix[2], viewMatrix[6], viewMatrix[10]);
+            return {
+                viewMatrix,
+                projMatrix
+            };
+        }
+        function getGeometryDefines(geometry) {
+            const defines = SHADER.getGeometryDefines(geometry);
+            defines['HAS_DIRECTIONAL_LIGHTING'] = 1;
+            return defines;
+        }
+
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.onmousemove = function(ev) { handleMouseMove(ev); };
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+
+        function handleMouseDown(ev) {
+            mouseDown = true;
+            lastMouseX = ev.clientX;
+            lastMouseY = ev.clientY;
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+            updateCamera();
+        }
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+        let timeout;
+        function updateCamera() {
+            clearTimeout(timeout);
+            paused = false;
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+            timeout = setTimeout(function () {
+                paused = true;
+            }, 1000);
+        }
+
+        function request(url, cb) {
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0, image.width, image.height);
+                const imgData = ctx.getImageData(0, 0, image.width, image.height);
+                const result = { width : image.width, height : image.height, data : new Uint8Array(imgData.data) };
+                cb(null, result);
+            };
+            image.onerror = function (err) {
+                cb(err);
+            };
+            image.src = url;
+        };
+
+        function toTexture(texture) {
+            const image = texture.texture.image;
+            return new reshader.Texture2D(regl.texture({
+                data: image.array,
+                width: image.width,
+                height: image.height,
+                wrap: 'repeat',
+                mag: 'linear',
+                min: 'mipmap'
+            }));
+        }
+
+        function getNodeTransformation(node) {
+            if (node.matrix) {
+                return node.matrix;
+            }
+            const mat = mat4.identity([]);
+            const v = node.translation || [0, 0, 0];
+            const q = node.rotation || [0, 0, 0, 1];
+            const s = node.scale || [1, 1, 1];
+            return mat4.fromRotationTranslationScale([], q, v, s)
+        }
+
+
+
+        function extract() {
+            const modelMatrix = [1, -0.0000, 0, 0, 0, 0.0000, 1, 0, -0.0000, -1, -0.0000, 0, 157.0230, -0.0000, -93.5090, 1];
+            const modelViewMatrix = [-0.8038, -0.2938, 0.5172, 0, 0, 0.8695, 0.4940, 0, -0.5948, 0.3971, -0.6989, 0, 0.0005, -328.0622, -2646.9722, 1];
+            //-0.8038, 0.5172, 0.2938, 0, -0.5948, -0.6989, -0.3971, 0, 0, -0.494, 0.8695, 0, -227.6184342, -2406.8974643, 411.32798130000003, 1
+            const invertedModelMatrix = mat4.invert([], modelMatrix);
+            const viewMatrix = mat4.multiply([], modelViewMatrix, invertedModelMatrix);
+            const cameraWorldMatrix = mat4.invert([], viewMatrix);
+            // console.log(mat4.multiply([], viewMatrix, modelMatrix));
+            // console.log(cameraWorldMatrix[2], cameraWorldMatrix[6], cameraWorldMatrix[10]);
+
+            const projMatrix = [1.5113, 0, 0, 0, 0, 2.4142, 0, 0, 0, 0, -3.3653, -1, 0, 0, -8166.4790, 0];
+            console.log(cameraWorldMatrix.map(f => +f.toFixed(4)));
+            //-0.8038, 0.5948, 0, 0, -0.2938, -0.3971, 0.8695, 0, 0.5172, 0.6989, 0.4940, 0, 1429.6604, 1719.8042, 1499.2101, 1
+            //-0.8039, 0.5949, 0, 0, -0.2938, -0.3971, 0.8694, 0, 0.5172, 0.6989, 0.494, 0, 1429.6421, 1719.7894, 1499.2294, 1
+
+            console.log(mat4.multiply([], projMatrix, viewMatrix).map(f => +f.toFixed(4)));
+            const width = 1524, height = 954;
+            const oneExtentY = Math.tan(0.5 * 45 * Math.PI / 180);
+            console.log(oneExtentY, oneExtentY * width / height);
+            //0.41421356237309503 0.6616996530991581
+            // Mathf.Tan(0.5f * Mathf.Deg2Rad * camera.fieldOfView)
+            console.log(2 / (projMatrix[0]), - 2 / (height * projMatrix[5]));
+            //-0.6617, 0.4142, -0.6617, -0.4142
+
+
+            //-1.2148, -0.7093, -1.7405, -0.5172, 0.8989, -0.9587, -2.3521, -0.6989, 0, 2.0991, -1.6625, -0.494, 190.7496, -484.3435, 859.2255, 2681.991
+            //-1.2148, -0.7093, -1.7405, -0.5172, 0.8990, -0.9586, -2.3521, -0.6989, 0, 2.0991, -1.6623, -0.4940, 190.7555, -484.3408, 859.1375, 2681.9966
+
+            //蓝右红左
+            //0.034928759187680285 -0.9157543935469857 -0.40026152419029554
+
+            //0.08007595998751595 0.5971954413623921 -0.798088620046706
+
+
+            //蓝左红右
+            //0.04638028212501815 0.7946342382380419 0.6052405844731987
+            //0.03284840030281776 0.6131168519734339 0.7893090069318429
+        }
+
+        const jitters = [
+            [.263385, -.0252475],
+            [-.38545, .054485],
+            [-.139795, -.5379925],
+            [-.2793775, .6875475],
+            [.7139025, .4710925],
+            [.90044, -.16422],
+            [.4481775, -.82799],
+            [-.9253375, -.2910625],
+            [.3468025, 1.02292],
+            [-1.13742, .33522],
+            [-.7676225, -.9123175],
+            [-.2005775, -1.1774125],
+            [-.926525, .96876],
+            [1.12909, -.7500325],
+            [.9603, 1.14625]
+        ];
+
+        // extract();
+        console.log(JSON.stringify(jitters.map(dd => dd.map(d => d * 0.05))));
+    </script>
+  </body>
+</html>

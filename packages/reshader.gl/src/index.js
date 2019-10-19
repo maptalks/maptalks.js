@@ -27,6 +27,8 @@ export { default as PhongShader } from './shader/PhongShader.js';
 export { default as FxaaShader } from './shader/FxaaShader.js';
 export { default as SsaoPass } from './shader/SsaoPass.js';
 export { default as PostProcessShader } from './shader/PostProcessShader.js';
+export { default as TaaPass } from './shader/TaaPass.js';
+export { default as Jitter } from './shader/Jitter.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };
@@ -64,3 +66,6 @@ export { default as ShadowMapShader } from './shadow/ShadowMapShader.js';
 export { default as ShadowDisplayShader } from './shadow/ShadowDisplayShader.js';
 
 export { default as FBORayPicking } from './picking/FBORayPicking';
+
+import * as Constants from './common/Constants';
+export { Constants };

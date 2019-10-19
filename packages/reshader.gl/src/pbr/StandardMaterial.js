@@ -1,5 +1,6 @@
 import Material from '../Material.js';
 import { mat3 } from 'gl-matrix';
+import { extend } from '../common/Util.js';
 
 const DEFAULT_UNIFORMS = {
     'uvScale': [1, 1],
@@ -17,7 +18,6 @@ const DEFAULT_UNIFORMS = {
     'uClearCoatRoughnessFactor': 0.04, //0.04
     'uClearCoatThickness': 5, //5
     'uEmitColorFactor': 1, //1
-    // 'uFrameMod', //
     'uRoughnessPBRFactor': 0.4, //0.4
     'uMetalnessPBRFactor': 0, //0
     'uNormalMapFactor': 1, //1
@@ -42,34 +42,17 @@ const DEFAULT_UNIFORMS = {
     'uMetallicRoughnessTexture': null,
     'uEmissiveTexture': null,
 
-    // 'sIntegrateBRDF': null,
-    // 'sSpecularPBR': null,
-    // 'uNearFar', //unused
-    // 'uShadow_Texture3_depthRange',
-    // 'uShadow_Texture3_renderSize',
-    // 'uTextureEnvironmentSpecularPBRLodRange': [8, 5], //8, 5
-    // 'uTextureEnvironmentSpecularPBRTextureSize': [256, 256], //256,256
     'uClearCoatTint': [0.0060, 0.0060, 0.0060], //0.0060, 0.0060, 0.0060
-    // 'uDiffuseSPH[9]': null,
-    // 'uShadow_Texture3_projection',
-    // 'uSketchfabLight0_viewDirection',
-    // 'uSketchfabLight1_viewDirection',
-    // 'uSketchfabLight2_viewDirection',
-    // 'uSketchfabLight3_viewDirection',
-    // 'uSubsurfaceTranslucencyColor', //1, 0.3700, 0.3000
-    // 'uHalton', //0.0450, -0.0082, 1, 5
-    // 'uShadow_Texture3_viewLook',
-    // 'uShadow_Texture3_viewRight',
-    // 'uShadow_Texture3_viewUp',
-    // 'uSketchfabLight0_diffuse',
-    // 'uSketchfabLight1_diffuse',
-    // 'uSketchfabLight2_diffuse',
-    // 'uSketchfabLight3_diffuse',
 };
 
 class StandardMaterial extends Material {
     constructor(uniforms) {
-        super(uniforms, DEFAULT_UNIFORMS);
+        const defaultUniforms = extend({}, DEFAULT_UNIFORMS);
+        if (uniforms['uMetallicRoughnessTexture']) {
+            defaultUniforms['uRoughnessPBRFactor'] = 1;
+            defaultUniforms['uMetalnessPBRFactor'] = 1;
+        }
+        super(uniforms, defaultUniforms);
     }
 
     createDefines() {

@@ -2,6 +2,7 @@ import { vec3, vec4 } from 'gl-matrix';
 import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-packer';
 import { isNumber, extend, isArray } from './common/Util';
 import BoundingBox from './BoundingBox';
+import { KEY_DISPOSED } from './common/Constants';
 
 const DEFAULT_DESC = {
     'positionSize': 3,
@@ -174,8 +175,8 @@ export default class Geometry {
 
     dispose() {
         this._forEachBuffer(buffer => {
-            if (!buffer['__reshader_disposed']) {
-                buffer['__reshader_disposed'] = true;
+            if (!buffer[KEY_DISPOSED]) {
+                buffer[KEY_DISPOSED] = true;
                 buffer.destroy();
             }
         });
@@ -365,3 +366,88 @@ function getElementLength(elements) {
     }
     throw new Error('invalid elements length');
 }
+
+// function buildTangents2(vertices, normals, uvs, indices) {
+//     const vtxCount = vertices.length / 3;
+//     const tangent = new Array(vtxCount * 4);
+//     const tanA = new Array(vertices.length);
+//     const tanB = new Array(vertices.length);
+
+//     // (1)
+//     const indexCount = indices.length;
+//     for (let i = 0; i < indexCount; i += 3) {
+//         const i0 = indices[i];
+//         const i1 = indices[i + 1];
+//         const i2 = indices[i + 2];
+
+//         const pos0 = vec3.set([], vertices[i0 * 3], vertices[i0 * 3 + 1], vertices[i0 * 3 + 2]);
+//         const pos1 = vec3.set([], vertices[i1 * 3], vertices[i1 * 3 + 1], vertices[i1 * 3 + 2]);
+//         const pos2 = vec3.set([], vertices[i2 * 3], vertices[i2 * 3 + 1], vertices[i2 * 3 + 2]);
+
+//         const tex0 = vec2.set([], uvs[i0 * 2], uvs[i0 * 2 + 1]);
+//         const tex1 = vec2.set([], uvs[i1 * 2], uvs[i1 * 2 + 1]);
+//         const tex2 = vec2.set([], uvs[i2 * 2], uvs[i2 * 2 + 1]);
+
+//         const edge1 = vec3.sub([], pos1, pos0);
+//         const edge2 = vec3.sub([], pos2, pos0);
+
+//         const uv1 = vec2.sub([], tex1, tex0);
+//         const uv2 = vec2.sub([], tex2, tex0);
+
+//         const r = 1.0 / (uv1[0] * uv2[1] - uv1[1] * uv2[0]);
+
+//         const tangent = [
+//             ((edge1[0] * uv2[1]) - (edge2[0] * uv1[1])) * r,
+//             ((edge1[1] * uv2[1]) - (edge2[1] * uv1[1])) * r,
+//             ((edge1[2] * uv2[1]) - (edge2[2] * uv1[1])) * r
+//         ];
+
+//         const bitangent = [
+//             ((edge1[0] * uv2[0]) - (edge2[0] * uv1[0])) * r,
+//             ((edge1[1] * uv2[0]) - (edge2[1] * uv1[0])) * r,
+//             ((edge1[2] * uv2[0]) - (edge2[2] * uv1[0])) * r
+//         ];
+
+//         tanA[i0] = tanA[i0] || [0, 0, 0];
+//         tanA[i1] = tanA[i1] || [0, 0, 0];
+//         tanA[i2] = tanA[i2] || [0, 0, 0];
+//         vec3.add(tanA[i0], tanA[i0], tangent);
+//         vec3.add(tanA[i1], tanA[i1], tangent);
+//         vec3.add(tanA[i2], tanA[i2], tangent);
+//         // tanA[i0] += tangent;
+//         // tanA[i1] += tangent;
+//         // tanA[i2] += tangent;
+
+//         tanB[i0] = tanB[i0] || [0, 0, 0];
+//         tanB[i1] = tanB[i1] || [0, 0, 0];
+//         tanB[i2] = tanB[i2] || [0, 0, 0];
+//         vec3.add(tanB[i0], tanB[i0], bitangent);
+//         vec3.add(tanB[i1], tanB[i1], bitangent);
+//         vec3.add(tanB[i2], tanB[i2], bitangent);
+//         // tanB[i0] += bitangent;
+//         // tanB[i1] += bitangent;
+//         // tanB[i2] += bitangent;
+//     }
+
+//     // (2)
+//     for (let j = 0; j < vtxCount; j++) {
+//         const n = vec3.set([], normals[j * 3], normals[j * 3 + 1], normals[j * 3 + 2]);
+//         const t0 = tanA[j];
+//         const t1 = tanB[j];
+
+//         const n1 = vec3.scale([], n, vec3.dot(n, t0));
+//         const t = vec3.sub([], t0, n1);
+//         vec3.normalize(t, t);
+//         // const t = t0 - (n * dot(n, t0));
+//         // t = normaljze(t);
+
+//         const c = vec3.cross(n, n, t0);
+//         const w = (vec3.dot(c, t1) < 0) ? -1.0 : 1.0;
+//         tangent[j * 4] = t[0];
+//         tangent[j * 4 + 1] = t[1];
+//         tangent[j * 4 + 2] = t[2];
+//         tangent[j * 4 + 3] = w;
+//     }
+//     return tangent;
+// }
+

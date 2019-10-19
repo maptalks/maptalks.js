@@ -10,6 +10,14 @@ class SsaoPass {
         this._renderer = renderer;
         this._fbo = fbo;
     }
+
+    /**
+    * uniforms值：
+    *   projMatrix,
+        bias,
+        radius,
+        power,
+    */
     render(uniforms, depthTexture) {
         this._initShaders();
         const fbo = this._fbo;

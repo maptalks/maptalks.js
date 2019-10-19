@@ -76,17 +76,6 @@ class SsaoShader extends QuadShader {
             ],
             extraCommandProps: {
                 viewport
-                // sample: {
-                //     enable: true,
-                //     alpha: true,
-                //     coverage: {
-                //         value: 1,
-                //         invert: true
-                //     }
-                // },
-                // blend: {
-                //     enable: true
-                // }
             }
         });
     }

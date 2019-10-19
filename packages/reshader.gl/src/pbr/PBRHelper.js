@@ -38,7 +38,7 @@ export function createIBLMaps(regl, config = {}) {
     const roughnessLevels = config.roughnessLevels || 256;
     const prefilterCubeSize = config.prefilterCubeSize || 256;
 
-    const dfgSize = config.dfgSize || 512;
+    const dfgSize = config.dfgSize || 256;
 
     //----------------------------------------------------
     // generate ibl maps
@@ -89,9 +89,32 @@ function createSkybox(regl, cubemap, envCubeSize) {
         },
         elements : cubeData.indices
     });
-    const tmpFBO = regl.framebufferCube(envCubeSize);
-    renderToCube(regl, tmpFBO, drawCube);
-    return tmpFBO;
+    // const color = regl.cube({
+    //     radius : envCubeSize,
+    //     min : 'linear',
+    //     mag : 'linear mipmap linear',
+    //     mipmap: true
+    //     // wrap : 'clamp',
+    //     // faces : mipmap
+    // });
+    const faces = [];
+    const tmpFBO = regl.framebufferCube({
+        radius: envCubeSize
+    });
+    renderToCube(regl, tmpFBO, drawCube, {
+        size : envCubeSize
+    }, function (/* context, props, batchId */) {
+        const pixels = regl.read();
+        faces.push(pixels);
+    });
+    const color = regl.cube({
+        radius : envCubeSize,
+        min : 'linear mipmap linear',
+        mag : 'linear',
+        faces: faces,
+        mipmap: true
+    });
+    return color;
 }
 
 function getEnvmapPixels(regl, cubemap, envCubeSize) {
@@ -192,6 +215,7 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
         data : distro,
         width : roughnessLevels,
         height : sampleSize,
+        format: 'rgb',
         min : 'nearest',
         mag : 'nearest'
     });
@@ -231,10 +255,10 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
         let faceId = 0;
         //分别绘制六个方向，读取fbo的pixel，作为某个方向的mipmap级别数据
         renderToCube(regl, tmpFBO, drawCube, {
-            roughness : Math.sqrt(roughness),
+            roughness: Math.sqrt(roughness),
             size : size
         }, function (/* context, props, batchId */) {
-            const pixels = regl.read();
+            const pixels = regl.read({ framebuffer: tmpFBO });
             if (!mipmap[faceId]) {
                 //regl要求的cube face的mipmap数据格式
                 mipmap[faceId] = {
@@ -261,17 +285,16 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
 //https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
 function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
     const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels);
-
-    const prefilterMapFBO = regl.cube({
+    // debugger
+    const prefilterCube = regl.cube({
         radius : SIZE,
         min : 'linear mipmap linear',
         mag : 'linear',
         // wrap : 'clamp',
+        //TODO #56 改成rgbm
         faces : mipmap
     });
-
-
-    return prefilterMapFBO;
+    return prefilterCube;
 }
 
 const quadVertices = [
@@ -304,11 +327,13 @@ function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
         DFG_CACHE[key] = distro;
     }
 
+    const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
     const distributionMap = regl.texture({
         data : distro,
         width : roughnessLevels,
         height : sampleSize,
-        type : 'float',
+        type,
+        format: 'rgb',
         min : 'nearest',
         mag : 'nearest'
     });
@@ -317,7 +342,8 @@ function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     const quadTexBuf = regl.buffer(quadTexcoords);
     const fbo = regl.framebuffer({
         radius : size,
-        type : 'float',
+        colorType: type,
+        colorFormat: 'rgba',
         min : 'nearest',
         mag : 'nearest'
     });
@@ -363,7 +389,7 @@ function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
 //因为glsl不支持位操作，所以预先生成采样LUT， 代替原代码中的采样逻辑
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/2.2.2.prefilter.fs
 function generateNormalDistribution(sampleSize, roughnessLevels) {
-    const pixels = new Array(sampleSize * roughnessLevels * 4);
+    const pixels = new Array(sampleSize * roughnessLevels * 3);
     for (let i = 0; i < sampleSize; i++) {
         const { x, y } = hammersley(i, sampleSize);
 
@@ -374,11 +400,11 @@ function generateNormalDistribution(sampleSize, roughnessLevels) {
             const phi = 2.0 * Math.PI * x;
             const cosTheta = Math.sqrt((1 - y) / (1 + (a * a - 1.0) * y));
             const sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
-            const offset = (i * roughnessLevels + j) * 4;
+            const offset = (i * roughnessLevels + j) * 3;
             pixels[offset] = sinTheta * Math.cos(phi);
             pixels[offset + 1] = sinTheta * Math.sin(phi);
             pixels[offset + 2] = cosTheta;
-            pixels[offset + 3] = 1.0;
+            // pixels[offset + 3] = 1.0;
         }
     }
 

@@ -31,14 +31,17 @@
                 stencil: true,
                 depth: true,
                 antialias: false,
+                preserveDrawingBuffer: true
             },
             canvas : canvas,
             // gl,
             extensions : [
                 'OES_texture_float',
+                'OES_texture_half_float',
                 'OES_element_index_uint',
                 'OES_standard_derivatives',
                 'EXT_shader_texture_lod',
+                'WEBGL_depth_texture'
             ]
         });
         let iblMaps;
@@ -59,47 +62,81 @@
         let ROUGHNESS_METALLIC_TEXTURE;
         let BASE_COLOR_TEXTURE;
         let CLEAR_COAT_NORMAL_TEXTURE;
+        let paused = false;
 
         function main() {
-            const skyboxTextures = [
-                // "./ibl/resources/skybox/right.jpg",
-                // "./ibl/resources/skybox/left.jpg",
-                // "./ibl/resources/skybox/top.jpg",
-                // "./ibl/resources/skybox/bottom.jpg",
-                // "./ibl/resources/skybox/back.jpg",
-                // "./ibl/resources/skybox/front.jpg"
-                "./ibl/resources/skybox_bridge/posx.jpg",
-                "./ibl/resources/skybox_bridge/negx.jpg",
-                "./ibl/resources/skybox_bridge/posy.jpg",
-                "./ibl/resources/skybox_bridge/negy.jpg",
-                "./ibl/resources/skybox_bridge/posz.jpg",
-                "./ibl/resources/skybox_bridge/negz.jpg"
-            ];
+            // const skyboxTextures = [
+            //     // "./ibl/resources/color_box/right.jpg",
+            //     // "./ibl/resources/color_box/left.jpg",
+            //     // "./ibl/resources/color_box/top.jpg",
+            //     // "./ibl/resources/color_box/bottom.jpg",
+            //     // "./ibl/resources/color_box/back.jpg",
+            //     // "./ibl/resources/color_box/front.jpg"
+            //     "./ibl/resources/skybox_bridge/posx.jpg",
+            //     "./ibl/resources/skybox_bridge/negx.jpg",
+            //     "./ibl/resources/skybox_bridge/posy.jpg",
+            //     "./ibl/resources/skybox_bridge/negy.jpg",
+            //     "./ibl/resources/skybox_bridge/posz.jpg",
+            //     "./ibl/resources/skybox_bridge/negz.jpg"
+            // ];
 
-            //载入天空盒纹理图片
-            const promises = skyboxTextures.map(url => new Promise(function (resolve, reject) {
-                const img = new Image();
-                img.onload = function () {
-                    resolve(img);
-                };
-                img.src = url;
-            }));
+            // //载入天空盒纹理图片
+            // const promises = skyboxTextures.map(url => new Promise(function (resolve, reject) {
+            //     const img = new Image();
+            //     img.onload = function () {
+            //         resolve(img);
+            //     };
+            //     img.src = url;
+            // }));
 
 
-            Promise.all(promises).then(images => {
-                iblMaps = createMaps(images.slice(0, 6));
+            // Promise.all(promises).then(images => {
+            //     iblMaps = createMaps(images.slice(0, 6));
+            //     const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+            //     UNIFORMS = {
+            //         // 'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
+            //         'uGlobalTexSize': [canvas.width, canvas.height],
+            //         // 'uHalton': [0, 0],
+            //         'uEnvironmentExposure': 0.8, //2
+            //         'sIntegrateBRDF': iblMaps.dfgLUT,
+            //         'sSpecularPBR': iblMaps.prefilterMap,
+            //         'uDiffuseSPH': iblMaps.sh,
+            //         'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
+            //         'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
+            //         'uSketchfabLight0_diffuse': [1, 1, 1, 1],
+            //         'uSketchfabLight0_viewDirection': [1, -1, -1]
+            //     };
+            //     // initGUI();
+            //     render();
+            // });
+
+            const loader = new reshader.ResourceLoader();
+            const hdr = new reshader.Texture2D(
+                {
+                    url: 'ibl/resources/industrial_room.hdr',
+                    arrayBuffer: true,
+                    hdr: true,
+                    type: 'float16',
+                    format: 'rgba',
+                    flipY: true
+                },
+                loader
+            );
+
+            hdr.once('complete', () => {
+                iblMaps = createMaps(hdr.getREGLTexture(regl));
                 const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
                 UNIFORMS = {
                     // 'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
-
-                    'uEnvironmentExposure': 1, //2
+                    'uGlobalTexSize': [canvas.width, canvas.height],
+                    'uEnvironmentExposure': 2, //2
                     'sIntegrateBRDF': iblMaps.dfgLUT,
                     'sSpecularPBR': iblMaps.prefilterMap,
                     'uDiffuseSPH': iblMaps.sh,
                     'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
                     'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
-                    'uSketchfabLight0_diffuse': [1, 1, 1, 1],
-                    'uSketchfabLight0_viewDirection': [1, -1, -1]
+                    'uSketchfabLight0_diffuse': [1.4192, 1.3973, 1.4269, 1],
+                    'uSketchfabLight0_viewDirection': [0.6170, 0.6895, -0.3793]
                 };
                 // initGUI();
                 render();
@@ -111,25 +148,85 @@
             drawGLTFModel();
             // drawSphere();
         }
+        const color = regl.texture({
+            min: 'nearest',
+            mag: 'nearest',
+            type: 'uint8',
+            width: canvas.width,
+            height: canvas.height,
+        });
+        const fbo = regl.framebuffer({
+            width: canvas.width,
+            height: canvas.height,
+            colors: [color],
+            colorFormat: 'rgba',
+            colorCount: 1,
+            depthTexture: true,
+            stencil: false
+        });
+        const emptyTexture = regl.texture();
+        let taaPass, fxaaShader, jitter;
         function drawScene() {
+            if (paused) {
+                requestAnimationFrame(drawScene);
+                return;
+            }
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            const cameraWorldMatrix = mat4.invert([], viewMatrix);
             const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+            const prevProjViewMatrix = projViewMatrix;
             // UNIFORMS.modelMatrix = mat4.identity([]);
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.projMatrix = projMatrix;
             UNIFORMS.projViewMatrix = projViewMatrix;
             UNIFORMS.uCameraPosition = camPos;
+            const halton = jitter.getJitter([]);
+            UNIFORMS.uHalton = halton;
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
+                framebuffer: fbo
+            });
             renderer.render(
                 SHADER,
                 UNIFORMS,
-                SCENE
+                SCENE,
+                fbo
             );
-            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            let output = fbo.color[0];
+            output = taaPass.render(
+                projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200, fbo.color[0], fbo.depth
+            );
+            jitter.frame();
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1
+            });
+            renderer.render(fxaaShader, {
+                'enableFXAA': 1,
+                'enableSSAO': 0,
+                'enableToneMapping': 0,
+                'textureSource': output,
+                'resolution': [canvas.width, canvas.height],
+                'ssaoTexture': emptyTexture,
+                'cameraNear': 0.1,
+                'cameraFar': 200
+            });
+            // reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
             requestAnimationFrame(drawScene);
         }
 
         function drawGLTFModel() {
+            const viewport = {
+                x: 0,
+                y: 0,
+                width: canvas.width,
+                height: canvas.height
+            };
+            taaPass = new reshader.TaaPass(renderer, viewport);
+            fxaaShader = new reshader.FxaaShader(viewport);
+            jitter = new reshader.Jitter();
             SHADER = new reshader.pbr.StandardShader({
                 positionAttribute : 'POSITION',
                 normalAttribute : 'NORMAL',
@@ -159,7 +256,7 @@
                 envTexture : hdr,
                 envCubeSize: 512,
                 prefilterCubeSize: PREFILTER_CUBE_SIZE,
-                ignoreSH: true
+                // ignoreSH: true
             });
 
             maps.sh = [
@@ -177,7 +274,7 @@
         }
 
         function getGLTFScene() {
-            var url = 'gltf/DamagedHelmet.glb';
+            var url = 'gltf/DamagedHelmet2.glb';
             return gltf.Ajax.getArrayBuffer(url, {}).then((json) => {
                 const loader = new gltf.GLTFLoader('gltf/', { buffer : json.data, byteOffset : 0 }, { requestImage : request });
             // const url = 'gltf/FlightHelmet/FlightHelmet.gltf';
@@ -359,11 +456,16 @@
             }
             updateCamera();
         }
-
+        let timeout;
         function updateCamera() {
+            clearTimeout(timeout);
+            paused = false;
             camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
             -translate * Math.sin(-pitch),
             translate * Math.cos(roll) * Math.cos(-pitch)];
+            timeout = setTimeout(function () {
+                paused = true;
+            }, 1000);
         }
 
         function request(url, cb) {
@@ -404,7 +506,9 @@
             const v = node.translation || [0, 0, 0];
             const q = node.rotation || [0, 0, 0, 1];
             const s = node.scale || [1, 1, 1];
-            return mat4.fromRotationTranslationScale([], q, v, s)
+            const m = mat4.fromRotationTranslationScale([], q, v, s);
+            // mat4.rotateX(m, m, Math.PI / 180 * 90);
+            return m;
         }
     </script>
   </body>

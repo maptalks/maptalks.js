@@ -69,42 +69,47 @@ class StandardShader extends MeshShader {
                     name: 'uModelNormalMatrix',
                     type: 'function',
                     fn: (context, props) => {
-                        return mat3.fromMat4([], props['modelMatrix']);
+                        const model3 = mat3.fromMat4([], props['modelMatrix']);
+                        const transposed = mat3.transpose(model3, model3);
+                        const inverted = mat3.invert(transposed, transposed);
+                        return inverted;
+                        // return mat3.fromMat4([], props['modelMatrix']);
+                    }
+                },
+                {
+                    name: 'uModelViewNormalMatrix',
+                    type: 'function',
+                    fn: (context, props) => {
+                        const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                        const inverted = mat4.invert(modelView, modelView);
+                        const transposed = mat4.transpose(inverted, inverted);
+                        return mat3.fromMat4([], transposed);
+                        // const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                        // return mat3.fromMat4([], modelView);
                     }
                 },
                 // {
-                //     name: 'uModelViewNormalMatrix',
-                //     type: 'function',
-                //     fn: (context, props) => {
-                //         // const modelView = mat4.multiply(MAT4, props['viewMatrix'], props['modelMatrix']);
-                //         // const inverted = mat4.invert(modelView, modelView);
-                //         // const transposed = mat4.transpose(inverted, inverted);
-                //         // return mat3.fromMat4([], transposed);
-                //         const modelView = mat4.multiply(MAT4, props['viewMatrix'], props['modelMatrix']);
-                //         return mat3.fromMat4([], modelView);
+                //     name : 'uProjViewModelMatrix',
+                //     type : 'function',
+                //     fn : (context, props) => {
+                //         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                 //     }
                 // },
                 {
-                    name : 'uProjViewModelMatrix',
+                    name : 'uModelViewMatrix',
                     type : 'function',
                     fn : (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
                     }
                 },
-                // {
-                //     name : 'uModelViewMatrix',
-                //     type : 'function',
-                //     fn : (context, props) => {
-                //         return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
-                //     }
-                // },
-                // {
-                //     name : 'uProjectionMatrix',
-                //     type : 'function',
-                //     fn : (context, props) => {
-                //         return props['projMatrix'];
-                //     }
-                // },
+                {
+                    name : 'uProjectionMatrix',
+                    type : 'function',
+                    fn : (context, props) => {
+                        return props['projMatrix'];
+                    }
+                },
+                'uGlobalTexSize',
                 'uvScale', 'uvOffset',
                 'uEmitColor',
                 'uAlbedoPBR',

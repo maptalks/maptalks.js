@@ -4,18 +4,27 @@ import { vec2 } from 'gl-matrix';
 const RESOLUTION = [];
 
 export default class PostProcess {
-    constructor(regl, viewport, fbo) {
+    constructor(regl, viewport) {
         this._regl = regl;
-        this._target = fbo;
-        this._fxaaShader = new reshader.FxaaShader(viewport);
-        this._postProcessShader = new reshader.PostProcessShader(viewport);
         this._renderer = new reshader.Renderer(regl);
+        this._fxaaShader = new reshader.FxaaShader(viewport);
+        this._taaPass = new reshader.TaaPass(this._renderer, viewport);
+        this._postProcessShader = new reshader.PostProcessShader(viewport);
         this._emptyTexture = regl.texture();
 
     }
 
-    layer(uniforms, src) {
-        const source = src || this._target.color[0];
+    taa(curTex, depthTex, {
+        projViewMatrix, prevProjViewMatrix, cameraWorldMatrix,
+        fov, jitter, near, far
+    }) {
+        return this._taaPass.render(
+            projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, fov, jitter, near, far, curTex, depthTex
+        );
+    }
+
+    layer(fbo, depthTex, uniforms, src) {
+        const source = src || fbo;
         if (uniforms['enableSSAO']) {
             const regl = this._regl;
             // this._ssaoTexture = this._ssaoTexture || regl.texture({
@@ -52,7 +61,7 @@ export default class PostProcess {
             //     cameraNear: uniforms['cameraNear'],
             //     cameraFar: uniforms['cameraFar'],
             //     resolution: vec2.set(RESOLUTION, source.width, source.height),
-            //     'materialParams_depth': this._target.depth,
+            //     'materialParams_depth': fbo.depth,
             //     bias: uniforms['ssaoBias'],
             //     radius: uniforms['ssaoRadius'],
             //     power: uniforms['ssaoPower'],
@@ -64,18 +73,18 @@ export default class PostProcess {
                 bias: uniforms['ssaoBias'],
                 radius: uniforms['ssaoRadius'],
                 power: uniforms['ssaoPower'],
-            }, this._target.depth, this._ssaoFBO);
+            }, depthTex, this._ssaoFBO);
         }
         uniforms['textureSource'] = source;
         uniforms['resolution'] = vec2.set(RESOLUTION, source.width, source.height);
         uniforms['ssaoTexture'] = uniforms['enableSSAO'] ? this._ssaoFBO : this._emptyTexture;
         this._renderer.render(this._fxaaShader, uniforms);
-        return this._target;
+        return fbo;
     }
 
     //filmic grain + vigenett
-    postprocess(uniforms, src) {
-        const source = src || this._target.color[0];
+    postprocess(fbo, uniforms, src) {
+        const source = src || fbo.color[0];
         uniforms['resolution'] = vec2.set(RESOLUTION, source.width, source.height);
         uniforms['textureSource'] = source;
         uniforms['timeGrain'] = performance.now();
@@ -84,6 +93,9 @@ export default class PostProcess {
     }
 
     delete() {
+        if (this._taaPass) {
+            this._taaPass.dispose();
+        }
         if (this._ssaoTexture) {
             this._ssaoTexture.destroy();
         }

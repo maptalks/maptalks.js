@@ -2,7 +2,8 @@ import { mat4 } from 'gl-matrix';
 
 const globalWorldInverse = [];
 export default class Skin {
-    constructor(joints, inverseBindMatrixData, jointTexture) {
+    constructor(regl, joints, inverseBindMatrixData) {
+        this._regl = regl;
         this.joints = joints;
         this.inverseBindMatrices = [];
         this.jointMatrices = [];
@@ -17,7 +18,7 @@ export default class Skin {
                 Float32Array.BYTES_PER_ELEMENT * 16 * i,
                 16));
         }
-        this.jointTexture = jointTexture;
+        this.jointTexture = regl.texture();
         this.jointTextureSize = [4, 6];
     }
 
@@ -33,13 +34,16 @@ export default class Skin {
             mat4.multiply(dst, globalWorldInverse, joint.nodeMatrix);
             mat4.multiply(dst, dst, this.inverseBindMatrices[j]);
         }
-        if (this.jointTexture) {
-            this.jointTexture({
-                width : 4,
-                type : 'float',
-                height : this.joints.length,
-                data : this.jointData
-            });
-        }
+        const type = this._regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        this.jointTexture({
+            width: 4,
+            type,
+            height: this.joints.length,
+            data: this.jointData
+        });
+    }
+
+    dispose() {
+        this.jointTexture.destroy();
     }
 }
