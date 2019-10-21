@@ -57,6 +57,18 @@ export function extend(dest) {
     return dest;
 }
 
+export function extend1(dest) {
+    for (let i = 1; i < arguments.length; i++) {
+        const src = arguments[i];
+        for (const k in src) {
+            if (src[k] !== undefined && src[k] !== null) {
+                dest[k] = src[k];
+            }
+        }
+    }
+    return dest;
+}
+
 export function extend2(dest) {
     for (let i = 1; i < arguments.length; i++) {
         const src = arguments[i];

@@ -1,19 +1,21 @@
 precision mediump float;
-varying vec2 vTexCoords;
-uniform float materialShininess;//反光度，即影响镜面高光的散射/半径
+
+uniform vec3 baseColorFactor;
+uniform float materialShiness;//反光度，即影响镜面高光的散射/半径
 uniform float opacity;
 uniform float ambientStrength;
 uniform float specularStrength;
 
 
-uniform vec3 lightPosition;
-uniform vec4 lightAmbient;
-uniform vec4 lightDiffuse;
-uniform vec4 lightSpecular;
+uniform vec3 lightDirection;
+uniform vec3 lightAmbient;
+uniform vec3 lightDiffuse;
+uniform vec3 lightSpecular;
+uniform vec3 cameraPosition;
 
+varying vec2 vTexCoords;
 varying vec3 vNormal;
-varying vec4 vFragPos;
-uniform vec3 viewPos;
+varying vec3 vFragPos;
 
 #ifdef HAS_INSTANCE
     varying vec4 vInstanceColor;
@@ -22,39 +24,67 @@ uniform vec3 viewPos;
 #ifdef HAS_BASECOLORTEXTURE
     uniform sampler2D baseColorTexture;
 #endif
-uniform vec4 baseColorFactor;
+
+#ifdef HAS_EXTRUSION_OPACITY
+    uniform vec2 extrusionOpacityRange;
+    varying float vExtrusionOpacity;
+#endif
+
+#ifdef HAS_COLOR
+    varying vec4 vColor;
+#endif
+
+vec4 linearTosRGB(const in vec4 color) {
+    return vec4( color.r < 0.0031308 ? color.r * 12.92 : 1.055 * pow(color.r, 1.0/2.4) - 0.055, color.g < 0.0031308 ? color.g * 12.92 : 1.055 * pow(color.g, 1.0/2.4) - 0.055, color.b < 0.0031308 ? color.b * 12.92 : 1.055 * pow(color.b, 1.0/2.4) - 0.055, color.a);
+}
 
 void main() {
     //环境光
     #ifdef HAS_BASECOLORTEXTURE
         #ifdef HAS_INSTANCE
-            vec3 ambientColor = ambientStrength * vInstanceColor.xyz * texture2D(baseColorTexture, vTexCoords).rgb;
+            vec3 ambientColor = ambientStrength * vInstanceColor.rgb * texture2D(baseColorTexture, vTexCoords).rgb;
         #else
-            vec3 ambientColor = ambientStrength * lightAmbient.xyz * texture2D(baseColorTexture, vTexCoords).rgb;
+            vec3 ambientColor = ambientStrength * lightAmbient * texture2D(baseColorTexture, vTexCoords).rgb;
         #endif
     #else
         #ifdef HAS_INSTANCE
-            vec3 ambientColor = ambientStrength * vInstanceColor.xyz ;
+            vec3 ambientColor = ambientStrength * vInstanceColor.rgb;
         #else
-            vec3 ambientColor = ambientStrength * lightAmbient.xyz;
+            vec3 ambientColor = ambientStrength * lightAmbient;
         #endif
     #endif
-    vec3 ambient = ambientColor * baseColorFactor.xyz;
+    vec3 ambient = ambientColor * baseColorFactor;
     //漫反射光
     vec3 norm = normalize(vNormal);
-    vec3 lightDir = vec3(normalize(lightPosition -vec3(vFragPos)));
+    vec3 lightDir = normalize(-lightDirection);
     float diff = max(dot(norm, lightDir), 0.0);
     #ifdef HAS_BASECOLORTEXTURE
-        vec3 diffuse = lightDiffuse.xyz * diff * texture2D(baseColorTexture, vTexCoords).rgb;
+        vec3 diffuse = lightDiffuse * diff * texture2D(baseColorTexture, vTexCoords).rgb;
     #else
-        vec3 diffuse = lightDiffuse.xyz * diff;
+        vec3 diffuse = lightDiffuse * diff * baseColorFactor;
+    #endif
+    #ifdef HAS_COLOR
+        ambient *= vColor.rgb;
+        diffuse *= vColor.rgb;
     #endif
     //镜面反色光
-    vec3 viewDir = vec3(normalize(viewPos -vec3(vFragPos)));
+    vec3 viewDir = normalize(cameraPosition - vFragPos);
     // vec3 reflectDir = reflect(-lightDir, norm);
     vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(norm, halfwayDir), 0.0), materialShininess);
-    vec3 specular = specularStrength * lightSpecular.xyz * spec;
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), materialShiness);
+    vec3 specular = specularStrength * lightSpecular * spec;
     vec3 result = ambient + diffuse + specular;
-    gl_FragColor = vec4(result, 1.0) * opacity;
+
+    gl_FragColor = vec4(result, opacity);
+    gl_FragColor = linearTosRGB(gl_FragColor);
+    #ifdef HAS_COLOR
+        gl_FragColor *= vColor.a;
+    #endif
+    #ifdef HAS_EXTRUSION_OPACITY
+        float topAlpha = extrusionOpacityRange.x;
+        float bottomAlpha = extrusionOpacityRange.y;
+        float alpha = topAlpha + vExtrusionOpacity * (bottomAlpha - topAlpha);
+        alpha = clamp(alpha, 0.0, 1.0);
+        gl_FragColor *= alpha;
+    #endif
 }

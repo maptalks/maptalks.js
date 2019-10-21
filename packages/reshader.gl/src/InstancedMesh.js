@@ -25,6 +25,12 @@ export default class InstancedMesh extends Mesh {
         return attributes;
     }
 
+    getDefines() {
+        const defines = super.getDefines();
+        defines['HAS_INSTANCE'] = 1;
+        return defines;
+    }
+
     updateInstancedData(name, data) {
         const buf = this.instancedData[name];
         if (!buf) {

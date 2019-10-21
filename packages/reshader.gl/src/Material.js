@@ -1,10 +1,10 @@
 import Eventable from './common/Eventable.js';
-import { extend } from './common/Util.js';
+import { extend1 } from './common/Util.js';
 import AbstractTexture from './AbstractTexture.js';
 
 class Material {
     constructor(uniforms = {}, defaultUniforms) {
-        this.uniforms = extend({}, defaultUniforms || {}, uniforms);
+        this.uniforms = extend1({}, defaultUniforms || {}, uniforms);
         for (const p in uniforms) {
             const getter = Object.getOwnPropertyDescriptor(uniforms, p).get;
             if (getter) {
