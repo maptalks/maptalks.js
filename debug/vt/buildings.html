@@ -45,6 +45,8 @@
       //纽约
       "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":52.80000000000042,"bearing":-15.59999999999991,
 
+      "center":[-74.00964073206632,40.70756220167331],"zoom":17.45624930433703,"pitch":41.600000000000705,"bearing":55.19999999999277,
+
       // "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
       // //阴影有裂缝
@@ -106,7 +108,7 @@
             // type : 'stencil',
             enable : true,
             quality : 'high',
-            opacity : 0.7,
+            opacity : 0.0,
             color : [0, 0, 0],
             blurOffset : 1,
             // debug : ['shadow', 'shadow2']
@@ -115,10 +117,10 @@
             ambient: {
               resource: 0,
               // color: [0.05, 0.05, 0.05],
-              exposure: 2
+              exposure: 0.7
             },
             directional: {
-              color : [1, 1, 1],
+              color : [0.5, 0.5, 0.5],
               direction : [0, 1, 1],
               // intensity: 80000
             }
@@ -127,23 +129,25 @@
       };
       // #E9E7EC
     const litMaterial = {
-      'baseColor': [233, 231, 236],
-      'baseColorFactor': [233 / 255, 231 / 255, 236 / 255, 1],
-      'metallicFactor' : 0,
-      'roughnessFactor' : 0.598,
-      'reflectance': 0.5,
-      'clearCoat': 0,
-      // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
-      'clearCoatRoughness': 0.5,
+      // 'baseColor': [233, 231, 236],
+      // 'baseColorFactor': [233 / 255, 231 / 255, 236 / 255, 1],
+      // 'metallicFactor' : 0,
+      // 'roughnessFactor' : 0.7,
+      // 'reflectance': 0.5,
+      // 'clearCoat': 0,
+      // // 'clearCoatNormalTexture': CLEAR_COAT_NORMAL_TEXTURE,
+      // 'clearCoatRoughness': 0.5,
       // 'clearCoatIorChange': false,
       // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-      // 'baseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/not-power-of-2.jpg',
+      // 'uAlbedoTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/not-power-of-2.jpg',
       // 'anisotropy': 0,
       'uvScale': [1, 1],  //纹理坐标的缩放比例
       'uvScaleFactor': 1,
       'uvOffset': [0, 0],      //纹理坐标的偏移量
-      'uAlbedoPBR': [1, 1, 1, 1]
+      'uAlbedoPBR': [1, 1, 1, 1],
+      'uRoughnessPBRFactor': 0.5,
+      'uMetalnessPBRFactor': 1
     };
 
     const style =  {
@@ -151,7 +155,7 @@
       resources: [
         {
           type: 'ambient',
-          url: '{$root}/resources/autumn_ground.hdr',
+          url: '{$root}/resources/windowStudio.hdr',
           sh: [
             [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
             [-0.004491398110985756, -0.0062361168675124645, -0.005997033789753914],
@@ -204,7 +208,8 @@
 
     var layer = new maptalks.MapboxVectorTileLayer('buildings', {
       urlTemplate: 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=' + accessToken,
-      style
+      style,
+      cascadeTiles: false
     })
 
     // map.on('click', function (e) {
@@ -216,7 +221,7 @@
         // type : 'stencil',
         enable : true,
         quality : 'high',
-        opacity : 0.7,
+        opacity : 1.0,
         color : [0, 0, 0],
         blurOffset : 1,
         lightDirection : [0, 1, 1]
@@ -229,11 +234,19 @@
         },
         ssao: {
           enable: false
+        },
+        taa: {
+          enable: true
         }
       }
     };
     // map.addLayer(layer);
     new maptalks.GroupGLLayer('group', [layer], { antialias: false, sceneConfig }).addTo(map);
+
+    function update() {
+      litMaterial.uAlbedoTexture = null;
+      layer.updateSymbol(0, style.style[0].symbol);
+    }
 
     var bearing = 0;
     var paused = false;
@@ -250,7 +263,7 @@
       console.log(JSON.stringify(map.getBaseLayer().identify(e.coordinate)));
     });
 
-    initGUI();
+    // initGUI();
 
     function initGUI() {
       const gui = new dat.GUI( { width: 250 } );

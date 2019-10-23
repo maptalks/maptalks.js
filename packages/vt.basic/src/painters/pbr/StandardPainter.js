@@ -370,18 +370,25 @@ class StandardPainter extends Painter {
     }
 
     getUniformValues(map, context) {
-        const viewMatrix = map.viewMatrix,
-            projMatrix = map.projMatrix,
-            cameraPosition = map.cameraPosition;
+        const viewMatrix = map.viewMatrix;
+        const projMatrix = map.projMatrix;
+        const cameraPosition = map.cameraPosition;
+        const canvas = this.layer.getRenderer().canvas;
         const lightUniforms = this._getLightUniforms();
         const uniforms = extend({
             viewMatrix,
             projMatrix,
             projViewMatrix: map.projViewMatrix,
-            uCameraPosition: cameraPosition
+            uCameraPosition: cameraPosition,
+            uGlobalTexSize: [canvas.width, canvas.height]
         }, lightUniforms);
         if (context && context.shadow && context.shadow.renderUniforms) {
             extend(uniforms, context.shadow.renderUniforms);
+        }
+        if (context && context.jitter) {
+            uniforms['uHalton'] = context.jitter;
+        } else {
+            uniforms['uHalton'] = [0, 0];
         }
         return uniforms;
     }
@@ -394,7 +401,7 @@ class StandardPainter extends Painter {
             const PREFILTER_CUBE_SIZE = 256;
             const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
             uniforms = {
-                'uEnvironmentExposure': lightConfig.ambient.exposure || 1, //2
+                'uEnvironmentExposure': isNumber(lightConfig.ambient.exposure) ? lightConfig.ambient.exposure : 1, //2
                 'sIntegrateBRDF': iblMaps.dfgLUT,
                 'sSpecularPBR': iblMaps.prefilterMap,
                 'uDiffuseSPH': iblMaps.sh,

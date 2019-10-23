@@ -17,6 +17,8 @@ import LitPainter from './painters/pbr/LitPainter';
 import ClothPainter from './painters/pbr/ClothPainter';
 import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
 
+import GLTFPhongPainter from './painters/GLTFPhongPainter';
+
 const FillPlugin = createPainterPlugin('fill', FillPainter);
 FillPlugin.registerAt(VectorTileLayer);
 
@@ -62,6 +64,9 @@ ClothPlugin.registerAt(VectorTileLayer);
 const SubsurfacePlugin = createPainterPlugin('subsurface', SubsurfacePainter);
 SubsurfacePlugin.registerAt(VectorTileLayer);
 
+const GLTFPhongPlugin = createPainterPlugin('gltf-phong', GLTFPhongPainter);
+GLTFPhongPlugin.registerAt(VectorTileLayer);
+
 export {
     LinePlugin,
     LineGradientPlugin,
@@ -90,5 +95,8 @@ export {
     //pbr plugins
     LitPlugin,
     ClothPlugin,
-    SubsurfacePlugin
+    SubsurfacePlugin,
+
+    //gltf plugins
+    GLTFPhongPlugin
 };

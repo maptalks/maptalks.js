@@ -1,26 +1,7 @@
 import { reshader } from '@maptalks/gl';
-import { mat3, mat4 } from '@maptalks/gl';
+import { mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import Painter from './Painter';
-import vert from './glsl/phong.vert';
-import frag from './glsl/phong.frag';
-
-const defaultUniforms = {
-    light: {
-        'direction': [1, 1, -1],
-        'ambient': [0.08, 0.08, 0.08],
-        'diffuse': [0.5, 0.5, 0.5],
-        'specular': [1, 1, 1],
-    },
-
-    material: {
-        'ambient': [1.0, 0.5, 0.31],
-        'diffuse': [1.0, 0.5, 0.31],
-        'specular': [0.5, 0.5, 0.5],
-        'shininess': 32,
-        'opacity': 1
-    }
-};
 
 const SCALE = [1, 1, 1];
 
@@ -31,6 +12,7 @@ class PhongPainter extends Painter {
             this.sceneConfig.lights = {};
         }
         this.colorSymbol = 'polygonFill';
+        this.opacitySymbol = 'polygonOpacity';
     }
 
     createGeometry(glData) {
@@ -75,11 +57,14 @@ class PhongPainter extends Painter {
             mat4.multiply(mat, transform, mat);
             transform = mat;
         }
-        if (geometry.data.aNormal && !geometry.data.aTangent) {
-            mesh.setDefines({
-                'HAS_NORMAL': 1
-            });
+        const defines = {};
+        if (geometry.data.aColor) {
+            defines['HAS_COLOR'] = 1;
         }
+        if (geometry.data.aNormal && !geometry.data.aTangent) {
+            defines['HAS_NORMAL'] = 1;
+        }
+        mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
     }
@@ -124,6 +109,25 @@ class PhongPainter extends Painter {
 
         this.renderer = new reshader.Renderer(regl);
 
+        const config = this.getShaderConfig();
+
+        this.shader = new reshader.PhongShader(config);
+
+        this._updateMaterial();
+
+
+        const pickingConfig = {
+            vert: this.getPickingVert(),
+            uniforms: [
+                'projViewMatrix',
+                'modelMatrix'
+            ]
+        };
+        this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
+
+    }
+
+    getShaderConfig() {
         const canvas = this.canvas;
         const viewport = {
             x: 0,
@@ -135,12 +139,7 @@ class PhongPainter extends Painter {
                 return canvas ? canvas.height : 1;
             }
         };
-
-        const config = {
-            vert,
-            frag,
-            uniforms: this._getUniforms(),
-            defines: this._getDefines(),
+        return {
             extraCommandProps: {
                 //enable cullFace
                 cull: {
@@ -203,33 +202,6 @@ class PhongPainter extends Painter {
                 }
             }
         };
-
-        this.shader = new reshader.MeshShader(config);
-
-        this._updateMaterial();
-
-
-        const pickingConfig = {};
-        pickingConfig.vert = `
-            attribute vec3 aPosition;
-            uniform mat4 projViewModelMatrix;
-            #include <fbo_picking_vert>
-            void main() {
-                vec4 pos = vec4(aPosition, 1.0);
-                gl_Position = projViewModelMatrix * pos;
-                fbo_picking_setData(gl_Position.w, true);
-            }
-        `;
-        let u;
-        for (let i = 0; i < config.uniforms.length; i++) {
-            if (config.uniforms[i] === 'projViewModelMatrix' || config.uniforms[i].name === 'projViewModelMatrix') {
-                u = config.uniforms[i];
-                break;
-            }
-        }
-        pickingConfig.uniforms = [u];
-        this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
-
     }
 
     deleteMesh(meshes, keepGeometry) {
@@ -256,80 +228,66 @@ class PhongPainter extends Painter {
         if (this._material) {
             this._material.dispose();
         }
-        const materialConfig = this.sceneConfig.material;
+        const materialConfig = this.getSymbol().material;
         const material = {};
         for (const p in materialConfig) {
             if (materialConfig.hasOwnProperty(p)) {
                 material[p] = materialConfig[p];
             }
         }
-        this._material = new reshader.Material(material);
+        this._material = new reshader.PhongMaterial(material);
     }
 
-    _getUniforms() {
-        const uniforms = [
-            'modelMatrix',
-            'camPos',
-            {
-                name: 'projViewModelMatrix',
-                type: 'function',
-                fn: function (context, props) {
-                    const projViewModelMatrix = [];
-                    mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                    mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                    return projViewModelMatrix;
-                }
-            },
-            {
-                name: 'normalMatrix',
-                type: 'function',
-                fn: function (context, props) {
-                    const normalMatrix = [];
-                    mat4.transpose(normalMatrix, mat4.invert(normalMatrix, props['modelMatrix']));
-                    return mat3.fromMat4([], normalMatrix);
-                }
-            },
-            'light.direction',
-            'light.ambient',
-            'light.diffuse',
-            'light.specular',
-
-            'material.ambient',
-            'material.diffuse',
-            'material.specular',
-            'material.shininess',
-            'material.opacity',
-
-            'extrusionOpacityRange'
-        ];
-
-        return uniforms;
-    }
 
     getUniformValues(map) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
-            camPos = map.cameraPosition;
+            cameraPosition = map.cameraPosition;
         const lightUniforms = this._getLightUniformValues();
         const uniforms = extend({
-            viewMatrix, projMatrix, camPos
+            viewMatrix, projMatrix, cameraPosition,
+            projViewMatrix: map.projViewMatrix
         }, lightUniforms);
-        const extrusionOpacity = this.sceneConfig.extrusionOpacity;
-        if (extrusionOpacity) {
-            extend(uniforms, {
-                extrusionOpacityRange: extrusionOpacity.value
-            });
-        }
         return uniforms;
+    }
+
+    getPickingVert() {
+        // return `
+        //     attribute vec3 aPosition;
+        //     uniform mat4 projViewModelMatrix;
+        //     #include <fbo_picking_vert>
+        //     void main() {
+        //         vec4 pos = vec4(aPosition, 1.0);
+        //         gl_Position = projViewModelMatrix * pos;
+        //         fbo_picking_setData(gl_Position.w, true);
+        //     }
+        // `;
+        return `
+            attribute vec3 aPosition;
+            uniform mat4 projViewMatrix;
+            uniform mat4 modelMatrix;
+            //引入fbo picking的vert相关函数
+            #include <fbo_picking_vert>
+            #include <get_output>
+            void main()
+            {
+                frameUniforms.modelMatrix = getModelMatrix();
+                gl_Position = projViewMatrix * frameUniforms.modelMatrix * getPosition(aPosition);
+                //传入gl_Position的depth值
+                fbo_picking_setData(gl_Position.w, true);
+            }
+        `;
     }
 
     _getLightUniformValues() {
         const lightConfig = this.sceneConfig.light;
-        const materialConfig = this.sceneConfig.material;
 
         const uniforms = {
-            light: extend({}, defaultUniforms.light, lightConfig),
-            material: extend({}, defaultUniforms.material, materialConfig),
+            'lightAmbient': lightConfig.ambient,
+            'lightDiffuse': lightConfig.diffuse,
+            'lightSpecular': lightConfig.specular,
+            'lightDirection': lightConfig.direction
+
             // 'light.ambient' : lightConfig.ambient,
             // 'light.diffuse' : lightConfig.diffuse,
             // 'light.specular' : lightConfig.specular,
@@ -344,15 +302,6 @@ class PhongPainter extends Painter {
         return uniforms;
     }
 
-    _getDefines() {
-        const defines =  {
-            'USE_COLOR': 1
-        };
-        if (this.sceneConfig.extrusionOpacity) {
-            defines['USE_EXTRUSION_OPACITY'] = 1;
-        }
-        return defines;
-    }
 }
 
 export default PhongPainter;

@@ -64,14 +64,16 @@ function createPainterPlugin(type, Painter) {
         },
 
         paintTile: function (context) {
-            var layer = context.layer,
-                tileCache = context.tileCache,
-                tileData = context.tileData,
-                tileInfo = context.tileInfo,
+            var { layer,
+                tileCache,
+                tileData,
+                tileInfo,
+                tileExtent,
                 tileCenter = tileInfo.point,
-                tileTransform = context.tileTransform,
-                tileZoom = context.tileZoom,
-                sceneConfig = context.sceneConfig;
+                tileTransform,
+                tileTranslationMatrix,
+                tileZoom,
+                sceneConfig } = context;
             var painter = this.painter;
             if (!painter) {
                 return {
@@ -91,7 +93,7 @@ function createPainterPlugin(type, Painter) {
                 }
                 var data = glData;
                 if (this.painter.colorSymbol && glData) {
-                    var colors = this._generateColorArray(features, glData.data.aPickingId, glData.indices, glData.data.aPosition);
+                    var colors = this._generateColorArray(features, glData.data.aPickingId, glData.indices, glData.data.aPosition, glData.positionSize);
                     data.data.aColor = colors;
                 }
                 geometry = tileCache.geometry = painter.createGeometry(data, features);
@@ -101,12 +103,12 @@ function createPainterPlugin(type, Painter) {
                             geometry[i].properties.features = features;
                             this._fillCommonProps(geometry[i], context);
                         }
-                    } else {
+                    } else if (geometry.properties) {
                         geometry.properties.features = features;
                         this._fillCommonProps(geometry, context);
                     }
                     if (tileCache.excludes !== this._excludes) {
-                        this._filterElements(geometry, tileData.data, context.regl);
+                        this._filterElements(geometry, tileData.data);
                         tileCache.excludes = this._excludes;
                     }
                 }
@@ -120,7 +122,7 @@ function createPainterPlugin(type, Painter) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
-                mesh = painter.createMesh(geometry, tileTransform, { tileCenter, tileZoom });
+                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tileCenter, tileZoom, tileTranslationMatrix });
                 if (mesh) {
                     if (Array.isArray(mesh)) {
                         for (let i = 0; i < mesh.length; i++) {
@@ -296,11 +298,11 @@ function createPainterPlugin(type, Painter) {
             return this.painter.canStencil();
         },
 
-        _generateColorArray: function (features, featureIndexes, indices, vertices) {
+        _generateColorArray: function (features, featureIndexes, indices, vertices, positionSize = 3) {
             if (!vertices || !features || !features.length) {
                 return null;
             }
-            var colors = new Uint8Array(vertices.length);
+            var colors = new Uint8Array(vertices.length / positionSize * 4);
             var symbol, rgb;
             var visitedColors = {};
             var pos;
@@ -312,11 +314,11 @@ function createPainterPlugin(type, Painter) {
                     var color = Color(symbol[this.painter.colorSymbol]);
                     rgb = visitedColors[idx] = color.array();
                 }
-                pos = indices[i] * 3;
+                pos = i * 4;
                 colors[pos] = rgb[0];
                 colors[pos + 1] = rgb[1];
                 colors[pos + 2] = rgb[2];
-
+                colors[pos + 3] = 255 * (symbol[this.painter.opacitySymbol] || 1);
             }
             return colors;
         },
@@ -331,19 +333,19 @@ function createPainterPlugin(type, Painter) {
             return this._meshCache[key];
         },
 
-        _filterElements(geometry, glData, regl) {
+        _filterElements(geometry, glData) {
             if (Array.isArray(geometry)) {
                 geometry.forEach((g, idx) => {
                     const { features } = g.properties;
-                    this._filterGeoElements(g, glData[idx], features, regl);
+                    this._filterGeoElements(g, glData[idx], features);
                 });
             } else {
                 const { features } = geometry.properties;
-                this._filterGeoElements(geometry, glData, features, regl);
+                this._filterGeoElements(geometry, glData, features);
             }
         },
 
-        _filterGeoElements(geometry, glData, features, regl) {
+        _filterGeoElements(geometry, glData, features) {
             var featureIndexes = glData.featureIndexes || glData.data.featureIndexes;
             if (!featureIndexes) return;
             if (this._excludesFunc) {
@@ -365,7 +367,6 @@ function createPainterPlugin(type, Painter) {
             } else {
                 geometry.setElements(glData.indices);
             }
-            geometry.generateBuffers(regl);
         },
 
         _throttle(layer, key) {

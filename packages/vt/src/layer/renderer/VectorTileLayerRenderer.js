@@ -585,6 +585,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._EXTENT = tileData.extent;
         }
         const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z);
+        const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tileInfo.point, tileInfo.z);
         const pluginData = tileData.data;
 
         const plugins = this._getFramePlugins(tileData);
@@ -606,14 +607,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache: tileCache[idx],
                 tileData: pluginData[idx],
                 tileTransform,
+                tileTranslationMatrix,
                 tileExtent: tileData.extent,
                 timestamp: this._frameTime,
                 tileInfo,
                 tileZoom: this['_tileZoom']
             };
             const status = plugin.paintTile(context);
-            //插件数据以及经转化为geometry，可以删除原始数据以节省内存
-            pluginData[idx] = 1;
+            if (tileCache[idx].geometry) {
+                //插件数据以及经转化为geometry，可以删除原始数据以节省内存
+                pluginData[idx] = 1;
+            }
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
@@ -911,25 +915,39 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 }
 
-VectorTileLayerRenderer.prototype.calculateTileMatrix = function () {
-    const v0 = new Array(3);
-    const v1 = new Array(3);
-    const v2 = new Array(3);
-    return function (point, z) {
-        const EXTENT = this._EXTENT;
-        const map = this.getMap();
-        const glScale = map.getGLScale(z);
-        const tilePos = point;
-        const tileSize = this.layer.getTileSize();
-        const posMatrix = mat4.identity([]);
-        //TODO 计算zScale时，zoom可能和tileInfo.z不同
-        mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
-        mat4.translate(posMatrix, posMatrix, vec3.set(v1, tilePos.x, tilePos.y, 0));
-        mat4.scale(posMatrix, posMatrix, vec3.set(v2, tileSize.width / EXTENT, tileSize.height / EXTENT, 1));
+VectorTileLayerRenderer.include({
+    calculateTileMatrix: function () {
+        const v0 = new Array(3);
+        const v1 = new Array(3);
+        const v2 = new Array(3);
+        return function (point, z) {
+            const EXTENT = this._EXTENT;
+            const map = this.getMap();
+            const glScale = map.getGLScale(z);
+            const tilePos = point;
+            const tileSize = this.layer.getTileSize();
+            const posMatrix = mat4.identity([]);
+            //TODO 计算zScale时，zoom可能和tileInfo.z不同
+            mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
+            mat4.translate(posMatrix, posMatrix, vec3.set(v1, tilePos.x, tilePos.y, 0));
+            mat4.scale(posMatrix, posMatrix, vec3.set(v2, tileSize.width / EXTENT, tileSize.height / EXTENT, 1));
 
-        return posMatrix;
-    };
-}();
+            return posMatrix;
+        };
+    }(),
+
+    calculateTileTranslationMatrix: function () {
+        const v0 = new Array(3);
+        return function (point, z) {
+            const map = this.getMap();
+            const glScale = map.getGLScale(z);
+            const tilePos = point;
+            const posMatrix = mat4.identity([]);
+            mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
+            return posMatrix;
+        };
+    }()
+});
 
 export default VectorTileLayerRenderer;
 
