@@ -27,12 +27,12 @@ uniform mat4 modelMatrix;
 void main()
 {
     frameUniforms.modelMatrix = getModelMatrix();
-    vec4 POSITION = getPosition(aPosition);
-    vFragPos = vec3(frameUniforms.modelMatrix * POSITION);
-    vec4 normal = getNormal(aNormal);
+    vec4 localPosition = getPosition(aPosition);
+    vFragPos = vec3(frameUniforms.modelMatrix * localPosition);
+    vec4 localNormal = getNormal(aNormal);
     frameUniforms.normalMatrix = getNormalMatrix(frameUniforms.modelMatrix);
-    vNormal = normalize(vec3(frameUniforms.normalMatrix * normal));
-    gl_Position = projViewMatrix * frameUniforms.modelMatrix * POSITION;
+    vNormal = normalize(vec3(frameUniforms.normalMatrix * localNormal));
+    gl_Position = projViewMatrix * frameUniforms.modelMatrix * localPosition;
     #ifdef HAS_BASECOLORTEXTURE
         vTexCoords = TEXCOORD_0;
     #endif

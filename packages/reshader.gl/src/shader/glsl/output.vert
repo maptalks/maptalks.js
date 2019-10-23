@@ -1,7 +1,9 @@
 #include <invert_matrix>
 #ifdef HAS_INSTANCE
     #include <instance_vert>
-    varying vec4 vInstanceColor;
+    #ifdef HAS_INSTANCE_COLOR
+        varying vec4 vInstanceColor;
+    #endif
 #endif
 
 #ifdef HAS_SKIN
@@ -30,7 +32,9 @@ struct FrameUniforms {
 
 mat4 getModelMatrix() {
     #ifdef HAS_INSTANCE
-        vInstanceColor = instance_getInstanceColor();
+        #ifdef HAS_INSTANCE_COLOR
+            vInstanceColor = instance_getInstanceColor();
+        #endif
         mat4 attributeMatrix = instance_getAttributeMatrix();
         #ifdef HAS_SKIN
             mat4 worldMatrix;

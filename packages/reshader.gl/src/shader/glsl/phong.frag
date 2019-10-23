@@ -1,6 +1,6 @@
 precision mediump float;
 
-uniform vec3 baseColorFactor;
+uniform vec4 baseColorFactor;
 uniform float materialShiness;//反光度，即影响镜面高光的散射/半径
 uniform float opacity;
 uniform float ambientStrength;
@@ -17,7 +17,7 @@ varying vec2 vTexCoords;
 varying vec3 vNormal;
 varying vec3 vFragPos;
 
-#ifdef HAS_INSTANCE
+#ifdef HAS_INSTANCE_COLOR
     varying vec4 vInstanceColor;
 #endif
 
@@ -41,19 +41,14 @@ vec4 linearTosRGB(const in vec4 color) {
 void main() {
     //环境光
     #ifdef HAS_BASECOLORTEXTURE
-        #ifdef HAS_INSTANCE
-            vec3 ambientColor = ambientStrength * vInstanceColor.rgb * texture2D(baseColorTexture, vTexCoords).rgb;
-        #else
-            vec3 ambientColor = ambientStrength * lightAmbient * texture2D(baseColorTexture, vTexCoords).rgb;
-        #endif
+        vec3 ambientColor = ambientStrength * lightAmbient * texture2D(baseColorTexture, vTexCoords).rgb;
     #else
-        #ifdef HAS_INSTANCE
-            vec3 ambientColor = ambientStrength * vInstanceColor.rgb;
-        #else
-            vec3 ambientColor = ambientStrength * lightAmbient;
-        #endif
+        vec3 ambientColor = ambientStrength * lightAmbient;
     #endif
-    vec3 ambient = ambientColor * baseColorFactor;
+    #ifdef HAS_INSTANCE_COLOR
+        ambientColor *= vInstanceColor.rgb;
+    #endif
+    vec3 ambient = ambientColor * baseColorFactor.rgb;
     //漫反射光
     vec3 norm = normalize(vNormal);
     vec3 lightDir = normalize(-lightDirection);
@@ -61,7 +56,7 @@ void main() {
     #ifdef HAS_BASECOLORTEXTURE
         vec3 diffuse = lightDiffuse * diff * texture2D(baseColorTexture, vTexCoords).rgb;
     #else
-        vec3 diffuse = lightDiffuse * diff * baseColorFactor;
+        vec3 diffuse = lightDiffuse * diff * baseColorFactor.rgb;
     #endif
     #ifdef HAS_COLOR
         ambient *= vColor.rgb;

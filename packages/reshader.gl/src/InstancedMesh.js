@@ -1,5 +1,6 @@
 import { extend } from './common/Util.js';
 import Mesh from './Mesh.js';
+import { KEY_DISPOSED } from './common/Constants';
 
 export default class InstancedMesh extends Mesh {
     constructor(instancedData, instanceCount, geometry, material, config = {}) {
@@ -66,6 +67,11 @@ export default class InstancedMesh extends Mesh {
                 if (buffers[key].divisor) {
                     buffers[key].divisor = 1;
                 }
+            } else if (data[key].destroy) {
+                buffers[key] = {
+                    buffer : data[key],
+                    divisor: 1
+                };
             } else {
                 buffers[key] = {
                     buffer : regl.buffer(data[key]),
@@ -82,6 +88,19 @@ export default class InstancedMesh extends Mesh {
         extend(props, this.instancedData);
         props.instances = this.instanceCount;
         return props;
+    }
+
+    disposeInstanceData() {
+        const buffers = this.instancedData;
+        if (buffers) {
+            for (const p in buffers) {
+                if (buffers[p] && buffers[p].destroy && !buffers[p][KEY_DISPOSED]) {
+                    buffers[p][KEY_DISPOSED] = 1;
+                    buffers[p].destroy();
+                }
+            }
+        }
+        delete this.instancedData;
     }
 
     _getBytesPerElement(dtype) {
