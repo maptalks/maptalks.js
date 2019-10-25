@@ -6,12 +6,12 @@ uniform float opacity;
 uniform float ambientStrength;
 uniform float specularStrength;
 
-
 uniform vec3 lightDirection;
 uniform vec3 lightAmbient;
 uniform vec3 lightDiffuse;
 uniform vec3 lightSpecular;
 uniform vec3 cameraPosition;
+uniform float bloom;
 
 varying vec2 vTexCoords;
 varying vec3 vNormal;
@@ -71,7 +71,7 @@ void main() {
     vec3 result = ambient + diffuse + specular;
 
     gl_FragColor = vec4(result, opacity);
-    gl_FragColor = linearTosRGB(gl_FragColor);
+    // gl_FragColor = linearTosRGB(gl_FragColor);
     #ifdef HAS_COLOR
         gl_FragColor *= vColor.a;
     #endif
@@ -82,4 +82,8 @@ void main() {
         alpha = clamp(alpha, 0.0, 1.0);
         gl_FragColor *= alpha;
     #endif
+    gl_FragColor.a = 0.7;
+    if (bloom == 1.0) {
+        gl_FragColor.rgb = (gl_FragColor.rgb + 1.0) * 16.0;
+    }
 }

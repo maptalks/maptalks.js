@@ -165,9 +165,9 @@ class BloomPass {
 
     }
 
-    _createColorTex(curTex, w, h, dataType) {
+    _createColorTex(curTex, w, h) {
         const regl = this._renderer.regl;
-        const type = dataType || (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
+        const type = (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
         const width = w || curTex.width, height = h || curTex.height;
         const color = regl.texture({
             min: 'linear',
@@ -196,7 +196,7 @@ class BloomPass {
             const config = {
                 vert: quadVert,
                 uniforms: [
-                    'uRGBMRange',
+                    // 'uRGBMRange',
                     'TextureBlurInput',
                     'uBlurDir',
                     'uGlobalTexSize',
@@ -228,7 +228,7 @@ class BloomPass {
                 uniforms: [
                     'uBloomFactor',
                     'uBloomRadius',
-                    'uRGBMRange',
+                    // 'uRGBMRange',
                     'TextureBloomBlur1',
                     'TextureBloomBlur2',
                     'TextureBloomBlur3',
