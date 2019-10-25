@@ -29,6 +29,7 @@ export { default as SsaoPass } from './shader/SsaoPass.js';
 export { default as PostProcessShader } from './shader/PostProcessShader.js';
 export { default as TaaPass } from './shader/TaaPass.js';
 export { default as Jitter } from './shader/Jitter.js';
+export { default as BloomPass } from './shader/BloomPass.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };

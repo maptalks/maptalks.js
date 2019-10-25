@@ -9,9 +9,14 @@ export default class PostProcess {
         this._renderer = new reshader.Renderer(regl);
         this._fxaaShader = new reshader.FxaaShader(viewport);
         this._taaPass = new reshader.TaaPass(this._renderer, viewport);
+        this._bloomPass = new reshader.BloomPass(this._renderer, viewport);
         this._postProcessShader = new reshader.PostProcessShader(viewport);
         this._emptyTexture = regl.texture();
 
+    }
+
+    bloom(curTex, threshold, extractBright) {
+        return this._bloomPass.render(curTex, threshold, extractBright);
     }
 
     taa(curTex, depthTex, {
