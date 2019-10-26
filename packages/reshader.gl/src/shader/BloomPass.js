@@ -15,7 +15,7 @@ class BloomPass {
         this._viewport = viewport;
     }
 
-    render(sourceTex, bloomThreshold, extractBright, bloomFactor = 0.5, bloomRadius = 0.1) {
+    render(sourceTex, bloomThreshold, extractBright, bloomFactor, bloomRadius) {
         this._initShaders();
         this._createTextures(sourceTex);
         let output = this._outputTex;
