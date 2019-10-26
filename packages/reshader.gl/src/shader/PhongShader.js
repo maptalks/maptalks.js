@@ -17,6 +17,8 @@ class PhongShader extends MeshShader {
             vert,
             frag: phongFrag,
             uniforms: [
+                'halton',
+                'globalTexSize',
                 'cameraPosition',
                 'lightAmbient',
                 'lightDiffuse',
@@ -29,6 +31,9 @@ class PhongShader extends MeshShader {
                 'opacity',
                 'baseColorTexture',
                 'baseColorFactor',
+                'bloom',
+                'projMatrix',
+                'viewMatrix',
                 {
                     name: 'normalMatrix',
                     type: 'function',
@@ -39,13 +44,13 @@ class PhongShader extends MeshShader {
                         return normalMatrix;
                     }
                 },
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
+                // {
+                //     name: 'projViewModelMatrix',
+                //     type: 'function',
+                //     fn: function (context, props) {
+                //         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                //     }
+                // }
             ],
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}

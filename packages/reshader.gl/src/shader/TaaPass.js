@@ -10,9 +10,13 @@ class TaaPass {
         this._nearfar = [];
     }
 
-    render(pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far, sourceTex, depthTex) {
+    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far) {
         this._initShaders();
         this._createTextures(sourceTex);
+        if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
+            this._fbo.resize(sourceTex.width, sourceTex.height);
+        }
+
         const output = this._outputTex;
         const prevTex = this._prevTex;
         const uniforms = this._uniforms || {
@@ -38,33 +42,15 @@ class TaaPass {
         vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
         vec2.set(uniforms['uTextureOutputSize'], output.width, output.height);
         vec2.set(uniforms['uTexturePreviousSize'], prevTex.width, prevTex.height);
-        if (!this._targetFBO) {
-            const regl = this._renderer.regl;
-            this._targetFBO = regl.framebuffer({
-                width: output.width,
-                height: output.height,
-                colors: [output],
-                depth: false,
-                stencil: false
-            });
-        } else {
-            if (output.width !== sourceTex.width || output.height !== sourceTex.height) {
-                output.resize(sourceTex.width, sourceTex.height);
-            }
-            this._targetFBO({
-                width: output.width,
-                height: output.height,
-                colors: [output],
-                depth: false,
-                stencil: false
-            });
-        }
 
-        this._renderer.render(this._shader, uniforms, null, this._targetFBO);
+        this._renderer.render(this._shader, uniforms, null, this._fbo);
 
         const temp = this._outputTex;
+        const tempFBO = this._fbo;
         this._outputTex = this._prevTex;
+        this._fbo = this._prevFbo;
         this._prevTex = temp;
+        this._prevFbo = tempFBO;
         return output;
     }
 
@@ -73,8 +59,11 @@ class TaaPass {
             this._shader.dispose();
             delete this._shader;
         }
-        if (this._targetFBO) {
-            this._targetFBO.destroy();
+        if (this._fbo) {
+            this._fbo.destroy();
+        }
+        if (this._prevFbo) {
+            this._prevFbo.destroy();
         }
         if (this._outputTex) {
             this._outputTex.destroy();
@@ -90,8 +79,23 @@ class TaaPass {
         if (this._outputTex) {
             return;
         }
+        const regl = this._renderer.regl;
         this._outputTex = this._createColorTex(tex);
+        this._fbo = regl.framebuffer({
+            width: tex.width,
+            height: tex.height,
+            colors: [this._outputTex],
+            depth: false,
+            stencil: false
+        });
         this._prevTex = this._createColorTex(tex);
+        this._prevFbo = regl.framebuffer({
+            width: tex.width,
+            height: tex.height,
+            colors: [this._prevTex],
+            depth: false,
+            stencil: false
+        });
     }
 
     _createColorTex(curTex) {
@@ -99,8 +103,8 @@ class TaaPass {
         const type = 'uint8';//regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const width = curTex.width, height = curTex.height;
         const color = regl.texture({
-            min: 'nearest',
-            mag: 'nearest',
+            min: 'linear',
+            mag: 'linear',
             type,
             width,
             height

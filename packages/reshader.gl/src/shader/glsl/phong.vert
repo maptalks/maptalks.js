@@ -13,10 +13,12 @@ attribute vec3 aNormal;
 varying vec3 vFragPos;
 varying vec3 vNormal;
 
-uniform mat4 projViewModelMatrix;
-uniform mat4 projViewMatrix;
+uniform mat4 projMatrix;
+uniform mat4 viewMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
+uniform vec2 halton;
+uniform vec2 globalTexSize;
 
 #include <get_output>
 
@@ -32,7 +34,10 @@ void main()
     vec4 localNormal = getNormal(aNormal);
     frameUniforms.normalMatrix = getNormalMatrix(frameUniforms.modelMatrix);
     vNormal = normalize(vec3(frameUniforms.normalMatrix * localNormal));
-    gl_Position = projViewMatrix * frameUniforms.modelMatrix * localPosition;
+
+    mat4 jitteredProjection = projMatrix;
+    jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
+    gl_Position = jitteredProjection * viewMatrix * frameUniforms.modelMatrix * localPosition;
     #ifdef HAS_BASECOLORTEXTURE
         vTexCoords = TEXCOORD_0;
     #endif

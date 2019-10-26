@@ -15,7 +15,7 @@ class BloomPass {
         this._viewport = viewport;
     }
 
-    render(sourceTex, bloomThreshold, extractBright) {
+    render(sourceTex, bloomThreshold, extractBright, bloomFactor = 0.5, bloomRadius = 0.1) {
         this._initShaders();
         this._createTextures(sourceTex);
         let output = this._outputTex;
@@ -42,7 +42,7 @@ class BloomPass {
         //blur
         output = this._blur(this._targetFBO.color[0]);
         //combine
-        // output = this._combine(sourceTex, output);
+        output = this._combine(sourceTex, bloomFactor, bloomRadius);
 
         return output;
     }
@@ -96,8 +96,48 @@ class BloomPass {
         this._renderer.render(shader, uniforms, null, output1);
     }
 
-    _combine(sourceTex, blurTex) {
+    _combine(sourceTex, bloomFactor, bloomRadius) {
+        let uniforms = this._combineUniforms;
+        if (!uniforms) {
+            uniforms = this._combineUniforms = {
+                'uBloomFactor': 0,
+                'uBloomRadius': 0,
+                'uRGBMRange': 7,
+                'TextureBloomBlur1': this._blur01Tex,
+                'TextureBloomBlur2': this._blur11Tex,
+                'TextureBloomBlur3': this._blur21Tex,
+                'TextureBloomBlur4': this._blur31Tex,
+                'TextureBloomBlur5': this._blur41Tex,
+                'TextureInput': null,
+                'uTextureBloomBlur1Ratio': [1, 1],
+                'uTextureBloomBlur1Size': [0, 0],
+                'uTextureBloomBlur2Ratio': [1, 1],
+                'uTextureBloomBlur2Size': [0, 0],
+                'uTextureBloomBlur3Ratio': [1, 1],
+                'uTextureBloomBlur3Size': [0, 0],
+                'uTextureBloomBlur4Ratio': [1, 1],
+                'uTextureBloomBlur4Size': [0, 0],
+                'uTextureBloomBlur5Ratio': [1, 1],
+                'uTextureBloomBlur5Size': [0, 0],
+                'uTextureInputRatio': [1, 1],
+                'uTextureInputSize': [0, 0],
+                'uTextureOutputRatio': [1, 1],
+                'uTextureOutputSize': [0, 0],
+            };
+        }
+        uniforms['uBloomFactor'] = bloomFactor;
+        uniforms['uBloomRadius'] = bloomRadius;
+        uniforms['TextureInput'] = sourceTex;
+        vec2.set(uniforms['uTextureBloomBlur1Size'], this._blur01Tex.width, this._blur01Tex.height);
+        vec2.set(uniforms['uTextureBloomBlur2Size'], this._blur11Tex.width, this._blur11Tex.height);
+        vec2.set(uniforms['uTextureBloomBlur3Size'], this._blur21Tex.width, this._blur21Tex.height);
+        vec2.set(uniforms['uTextureBloomBlur4Size'], this._blur31Tex.width, this._blur31Tex.height);
+        vec2.set(uniforms['uTextureBloomBlur5Size'], this._blur41Tex.width, this._blur41Tex.height);
+        vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
+        vec2.set(uniforms['uTextureOutputSize'], sourceTex.width, sourceTex.height);
 
+        this._renderer.render(this._combineShader, uniforms, null, this._combineFBO);
+        return this._combineTex;
     }
 
     dispose() {
@@ -130,6 +170,10 @@ class BloomPass {
         });
 
         let w = tex.width, h = tex.height;
+
+        this._combineTex = this._createColorTex(tex, w, h, 'uint8');
+        this._combineFBO = this._createBlurFBO(this._combineTex);
+
         this._blur00Tex = this._createColorTex(tex, w, h, 'uint8');
         this._blur00FBO = this._createBlurFBO(this._blur00Tex);
         this._blur01Tex = this._createColorTex(tex);
@@ -165,9 +209,9 @@ class BloomPass {
 
     }
 
-    _createColorTex(curTex, w, h) {
+    _createColorTex(curTex, w, h, dataType) {
         const regl = this._renderer.regl;
-        const type = (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
+        const type = dataType || (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
         const width = w || curTex.width, height = h || curTex.height;
         const color = regl.texture({
             min: 'linear',
@@ -196,7 +240,7 @@ class BloomPass {
             const config = {
                 vert: quadVert,
                 uniforms: [
-                    // 'uRGBMRange',
+                    'uRGBMRange',
                     'TextureBlurInput',
                     'uBlurDir',
                     'uGlobalTexSize',
@@ -228,7 +272,7 @@ class BloomPass {
                 uniforms: [
                     'uBloomFactor',
                     'uBloomRadius',
-                    // 'uRGBMRange',
+                    'uRGBMRange',
                     'TextureBloomBlur1',
                     'TextureBloomBlur2',
                     'TextureBloomBlur3',

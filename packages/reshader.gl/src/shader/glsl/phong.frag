@@ -82,7 +82,7 @@ void main() {
         alpha = clamp(alpha, 0.0, 1.0);
         gl_FragColor *= alpha;
     #endif
-    gl_FragColor.a = 0.7;
+    // gl_FragColor.a = 0.7;
     if (bloom == 1.0) {
         gl_FragColor.rgb = (gl_FragColor.rgb + 1.0) * 16.0;
     }

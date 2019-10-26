@@ -24,7 +24,9 @@ export default class PostProcess {
         fov, jitter, near, far
     }) {
         return this._taaPass.render(
-            projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, fov, jitter, near, far, curTex, depthTex
+            curTex, depthTex,
+            projViewMatrix, cameraWorldMatrix, prevProjViewMatrix,
+            fov, jitter, near, far
         );
     }
 

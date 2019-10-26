@@ -40,5 +40,5 @@ vec4 encodeRGBM(const in vec3 color, const in float range) {
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;
-    gl_FragColor = bloomExtract();
+    gl_FragColor = encodeRGBM(bloomExtract().rgb, uRGBMRange);
 }

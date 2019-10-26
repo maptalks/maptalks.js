@@ -373,6 +373,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             optionalExtensions: layer.options['optionalExtensions']
         });
         this.gl.regl = this._regl;
+
+        this._jitter = [];
+        this._jitGetter = new reshader.Jitter();
     }
 
     _initGL() {
@@ -414,7 +417,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     resizeCanvas() {
         super.resizeCanvas();
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        if (this._targetFBO) {
+        if (this._targetFBO && (this._targetFBO.width !== this.canvas.width ||
+            this._targetFBO.height !== this.canvas.height)) {
             this._targetFBO.resize(this.canvas.width, this.canvas.height);
         }
         this.forEachRenderer(renderer => {
@@ -479,17 +483,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _prepareDrawContext() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        const hasJitter = config && config.taa && config.taa.enable;
         const context = {};
+        if (!config || !config.enable) {
+            return context;
+        }
+        const hasJitter = config.taa && config.taa.enable || config.ssaa && config.ssaa.enable;
         if (hasJitter) {
-            this._jitter = this._jitter || [];
-            if (!this._jitGetter) {
-                this._jitGetter = new reshader.Jitter();
-            }
             context['jitter'] = this._jitGetter.getJitter(this._jitter);
             this._jitGetter.frame();
-        } else {
-            delete this._jitter;
+        }
+        if (config.bloom && config.bloom.enable) {
+            context['bloom'] = 1;
         }
         const framebuffer = this._getFramebufferTarget();
         if (framebuffer) {
@@ -553,30 +557,21 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _getFramebufferTarget() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        if (!config || !this._isPostProcessEnabled()) {
-            if (this._targetFBO) {
-                this._targetFBO.destroy();
-            }
-            delete this._targetFBO;
-            return null;
-        }
         if (!this._targetFBO) {
             const regl = this._regl;
             const info = this._createFBOInfo(config);
-            this._depthTex = info.depth;
+            this._depthTex = info.depth || info.depthStencil;
             this._targetFBO = regl.framebuffer(info);
         }
         return {
-            bloom: config.bloom && config.bloom.enable,
             fbo: this._targetFBO
         };
     }
 
     _createFBOInfo(config, depthTex) {
-        const regl = this._regl;
-        // const colorCount = config.bloom && config.bloom.enable ? 2 : 1;
-        const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const width = this.canvas.width, height = this.canvas.height;
+        const regl = this._regl;
+        const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const color = regl.texture({
             min: 'nearest',
             mag: 'nearest',
@@ -588,7 +583,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             width,
             height,
             colors: [color],
-            stencil: false,
+            // stencil: true,
             // colorCount,
             colorFormat: 'rgba'
         };
@@ -618,13 +613,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _postProcess() {
         if (!this._targetFBO) {
-            this._displayShadow();
+            // this._displayShadow();
             return;
         }
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !config.enable) {
-            this._displayShadow();
+            // this._displayShadow();
             return;
         }
         if (!this._postProcessor) {
@@ -642,7 +637,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         let tex = this._targetFBO.color[0];
         const map = this.layer.getMap();
-        const enableTAA = config && config.taa && config.taa.enable;
+
+        const enableBloom = config.bloom && config.bloom.enable;
+        if (enableBloom) {
+            const bloomConfig = config.bloom;
+            const threshold = +bloomConfig.threshold || 0;
+            const extractBright = +bloomConfig.extractBright || 0;
+            const factor = isNil(bloomConfig.factor) ? 0.5 : +bloomConfig.factor;
+            const radius = isNil(bloomConfig.radius) ? 0.1 : +bloomConfig.radius;
+            tex = this._postProcessor.bloom(tex, threshold, extractBright, factor, radius);
+        }
+
+        const enableTAA = config.taa && config.taa.enable;
         if (enableTAA) {
             tex = this._postProcessor.taa(tex, this._depthTex, {
                 projViewMatrix: map.projViewMatrix,
@@ -658,7 +664,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             mat4.copy(this._prevProjViewMatrix, map.projViewMatrix);
         }
-        this._displayShadow();
+        // this._displayShadow();
         this._postProcessor.layer(tex, this._depthTex, {
             enableSSAO: +!!(config.ssao && config.ssao.enable),
             enableFXAA: +!!(config.antialias && config.antialias.enable),
@@ -694,4 +700,8 @@ function empty() {}
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
     if (window.maptalks) window.maptalks.GroupGLLayer = GroupGLLayer;
+}
+
+function isNil(obj) {
+    return obj == null;
 }
