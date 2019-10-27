@@ -239,7 +239,7 @@ class PhongPainter extends Painter {
     }
 
 
-    getUniformValues(map) {
+    getUniformValues(map, context) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix,
             cameraPosition = map.cameraPosition;
@@ -248,6 +248,13 @@ class PhongPainter extends Painter {
             viewMatrix, projMatrix, cameraPosition,
             projViewMatrix: map.projViewMatrix
         }, lightUniforms);
+        if (context && context.jitter) {
+            uniforms['halton'] = context.jitter;
+        } else {
+            uniforms['halton'] = [0, 0];
+        }
+        const canvas = this.layer.getRenderer().canvas;
+        uniforms['globalTexSize'] = [canvas.width, canvas.height];
         return uniforms;
     }
 

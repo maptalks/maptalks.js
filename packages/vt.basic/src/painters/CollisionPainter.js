@@ -498,15 +498,15 @@ export default class CollisionPainter extends BasicPainter {
         return status;
     }
 
-    callShader(uniforms) {
-        this.callCurrentTileShader(uniforms);
+    callShader(uniforms, context) {
+        this.callCurrentTileShader(uniforms, context);
 
         if (this.shouldIgnoreBgTiles()) {
             //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
             //但有zoomFading时
             return;
         }
-        this.callBackgroundTileShader(uniforms);
+        this.callBackgroundTileShader(uniforms, context);
     }
 
     shouldIgnoreBgTiles() {

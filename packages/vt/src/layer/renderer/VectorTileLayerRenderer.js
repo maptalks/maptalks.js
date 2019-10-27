@@ -129,7 +129,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 'OES_standard_derivatives'
             ],
             optionalExtensions: layer.options['glExtensions'] ||
-                ['OES_texture_float', 'WEBGL_draw_buffers', 'EXT_shader_texture_lod', 'OES_texture_float_linear']
+                [
+                    'OES_texture_half_float', 'OES_texture_half_float_linear',
+                    'OES_texture_float', 'OES_texture_float_linear',
+                    'WEBGL_draw_buffers', 'EXT_shader_texture_lod'
+                ]
         });
     }
 
@@ -197,9 +201,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         this._frameTime = timestamp;
         this._zScale = this._getCentiMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
+        this._parentContext = parentContext || {};
         this._startFrame(timestamp);
         super.draw(timestamp);
-        this._endFrame(timestamp, parentContext);
+        this._endFrame(timestamp);
         if (layer.options['debug']) {
             const mat = [];
             const projViewMatrix = this.getMap().projViewMatrix;
@@ -456,25 +461,31 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _startFrame(timestamp) {
+        const parentContext = this._parentContext;
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
             const visible = this._isVisible(idx);
             if (!plugin || !visible) {
                 return;
             }
-            plugin.startFrame({
+            const context = {
                 regl: this.regl,
                 layer: this.layer,
                 gl: this.gl,
                 sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
                 pluginIndex: idx,
                 timestamp
-            });
+            };
+            if (parentContext) {
+                extend(context, parentContext);
+            }
+            plugin.startFrame(context);
         });
         this.getMap().collisionFrameTime = 0;
     }
 
-    _endFrame(timestamp, parentContext) {
+    _endFrame(timestamp) {
+        const parentContext = this._parentContext;
         let stenciled = false;
         const enableTileStencil = this.isEnableTileStencil();
         const cameraPosition = this.getMap().cameraPosition;
@@ -576,6 +587,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     drawTile(tileInfo, tileData) {
         if (!tileData.loadTime || tileData._empty) return;
+        const parentContext = this._parentContext;
         let tileCache = tileData.cache;
         if (!tileCache) {
             tileCache = tileData.cache = {};
@@ -613,6 +625,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileInfo,
                 tileZoom: this['_tileZoom']
             };
+            if (parentContext) {
+                extend(context, parentContext);
+            }
             const status = plugin.paintTile(context);
             if (tileCache[idx].geometry) {
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存

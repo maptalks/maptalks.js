@@ -64,7 +64,8 @@ function createPainterPlugin(type, Painter) {
         },
 
         paintTile: function (context) {
-            var { layer,
+            var {
+                layer,
                 tileCache,
                 tileData,
                 tileInfo,
@@ -73,7 +74,9 @@ function createPainterPlugin(type, Painter) {
                 tileTransform,
                 tileTranslationMatrix,
                 tileZoom,
-                sceneConfig } = context;
+                sceneConfig,
+                bloom
+            } = context;
             var painter = this.painter;
             if (!painter) {
                 return {
@@ -198,6 +201,12 @@ function createPainterPlugin(type, Painter) {
                         progress = animation === 'linear' ? t : easing(animation, t);
                         redraw = true;
                     }
+                }
+                bloom = bloom && painter.getSymbol()['bloom'];
+                if (Array.isArray(mesh)) {
+                    mesh.forEach(m => m.setUniform('bloom', bloom ? 1 : 0));
+                } else {
+                    mesh.setUniform('bloom', bloom ? 1 : 0);
                 }
                 painter.addMesh(mesh, progress);
                 this._frameCache[key] = 1;

@@ -64,7 +64,10 @@ class Painter {
             this.init(context);
             this._inited = true;
         }
-        this.preparePaint(context);
+        if (this._preparedTime !== context.timestamp) {
+            this.preparePaint(context);
+            this._preparedTime = context.timestamp;
+        }
         return this.paint(context);
     }
 
@@ -103,14 +106,14 @@ class Painter {
 
     callCurrentTileShader(uniforms, context) {
         //1. render current tile level's meshes
-        this.shader.filter = this.level0Filter;
+        this.shader.filter = context.sceneFilter ? [this.level0Filter, context.sceneFilter] : this.level0Filter;
         this.renderer.render(this.shader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
     }
 
     callBackgroundTileShader(uniforms, context) {
         //2. render background tile level's meshes
         //stenciled pixels already rendered in step 1
-        this.shader.filter = this.levelNFilter;
+        this.shader.filter = context.sceneFilter ? [this.levelNFilter, context.sceneFilter] : this.levelNFilter;
         this.renderer.render(this.shader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
     }
 

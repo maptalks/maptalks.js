@@ -329,19 +329,19 @@ class IconPainter extends CollisionPainter {
 
     }
 
-    callCurrentTileShader(uniforms) {
-        this.shader.filter = this._iconFilter0;
+    callCurrentTileShader(uniforms, context) {
+        this.shader.filter = context.sceneFilter ? [this._iconFilter0, context.sceneFilter] : this._iconFilter0;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        this._textShader.filter = this._textFilter0;
+        this.shader.filter = context.sceneFilter ? [this._textFilter0, context.sceneFilter] : this._textFilter0;
         this.renderer.render(this._textShader, uniforms, this.scene);
     }
 
-    callBackgroundTileShader(uniforms) {
-        this.shader.filter = this._iconFilter1;
+    callBackgroundTileShader(uniforms, context) {
+        this.shader.filter = context.sceneFilter ? [this._iconFilter1, context.sceneFilter] : this._iconFilter1;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        this._textShader.filter = this._textFilter1;
+        this.shader.filter = context.sceneFilter ? [this._textFilter1, context.sceneFilter] : this._textFilter1;
         this.renderer.render(this._textShader, uniforms, this.scene);
     }
 
