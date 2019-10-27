@@ -16,11 +16,7 @@ float getLuminance(const in vec3 color) {
     return dot(color, colorBright);
 }
 vec4 extractBright(vec4 color) {
-    bool isBloom = color.r >= 4.0;
-
-    if (isBloom) {
-        color.rgb = (color.rgb / 16.0) - 1.0;
-    } else if (uExtractBright != 1.0) {
+    if (color.a == 0.0) {
         return vec4(vec3(0.0), 1.0);
     }
     return vec4(clamp(color.rgb * clamp(getLuminance(color.rgb) - uBloomThreshold, 0.0, 1.0), 0.0, 1.0), 1.0);

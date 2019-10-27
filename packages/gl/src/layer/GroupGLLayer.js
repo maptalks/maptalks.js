@@ -24,6 +24,9 @@ const options = {
     forceRenderOnRotating : true
 };
 
+const bloomFilter = m => m.getUniform('bloom');
+const noBloomFilter = m => !m.getUniform('bloom');
+
 export default class GroupGLLayer extends maptalks.Layer {
     /**
      * Reproduce a GroupGLLayer from layer's profile JSON.
@@ -174,7 +177,10 @@ export default class GroupGLLayer extends maptalks.Layer {
             this._targetFBO.destroy();
             delete this._targetFBO;
         }
-        delete this._targetFBO;
+        if (this._bloomFBO) {
+            this._bloomFBO.destroy();
+            delete this._bloomFBO;
+        }
         if (this._postProcessor) {
             this._postProcessor.delete();
             delete this._postProcessor;
@@ -471,12 +477,22 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _buildDrawFn(drawMethod) {
         const parent = this;
-        return function (timestamp) {
+        return function (event, timestamp, context) {
+            if (isNumber(event)) {
+                context = timestamp;
+                timestamp = event;
+                event = null;
+            }
             if (timestamp !== parent._contextFrameTime) {
                 parent._drawContext = parent._prepareDrawContext();
                 parent._contextFrameTime = timestamp;
+                parent._frameEvent = event;
             }
-            return drawMethod.call(this, timestamp, parent._drawContext);
+            if (event) {
+                return drawMethod.call(this, event, timestamp, context || parent._drawContext);
+            } else {
+                return drawMethod.call(this, timestamp, context || parent._drawContext);
+            }
         };
     }
 
@@ -494,6 +510,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         if (config.bloom && config.bloom.enable) {
             context['bloom'] = 1;
+            context['sceneFilter'] = noBloomFilter;
         }
         const framebuffer = this._getFramebufferTarget();
         if (framebuffer) {
@@ -568,10 +585,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
-    _createFBOInfo(config, depthTex) {
+    _createFBOInfo(config, depthTex, colorType) {
         const width = this.canvas.width, height = this.canvas.height;
         const regl = this._regl;
-        const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        const type = colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const color = regl.texture({
             min: 'nearest',
             mag: 'nearest',
@@ -622,6 +639,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // this._displayShadow();
             return;
         }
+        const map = this.layer.getMap();
         if (!this._postProcessor) {
             const viewport = {
                 x: 0,
@@ -636,16 +654,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor = new PostProcess(this._regl, viewport);
         }
         let tex = this._targetFBO.color[0];
-        const map = this.layer.getMap();
 
         const enableBloom = config.bloom && config.bloom.enable;
         if (enableBloom) {
+            this._drawBloom();
             const bloomConfig = config.bloom;
             const threshold = +bloomConfig.threshold || 0;
             const extractBright = +bloomConfig.extractBright || 0;
             const factor = isNil(bloomConfig.factor) ? 0.5 : +bloomConfig.factor;
             const radius = isNil(bloomConfig.radius) ? 0.1 : +bloomConfig.radius;
-            tex = this._postProcessor.bloom(tex, threshold, extractBright, factor, radius);
+            tex = this._postProcessor.bloom(tex, this._bloomFBO.color[0], threshold, extractBright, factor, radius);
         }
 
         const enableTAA = config.taa && config.taa.enable;
@@ -677,6 +695,42 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         });
     }
 
+    _drawBloom() {
+        const regl = this._regl;
+        const bloomFBO = this._bloomFBO;
+        if (!bloomFBO) {
+            const sceneConfig =  this.layer._getSceneConfig();
+            const config = sceneConfig && sceneConfig.postProcess;
+            const info = this._createFBOInfo(config, this._depthTex/*, 'uint8'*/);
+            this._bloomFBO = regl.framebuffer(info);
+        } else {
+            if (bloomFBO.width !== this._targetFBO.width || bloomFBO.height !== this._targetFBO.height) {
+                bloomFBO.resize(this._targetFBO.width, this._targetFBO.height);
+            }
+            regl.clear({
+                color: [0, 0, 0, 0],
+                stencil: 0xFF,
+                framebuffer: bloomFBO
+            });
+        }
+        const timestamp = this._contextFrameTime;
+        const event = this._frameEvent;
+        const context = this._drawContext;
+        context['sceneFilter'] = bloomFilter;
+        context.renderTarget = {
+            fbo: this._bloomFBO
+        };
+        if (event) {
+            this.forEachRenderer(renderer => {
+                renderer.drawOnInteracting(event, timestamp, context);
+            });
+        } else {
+            this.forEachRenderer(renderer => {
+                renderer.draw(timestamp, context);
+            });
+        }
+    }
+
     _isPostProcessEnabled() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig.postProcess;
@@ -704,4 +758,8 @@ if (typeof window !== 'undefined') {
 
 function isNil(obj) {
     return obj == null;
+}
+
+function isNumber(val) {
+    return (typeof val === 'number') && !isNaN(val);
 }

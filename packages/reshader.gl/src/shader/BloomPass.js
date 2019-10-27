@@ -15,26 +15,26 @@ class BloomPass {
         this._viewport = viewport;
     }
 
-    render(sourceTex, bloomThreshold, extractBright, bloomFactor, bloomRadius) {
+    render(sourceTex, bloomTex, bloomThreshold, extractBright, bloomFactor, bloomRadius) {
         this._initShaders();
         this._createTextures(sourceTex);
         let output = this._outputTex;
         const uniforms = this._uniforms || {
             'uRGBMRange': 7,
             'uBloomThreshold': bloomThreshold,
-            'TextureInput': sourceTex,
+            'TextureInput': bloomTex,
             'uTextureInputRatio': [1, 1],
-            'uTextureInputSize': [sourceTex.width, sourceTex.height],
-            'uTextureOutputSize': [sourceTex.width, sourceTex.height],
+            'uTextureInputSize': [bloomTex.width, bloomTex.height],
+            'uTextureOutputSize': [bloomTex.width, bloomTex.height],
             'uExtractBright': 0
         };
         uniforms['uExtractBright'] = extractBright ? 1 : 0;
-        uniforms['TextureInput'] = sourceTex;
-        vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
-        vec2.set(uniforms['uTextureOutputSize'], sourceTex.width, sourceTex.height);
+        uniforms['TextureInput'] = bloomTex;
+        vec2.set(uniforms['uTextureInputSize'], bloomTex.width, bloomTex.height);
+        vec2.set(uniforms['uTextureOutputSize'], bloomTex.width, bloomTex.height);
 
-        if (output.width !== sourceTex.width || output.height !== sourceTex.height) {
-            this._targetFBO.resize(sourceTex.width, sourceTex.height);
+        if (output.width !== bloomTex.width || output.height !== bloomTex.height) {
+            this._targetFBO.resize(bloomTex.width, bloomTex.height);
         }
 
         this._renderer.render(this._extractShader, uniforms, null, this._targetFBO);
@@ -42,7 +42,7 @@ class BloomPass {
         //blur
         output = this._blur(this._targetFBO.color[0]);
         //combine
-        output = this._combine(sourceTex, bloomFactor, bloomRadius);
+        output = this._combine(sourceTex, bloomTex, bloomFactor, bloomRadius);
 
         return output;
     }
@@ -96,7 +96,7 @@ class BloomPass {
         this._renderer.render(shader, uniforms, null, output1);
     }
 
-    _combine(sourceTex, bloomFactor, bloomRadius) {
+    _combine(sourceTex, inputTex, bloomFactor, bloomRadius) {
         let uniforms = this._combineUniforms;
         if (!uniforms) {
             uniforms = this._combineUniforms = {
@@ -109,6 +109,7 @@ class BloomPass {
                 'TextureBloomBlur4': this._blur31Tex,
                 'TextureBloomBlur5': this._blur41Tex,
                 'TextureInput': null,
+                'TextureSource': null,
                 'uTextureBloomBlur1Ratio': [1, 1],
                 'uTextureBloomBlur1Size': [0, 0],
                 'uTextureBloomBlur2Ratio': [1, 1],
@@ -127,7 +128,8 @@ class BloomPass {
         }
         uniforms['uBloomFactor'] = bloomFactor;
         uniforms['uBloomRadius'] = bloomRadius;
-        uniforms['TextureInput'] = sourceTex;
+        uniforms['TextureInput'] = inputTex;
+        uniforms['TextureSource'] = sourceTex;
         vec2.set(uniforms['uTextureBloomBlur1Size'], this._blur01Tex.width, this._blur01Tex.height);
         vec2.set(uniforms['uTextureBloomBlur2Size'], this._blur11Tex.width, this._blur11Tex.height);
         vec2.set(uniforms['uTextureBloomBlur3Size'], this._blur21Tex.width, this._blur21Tex.height);
@@ -279,6 +281,7 @@ class BloomPass {
                     'TextureBloomBlur4',
                     'TextureBloomBlur5',
                     'TextureInput',
+                    'TextureSource',
                     'uTextureBloomBlur1Ratio',
                     'uTextureBloomBlur1Size',
                     'uTextureBloomBlur2Ratio',

@@ -23,7 +23,7 @@ const SAMPLE_COUNT = SAMPLES.length;
 class Jitter {
     constructor() {
         this._frameNum = 0;
-        this._ratio = 0.1;
+        this._ratio = 0.05;
         // this._ratio = 1;
     }
 

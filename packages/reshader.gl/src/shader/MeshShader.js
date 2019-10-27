@@ -14,7 +14,7 @@ class MeshShader extends Shader {
                 }
                 continue;
             }
-            if (!meshes[i].geometry.getDrawCount() || !this.filter(meshes[i])) {
+            if (!meshes[i].geometry.getDrawCount() || !this._runFilter(meshes[i])) {
                 //此处regl有个潜在的bug:
                 //如果count为0的geometry不过滤掉，regl生成的函数中，bind的texture不会执行unbind
                 if (i === l - 1 && preCommand && props.length) {
@@ -46,8 +46,24 @@ class MeshShader extends Shader {
         return this;
     }
 
-    filter() {
-        return true;
+    // filter() {
+    //     return true;
+    // }
+
+    _runFilter(m) {
+        const filters = this.filter;
+        if (!filters) {
+            return true;
+        }
+        if (Array.isArray(filters)) {
+            for (let i = 0; i < filters.length; i++) {
+                if (!filters[i](m)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return filters(m);
     }
 
     getMeshCommand(regl, mesh) {

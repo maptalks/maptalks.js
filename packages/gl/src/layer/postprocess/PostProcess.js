@@ -12,11 +12,10 @@ export default class PostProcess {
         this._bloomPass = new reshader.BloomPass(this._renderer, viewport);
         this._postProcessShader = new reshader.PostProcessShader(viewport);
         this._emptyTexture = regl.texture();
-
     }
 
-    bloom(curTex, threshold, extractBright, bloomFactor, bloomRadius) {
-        return this._bloomPass.render(curTex, threshold, extractBright, bloomFactor, bloomRadius);
+    bloom(curTex, bloomTex, threshold, extractBright, bloomFactor, bloomRadius) {
+        return this._bloomPass.render(curTex, bloomTex, threshold, extractBright, bloomFactor, bloomRadius);
     }
 
     taa(curTex, depthTex, {
