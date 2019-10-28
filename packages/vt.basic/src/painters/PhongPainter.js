@@ -23,7 +23,7 @@ class PhongPainter extends Painter {
             aColor: glData.data.aColor,
             aPickingId: glData.data.aPickingId
         };
-        const extrusionOpacity = this.sceneConfig.extrusionOpacity;
+        const extrusionOpacity = this.getSymbol().material && this.getSymbol().material.extrusionOpacity;
         if (extrusionOpacity) {
             const aExtrusionOpacity = new Uint8Array(data.aPosition.length / 3);
             for (let i = 0; i < data.aPosition.length; i += 3) {
