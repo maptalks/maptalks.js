@@ -90,13 +90,17 @@ class BloomPass {
         this._renderer.render(shader, uniforms, null, output0);
 
 
+        vec2.set(uniforms['uBlurDir'], 1, 0);
         uniforms['TextureBlurInput'] = output0.color[0];
         vec2.set(uniforms['uTextureBlurInputSize'], output0.width, output0.height);
-        vec2.set(uniforms['uBlurDir'], 1, 0);
         this._renderer.render(shader, uniforms, null, output1);
     }
 
     _combine(sourceTex, inputTex, bloomFactor, bloomRadius) {
+        if (this._combineTex.width !== sourceTex.width || this._combineTex.height !== sourceTex.height) {
+            this._combineFBO.resize(sourceTex.width, sourceTex.height);
+        }
+
         let uniforms = this._combineUniforms;
         if (!uniforms) {
             uniforms = this._combineUniforms = {
