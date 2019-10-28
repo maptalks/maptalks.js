@@ -46,6 +46,7 @@ mat4 getModelMatrix() {
         #else
             mat4 worldMatrix = attributeMatrix;
         #endif
+        worldMatrix *= modelMatrix;
     #else
         #ifdef HAS_SKIN
             mat4 worldMatrix;

@@ -427,6 +427,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._targetFBO.height !== this.canvas.height)) {
             this._targetFBO.resize(this.canvas.width, this.canvas.height);
         }
+        if (this._bloomFBO && (this._bloomFBO.width !== this.canvas.width ||
+            this._bloomFBO.height !== this.canvas.height)) {
+            this._bloomFBO.resize(this.canvas.width, this.canvas.height);
+        }
         this.forEachRenderer(renderer => {
             if (renderer.canvas) {
                 renderer.resizeCanvas();
