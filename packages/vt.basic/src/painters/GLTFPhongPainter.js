@@ -138,7 +138,7 @@ class GLTFPhongPainter extends PhongPainter {
         return config;
     }
 
-    addMesh(mesh, progress) {
+    addMesh(mesh) {
         // if (progress !== null) {
         //     const mat = mesh.localTransform;
         //     if (progress === 0) {
