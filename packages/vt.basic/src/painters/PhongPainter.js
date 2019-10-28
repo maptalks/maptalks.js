@@ -294,16 +294,6 @@ class PhongPainter extends Painter {
             'lightDiffuse': lightConfig.diffuse,
             'lightSpecular': lightConfig.specular,
             'lightDirection': lightConfig.direction
-
-            // 'light.ambient' : lightConfig.ambient,
-            // 'light.diffuse' : lightConfig.diffuse,
-            // 'light.specular' : lightConfig.specular,
-            // 'light.position' : lightConfig.position,
-
-            // 'material.ambient' : materialConfig.ambient,
-            // 'material.diffuse' : materialConfig.diffuse,
-            // 'material.specular' : materialConfig.specular,
-            // 'material.shininess' : materialConfig.shininess
         };
 
         return uniforms;

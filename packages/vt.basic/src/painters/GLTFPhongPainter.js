@@ -65,7 +65,7 @@ class GLTFPhongPainter extends PhongPainter {
 
         const meshInfos = this._gltfMeshInfos;
         const meshes = meshInfos.map(info => {
-            const { geometry, materialInfo } = info;
+            const { geometry, materialInfo, node } = info;
             const material = new reshader.PhongMaterial(materialInfo);
             const mesh = new reshader.InstancedMesh(instanceBuffers, count, geometry, material, {
                 transparent: false,
@@ -75,7 +75,7 @@ class GLTFPhongPainter extends PhongPainter {
 
             //创建普通的mesh用于测试
             // const mesh = new reshader.Mesh(geometry, material);
-            // mesh.setLocalTransform(mat);
+            mesh.setLocalTransform(node.nodeMatrix);
 
             geometry.generateBuffers(this.regl);
             //上面已经生成了buffer，无需再生成
@@ -106,7 +106,6 @@ class GLTFPhongPainter extends PhongPainter {
 
         const { translation, rotation, scale } = this.getSymbol();
         const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
-
         const count = aPosition.length / positionSize;
         const tileSize = this.layer.getTileSize();
         const tileScale = tileSize.width / tileExtent * this.layer.getMap().getGLScale();
