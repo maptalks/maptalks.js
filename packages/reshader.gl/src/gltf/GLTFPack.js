@@ -95,7 +95,7 @@ export default class GLTFPack {
         }
     }
 
-    _parserNode(node, geometries) {
+    _parserNode(node, geometries, parentNodeMatrix) {
         if (node.isParsed) {
             return;
         }
@@ -103,17 +103,26 @@ export default class GLTFPack {
         node.localMatrix = node.localMatrix || mat4.identity([]);
         if (node.matrix) {
             node.trs = new TRS();
-            node.trs.setMatrix(node.matrix);
+            node.trs.decompose(node.matrix);
         } else {
             node.trs = new TRS(node.translation, node.rotation, node.scale);
         }
+        const trs = node.trs;
+        if (trs) {
+            trs.setMatrix(node.localMatrix);
+        }
+        if (parentNodeMatrix) {
+            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.localMatrix);
+        } else {
+            mat4.copy(node.nodeMatrix, node.localMatrix);
+        }
+        const nodeMatrix = node.nodeMatrix;
         if (node.children) {
             for (let i = 0; i < node.children.length; i++) {
                 const child = node.children[i];
-                this._parserNode(child, geometries);
+                this._parserNode(child, geometries, nodeMatrix);
             }
         }
-
         if (node.skin) {
             const skin = node.skin;
             node.trs = new TRS();
@@ -131,6 +140,7 @@ export default class GLTFPack {
                 const geometry = createGeometry(primitive);
                 geometries.push({
                     geometry,
+                    node,
                     materialInfo : this._createMaterialInfo(primitive.material, node),
                     animationMatrix : node.trs.setMatrix()
                 });
