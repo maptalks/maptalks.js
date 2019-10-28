@@ -333,7 +333,7 @@ class IconPainter extends CollisionPainter {
         this.shader.filter = context.sceneFilter ? [this._iconFilter0, context.sceneFilter] : this._iconFilter0;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        this.shader.filter = context.sceneFilter ? [this._textFilter0, context.sceneFilter] : this._textFilter0;
+        this._textShader.filter = context.sceneFilter ? [this._textFilter0, context.sceneFilter] : this._textFilter0;
         this.renderer.render(this._textShader, uniforms, this.scene);
     }
 
@@ -341,7 +341,7 @@ class IconPainter extends CollisionPainter {
         this.shader.filter = context.sceneFilter ? [this._iconFilter1, context.sceneFilter] : this._iconFilter1;
         this.renderer.render(this.shader, uniforms, this.scene);
 
-        this.shader.filter = context.sceneFilter ? [this._textFilter1, context.sceneFilter] : this._textFilter1;
+        this._textShader.filter = context.sceneFilter ? [this._textFilter1, context.sceneFilter] : this._textFilter1;
         this.renderer.render(this._textShader, uniforms, this.scene);
     }
 
