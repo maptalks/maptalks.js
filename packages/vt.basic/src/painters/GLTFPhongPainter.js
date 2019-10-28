@@ -23,7 +23,11 @@ class GLTFPhongPainter extends PhongPainter {
     }
 
     createGeometry(glData, features) {
-        if (!glData || !this._ready) {
+        if (!glData) {
+            return null;
+        }
+        this._initGLTF();
+        if (!this._ready) {
             return null;
         }
         const { data, positionSize } = glData;
@@ -155,13 +159,37 @@ class GLTFPhongPainter extends PhongPainter {
 
     init(context) {
         super.init(context);
+        this._initGLTF();
+    }
+
+    _initGLTF() {
+        if (this._gltfPack) {
+            return;
+        }
         const url = this.getSymbol().url;
-        reshader.GLTFHelper.load(url).then(gltfData => {
-            const pack = reshader.GLTFHelper.exportGLTFPack(gltfData, this.regl);
-            this._gltfMeshInfos = pack.getMeshesInfo();
+        const renderer = this.layer.getRenderer();
+        if (renderer.isCachePlaced(url)) {
+            return;
+        }
+        const cacheItem = renderer.fetchCache(url);
+        if (cacheItem) {
+            this._gltfPack = cacheItem;
+            this._gltfMeshInfos = cacheItem.getMeshesInfo();
             this._ready = true;
-            this.setToRedraw();
-        });
+            renderer.addToCache(url);
+        } else {
+            renderer.placeCache(url);
+            reshader.GLTFHelper.load(url).then(gltfData => {
+                const pack = reshader.GLTFHelper.exportGLTFPack(gltfData, this.regl);
+                this._gltfPack = pack;
+                this._gltfMeshInfos = pack.getMeshesInfo();
+                renderer.addToCache(url, pack, pack => {
+                    pack.dispose();
+                });
+                this._ready = true;
+                this.setToRedraw();
+            });
+        }
     }
 
     getPickingVert() {
@@ -182,6 +210,9 @@ class GLTFPhongPainter extends PhongPainter {
 
     delete(/* context */) {
         super.delete();
+        const url = this.getSymbol().url;
+        const renderer = this.layer.getRenderer();
+        renderer.removeCache(url);
         if (this._gltfMeshInfos) {
             this._gltfMeshInfos.forEach(info => {
                 const { geometry, materialInfo } = info;

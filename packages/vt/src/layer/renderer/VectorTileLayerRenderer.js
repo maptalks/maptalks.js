@@ -16,6 +16,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.ready = false;
         this._styleCounter = 0;
         this._requestingMVT = {};
+        this._vtResCache = {};
+        this._vtResLoading = {};
     }
 
     getWorkerConnection() {
@@ -927,6 +929,45 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return this.layer.options['workarounds']['win-intel-gpu-crash'] && isWinIntelGPU(this.gl);
         }
         return false;
+    }
+
+    isCachePlaced(id) {
+        return this._vtResLoading[id] === 1;
+    }
+
+    placeCache(id) {
+        this._vtResLoading[id] = 1;
+    }
+
+    fetchCache(id) {
+        return this._vtResCache[id] && this._vtResCache[id].resource;
+    }
+
+    removeCache(id) {
+        delete this._vtResLoading[id];
+        const cacheItem = this._vtResCache[id];
+        if (cacheItem) {
+            cacheItem.count--;
+            if (cacheItem.count <= 0) {
+                if (cacheItem.onDelete) {
+                    cacheItem.onDelete(cacheItem.resource);
+                }
+                delete this._vtResCache[id];
+            }
+        }
+    }
+
+    addToCache(id, resource, onDelete) {
+        delete this._vtResLoading[id];
+        if (this._vtResCache[id]) {
+            this._vtResCache[id].count++;
+        } else {
+            this._vtResCache[id] = {
+                resource,
+                onDelete,
+                count: 1
+            };
+        }
     }
 }
 
