@@ -167,7 +167,6 @@ export default class GLTFPack {
         }
         if (material) {
             const pbrMetallicRoughness = material.pbrMetallicRoughness;
-            const pbrSpecularGlossiness = material.pbrSpecularGlossiness;
             if (pbrMetallicRoughness) {
                 const metallicRoughnessTexture = pbrMetallicRoughness.metallicRoughnessTexture;
                 const baseColorTexture = pbrMetallicRoughness.baseColorTexture;
@@ -189,14 +188,15 @@ export default class GLTFPack {
                     }
                 }
             }
+            const pbrSpecularGlossiness = material.extensions && material.extensions['KHR_materials_pbrSpecularGlossiness'];
             if (pbrSpecularGlossiness) {
-                materialUniforms.extensions  = materialUniforms.extensions || {};
                 for (const p in pbrSpecularGlossiness) {
                     if (pbrSpecularGlossiness[p].texture) {
-                        pbrSpecularGlossiness[p] = this._toTexture(pbrSpecularGlossiness[p]);
+                        materialUniforms[p] = this._toTexture(pbrSpecularGlossiness[p]);
+                    } else {
+                        materialUniforms[p] = pbrSpecularGlossiness[p];
                     }
                 }
-                materialUniforms.extensions['KHR_materials_pbrSpecularGlossiness'] = pbrSpecularGlossiness;
             }
             if (material.normalTexture) {
                 const texture = this._toTexture(material.normalTexture);
