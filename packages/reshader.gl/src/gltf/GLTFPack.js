@@ -6,6 +6,7 @@ import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
 
 const animMatrix = [];
+const EMPTY_MATRIX = mat4.identity([]);
 let timespan = 0;
 const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 //将GLTF规范里面的sampler数码映射到regl接口的sampler
@@ -87,10 +88,12 @@ export default class GLTFPack {
             });
         }
         gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
-        node.trs.decompose(animMatrix);
-        if (node.weights) {
-            for (let i = 0; i < node.weights.length; i++) {
-                node.morphWeights[i] = node.weights[i];
+        if (!mat4.equals(EMPTY_MATRIX, animMatrix)) {
+            node.trs.decompose(animMatrix);
+            if (node.weights) {
+                for (let i = 0; i < node.weights.length; i++) {
+                    node.morphWeights[i] = node.weights[i];
+                }
             }
         }
     }
@@ -164,7 +167,7 @@ export default class GLTFPack {
         }
         if (material) {
             const pbrMetallicRoughness = material.pbrMetallicRoughness;
-            //TODO 对pbrSpecularGlossiness、unlit的解析
+            const pbrSpecularGlossiness = material.pbrSpecularGlossiness;
             if (pbrMetallicRoughness) {
                 const metallicRoughnessTexture = pbrMetallicRoughness.metallicRoughnessTexture;
                 const baseColorTexture = pbrMetallicRoughness.baseColorTexture;
@@ -185,6 +188,15 @@ export default class GLTFPack {
                         materialUniforms['roughnessFactor'] = pbrMetallicRoughness.roughnessFactor;
                     }
                 }
+            }
+            if (pbrSpecularGlossiness) {
+                materialUniforms.extensions  = materialUniforms.extensions || {};
+                for (const p in pbrSpecularGlossiness) {
+                    if (pbrSpecularGlossiness[p].texture) {
+                        pbrSpecularGlossiness[p] = this._toTexture(pbrSpecularGlossiness[p]);
+                    }
+                }
+                materialUniforms.extensions['KHR_materials_pbrSpecularGlossiness'] = pbrSpecularGlossiness;
             }
             if (material.normalTexture) {
                 const texture = this._toTexture(material.normalTexture);
