@@ -167,10 +167,18 @@ class StandardShader extends MeshShader {
                 // 'uShadow_Texture3_viewLook',
                 // 'uShadow_Texture3_viewRight',
                 // 'uShadow_Texture3_viewUp',
-                'uSketchfabLight0_diffuse'
+                'uSketchfabLight0_diffuse',
                 // 'uSketchfabLight1_diffuse',
                 // 'uSketchfabLight2_diffuse',
                 // 'uSketchfabLight3_diffuse',
+                'uAmbientColor',
+
+                //KHR_materials_pbrSpecularGlossiness
+                'uDiffuseFactor',
+                'uSpecularFactor',
+                'uGlossinessFactor',
+                'uDiffuseTexture',
+                'uSpecularGlossinessTexture',
             ],
             extraCommandProps,
             defines: config.defines

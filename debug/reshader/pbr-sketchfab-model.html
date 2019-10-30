@@ -196,7 +196,7 @@
             );
             let output = fbo.color[0];
             output = taaPass.render(
-                projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200, fbo.color[0], fbo.depth
+                fbo.color[0], fbo.depth, projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200
             );
             jitter.frame();
             regl.clear({
@@ -241,7 +241,7 @@
                     }
                 },
                 defines: {
-                    // 'HAS_IBL_LIGHTING': 1
+                    'HAS_IBL_LIGHTING': 1
                 }
             });
             const scenePromise = getGLTFScene();
@@ -258,6 +258,7 @@
                 prefilterCubeSize: PREFILTER_CUBE_SIZE,
                 // ignoreSH: true
             });
+            maps.dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
 
             maps.sh = [
                 [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],

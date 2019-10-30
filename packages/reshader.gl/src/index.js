@@ -45,11 +45,13 @@ import * as PBRHelper from './pbr/PBRHelper.js';
 // import SubsurfaceMaterial from './pbr/SubsurfaceMaterial.js';
 // import SubsurfaceShader from './pbr/SubsurfaceShader';
 import StandardMaterial from './pbr/StandardMaterial.js';
+import PBRSpecularGlossinessMaterial from './pbr/PBRSpecularGlossinessMaterial.js';
 import StandardShader from './pbr/StandardShader';
 
 const pbr = {
     PBRHelper,
     StandardMaterial,
+    PBRSpecularGlossinessMaterial,
     StandardShader
 
     // LitShader,

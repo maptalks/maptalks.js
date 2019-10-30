@@ -38,7 +38,7 @@ export function createIBLMaps(regl, config = {}) {
     const roughnessLevels = config.roughnessLevels || 256;
     const prefilterCubeSize = config.prefilterCubeSize || 256;
 
-    const dfgSize = config.dfgSize || 256;
+    // const dfgSize = config.dfgSize || 256;
 
     //----------------------------------------------------
     // generate ibl maps
@@ -53,7 +53,7 @@ export function createIBLMaps(regl, config = {}) {
 
     const prefilterMap = createPrefilterCube(regl, envMap, prefilterCubeSize, sampleSize, roughnessLevels);
 
-    const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
+    // const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
     let sh;
     if (!config.ignoreSH) {
@@ -66,7 +66,7 @@ export function createIBLMaps(regl, config = {}) {
     const maps = {
         envMap,
         prefilterMap,
-        dfgLUT
+        // dfgLUT
     };
 
     if (sh) {
@@ -313,7 +313,8 @@ const quadTexcoords = [
 
 const DFG_CACHE = {};
 
-function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
+export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
+    size = size || 256;
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
 

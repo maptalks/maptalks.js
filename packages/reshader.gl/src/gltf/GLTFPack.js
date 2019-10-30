@@ -188,7 +188,7 @@ export default class GLTFPack {
                     }
                 }
             }
-            const pbrSpecularGlossiness = material.extensions && material.extensions['KHR_materials_pbrSpecularGlossiness'];
+            const pbrSpecularGlossiness = material.pbrSpecularGlossiness;
             if (pbrSpecularGlossiness) {
                 for (const p in pbrSpecularGlossiness) {
                     if (pbrSpecularGlossiness[p].texture) {
