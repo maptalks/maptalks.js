@@ -164,23 +164,26 @@ export default class GLTFPack {
         }
         if (material) {
             const pbrMetallicRoughness = material.pbrMetallicRoughness;
-            const metallicRoughnessTexture = pbrMetallicRoughness.metallicRoughnessTexture;
-            const baseColorTexture = pbrMetallicRoughness.baseColorTexture;
-            if (baseColorTexture) {
-                const texture = this._toTexture(baseColorTexture);
-                materialUniforms['baseColorTexture'] = texture;
-            } else if (pbrMetallicRoughness.baseColorFactor) {
-                materialUniforms['baseColorFactor'] = pbrMetallicRoughness.baseColorFactor;
-            }
-            if (metallicRoughnessTexture) {
-                const texture = this._toTexture(metallicRoughnessTexture);
-                materialUniforms['metallicRoughnessTexture'] = texture;
-            } else {
-                if (defined(pbrMetallicRoughness.metallicFactor)) {
-                    materialUniforms['metallicFactor'] = pbrMetallicRoughness.metallicFactor;
+            //TODO 对pbrSpecularGlossiness、unlit的解析
+            if (pbrMetallicRoughness) {
+                const metallicRoughnessTexture = pbrMetallicRoughness.metallicRoughnessTexture;
+                const baseColorTexture = pbrMetallicRoughness.baseColorTexture;
+                if (baseColorTexture) {
+                    const texture = this._toTexture(baseColorTexture);
+                    materialUniforms['baseColorTexture'] = texture;
+                } else if (pbrMetallicRoughness.baseColorFactor) {
+                    materialUniforms['baseColorFactor'] = pbrMetallicRoughness.baseColorFactor;
                 }
-                if (defined(pbrMetallicRoughness.roughnessFactor)) {
-                    materialUniforms['roughnessFactor'] = pbrMetallicRoughness.roughnessFactor;
+                if (metallicRoughnessTexture) {
+                    const texture = this._toTexture(metallicRoughnessTexture);
+                    materialUniforms['metallicRoughnessTexture'] = texture;
+                } else {
+                    if (defined(pbrMetallicRoughness.metallicFactor)) {
+                        materialUniforms['metallicFactor'] = pbrMetallicRoughness.metallicFactor;
+                    }
+                    if (defined(pbrMetallicRoughness.roughnessFactor)) {
+                        materialUniforms['roughnessFactor'] = pbrMetallicRoughness.roughnessFactor;
+                    }
                 }
             }
             if (material.normalTexture) {
