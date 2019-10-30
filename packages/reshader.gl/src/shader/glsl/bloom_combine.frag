@@ -89,9 +89,13 @@ vec4 bloomCombine() {
     bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur4, (min(gTexCoord, 1.0 - 1e+0 / uTextureBloomBlur4Size.xy)) * uTextureBloomBlur4Ratio), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor4, midVal);
     bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur5, (min(gTexCoord, 1.0 - 1e+0 / uTextureBloomBlur5Size.xy)) * uTextureBloomBlur5Ratio), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor5, midVal);
     vec4 color = texture2D(TextureInput, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio);
+
+    color.rgb = mix(vec3(0.0), color.rgb, sign(color.a));
+    float srcAlpha = mix(sqrt((bloom.r + bloom.g + bloom.b) / 3.0), color.a, sign(color.a));
+
     vec4 srcColor = texture2D(TextureSource, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio);
     float dstAlpha = 1.0 - color.a;
-    return vec4(srcColor.rgb * dstAlpha + color.rgb + (bloom * uBloomFactor), color.a + srcColor.a * dstAlpha);
+    return vec4(srcColor.rgb * dstAlpha + color.rgb + (bloom.rgb * uBloomFactor), srcAlpha + srcColor.a * dstAlpha);
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;
