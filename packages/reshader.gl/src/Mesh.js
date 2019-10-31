@@ -15,6 +15,7 @@ class Mesh {
         this.picking = !!config.picking;
         this.uniforms = {};
         this.localTransform = mat4.identity(new Array(16));
+        this.positionMatrix = mat4.identity(new Array(16));
         this.properties = {};
         this._dirtyUniforms = true;
     }
@@ -34,6 +35,10 @@ class Mesh {
     setLocalTransform(transform) {
         this.localTransform = transform;
         return this;
+    }
+
+    setPositionMatrix(matrix) {
+        this.positionMatrix = matrix;
     }
 
     setUniform(k, v) {
@@ -123,6 +128,7 @@ class Mesh {
             this._dirtyUniforms = false;
         }
         this._realUniforms['modelMatrix'] = this.localTransform;
+        this._realUniforms['positionMatrix'] = this.positionMatrix;
         return this._realUniforms;
     }
 

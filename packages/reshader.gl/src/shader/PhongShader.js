@@ -34,6 +34,7 @@ class PhongShader extends MeshShader {
                 'bloom',
                 'projMatrix',
                 'viewMatrix',
+                'positionMatrix',
                 {
                     name: 'normalMatrix',
                     type: 'function',
@@ -44,13 +45,20 @@ class PhongShader extends MeshShader {
                         return normalMatrix;
                     }
                 },
-                // {
-                //     name: 'projViewModelMatrix',
-                //     type: 'function',
-                //     fn: function (context, props) {
-                //         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                //     }
-                // }
+                {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                    }
+                },
+                {
+                    name: 'viewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
+                        return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                    }
+                },
                 //KHR_materials_pbrSpecularGlossiness
                 'diffuseFactor',
                 'specularFactor',

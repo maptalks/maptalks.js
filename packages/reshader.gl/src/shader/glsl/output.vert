@@ -46,17 +46,17 @@ mat4 getModelMatrix() {
         #else
             mat4 worldMatrix = attributeMatrix;
         #endif
-        worldMatrix *= modelMatrix;
+        worldMatrix *= positionMatrix;
     #else
         #ifdef HAS_SKIN
             mat4 worldMatrix;
             if (skinAnimation == 1) {
-                worldMatrix = modelMatrix * skin_getSkinMatrix();
+                worldMatrix = skin_getSkinMatrix() * positionMatrix;
             } else {
-                worldMatrix = modelMatrix;
+                worldMatrix = positionMatrix;
             }
         #else
-            mat4 worldMatrix = modelMatrix;
+            mat4 worldMatrix = positionMatrix;
         #endif
     #endif
     return worldMatrix;

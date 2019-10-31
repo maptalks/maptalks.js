@@ -18,11 +18,15 @@ varying vec3 vFragPos;
 varying vec3 vNormal;
 
 uniform mat4 projMatrix;
-uniform mat4 viewMatrix;
+uniform mat4 viewModelMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 positionMatrix;
 uniform vec2 halton;
 uniform vec2 globalTexSize;
+
+uniform mat4 projViewMatrix;
+// uniform mat4 projViewModelMatrix;
 
 #include <get_output>
 
@@ -60,7 +64,7 @@ void main()
 {
     frameUniforms.modelMatrix = getModelMatrix();
     vec4 localPosition = getPosition(aPosition);
-    vFragPos = vec3(frameUniforms.modelMatrix * localPosition);
+    vFragPos = vec3(modelMatrix * frameUniforms.modelMatrix * localPosition);
     vec3 Normal;
     #if defined(HAS_TANGENT)
         vec3 t;
@@ -75,7 +79,8 @@ void main()
 
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
-    gl_Position = jitteredProjection * viewMatrix * frameUniforms.modelMatrix * localPosition;
+    gl_Position = jitteredProjection * viewModelMatrix * frameUniforms.modelMatrix * localPosition;
+    // gl_Position = projViewModelMatrix * frameUniforms.modelMatrix * localPosition;
     #ifdef HAS_MAP
         vTexCoords = TEXCOORD_0;
     #endif

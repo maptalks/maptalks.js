@@ -267,10 +267,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (!layer.isVisible()) {
                 return;
             }
-            const gl = renderer.gl;
-            if (gl && (gl instanceof GLContext)) {
-                gl.clear(gl.STENCIL_BUFFER_BIT);
-            }
+            this._clearStencil(renderer, this._targetFBO);
             renderer.render.apply(renderer, args);
         });
         this._postProcess();
@@ -285,10 +282,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (!layer.isVisible()) {
                 return;
             }
-            const gl = renderer.gl;
-            if (gl && (gl instanceof GLContext)) {
-                gl.clear(gl.STENCIL_BUFFER_BIT);
-            }
+            this._clearStencil(renderer, this._targetFBO);
             renderer.drawOnInteracting.apply(renderer, args);
         });
         this._postProcess();
@@ -471,6 +465,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         /* eslint-enable no-empty */
     }
 
+    _clearStencil(renderer, fbo) {
+        const stencilValue = renderer.getStencilValue ? renderer.getStencilValue() : 0xFF;
+        const config = {
+            stencil: stencilValue
+        };
+        if (fbo) {
+            config['framebuffer'] = fbo;
+        }
+        this._regl.clear(config);
+    }
+
     onRemove() {
         //regl framebuffer for picking created by children layers
         if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
@@ -481,6 +486,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _buildDrawFn(drawMethod) {
         const parent = this;
+        //drawBloom中会手动创建context
         return function (event, timestamp, context) {
             if (isNumber(event)) {
                 context = timestamp;
@@ -505,6 +511,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const config = sceneConfig && sceneConfig.postProcess;
         const context = {};
         if (!config || !config.enable) {
+            if (this._targetFBO) {
+                this._targetFBO.destroy();
+                delete this._targetFBO;
+            }
+            if (this._bloomFBO) {
+                this._bloomFBO.destroy();
+                delete this._bloomFBO;
+            }
             return context;
         }
         const hasJitter = config.taa && config.taa.enable || config.ssaa && config.ssaa.enable;
@@ -713,7 +727,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             regl.clear({
                 color: [0, 0, 0, 0],
-                stencil: 0xFF,
                 framebuffer: bloomFBO
             });
         }
@@ -726,10 +739,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
         if (event) {
             this.forEachRenderer(renderer => {
+                this._clearStencil(renderer, bloomFBO);
                 renderer.drawOnInteracting(event, timestamp, context);
             });
         } else {
             this.forEachRenderer(renderer => {
+                this._clearStencil(renderer, bloomFBO);
                 renderer.draw(timestamp, context);
             });
         }
