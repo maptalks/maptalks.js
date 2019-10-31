@@ -969,6 +969,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             };
         }
     }
+
+    getZScale() {
+        return this._zScale;
+    }
 }
 
 VectorTileLayerRenderer.include({

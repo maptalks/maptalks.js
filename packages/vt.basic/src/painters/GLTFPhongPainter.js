@@ -3,7 +3,7 @@ import PhongPainter from './PhongPainter';
 
 const pickingVert = `
     attribute vec3 POSITION;
-    uniform mat4 projViewMatrix;
+    uniform mat4 projViewModelMatrix;
     uniform mat4 modelMatrix;
     //引入fbo picking的vert相关函数
     #include <fbo_picking_vert>
@@ -11,7 +11,7 @@ const pickingVert = `
     void main()
     {
         frameUniforms.modelMatrix = getModelMatrix();
-        gl_Position = projViewMatrix * frameUniforms.modelMatrix * getPosition(POSITION);
+        gl_Position = projViewModelMatrix * frameUniforms.modelMatrix * getPosition(POSITION);
         //传入gl_Position的depth值
         fbo_picking_setData(gl_Position.w, true);
     }`;
@@ -62,7 +62,8 @@ class GLTFPhongPainter extends PhongPainter {
                 divisor: 1
             };
         }
-
+        const { translation, rotation, scale } = this.getSymbol();
+        const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
         const meshInfos = this._gltfMeshInfos;
         const meshes = meshInfos.map(info => {
             const { geometry, materialInfo, node } = info;
@@ -74,9 +75,8 @@ class GLTFPhongPainter extends PhongPainter {
                 picking: true
             });
 
-            //创建普通的mesh用于测试
-            // const mesh = new reshader.Mesh(geometry, material);
-            mesh.setLocalTransform(node.nodeMatrix);
+            mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, node.nodeMatrix));
+            mesh.setLocalTransform(tileTranslationMatrix);
 
             geometry.generateBuffers(this.regl);
             //上面已经生成了buffer，无需再生成
@@ -105,11 +105,11 @@ class GLTFPhongPainter extends PhongPainter {
             instanceData[name][idx * 4 + 3] = matrix[start * stride + 3];
         }
 
-        const { translation, rotation, scale } = this.getSymbol();
-        const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
+
         const count = aPosition.length / positionSize;
         const tileSize = this.layer.getTileSize();
         const tileScale = tileSize.width / tileExtent * this.layer.getMap().getGLScale(tileZoom);
+        const zScale = this.layer.getRenderer().getZScale();
         const position = [];
         const mat = [];
         for (let i = 0; i < count; i++) {
@@ -117,13 +117,9 @@ class GLTFPhongPainter extends PhongPainter {
                 position,
                 aPosition[i * positionSize] * tileScale,
                 aPosition[i * positionSize + 1] * tileScale,
-                positionSize === 2 ? 0 : aPosition[i * positionSize + 2]
+                positionSize === 2 ? 0 : aPosition[i * positionSize + 2] * zScale
             );
-            mat4.copy(mat, tileTranslationMatrix);
-            mat[12] += pos[0];
-            mat[13] += pos[1];
-            //TODO z轴位置还没有处理
-            mat4.multiply(mat, mat, gltfMatrix);
+            mat4.fromTranslation(mat, pos);
             setInstanceData('instance_vectorA', i, 0, 4, mat);
             setInstanceData('instance_vectorB', i, 1, 4, mat);
             setInstanceData('instance_vectorC', i, 2, 4, mat);

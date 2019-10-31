@@ -271,7 +271,7 @@ class PhongPainter extends Painter {
         // `;
         return `
             attribute vec3 aPosition;
-            uniform mat4 projViewMatrix;
+            uniform mat4 projViewModelMatrix;
             uniform mat4 modelMatrix;
             //引入fbo picking的vert相关函数
             #include <fbo_picking_vert>
@@ -279,7 +279,7 @@ class PhongPainter extends Painter {
             void main()
             {
                 frameUniforms.modelMatrix = getModelMatrix();
-                gl_Position = projViewMatrix * frameUniforms.modelMatrix * getPosition(aPosition);
+                gl_Position = projViewModelMatrix * frameUniforms.modelMatrix * getPosition(aPosition);
                 //传入gl_Position的depth值
                 fbo_picking_setData(gl_Position.w, true);
             }
