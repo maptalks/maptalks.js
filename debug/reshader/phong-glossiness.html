@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PBR-GLTF</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1400px;height:1000px}
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+    <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+    <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/dat.gui.min.js"></script>
+  <body>
+    <canvas id="canvas" width=1400 height=1000 class="container"></canvas>
+    <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
+    <script type="module">
+        import sphereData from './common/sphere.js';
+        const PREFILTER_CUBE_SIZE = 256;
+        const { createREGL, mat4, reshader } = maptalksgl;
+        const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
+
+        // const gl = canvas.getContext('webgl', {
+        //     alpha: true,
+        //     // antialias: false
+        // });
+
+        const regl = createREGL({
+            attributes: {
+                alpha: true,
+                stencil: true,
+                depth: true,
+                antialias: false,
+                preserveDrawingBuffer: true
+            },
+            canvas : canvas,
+            // gl,
+            extensions : [
+                'OES_texture_float',
+                'OES_texture_half_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod',
+                'WEBGL_depth_texture'
+            ]
+        });
+        let iblMaps;
+        let mouseDown = false;
+        let roll = Math.PI;
+        let pitch = 0.0;
+        let translate = -0.26837494238387904;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        const loader = new reshader.ResourceLoader(regl.texture(2));
+        const renderer = new reshader.Renderer(regl);
+        let camPos = [-0.032360472676770446, 0.2674160944757587, -0.26837494238387904];
+        let SCENE = null;
+        let SHADER;
+        window.UNIFORMS = null;
+        let NORMAL_TEXTURE;
+        let ROUGHNESS_METALLIC_TEXTURE;
+        let BASE_COLOR_TEXTURE;
+        let CLEAR_COAT_NORMAL_TEXTURE;
+        let paused = false;
+
+        const color = regl.texture({
+            min: 'nearest',
+            mag: 'nearest',
+            type: 'uint8',
+            width: canvas.width,
+            height: canvas.height,
+        });
+        const fbo = regl.framebuffer({
+            width: canvas.width,
+            height: canvas.height,
+            colors: [color],
+            colorFormat: 'rgba',
+            colorCount: 1,
+            depthTexture: true,
+            stencil: false
+        });
+        const emptyTexture = regl.texture();
+        let taaPass, fxaaShader, jitter;
+
+        function main() {
+            UNIFORMS = {
+                'globalTexSize': [canvas.width, canvas.height],
+                'lightAmbient': [0.1, 0.1, 0.1],
+                'lightSpecular': [1, 1, 1],
+                'lightDiffuse': [1.4192, 1.3973, 1.4269],
+                'lightDirection': [0.6170, 0.6895, -0.3793]
+            };
+            // initGUI();
+            render();
+        }
+
+        main();
+
+        function render() {
+            //绘制gltf模型
+            drawGLTFModel();
+            // drawSphere();
+        }
+
+        function drawScene() {
+            if (paused) {
+                requestAnimationFrame(drawScene);
+                return;
+            }
+            const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
+            const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            const cameraWorldMatrix = mat4.invert([], viewMatrix);
+            const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+            const prevProjViewMatrix = projViewMatrix;
+            // UNIFORMS.modelMatrix = mat4.identity([]);
+            UNIFORMS.viewMatrix = viewMatrix;
+            UNIFORMS.projMatrix = projMatrix;
+            UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.cameraPosition = camPos;
+            // const halton = jitter.getJitter([]);
+            const halton = [0, 0];
+            UNIFORMS.halton = halton;
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
+                framebuffer: fbo
+            });
+            renderer.render(
+                SHADER,
+                UNIFORMS,
+                SCENE,
+                fbo
+            );
+            let output = fbo.color[0];
+            // output = taaPass.render(
+            //     fbo.color[0], fbo.depth, projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200
+            // );
+            // jitter.frame();
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1
+            });
+            renderer.render(fxaaShader, {
+                'enableFXAA': 1,
+                'enableSSAO': 0,
+                'enableToneMapping': 0,
+                'textureSource': output,
+                'resolution': [canvas.width, canvas.height],
+                'ssaoTexture': emptyTexture,
+                'cameraNear': 0.1,
+                'cameraFar': 200
+            });
+            // reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            requestAnimationFrame(drawScene);
+        }
+
+        function drawGLTFModel() {
+            const viewport = {
+                x: 0,
+                y: 0,
+                width: canvas.width,
+                height: canvas.height
+            };
+            taaPass = new reshader.TaaPass(renderer, viewport);
+            fxaaShader = new reshader.FxaaShader(viewport);
+            jitter = new reshader.Jitter();
+            SHADER = new reshader.PhongShader({
+                positionAttribute : 'POSITION',
+                normalAttribute : 'NORMAL',
+                tangentAttribute : 'TANGENT',
+                colorAttribute : 'COLOR_0',
+                uv0Attribute : 'TEXCOORD_0',
+                uv1Attribute : 'TEXCOORD_1',
+                extraCommandProps: {
+                    cull: {
+                        enable: true,
+                        face: 'back'
+                    }
+                },
+                defines: {
+                    // 'HAS_IBL_LIGHTING': 1
+                }
+            });
+            const scenePromise = getGLTFScene();
+            scenePromise.then(scene => {
+                SCENE = scene;
+                drawScene();
+            });
+        }
+
+        function getGLTFScene() {
+
+            const url = 'gltf/flame_test_2/scene.gltf';
+            return reshader.GLTFHelper.load(url).then(gltfData => {
+                const pack = reshader.GLTFHelper.exportGLTFPack(gltfData, regl);
+                const infos = pack.getMeshesInfo();
+                const meshes = infos.map(info => {
+                    const { geometry, materialInfo, node } = info;
+                    const mesh = new reshader.Mesh(geometry, new reshader.PhongSpecularGlossinessMaterial(materialInfo));
+                    mesh.setLocalTransform(node.nodeMatrix);
+                    return mesh;
+                });
+                const scene = new reshader.Scene();
+                scene.setMeshes(meshes);
+                // console.log(pack.getMeshesInfo());
+                return scene;
+            });
+        }
+
+        function getViewProjection(cameraPos, aspect) {
+            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 0.1, 200);
+            const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            return {
+                viewMatrix,
+                projMatrix
+            };
+        }
+
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.onmousemove = function(ev) { handleMouseMove(ev); };
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+
+        function handleMouseDown(ev) {
+            mouseDown = true;
+            lastMouseX = ev.clientX;
+            lastMouseY = ev.clientY;
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+            updateCamera();
+        }
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+        let timeout;
+        function updateCamera() {
+            clearTimeout(timeout);
+            paused = false;
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+            timeout = setTimeout(function () {
+                paused = true;
+            }, 1000);
+        }
+
+        function request(url, cb) {
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0, image.width, image.height);
+                const imgData = ctx.getImageData(0, 0, image.width, image.height);
+                const result = { width : image.width, height : image.height, data : new Uint8Array(imgData.data) };
+                cb(null, result);
+            };
+            image.onerror = function (err) {
+                cb(err);
+            };
+            image.src = url;
+        };
+
+        function toTexture(texture) {
+            const image = texture.texture.image;
+            return new reshader.Texture2D(regl.texture({
+                data: image.array,
+                width: image.width,
+                height: image.height,
+                wrap: 'repeat',
+                mag: 'linear',
+                min: 'mipmap'
+            }));
+        }
+
+        function getNodeTransformation(node) {
+            if (node.matrix) {
+                return node.matrix;
+            }
+            const mat = mat4.identity([]);
+            const v = node.translation || [0, 0, 0];
+            const q = node.rotation || [0, 0, 0, 1];
+            const s = node.scale || [1, 1, 1];
+            const m = mat4.fromRotationTranslationScale([], q, v, s);
+            // mat4.rotateX(m, m, Math.PI / 180 * 90);
+            return m;
+        }
+    </script>
+  </body>
+</html>

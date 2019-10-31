@@ -51,6 +51,12 @@ class PhongShader extends MeshShader {
                 //         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                 //     }
                 // }
+                //KHR_materials_pbrSpecularGlossiness
+                'diffuseFactor',
+                'specularFactor',
+                'glossinessFactor',
+                'diffuseTexture',
+                'specularGlossinessTexture',
             ],
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}

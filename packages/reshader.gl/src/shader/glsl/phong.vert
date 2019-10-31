@@ -1,6 +1,6 @@
 attribute vec3 aPosition;
 
-#ifdef HAS_BASECOLORTEXTURE
+#ifdef HAS_MAP
     attribute vec2 TEXCOORD_0;
     varying vec2 vTexCoords;
 #endif
@@ -9,7 +9,11 @@ attribute vec3 aPosition;
     varying vec4 vColor;
 #endif
 
-attribute vec3 aNormal;
+#if defined(HAS_TANGENT)
+    attribute vec4 aTangent;
+#else
+    attribute vec3 aNormal;
+#endif
 varying vec3 vFragPos;
 varying vec3 vNormal;
 
@@ -26,19 +30,53 @@ uniform vec2 globalTexSize;
     attribute float aExtrusionOpacity;
     varying float vExtrusionOpacity;
 #endif
+
+#if defined(HAS_TANGENT)
+    varying vec4 vTangent;
+#endif
+
+/**
+ * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
+ */
+void toTangentFrame(const highp vec4 q, out highp vec3 n) {
+    n = vec3( 0.0,  0.0,  1.0) +
+        vec3( 2.0, -2.0, -2.0) * q.x * q.zwx +
+        vec3( 2.0,  2.0, -2.0) * q.y * q.wzy;
+}
+
+/**
+ * Extracts the normal and tangent vectors of the tangent frame encoded in the
+ * specified quaternion.
+ */
+void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
+    toTangentFrame(q, n);
+    t = vec3( 1.0,  0.0,  0.0) +
+        vec3(-2.0,  2.0, -2.0) * q.y * q.yxw +
+        vec3(-2.0,  2.0,  2.0) * q.z * q.zwx;
+}
+
+
 void main()
 {
     frameUniforms.modelMatrix = getModelMatrix();
     vec4 localPosition = getPosition(aPosition);
     vFragPos = vec3(frameUniforms.modelMatrix * localPosition);
-    vec4 localNormal = getNormal(aNormal);
+    vec3 Normal;
+    #if defined(HAS_TANGENT)
+        vec3 t;
+        toTangentFrame(aTangent, Normal, t);
+        vTangent = vec4(frameUniforms.normalMatrix * t, aTangent.w);
+    #else
+        Normal = aNormal;
+    #endif
+    vec4 localNormal = getNormal(Normal);
     frameUniforms.normalMatrix = getNormalMatrix(frameUniforms.modelMatrix);
     vNormal = normalize(vec3(frameUniforms.normalMatrix * localNormal));
 
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
     gl_Position = jitteredProjection * viewMatrix * frameUniforms.modelMatrix * localPosition;
-    #ifdef HAS_BASECOLORTEXTURE
+    #ifdef HAS_MAP
         vTexCoords = TEXCOORD_0;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY

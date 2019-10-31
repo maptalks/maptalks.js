@@ -1,0 +1,557 @@
+{
+  "accessors": [
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 160,
+      "max": [
+        1,
+        1,
+        1.0841900110244751
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1920,
+      "componentType": 5126,
+      "count": 160,
+      "max": [
+        0.99929136037826538,
+        0.99961525201797485,
+        0.88638782501220703
+      ],
+      "min": [
+        -0.99929147958755493,
+        -0.99955439567565918,
+        -0.68571722507476807
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 948,
+      "max": [
+        159
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3840,
+      "componentType": 5126,
+      "count": 52,
+      "max": [
+        0.0063499999232590199,
+        0.0058400002308189869,
+        0.051709998399019241
+      ],
+      "min": [
+        -0.0055300001986324787,
+        -0.005169999785721302,
+        -0.051810000091791153
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 4464,
+      "componentType": 5126,
+      "count": 52,
+      "max": [
+        0.74112248420715332,
+        0.84807711839675903,
+        0.96982663869857788
+      ],
+      "min": [
+        -0.81363081932067871,
+        -0.78231757879257202,
+        -0.46385401487350464
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 3792,
+      "componentType": 5125,
+      "count": 294,
+      "max": [
+        51
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 5088,
+      "componentType": 5126,
+      "count": 642,
+      "max": [
+        1.5438300371170044,
+        1.2559000253677368,
+        4.0913400650024414
+      ],
+      "min": [
+        -1.1492400169372559,
+        -1.2559000253677368,
+        -0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 12792,
+      "componentType": 5126,
+      "count": 642,
+      "max": [
+        0.98897039890289307,
+        0.99988502264022827,
+        0.96092629432678223
+      ],
+      "min": [
+        -0.99461483955383301,
+        -0.99988502264022827,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 4968,
+      "componentType": 5125,
+      "count": 3840,
+      "max": [
+        641
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 1,
+      "max": [
+        0.041669998317956924
+      ],
+      "min": [
+        0.041669998317956924
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 1,
+      "max": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "min": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 4,
+      "componentType": 5126,
+      "count": 59,
+      "max": [
+        2.5
+      ],
+      "min": [
+        0.041669998317956924
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 59,
+      "max": [
+        0.0057799997739493847,
+        0.0057799997739493847,
+        0.015979999676346779
+      ],
+      "min": [
+        0.0057799997739493847,
+        0.0057799997739493847,
+        0.0059899999760091305
+      ],
+      "type": "VEC3"
+    }
+  ],
+  "animations": [
+    {
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 7,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 1,
+          "target": {
+            "node": 7,
+            "path": "scale"
+          }
+        }
+      ],
+      "name": "flameAction.001",
+      "samplers": [
+        {
+          "input": 9,
+          "interpolation": "LINEAR",
+          "output": 10
+        },
+        {
+          "input": 11,
+          "interpolation": "LINEAR",
+          "output": 12
+        }
+      ]
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "CATENCODE (https://sketchfab.com/catencode)",
+      "license": "CC-BY-SA-4.0 (http://creativecommons.org/licenses/by-sa/4.0/)",
+      "source": "https://sketchfab.com/models/d5e7042d18a14127a9971bb493b8c863",
+      "title": "Candle Light Animated"
+    },
+    "generator": "Sketchfab-3.18.7",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 20328,
+      "byteOffset": 0,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 20496,
+      "byteOffset": 20328,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 240,
+      "byteOffset": 40824,
+      "name": "floatBufferViews"
+    },
+    {
+      "buffer": 0,
+      "byteLength": 708,
+      "byteOffset": 41064,
+      "byteStride": 12,
+      "name": "floatBufferViews"
+    },
+    {
+      "buffer": 0,
+      "byteLength": 16,
+      "byteOffset": 41772,
+      "byteStride": 16,
+      "name": "floatBufferViews"
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 41788,
+      "uri": "scene.bin"
+    }
+  ],
+  "extensionsRequired": [
+    "KHR_materials_pbrSpecularGlossiness"
+  ],
+  "extensionsUsed": [
+    "KHR_materials_pbrSpecularGlossiness"
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseFactor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "glossinessFactor": 0.65587006569999995,
+          "specularFactor": [
+            0.67942479397872957,
+            0.67942479397872957,
+            0.67942479397872957
+          ]
+        }
+      },
+      "name": "Root"
+    },
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        1,
+        1,
+        0.44841099500000003
+      ],
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseFactor": [
+            0.80149452669999999,
+            0.23232734150000001,
+            0.0072293160000000004,
+            1
+          ],
+          "glossinessFactor": 0.72505245569999999,
+          "specularFactor": [
+            0.97998638100000002,
+            1,
+            0
+          ]
+        }
+      },
+      "name": "flame"
+    },
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "extensions": {
+        "KHR_materials_pbrSpecularGlossiness": {
+          "diffuseFactor": [
+            0.65140563740000001,
+            0.46778379609999998,
+            0.011612245199999999,
+            1
+          ],
+          "glossinessFactor": 0.37914050599999999,
+          "specularFactor": [
+            0.78391446529999997,
+            0.57640287810000002,
+            0.025809630100000001
+          ]
+        }
+      },
+      "name": "candleWax"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "candle_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0
+          },
+          "indices": 2,
+          "material": 2,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "candleWick_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 4,
+            "POSITION": 3
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "flame_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 7,
+            "POSITION": 6
+          },
+          "indices": 8,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "name": "RootNode (gltf orientation matrix)",
+      "rotation": [
+        -0.70710678118654746,
+        -0,
+        -0,
+        0.70710678118654757
+      ]
+    },
+    {
+      "children": [
+        2
+      ],
+      "name": "RootNode (model correction matrix)"
+    },
+    {
+      "children": [
+        3,
+        5,
+        7,
+        9
+      ],
+      "name": "Root"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        0.014860000000000002,
+        0,
+        0,
+        0,
+        0,
+        0.014860000000000002,
+        0,
+        0,
+        0,
+        0,
+        0.036270000000000004,
+        0,
+        0.0013700000000000003,
+        -0.0029100000000000007,
+        0.058800000000000012,
+        1
+      ],
+      "name": "candle"
+    },
+    {
+      "mesh": 0,
+      "name": "candle_0"
+    },
+    {
+      "children": [
+        6
+      ],
+      "matrix": [
+        0.40651000000000004,
+        0,
+        0,
+        0,
+        0,
+        0.40651000000000004,
+        0,
+        0,
+        0,
+        0,
+        0.40651000000000004,
+        0,
+        0.0010100000000000003,
+        -0.0048200000000000014,
+        0.11564000000000002,
+        1
+      ],
+      "name": "candleWick"
+    },
+    {
+      "mesh": 1,
+      "name": "candleWick_0"
+    },
+    {
+      "children": [
+        8
+      ],
+      "name": "flame",
+      "scale": [
+        0.0057799997739493847,
+        0.0057799997739493847,
+        0.010649999603629112
+      ],
+      "translation": [
+        0.0028399999719113111,
+        -0.0048199999146163464,
+        0.12928000092506409
+      ]
+    },
+    {
+      "mesh": 2,
+      "name": "flame_0"
+    },
+    {
+      "children": [
+        10
+      ],
+      "matrix": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.0028400000000000009,
+        -0.0048200000000000014,
+        0.15297000000000002,
+        1
+      ],
+      "name": "candleLight"
+    },
+    {
+      "name": "candleLight"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "OSG_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}
+
