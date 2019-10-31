@@ -38,7 +38,7 @@ class GLTFPhongPainter extends PhongPainter {
         };
     }
 
-    createMesh(geometry, transform, { tileTranslationMatrix, tileExtent }) {
+    createMesh(geometry, transform, { tileTranslationMatrix, tileExtent, tileZoom }) {
         const { positionSize } = geometry;
         const { aPosition } = geometry.data;
         const count = aPosition.length / positionSize;
@@ -53,7 +53,7 @@ class GLTFPhongPainter extends PhongPainter {
             // 'instance_color': [],
             'aPickingId': []
         };
-        this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, aPosition, positionSize);
+        this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize);
         const instanceBuffers = {};
         //所有mesh共享一个instance buffer，以节省内存
         for (const p in instanceData) {
@@ -66,7 +66,8 @@ class GLTFPhongPainter extends PhongPainter {
         const meshInfos = this._gltfMeshInfos;
         const meshes = meshInfos.map(info => {
             const { geometry, materialInfo, node } = info;
-            const material = new reshader.PhongMaterial(materialInfo);
+            const MatClazz = materialInfo.diffuseFactor ? reshader.PhongSpecularGlossinessMaterial : reshader.PhongMaterial;
+            const material = new MatClazz(materialInfo);
             const mesh = new reshader.InstancedMesh(instanceBuffers, count, geometry, material, {
                 transparent: false,
                 castShadow: false,
@@ -96,7 +97,7 @@ class GLTFPhongPainter extends PhongPainter {
         return meshes;
     }
 
-    _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, aPosition, positionSize) {
+    _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize) {
         function setInstanceData(name, idx, start, stride, matrix) {
             instanceData[name][idx * 4] = matrix[start * stride];
             instanceData[name][idx * 4 + 1] = matrix[start * stride + 1];
@@ -108,7 +109,7 @@ class GLTFPhongPainter extends PhongPainter {
         const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
         const count = aPosition.length / positionSize;
         const tileSize = this.layer.getTileSize();
-        const tileScale = tileSize.width / tileExtent * this.layer.getMap().getGLScale();
+        const tileScale = tileSize.width / tileExtent * this.layer.getMap().getGLScale(tileZoom);
         const position = [];
         const mat = [];
         for (let i = 0; i < count; i++) {
@@ -121,6 +122,7 @@ class GLTFPhongPainter extends PhongPainter {
             mat4.copy(mat, tileTranslationMatrix);
             mat[12] += pos[0];
             mat[13] += pos[1];
+            //TODO z轴位置还没有处理
             mat4.multiply(mat, mat, gltfMatrix);
             setInstanceData('instance_vectorA', i, 0, 4, mat);
             setInstanceData('instance_vectorB', i, 1, 4, mat);
