@@ -120,7 +120,15 @@ class PhongPainter extends Painter {
             vert: this.getPickingVert(),
             uniforms: [
                 'projViewMatrix',
-                'modelMatrix'
+                'modelMatrix',
+                'positionMatrix',
+                {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                    }
+                }
             ]
         };
         this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);

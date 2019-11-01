@@ -144,7 +144,11 @@ class Painter {
             //有可能mesh已经被回收，geometry不再存在
             return null;
         }
-        const props = mesh.geometry.properties;
+        let props = mesh.geometry.properties;
+        if (!props.features) {
+            //GLTFPhongPainter中，因为geometry是gltf数据，由全部的tile共享，features是存储在mesh上的
+            props = mesh.properties;
+        }
         return {
             data: props && props.features && props.features[pickingId],
             point

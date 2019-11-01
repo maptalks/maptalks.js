@@ -5,6 +5,7 @@ const pickingVert = `
     attribute vec3 POSITION;
     uniform mat4 projViewModelMatrix;
     uniform mat4 modelMatrix;
+    uniform mat4 positionMatrix;
     //引入fbo picking的vert相关函数
     #include <fbo_picking_vert>
     #include <get_output>
@@ -39,7 +40,7 @@ class GLTFPhongPainter extends PhongPainter {
     }
 
     createMesh(geometry, transform, { tileTranslationMatrix, tileExtent, tileZoom }) {
-        const { positionSize } = geometry;
+        const { positionSize, features } = geometry;
         const { aPosition } = geometry.data;
         const count = aPosition.length / positionSize;
         if (count === 0) {
@@ -84,6 +85,7 @@ class GLTFPhongPainter extends PhongPainter {
             if (instanceData['instance_color']) {
                 mesh.getDefines()['HAS_INSTANCE_COLOR'] = 1;
             }
+            mesh.properties.features = features;
             return mesh;
         });
         meshes.insContext = {
