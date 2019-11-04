@@ -44,9 +44,11 @@ export function loadAmbientTexture(res, regl) {
             ignoreSH: !!res['sh'],
             // prefilterCubeSize : 256
         });
+        const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
         if (res['sh']) {
             maps['sh'] = res['sh'];
         }
+        maps['dfgLUT'] = dfgLUT;
         if (images.destroy) {
             images.destroy();
         }

@@ -1,6 +1,6 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import { extend, isNumber } from '../../Util';
+import { isNil, extend, isNumber } from '../../Util';
 import Painter from '../Painter';
 import { setUniformFromSymbol } from '../../Util';
 
@@ -240,9 +240,11 @@ class StandardPainter extends Painter {
             ignoreSH: !!config['sh'],
             // prefilterCubeSize : 256
         });
+        const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
         if (config['sh']) {
             maps.sh = config['sh'];
         }
+        maps['dfgLUT'] = dfgLUT;
         return maps;
     }
 
@@ -307,8 +309,12 @@ class StandardPainter extends Painter {
         this.material = new reshader.pbr.StandardMaterial(material);
     }
 
+    _getHDRResource() {
+        return this.sceneConfig.lights && this.sceneConfig.lights.ambient && this.sceneConfig.lights.ambient.resource;
+    }
+
     _initCubeLight() {
-        const config = this.sceneConfig.lights && this.sceneConfig.lights.ambient && this.sceneConfig.lights.ambient.resource;
+        const config = this._getHDRResource();
         if (!config && config !== 0) {
             return;
         }
@@ -437,6 +443,9 @@ class StandardPainter extends Painter {
 
     _getDefines(shadowDefines) {
         const defines = {};
+        if (!isNil(this._getHDRResource())) {
+            defines['HAS_IBL_LIGHTING'] = 1;
+        }
         if (shadowDefines) {
             extend(defines, shadowDefines);
         }
