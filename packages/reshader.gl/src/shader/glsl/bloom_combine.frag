@@ -100,6 +100,6 @@ vec4 bloomCombine() {
 void main(void) {
     gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;
     vec4 color = bloomCombine();
-    color.rgb = linearTosRGB(color.rgb);
+    // color.rgb = linearTosRGB(color.rgb);
     gl_FragColor = color;
 }

@@ -1,5 +1,6 @@
 import { isFunction } from './common/Util.js';
 import Eventable from './common/Eventable.js';
+import { KEY_DISPOSED } from './common/Constants.js';
 
 /**
  * Abstract Texture
@@ -101,9 +102,9 @@ class AbstractTexture {
         if (this.config && this.config.url) {
             this.resLoader.disposeRes(this.config.url);
         }
-        if (this._texture && !this._texture['__destroyed']) {
+        if (this._texture && !this._texture[KEY_DISPOSED]) {
             this._texture.destroy();
-            this._texture['__destroyed'] = true;
+            this._texture[KEY_DISPOSED] = true;
         }
         delete this.resLoader;
         this.fire('disposed', { target: this, url: this.config && this.config.url });

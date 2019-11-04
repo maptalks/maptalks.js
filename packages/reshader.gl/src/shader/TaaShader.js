@@ -30,6 +30,8 @@ class TaaShader extends QuadShader {
                 'uTexturePreviousSize',
                 'uHalton',
                 'uNearFar',
+                'uSSAARestart',
+                'uTaaEnabled',
                 {
                     name: 'uTaaCornersCSLeft',
                     type: 'array',

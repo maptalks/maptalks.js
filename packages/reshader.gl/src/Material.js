@@ -1,6 +1,7 @@
 import Eventable from './common/Eventable.js';
 import { extend1 } from './common/Util.js';
 import AbstractTexture from './AbstractTexture.js';
+import { KEY_DISPOSED } from './common/Constants.js';
 
 class Material {
     constructor(uniforms = {}, defaultUniforms) {
@@ -130,10 +131,10 @@ class Material {
             if (u) {
                 if (u.dispose) {
                     u.dispose();
-                } else if (u.destroy && !u['__destroyed']) {
+                } else if (u.destroy && !u[KEY_DISPOSED]) {
                     //a normal regl texture
                     u.destroy();
-                    u['__destroyed'] = true;
+                    u[KEY_DISPOSED] = true;
                 }
             }
         }

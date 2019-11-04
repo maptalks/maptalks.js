@@ -38,6 +38,7 @@
             extensions : [
                 'OES_texture_float',
                 'OES_texture_half_float',
+                'OES_texture_half_float_linear',
                 'OES_element_index_uint',
                 'OES_standard_derivatives',
                 'EXT_shader_texture_lod',
@@ -165,7 +166,7 @@
             stencil: false
         });
         const emptyTexture = regl.texture();
-        let taaPass, fxaaShader, jitter;
+        let taaPass, fxaaShader, jitter, prevProjViewMatrix;
         function drawScene() {
             if (paused) {
                 requestAnimationFrame(drawScene);
@@ -175,7 +176,7 @@
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
             const cameraWorldMatrix = mat4.invert([], viewMatrix);
             const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
-            const prevProjViewMatrix = projViewMatrix;
+
             // UNIFORMS.modelMatrix = mat4.identity([]);
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.projMatrix = projMatrix;
@@ -199,6 +200,7 @@
                 fbo.color[0], fbo.depth, projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200
             );
             jitter.frame();
+            prevProjViewMatrix = projViewMatrix;
             regl.clear({
                 color: [0, 0, 0, 0],
                 depth: 1
@@ -224,9 +226,9 @@
                 width: canvas.width,
                 height: canvas.height
             };
-            taaPass = new reshader.TaaPass(renderer, viewport);
+            jitter = new reshader.Jitter(0.8);
+            taaPass = new reshader.TaaPass(renderer, viewport, jitter);
             fxaaShader = new reshader.FxaaShader(viewport);
-            jitter = new reshader.Jitter();
             SHADER = new reshader.pbr.StandardShader({
                 positionAttribute : 'POSITION',
                 normalAttribute : 'NORMAL',

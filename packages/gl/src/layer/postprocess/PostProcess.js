@@ -4,11 +4,11 @@ import { vec2 } from 'gl-matrix';
 const RESOLUTION = [];
 
 export default class PostProcess {
-    constructor(regl, viewport) {
+    constructor(regl, viewport, jitter) {
         this._regl = regl;
         this._renderer = new reshader.Renderer(regl);
         this._fxaaShader = new reshader.FxaaShader(viewport);
-        this._taaPass = new reshader.TaaPass(this._renderer, viewport);
+        this._taaPass = new reshader.TaaPass(this._renderer, viewport, jitter);
         this._bloomPass = new reshader.BloomPass(this._renderer, viewport);
         this._postProcessShader = new reshader.PostProcessShader(viewport);
         this._emptyTexture = regl.texture();
@@ -20,13 +20,19 @@ export default class PostProcess {
 
     taa(curTex, depthTex, {
         projViewMatrix, prevProjViewMatrix, cameraWorldMatrix,
-        fov, jitter, near, far
+        fov, jitter, near, far, needClear
     }) {
-        return this._taaPass.render(
+        const pass = this._taaPass;
+        const outputTex = pass.render(
             curTex, depthTex,
             projViewMatrix, cameraWorldMatrix, prevProjViewMatrix,
-            fov, jitter, near, far
+            fov, jitter, near, far, needClear
         );
+        const redraw = pass.needToRedraw();
+        return {
+            outputTex,
+            redraw
+        };
     }
 
     layer(fbo, depthTex, uniforms, src) {
@@ -101,12 +107,15 @@ export default class PostProcess {
     delete() {
         if (this._taaPass) {
             this._taaPass.dispose();
-        }
-        if (this._ssaoTexture) {
-            this._ssaoTexture.destroy();
+            delete this._taaPass;
         }
         if (this._ssaoFBO) {
             this._ssaoFBO.destroy();
+            delete this._ssaoFBO;
+        }
+        if (this._ssaoTexture) {
+            this._ssaoTexture.destroy();
+            delete this._ssaoTexture;
         }
     }
 }

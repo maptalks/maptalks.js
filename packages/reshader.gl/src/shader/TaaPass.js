@@ -1,22 +1,45 @@
-
 import TaaShader from './TaaShader.js';
-import { vec2 } from 'gl-matrix';
+import { vec2, vec4, mat4 } from 'gl-matrix';
 
 class TaaPass {
-    constructor(renderer, viewport) {
+    constructor(renderer, viewport, jitter) {
+        this._jitter = jitter;
         this._renderer = renderer;
         this._viewport = viewport;
         this._halton = [];
         this._nearfar = [];
+        this._counter = 0;
+        this._taaCounter = 0;
+        this._ssCounter = 0;
+        this._sampleCount = 8;
     }
 
-    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far) {
+    needToRedraw() {
+        return this._counter < this._sampleCount;
+    }
+
+    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far, needClear) {
+        prevPvMatrix = prevPvMatrix || pvMatrix;
         this._initShaders();
         this._createTextures(sourceTex);
         if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
             this._fbo.resize(sourceTex.width, sourceTex.height);
         }
-
+        if (needClear || this._viewChanged(pvMatrix, prevPvMatrix)) {
+            this._jitter.reset();
+            this._counter = 0;
+            this._clearTex();
+            // this._taaCounter = 0;
+        }
+        this._counter++;
+        const sampleCount = this._sampleCount;
+        // if (isLowSampling) {
+        //     sampleCount = 4;
+        // }
+        if (this._counter >= sampleCount) {
+            console.log('ended');
+            return this._prevTex;
+        }
         const output = this._outputTex;
         const prevTex = this._prevTex;
         const uniforms = this._uniforms || {
@@ -28,6 +51,8 @@ class TaaPass {
             'uTextureOutputSize': [sourceTex.width, sourceTex.height],
             'uTexturePreviousRatio': [1, 1],
             'uTexturePreviousSize': [prevTex.width, prevTex.height],
+            'uSSAARestart': 0,
+            'uTaaEnabled': 0,
         };
         uniforms['fov'] = fov;
         uniforms['uTaaCurrentFramePVLeft'] = pvMatrix;
@@ -36,7 +61,7 @@ class TaaPass {
         uniforms['TextureDepth'] = depthTex;
         uniforms['TextureInput'] = sourceTex;
         uniforms['TexturePrevious'] = prevTex;
-        uniforms['uHalton'] = vec2.set(this._halton, jitter[0], jitter[1]);
+        uniforms['uHalton'] = vec4.set(this._halton, jitter[0], jitter[1], 2.0, this._counter);
         uniforms['uNearFar'] = vec2.set(this._nearfar, near, far);
         vec2.set(uniforms['uTextureDepthSize'], depthTex.width, depthTex.height);
         vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
@@ -116,6 +141,26 @@ class TaaPass {
         if (!this._shader) {
             this._shader = new TaaShader(this._viewport);
         }
+    }
+
+    _viewChanged(mat0, mat1) {
+        if (mat0 === mat1) {
+            return false;
+        }
+        return !mat4.equals(mat0, mat1);
+    }
+
+    _clearTex() {
+        const regl = this._renderer.regl;
+        const color = [0, 0, 0, 0];
+        regl.clear({
+            color,
+            framebuffer: this._fbo
+        });
+        regl.clear({
+            color,
+            framebuffer: this._prevFbo
+        });
     }
 }
 

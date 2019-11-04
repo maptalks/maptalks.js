@@ -270,8 +270,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._clearStencil(renderer, this._targetFBO);
             renderer.render.apply(renderer, args);
         });
-        this._postProcess();
         this['_toRedraw'] = false;
+        this._postProcess();
     }
 
     drawOnInteracting(...args) {
@@ -285,8 +285,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._clearStencil(renderer, this._targetFBO);
             renderer.drawOnInteracting.apply(renderer, args);
         });
-        this._postProcess();
         this['_toRedraw'] = false;
+        this._postProcess();
     }
 
     testIfNeedRedraw() {
@@ -375,7 +375,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.gl.regl = this._regl;
 
         this._jitter = [];
-        this._jitGetter = new reshader.Jitter();
+        this._jitGetter = new reshader.Jitter(1);
     }
 
     _initGL() {
@@ -669,7 +669,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     return this.canvas.height;
                 }
             };
-            this._postProcessor = new PostProcess(this._regl, viewport);
+            this._postProcessor = new PostProcess(this._regl, viewport, this._jitGetter);
         }
         let tex = this._targetFBO.color[0];
 
@@ -686,19 +686,26 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const enableTAA = config.taa && config.taa.enable;
         if (enableTAA) {
-            tex = this._postProcessor.taa(tex, this._depthTex, {
+            const redrawFrame = this.testIfNeedRedraw();
+            const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
                 projViewMatrix: map.projViewMatrix,
                 prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
                 cameraWorldMatrix: map.cameraWorldMatrix,
                 fov: map.getFov() * Math.PI / 180,
                 jitter: this._jitter || [0, 0],
                 near: map.cameraNear,
-                far: map.cameraFar
+                far: map.cameraFar,
+                needClear: redrawFrame
             });
+            tex = outputTex;
             if (!this._prevProjViewMatrix) {
                 this._prevProjViewMatrix = new Array(16);
             }
             mat4.copy(this._prevProjViewMatrix, map.projViewMatrix);
+            if (redraw) {
+                // console.log('taa.redraw', redraw);
+                this.setToRedraw();
+            }
         }
         // this._displayShadow();
         this._postProcessor.layer(tex, this._depthTex, {

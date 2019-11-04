@@ -21,16 +21,21 @@ const SAMPLES = [
 const SAMPLE_COUNT = SAMPLES.length;
 
 class Jitter {
-    constructor() {
+    constructor(ratio) {
         this._frameNum = 0;
-        this._ratio = 0.05;
-        // this._ratio = 1;
+        // this._ratio = 0.05;
+        this._ratio = ratio || 0.05;
+    }
+
+    reset() {
+        this._frameNum = 0;
     }
 
     getJitter(out) {
         const t = this._frameNum % SAMPLE_COUNT;
         const r = this._ratio;
         vec2.set(out, SAMPLES[t][0] * r, SAMPLES[t][1] * r);
+        // out[0] = out[1] = 0;
         return out;
     }
 
