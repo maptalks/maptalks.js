@@ -11,7 +11,7 @@ class TaaPass {
         this._counter = 0;
         this._taaCounter = 0;
         this._ssCounter = 0;
-        this._sampleCount = 8;
+        this._sampleCount = 15;
     }
 
     needToRedraw() {
@@ -25,19 +25,29 @@ class TaaPass {
         if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
             this._fbo.resize(sourceTex.width, sourceTex.height);
         }
-        if (needClear || this._viewChanged(pvMatrix, prevPvMatrix)) {
+        // console.log(pvMatrix.slice(16 - 3), prevPvMatrix.slice(16 - 3));
+        const viewChanged = this._viewChanged(pvMatrix, prevPvMatrix);
+        // console.log(viewChanged);
+        if (viewChanged) {
             this._jitter.reset();
             this._counter = 0;
             this._clearTex();
             // this._taaCounter = 0;
         }
+        // if (needClear) {
+        // this._jitter.reset();
+        // }
         this._counter++;
         const sampleCount = this._sampleCount;
+        // if (!viewChanged && needClear && this._counter === sampleCount) {
+        //     this._counter = 0;
+        //     // this._jitter.reset();
+        // }
         // if (isLowSampling) {
         //     sampleCount = 4;
         // }
-        if (this._counter >= sampleCount) {
-            console.log('ended');
+        if (this._counter >= sampleCount && !needClear) {
+            // console.log('ended');
             return this._prevTex;
         }
         const output = this._outputTex;
@@ -54,6 +64,7 @@ class TaaPass {
             'uSSAARestart': 0,
             'uTaaEnabled': 0,
         };
+        uniforms['uClipAABBEnabled'] = needClear && !viewChanged ? 1 : 0;
         uniforms['fov'] = fov;
         uniforms['uTaaCurrentFramePVLeft'] = pvMatrix;
         uniforms['uTaaInvViewMatrixLeft'] = invViewMatrix;

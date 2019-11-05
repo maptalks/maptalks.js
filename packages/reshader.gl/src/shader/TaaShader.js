@@ -32,6 +32,7 @@ class TaaShader extends QuadShader {
                 'uNearFar',
                 'uSSAARestart',
                 'uTaaEnabled',
+                'uClipAABBEnabled',
                 {
                     name: 'uTaaCornersCSLeft',
                     type: 'array',

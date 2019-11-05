@@ -6,6 +6,7 @@
 precision highp float;
 uniform float uSSAARestart;
 uniform float uTaaEnabled;
+uniform float uClipAABBEnabled;
 uniform mat4 uTaaCurrentFramePVLeft;
 uniform mat4 uTaaInvViewMatrixLeft;
 uniform mat4 uTaaLastFramePVLeft;
@@ -92,20 +93,7 @@ float decodeDepth(const in vec4 pack) {
 float decodeAlpha(const in vec4 pack) {
     return pack.a;
 }
-vec4 supersample() {
-    vec4 currFragColor = (texture2D(TextureInput, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).rgba;
-    float haltz = abs(uHalton.z);
-    if (haltz == 1.0) {
-        return currFragColor;
-    }
-    vec4 accumColorN = (texture2D(TexturePrevious, (floor((min(gTexCoord, 1.0 - 1e+0 / uTexturePreviousSize.xy)) * uTexturePreviousSize) + 0.5) * uTexturePreviousRatio / uTexturePreviousSize, -99999.0)).rgba;
-    float lerpFac = 1.0 / uHalton.w;
-    // if (uHalton.w == 1.0) lerpFac = uSSAARestart;
-    // if (haltz == 3.0) {
-    //     return mix(currFragColor, accumColorN, lerpFac);
-    // }
-    return mix(accumColorN, currFragColor, lerpFac);
-}
+
 vec3 reconstructWSPosition(const in vec2 uv, const in vec4 corners0, const in vec4 corners1, const in mat4 invView, const in float depth) {
     vec2 finalUv = uv;
     vec4 AB = mix(corners0, corners1, vec4(finalUv.x));
@@ -136,9 +124,9 @@ vec4 clip_aabb_opti(const in vec4 minimum, const in vec4 maximum, const in vec4 
     float t = max(max(ts.r, ts.g), max(ts.b, ts.a));
     return center + offset / max(1.0, t);
 }
-vec4 taa(const in vec2 ssVel, const in vec2 texelSize) {
+
+vec4 clip_aabb(const in vec2 texelSize, const in vec4 preColor, out vec4 m, bool sharpen) {
     vec2 uv = gTexCoord;
-    vec4 m = (texture2D(TextureInput, (min(uv, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 tl = (texture2D(TextureInput, (min(uv + vec2(-texelSize.x, texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 t = (texture2D(TextureInput, (min(uv + vec2(0.0, texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 tr = (texture2D(TextureInput, (min(uv + vec2(texelSize.x, texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
@@ -147,23 +135,32 @@ vec4 taa(const in vec2 ssVel, const in vec2 texelSize) {
     vec4 bl = (texture2D(TextureInput, (min(uv + vec2(-texelSize.x, -texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 b = (texture2D(TextureInput, (min(uv + vec2(0.0, -texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 br = (texture2D(TextureInput, (min(uv + vec2(texelSize.x, -texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    vec4 corners = 2.0 * (tr + bl + br + tl) - 2.0 * m;
-    m += (m - (corners * 0.166667)) * 2.718282 * 0.3;
-    m = max(vec4(0.0), m);
+    if (sharpen) {
+        vec4 corners = 2.0 * (tr + bl + br + tl) - 2.0 * m;
+        m += (m - (corners * 0.166667)) * 2.718282 * 0.3;
+        m = max(vec4(0.0), m);
+    }
     vec4 cmin5 = min(mr, min(m, min(ml, min(t, b))));
     vec4 cmin = min(cmin5, min(tl, min(tr, min(bl, br))));
     vec4 cmax5 = max(mr, max(m, max(ml, max(t, b))));
     vec4 cmax = max(cmax5, max(tl, max(tr, max(bl, br))));
     cmin = 0.5 * (cmin + cmin5);
     cmax = 0.5 * (cmax + cmax5);
+    return clip_aabb_opti(cmin, cmax, preColor);
+}
+
+vec4 taa(const in vec2 ssVel, const in vec2 texelSize) {
+    vec2 uv = gTexCoord;
+    vec4 m = (texture2D(TextureInput, (min(uv, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 previousColor = (texture2D(TexturePrevious, (min(uv - ssVel, 1.0 - 1e+0 / uTexturePreviousSize.xy)) * uTexturePreviousRatio));
-    previousColor = clip_aabb_opti(cmin, cmax, previousColor);
+    previousColor = clip_aabb(texelSize, previousColor, m, true);
     float lum0 = getLuminance(m.rgb);
     float lum1 = getLuminance(previousColor.rgb);
     float diff = abs(lum0 - lum1) / max(lum0, max(lum1, 0.2));
     float unbiased_weight = 1.0 - diff;
     float feedback = mix(0.88, 0.97, unbiased_weight * unbiased_weight);
     // return m;
+    // return mix(previousColor, m, 1.0 / uHalton.w);
     return mix(m, previousColor, feedback);
 }
 vec2 computeSSVelocity(const in vec3 wsPos, const in mat4 currentFrameProjView, const in mat4 lastFrameProjView, const in bool rightEye) {
@@ -174,6 +171,25 @@ vec2 computeSSVelocity(const in vec3 wsPos, const in mat4 currentFrameProjView, 
     if(ndcPrev.x >= 1.0 || ndcPrev.x <= -1.0 || ndcPrev.x >= 1.0 || ndcPrev.y <= -1.0)
     return vec2(0.0);
     return 0.5 * (ndcCurrent - ndcPrev);
+}
+vec4 supersample() {
+    vec4 currFragColor = (texture2D(TextureInput, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).rgba;
+    float haltz = abs(uHalton.z);
+    if (haltz == 1.0) {
+        return currFragColor;
+    }
+    vec4 accumColorN = (texture2D(TexturePrevious, (floor((min(gTexCoord, 1.0 - 1e+0 / uTexturePreviousSize.xy)) * uTexturePreviousSize) + 0.5) * uTexturePreviousRatio / uTexturePreviousSize, -99999.0)).rgba;
+    if (uClipAABBEnabled == 1.0) {
+        vec2 texelSize = vec2(1.0) / uTextureInputSize;
+        accumColorN = clip_aabb(texelSize, accumColorN, currFragColor, false);
+    }
+
+    float lerpFac = 1.0 / uHalton.w;
+    // if (uHalton.w == 1.0) lerpFac = uSSAARestart;
+    // if (haltz == 3.0) {
+    //     return mix(currFragColor, accumColorN, lerpFac);
+    // }
+    return mix(accumColorN, currFragColor, lerpFac);
 }
 vec4 computeTaa(const in mat4 invView, const in mat4 currentFrameProjView, const in mat4 lastFrameProjView, const in vec4 corners0, const in vec4 corners1) {
     vec2 uv = gTexCoord;
@@ -201,10 +217,10 @@ vec4 computeTaa(const in mat4 invView, const in mat4 currentFrameProjView, const
         ) {
             return  (texture2D(TextureInput, (min(uv - 0.5 * uHalton.xy * texelSize, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
         }
-        // float depth = -(uNearFar.x + (uNearFar.y - uNearFar.x) * closest.z);
-        // vec3 ws = reconstructWSPosition(closest.xy, corners0, corners1, invView, depth);
-        // vec2 ssVel = computeSSVelocity(ws, currentFrameProjView, lastFrameProjView, uv.x >= 0.5);
-        vec2 ssVel = vec2(0.0, 0.0);
+        float depth = -(uNearFar.x + (uNearFar.y - uNearFar.x) * closest.z);
+        vec3 ws = reconstructWSPosition(closest.xy, corners0, corners1, invView, depth);
+        vec2 ssVel = computeSSVelocity(ws, currentFrameProjView, lastFrameProjView, uv.x >= 0.5);
+        // vec2 ssVel = vec2(0.0, 0.0);
         return taa(ssVel, texelSize);
     }
     return supersample();
