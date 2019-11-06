@@ -164,6 +164,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         layer['_canvas'] = this.getRenderer().canvas;
         layer['_bindMap'](map);
         layer.once('renderercreate', this._onChildRendererCreate, this);
+        layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
         layer.load();
         this._bindChildListeners(layer);
     }
@@ -211,6 +212,13 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     _onChildRendererCreate(e) {
         e.renderer.clearCanvas = empty;
+    }
+
+    _onChildLayerStyleChanged() {
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setOutdated();
+        }
     }
 
     isVisible() {
@@ -484,6 +492,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         super.onRemove();
     }
 
+    setOutdated() {
+        this._outdated = true;
+    }
+
     _buildDrawFn(drawMethod) {
         const parent = this;
         //drawBloom中会手动创建context
@@ -648,6 +660,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _postProcess() {
         if (!this._targetFBO) {
+            this._outdated = false;
             // this._displayShadow();
             return;
         }
@@ -695,7 +708,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 jitter: this._jitter || [0, 0],
                 near: map.cameraNear,
                 far: map.cameraFar,
-                needClear: redrawFrame
+                canvasUpdated: redrawFrame,
+                needClear: this._outdated
             });
             tex = outputTex;
             if (!this._prevProjViewMatrix) {
@@ -718,6 +732,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             ssaoRadius: config.ssao && config.ssao.radius || 0.3,
             ssaoPower: config.ssao && config.ssao.power || 0
         });
+        this._outdated = false;
     }
 
     _drawBloom() {

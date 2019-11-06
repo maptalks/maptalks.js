@@ -175,7 +175,6 @@
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
             const cameraWorldMatrix = mat4.invert([], viewMatrix);
-            const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
 
             // UNIFORMS.modelMatrix = mat4.identity([]);
             UNIFORMS.viewMatrix = viewMatrix;
@@ -256,9 +255,9 @@
         function createMaps(hdr) {
             const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
-                envCubeSize: 512,
+                envCubeSize: 1024,
                 prefilterCubeSize: PREFILTER_CUBE_SIZE,
-                // ignoreSH: true
+                ignoreSH: true
             });
             maps.dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
 

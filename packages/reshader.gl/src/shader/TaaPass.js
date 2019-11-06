@@ -18,7 +18,7 @@ class TaaPass {
         return this._counter < this._sampleCount;
     }
 
-    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far, needClear) {
+    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far, canvasUpdated, needClear) {
         prevPvMatrix = prevPvMatrix || pvMatrix;
         this._initShaders();
         this._createTextures(sourceTex);
@@ -27,24 +27,24 @@ class TaaPass {
         }
         const viewChanged = this._viewChanged(pvMatrix, prevPvMatrix);
         // console.log(viewChanged);
-        if (viewChanged) {
+        if (needClear || viewChanged) {
             this._jitter.reset();
             this._counter = 0;
             this._clearTex();
         }
-        // if (needClear) {
+        // if (canvasUpdated) {
         // this._jitter.reset();
         // }
         this._counter++;
         const sampleCount = this._sampleCount;
-        // if (!viewChanged && needClear && this._counter === sampleCount) {
+        // if (!viewChanged && canvasUpdated && this._counter === sampleCount) {
         //     this._counter = 0;
         //     // this._jitter.reset();
         // }
         // if (isLowSampling) {
         //     sampleCount = 4;
         // }
-        if (this._counter >= sampleCount && !needClear) {
+        if (this._counter >= sampleCount && !canvasUpdated) {
             // console.log('ended');
             return this._prevTex;
         }
@@ -62,7 +62,7 @@ class TaaPass {
             'uSSAARestart': 0,
             'uTaaEnabled': 0,
         };
-        uniforms['uClipAABBEnabled'] = needClear && !viewChanged ? 1 : 0;
+        uniforms['uClipAABBEnabled'] = canvasUpdated && !viewChanged ? 1 : 0;
         uniforms['fov'] = fov;
         uniforms['uTaaCurrentFramePVLeft'] = pvMatrix;
         uniforms['uTaaInvViewMatrixLeft'] = invViewMatrix;

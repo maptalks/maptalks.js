@@ -16,7 +16,7 @@
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
-        const PREFILTER_CUBE_SIZE = 256;
+        const PREFILTER_CUBE_SIZE = 512;
         const { createREGL, mat4, reshader, vec2 } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -144,7 +144,7 @@
             stencil: false
         });
         const emptyTexture = regl.texture();
-        let taaPass, fxaaShader, jitter;
+        let taaPass, fxaaShader, jitter, prevProjViewMatrix;
         function drawScene() {
             if (paused) {
                 requestAnimationFrame(drawScene);
@@ -153,14 +153,6 @@
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
             const cameraWorldMatrix = mat4.invert([], viewMatrix);
-            const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
-            const prevProjViewMatrix = projViewMatrix;
-            // UNIFORMS.modelMatrix = mat4.identity([]);
-            UNIFORMS.viewMatrix = viewMatrix;
-            UNIFORMS.projMatrix = projMatrix;
-            UNIFORMS.projViewMatrix = projViewMatrix;
-            UNIFORMS.uCameraPosition = camPos;
-            // UNIFORMS.modelMatrix = mat4.identity([]);
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.projMatrix = projMatrix;
             UNIFORMS.projViewMatrix = projViewMatrix;
@@ -178,10 +170,12 @@
                 SCENE,
                 fbo
             );
-            const output = taaPass.render(
-                projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200, fbo.color[0], fbo.depth
+            let output = fbo.color[0];
+            output = taaPass.render(
+                fbo.color[0], fbo.depth, projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200
             );
             jitter.frame();
+            prevProjViewMatrix = projViewMatrix;
             regl.clear({
                 color: [0, 0, 0, 0],
                 depth: 1
@@ -207,9 +201,10 @@
                 width: canvas.width,
                 height: canvas.height
             };
-            taaPass = new reshader.TaaPass(renderer, viewport);
+            jitter = new reshader.Jitter(0.8);
+            taaPass = new reshader.TaaPass(renderer, viewport, jitter);
             fxaaShader = new reshader.FxaaShader(viewport);
-            jitter = new reshader.Jitter();
+
             SHADER = new reshader.pbr.StandardShader({
                 positionAttribute : 'POSITION',
                 normalAttribute : 'NORMAL',
@@ -224,7 +219,7 @@
                     }
                 },
                 defines: {
-                    // 'HAS_IBL_LIGHTING': 1
+                    'HAS_IBL_LIGHTING': 1
                 }
             });
             const scenePromise = getGLTFScene();
@@ -241,6 +236,7 @@
                 prefilterCubeSize: PREFILTER_CUBE_SIZE,
                 // ignoreSH: true
             });
+            maps['dfgLUT'] = reshader.pbr.PBRHelper.generateDFGLUT(regl);
 
             // maps.sh = [
             //     [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
@@ -326,7 +322,7 @@
                                             uRoughnessPBRFactor : 0
                                         };
                                     }
-                                    // uniforms['uOutputLinear'] = 0;
+                                    uniforms['uOutputLinear'] = 0;
                                     const material = new reshader.pbr.StandardMaterial(uniforms);
                                     //modelGeometry.generateBuffers(this.regl);//会抛elements must be array to build unique vertex.的异常，
                                     const modelMesh = new reshader.Mesh(modelGeometry, material);

@@ -197,7 +197,11 @@ function createEquirectangularMapCube(regl, texture, size) {
         elements : cubeData.indices
     });
 
-    const envMapFBO = regl.framebufferCube(size);
+    const colorType = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+    const envMapFBO = regl.framebufferCube({
+        radius: size,
+        colorType
+    });
 
     renderToCube(regl, envMapFBO, drawCube);
 
