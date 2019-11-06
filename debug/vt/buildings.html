@@ -244,7 +244,7 @@
     new maptalks.GroupGLLayer('group', [layer], { antialias: false, sceneConfig }).addTo(map);
 
     function update() {
-      litMaterial.uAlbedoTexture = null;
+      litMaterial.uAlbedoPBR = [1, 0, 0, 1];
       layer.updateSymbol(0, style.style[0].symbol);
     }
 

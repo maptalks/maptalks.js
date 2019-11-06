@@ -342,6 +342,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             this._compileStyle();
             renderer.updateSymbol(idx);
         }
+        this.fire('updatesymbol', { index: idx, symbol });
         return this;
     }
 
