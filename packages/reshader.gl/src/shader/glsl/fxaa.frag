@@ -170,6 +170,7 @@ vec4 fxaa() {
     float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
     if(!horzSpan) posM.x += pixelOffsetSubpix * lengthSign;
     if( horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
+    // return vec4(0.0, 0.0, 0.0, 1.0);
     return  (texture2D(textureSource, (min(posM, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
 }
 
@@ -178,13 +179,6 @@ float ssao() {
 }
 
 //---------------tone mapping-------------------
-float linearToSRGB(float c) {
-    return (c <= 0.0031308) ? c * 12.92 : (pow(abs(c), 1.0 / 2.4) * 1.055) - 0.055;
-}
-vec3 linearToSRGB(vec3 c) {
-    return vec3(linearToSRGB(c.r), linearToSRGB(c.g), linearToSRGB(c.b));
-}
-
 vec3 HDR_ACES(const vec3 x) {
     // Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
     const float a = 2.51;

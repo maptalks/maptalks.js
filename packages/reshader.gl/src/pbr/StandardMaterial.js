@@ -34,7 +34,7 @@ const DEFAULT_UNIFORMS = {
     // 'uDrawOpaque', //unused
     'uEmitMultiplicative': 0, //0
     'uNormalMapFlipY': 0, //1
-    'uOutputLinear': 1, //1
+    'uOutputLinear': 0, //1
     'uEnvironmentTransform': mat3.identity([]), //0.5063, -0.0000, 0.8624, 0.6889, 0.6016, -0.4044, -0.5188, 0.7988, 0.3046
     'uAlbedoTexture': null, //albedo color
     'uNormalTexture': null,

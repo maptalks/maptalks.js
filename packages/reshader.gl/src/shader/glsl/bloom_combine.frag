@@ -95,7 +95,7 @@ vec4 bloomCombine() {
 
     vec4 srcColor = texture2D(TextureSource, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio);
     float dstAlpha = 1.0 - color.a;
-    return vec4(srcColor.rgb * dstAlpha + color.rgb + (bloom.rgb * uBloomFactor), srcAlpha + srcColor.a * dstAlpha);
+    return vec4(srcColor.rgb * dstAlpha + color.rgb + linearTosRGB(bloom.rgb * uBloomFactor), srcAlpha + srcColor.a * dstAlpha);
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;

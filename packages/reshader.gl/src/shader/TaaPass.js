@@ -25,14 +25,12 @@ class TaaPass {
         if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
             this._fbo.resize(sourceTex.width, sourceTex.height);
         }
-        // console.log(pvMatrix.slice(16 - 3), prevPvMatrix.slice(16 - 3));
         const viewChanged = this._viewChanged(pvMatrix, prevPvMatrix);
         // console.log(viewChanged);
         if (viewChanged) {
             this._jitter.reset();
             this._counter = 0;
             this._clearTex();
-            // this._taaCounter = 0;
         }
         // if (needClear) {
         // this._jitter.reset();
