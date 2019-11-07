@@ -77,7 +77,7 @@ export function createIBLMaps(regl, config = {}) {
 
 function createSkybox(regl, cubemap, envCubeSize) {
     const drawCube = regl({
-        frag : skyboxFrag,
+        frag : '#define ENC_RGBM 1\n' + skyboxFrag,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -197,16 +197,12 @@ function createEquirectangularMapCube(regl, texture, size) {
         elements : cubeData.indices
     });
 
-    const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
     const color = regl.cube({
         width: size,
         height: size,
-        // min: 'linear',
-        min: 'linear mipmap linear',
+        min: 'linear',
         mag: 'linear',
-        type,
         format: 'rgba',
-        // mipmap: true
     });
     const envMapFBO = regl.framebufferCube({
         radius: size,
@@ -307,17 +303,18 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/ibl_specular_textured.cpp#L290
 //https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
 function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
-    // const faces = getEnvmapPixels(regl, fromCubeMap, fromCubeMap.width);
-    // const mipmapCube = regl.cube({
-    //     faces,
-    //     min : 'linear mipmap linear',
-    //     mag : 'linear',
-    //     width: fromCubeMap.width,
-    //     height: fromCubeMap.height,
-    //     mipmap: true
-    // });
+    //基于rgbm格式生成mipmap
+    const faces = getEnvmapPixels(regl, fromCubeMap, fromCubeMap.width);
+    const mipmapCube = regl.cube({
+        faces,
+        min : 'linear mipmap linear',
+        mag : 'linear',
+        width: fromCubeMap.width,
+        height: fromCubeMap.height,
+        mipmap: true
+    });
 
-    const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels);
+    const mipmap = createPrefilterMipmap(regl, mipmapCube, SIZE, sampleSize, roughnessLevels);
     // debugger
     const prefilterCube = regl.cube({
         radius : SIZE,

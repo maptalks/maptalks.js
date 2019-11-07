@@ -36,8 +36,8 @@ void main()
     vec2 uv = SampleSphericalMap(normalize(-vWorldPos)); // make sure to normalize localPos
     vec3 color = texture2D(equirectangularMap, uv).rgb;
 
-    gl_FragColor = vec4(color, 1.0);
-    // gl_FragColor = encodeRGBM(color, 7.0);
+    // gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = encodeRGBM(color, 7.0);
     // gl_FragColor = vec4(uv, 0.0, 1.0);
 }
 

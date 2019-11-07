@@ -15,7 +15,7 @@ let config;
  * @param {Boolean} [useHDR=false] - whether export color using HDR
  * @param {REGLFramebuffer} [frameBuffer=false] - the framebuffer to render to
  */
-export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameBuffer) {
+export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameBuffer, decRGBM) {
     let drawCommand;
     config = config || {
         vert : skyboxVS,
@@ -34,13 +34,18 @@ export function drawSkybox(regl, cubeMap, viewMatrix, projMatrix, useHDR, frameB
             func : 'lequal'
         }
     };
+    let frag = skyboxFS;
+    if (decRGBM) {
+        frag = '#define DEC_RGBM 1 \n' + frag;
+    }
     if (useHDR) {
-        config['frag'] = '#define USE_HDR \n' + skyboxFS;
+        config['frag'] = '#define USE_HDR 1\n' + frag;
         drawCommand = commandHDR = commandHDR || regl(config);
     } else {
-        config['frag'] = skyboxFS;
+        config['frag'] = frag;
         drawCommand = command = command || regl(config);
     }
+
 
     drawCommand({
         cubeMap,

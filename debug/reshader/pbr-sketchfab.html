@@ -150,22 +150,28 @@
                 UNIFORMS,
                 SCENE
             );
-            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true, null, true);
             requestAnimationFrame(drawScene);
         }
 
         function drawSphere() {
-            SHADER = new reshader.pbr.StandardShader();
+            SHADER = new reshader.pbr.StandardShader({
+                defines: {
+                    'HAS_IBL_LIGHTING': 1
+                }
+            });
             SCENE = getScene();
             drawScene();
         }
 
         function createMaps(hdr) {
-            return reshader.pbr.PBRHelper.createIBLMaps(regl, {
+            const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
                 envCubeSize: 256,
                 prefilterCubeSize: PREFILTER_CUBE_SIZE
             });
+            maps['dfgLUT'] = reshader.pbr.PBRHelper.generateDFGLUT(regl);
+            return maps;
         }
         function getScene() {
             const meshes = [];

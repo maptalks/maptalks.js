@@ -1,4 +1,4 @@
-#extension GL_EXT_shader_texture_lod : enable
+#define SHADER_NAME PBR_prefilter
 precision highp float;
 
 varying vec3 vWorldPos;
@@ -86,22 +86,16 @@ void main()
 
             float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
-            // prefilteredColor += decodeRGBM(textureCubeLodEXT(environmentMap, L, mipLevel), 7.0).rgb * NdotL;
-            prefilteredColor += textureCubeLodEXT(environmentMap, L, mipLevel).rgb * NdotL;
+            prefilteredColor += decodeRGBM(textureCube(environmentMap, L, mipLevel), 7.0).rgb * NdotL;
             totalWeight      += NdotL;
             //--------------------------------------------------------
             // prefilteredColor += textureCube(environmentMap, L).rgb * NdotL;
             // totalWeight      += NdotL;
-            // prefilteredColor += textureCube(environmentMap, L).rgb;
-            // totalWeight      += 1.0;
         }
     }
 
     prefilteredColor = prefilteredColor / totalWeight;
 
-    // gl_FragColor = encodeRGBM(prefilteredColor, 7.0);
-    gl_FragColor = vec4(prefilteredColor, 1.0);
-    // gl_FragColor = textureCube(environmentMap, N);
-    // gl_FragColor = vec4(totalWeight, 0.0, 0.0, 1.0);
-    // gl_FragColor = vec4(vec3(roughness), 1.0);
+    gl_FragColor = encodeRGBM(prefilteredColor, 7.0);
+    // gl_FragColor = vec4(prefilteredColor, 1.0);
 }
