@@ -42,11 +42,15 @@ const renderToCube = function () {
 
         const setupFace = regl(config);
 
-        setupFace(6, () => {
-            regl.clear({
+        setupFace(6, (context, p, batchId) => {
+            const cfg = {
                 color: clearColor,
                 depth: 1
-            });
+            };
+            if (fbo) {
+                cfg.framebuffer = fbo.faces ? fbo.faces[batchId] : fbo;
+            }
+            regl.clear(cfg);
             drawCommand(props);
             if (cb) cb();
         });

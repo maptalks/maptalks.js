@@ -9,6 +9,7 @@
   </style>
   <script type="text/javascript" src="http://localhost/maptalks/dist/maptalks.js"></script>
     <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@maptalks/gl@0.7.0/dist/maptalksgl.js"></script> -->
     <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
     <script type="text/javascript" src="js/dat.gui.min.js"></script>
   <body>
@@ -16,7 +17,7 @@
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
-        const PREFILTER_CUBE_SIZE = 512;
+        const PREFILTER_CUBE_SIZE = 256;
         const { createREGL, mat4, reshader, vec2 } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -36,7 +37,9 @@
             // gl,
             extensions : [
                 'OES_texture_float',
+                'OES_texture_float_linear',
                 'OES_texture_half_float',
+                'OES_texture_half_float_linear',
                 'OES_element_index_uint',
                 'OES_standard_derivatives',
                 'EXT_shader_texture_lod',
@@ -108,14 +111,14 @@
                     // 'uSketchfabLight0_diffuse': [0.1747, 0.1375, 0.1065, 1],
                     'uGlobalTexSize': [canvas.width, canvas.height],
                     'uHalton': [0, 0],
-                    'uEnvironmentExposure': 2, //2
+                    'uEnvironmentExposure': 0.9, //2
                     'sIntegrateBRDF': iblMaps.dfgLUT,
                     'sSpecularPBR': iblMaps.prefilterMap,
                     'uDiffuseSPH': iblMaps.sh,
                     'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
                     'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
-                    'uSketchfabLight0_diffuse': [1.4192, 1.3973, 1.4269, 1],
-                    'uSketchfabLight0_viewDirection': [0.6170, -0.6895, -0.3793]
+                    'uSketchfabLight0_diffuse': [1.2233, 1.1864, 1.3273, 1],
+                    'uSketchfabLight0_viewDirection': [-0.4389, -0.2652, -0.8585]
                 };
                 // initGUI();
                 render();
@@ -230,25 +233,30 @@
         }
 
         function createMaps(hdr) {
+            const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
             const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
                 envTexture : hdr,
-                envCubeSize: 512,
+                envCubeSize: 2048,
                 prefilterCubeSize: PREFILTER_CUBE_SIZE,
-                // ignoreSH: true
+                ignoreSH: true
             });
-            maps['dfgLUT'] = reshader.pbr.PBRHelper.generateDFGLUT(regl);
+            maps['dfgLUT'] = dfgLUT;
 
+            // console.log(JSON.stringify(maps.sh.map(v => Array.from(v))));
+            //sketchfab上的值
             // maps.sh = [
-            //     [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
-            //     [-0.004491398110985756, -0.0062361168675124645, -0.005997033789753914],
-            //     [0.02749081887304783, 0.057795193046331406, 0.1145947203040123],
-            //     [0.03964025899767876, 0.03352731838822365, 0.020897403359413147],
-            //     [-0.005459152162075043, -0.008918278850615025, -0.011838626116514206],
-            //     [0.017447197809815407, 0.016732292249798775, 0.012003022246062756],
-            //     [-0.003052285173907876, -0.00440911715850234, -0.004788860213011503],
-            //     [0.01575229875743389, 0.017373336479067802, 0.015197779051959515],
-            //     [0.018414868041872978, 0.027235284447669983, 0.030140453949570656]
+            //     [0.3806, 0.3934, 0.3948],
+            //     [0.1656, 0.1949, 0.1988],
+            //     [0.0577, 0.0575, 0.0545],
+            //     [0.0031, 0.0106, 0.0211],
+            //     [-0.0083, -0.0126, -0.0130],
+            //     [0.0353, 0.0458, 0.0482],
+            //     [0.0009, 0.0019, 0.0043],
+            //     [0.0098, 0.0073, 0.0085],
+            //     [0.0126, 0.0115, 0.0132]
             // ];
+
+            maps.sh = [[0.0898907408118248,0.0871584415435791,0.08922719210386276],[-0.011661838740110397,-0.009565523825585842,-0.007656533271074295],[0.025226503610610962,0.030300477519631386,0.03129858151078224],[0.026255039498209953,0.03438148275017738,0.04095037654042244],[-0.007547180633991957,-0.005829851608723402,-0.006234696600586176],[0.007929825223982334,0.005318596493452787,0.00529433973133564],[-0.00009915741247823462,-0.002495981054380536,-0.0037203459069132805],[0.010773959569633007,0.010661408305168152,0.011021492071449757],[0.008729873225092888,0.009480327367782593,0.011747329495847225]];
             return maps;
         }
 

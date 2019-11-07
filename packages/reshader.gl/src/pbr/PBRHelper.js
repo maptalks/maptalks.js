@@ -197,10 +197,20 @@ function createEquirectangularMapCube(regl, texture, size) {
         elements : cubeData.indices
     });
 
-    const colorType = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+    const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+    const color = regl.cube({
+        width: size,
+        height: size,
+        // min: 'linear',
+        min: 'linear mipmap linear',
+        mag: 'linear',
+        type,
+        format: 'rgba',
+        // mipmap: true
+    });
     const envMapFBO = regl.framebufferCube({
         radius: size,
-        colorType
+        color
     });
 
     renderToCube(regl, envMapFBO, drawCube);
@@ -216,12 +226,13 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
     const distro = generateNormalDistribution(sampleSize, roughnessLevels);
 
     const distributionMap = regl.texture({
-        data : distro,
-        width : roughnessLevels,
-        height : sampleSize,
-        format: 'rgb',
-        min : 'nearest',
-        mag : 'nearest'
+        data: distro,
+        width: roughnessLevels,
+        height: sampleSize,
+        format: 'rgba',
+        min: 'nearest',
+        mag: 'nearest',
+        type: 'float'
     });
 
     const drawCube = regl({
@@ -248,7 +259,15 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
     });
     let size = SIZE;
 
-    const tmpFBO = regl.framebuffer(size);
+    const color = regl.texture({
+        radius : SIZE,
+        min : 'linear',
+        mag : 'linear',
+    });
+    const tmpFBO = regl.framebuffer({
+        radius: SIZE,
+        color
+    });
 
     const maxLevels = Math.log(size) / Math.log(2);//log2(SIZE); //fix to 4
 
@@ -259,7 +278,7 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
         let faceId = 0;
         //分别绘制六个方向，读取fbo的pixel，作为某个方向的mipmap级别数据
         renderToCube(regl, tmpFBO, drawCube, {
-            roughness: Math.sqrt(roughness),
+            roughness: roughness,
             size : size
         }, function (/* context, props, batchId */) {
             const pixels = regl.read({ framebuffer: tmpFBO });
@@ -288,6 +307,16 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/ibl_specular_textured.cpp#L290
 //https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
 function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
+    // const faces = getEnvmapPixels(regl, fromCubeMap, fromCubeMap.width);
+    // const mipmapCube = regl.cube({
+    //     faces,
+    //     min : 'linear mipmap linear',
+    //     mag : 'linear',
+    //     width: fromCubeMap.width,
+    //     height: fromCubeMap.height,
+    //     mipmap: true
+    // });
+
     const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels);
     // debugger
     const prefilterCube = regl.cube({
@@ -315,30 +344,20 @@ const quadTexcoords = [
     1.0, 0.0,
 ];
 
-const DFG_CACHE = {};
-
 export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     size = size || 256;
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
 
-    const key = size + '-' + sampleSize + '-' + roughnessLevels;
-
-    let distro;
-    if (DFG_CACHE[key]) {
-        distro = DFG_CACHE[key];
-    } else {
-        distro = generateNormalDistribution(sampleSize, roughnessLevels);
-        DFG_CACHE[key] = distro;
-    }
+    const distro = generateNormalDistribution(sampleSize, roughnessLevels);
 
     const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
     const distributionMap = regl.texture({
         data : distro,
         width : roughnessLevels,
         height : sampleSize,
-        type,
-        format: 'rgb',
+        type: 'float',
+        format: 'rgba',
         min : 'nearest',
         mag : 'nearest'
     });
@@ -349,8 +368,8 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
         radius : size,
         colorType: type,
         colorFormat: 'rgba',
-        min : 'nearest',
-        mag : 'nearest'
+        min : 'linear',
+        mag : 'linear'
     });
     // const FSIZE = Float32Array.BYTES_PER_ELEMENT;
     const drawLUT = regl({
@@ -394,7 +413,7 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
 //因为glsl不支持位操作，所以预先生成采样LUT， 代替原代码中的采样逻辑
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/2.2.2.prefilter.fs
 function generateNormalDistribution(sampleSize, roughnessLevels) {
-    const pixels = new Array(sampleSize * roughnessLevels * 3);
+    const pixels = new Float32Array(sampleSize * roughnessLevels * 4);
     for (let i = 0; i < sampleSize; i++) {
         const { x, y } = hammersley(i, sampleSize);
 
@@ -405,11 +424,11 @@ function generateNormalDistribution(sampleSize, roughnessLevels) {
             const phi = 2.0 * Math.PI * x;
             const cosTheta = Math.sqrt((1 - y) / (1 + (a * a - 1.0) * y));
             const sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
-            const offset = (i * roughnessLevels + j) * 3;
+            const offset = (i * roughnessLevels + j) * 4;
             pixels[offset] = sinTheta * Math.cos(phi);
             pixels[offset + 1] = sinTheta * Math.sin(phi);
             pixels[offset + 2] = cosTheta;
-            // pixels[offset + 3] = 1.0;
+            pixels[offset + 3] = 1.0;
         }
     }
 

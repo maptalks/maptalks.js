@@ -1,4 +1,5 @@
-precision mediump float;
+#extension GL_EXT_shader_texture_lod : enable
+precision highp float;
 
 varying vec3 vWorldPos;
 
@@ -48,6 +49,10 @@ vec4 encodeRGBM(const in vec3 color, const in float range) {
     return rgbm;
 }
 
+vec3 decodeRGBM(const in vec4 color, const in float range) {
+    if(range <= 0.0) return color.rgb;
+    return range * color.rgb * color.a;
+}
 // ----------------------------------------------------------------------------
 void main()
 {
@@ -81,19 +86,22 @@ void main()
 
             float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
-            prefilteredColor += textureCube(environmentMap, L, mipLevel).rgb * NdotL;
+            // prefilteredColor += decodeRGBM(textureCubeLodEXT(environmentMap, L, mipLevel), 7.0).rgb * NdotL;
+            prefilteredColor += textureCubeLodEXT(environmentMap, L, mipLevel).rgb * NdotL;
             totalWeight      += NdotL;
             //--------------------------------------------------------
             // prefilteredColor += textureCube(environmentMap, L).rgb * NdotL;
             // totalWeight      += NdotL;
+            // prefilteredColor += textureCube(environmentMap, L).rgb;
+            // totalWeight      += 1.0;
         }
     }
 
     prefilteredColor = prefilteredColor / totalWeight;
 
-    gl_FragColor = encodeRGBM(prefilteredColor, 7.0);
-    // gl_FragColor = vec4(prefilteredColor, 1.0);
-    // gl_FragColor = textureCube(environmentMap, vWorldPos, 5.0);
+    // gl_FragColor = encodeRGBM(prefilteredColor, 7.0);
+    gl_FragColor = vec4(prefilteredColor, 1.0);
+    // gl_FragColor = textureCube(environmentMap, N);
     // gl_FragColor = vec4(totalWeight, 0.0, 0.0, 1.0);
     // gl_FragColor = vec4(vec3(roughness), 1.0);
 }

@@ -21,12 +21,23 @@ vec2 SampleSphericalMap(vec3 v)
     return fract(uv);
 }
 
+vec4 encodeRGBM(const in vec3 color, const in float range) {
+    if(range <= 0.0) return vec4(color, 1.0);
+    vec4 rgbm;
+    vec3 col = color / range;
+    rgbm.a = clamp( max( max( col.r, col.g ), max( col.b, 1e-6 ) ), 0.0, 1.0 );
+    rgbm.a = ceil( rgbm.a * 255.0 ) / 255.0;
+    rgbm.rgb = col / rgbm.a;
+    return rgbm;
+}
+
 void main()
 {
     vec2 uv = SampleSphericalMap(normalize(-vWorldPos)); // make sure to normalize localPos
     vec3 color = texture2D(equirectangularMap, uv).rgb;
 
     gl_FragColor = vec4(color, 1.0);
+    // gl_FragColor = encodeRGBM(color, 7.0);
     // gl_FragColor = vec4(uv, 0.0, 1.0);
 }
 

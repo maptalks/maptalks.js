@@ -80,9 +80,9 @@ class StandardMaterial extends Material {
             defines['HAS_NORMAL_MAP']) {
             defines['HAS_MAP'] = 1;
         }
-        if (uniforms['HAS_TONE_MAPPING']) {
-            defines['HAS_TONE_MAPPING'] = 1;
-        }
+        // if (uniforms['HAS_TONE_MAPPING']) {
+        //     defines['HAS_TONE_MAPPING'] = 1;
+        // }
         if (uniforms['GAMMA_CORRECT_INPUT']) {
             defines['GAMMA_CORRECT_INPUT'] = 1;
         }
