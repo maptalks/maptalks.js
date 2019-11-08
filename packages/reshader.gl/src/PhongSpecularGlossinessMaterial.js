@@ -2,7 +2,7 @@ import PhongMaterial from './PhongMaterial.js';
 import SpecularGlossinessMixin from './SpecularGlossinessMixin.js';
 
 
-class PBRSpecularGlossinessMaterial extends SpecularGlossinessMixin(PhongMaterial) {
+class PhongSpecularGlossinessMaterial extends SpecularGlossinessMixin(PhongMaterial) {
 }
 
-export default PBRSpecularGlossinessMaterial;
+export default PhongSpecularGlossinessMaterial;
