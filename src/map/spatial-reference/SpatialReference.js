@@ -45,9 +45,6 @@ const DefaultSpatialReference = {
                 resolutions[i] = res;
                 res *= 0.5;
             }
-            resolutions[0] = null;
-            resolutions[1] = null;
-            resolutions[2] = null;
             return resolutions;
         })(),
         'fullExtent': {

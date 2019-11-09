@@ -244,7 +244,9 @@ Map.include(/** @lends Map.prototype */{
                 } else {
                     out = point;
                 }
-                return out._sub(centerPoint)._add(this.width / 2, this.height / 2);
+                out._sub(centerPoint.x, centerPoint.y);
+                out.set(out.x, -out.y);
+                return out._add(this.width / 2, this.height / 2);
             }
         };
     }(),
@@ -312,7 +314,7 @@ Map.include(/** @lends Map.prototype */{
                 scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
             const x = scale * (p.x - this.width / 2),
                 y = scale * (p.y - this.height / 2);
-            return centerPoint._add(x, y);
+            return centerPoint._add(x, -y);
         };
     }(),
 
@@ -419,8 +421,7 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _getCameraWorldMatrix: function () {
-        const q = {},
-            minusY = [1, -1, 1];
+        const q = {};
         return function () {
             const targetZ = this.getGLZoom();
 
@@ -430,7 +431,7 @@ Map.include(/** @lends Map.prototype */{
             this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, 0);
 
             const pitch = this.getPitch() * RADIAN;
-            const bearing = -this.getBearing() * RADIAN;
+            const bearing = this.getBearing() * RADIAN;
 
             const ratio = this._getFovRatio();
             const z = scale * (size.height || 1) / 2 / ratio;
@@ -438,8 +439,8 @@ Map.include(/** @lends Map.prototype */{
             // and [dist] away from map's center on XY plane to tilt the scene.
             const dist = Math.sin(pitch) * z;
             // when map rotates, the camera's xy position is rotating with the given bearing and still keeps [dist] away from map's center
-            const cx = center2D.x + dist * Math.sin(bearing);
-            const cy = center2D.y + dist * Math.cos(bearing);
+            const cx = center2D.x - dist * Math.sin(bearing);
+            const cy = center2D.y - dist * Math.cos(bearing);
             this.cameraPosition = set(this.cameraPosition || [0, 0, 0], cx, cy, cz);
             this.cameraToCenterDistance  = distance(this.cameraPosition, this.cameraLookAt);
             // when map rotates, camera's up axis is pointing to bearing from south direction of map
@@ -460,7 +461,7 @@ Map.include(/** @lends Map.prototype */{
             matrixToQuaternion(q, m);
             quaternionToMatrix(m, q);
             setPosition(m, this.cameraPosition);
-            mat4.scale(m, m, minusY);
+            // mat4.scale(m, m, minusY);
             return m;
         };
     }(),

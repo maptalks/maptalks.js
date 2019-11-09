@@ -44,7 +44,10 @@ class MapCanvasRenderer extends MapRenderer {
         map.clearCollisionIndex();
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers, framestamp);
-        this.drawLayerCanvas(layers);
+        const updated = this.drawLayerCanvas(layers);
+        if (updated) {
+            this._drawCenterCross();
+        }
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
         // 1. frameend is often used internally by maptalks and plugins
@@ -210,9 +213,9 @@ class MapCanvasRenderer extends MapRenderer {
             renderer.render(framestamp);
         } else if (renderer.drawOnInteracting &&
             (layer === map.getBaseLayer() || inTime ||
-            map.isZooming() && layer.options['forceRenderOnZooming'] ||
-            map.isMoving() && layer.options['forceRenderOnMoving'] ||
-            map.isRotating() && layer.options['forceRenderOnRotating'])
+                map.isZooming() && layer.options['forceRenderOnZooming'] ||
+                map.isMoving() && layer.options['forceRenderOnMoving'] ||
+                map.isRotating() && layer.options['forceRenderOnRotating'])
         ) {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
@@ -284,10 +287,10 @@ class MapCanvasRenderer extends MapRenderer {
     drawLayerCanvas(layers) {
         const map = this.map;
         if (!map) {
-            return;
+            return false;
         }
         if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
-            return;
+            return false;
         }
         if (!this.canvas) {
             this.createCanvas();
@@ -344,8 +347,6 @@ class MapCanvasRenderer extends MapRenderer {
             this._drawLayerCanvasImage(images[i][0], images[i][1]);
         }
 
-
-        this._drawCenterCross();
         /**
          * renderend event, an event fired when map ends rendering.
          * @event Map#renderend
@@ -357,6 +358,7 @@ class MapCanvasRenderer extends MapRenderer {
         map._fireEvent('renderend', {
             'context': this.context
         });
+        return true;
     }
 
     setToRedraw() {
@@ -437,6 +439,11 @@ class MapCanvasRenderer extends MapRenderer {
             if (renderer.isBlank && renderer.isBlank()) {
                 continue;
             }
+            // renderer.hitDetect(point)) .  This can't ignore the shadows.
+            /**
+             * TODO
+             *  This requires a better way to judge
+             */
             if (layer.options['cursor'] !== 'default' && renderer.hitDetect(point)) {
                 cursor = layer.options['cursor'] || 'pointer';
                 break;

@@ -783,9 +783,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Caculate the zoom level that contains the given extent with the maximum zoom level possible.
      * @param {Extent} extent
-     * @return {Number} zoom fit for the extent
+     * @param  {Boolean} isFraction - can return fractional zoom
+     * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getFitZoom(extent) {
+    getFitZoom(extent, isFraction) {
         if (!extent || !(extent instanceof Extent)) {
             return this._zoomLevel;
         }
@@ -801,7 +802,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             scaleY = size['height'] / h;
         const scale = this.getSpatialReference().getZoomDirection() < 0 ?
             Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
-        const zoom = this.getZoomForScale(scale);
+        const zoom = this.getZoomForScale(scale, null, isFraction);
         return zoom;
     }
 
@@ -2307,8 +2308,8 @@ Map.include(/** @lends Map.prototype */{
             const fullExtent = this.getFullExtent();
             const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
             const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
-            const min = min2d.set(minx, miny);
-            const max = max2d.set(maxx, maxy);
+            const min = min2d.set(minx, maxy);
+            const max = max2d.set(maxx, miny);
             return new Extent(
                 this.pointToCoord(min, undefined, COORD0),
                 this.pointToCoord(max, undefined, COORD1),

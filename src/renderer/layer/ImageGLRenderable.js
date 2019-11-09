@@ -93,7 +93,7 @@ const ImageGLRenderable = Base => {
             const x1 = x;
             const x2 = x + w;
             const y1 = y;
-            const y2 = y + h;
+            const y2 = y - h;
             const glBuffer = this.loadImageBuffer(this.set12(
                 x1, y1, 0,
                 x1, y2, 0,
