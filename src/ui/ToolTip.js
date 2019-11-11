@@ -8,7 +8,7 @@ import UIComponent from './UIComponent';
  * @property {Number}  [options.height=0]     - default height
  * @property {String}  [options.animation='fade']     - default fade, scale | fade,scale are an alternative to set
  * @property {String}  [options.cssName=maptalks-tooltip]    - tooltip's css class name
- * @property {Number}  [options.showTimeout=400]      - timeout to show tooltip
+ * @property {Number}  [options.showTimeout=0]      - timeout to show tooltip
  * @memberOf ui.ToolTip
  * @instance
  */
@@ -17,7 +17,7 @@ const options = {
     'height': 0,
     'animation': 'fade',
     'cssName': 'maptalks-tooltip',
-    'showTimeout' : 400
+    'showTimeout': 0
 };
 /**
  * @classdesc

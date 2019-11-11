@@ -35,6 +35,7 @@ const files = [
     './src/geometry/ext/Geometry.Events.js',
     './src/geometry/ext/Geometry.Animation.js',
     './src/geometry/ext/Geometry.InfoWindow.js',
+    './src/geometry/ext/Geometry.ToolTip.js',
     './src/geometry/Path.js',
     './src/geometry/CenterMixin.js',
     './src/geometry/Marker.js',
