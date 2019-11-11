@@ -138,7 +138,15 @@
         function render() {
             drawSphere();
         }
-
+        const depthTexture = regl.texture({
+            min: 'nearest',
+            mag: 'nearest',
+            mipmap: false,
+            type: 'uint16',
+            width: canvas.width,
+            height: canvas.height,
+            format: 'depth'
+        });
         const color = regl.texture({
             min: 'nearest',
             mag: 'nearest',
@@ -152,13 +160,14 @@
             colors: [color],
             colorFormat: 'rgba',
             colorCount: 1,
-            depthTexture: true,
+            depthTexture,
             stencil: false
         });
         const skyboxFBO = regl.framebuffer({
             width: canvas.width,
             height: canvas.height,
             colorFormat: 'rgba',
+            depthTexture,
             colorCount: 1
         });
         const bloomPass = new reshader.BloomPass(renderer, {
@@ -179,15 +188,21 @@
             regl.clear({
                 color: [0, 0, 0, 0],
                 depth: 1,
+                framebuffer: skyboxFBO
+            });
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
                 framebuffer: fbo
             });
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true, skyboxFBO, true);
             renderer.render(
                 SHADER,
                 UNIFORMS,
                 SCENE,
                 fbo
             );
-            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true, skyboxFBO, true);
+
             const source = skyboxFBO.color[0];
             const bloomSource = fbo.color[0];
             const output = bloomPass.render(source, bloomSource, 0, 1, 0.7, true);
