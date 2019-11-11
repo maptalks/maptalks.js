@@ -14,8 +14,8 @@ export default class PostProcess {
         this._emptyTexture = regl.texture();
     }
 
-    bloom(curTex, bloomTex, threshold, extractBright, bloomFactor, bloomRadius) {
-        return this._bloomPass.render(curTex, bloomTex, threshold, extractBright, bloomFactor, bloomRadius);
+    bloom(curTex, bloomTex, threshold, bloomFactor, bloomRadius) {
+        return this._bloomPass.render(curTex, bloomTex, threshold, bloomFactor, bloomRadius);
     }
 
     taa(curTex, depthTex, {

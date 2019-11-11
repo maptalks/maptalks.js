@@ -691,10 +691,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._drawBloom();
             const bloomConfig = config.bloom;
             const threshold = +bloomConfig.threshold || 0;
-            const extractBright = +bloomConfig.extractBright || 0;
             const factor = isNil(bloomConfig.factor) ? 0.5 : +bloomConfig.factor;
             const radius = isNil(bloomConfig.radius) ? 0.1 : +bloomConfig.radius;
-            tex = this._postProcessor.bloom(tex, this._bloomFBO.color[0], threshold, extractBright, factor, radius);
+            tex = this._postProcessor.bloom(tex, this._bloomFBO.color[0], threshold, factor, radius);
         }
 
         const enableTAA = config.taa && config.taa.enable;
@@ -721,6 +720,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 this.setToRedraw();
             }
         }
+
         // this._displayShadow();
         this._postProcessor.layer(tex, this._depthTex, {
             enableSSAO: +!!(config.ssao && config.ssao.enable),

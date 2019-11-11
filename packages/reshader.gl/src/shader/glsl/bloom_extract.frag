@@ -1,7 +1,6 @@
 #version 100
 precision mediump float;
 uniform float uRGBMRange;
-uniform float uExtractBright;
 uniform float uBloomThreshold;
 uniform sampler2D TextureInput;
 uniform vec2 uTextureInputRatio;

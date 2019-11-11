@@ -128,7 +128,7 @@
                     'uRoughnessPBRFactor': 0.3,
                     'uAnisotropyFactor': 0,
                     'uClearCoatFactor': 0,
-                    'uMetalnessPBRFactor': 1
+                    'uMetalnessPBRFactor': 0
                 };
                 initGUI();
                 render();
@@ -138,6 +138,33 @@
         function render() {
             drawSphere();
         }
+
+        const color = regl.texture({
+            min: 'nearest',
+            mag: 'nearest',
+            type: 'uint8',
+            width: canvas.width,
+            height: canvas.height,
+        });
+        const fbo = regl.framebuffer({
+            width: canvas.width,
+            height: canvas.height,
+            colors: [color],
+            colorFormat: 'rgba',
+            colorCount: 1,
+            depthTexture: true,
+            stencil: false
+        });
+        const skyboxFBO = regl.framebuffer({
+            width: canvas.width,
+            height: canvas.height,
+            colorFormat: 'rgba',
+            colorCount: 1
+        });
+        const bloomPass = new reshader.BloomPass(renderer, {
+            x: 0, y: 0, width: canvas.width, height: canvas.height
+        });
+
         function drawScene() {
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
             const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
@@ -149,12 +176,23 @@
             for (const p in MatUNIFORMS) {
                 SCENE.getMeshes()[0].material.set(p, MatUNIFORMS[p]);
             }
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
+                framebuffer: fbo
+            });
             renderer.render(
                 SHADER,
                 UNIFORMS,
-                SCENE
+                SCENE,
+                fbo
             );
-            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true, null, true);
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true, skyboxFBO, true);
+            const source = skyboxFBO.color[0];
+            const bloomSource = fbo.color[0];
+            const output = bloomPass.render(source, bloomSource, 0, 1, 0.7, true);
+
+
             requestAnimationFrame(drawScene);
         }
 

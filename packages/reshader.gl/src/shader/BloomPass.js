@@ -15,7 +15,7 @@ class BloomPass {
         this._viewport = viewport;
     }
 
-    render(sourceTex, bloomTex, bloomThreshold, extractBright, bloomFactor, bloomRadius) {
+    render(sourceTex, bloomTex, bloomThreshold, bloomFactor, bloomRadius, paintToScreen) {
         this._initShaders();
         this._createTextures(sourceTex);
         let output = this._outputTex;
@@ -28,7 +28,7 @@ class BloomPass {
             'uTextureOutputSize': [bloomTex.width, bloomTex.height],
             'uExtractBright': 0
         };
-        uniforms['uExtractBright'] = extractBright ? 1 : 0;
+        // uniforms['uExtractBright'] = extractBright ? 1 : 0;
         uniforms['TextureInput'] = bloomTex;
         vec2.set(uniforms['uTextureInputSize'], bloomTex.width, bloomTex.height);
         vec2.set(uniforms['uTextureOutputSize'], bloomTex.width, bloomTex.height);
@@ -42,7 +42,7 @@ class BloomPass {
         //blur
         output = this._blur(this._targetFBO.color[0]);
         //combine
-        output = this._combine(sourceTex, bloomTex, bloomFactor, bloomRadius);
+        output = this._combine(sourceTex, bloomTex, bloomFactor, bloomRadius, paintToScreen);
 
         return output;
     }
@@ -96,10 +96,13 @@ class BloomPass {
         this._renderer.render(shader, uniforms, null, output1);
     }
 
-    _combine(sourceTex, inputTex, bloomFactor, bloomRadius) {
-        if (this._combineTex.width !== sourceTex.width || this._combineTex.height !== sourceTex.height) {
-            this._combineFBO.resize(sourceTex.width, sourceTex.height);
+    _combine(sourceTex, inputTex, bloomFactor, bloomRadius, paintToScreen) {
+        if (!paintToScreen) {
+            if (this._combineTex.width !== sourceTex.width || this._combineTex.height !== sourceTex.height) {
+                this._combineFBO.resize(sourceTex.width, sourceTex.height);
+            }
         }
+
 
         let uniforms = this._combineUniforms;
         if (!uniforms) {
@@ -142,8 +145,8 @@ class BloomPass {
         vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
         vec2.set(uniforms['uTextureOutputSize'], sourceTex.width, sourceTex.height);
 
-        this._renderer.render(this._combineShader, uniforms, null, this._combineFBO);
-        return this._combineTex;
+        this._renderer.render(this._combineShader, uniforms, null, paintToScreen ? null : this._combineFBO);
+        return paintToScreen ? null : this._combineTex;
     }
 
     dispose() {

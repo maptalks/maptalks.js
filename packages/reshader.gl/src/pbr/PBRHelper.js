@@ -44,10 +44,10 @@ export function createIBLMaps(regl, config = {}) {
     // generate ibl maps
     let envMap;
     if (!Array.isArray(envTexture)) {
-        envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize);
+        envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize, true);
     } else {
         const cube = regl.cube(...envTexture);
-        envMap = createSkybox(regl, cube, envCubeSize);
+        envMap = createSkybox(regl, cube, envCubeSize, true);
         cube.destroy();
     }
 
@@ -57,8 +57,18 @@ export function createIBLMaps(regl, config = {}) {
 
     let sh;
     if (!config.ignoreSH) {
-        const faces = getEnvmapPixels(regl, envMap, envCubeSize);
-        sh = coefficients(faces, envCubeSize, 4);
+        const size = 256;
+        let cubeMap;
+        if (!Array.isArray(envTexture)) {
+            cubeMap = createEquirectangularMapCube(regl, envTexture, size, false);
+        } else {
+            const cube = regl.cube(...envTexture);
+            cubeMap = createSkybox(regl, cube, size, false);
+            cube.destroy();
+        }
+        const faces = getEnvmapPixels(regl, cubeMap, size);
+        sh = coefficients(faces, size, 4);
+        cubeMap.destroy();
     }
 
     // const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
@@ -75,9 +85,9 @@ export function createIBLMaps(regl, config = {}) {
     return maps;
 }
 
-function createSkybox(regl, cubemap, envCubeSize) {
+function createSkybox(regl, cubemap, envCubeSize, rgbm) {
     const drawCube = regl({
-        frag : '#define ENC_RGBM 1\n' + skyboxFrag,
+        frag : rgbm ? '#define ENC_RGBM 1\n' + skyboxFrag : skyboxFrag,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -114,6 +124,7 @@ function createSkybox(regl, cubemap, envCubeSize) {
         faces: faces,
         mipmap: true
     });
+    tmpFBO.destroy();
     return color;
 }
 
@@ -181,10 +192,10 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
  * @param {REGLTexture} texture - a regl texture
  * @param {Number} [size=512] - size of the cubemap, 512 by default
  */
-function createEquirectangularMapCube(regl, texture, size) {
+function createEquirectangularMapCube(regl, texture, size, rgbm) {
     size = size || 512;
     const drawCube = regl({
-        frag : equirectangularMapFS,
+        frag : rgbm ? '#define ENC_RGBM 1\n' + equirectangularMapFS : equirectangularMapFS,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -324,6 +335,7 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
         //TODO #56 改成rgbm
         faces : mipmap
     });
+    mipmapCube.destroy();
     return prefilterCube;
 }
 
@@ -402,6 +414,7 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
 
     quadBuf.destroy();
     quadTexBuf.destroy();
+    distributionMap.destroy();
 
     return fbo;
 

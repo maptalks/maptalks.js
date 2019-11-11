@@ -7,7 +7,7 @@ class BloomExtractShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
-                'uRGBMRange', 'uExtractBright', 'uBloomThreshold',
+                'uRGBMRange', 'uBloomThreshold',
                 'TextureInput', 'uTextureInputRatio', 'uTextureInputSize',
                 'uTextureOutputSize'
             ],
