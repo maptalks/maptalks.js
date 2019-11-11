@@ -1,7 +1,7 @@
 precision mediump float;
 
 uniform vec4 baseColorFactor;
-uniform float materialShiness;//反光度，即影响镜面高光的散射/半径
+uniform float materialShininess;//反光度，即影响镜面高光的散射/半径
 uniform float opacity;
 uniform float ambientStrength;
 uniform float specularStrength;
@@ -26,7 +26,7 @@ varying vec3 vFragPos;
     varying vec4 vInstanceColor;
 #endif
 
-#ifdef HAS_BASECOLORTEXTURE
+#ifdef HAS_BASECOLOR_MAP
     uniform sampler2D baseColorTexture;
 #endif
 
@@ -65,11 +65,15 @@ varying vec3 vFragPos;
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
         vec3 n = normalize(vNormal);
-        vec3 t = normalize(vTangent.xyz);
-        vec3 b = normalize(cross(n, t) * sign(vTangent.w));
-        mat3 tbn = mat3(t, b, n);
         vec3 normal = texture2D(normalTexture, vTexCoords).xyz * 2.0 - 1.0;
-        return normalize(tbn * normal);
+        #if defined(HAS_TANGENT)
+            vec3 t = normalize(vTangent.xyz);
+            vec3 b = normalize(cross(n, t) * sign(vTangent.w));
+            mat3 tbn = mat3(t, b, n);
+            return normalize(tbn * normal);
+        #else
+            return normalize(normal);
+        #endif
     #else
         return normalize(vNormal);
     #endif
@@ -124,7 +128,7 @@ void main() {
     vec3 viewDir = normalize(cameraPosition - vFragPos);
     // vec3 reflectDir = reflect(-lightDir, norm);
     vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(norm, halfwayDir), 0.0), materialShiness);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), materialShininess);
     vec3 specular = specularStrength * lightSpecular * spec * getSpecularColor();
     #ifdef HAS_OCCLUSION_MAP
         float ao = texture2D(occlusionTexture, vTexCoords).r;

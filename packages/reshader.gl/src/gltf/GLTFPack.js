@@ -6,7 +6,6 @@ import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
 
 const animMatrix = [];
-const EMPTY_MATRIX = mat4.identity([]);
 let timespan = 0;
 const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 //将GLTF规范里面的sampler数码映射到regl接口的sampler
@@ -88,12 +87,10 @@ export default class GLTFPack {
             });
         }
         gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
-        if (!mat4.equals(EMPTY_MATRIX, animMatrix)) {
-            node.trs.decompose(animMatrix);
-            if (node.weights) {
-                for (let i = 0; i < node.weights.length; i++) {
-                    node.morphWeights[i] = node.weights[i];
-                }
+        node.trs.update(animMatrix);
+        if (node.weights) {
+            for (let i = 0; i < node.weights.length; i++) {
+                node.morphWeights[i] = node.weights[i];
             }
         }
     }
@@ -143,7 +140,7 @@ export default class GLTFPack {
                 const geometry = createGeometry(primitive);
                 geometries.push({
                     geometry,
-                    node,
+                    nodeMatrix,
                     materialInfo : this._createMaterialInfo(primitive.material, node),
                     animationMatrix : node.trs.setMatrix()
                 });
