@@ -36,7 +36,7 @@ describe('#SpatialReference.Conversion', function () {
         var p2 = map.coordinateToPoint(new maptalks.Coordinate([-180, 90]));
         var c1 = map.coordinateToContainerPoint(new maptalks.Coordinate([180, -90]));
         var c2 = map.coordinateToContainerPoint(new maptalks.Coordinate([-180, 90]));
-        expect(p1.x < p2.x && p1.y < p2.y).to.be.ok();
+        expect(p1.x < p2.x && p1.y > p2.y).to.be.ok();
         expect(c1.x < c2.x && c1.y < c2.y).to.be.ok();
     });
 
@@ -53,7 +53,7 @@ describe('#SpatialReference.Conversion', function () {
         var p2 = map.coordinateToPoint(new maptalks.Coordinate([180, -90]));
         var c1 = map.coordinateToContainerPoint(new maptalks.Coordinate([-180, 90]));
         var c2 = map.coordinateToContainerPoint(new maptalks.Coordinate([180, -90]));
-        expect(p1.x < p2.x && p1.y < p2.y).to.be.ok();
+        expect(p1.x < p2.x && p1.y > p2.y).to.be.ok();
         expect(c1.x < c2.x && c1.y < c2.y).to.be.ok();
     });
 });

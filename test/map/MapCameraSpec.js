@@ -261,7 +261,7 @@ describe('Map.Camera', function () {
                 expect(cExtent.getMin()).to.be.closeTo({x:0, y:0});
 
                 var pExtent = map._get2DExtent();
-                var cp = map._pointToContainerPoint(pExtent.getMin());
+                var cp = map._pointToContainerPoint(new maptalks.Point(pExtent.xmin, pExtent.ymax));
                 expect(cp).to.be.closeTo({x:0, y:0});
 
                 var nw = map.getExtent().getMin();
@@ -544,7 +544,7 @@ describe('Map.Camera', function () {
     it('should generate dom css matrix', function () {
         map.setPitch(75);
         map.setBearing(45);
-        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643,-8.235571585149868,0.6830127039600659,0.6830127018922193,31.819805153394636,8.23557158514987,-0.683012703960066,-0.6830127018922194,0,-43.466662183008076,-0.2588190458861051,-0.25881904510252074,0,0,44.800000135936436,45].join());
+        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643,-8.235571585149868,0.6543477075126822,0.6830127018922193,31.819805153394636,8.23557158514987,-0.6543477075126823,-0.6830127018922194,0,-43.466662183008076,-0.2479568071783545,-0.25881904510252074,0,0,42.50616221697277,45].join());
     });
 });
 
