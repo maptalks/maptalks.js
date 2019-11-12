@@ -30,22 +30,21 @@
 
   <script>
     var accessToken = 'pk.eyJ1IjoiemhlbmZ1IiwiYSI6ImNqamY2OXF0azA1M3kzdnF0enRoZm83aXQifQ.WpJebxPjCnmszaxHDRBrtw';
+    var mapboxURL = 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=' + accessToken
     var map = new maptalks.Map('map2', {
       center: [13.416935229170008, 52.529564137540376],
       zoom: 11,
       pitch : 45,
-      // baseLayer: new maptalks.MapboxVectorTileLayer('vt', {
-      //   urlTemplate: 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=' + accessToken,
-      //   background: [0.925,0.878,0.792,1],
-      //   style: 'mbtiles.json'
-      // }),
+      baseLayer: new maptalks.MapboxVectorTileLayer('vt', {
+        urlTemplate: mapboxURL,
+        background: [0.925,0.878,0.792,1],
+        style: 'mbtiles.json'
+      }),
       "center":[13.414627196474385,52.52909578112681],"zoom":16.309955844160633,"pitch":52.20000000000007,"bearing":0,
       "center":[13.418531244478004,52.533396361654326],"zoom":18.582413946875466,"pitch":52.20000000000007,"bearing":0,
 
       //纽约
-      "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":52.80000000000042,"bearing":-15.59999999999991,
-
-      "center":[-74.00964073206632,40.70756220167331],"zoom":17.45624930433703,"pitch":41.600000000000705,"bearing":55.19999999999277,
+      "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
 
       // "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
@@ -115,12 +114,14 @@
           },
           lights : {
             ambient: {
-              resource: 0,
+              resource: {
+                url: './resources/industrial_room.hdr'
+              },
               // color: [0.05, 0.05, 0.05],
               exposure: 0.7
             },
             directional: {
-              color : [0.5, 0.5, 0.5],
+              color : [0.2, 0.1, 0.1],
               direction : [0, 1, 1],
               // intensity: 80000
             }
@@ -142,11 +143,11 @@
       // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
       // 'uAlbedoTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/not-power-of-2.jpg',
       // 'anisotropy': 0,
-      'uvScale': [1, 1],  //纹理坐标的缩放比例
-      'uvScaleFactor': 1,
-      'uvOffset': [0, 0],      //纹理坐标的偏移量
+      // 'uvScale': [1, 1],  //纹理坐标的缩放比例
+      // 'uvScaleFactor': 1,
+      // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       'uAlbedoPBR': [1, 1, 1, 1],
-      'uRoughnessPBRFactor': 0.5,
+      'uRoughnessPBRFactor': 0,
       'uMetalnessPBRFactor': 1
     };
 
@@ -154,19 +155,19 @@
       $root: '.',
       resources: [
         {
-          type: 'ambient',
-          url: '{$root}/resources/windowStudio.hdr',
-          sh: [
-            [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
-            [-0.004491398110985756, -0.0062361168675124645, -0.005997033789753914],
-            [0.02749081887304783, 0.057795193046331406, 0.1145947203040123],
-            [0.03964025899767876, 0.03352731838822365, 0.020897403359413147],
-            [-0.005459152162075043, -0.008918278850615025, -0.011838626116514206],
-            [0.017447197809815407, 0.016732292249798775, 0.012003022246062756],
-            [-0.003052285173907876, -0.00440911715850234, -0.004788860213011503],
-            [0.01575229875743389, 0.017373336479067802, 0.015197779051959515],
-            [0.018414868041872978, 0.027235284447669983, 0.030140453949570656]
-          ]
+          // type: 'ambient',
+          // url: '{$root}/resources/aft_lounge.hdr',
+          // sh: [
+          //   [0.08225932717323303, 0.1296476572751999, 0.18428272008895874],
+          //   [-0.004491398110985756, -0.0062361168675124645, -0.005997033789753914],
+          //   [0.02749081887304783, 0.057795193046331406, 0.1145947203040123],
+          //   [0.03964025899767876, 0.03352731838822365, 0.020897403359413147],
+          //   [-0.005459152162075043, -0.008918278850615025, -0.011838626116514206],
+          //   [0.017447197809815407, 0.016732292249798775, 0.012003022246062756],
+          //   [-0.003052285173907876, -0.00440911715850234, -0.004788860213011503],
+          //   [0.01575229875743389, 0.017373336479067802, 0.015197779051959515],
+          //   [0.018414868041872978, 0.027235284447669983, 0.030140453949570656]
+          // ]
         }
       ],
       style: [
@@ -207,7 +208,7 @@
     ];
 
     var layer = new maptalks.MapboxVectorTileLayer('buildings', {
-      urlTemplate: 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v7/{z}/{x}/{y}.vector.pbf?access_token=' + accessToken,
+      urlTemplate: mapboxURL,
       style,
       cascadeTiles: false
     })
@@ -241,7 +242,11 @@
       }
     };
     // map.addLayer(layer);
-    new maptalks.GroupGLLayer('group', [layer], { antialias: false, sceneConfig }).addTo(map);
+    var groupLayer = new maptalks.GroupGLLayer('group', [layer], { antialias: false, sceneConfig }).addTo(map);
+
+    function addLayer() {
+      groupLayer.addTo(map);
+    }
 
     function update() {
       litMaterial.uAlbedoPBR = [1, 0, 0, 1];
@@ -260,7 +265,7 @@
     // changeView();
 
     map.on('click', e => {
-      console.log(JSON.stringify(map.getBaseLayer().identify(e.coordinate)));
+      // console.log(JSON.stringify(map.getBaseLayer().identify(e.coordinate)));
     });
 
     // initGUI();

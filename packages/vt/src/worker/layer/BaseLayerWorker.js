@@ -1,4 +1,5 @@
 import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber } from '../../common/Util';
+import { LRUCache } from '@maptalks/vector-packer';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
@@ -9,6 +10,10 @@ import { KEY_IDX } from '../builder/Constant';
 
 // let FONT_CANVAS;
 
+//global level 1 cache for layers sharing the same urlTemplate
+const TILE_CACHE = new LRUCache(128);
+const TILE_LOADINGS = {};
+
 export default class BaseLayerWorker {
     constructor(id, options, upload) {
         this.id = id;
@@ -17,6 +22,8 @@ export default class BaseLayerWorker {
         this._compileStyle(options.style || []);
         this.requests = {};
         this._styleCounter = 0;
+        this._cache = TILE_CACHE;
+        this.loadings = TILE_LOADINGS;
     }
 
     updateStyle(style, cb) {
@@ -38,38 +45,94 @@ export default class BaseLayerWorker {
      */
     loadTile(context, cb) {
         const url = context.tileInfo.url;
-        this.requests[url] = this.getTileFeatures(context.tileInfo, (err, features, layers) => {
-            if (this.checkIfCanceled(url)) {
-                delete this.requests[url];
-                cb(null, { canceled: true });
-                return;
-            }
-            if (err) {
-                delete this.requests[url];
-                cb(err);
-                return;
-            }
-            if (!features || features.length === 0) {
-                delete this.requests[url];
+        if (this._cache.has(url)) {
+            const { features, layers } = this._cache.get(url);
+            if (!features.length) {
                 cb();
                 return;
             }
-            this._createTileData(layers, features, context).then(data => {
-                if (data.canceled || this.checkIfCanceled(url)) {
-                    delete this.requests[url];
-                    cb(null, { canceled: true });
-                    return;
-                }
-                delete this.requests[url];
-                data.data.style = this._styleCounter;
-                cb(null, data.data, data.buffers);
+            this._onTileLoad(context, cb, url, layers, features);
+            return;
+        }
+        const loadings = TILE_LOADINGS;
+        if (loadings[url]) {
+            loadings[url].push({
+                callback: cb,
+                ref: this
             });
+            return;
+        }
+        loadings[url] = [{
+            callback: cb,
+            ref: this
+        }];
+        this.requests[url] = this.getTileFeatures(context.tileInfo, (err, features, layers) => {
+            const waitings = loadings[url];
+            delete loadings[url];
+            if (this.checkIfCanceled(url)) {
+                delete this.requests[url];
+                if (waitings) {
+                    for (let i = 0; i < waitings.length; i++) {
+                        waitings[i].callback(null, { canceled: true });
+                    }
+                }
+                return;
+            }
+            delete this.requests[url];
+            if (err) {
+                this._cache.add(url, { features: [], layers: [] });
+                if (waitings) {
+                    for (let i = 0; i < waitings.length; i++) {
+                        waitings[i].callback(err);
+                    }
+                }
+                return;
+            }
+            if (!features || !features.length) {
+                this._cache.add(url, { features: [], layers: [] });
+                if (waitings) {
+                    for (let i = 0; i < waitings.length; i++) {
+                        waitings[i].callback();
+                    }
+                }
+                return;
+            }
+            this._cache.add(url, { features, layers });
+            if (waitings) {
+                for (let i = 0; i < waitings.length; i++) {
+                    this._onTileLoad.call(waitings[i].ref, context, waitings[i].callback, url, layers, features);
+                }
+            }
+        });
+
+    }
+
+    _onTileLoad(context, cb, url, layers, features) {
+        // debugger
+        this._createTileData(layers, features, context).then(data => {
+            if (data.canceled) {
+                cb(null, { canceled: true });
+                return;
+            }
+            data.data.style = this._styleCounter;
+            cb(null, data.data, data.buffers);
         });
     }
 
     abortTile(url, cb) {
         delete this.requests[url];
+        this._cancelLoadings(url);
         cb();
+    }
+
+    _cancelLoadings(url) {
+        const waitings = TILE_LOADINGS[url];
+        if (waitings) {
+            for (let i = 0; i < waitings.length; i++) {
+                waitings[i].callback(null, { canceled: true });
+            }
+        }
+        delete TILE_LOADINGS[url];
     }
 
     checkIfCanceled(url) {
@@ -106,6 +169,7 @@ export default class BaseLayerWorker {
             pluginIndexes = [],
             options = this.options,
             buffers = [];
+        const feaTags = {};
         const promises = [
             Promise.resolve(this._styleCounter)
         ];
@@ -114,7 +178,7 @@ export default class BaseLayerWorker {
             if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
                 continue;
             }
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.filter, features, i);
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.filter, features, feaTags, i);
 
             if (!tileFeatures.length) {
                 continue;
@@ -196,9 +260,7 @@ export default class BaseLayerWorker {
 
                     if (options.features) {
                         //reset feature's marks
-                        if (feature && feature[KEY_IDX] !== undefined) {
-                            delete feature[KEY_IDX];
-                            delete feature._styleMark;
+                        if (feature && feaTags[i]) {
                             if (options.features === 'id') {
                                 allFeas.push(feature.id);
                             } else {
@@ -309,17 +371,18 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(filter, features) {
+    _filterFeatures(filter, features, tags) {
         const indexes = [];
         const filtered = [];
         const l = features.length;
         for (let i = 0; i < l; i++) {
             //filter.def没有定义，或者为default时，说明其实默认样式，feature之前没有其他样式时的应用样式
-            if ((!filter.def || filter.def === 'default') && !features[i]._styleMark ||
+            if ((!filter.def || filter.def === 'default') && !tags[i] ||
                 (filter.def === true || Array.isArray(filter.def) && filter(features[i]))) {
-                features[i][KEY_IDX] = i;
-                features[i]._styleMark = 1;
-                filtered.push(features[i]);
+                tags[i] = 1;
+                const fea = extend({}, features[i]);
+                fea[KEY_IDX] = i;
+                filtered.push(fea);
                 indexes.push(i);
             }
         }

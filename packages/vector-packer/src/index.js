@@ -6,3 +6,4 @@ export { default as NativePointPack } from './pack/NativePointPack';
 export { default as PolygonPack } from './pack/PolygonPack';
 export { default as GlyphRequestor } from './GlyphRequestor';
 export { default as IconRequestor } from './IconRequestor';
+export { default as LRUCache } from './LRUCache';

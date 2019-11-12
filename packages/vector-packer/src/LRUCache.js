@@ -11,9 +11,8 @@ class LRUCache {
      * @param {number} max number of permitted values
      * @param {Function} onRemove callback called with items when they expire
      */
-    constructor(max, onRemove) {
+    constructor(max) {
         this.max = max;
-        this.onRemove = onRemove;
         this.reset();
     }
 
@@ -23,10 +22,6 @@ class LRUCache {
      * @returns {LRUCache} this cache
      */
     reset() {
-        for (const key in this.data) {
-            this.onRemove(this.data[key]);
-        }
-
         this.data = {};
         this.order = [];
 
@@ -35,7 +30,6 @@ class LRUCache {
 
     clear() {
         this.reset();
-        delete this.onRemove;
     }
 
     /**
@@ -59,8 +53,7 @@ class LRUCache {
             this.order.push(key);
 
             if (this.order.length > this.max) {
-                const removedData = this.getAndRemove(this.order[0]);
-                if (removedData) this.onRemove(removedData);
+                this.getAndRemove(this.order[0]);
             }
         }
 
@@ -127,9 +120,7 @@ class LRUCache {
     remove(key) {
         if (!this.has(key)) { return this; }
 
-        const data = this.data[key];
         delete this.data[key];
-        this.onRemove(data);
         this.order.splice(this.order.indexOf(key), 1);
 
         return this;
@@ -145,8 +136,7 @@ class LRUCache {
         this.max = max;
 
         while (this.order.length > this.max) {
-            const removedData = this.getAndRemove(this.order[0]);
-            if (removedData) this.onRemove(removedData);
+            this.getAndRemove(this.order[0]);
         }
 
         return this;

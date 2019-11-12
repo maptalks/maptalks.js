@@ -65,9 +65,10 @@ export default class VectorTileLayerWorker extends LayerWorker {
         const xhr = this.requests[url];
         delete this.requests[url];
         //需要先从requests中删除url，再abort，触发cancel逻辑, 否则会被当成xhr的error处理掉
-        if (xhr) {
+        if (xhr && xhr.abort) {
             xhr.abort();
         }
+        this._cancelLoadings(url);
         cb();
     }
 

@@ -134,7 +134,10 @@ export default class WorkerConnection extends maptalks.worker.Actor {
                 zScale : context.zScale
             }
         };
-        this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
+        const { x, y } = context.tileInfo;
+        const length = this.workers.length;
+        const s = (x + y) % length;
+        this.send(data, null, cb, this._dedicatedVTWorkers[layerId] || this.workers[s].id);
     }
 
     remove() {
