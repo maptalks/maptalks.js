@@ -118,7 +118,8 @@ class GLTFPhongPainter extends PhongPainter {
             const pos = vec3.set(
                 position,
                 aPosition[i * positionSize] * tileScale,
-                aPosition[i * positionSize + 1] * tileScale,
+                //vt中的y轴方向与opengl(maptalks世界坐标系)相反
+                -aPosition[i * positionSize + 1] * tileScale,
                 positionSize === 2 ? 0 : aPosition[i * positionSize + 2] * zScale
             );
             mat4.fromTranslation(mat, pos);
@@ -134,7 +135,7 @@ class GLTFPhongPainter extends PhongPainter {
         const config = super.getShaderConfig();
         config.positionAttribute = 'POSITION';
         config.normalAttribute = 'NORMAL';
-        config.extraCommandProps['frontFace'] = 'cw';
+        // config.extraCommandProps['frontFace'] = 'cw';
         return config;
     }
 

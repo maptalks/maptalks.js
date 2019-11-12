@@ -64,7 +64,9 @@ export function buildExtrudeFaces(
                 buildFaceUV(start, offset, uvs, vertices, uvSize[0] / glScale, uvSize[1] / glScale);
             }
         }
-        const count = offset - start;
+        //在末尾添加 第一个端点
+        top.push(top[0], top[1], top[2]);
+        const count = offset - start + 3;
 
         //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
         //top vertexes
@@ -99,21 +101,18 @@ export function buildExtrudeFaces(
         if (height > 0) {
             //side face indices
             const s = indices.length;
-            const startIdx = (start + count) / 3;
+            const startIdx = (start + count - 3) / 3;
             const vertexCount = count / 3;
-            let ringStartIdx = startIdx, current, next, isClipped;
-            for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
+            let ringStartIdx = startIdx, current, next;
+            for (let i = startIdx, l = vertexCount + startIdx; i < l - 1; i++) {
                 current = i;
-                if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
+                if (holes.indexOf(i - startIdx + 1) >= 0) {
                     next = ringStartIdx;
-                    if (i < l - 1) {
-                        ringStartIdx = i + 1;
-                    }
-                } else if (i < l - 1) {
+                    ringStartIdx = i + 1;
+                } else {
                     next = i + 1;
                 }
-                isClipped = isClippedEdge(vertices, current, next, EXTENT);
-                if (isClipped) {
+                if (isClippedEdge(vertices, current, next, EXTENT)) {
                     continue;
                 }
                 if ((i - startIdx) % 2 === 1) {

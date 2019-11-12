@@ -12,12 +12,19 @@ class StandardPainter extends Painter {
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'
         });
-        geometry.generateBuffers(this.regl);
         return geometry;
     }
 
     createMesh(geometry, transform) {
+        if (!this.material) {
+            //还没有初始化
+            this.setToRedraw();
+            return null;
+        }
         const mesh = new reshader.Mesh(geometry, this.material);
+        if (this.material['uNormalTexture']) {
+            geometry.createTangent();
+        }
         if (this.sceneConfig.animation) {
             SCALE[2] = 0.01;
             const mat = [];
@@ -39,6 +46,7 @@ class StandardPainter extends Painter {
             });
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
         }
+        geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
 
@@ -238,6 +246,7 @@ class StandardPainter extends Painter {
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: hdr.getREGLTexture(regl),
             ignoreSH: !!config['sh'],
+            envCubeSize: 1024
             // prefilterCubeSize : 256
         });
         const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);

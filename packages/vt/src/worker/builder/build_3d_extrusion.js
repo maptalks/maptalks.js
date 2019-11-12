@@ -50,6 +50,9 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
     // debugger
     if (tangent || normal) {
         const normals = buildNormals(faces.vertices, indices);
+        for (let i = 0; i < normals.length; i++) {
+            normals[i] = -normals[i];
+        }
         faces.normals = normals;
     }
     if (tangent) {
