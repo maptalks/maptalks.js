@@ -123,6 +123,7 @@ class GeometryEditor extends Eventable(Class) {
         if (geometry._getParent()) {
             shadow.copyEventListeners(geometry._getParent());
         }
+        shadow._setEventTarget(geometry);
         //drag shadow by center handle instead.
         shadow.setId(null).config({
             'draggable': false
