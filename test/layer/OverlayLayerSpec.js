@@ -340,7 +340,7 @@ describe('OverlayLayer', function () {
             var geo1 = new maptalks.Marker(center1);
             var geo2 = new maptalks.Marker(center2);
             layer.addGeometry([geo1, geo2], {
-                duration: 2000,
+                duration: 100,
                 easing: 'linear'
             });
             expect(map.isAnimating()).to.be(true);
@@ -355,7 +355,7 @@ describe('OverlayLayer', function () {
             var geo1 = new maptalks.Marker(center1);
             var geo2 = new maptalks.Marker(center2);
             layer.addGeometry([geo1, geo2], {
-                duration: 500,
+                duration: 100,
                 easing: 'linear',
                 step: function(frame) {
                     if (frame.state.playState === 'finished') {

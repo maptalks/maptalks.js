@@ -233,22 +233,24 @@ class OverlayLayer extends Layer {
             }
         }
         const map = this.getMap();
-        if (map && extent && !isNil(extent.xmin)) {
+        if (map) {
             this._getRenderer().onGeometryAdd(geos);
-            const center = extent.getCenter();
-            const z = map.getFitZoom(extent);
+            if (extent && !isNil(extent.xmin)) {
+                const center = extent.getCenter();
+                const z = map.getFitZoom(extent);
 
-            if (isObject(fitView)) {
-                const step = isFunction(fitView.step) ? fitView.step : () => undefined;
-                map.animateTo({
-                    center,
-                    zoom: z,
-                }, extend({
-                    duration: map.options.zoomAnimationDuration,
-                    easing: 'out',
-                }, fitView), step);
-            } else if (fitView === true) {
-                map.setCenterAndZoom(center, z);
+                if (isObject(fitView)) {
+                    const step = isFunction(fitView.step) ? fitView.step : () => undefined;
+                    map.animateTo({
+                        center,
+                        zoom: z,
+                    }, extend({
+                        duration: map.options.zoomAnimationDuration,
+                        easing: 'out',
+                    }, fitView), step);
+                } else if (fitView === true) {
+                    map.setCenterAndZoom(center, z);
+                }
             }
         }
         /**
