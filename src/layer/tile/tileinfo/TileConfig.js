@@ -56,7 +56,7 @@ class TileConfig {
             tileSize = this['tileSize'],
             delta = 1E-7;
         const tileX = Math.floor(delta + point.x / (tileSize['width'] * res));
-        const tileY = -Math.floor(delta + point.y / (tileSize['height'] * res));
+        const tileY = Math.ceil(delta + point.y / (tileSize['height'] * res));
 
         return {
             'x': tileSystem['scale']['x'] * tileX,

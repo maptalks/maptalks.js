@@ -88,8 +88,12 @@ class PointSymbolizer extends CanvasSymbolizer {
             const maxZoom = map.getGLZoom();
             p0 = map._pointToContainerPoint(rotations[i][0], maxZoom, 0, TEMP_POINT0);
             p1 = map._pointToContainerPoint(rotations[i][1], maxZoom, 0, TEMP_POINT1);
+            return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
+        } else {
+            //point的y轴方向与containerPoint是相反的，所以角度取负值
+            return r + -computeDegree(p0.x, p0.y, p1.x, p1.y);
         }
-        return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
+
     }
 
     _rotate(ctx, origin, rotation) {

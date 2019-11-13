@@ -359,9 +359,9 @@ class TileLayer extends Layer {
         }
 
         TEMP_POINT2.x = extent2d.xmin;
-        TEMP_POINT2.y = extent2d.ymin;
+        TEMP_POINT2.y = extent2d.ymax;
         TEMP_POINT3.x = extent2d.xmax;
-        TEMP_POINT3.y = extent2d.ymax;
+        TEMP_POINT3.y = extent2d.ymin;
         const pmin = this._project(map._pointToPrj(TEMP_POINT2, undefined, TEMP_POINT2), TEMP_POINT2);
         const pmax = this._project(map._pointToPrj(TEMP_POINT3, undefined, TEMP_POINT3), TEMP_POINT3);
 
@@ -426,7 +426,7 @@ class TileLayer extends Layer {
                     height = Math.ceil(Math.abs(pp.y - p.y));
                 }
                 const dx = scale.x * (idx.idx - idx.x) * width,
-                    dy = -scale.y * (idx.idy - idx.y) * height;
+                    dy = scale.y * (idx.idy - idx.y) * height;
                 if (dx || dy) {
                     p._add(dx, dy);
                 }
@@ -434,7 +434,7 @@ class TileLayer extends Layer {
                     p._sub(offset);
                 }
                 if (!tileInfo) {
-                    const tileExtent = new PointExtent(p.x, p.y, p.x + width, p.y + height);
+                    const tileExtent = new PointExtent(p.x, p.y, p.x + width, p.y - height);
                     tileInfo = {
                         //reserve point caculated by tileConfig
                         //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
@@ -452,7 +452,7 @@ class TileLayer extends Layer {
                 if (rightVisitEnd || innerExtent2D.intersects(tileExtent) ||
                     !innerExtent2D.equals(offsetExtent2D) && this._isTileInExtent(tileInfo, containerExtent)) {
                     if (hasOffset) {
-                        tileExtent.set(p.x, p.y, p.x + width, p.y + height);
+                        tileExtent.set(p.x, p.y, p.x + width, p.y - height);
                         tileInfo.point = p._add(offset);
                         tileExtent._add(offset);
                     }

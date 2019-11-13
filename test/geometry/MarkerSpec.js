@@ -390,7 +390,7 @@ describe('Geometry.Marker', function () {
         });
         layer = new maptalks.VectorLayer('id').addGeometry(geometry);
         layer.on('layerload', function () {
-            expect(layer._getRenderer()._geosToDraw.length).to.be.ok();
+            expect(layer.getRenderer()._geosToDraw.length).to.be.ok();
             done();
         });
         map.addLayer(layer);

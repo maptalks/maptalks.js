@@ -547,12 +547,15 @@ class Painter extends Class {
         if (!this._extent2D) {
             return null;
         }
+        const { xmin, ymin, xmax, ymax } = this._fixedExtent;
+        //2d 坐标系是opengl规则，y轴方向与containerPoint是反向的
+        TEMP_FIXED_EXTENT.set(xmin, -ymax, xmax, -ymin);
         if (out) {
             out.set(this._extent2D['xmin'], this._extent2D['ymin'], this._extent2D['xmax'], this._extent2D['ymax']);
-            out._add(this._fixedExtent);
+            out._add(TEMP_FIXED_EXTENT);
             return out;
         }
-        return this._extent2D.add(this._fixedExtent);
+        return this._extent2D.add(TEMP_FIXED_EXTENT);
     }
 
     getContainerExtent(out) {
