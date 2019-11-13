@@ -120,6 +120,9 @@ LineString.include({
     },
 
     _getArrowShape(prePoint, point, lineWidth, arrowStyle, tolerance) {
+        if (!prePoint || !point || prePoint.equals(point)) {
+            return null;
+        }
         if (!tolerance) {
             tolerance = 0;
         }
@@ -188,10 +191,16 @@ LineString.include({
             last = map.coordToContainerPoint(this.getLastCoordinate());
         for (let i = segments.length - 1; i >= 0; i--) {
             if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
-                arrows.push(this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance));
+                const arrow = this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance);
+                if (arrow) {
+                    arrows.push(arrow);
+                }
             }
             if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
-                arrows.push(this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance));
+                const arrow = this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance);
+                if (arrow) {
+                    arrows.push(arrow);
+                }
             } else if (placement === 'point') {
                 this._getArrowPoints(arrows, segments[i], lineWidth, arrowStyle, tolerance);
             }
@@ -201,7 +210,10 @@ LineString.include({
 
     _getArrowPoints(arrows, segments, lineWidth, arrowStyle, tolerance) {
         for (let ii = 0, ll = segments.length - 1; ii < ll; ii++) {
-            arrows.push(this._getArrowShape(segments[ii], segments[ii + 1], lineWidth, arrowStyle, tolerance));
+            const arrow = this._getArrowShape(segments[ii], segments[ii + 1], lineWidth, arrowStyle, tolerance);
+            if (arrow) {
+                arrows.push(arrow);
+            }
         }
     },
 
