@@ -331,6 +331,42 @@ describe('OverlayLayer', function () {
             });
             layer.addGeometry(geo1, geo2, true);
         });
+
+        it('animate map view when add', function (done) {
+            var layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var geo1 = new maptalks.Marker(center1);
+            var geo2 = new maptalks.Marker(center2);
+            layer.addGeometry([geo1, geo2], {
+                duration: 2000,
+                easing: 'linear'
+            });
+            expect(map.isAnimating()).to.be(true);
+            done();
+        });
+
+        it('animate map view and callback step when add', function (done) {
+            var layer = new maptalks.VectorLayer('id');
+            map.addLayer(layer);
+            var center1 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var center2 = center.add(new maptalks.Coordinate(Math.random(), Math.random()));
+            var geo1 = new maptalks.Marker(center1);
+            var geo2 = new maptalks.Marker(center2);
+            layer.addGeometry([geo1, geo2], {
+                duration: 500,
+                easing: 'linear',
+                step: function(frame) {
+                    if (frame.state.playState === 'finished') {
+                        console.log('animation finished');
+                        expect(map.isAnimating()).to.be(false);
+                        done();
+                    }
+                }
+            });
+            expect(map.isAnimating()).to.be(true);
+        });
     });
 
     describe('getGeometry', function () {
