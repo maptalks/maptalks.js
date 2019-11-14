@@ -142,18 +142,18 @@ class IconPainter extends CollisionPainter {
         //     return [];
         // }
         prepareFnTypeData(iconGeometry, iconGeometry.properties.features, this.symbolDef, this._iconFnTypeConfig);
+        this._prepareIconGeometry(iconGeometry);
         const textGeometry = geometries[1];
         const markerTextFit = this.symbolDef['markerTextFit'];
         const labelIndex = buildLabelIndex(iconGeometry, textGeometry, markerTextFit);
         if (!iconGeometry.getElements().length) {
             return [];
         }
-        if (markerTextFit === 'none' && !labelIndex.length) {
+        if ((!markerTextFit || markerTextFit === 'none') && !labelIndex.length) {
             return [iconGeometry];
         }
         iconGeometry.properties.labelIndex = labelIndex;
         const hasTextFit = labelIndex.length && markerTextFit && markerTextFit !== 'none';
-        this._prepareIconGeometry(iconGeometry);
         if (hasTextFit && textGeometry) {
             const labelShape = buildLabelShape(iconGeometry, textGeometry);
             if (labelShape.length) {
