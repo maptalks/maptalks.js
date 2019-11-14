@@ -226,6 +226,9 @@ describe('Geometry.TextBox', function () {
         });
 
         it('bottom', function () {
+            if (maptalks.Browser.ie) {
+                return;
+            }
             var vector = new maptalks.TextBox('■■■', center, 100, 100, {
                 textStyle : {
                     'wrap' : true,

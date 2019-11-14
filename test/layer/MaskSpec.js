@@ -189,4 +189,21 @@ describe('Spec of Masks', function () {
         });
     });
 
+    it('mask with Layer.toJSON', function (done) {
+        vlayer.setMask(new maptalks.MultiPolygon([
+            new maptalks.Circle(map.getCenter(), 5).getShell(),
+            new maptalks.Circle(map.locate(map.getCenter(), 10, 0), 5).getShell()
+        ]));
+        // map.addLayer(vlayer);
+        var json = vlayer.toJSON();
+        var layer2 = maptalks.Layer.fromJSON(json).addTo(map);
+        var canvas = layer2.getMap().getRenderer().canvas;
+        var c = new maptalks.Point(canvas.width / 2, canvas.height / 2);
+        layer2.once('layerload', function () {
+            expect(isDrawn(canvas, c.add(-11, 0))).not.to.be.ok();
+            expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
+            done();
+        });
+    });
+
 });

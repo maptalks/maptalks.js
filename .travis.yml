@@ -4,12 +4,12 @@ branches:
     - "dev"
 language: node_js
 node_js:
-  - "8"
+  - "10"
+services:
+  - xvfb
 addons:
   firefox: "latest"
 before_script:
   - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
 script:
   gulp test --browsers Firefox

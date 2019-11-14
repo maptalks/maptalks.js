@@ -1,5 +1,6 @@
 import { extend } from '../core/util';
 import Browser from '../core/Browser';
+import Point from '../geo/Point';
 import ImageGLRenderable from '../renderer/layer/ImageGLRenderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import { ResourceCache } from '../renderer/layer/CanvasRenderer';
@@ -17,6 +18,8 @@ const options = {
     renderer: Browser.webgl ? 'gl' : 'canvas',
     crossOrigin: null
 };
+
+const TEMP_POINT = new Point(0, 0);
 
 /**
  * @classdesc
@@ -184,9 +187,8 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
             ctx.globalAlpha = opacity;
         }
         const map = this.getMap();
-        const min = extent.getMin(),
-            max = extent.getMax();
-        const point = map._pointToContainerPoint(min, map.getGLZoom());
+        const nw = TEMP_POINT.set(extent.xmin, extent.ymax);
+        const point = map._pointToContainerPoint(nw, map.getGLZoom());
         let x = point.x, y = point.y;
         const bearing = map.getBearing();
         if (bearing) {
@@ -198,7 +200,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
             x = y = 0;
         }
         const scale = map.getGLScale();
-        ctx.drawImage(image, x, y, (max.x - min.x) / scale, (max.y - min.y) / scale);
+        ctx.drawImage(image, x, y, extent.getWidth() / scale, extent.getHeight() / scale);
         if (bearing) {
             ctx.restore();
         }
@@ -220,7 +222,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
     }
 
     _drawImage(image, extent, opacity) {
-        this.drawGLImage(image, extent.xmin, extent.ymin, extent.getWidth(), extent.getHeight(), opacity);
+        this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), opacity);
     }
 
     createContext() {

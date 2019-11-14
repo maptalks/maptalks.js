@@ -67,12 +67,18 @@ class Curve extends LineString {
         const l = segments.length;
         let i;
         for (i = step; i < l; i += step) {
-            arrows.push(this._getArrowShape(segments[i - 1], segments[i], lineWidth, arrowStyle, tolerance));
+            const arrow = this._getArrowShape(segments[i - 1], segments[i], lineWidth, arrowStyle, tolerance);
+            if (arrow) {
+                arrows.push(arrow);
+            }
         }
         i -= step;
         if (i < l - 1) {
             for (i += 1; i < l; i++) {
-                arrows.push(this._getArrowShape(segments[i - 1], segments[i], lineWidth, arrowStyle, tolerance));
+                const arrow = this._getArrowShape(segments[i - 1], segments[i], lineWidth, arrowStyle, tolerance);
+                if (arrow) {
+                    arrows.push(arrow);
+                }
             }
         }
     }

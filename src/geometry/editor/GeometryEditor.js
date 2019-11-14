@@ -123,6 +123,7 @@ class GeometryEditor extends Eventable(Class) {
         if (geometry._getParent()) {
             shadow.copyEventListeners(geometry._getParent());
         }
+        shadow._setEventTarget(geometry);
         //drag shadow by center handle instead.
         shadow.setId(null).config({
             'draggable': false
@@ -398,14 +399,15 @@ class GeometryEditor extends Eventable(Class) {
 
         function getResizeAnchors(ext) {
             return [
-                ext.getMin(),
-                new Point((ext['xmax'] + ext['xmin']) / 2, ext['ymin']),
-                new Point(ext['xmax'], ext['ymin']),
-                new Point(ext['xmin'], (ext['ymax'] + ext['ymin']) / 2),
-                new Point(ext['xmax'], (ext['ymax'] + ext['ymin']) / 2),
+                // ext.getMin(),
                 new Point(ext['xmin'], ext['ymax']),
                 new Point((ext['xmax'] + ext['xmin']) / 2, ext['ymax']),
-                ext.getMax()
+                new Point(ext['xmax'], ext['ymax']),
+                new Point(ext['xmin'], (ext['ymax'] + ext['ymin']) / 2),
+                new Point(ext['xmax'], (ext['ymax'] + ext['ymin']) / 2),
+                new Point(ext['xmin'], ext['ymin']),
+                new Point((ext['xmax'] + ext['xmin']) / 2, ext['ymin']),
+                new Point(ext['xmax'], ext['ymin']),
             ];
         }
         if (!blackList) {

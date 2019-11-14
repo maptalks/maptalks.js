@@ -3,9 +3,9 @@ environment:
   nodejs_version: "6.9.0"
   matrix:
     # first group
-    - MAPTALKS_BROWSERS: IE10
-    # second group
     - MAPTALKS_BROWSERS: IE
+    # second group
+    # - MAPTALKS_BROWSERS: IE10
     - MAPTALKS_BROWSERS: IE9
 # Install scripts. (runs after repo cloning)
 install:

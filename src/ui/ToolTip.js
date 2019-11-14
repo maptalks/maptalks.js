@@ -1,7 +1,5 @@
 import { createEl } from '../core/util/dom';
-import { Geometry } from '../geometry';
 import UIComponent from './UIComponent';
-import UIMarker from './UIMarker';
 
 
 /**
@@ -44,13 +42,13 @@ class ToolTip extends UIComponent {
     }
 
     /**
-     * Adds the UI Component to a geometry
+     * Adds the UI Component to a geometry UIMarker Other graphic elements
      * @param {Geometry} owner - geometry to add.
      * @returns {UIComponent} this
      * @fires UIComponent#add
      */
     addTo(owner) {
-        if (owner instanceof Geometry || owner instanceof UIMarker) {
+        if (ToolTip.isSupport(owner)) {
             owner.on('mousemove', this.onMouseMove, this);
             owner.on('mouseout', this.onMouseOut, this);
             return super.addTo(owner);

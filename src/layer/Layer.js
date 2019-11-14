@@ -5,6 +5,7 @@ import JSONAble from '../core/JSONAble';
 import Renderable from '../renderer/Renderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import CollisionIndex from '../core/CollisionIndex';
+import Geometry from '../geometry/Geometry';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
@@ -69,6 +70,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this.setId(id);
         if (options) {
             this.setZIndex(options.zIndex);
+            if (options.mask) {
+                this.setMask(Geometry.fromJSON(options.mask));
+            }
         }
     }
 
@@ -389,6 +393,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         mask._bindLayer(this);
         this._mask = mask;
+        this.options.mask = mask.toJSON();
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
@@ -405,6 +410,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     removeMask() {
         delete this._mask;
+        delete this.options.mask;
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }

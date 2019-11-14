@@ -63,3 +63,5 @@ export const NUMERICAL_PROPERTIES = {
 export const COLOR_PROPERTIES = [
     'lineColor', 'polygonFill', 'markerFill', 'markerLineColor', 'textFill'
 ];
+
+export const DEFAULT_TEXT_SIZE = 14;

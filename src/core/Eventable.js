@@ -296,6 +296,11 @@ const Eventable = Base =>
             return this;
         }
 
+        _setEventTarget(target) {
+            this._eventTarget = target;
+            return this;
+        }
+
         _fire(eventType, param) {
             if (!this._eventMap) {
                 return this;
@@ -308,7 +313,7 @@ const Eventable = Base =>
                 param = {};
             }
             param['type'] = eventType;
-            param['target'] = this;
+            param['target'] = this._eventTarget || this;
             //in case of deleting a listener in a execution, copy the handlerChain to execute.
             const queue = handlerChain.slice(0);
             let context, bubble, passed;

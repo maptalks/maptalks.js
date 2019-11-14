@@ -261,7 +261,7 @@ describe('Map.Camera', function () {
                 expect(cExtent.getMin()).to.be.closeTo({x:0, y:0});
 
                 var pExtent = map._get2DExtent();
-                var cp = map._pointToContainerPoint(pExtent.getMin());
+                var cp = map._pointToContainerPoint(new maptalks.Point(pExtent.xmin, pExtent.ymax));
                 expect(cp).to.be.closeTo({x:0, y:0});
 
                 var nw = map.getExtent().getMin();
