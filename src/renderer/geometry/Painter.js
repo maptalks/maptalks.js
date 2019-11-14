@@ -309,7 +309,7 @@ class Painter extends Class {
                     }
                 }
             }
-        } else if (geometry.getJSONType() === 'LineString') {
+        } else if (geometry.getJSONType() === 'LineString' && !smoothness) {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
                 clipPoints = clipLine(points, glExtent2D, false, !!smoothness);
