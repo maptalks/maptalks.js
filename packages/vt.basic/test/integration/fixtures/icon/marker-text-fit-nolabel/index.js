@@ -22,7 +22,7 @@ const style = [
                 ]
             },
             markerTextFitPadding: [5, 5, 5, 5],
-            textName: '',
+            textName: '{label}',
             textFill: '#fff',
             textSize: {
                 stops: [
@@ -39,8 +39,8 @@ module.exports = {
     data: {
         type: 'FeatureCollection',
         features: [
-            { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } },
-            { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 2 } }
+            { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { label: '1' } },
+            { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { label: '' } }
         ]
     },
     view: {

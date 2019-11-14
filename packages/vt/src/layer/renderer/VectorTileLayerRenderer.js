@@ -216,6 +216,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (transform && extent) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform), extent);
             }
         }
+        this.completeRender();
     }
 
     getFrameTimestamp() {
@@ -492,6 +493,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const enableTileStencil = this.isEnableTileStencil();
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getFramePlugins();
+        let dirty = false;
         plugins.forEach((plugin, idx) => {
             const visible = this._isVisible(idx);
             if (!plugin || !visible) {
@@ -523,7 +525,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
+            if (plugin.painter.scene.getMeshes().length) {
+                dirty = true;
+            }
         });
+        if (dirty) {
+            this.layer.fire('canvasisdirty');
+        }
     }
 
     _drawTileStencil() {

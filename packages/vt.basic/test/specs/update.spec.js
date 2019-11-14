@@ -55,7 +55,7 @@ describe('update style specs', () => {
                     symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
                 }
             ]);
-        });
+        }, true);
     });
 
     it('should can setStyle with missed filter', done => {
@@ -129,14 +129,14 @@ describe('update style specs', () => {
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('layerload', () => {
+        layer.on('canvasisdirty', () => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { textFill: '#0f0' });
-            } else if (count === 3) {
+            } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
@@ -168,14 +168,14 @@ describe('update style specs', () => {
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('layerload', () => {
+        layer.on('canvasisdirty', () => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { textSize: 20, textFill: '#0f0' });
-            } else if (count === 3) {
+            } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
@@ -207,15 +207,15 @@ describe('update style specs', () => {
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('layerload', () => {
-            const xOffset = 2;
+        layer.on('canvasisdirty', () => {
             count++;
-            if (count === 2) {
+            const xOffset = 2;
+            if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { textSize: 20, textFill: '#0f0' });
-            } else if (count === 3) {
+            } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
@@ -245,17 +245,24 @@ describe('update style specs', () => {
             style
         });
         let count = 0;
+        let dirty = false;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.once('canvasisdirty', () => {
+            dirty = true;
+        });
         layer.on('layerload', () => {
-            const xOffset = 2;
+            if (!dirty) {
+                return;
+            }
             count++;
-            if (count === 2) {
+            const xOffset = 2;
+            if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.updateSymbol(0, { visible: false });
-            } else if (count === 3) {
+            } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //变成透明
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
@@ -290,18 +297,18 @@ describe('update style specs', () => {
             style
         });
         let count = 0;
-        layer.on('layerload', () => {
+        layer.on('canvasisdirty', () => {
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 layer.updateSymbol(0, { markerAllowOverlap: true });
-            } else if (count === 3) {
+            } else if (count === 2) {
                 done();
             }
         });
         layer.addTo(map);
     });
 
-    function assertChangeStyle(done, expectedColor, changeFun) {
+    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle) {
         const style = [
             {
                 filter: {
@@ -319,17 +326,25 @@ describe('update style specs', () => {
             data: line,
             style
         });
+        let dirty = false;
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('layerload', () => {
+        layer.once('canvasisdirty', () => {
+            dirty = true;
+        });
+        //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
+        layer.on(isSetStyle ? 'canvasisdirty' : 'layerload', () => {
+            if (!dirty) {
+                return;
+            }
             count++;
-            if (count === 2) {
+            if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 changeFun(layer);
-            } else if (count === 3) {
+            } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);

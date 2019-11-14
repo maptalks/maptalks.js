@@ -36,13 +36,8 @@ describe('vector tile integration specs', () => {
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
-            let count = 0;
             let generated = false;
-            layer.on('layerload', () => {
-                count++;
-                if (count <= 1) {
-                    return;
-                }
+            layer.once('canvasisdirty', () => {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (GENERATE_MODE) {

@@ -34,12 +34,7 @@ describe('picking specs', () => {
             console.log(e.coordinate);
         });
         const layer = new GeoJSONVectorTileLayer('gvt', options);
-        let count = 0;
-        layer.on('layerload', () => {
-            count++;
-            if (count <= 1 || count > 2) {
-                return;
-            }
+        layer.once('canvasisdirty', () => {
             const result = layer.identify(coord);
             if (ignoreSymbol) {
                 for (let i = 0; i < result.length; i++) {
@@ -69,6 +64,7 @@ describe('picking specs', () => {
                                 type: 'point'
                             },
                             sceneConfig: {
+                                fading: false,
                                 collision: false
                             }
                         },
@@ -81,7 +77,7 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, -368, 0], 'type': 'icon' }];
+            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, 368, 0], 'type': 'icon' }];
             runner(options, coord, expected, true, done);
         });
 
@@ -110,7 +106,7 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, -368, 0], 'type': 'icon' }];
+            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, 368, 0], 'type': 'icon' }];
             runner(options, coord, expected, true, done);
         });
 
@@ -388,12 +384,7 @@ describe('picking specs', () => {
             map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
 
             const layer = new GeoJSONVectorTileLayer('gvt', options);
-            let count = 0;
-            layer.on('layerload', () => {
-                count++;
-                if (count <= 1 || count > 2) {
-                    return;
-                }
+            layer.once('canvasisdirty', () => {
                 const yellowPoint = layer.identify([0.6, 0.6]);
                 const redPoint = layer.identify([0.5, 0.5]);
                 assert.ok(yellowPoint.length === 1);
@@ -451,12 +442,7 @@ describe('picking specs', () => {
             map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
 
             const layer = new GeoJSONVectorTileLayer('gvt', options);
-            let count = 0;
-            layer.on('layerload', () => {
-                count++;
-                if (count <= 1 || count > 2) {
-                    return;
-                }
+            layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([13.417226248848124, 52.52954504632825]);
 
                 const expected = { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [[13.417135053741617, 52.52956625878565], [13.417226248848124, 52.52954504632825]] }, 'id': 0, 'layer': 0 }, 'symbol': { 'lineColor': '#f00' } };
@@ -501,19 +487,13 @@ describe('picking specs', () => {
         map = new maptalks.Map(container, COMMON_OPTIONS.view || DEFAULT_VIEW);
         const options = JSON.parse(JSON.stringify(COMMON_OPTIONS));
         options.features = false;
+        options.pickingPoint = true;
         const layer = new GeoJSONVectorTileLayer('gvt', options);
-        let count = 0;
-        layer.on('layerload', () => {
-            count++;
-            if (count === 2) {
-                const picked = layer.identify([0.5, 0.5]);
-                assert.ok(!picked[0].data);
-                layer.config('features', true);
-            } else if (count === 3) {
-                const picked = layer.identify([0.5, 0.5]);
-                assert.ok(!!picked[0].data.feature);
-                done();
-            }
+        layer.once('canvasisdirty', () => {
+            const picked = layer.identify([0.5, 0.5]);
+            assert.ok(picked[0].point);
+            assert.ok(!picked[0].data);
+            done();
         });
         layer.addTo(map);
     }).timeout(5000);
@@ -521,19 +501,27 @@ describe('picking specs', () => {
     it('should pick in a GroupGLLayer', done => {
         map = new maptalks.Map(container, COMMON_OPTIONS.view || DEFAULT_VIEW);
 
-        let count = 0;
         const layer1 = new GeoJSONVectorTileLayer('gvt1', COMMON_OPTIONS);
         const layer2 = new GeoJSONVectorTileLayer('gvt2', COMMON_OPTIONS);
         const group = new GroupGLLayer('group', [layer1, layer2]);
-        group.on('layerload', () => {
-            count++;
-            if (count === 2) {
+        let dirty1 = false;
+        let dirty2 = false;
+        function onDirty() {
+            if (dirty1 && dirty2) {
                 let picked = layer1.identify([0.5, 0.5]);
                 assert.ok(picked[0].data);
                 picked = layer2.identify([0.5, 0.5]);
                 assert.ok(picked[0].data);
                 done();
             }
+        }
+        layer1.once('canvasisdirty', () => {
+            dirty1 = true;
+            onDirty();
+        });
+        layer2.once('canvasisdirty', () => {
+            dirty2 = true;
+            onDirty();
         });
         group.addTo(map);
     });
