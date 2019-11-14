@@ -528,26 +528,32 @@ class Painter extends Class {
         const map = this.getMap();
         resources = resources || this.getLayer()._getRenderer().resources;
         const zoom = map.getZoom();
-        if (!this._extent2D || this._extent2D._zoom !== zoom) {
-            delete this._extent2D;
-            delete this._fixedExtent;
+        const isDynamicSize = this._isDynamicSize();
+        if (!this._extent2D || this._extent2D._zoom !== zoom || !this._fixedExtent) {
+            if (this._extent2D && this._extent2D._zoom !== zoom) {
+                delete this._extent2D;
+            }
             if (this.symbolizers) {
-                const extent = this._extent2D = new PointExtent();
-                const fixedExt = this._fixedExtent = new PointExtent();
-                for (let i = this.symbolizers.length - 1; i >= 0; i--) {
-                    const symbolizer = this.symbolizers[i];
-                    extent._combine(symbolizer.get2DExtent());
-                    if (symbolizer.getFixedExtent) {
-                        fixedExt._combine(symbolizer.getFixedExtent(resources));
-                    }
+                if (!this._extent2D) {
+                    this._extent2D = this._computeExtent2D(new PointExtent());
+                    this._extent2D._zoom = zoom;
                 }
-                extent._zoom = zoom;
+                if (!this._fixedExtent) {
+                    this._fixedExtent = this._computeFixedExtent(resources, new PointExtent());
+                }
             }
         }
+
         if (!this._extent2D) {
+            if (isDynamicSize) {
+                delete this._fixedExtent;
+            }
             return null;
         }
         const { xmin, ymin, xmax, ymax } = this._fixedExtent;
+        if (isDynamicSize) {
+            delete this._fixedExtent;
+        }
         //2d 坐标系是opengl规则，y轴方向与containerPoint是反向的
         TEMP_FIXED_EXTENT.set(xmin, -ymax, xmax, -ymin);
         if (out) {
@@ -556,6 +562,34 @@ class Painter extends Class {
             return out;
         }
         return this._extent2D.add(TEMP_FIXED_EXTENT);
+    }
+
+    _computeExtent2D(extent) {
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            const symbolizer = this.symbolizers[i];
+            extent._combine(symbolizer.get2DExtent());
+        }
+        return extent;
+    }
+
+    _computeFixedExtent(resources, extent) {
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            const symbolizer = this.symbolizers[i];
+            if (symbolizer.getFixedExtent) {
+                extent._combine(symbolizer.getFixedExtent(resources));
+            }
+        }
+        return extent;
+    }
+
+    _isDynamicSize() {
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            const symbolizer = this.symbolizers[i];
+            if (symbolizer.isDynamicSize()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     getContainerExtent(out) {
@@ -582,7 +616,7 @@ class Painter extends Class {
             extent._combine(groundExtent);
         }
         if (extent) {
-            extent._add(this._fixedExtent);
+            extent._add(this._fixedExtent || this._computeFixedExtent(null, new PointExtent()));
         }
         const smoothness = this.geometry.options['smoothness'];
         if (smoothness) {
@@ -601,6 +635,9 @@ class Painter extends Class {
     getFixedExtent() {
         const map = this.getMap();
         const zoom = map.getZoom();
+        if (this._isDynamicSize()) {
+            return this._computeFixedExtent(null, new PointExtent());
+        }
         if (!this._extent2D || this._extent2D._zoom !== zoom) {
             this.get2DExtent(null, TEMP_FIXED_EXTENT);
         }

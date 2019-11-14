@@ -2,6 +2,7 @@ import { computeDegree } from '../../../core/util';
 import PointExtent from '../../../geo/PointExtent';
 import Point from '../../../geo/Point';
 import CanvasSymbolizer from './CanvasSymbolizer';
+import { isFunctionDefinition } from '../../../core/mapbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
@@ -36,6 +37,12 @@ class PointSymbolizer extends CanvasSymbolizer {
             }
         }
         return extent;
+    }
+
+    isDynamicSize() {
+        const symbol = this.symbol;
+        return isFunctionDefinition(symbol['markerWidth']) || isFunctionDefinition(symbol['markerHeight']) ||
+            isFunctionDefinition(symbol['textSize']);
     }
 
     _rotateExtent(fixedExtent, angle) {

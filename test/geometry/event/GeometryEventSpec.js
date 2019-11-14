@@ -1,5 +1,4 @@
 describe('Geometry.Events', function () {
-
     var container;
     var map;
     var center = new maptalks.Coordinate(118.846825, 32.046534);
@@ -226,5 +225,47 @@ describe('Geometry.Events', function () {
             'clientY':point.y
         });
         expect(spy.called).not.to.be.ok();
+    });
+
+    it('#1029, event for invisible dynamic size marker', function () {
+        var circle = new maptalks.Marker(map.getCenter(), {
+            'symbol': {
+                'markerType': 'circle',
+                'markerWidth': {stops: [[18, 0], [20, 30]]},
+                'markerHeight': {stops: [[18, 0], [20, 30]]},
+            }
+        });
+        circle.addTo(layer);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        circle.on('click', spy);
+
+        happen.click(eventContainer, {
+            'clientX':point.x + 1,
+            'clientY':point.y
+        });
+        expect(spy.called).not.to.be.ok();
+    });
+
+    it('#1029, event for visible dynamic size marker', function () {
+        var circle = new maptalks.Marker(map.getCenter(), {
+            'symbol': {
+                'markerType': 'circle',
+                'markerWidth': {stops: [[10, 0], [20, 30]]},
+                'markerHeight': {stops: [[10, 0], [20, 30]]},
+            }
+        });
+        circle.addTo(layer);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        circle.on('click', spy);
+
+        happen.click(eventContainer, {
+            'clientX':point.x + 1,
+            'clientY':point.y
+        });
+        expect(spy.called).to.be.ok();
     });
 });

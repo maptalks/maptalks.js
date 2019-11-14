@@ -18,6 +18,10 @@ class Symbolizer {
         return this.painter;
     }
 
+    isDynamicSize() {
+        return false;
+    }
+
     /**
      * Test if the property is a property related with coloring
      * @param {String} prop - property name to test
