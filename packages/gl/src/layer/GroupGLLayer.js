@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4 } from 'gl-matrix';
+import { vec2, mat4 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowPass';
 import * as reshader from '@maptalks/reshader.gl';
@@ -266,6 +266,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this.forEachRenderer((renderer) => {
                 renderer.draw = this._buildDrawFn(renderer.draw);
                 renderer.drawOnInteracting = this._buildDrawFn(renderer.drawOnInteracting);
+                renderer.setToRedraw = this._buildSetToRedrawFn(renderer.setToRedraw);
+                renderer.setCanvasUpdated = this._buildSetToRedrawFn(renderer.setCanvasUpdated);
             });
             this._replaceChildDraw = true;
         }
@@ -382,7 +384,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         });
         this.gl.regl = this._regl;
 
-        this._jitter = [];
+        this._jitter = [0, 0];
         this._jitGetter = new reshader.Jitter(0.5);
     }
 
@@ -518,6 +520,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
+    _buildSetToRedrawFn(fn) {
+        const parent = this;
+        return function (...args) {
+            parent.setOutdated();
+            return fn.apply(this, args);
+        };
+    }
+
     _prepareDrawContext() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -537,6 +547,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (hasJitter) {
             context['jitter'] = this._jitGetter.getJitter(this._jitter);
             this._jitGetter.frame();
+        } else {
+            vec2.set(this._jitter, 0, 0);
         }
         if (config.bloom && config.bloom.enable) {
             context['bloom'] = 1;
@@ -704,7 +716,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
                 cameraWorldMatrix: map.cameraWorldMatrix,
                 fov: map.getFov() * Math.PI / 180,
-                jitter: this._jitter || [0, 0],
+                jitter: this._jitter,
                 near: map.cameraNear,
                 far: map.cameraFar,
                 canvasUpdated: redrawFrame,

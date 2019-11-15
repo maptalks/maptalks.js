@@ -27,7 +27,7 @@ class TaaPass {
         }
         const viewChanged = this._viewChanged(pvMatrix, prevPvMatrix);
         // console.log(viewChanged);
-        if (needClear || viewChanged) {
+        if (canvasUpdated || needClear || viewChanged) {
             this._jitter.reset();
             this._counter = 0;
             this._clearTex();
@@ -62,7 +62,8 @@ class TaaPass {
             'uSSAARestart': 0,
             'uTaaEnabled': 0,
         };
-        uniforms['uClipAABBEnabled'] = canvasUpdated && !viewChanged ? 1 : 0;
+        // uniforms['uClipAABBEnabled'] = canvasUpdated && !viewChanged ? 1 : 0;
+        uniforms['uClipAABBEnabled'] = 0;
         uniforms['fov'] = fov;
         uniforms['uTaaCurrentFramePVLeft'] = pvMatrix;
         uniforms['uTaaInvViewMatrixLeft'] = invViewMatrix;
