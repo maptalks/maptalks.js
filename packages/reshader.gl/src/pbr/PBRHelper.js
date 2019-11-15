@@ -315,27 +315,25 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
 //https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
 function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
     //基于rgbm格式生成mipmap
-    const faces = getEnvmapPixels(regl, fromCubeMap, fromCubeMap.width);
-    const mipmapCube = regl.cube({
-        faces,
-        min : 'linear mipmap linear',
-        mag : 'linear',
-        width: fromCubeMap.width,
-        height: fromCubeMap.height,
-        mipmap: true
-    });
+    // const faces = getEnvmapPixels(regl, fromCubeMap, fromCubeMap.width);
+    // const mipmapCube = regl.cube({
+    //     faces,
+    //     min : 'linear mipmap linear',
+    //     mag : 'linear',
+    //     width: fromCubeMap.width,
+    //     height: fromCubeMap.height,
+    //     mipmap: true
+    // });
 
-    const mipmap = createPrefilterMipmap(regl, mipmapCube, SIZE, sampleSize, roughnessLevels);
+    const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels);
     // debugger
     const prefilterCube = regl.cube({
         radius : SIZE,
         min : 'linear mipmap linear',
         mag : 'linear',
-        // wrap : 'clamp',
-        //TODO #56 改成rgbm
         faces : mipmap
     });
-    mipmapCube.destroy();
+    // mipmapCube.destroy();
     return prefilterCube;
 }
 
