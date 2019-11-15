@@ -38,6 +38,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return false;
         }
+        delete this._isViewChanged;
         const map = this.map;
         map._fireEvent('framestart');
         this.updateMapDOM();
@@ -534,12 +535,13 @@ class MapCanvasRenderer extends MapRenderer {
      * @return {Boolean}
      */
     isViewChanged() {
+        if (this._isViewChanged !== undefined) {
+            return this._isViewChanged;
+        }
         const previous = this._mapview;
         const view = this._getMapView();
-        if (!previous || !equalMapView(previous, view)) {
-            return true;
-        }
-        return false;
+        this._isViewChanged = !previous || !equalMapView(previous, view);
+        return this._isViewChanged;
     }
 
     _recordView() {
