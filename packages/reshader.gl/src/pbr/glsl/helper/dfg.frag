@@ -6,6 +6,24 @@ uniform sampler2D distributionMap;
 
 const float PI = 3.14159265359;
 
+vec4 packFloat(float a, float b) {
+    // vec4 rgba = texture2D(sIntegrateBRDF, vec2(NoV, roughness));
+    // float b = (rgba[3] * 65280.0 + rgba[2] * 255.0);
+    // float a = (rgba[1] * 65280.0 + rgba[0] * 255.0);
+    // const float div = 1.0 / 65535.0;
+    // return (specular * a + b * f90) * div;
+
+    a *= 65535.0;
+    b *= 65535.0;
+    vec4 rgba;
+    rgba[0] = mod(a, 255.0);
+    rgba[1] = (a - rgba[0]) / 65280.0;
+
+    rgba[2] = mod(b, 255.0);
+    rgba[3] = (b - rgba[2]) / 65280.0;
+    return rgba;
+}
+
 vec3 ImportanceSampleGGX(float Xi, vec3 N, float roughness)
 {
     vec3 H = texture2D(distributionMap, vec2(roughness, Xi)).rgb;
@@ -82,6 +100,7 @@ vec2 IntegrateBRDF(float NdotV, float roughness)
 void main()
 {
     vec2 integratedBRDF = IntegrateBRDF(vTexCoords.x, vTexCoords.y);
-    gl_FragColor = vec4(integratedBRDF, 0.0, 1.0);
+    gl_FragColor = packFloat(integratedBRDF.x, integratedBRDF.y);
+    // gl_FragColor = vec4(integratedBRDF, 0.0, 1.0);
     // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

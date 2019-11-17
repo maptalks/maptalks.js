@@ -358,7 +358,7 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
 
     const distro = generateNormalDistribution(sampleSize, roughnessLevels);
 
-    const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+    // const type = regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
     const distributionMap = regl.texture({
         data : distro,
         width : roughnessLevels,
@@ -373,7 +373,7 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     const quadTexBuf = regl.buffer(quadTexcoords);
     const fbo = regl.framebuffer({
         radius : size,
-        colorType: type,
+        colorType: 'uint8',
         colorFormat: 'rgba',
         min : 'linear',
         mag : 'linear'
