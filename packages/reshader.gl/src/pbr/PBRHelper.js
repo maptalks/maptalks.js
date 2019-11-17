@@ -7,7 +7,7 @@ import equirectangularMapFS from './glsl/helper/equirectangular_to_cubemap.frag'
 import prefilterFS from './glsl/helper/prefilter.frag';
 import dfgFS from './glsl/helper/dfg.frag';
 import dfgVS from './glsl/helper/dfg.vert';
-import coefficients from 'cubemap-sh';
+import coefficients from './SH.js';
 import skyboxFrag from '../skybox/skybox.frag';
 
 
@@ -57,18 +57,19 @@ export function createIBLMaps(regl, config = {}) {
 
     let sh;
     if (!config.ignoreSH) {
-        const size = 256;
-        let cubeMap;
-        if (!Array.isArray(envTexture)) {
-            cubeMap = createEquirectangularMapCube(regl, envTexture, size, false);
-        } else {
-            const cube = regl.cube(...envTexture);
-            cubeMap = createSkybox(regl, cube, size, false);
-            cube.destroy();
-        }
-        const faces = getEnvmapPixels(regl, cubeMap, size);
-        sh = coefficients(faces, size, 4);
-        cubeMap.destroy();
+        const size = prefilterCubeSize;
+        // let cubeMap;
+        // if (!Array.isArray(envTexture)) {
+        //     cubeMap = createEquirectangularMapCube(regl, envTexture, size, false);
+        // } else {
+        // const cube = regl.cube(...envTexture);
+        // cubeMap = createSkybox(regl, cube, size, false);
+        // cube.destroy();
+        // }
+        const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
+        const faces = getEnvmapPixels(regl, prefilterMap, size, lod);
+        sh = coefficients(faces, size, size);
+        // cubeMap.destroy();
     }
 
     // const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
@@ -128,9 +129,9 @@ function createSkybox(regl, cubemap, envCubeSize, rgbm) {
     return color;
 }
 
-function getEnvmapPixels(regl, cubemap, envCubeSize) {
+function getEnvmapPixels(regl, cubemap, envCubeSize, lod) {
     const drawCube = regl({
-        frag : skyboxFrag,
+        frag : lod !== undefined ? `#define LOD ${lod}\n` + skyboxFrag : skyboxFrag,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices

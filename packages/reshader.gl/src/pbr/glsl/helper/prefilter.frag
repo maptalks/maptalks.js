@@ -76,21 +76,21 @@ void main()
         if(NdotL > 0.0)
         {
             // a more precision method,  sample from the environment's mip level based on roughness/pdf
-            float D   = DistributionGGX(N, H, roughness);
-            float NdotH = max(dot(N, H), 0.0);
-            float HdotV = max(dot(H, V), 0.0);
-            float pdf = D * NdotH / (4.0 * HdotV) + 0.0001;
+            // float D   = DistributionGGX(N, H, roughness);
+            // float NdotH = max(dot(N, H), 0.0);
+            // float HdotV = max(dot(H, V), 0.0);
+            // float pdf = D * NdotH / (4.0 * HdotV) + 0.0001;
 
-            float saTexel  = 4.0 * PI / (6.0 * resolution * resolution);
-            float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
+            // float saTexel  = 4.0 * PI / (6.0 * resolution * resolution);
+            // float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
 
-            float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
+            // float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
-            prefilteredColor += decodeRGBM(textureCube(environmentMap, L, mipLevel), 7.0).rgb * NdotL;
-            totalWeight      += NdotL;
-            //--------------------------------------------------------
-            // prefilteredColor += textureCube(environmentMap, L).rgb * NdotL;
+            // prefilteredColor += decodeRGBM(textureCube(environmentMap, L, mipLevel), 7.0).rgb * NdotL;
             // totalWeight      += NdotL;
+            //--------------------------------------------------------
+            prefilteredColor += decodeRGBM(textureCube(environmentMap, L), 7.0).rgb * NdotL;
+            totalWeight      += NdotL;
         }
     }
 

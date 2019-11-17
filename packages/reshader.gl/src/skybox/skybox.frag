@@ -1,3 +1,4 @@
+#extension GL_EXT_shader_texture_lod : enable
 precision highp float;
 
 varying vec3 vWorldPos;
@@ -21,7 +22,12 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 
 void main()
 {
-    vec4 envColor = textureCube(cubeMap, vWorldPos);
+
+    #if defined(LOD)
+        vec4 envColor = textureCubeLodEXT(cubeMap, vWorldPos, LOD);
+    #else
+        vec4 envColor = textureCube(cubeMap, vWorldPos);
+    #endif
 
     #ifdef ENC_RGBM
     	gl_FragColor = encodeRGBM(envColor.rgb, 7.0);
