@@ -45,6 +45,11 @@ varying vec3 vModelVertex;
     varying vec2 vTexCoord;
 #endif
 
+#if defined(HAS_COLOR)
+    attribute vec4 aColor;
+    varying vec4 vColor;
+#endif
+
 /**
  * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
  */
@@ -99,4 +104,8 @@ void main() {
     jitteredProjection[2].xy += uHalton.xy / uGlobalTexSize.xy;
     gl_Position = jitteredProjection * viewVertex;
     // gl_PointSize = min(64.0, max(1.0, -uPointSize / vViewVertex.z));
+
+    #if defined(HAS_COLOR)
+        vColor = aColor / 255.0;
+    #endif
 }

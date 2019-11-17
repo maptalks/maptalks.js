@@ -267,7 +267,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 renderer.draw = this._buildDrawFn(renderer.draw);
                 renderer.drawOnInteracting = this._buildDrawFn(renderer.drawOnInteracting);
                 renderer.setToRedraw = this._buildSetToRedrawFn(renderer.setToRedraw);
-                renderer.setCanvasUpdated = this._buildSetToRedrawFn(renderer.setCanvasUpdated);
             });
             this._replaceChildDraw = true;
         }
