@@ -22,7 +22,7 @@
 <body>
 
   <div id="main">
-    <div id="map2" style="position:absolute;top:80px;width:100%;height:1000px;background-color:#fff;"></div>
+    <div id="map2" style="position:absolute;top:80px;width:1100px;height:1000px;background-color:#fff;"></div>
     <!-- <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas> -->
 
@@ -44,7 +44,7 @@
       "center":[13.418531244478004,52.533396361654326],"zoom":18.582413946875466,"pitch":52.20000000000007,"bearing":0,
 
       //纽约
-      "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
+      // "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
 
       // "center":[13.420845330196812,52.53554217055179],"zoom":19,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
@@ -115,14 +115,27 @@
           lights : {
             ambient: {
               resource: {
-                url: './resources/industrial_room.hdr'
+                url: './resources/industrial_room.hdr',
+                // url: './resources/pisa.hdr',
+                // sh: [
+                //   [0.8216, 0.6652, 0.5816],
+                //   [0.0265, -0.0286, -0.0697],
+                //   [-0.0170, -0.0221, 0.0129],
+                //   [-0.0024, 0.0028, 0.0057],
+                //   [-0.0017, 0.0098, 0.0140],
+                //   [-0.0026, -0.0008, 0.0014],
+                //   [0.0197, -0.0080, -0.0268],
+                //   [0.0269, 0.0155, 0.0024],
+                //   [0.0294, 0.0102, -0.0056]
+                // ]
+                // exposure: 1.5
               },
               // color: [0.05, 0.05, 0.05],
-              exposure: 0.7
+              exposure: 1.0
             },
             directional: {
-              color : [0.2, 0.1, 0.1],
-              direction : [0, 1, 1],
+              color : [1, 1, 1],
+              direction : [-0.0000, 0, -1],
               // intensity: 80000
             }
           }
@@ -147,8 +160,9 @@
       // 'uvScaleFactor': 1,
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       'uAlbedoPBR': [1, 1, 1, 1],
-      'uRoughnessPBRFactor': 0,
-      'uMetalnessPBRFactor': 1
+      'uRoughnessPBRFactor': 0.6,
+      'uMetalnessPBRFactor': 0,
+      'uOutputLinear': 1
     };
 
     const style =  {
@@ -177,41 +191,42 @@
           symbol: {
             material: litMaterial,
             polygonOpacity: 1,
-            polygonFill: {
+            polygonFill: '#fff'/*{
               property : 'levels',
               stops : [
-                [5, '#f00'],
-                [3, '#fff700'],
-                [1, '#fff']
+                [5, '#313695'],
+                [3, '#4575b4'],
+                [1, '#74add1']
               ]
-            }
+            }*/
           }
         }
       ]
     };
-
+    //'#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'
     // test tile clipping mask
-    // var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
-    //   debug : false,
-    //   // canvas: debugCanvas,
-    //   data: data,
-    //   hitDetect : false,
-    //   antialias: false,
-    //   pickingPoint: true
-    // });
-    // layer.setStyle(style);
+    var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
+      debug : false,
+      // canvas: debugCanvas,
+      data: data,
+      hitDetect : false,
+      antialias: false,
+      pickingPoint: true,
+      cascadeTiles: true
+    });
+    layer.setStyle(style);
 
-    style.style[0].filter = [
-      "==",
-      "$layer",
-      "building"
-    ];
+    // style.style[0].filter = [
+    //   "==",
+    //   "$layer",
+    //   "building"
+    // ];
 
-    var layer = new maptalks.MapboxVectorTileLayer('buildings', {
-      urlTemplate: mapboxURL,
-      style,
-      cascadeTiles: false
-    })
+    // var layer = new maptalks.MapboxVectorTileLayer('buildings', {
+    //   urlTemplate: mapboxURL,
+    //   style,
+    //   cascadeTiles: true
+    // })
 
     // map.on('click', function (e) {
     //   alert(JSON.stringify(layer.identify(e.coordinate)));

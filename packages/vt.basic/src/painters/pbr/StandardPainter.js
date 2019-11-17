@@ -4,9 +4,14 @@ import { isNil, extend, isNumber } from '../../Util';
 import Painter from '../Painter';
 import { setUniformFromSymbol } from '../../Util';
 
+const PREFILTER_CUBE_SIZE = 32;
 const SCALE = [1, 1, 1];
 
 class StandardPainter extends Painter {
+    constructor(regl, layer, sceneConfig, pluginIndex) {
+        super(regl, layer, sceneConfig, pluginIndex);
+        this.colorSymbol = 'polygonFill';
+    }
 
     createGeometry(glData) {
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
@@ -45,6 +50,9 @@ class StandardPainter extends Painter {
                 }
             });
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
+        }
+        if (geometry.data.aColor) {
+            defines['HAS_COLOR'] = 1;
         }
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
@@ -174,6 +182,11 @@ class StandardPainter extends Painter {
                     }
                 },
                 viewport,
+                depth: {
+                    enable: true,
+                    range: this.sceneConfig.depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || '<='
+                },
                 polygonOffset: {
                     enable: true,
                     offset: {
@@ -246,8 +259,8 @@ class StandardPainter extends Painter {
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: hdr.getREGLTexture(regl),
             ignoreSH: !!config['sh'],
-            envCubeSize: 1024
-            // prefilterCubeSize : 256
+            envCubeSize: PREFILTER_CUBE_SIZE,
+            prefilterCubeSize: PREFILTER_CUBE_SIZE
         });
         const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
         if (config['sh']) {
@@ -413,7 +426,6 @@ class StandardPainter extends Painter {
         const lightConfig = this.sceneConfig.lights;
         let uniforms;
         if (iblMaps) {
-            const PREFILTER_CUBE_SIZE = 256;
             const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
             uniforms = {
                 'uEnvironmentExposure': isNumber(lightConfig.ambient.exposure) ? lightConfig.ambient.exposure : 1, //2

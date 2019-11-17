@@ -289,7 +289,7 @@ class LinePainter extends BasicPainter {
                 depth: {
                     enable: true,
                     range: depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || (depthRange ? '<=' : 'always')
+                    func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
                     enable: true,

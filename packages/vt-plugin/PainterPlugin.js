@@ -142,49 +142,49 @@ function createPainterPlugin(type, Painter) {
                         mesh._animationTime = context.timestamp;
                     }
                 }
-                this._meshCache[key] = mesh;
-            }
-            if (!mesh || Array.isArray(mesh) && !mesh.length) {
-                return NO_REDRAW;
-            }
-            var enableTileStencil = layer.getRenderer().isEnableTileStencil();
-            //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
-            //level:    4       2     0     1       3
-            var level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
-            if (Array.isArray(mesh)) {
-                mesh.forEach(m => {
-                    m.properties.tile = tileInfo;
-                    m.properties.level = level;
-                    m.setUniform('level', level);
+                var enableTileStencil = layer.getRenderer().isEnableTileStencil();
+                //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
+                //level:    4       2     0     1       3
+                var level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
+                if (Array.isArray(mesh)) {
+                    mesh.forEach(m => {
+                        m.properties.tile = tileInfo;
+                        m.properties.level = level;
+                        m.setUniform('level', level);
+                        if (enableTileStencil) {
+                            m.defines['ENABLE_TILE_STENCIL'] = 1;
+                            m.setDefines(m.defines);
+                            if (!m.material.uniforms.hasOwnProperty('stencilRef')) {
+                                Object.defineProperty(m.material.uniforms, 'stencilRef', {
+                                    enumerable: true,
+                                    get: function () {
+                                        return m.properties.tile ? m.properties.tile.stencilRef : 255;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    mesh.properties.tile = tileInfo;
+                    mesh.properties.level = level;
+                    mesh.setUniform('level', level);
                     if (enableTileStencil) {
-                        m.defines['ENABLE_TILE_STENCIL'] = 1;
-                        m.setDefines(m.defines);
-                        if (!m.material.uniforms.hasOwnProperty('stencilRef')) {
-                            Object.defineProperty(m.material.uniforms, 'stencilRef', {
+                        mesh.defines['ENABLE_TILE_STENCIL'] = 1;
+                        mesh.setDefines(mesh.defines);
+                        if (!mesh.material.uniforms.hasOwnProperty('stencilRef')) {
+                            Object.defineProperty(mesh.material.uniforms, 'stencilRef', {
                                 enumerable: true,
                                 get: function () {
-                                    return m.properties.tile ? m.properties.tile.stencilRef : 255;
+                                    return mesh.properties.tile ? mesh.properties.tile.stencilRef : 255;
                                 }
                             });
                         }
                     }
-                });
-            } else {
-                mesh.properties.tile = tileInfo;
-                mesh.properties.level = level;
-                mesh.setUniform('level', level);
-                if (enableTileStencil) {
-                    mesh.defines['ENABLE_TILE_STENCIL'] = 1;
-                    mesh.setDefines(mesh.defines);
-                    if (!mesh.material.uniforms.hasOwnProperty('stencilRef')) {
-                        Object.defineProperty(mesh.material.uniforms, 'stencilRef', {
-                            enumerable: true,
-                            get: function () {
-                                return mesh.properties.tile ? mesh.properties.tile.stencilRef : 255;
-                            }
-                        });
-                    }
                 }
+                this._meshCache[key] = mesh;
+            }
+            if (!mesh || Array.isArray(mesh) && !mesh.length) {
+                return NO_REDRAW;
             }
             var redraw = false;
             if (!this._frameCache[key]) {
@@ -308,9 +308,10 @@ function createPainterPlugin(type, Painter) {
         },
 
         _generateColorArray: function (features, featureIndexes, indices, vertices, positionSize = 3) {
-            if (!vertices || !features || !features.length) {
+            if (!vertices || !features || !features.length || !this.painter.getSymbol()[this.painter.colorSymbol]) {
                 return null;
             }
+            // var myColors = ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'];
             var colors = new Uint8Array(vertices.length / positionSize * 4);
             var symbol, rgb;
             var visitedColors = {};
@@ -320,8 +321,14 @@ function createPainterPlugin(type, Painter) {
                 symbol = features[idx].symbol;
                 rgb = visitedColors[idx];
                 if (!rgb) {
-                    var color = Color(symbol[this.painter.colorSymbol]);
-                    rgb = visitedColors[idx] = color.array();
+                    // var color = Color(myColors[features[idx].feature.id % myColors.length]);
+                    // rgb = visitedColors[idx] = color.array();
+                    if (symbol[this.painter.colorSymbol]) {
+                        var color = Color(symbol[this.painter.colorSymbol]);
+                        rgb = visitedColors[idx] = color.array();
+                    } else {
+                        rgb = visitedColors[idx] = [255, 255, 255];
+                    }
                 }
                 pos = i * 4;
                 colors[pos] = rgb[0];

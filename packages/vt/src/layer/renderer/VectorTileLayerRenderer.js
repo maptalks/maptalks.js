@@ -11,6 +11,10 @@ const EMPTY_ARRAY = [];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
+    setToRedraw() {
+        super.setToRedraw();
+    }
+
     constructor(layer) {
         super(layer);
         this.ready = false;

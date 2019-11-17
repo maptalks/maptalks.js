@@ -44,17 +44,24 @@ export default class BaseLayerWorker {
      * @param {Function} cb - callback function when finished
      */
     loadTile(context, cb) {
+        const loadings = TILE_LOADINGS;
         const url = context.tileInfo.url;
         if (this._cache.has(url)) {
             const { features, layers } = this._cache.get(url);
+            const waitings = loadings[url];
+            delete loadings[url];
             if (!features.length) {
                 cb();
                 return;
             }
+            if (waitings) {
+                for (let i = 0; i < waitings.length; i++) {
+                    this._onTileLoad.call(waitings[i].ref, context, waitings[i].callback, url, layers, features);
+                }
+            }
             this._onTileLoad(context, cb, url, layers, features);
             return;
         }
-        const loadings = TILE_LOADINGS;
         if (loadings[url]) {
             loadings[url].push({
                 callback: cb,
@@ -71,30 +78,18 @@ export default class BaseLayerWorker {
             delete loadings[url];
             if (this.checkIfCanceled(url)) {
                 delete this.requests[url];
-                if (waitings) {
-                    for (let i = 0; i < waitings.length; i++) {
-                        waitings[i].callback(null, { canceled: true });
-                    }
-                }
+                this._callWaitings(waitings, null, { canceled: true });
                 return;
             }
             delete this.requests[url];
             if (err) {
                 this._cache.add(url, { features: [], layers: [] });
-                if (waitings) {
-                    for (let i = 0; i < waitings.length; i++) {
-                        waitings[i].callback(err);
-                    }
-                }
+                this._callWaitings(waitings, err);
                 return;
             }
             if (!features || !features.length) {
                 this._cache.add(url, { features: [], layers: [] });
-                if (waitings) {
-                    for (let i = 0; i < waitings.length; i++) {
-                        waitings[i].callback();
-                    }
-                }
+                this._callWaitings(waitings);
                 return;
             }
             this._cache.add(url, { features, layers });
@@ -133,6 +128,14 @@ export default class BaseLayerWorker {
             }
         }
         delete TILE_LOADINGS[url];
+    }
+
+    _callWaitings(waitings, err, data) {
+        if (waitings) {
+            for (let i = 0; i < waitings.length; i++) {
+                waitings[i].callback(err, data);
+            }
+        }
     }
 
     checkIfCanceled(url) {

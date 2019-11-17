@@ -42,8 +42,8 @@ export function loadAmbientTexture(res, regl) {
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: images,
             ignoreSH: !!res['sh'],
-            envCubeSize: 2048,
-            prefilterCubeSize : 512
+            envCubeSize: 32,
+            prefilterCubeSize : 32
         });
         const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
         if (res['sh']) {
