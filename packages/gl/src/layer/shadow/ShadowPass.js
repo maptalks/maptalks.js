@@ -82,7 +82,7 @@ class VSMShadowPass {
         this._transformGround();
         const map = this._layer.getMap();
         const shadowConfig = this.sceneConfig.shadow;
-        const changed = this._shadowChanged(map, scene);
+        const changed = this._shadowChanged(map, scene, lightDirection);
         let matrix, smap;
         if (changed) {
             const cameraProjViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
@@ -104,7 +104,8 @@ class VSMShadowPass {
             this._renderedView = {
                 center: map.getCenter(),
                 bearing: map.getBearing(),
-                pitch: map.getPitch()
+                pitch: map.getPitch(),
+                lightDirection: vec3.copy([], lightDirection)
             };
         } else {
             matrix = this._lightProjViewMatrix;
@@ -161,8 +162,11 @@ class VSMShadowPass {
         delete this.renderer;
     }
 
-    _shadowChanged(map, scene) {
+    _shadowChanged(map, scene, lightDirection) {
         if (!this._renderedShadows) {
+            return true;
+        }
+        if (!vec3.equals(lightDirection, this._renderedView.lightDirection)) {
             return true;
         }
         const meshes = scene.getMeshes();

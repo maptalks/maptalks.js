@@ -191,6 +191,7 @@ getFrustumWorldSpace = function () {
  */
 getDirLightCameraProjView = function () {
     let transf = new Array(4);
+    const lightDirection = new Array(3);
     const frustumCenter = [0, 0, 0, 0];
     const cameraUp = [0, 1, 0];
     const v3 = new Array(3);
@@ -206,8 +207,8 @@ getDirLightCameraProjView = function () {
             vec4.add(frustumCenter, frustumCenter, frustum[i]);
         }
         vec4.scale(frustumCenter, frustumCenter, 1 / 4);
-
-        lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDir)), frustumCenter, cameraUp);
+        vec3.scale(lightDirection, lightDir, -1);
+        lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDirection)), frustumCenter, cameraUp);
         vec4.transformMat4(transf, frustum[0], lvMatrix);
         let minZ = transf[2], maxZ = transf[2],
             minX = transf[0], maxX = transf[0],

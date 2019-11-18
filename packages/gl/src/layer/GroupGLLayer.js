@@ -253,6 +253,11 @@ GroupGLLayer.registerJSONType('GroupGLLayer');
 
 class Renderer extends maptalks.renderer.CanvasRenderer {
 
+    setToRedraw() {
+        this.setOutdated();
+        super.setToRedraw();
+    }
+
     onAdd() {
         super.onAdd();
         this.prepareCanvas();
