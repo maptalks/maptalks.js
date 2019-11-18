@@ -116,6 +116,8 @@
             ambient: {
               resource: {
                 url: './resources/industrial_room.hdr',
+                sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
+                ////echarts-gl上的例子
                 // url: './resources/pisa.hdr',
                 // sh: [
                 //   [0.8216, 0.6652, 0.5816],
@@ -134,8 +136,8 @@
               exposure: 1.0
             },
             directional: {
-              color : [1, 1, 1],
-              direction : [-0.0000, 0, -1],
+              color : [0.1, 0.1, 0.1],
+              direction : [1, 0, -1],
               // intensity: 80000
             }
           }
@@ -160,7 +162,7 @@
       // 'uvScaleFactor': 1,
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       'uAlbedoPBR': [1, 1, 1, 1],
-      'uRoughnessPBRFactor': 0.6,
+      'uRoughnessPBRFactor': 0,
       'uMetalnessPBRFactor': 0,
       'uOutputLinear': 1
     };
@@ -240,7 +242,7 @@
         opacity : 1.0,
         color : [0, 0, 0],
         blurOffset : 1,
-        lightDirection : [0, 1, 1]
+        lightDirection : renderPlugin.sceneConfig.lights.directional.direction
         // debug : ['shadow', 'shadow2']
       },
       postProcess: {
@@ -283,53 +285,37 @@
       // console.log(JSON.stringify(map.getBaseLayer().identify(e.coordinate)));
     });
 
-    // initGUI();
+    initGUI();
 
     function initGUI() {
       const gui = new dat.GUI( { width: 250 } );
-      const options = style.style[0].symbol.material;
-      options.colorLUT = true;
-      if (options['metallicFactor'] !== undefined) {
-        gui.add(options, 'metallicFactor', 0, 1).onChange(function(value){
-          updateMaterial('metallicFactor', value);
-        });
-        gui.add(options, 'clearCoat', 0, 5).onChange(function(value){
-          updateMaterial('clearCoat', value);
-        });
-
-        gui.add(options, 'clearCoatRoughness', 0, 1).onChange(function(value){
-          updateMaterial('clearCoatRoughness', value);
-        });
-      }
-      gui.add(options, 'roughnessFactor', 0, 1).onChange(function(value){
-        updateMaterial('roughnessFactor', value);
+      const dirConfig = renderPlugin.sceneConfig.lights.directional.direction;
+      const direction = {
+        x: dirConfig[0],
+        y: dirConfig[1],
+        z: dirConfig[2],
+      };
+      const folder = gui.addFolder('direction');
+      folder.open();
+      const xCtrl = folder.add(direction, 'x', -1, 1, 0.1);
+      const yCtrl = folder.add(direction, 'y', -1, 1, 0.1);
+      const zCtrl = folder.add(direction, 'z', -1, 1, 0.1);
+      xCtrl.onChange(function () {
+        dirConfig[0] = direction.x;
+        layer.updateSceneConfig(0, renderPlugin.sceneConfig);
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      yCtrl.onChange(function () {
+        dirConfig[1] = direction.y;
+        layer.updateSceneConfig(0, renderPlugin.sceneConfig);
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      zCtrl.onChange(function () {
+        dirConfig[2] = direction.z;
+        layer.updateSceneConfig(0, renderPlugin.sceneConfig);
+        groupLayer.setSceneConfig(sceneConfig);
       });
 
-      if (options['thickness']) {
-        gui.add(options, 'thickness', 0, 1, 0.1).onChange(function(value){
-          updateMaterial('thickness', value);
-        });
-
-        gui.add(options, 'subsurfacePower', 0, 30, 1).onChange(function(value){
-          updateMaterial('subsurfacePower', value);
-        });
-      }
-
-      gui.addColor(options, 'baseColor').onChange(function(value){
-        updateMaterial('baseColor', value);
-      });
-      if (options['subsurface']) {
-        gui.addColor(options, 'subsurface').onChange(function(value){
-          updateMaterial('subsurface', value);
-        });
-      }
-      gui.add(options, 'uvScaleFactor', 0.1, 5, 0.1).onChange(function(value){
-        updateMaterial('uvScale', [1 / value, 1 / value]);
-      });
-      gui.add(options, 'colorLUT').onChange(function (value) {
-        mapPostProcessConfig.colorLUT.enable = value;
-        map.setPostProcessConfig(mapPostProcessConfig);
-      });
     }
 
     function updateMaterial(key, value) {

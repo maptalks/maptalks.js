@@ -86,7 +86,7 @@ class StandardPainter extends Painter {
 
     updateSceneConfig(config) {
         extend(this.sceneConfig, config);
-        this.init();
+        this._updateCubeLight();
         this.setToRedraw();
     }
 
@@ -265,7 +265,9 @@ class StandardPainter extends Painter {
         const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
         if (config['sh']) {
             maps.sh = config['sh'];
-        }
+        }/* else {
+            console.log(JSON.stringify(maps.sh));
+        }*/
         maps['dfgLUT'] = dfgLUT;
         return maps;
     }
@@ -335,11 +337,30 @@ class StandardPainter extends Painter {
         return this.sceneConfig.lights && this.sceneConfig.lights.ambient && this.sceneConfig.lights.ambient.resource;
     }
 
+    _updateCubeLight() {
+        if (!this.iblMaps) {
+            return;
+        }
+        if (this.iblMaps) {
+            const config = this._getHDRResource();
+            if (isNumber(config)) {
+                if (config === this._iblConfig) {
+                    return;
+                }
+            } else if (config && config.url === this._iblConfig.url) {
+                return;
+            }
+            this._disposeIblMaps();
+        }
+        this._initCubeLight();
+    }
+
     _initCubeLight() {
         const config = this._getHDRResource();
         if (!config && config !== 0) {
             return;
         }
+        this._iblConfig = config;
         if (isNumber(config)) {
             //从图层的全局resources中读取
             const { resource } = this.layer.getStyleResource(config);
