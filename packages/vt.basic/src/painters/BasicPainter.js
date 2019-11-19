@@ -7,44 +7,45 @@ export default class BasicPainter extends Painter {
         if (!glData) {
             return null;
         }
-        const regl = this.regl;
-        let iconAtlas, glyphAtlas;
-        if (glData.iconAtlas) {
-            const repeatMode = (glData.type !== 'point') ? 'repeat' : 'clamp';
-            const image = glData.iconAtlas.image;
-            iconAtlas = regl.texture({
-                width: image.width,
-                height: image.height,
-                data: image.data,
-                format: image.format,
-                wrapS: repeatMode,
-                wrapT: repeatMode,
-                mag: 'linear', //very important
-                min: 'linear', //very important
-                flipY: false,
-            });
+        if (glData.iconAtlas && glData.iconAtlas.image) {
+            glData.iconAtlas.image.dataType = glData.type;
+            glData.iconAtlas.image.type = 'icon';
         }
-        if (glData.glyphAtlas) {
-            const sdf = glData.glyphAtlas.image;
-            glyphAtlas = regl.texture({
-                width: sdf.width,
-                height: sdf.height,
-                data: sdf.data,
-                format: sdf.format,
-                mag: 'linear', //very important
-                min: 'linear', //very important
-                flipY: false,
-            });
+        if (glData.glyphAtlas && glData.glyphAtlas.image) {
+            glData.glyphAtlas.image.type = 'glyph';
         }
-
         const data = extend({}, glData.data);
         const geometry = new reshader.Geometry(data, glData.indices, 0, { positionSize: glData.positionSize || 3 });
         geometry.properties = {
-            iconAtlas,
-            glyphAtlas,
             features
         };
+        if (glData.iconAtlas) {
+            geometry.properties.iconAtlas = glData.iconAtlas.image;
+        }
+        if (glData.glyphAtlas) {
+            geometry.properties.glyphAtlas = glData.glyphAtlas.image;
+        }
         extend(geometry.properties, glData.properties);
         return geometry;
+    }
+
+    createAtlasTexture(atlas) {
+        const regl = this.regl;
+        const image = atlas;
+        const config = {
+            width: image.width,
+            height: image.height,
+            data: image.data,
+            format: image.format,
+            mag: 'linear', //very important
+            min: 'linear', //very important
+            flipY: false,
+        };
+        if (atlas.type === 'icon') {
+            const wrapMode = (atlas.dataType !== 'point') ? 'repeat' : 'clamp';
+            config['wrapS'] = wrapMode;
+            config['wrapT'] = wrapMode;
+        }
+        return regl.texture(config);
     }
 }

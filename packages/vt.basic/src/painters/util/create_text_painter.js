@@ -75,7 +75,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         transparent = true;
     }
 
-    uniforms['texture'] = glyphAtlas;
+    uniforms['texture'] = this.createAtlasTexture(glyphAtlas);
     uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
 
     geometry.properties.memorySize = geometry.getMemorySize();

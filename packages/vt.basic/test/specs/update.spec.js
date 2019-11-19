@@ -308,6 +308,47 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update symbol textFill', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point', only2D: true },
+                    sceneConfig: { collision: false, fading: false }
+                },
+                symbol: { textOpacity: 1, textSize: 20, textFill: 'rgba(64,92,143,1)', textName: '大大大', textHaloRadius: 2, textHaloFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                const canvas = layer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
+                assert.deepEqual(pixel, [143, 54, 84, 255]);
+                layer.updateSymbol(0, { textFill: 'rgba(25,95,230,1)' });
+            } else if (count === 2) {
+                const canvas = layer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
+                assert.deepEqual(pixel, [121, 56, 134, 255]);
+
+                //确保glyphAtlas是有效的（否则会绘制一个矩形）
+                const pixel2 = readPixel(canvas, canvas.width / 2 + 6, canvas.height / 2);
+                assert.deepEqual(pixel2, [0, 0, 0, 0]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle) {
         const style = [
             {

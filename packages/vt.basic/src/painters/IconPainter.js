@@ -196,7 +196,7 @@ class IconPainter extends CollisionPainter {
             } else if (geometry.properties.glyphAtlas) {
                 const symbol = this.getSymbol();
                 this.symbolDef['isIconText'] = symbol['isIconText'] = true;
-                const mesh = textMesh = createTextMesh(this.regl, geometry, transform, symbol, this._textFnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
+                const mesh = textMesh = createTextMesh.call(this, this.regl, geometry, transform, symbol, this._textFnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
                 if (mesh.length) meshes.push(...mesh);
             }
         }
@@ -261,7 +261,7 @@ class IconPainter extends CollisionPainter {
         setUniformFromSymbol(uniforms, 'markerDy', symbol, 'markerDy');
         setUniformFromSymbol(uniforms, 'markerRotation', symbol, 'markerRotation', v => v * Math.PI / 180);
 
-        uniforms['texture'] = iconAtlas;
+        uniforms['texture'] = this.createAtlasTexture(iconAtlas);
         uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, defaultUniforms);

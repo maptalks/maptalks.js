@@ -118,7 +118,7 @@ export default class TextPainter extends CollisionPainter {
     createMesh(geometry, transform) {
         const symbol = this.getSymbol();
 
-        const meshes = createTextMesh(this.regl, geometry, transform, symbol, this._fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
+        const meshes = createTextMesh.call(this, this.regl, geometry, transform, symbol, this._fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
         if (meshes.length) {
             const isLinePlacement = symbol['textPlacement'] === 'line';
             //tags for picking
@@ -128,7 +128,6 @@ export default class TextPainter extends CollisionPainter {
                 this._hasNormalText = true;
             }
         }
-
         return meshes;
     }
 
