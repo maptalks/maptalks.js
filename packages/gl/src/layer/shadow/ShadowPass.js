@@ -5,11 +5,11 @@ import * as reshader from '@maptalks/reshader.gl';
 
 const COORD_THRESHOLD = 100;
 
-class VSMShadowPass {
+class ShadowPass {
     constructor(regl, sceneConfig, layer) {
         this.renderer = new reshader.Renderer(regl);
         this.sceneConfig = sceneConfig;
-        this._esmShadowThreshold = 0.5;
+        this._esmShadowThreshold = 0.3;
         this._layer = layer;
         this._init();
     }
@@ -65,7 +65,8 @@ class VSMShadowPass {
 
     getDefines() {
         const defines = {
-            'HAS_SHADOWING': 1
+            'HAS_SHADOWING': 1,
+            'PACK_FLOAT': 1
         };
         const type = this.sceneConfig.shadow.type;
         if (type === undefined || type === 'esm') {
@@ -150,12 +151,13 @@ class VSMShadowPass {
     delete() {
         this._shadowPass.dispose();
         this._shadowDisplayShader.dispose();
-        if (this._shadowMap) {
-            this._shadowMap.destroy();
-        }
-        if (this._blurFBO) {
-            this._blurFBO.destroy();
-        }
+        // if (this._shadowMap) {
+        // //已经在shadowPass中destroy了
+        //     this._shadowMap.destroy();
+        // }
+        // if (this._blurFBO) {
+        //     this._blurFBO.destroy();
+        // }
         if (this._ground) {
             this._ground.dispose();
         }
@@ -163,6 +165,10 @@ class VSMShadowPass {
     }
 
     _shadowChanged(map, scene, lightDirection) {
+        // if (this._rendered || !this._rendered && scene.getMeshes().length > 5) {
+        //     this._rendered = true;
+        //     return false;
+        // }
         if (!this._renderedShadows) {
             return true;
         }
@@ -200,7 +206,7 @@ class VSMShadowPass {
         const layer = this._layer;
         const map = layer.getMap();
         const extent = map['_get2DExtent'](map.getGLZoom());
-        const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
+        const scaleX = extent.getWidth() * 32, scaleY = extent.getHeight() * 32;
         const localTransform = this._ground.localTransform;
         mat4.identity(localTransform);
         mat4.translate(localTransform, localTransform, map.cameraLookAt);
@@ -209,4 +215,4 @@ class VSMShadowPass {
     }
 }
 
-export default VSMShadowPass;
+export default ShadowPass;

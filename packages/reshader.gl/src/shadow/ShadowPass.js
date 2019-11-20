@@ -15,9 +15,6 @@ class ShadowPass {
     }
 
     render(scene, { cameraProjViewMatrix, lightDir, farPlane }) {
-        if (!this.isSupported()) {
-            return null;
-        }
         const lightProjViewMatrix = this._renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane);
         return {
             lightProjViewMatrix,
@@ -39,10 +36,6 @@ class ShadowPass {
         return this;
     }
 
-    isSupported() {
-        return this._supported;
-    }
-
     _renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane) {
         const renderer = this.renderer;
         const frustum = getFrustumWorldSpace(cameraProjViewMatrix);
@@ -55,7 +48,7 @@ class ShadowPass {
         //TODO 遍历scene中的图形，如果aabb不和frustum相交，就不绘制
         const lightProjViewMatrix = getDirLightCameraProjView(frustum, lightDir);
         renderer.clear({
-            color : [0, 0, 0, 1],
+            color : [1, 0, 0, 1],
             depth : 1,
             framebuffer : this.depthFBO
         });
@@ -67,7 +60,7 @@ class ShadowPass {
                 });
             }
             renderer.clear({
-                color : [0, 0, 0, 1],
+                color : [1, 0, 0, 1],
                 depth : 1,
                 framebuffer : this.blurFBO
             });
@@ -86,22 +79,15 @@ class ShadowPass {
 
     _init(defines) {
         const regl = this.renderer.regl;
-        this._supported = regl.hasExtension('OES_texture_half_float_linear') || regl.hasExtension('oes_texture_float_linear');
-        if (!this.isSupported()) {
-            console.warn('WebGL oes_texture_float_linear or OES_texture_half_float_linear extension is not supported, shadow rendering is disabled.');
-            return;
-        }
-        //half_float能显著提升纹理读取速度
-        const type = (regl.hasExtension('OES_texture_half_float') &&
-            regl.hasExtension('OES_texture_half_float_linear')) ? 'float16' : 'float';
+        const type = 'uint8';
         const width = this.width,
             height = this.height;
         this.depthTex = regl.texture({
             width, height,
-            format : 'rgb',
+            format: 'rgb',
             type,
-            min : 'linear',
-            mag : 'linear',
+            min: 'nearest',
+            mag: 'nearest',
         });
 
         this.vsmShader = new ShadowMapShader(defines);
@@ -224,12 +210,15 @@ getDirLightCameraProjView = function () {
         }
 
         // 可能因为地图空间中y轴是反向的，所以与原贴不同，需要交换minZ和maxZ，即以-maxZ作为近裁面，-minZ作为远裁面
+        // lpMatrix = mat4.ortho(lpMatrix, -1, 1, -1, 1, -maxZ, -minZ);
         lpMatrix = mat4.ortho(lpMatrix, -1, 1, -1, 1, -maxZ, -minZ);
 
         const scaleX = scaleV[0] = 2 / (maxX - minX);
         const scaleY = scaleV[1] = -2 / (maxY - minY);
         offsetV[0] = -0.5 * (minX + maxX) * scaleX;
         offsetV[1] = -0.5 * (minY + maxY) * scaleY;
+        // scaleV[0] *= 1 / 4;
+        // scaleV[1] *= 1 / 4;
 
         mat4.identity(cropMatrix);
         mat4.translate(cropMatrix, cropMatrix, offsetV);

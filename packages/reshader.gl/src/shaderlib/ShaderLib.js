@@ -2,6 +2,7 @@
 import vsm_shadow_vert from './glsl/vsm_shadow.vert';
 import vsm_shadow_frag from './glsl/vsm_shadow.frag';
 import fbo_picking_vert from './glsl/fbo_picking.vert';
+import common_pack_float from './glsl/common_pack_float.glsl';
 import invert_matrix from '../shader/glsl/invert_matrix.vert';
 import get_output from '../shader/glsl/output.vert';
 //instance.vert
@@ -55,6 +56,7 @@ const ShaderChunk = {
     vsm_shadow_vert,
     vsm_shadow_frag,
     fbo_picking_vert,
+    common_pack_float,
 
     // //pbr common includes
     // fl_common_math_glsl,
@@ -90,7 +92,7 @@ const ShaderChunk = {
     get_output,
     instance_vert,
     skin_vert,
-    ssao_frag
+    ssao_frag,
 };
 /* eslint-enable camelcase */
 

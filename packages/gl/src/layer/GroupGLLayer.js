@@ -536,6 +536,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const context = {};
+        let framebuffer;
         if (!config || !config.enable) {
             if (this._targetFBO) {
                 this._targetFBO.destroy();
@@ -545,23 +546,24 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 this._bloomFBO.destroy();
                 delete this._bloomFBO;
             }
-            return context;
-        }
-        const hasJitter = config.taa && config.taa.enable || config.ssaa && config.ssaa.enable;
-        if (hasJitter) {
-            context['jitter'] = this._jitGetter.getJitter(this._jitter);
-            this._jitGetter.frame();
         } else {
-            vec2.set(this._jitter, 0, 0);
+            const hasJitter = config.taa && config.taa.enable || config.ssaa && config.ssaa.enable;
+            if (hasJitter) {
+                context['jitter'] = this._jitGetter.getJitter(this._jitter);
+                this._jitGetter.frame();
+            } else {
+                vec2.set(this._jitter, 0, 0);
+            }
+            if (config.bloom && config.bloom.enable) {
+                context['bloom'] = 1;
+                context['sceneFilter'] = noBloomFilter;
+            }
+            framebuffer = this._getFramebufferTarget();
+            if (framebuffer) {
+                context.renderTarget = framebuffer;
+            }
         }
-        if (config.bloom && config.bloom.enable) {
-            context['bloom'] = 1;
-            context['sceneFilter'] = noBloomFilter;
-        }
-        const framebuffer = this._getFramebufferTarget();
-        if (framebuffer) {
-            context.renderTarget = framebuffer;
-        }
+
         const shadowContext = this._getShadowContext(framebuffer && framebuffer.fbo);
         if (shadowContext) {
             context.shadow = shadowContext;

@@ -22,12 +22,23 @@ uniform float shadow_opacity;
 
 varying vec4 shadow_vLightSpacePos;
 
+#ifdef PACK_FLOAT
+    #include <common_pack_float>
+#endif
+
 #if defined(USE_ESM)
 float esm(vec3 projCoords, vec4 shadowTexel) {
     // vec2 uv = projCoords.xy;
     float compare = projCoords.z;
     float c = 50.0;
-    float depth = shadowTexel.r;
+    #ifdef PACK_FLOAT
+        float depth = common_decodeDepth(shadowTexel);
+        if (depth >= 1.0 - 1E-6 || compare <= depth) {
+            return 1.0;
+        }
+    #else
+        float depth = shadowTexel.r;
+    #endif
 
     depth = exp(-c * min(compare - depth, 0.05));
     // depth = exp(c * depth) * exp(-c * compare);
