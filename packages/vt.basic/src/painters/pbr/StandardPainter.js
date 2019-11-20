@@ -80,6 +80,19 @@ class StandardPainter extends Painter {
         super.addMesh(mesh, progress);
     }
 
+    paint(context) {
+        const hasShadow = !!context.shadow;
+        if (this._hasShadow === undefined) {
+            this._hasShadow = hasShadow;
+        }
+        if (this._hasShadow !== hasShadow) {
+            this.shader.dispose();
+            this._createShader(context);
+        }
+        this._hasShadow = hasShadow;
+        super.paint(context);
+    }
+
     getShadowMeshes() {
         return this.scene.getMeshes();
     }
@@ -142,6 +155,41 @@ class StandardPainter extends Painter {
 
         this.renderer = new reshader.Renderer(regl);
 
+        this._createShader(context);
+
+        this._bindedOnTextureLoad = this._onTextureLoad.bind(this);
+        this._bindDisposeCachedTexture = this.disposeCachedTexture.bind(this);
+
+        this._updateMaterial();
+
+        this._initCubeLight();
+
+        const pickingConfig = {
+            vert: `
+                attribute vec3 aPosition;
+                uniform mat4 projViewModelMatrix;
+                #include <fbo_picking_vert>
+                void main() {
+                    vec4 pos = vec4(aPosition, 1.0);
+                    gl_Position = projViewModelMatrix * pos;
+                    fbo_picking_setData(gl_Position.w, true);
+                }
+            `,
+            uniforms: [
+                {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: (context, props) => {
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                    }
+                }
+            ]
+        };
+        this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
+
+    }
+
+    _createShader(context) {
         const viewport = {
             x: 0,
             y: 0,
@@ -154,8 +202,8 @@ class StandardPainter extends Painter {
         };
 
         const config = {
-            uniforms: this._context.shadow && this._context.shadow.uniformDeclares || null,
-            defines: this._getDefines(this._context.shadow && this._context.shadow.defines),
+            uniforms: context.shadow && context.shadow.uniformDeclares || null,
+            defines: this._getDefines(context.shadow && context.shadow.defines),
             extraCommandProps: {
                 cull: {
                     enable: true,
@@ -198,37 +246,6 @@ class StandardPainter extends Painter {
         };
 
         this.shader = new reshader.pbr.StandardShader(config);
-
-        this._bindedOnTextureLoad = this._onTextureLoad.bind(this);
-        this._bindDisposeCachedTexture = this.disposeCachedTexture.bind(this);
-
-        this._updateMaterial();
-
-        this._initCubeLight();
-
-        const pickingConfig = {
-            vert: `
-                attribute vec3 aPosition;
-                uniform mat4 projViewModelMatrix;
-                #include <fbo_picking_vert>
-                void main() {
-                    vec4 pos = vec4(aPosition, 1.0);
-                    gl_Position = projViewModelMatrix * pos;
-                    fbo_picking_setData(gl_Position.w, true);
-                }
-            `,
-            uniforms: [
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
-            ]
-        };
-        this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
-
     }
 
     _initHDR() {
