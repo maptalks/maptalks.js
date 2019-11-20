@@ -16,13 +16,13 @@
 
 uniform sampler2D shadow_shadowMap;
 uniform float shadow_opacity;
-#if defined(USE_ESM) || defined(USE_VSM_ESM)
+#if defined(USE_ESM)
     uniform float esm_shadow_threshold;
 #endif
 
 varying vec4 shadow_vLightSpacePos;
 
-#if defined(USE_ESM) || defined(USE_VSM_ESM)
+#if defined(USE_ESM)
 float esm(vec3 projCoords, vec4 shadowTexel) {
     // vec2 uv = projCoords.xy;
     float compare = projCoords.z;
@@ -35,7 +35,7 @@ float esm(vec3 projCoords, vec4 shadowTexel) {
 }
 #endif
 
-#if defined(USE_VSM) || defined(USE_VSM_ESM)
+#if defined(USE_VSM)
 float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
 
     vec2 moments = shadowTexel.rg;
@@ -58,21 +58,14 @@ float vsm_shadow_chebyshevUpperBound(vec3 projCoords, vec4 shadowTexel){
 float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
     vec2 uv = projCoords.xy;
     vec4 shadowTexel = texture2D(shadowMap, uv);
-    #if defined(USE_ESM) || defined(USE_VSM_ESM)
+    #if defined(USE_ESM)
         float esm_coeff = esm(projCoords, shadowTexel);
+        float coeff = esm_coeff * esm_coeff;
     #endif
-    //TODO shadowMap是用esm算法生成的，但貌似采用vsm效果却不算差
-    #if defined(USE_VSM) || defined(USE_VSM_ESM)
+    #if defined(USE_VSM)
         float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
-    #endif
-    #if defined(USE_VSM_ESM)
-       float coeff = esm_coeff * vsm_coeff;
-    #elif defined(USE_ESM)
-        float coeff = esm_coeff;
-    #else
         float coeff = vsm_coeff;
     #endif
-
     return 1.0 - (1.0 - coeff) * shadow_opacity;
 }
 

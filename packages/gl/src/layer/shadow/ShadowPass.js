@@ -41,8 +41,9 @@ class VSMShadowPass {
         } else if (quality === 'medium') {
             shadowRes = 1024;
         }
-        this._shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: shadowConfig.blurOffset });
-        this._shadowDisplayShader = new reshader.ShadowDisplayShader(viewport, this.getDefines());
+        const defines = this.getDefines();
+        this._shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: shadowConfig.blurOffset, defines });
+        this._shadowDisplayShader = new reshader.ShadowDisplayShader(viewport, defines);
 
         this._createGround();
     }
@@ -72,8 +73,6 @@ class VSMShadowPass {
             defines['USE_ESM'] = 1;
         } else if (type === 'vsm') {
             defines['USE_VSM'] = 1;
-        } else if (type === 'vsm_esm') {
-            defines['USE_VSM_ESM'] = 1;
         }
         return defines;
     }
@@ -102,6 +101,7 @@ class VSMShadowPass {
                 return ids;
             }, {});
             this._renderedView = {
+                zoom: map.getZoom(),
                 center: map.getCenter(),
                 bearing: map.getBearing(),
                 pitch: map.getPitch(),
@@ -166,7 +166,11 @@ class VSMShadowPass {
         if (!this._renderedShadows) {
             return true;
         }
-        if (!vec3.equals(lightDirection, this._renderedView.lightDirection)) {
+        const renderedView = this._renderedView;
+        if (!vec3.equals(lightDirection, renderedView.lightDirection)) {
+            return true;
+        }
+        if (!map.isInteracting() && map.getZoom() !== renderedView.zoom) {
             return true;
         }
         const meshes = scene.getMeshes();
@@ -178,8 +182,8 @@ class VSMShadowPass {
         }
         const cp = map.coordToContainerPoint(this._renderedView.center);
         changed = (cp._sub(map.width / 2, map.height / 2).mag() > COORD_THRESHOLD) ||
-            Math.abs(this._renderedView.bearing - map.getBearing()) > 30 ||
-            Math.abs(this._renderedView.pitch - map.getPitch()) > 15;
+            Math.abs(renderedView.bearing - map.getBearing()) > 30 ||
+            Math.abs(renderedView.pitch - map.getPitch()) > 15;
         return changed;
     }
 

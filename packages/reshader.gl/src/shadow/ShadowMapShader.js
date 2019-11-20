@@ -5,7 +5,7 @@ import MeshShader from '../shader/MeshShader.js';
 
 class ShadowMapShader extends MeshShader {
 
-    constructor() {
+    constructor(defines) {
         super({
             vert : vsmVert,
             frag : vsmFrag,
@@ -23,7 +23,8 @@ class ShadowMapShader extends MeshShader {
                 //     enable: true,
                 //     face: 'back'
                 // }
-            }
+            },
+            defines
         });
     }
 

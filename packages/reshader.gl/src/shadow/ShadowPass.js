@@ -6,12 +6,12 @@ import BoxBlurShader from '../shader/BoxBlurShader';
 let getFrustumWorldSpace, getDirLightCameraProjView;
 
 class ShadowPass {
-    constructor(renderer, { width, height, blurOffset }) {
+    constructor(renderer, { width, height, blurOffset, defines }) {
         this.renderer = renderer;
         this.width = width || 512;
         this.height = height || 512;
         this.blurOffset = isNil(blurOffset) ? 2 : blurOffset;
-        this._init();
+        this._init(defines);
     }
 
     render(scene, { cameraProjViewMatrix, lightDir, farPlane }) {
@@ -45,9 +45,6 @@ class ShadowPass {
 
     _renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane) {
         const renderer = this.renderer;
-        if (!this.vsmShader) {
-            this.vsmShader = new ShadowMapShader();
-        }
         const frustum = getFrustumWorldSpace(cameraProjViewMatrix);
         if (farPlane) {
             for (let i = 4; i < 8; i++) {
@@ -87,7 +84,7 @@ class ShadowPass {
         return lightProjViewMatrix;
     }
 
-    _init() {
+    _init(defines) {
         const regl = this.renderer.regl;
         this._supported = regl.hasExtension('OES_texture_half_float_linear') || regl.hasExtension('oes_texture_float_linear');
         if (!this.isSupported()) {
@@ -106,6 +103,8 @@ class ShadowPass {
             min : 'linear',
             mag : 'linear',
         });
+
+        this.vsmShader = new ShadowMapShader(defines);
 
         this.depthFBO = regl.framebuffer({
             color : this.depthTex

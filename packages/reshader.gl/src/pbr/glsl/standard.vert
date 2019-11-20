@@ -50,6 +50,10 @@ varying vec3 vModelVertex;
     varying vec4 vColor;
 #endif
 
+#ifdef HAS_SHADOWING
+    #include <vsm_shadow_vert>
+#endif
+
 /**
  * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
  */
@@ -107,5 +111,9 @@ void main() {
 
     #if defined(HAS_COLOR)
         vColor = aColor / 255.0;
+    #endif
+
+    #if defined(HAS_SHADOWING)
+        shadow_computeShadowPars(localVertex);
     #endif
 }
