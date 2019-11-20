@@ -217,7 +217,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             for (const p in this.tilesInView) {
                 const transform = this.tilesInView[p].info.transform;
                 const extent = this.tilesInView[p].image.extent;
-                if (transform && extent) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform), extent);
+                if (transform && extent) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform), extent, parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo);
             }
         }
         this.completeRender();

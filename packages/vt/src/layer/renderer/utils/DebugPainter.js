@@ -8,7 +8,7 @@ class DebugPainter {
         this._init();
     }
 
-    draw(transform, extent) {
+    draw(transform, extent, fbo) {
         if (!this._data) {
             this._data = this._regl.buffer(new Uint16Array([
                 0, 0,
@@ -21,10 +21,14 @@ class DebugPainter {
                 0, 0
             ]));
         }
-        this._command({
+        const config = {
             transform,
-            data : this._data
-        });
+            data: this._data
+        };
+        if (fbo) {
+            config.framebuffer = fbo;
+        }
+        this._command(config);
     }
 
     remove() {
@@ -37,18 +41,18 @@ class DebugPainter {
     _init() {
         const canvas = this._canvas;
         const viewport = {
-            x : 0,
-            y : 0,
-            width : () => {
+            x: 0,
+            y: 0,
+            width: () => {
                 return canvas ? canvas.width : 1;
             },
-            height : () => {
+            height: () => {
                 return canvas ? canvas.height : 1;
             }
         };
 
         this._command = this._regl({
-            vert : `
+            vert: `
                 attribute vec2 aPosition;
                 uniform mat4 transform;
                 void main()
@@ -56,7 +60,7 @@ class DebugPainter {
                     gl_Position = transform * vec4(aPosition, 0.0, 1.0);
                 }
             `,
-            frag : `
+            frag: `
                 precision mediump float;
                 uniform vec3 color;
                 void main()
@@ -64,23 +68,24 @@ class DebugPainter {
                     gl_FragColor = vec4(color, 1.0);
                 }
             `,
-            attributes : {
-                aPosition : this._regl.prop('data')
+            attributes: {
+                aPosition: this._regl.prop('data')
             },
-            uniforms : {
-                transform : this._regl.prop('transform'),
-                color : this._color
+            uniforms: {
+                transform: this._regl.prop('transform'),
+                color: this._color
             },
-            count : 8,
-            primitive : 'lines',
-            depth : {
-                enable : false,
-                mask : false
+            count: 8,
+            primitive: 'lines',
+            depth: {
+                enable: false,
+                mask: false
             },
-            stencil : {
-                enable : false
+            stencil: {
+                enable: false
             },
-            viewport
+            viewport,
+            framebuffer: this._regl.prop('framebuffer')
         });
     }
 }
