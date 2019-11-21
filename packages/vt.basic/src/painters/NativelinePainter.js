@@ -110,7 +110,7 @@ class NativeLinePainter extends Painter {
                 depth: {
                     enable: true,
                     range: depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || (depthRange ? '<=' : 'always')
+                    func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
                     enable: true,
@@ -119,6 +119,13 @@ class NativeLinePainter extends Painter {
                         dst: 'one minus src alpha'
                     },
                     equation: 'add'
+                },
+                polygonOffset: {
+                    enable: true,
+                    offset: {
+                        factor: -(this.pluginIndex + 1),
+                        units: -(this.pluginIndex + 1)
+                    }
                 }
             }
         };

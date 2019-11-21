@@ -1034,7 +1034,7 @@ function getDefaultSymbol(type) {
         };
     case 'native-line':
         return {
-            lineColor: '#fff',
+            lineColor: '#bbb',
             lineOpacity: 0.5
         };
     case 'fill':
