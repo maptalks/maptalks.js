@@ -115,7 +115,9 @@ class ShadowPass {
         }
         this._projMatrix = projMatrix;
         this._viewMatrix = viewMatrix;
-        this.displayShadow(halton, framebuffer);
+        if (scene.getMeshes().length) {
+            this.displayShadow(halton, framebuffer);
+        }
         const uniforms = {
             'shadow_lightProjViewMatrix': matrix,
             'shadow_shadowMap': smap,
