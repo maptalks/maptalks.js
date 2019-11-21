@@ -114,7 +114,9 @@ export default class TileStencilRenderer {
                 }
             },
             depth: {
-                enable: false
+                enable: true,
+                func: 'always',
+                mask: false
             },
             colorMask: [false, false, false, false],
         };

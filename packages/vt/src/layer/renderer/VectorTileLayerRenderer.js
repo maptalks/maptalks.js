@@ -899,8 +899,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         case 'native-line':
             renderPlugin = {
                 type: 'native-line',
-                dataConfig: { type: 'native-line', only2D: true },
-                sceneConfig: { depthRange: [0.9998, 0.9998] }
+                dataConfig: { type: 'native-line', only2D: true }
             };
             break;
         case 'native-point':
@@ -912,8 +911,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         case 'fill':
             renderPlugin = {
                 type: 'fill',
-                dataConfig: { type: 'fill', only2D: true },
-                sceneConfig: { depthRange: [0.9999, 0.9999] }
+                dataConfig: { type: 'fill', only2D: true }
             };
             break;
         default:
