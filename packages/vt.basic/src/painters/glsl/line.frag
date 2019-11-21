@@ -2,6 +2,10 @@
 
 precision highp float;
 
+#if defined(HAS_SHADOWING)
+    #include <vsm_shadow_frag>
+#endif
+
 uniform lowp float lineBlur;
 uniform lowp float lineOpacity;
 
@@ -90,4 +94,9 @@ void main() {
     #endif
 
     gl_FragColor = color * lineOpacity;
+
+    #if defined(HAS_SHADOWING)
+        float shadow = shadow_computeShadow();
+        gl_FragColor.rgb *= shadow;
+    #endif
 }

@@ -63,6 +63,11 @@ varying float vGammaScale;
     varying float vGradIndex;
 #endif
 
+#ifdef HAS_SHADOWING
+    #include <vsm_shadow_vert>
+#endif
+
+
 void main() {
     #ifdef IS_2D_POSITION
         vec3 position = vec3(aPosition, 0.0);
@@ -95,7 +100,8 @@ void main() {
     #endif
 
     float scale = tileResolution / resolution;
-    gl_Position = projViewModelMatrix * vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+    vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+    gl_Position = projViewModelMatrix * localVertex;
 
     float distance = gl_Position.w;
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
@@ -122,5 +128,9 @@ void main() {
 
     #ifdef HAS_COLOR
         vColor = aColor;
+    #endif
+
+    #if defined(HAS_SHADOWING)
+        shadow_computeShadowPars(localVertex);
     #endif
 }

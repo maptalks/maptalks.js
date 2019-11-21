@@ -3,6 +3,10 @@
 
 precision mediump float;
 
+#if defined(HAS_SHADOWING)
+    #include <vsm_shadow_frag>
+#endif
+
 uniform lowp float lineBlur;
 uniform lowp float lineOpacity;
 uniform float lineGradientTextureHeight;
@@ -39,4 +43,9 @@ void main() {
     color *= max(sign(MAX_LINE_COUNT - vGradIndex), 0.0); //超过MAX_LINE_COUNT时则不显示
 
     gl_FragColor = color * lineOpacity;
+
+    #if defined(HAS_SHADOWING)
+        float shadow = shadow_computeShadow();
+        gl_FragColor.rgb *= shadow;
+    #endif
 }

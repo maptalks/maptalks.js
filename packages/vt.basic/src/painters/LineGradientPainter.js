@@ -5,7 +5,7 @@ import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
 import pickingVert from './glsl/line.picking.vert';
 import { setUniformFromSymbol } from '../Util';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { prepareFnTypeData, updateGeometryFnTypeAttrib, extend } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 
 const defaultUniforms = {
@@ -117,6 +117,19 @@ class LineGradientPainter extends BasicPainter {
         updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
+    paint(context) {
+        const hasShadow = !!context.shadow;
+        if (this._hasShadow === undefined) {
+            this._hasShadow = hasShadow;
+        }
+        if (this._hasShadow !== hasShadow) {
+            this.shader.dispose();
+            this.createShader(context);
+        }
+        this._hasShadow = hasShadow;
+        super.paint(context);
+    }
+
     _getFnTypeConfig() {
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
         const map = this.getMap();
@@ -143,13 +156,13 @@ class LineGradientPainter extends BasicPainter {
         return true;
     }
 
-    init() {
+    init(context) {
 
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
 
-        this.createShader();
+        this.createShader(context);
 
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
@@ -183,7 +196,30 @@ class LineGradientPainter extends BasicPainter {
         }
     }
 
-    createShader() {
+    createShader(context) {
+        const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
+        const defines = context.shadow && context.shadow.defines || {};
+        uniforms.push(
+            'cameraToCenterDistance',
+            'lineWidth',
+            'lineBlur',
+            'lineOpacity',
+            {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
+                    const projViewModelMatrix = [];
+                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                    return projViewModelMatrix;
+                }
+            },
+            'tileRatio',
+            'resolution',
+            'tileResolution',
+            'lineDx',
+            'lineDy',
+            'canvasSize'
+        );
         const stencil = this.layer.getRenderer().isEnableTileStencil();
         const canvas = this.canvas;
         const viewport = {
@@ -199,27 +235,8 @@ class LineGradientPainter extends BasicPainter {
         const depthRange = this.sceneConfig.depthRange;
         this.shader = new reshader.MeshShader({
             vert, frag,
-            uniforms: [
-                'cameraToCenterDistance',
-                'lineWidth',
-                'lineBlur',
-                'lineOpacity',
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        const projViewModelMatrix = [];
-                        mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                        return projViewModelMatrix;
-                    }
-                },
-                'tileRatio',
-                'resolution',
-                'tileResolution',
-                'lineDx',
-                'lineDy',
-                'canvasSize'
-            ],
+            uniforms,
+            defines,
             extraCommandProps: {
                 viewport,
                 stencil: {
@@ -270,16 +287,20 @@ class LineGradientPainter extends BasicPainter {
         });
     }
 
-    getUniformValues(map) {
+    getUniformValues(map, context) {
         const viewMatrix = map.viewMatrix,
             projViewMatrix = map.projViewMatrix,
             uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
-        return {
+        const uniforms = {
             uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize
         };
+        if (context && context.shadow && context.shadow.renderUniforms) {
+            extend(uniforms, context.shadow.renderUniforms);
+        }
+        return uniforms;
     }
 }
 

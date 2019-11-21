@@ -164,7 +164,7 @@ class FillPainter extends BasicPainter {
     _createShader(context) {
         const canvas = this.canvas;
 
-        const uniforms = context.shadow && context.shadow.uniformDeclares || [];
+        const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
         const defines = context.shadow && context.shadow.defines || {};
 
         uniforms.push(
