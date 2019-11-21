@@ -1,5 +1,9 @@
 precision mediump float;
 
+#if defined(HAS_SHADOWING)
+    #include <vsm_shadow_frag>
+#endif
+
 #ifdef HAS_PATTERN
     uniform sampler2D polygonPatternFile;
     varying vec2 vTexCoord;
@@ -47,5 +51,10 @@ void main() {
         gl_FragColor = color * vOpacity;
     #else
         gl_FragColor = color * polygonOpacity;
+    #endif
+
+    #if defined(HAS_SHADOWING)
+        float shadow = shadow_computeShadow();
+        gl_FragColor.rgb *= shadow;
     #endif
 }

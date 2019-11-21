@@ -31,6 +31,11 @@ uniform mat4 projViewModelMatrix;
     varying vec2 vPosition;
 #endif
 
+#ifdef HAS_SHADOWING
+    #include <vsm_shadow_vert>
+#endif
+
+
 void main() {
     #ifdef IS_2D_POSITION
         vec3 position = vec3(aPosition, 0.0);
@@ -53,5 +58,9 @@ void main() {
 
     #ifdef HAS_OPACITY
         vOpacity = aOpacity / 255.0;
+    #endif
+
+    #if defined(HAS_SHADOWING)
+        shadow_computeShadowPars(vec4(position, 1.0));
     #endif
 }

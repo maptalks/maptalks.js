@@ -4,7 +4,7 @@ import { mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { setUniformFromSymbol, createColorSetter, extend } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
@@ -116,12 +116,89 @@ class FillPainter extends BasicPainter {
         this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
     }
 
-    init() {
+    paint(context) {
+        const hasShadow = !!context.shadow;
+        if (this._hasShadow === undefined) {
+            this._hasShadow = hasShadow;
+        }
+        if (this._hasShadow !== hasShadow) {
+            this.shader.dispose();
+            this._createShader(context);
+        }
+        this._hasShadow = hasShadow;
+        super.paint(context);
+    }
+
+    init(context) {
         const regl = this.regl;
-        const canvas = this.canvas;
+
 
         this.renderer = new reshader.Renderer(regl);
 
+
+        this._createShader(context);
+
+        if (this.pickingFBO) {
+            this.picking = new reshader.FBORayPicking(
+                this.renderer,
+                {
+                    vert: pickingVert,
+                    uniforms: [
+                        {
+                            name: 'projViewModelMatrix',
+                            type: 'function',
+                            fn: function (context, props) {
+                                const projViewModelMatrix = [];
+                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                                return projViewModelMatrix;
+                            }
+                        }
+                    ]
+                },
+                this.pickingFBO
+            );
+        }
+    }
+
+    _createShader(context) {
+        const canvas = this.canvas;
+
+        const uniforms = context.shadow && context.shadow.uniformDeclares || [];
+        const defines = context.shadow && context.shadow.defines || {};
+
+        uniforms.push(
+            'polygonFill', 'polygonOpacity',
+            'polygonPatternFile', 'uvScale',
+            {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
+                    const projViewModelMatrix = [];
+                    mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                    mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                    return projViewModelMatrix;
+                }
+            },
+            {
+                name: 'uvOffset',
+                type: 'function',
+                fn: (context, props) => {
+                    if (!props['tileCenter']) {
+                        return EMPTY_UV_OFFSET;
+                    }
+                    const scale =  props['tileResolution'] / props['resolution'];
+                    const [width, height] = props['patternSize'];
+                    const tileSize = this.layer.options['tileSize'];
+                    //瓦片左边沿的坐标 = 瓦片中心点.x - 瓦片宽度 / 2
+                    //瓦片左边沿的屏幕坐标 = 瓦片左边沿的坐标 * tileResolution / resolution
+                    //瓦片左边沿的uv偏移量 = （瓦片左边沿的屏幕坐标 / 模式图片的宽） % 1
+                    const offset = [(props['tileCenter'][0] - tileSize[0] / 2) * scale / width % 1, (props['tileCenter'][1] - tileSize[1] / 2) * scale / height % 1];
+                    return offset;
+                }
+            },
+            'tileResolution', 'resolution', 'tileRatio'
+        );
         const viewport = {
             x: 0,
             y: 0,
@@ -136,38 +213,8 @@ class FillPainter extends BasicPainter {
         const depthRange = this.sceneConfig.depthRange;
         this.shader = new reshader.MeshShader({
             vert, frag,
-            uniforms: [
-                'polygonFill', 'polygonOpacity',
-                'polygonPatternFile', 'uvScale',
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        const projViewModelMatrix = [];
-                        mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                        mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                        return projViewModelMatrix;
-                    }
-                },
-                {
-                    name: 'uvOffset',
-                    type: 'function',
-                    fn: (context, props) => {
-                        if (!props['tileCenter']) {
-                            return EMPTY_UV_OFFSET;
-                        }
-                        const scale =  props['tileResolution'] / props['resolution'];
-                        const [width, height] = props['patternSize'];
-                        const tileSize = this.layer.options['tileSize'];
-                        //瓦片左边沿的坐标 = 瓦片中心点.x - 瓦片宽度 / 2
-                        //瓦片左边沿的屏幕坐标 = 瓦片左边沿的坐标 * tileResolution / resolution
-                        //瓦片左边沿的uv偏移量 = （瓦片左边沿的屏幕坐标 / 模式图片的宽） % 1
-                        const offset = [(props['tileCenter'][0] - tileSize[0] / 2) * scale / width % 1, (props['tileCenter'][1] - tileSize[1] / 2) * scale / height % 1];
-                        return offset;
-                    }
-                },
-                'tileResolution', 'resolution', 'tileRatio'
-            ],
+            uniforms,
+            defines,
             extraCommandProps: {
                 viewport,
                 stencil: {
@@ -210,37 +257,20 @@ class FillPainter extends BasicPainter {
                 }
             }
         });
-        if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
-                this.renderer,
-                {
-                    vert: pickingVert,
-                    uniforms: [
-                        {
-                            name: 'projViewModelMatrix',
-                            type: 'function',
-                            fn: function (context, props) {
-                                const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
-                                return projViewModelMatrix;
-                            }
-                        }
-                    ]
-                },
-                this.pickingFBO
-            );
-        }
     }
 
-    getUniformValues(map) {
+    getUniformValues(map, context) {
         const viewMatrix = map.viewMatrix,
             projMatrix = map.projMatrix;
         const resolution = map.getResolution();
-        return {
+        const uniforms = {
             viewMatrix, projMatrix,
             resolution
         };
+        if (context && context.shadow && context.shadow.renderUniforms) {
+            extend(uniforms, context.shadow.renderUniforms);
+        }
+        return uniforms;
     }
 
     canStencil() {
