@@ -89,5 +89,19 @@ describe('GeoJSONVectorTileLayer', () => {
         layer2.addTo(map);
     });
 
+    it('should can update sceneConfig', () => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points,
+            style: [{
+                renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
+                symbol: { markerType: 'square', markerSize: 20 }
+            }]
+        });
+        layer.updateSceneConfig(0, { foo2: 2 });
+        assert.deepStrictEqual(layer.options.style[0].renderPlugin.sceneConfig, layer.getComputedStyle()[0].renderPlugin.sceneConfig);
+        assert.deepStrictEqual(layer.getStyle()[0].renderPlugin.sceneConfig, layer.getComputedStyle()[0].renderPlugin.sceneConfig);
+        assert.deepStrictEqual(layer.options.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
+    });
+
     //TODO 增加url方式的style的测试
 });
