@@ -655,16 +655,26 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const needDepth = config && (config.ssao && config.ssao.enable || config.taa && config.taa.enable);
         //depth(stencil) buffer 是可以共享的
         if (needDepth) {
-            const depthBuffer = depthTex || regl.texture({
+            const depthStencilTexture = depthTex || regl.texture({
                 min: 'nearest',
                 mag: 'nearest',
                 mipmap: false,
-                type: 'uint16',
+                type: 'depth stencil',
                 width,
                 height,
-                format: 'depth'
+                format: 'depth stencil'
             });
-            fboInfo.depth = depthBuffer;
+            fboInfo.depthStencil = depthStencilTexture;
+            // const depthBuffer = depthTex || regl.texture({
+            //     min: 'nearest',
+            //     mag: 'nearest',
+            //     mipmap: false,
+            //     type: 'uint16',
+            //     width,
+            //     height,
+            //     format: 'depth'
+            // });
+            // fboInfo.depth = depthBuffer;
         } else {
             const renderbuffer = depthTex || regl.renderbuffer({
                 width,
