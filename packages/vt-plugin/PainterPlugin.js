@@ -308,12 +308,13 @@ function createPainterPlugin(type, Painter) {
         },
 
         _generateColorArray: function (features, featureIndexes, indices, vertices, positionSize = 3) {
-            if (!vertices || !features || !features.length || !this.painter.getSymbol()[this.painter.colorSymbol]) {
+            if (!vertices || !features || !features.length) {
                 return null;
             }
             // var myColors = ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'];
             var colors = new Uint8Array(vertices.length / positionSize * 4);
             var symbol, rgb;
+            const colorSymbol = this.painter.colorSymbol;
             var visitedColors = {};
             var pos;
             for (var i = 0, l = featureIndexes.length; i < l; i++) {
@@ -323,8 +324,21 @@ function createPainterPlugin(type, Painter) {
                 if (!rgb) {
                     // var color = Color(myColors[features[idx].feature.id % myColors.length]);
                     // rgb = visitedColors[idx] = color.array();
-                    if (symbol[this.painter.colorSymbol]) {
-                        var color = Color(symbol[this.painter.colorSymbol]);
+                    // if (symbol[this.painter.colorSymbol]) {
+                    //     var color = Color(symbol[this.painter.colorSymbol]);
+                    //     rgb = visitedColors[idx] = color.array();
+                    // } else {
+                    //     rgb = visitedColors[idx] = [255, 255, 255];
+                    // }
+
+                    if (colorSymbol) {
+                        let color;
+                        if (typeof colorSymbol === 'function') {
+                            color = colorSymbol(features[idx].feature && features[idx].feature.properties);
+                        } else {
+                            color = colorSymbol;
+                        }
+                        color = Color(color);
                         rgb = visitedColors[idx] = color.array();
                     } else {
                         rgb = visitedColors[idx] = [255, 255, 255];

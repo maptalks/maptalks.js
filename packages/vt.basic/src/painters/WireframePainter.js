@@ -1,6 +1,7 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
+import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 const vert = `
     attribute vec3 aPosition;
@@ -37,7 +38,13 @@ const SCALE = [1, 1, 1];
 class WireframePainter extends Painter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
         super(regl, layer, sceneConfig, pluginIndex);
-        this.colorSymbol = 'lineColor';
+        if (isFunctionDefinition(this.symbolDef['lineColor'])) {
+            const map = layer.getMap();
+            const fn = piecewiseConstant(this.symbolDef['lineColor']);
+            this.colorSymbol = properties => fn(map.getZoom(), properties);
+        } else {
+            this.colorSymbol = this.getSymbol()['lineColor'] || '#bbb';
+        }
     }
 
     createGeometry(glData) {

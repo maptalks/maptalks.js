@@ -4,8 +4,8 @@ import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
 import pickingVert from './glsl/line.picking.vert';
-import { setUniformFromSymbol } from '../Util';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib, extend } from './util/fn_type_util';
+import { setUniformFromSymbol, extend } from '../Util';
+import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 
 const defaultUniforms = {

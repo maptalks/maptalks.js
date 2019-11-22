@@ -3,6 +3,7 @@ import { mat4 } from '@maptalks/gl';
 import { isNil, extend, isNumber } from '../../Util';
 import Painter from '../Painter';
 import { setUniformFromSymbol } from '../../Util';
+import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 const PREFILTER_CUBE_SIZE = 32;
 const SCALE = [1, 1, 1];
@@ -10,7 +11,14 @@ const SCALE = [1, 1, 1];
 class StandardPainter extends Painter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
         super(regl, layer, sceneConfig, pluginIndex);
-        this.colorSymbol = 'polygonFill';
+        // this.colorSymbol = 'polygonFill';
+        if (isFunctionDefinition(this.symbolDef['polygonFill'])) {
+            const map = layer.getMap();
+            const fn = piecewiseConstant(this.symbolDef['polygonFill']);
+            this.colorSymbol = properties => fn(map.getZoom(), properties);
+        } else {
+            this.colorSymbol = this.getSymbol()['polygonFill'];
+        }
     }
 
     createGeometry(glData) {

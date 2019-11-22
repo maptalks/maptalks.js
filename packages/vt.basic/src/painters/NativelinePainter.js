@@ -4,6 +4,7 @@ import Painter from './Painter';
 import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
 import pickingVert from './glsl/native-line.picking.vert';
+import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 const defaultUniforms = {
     lineColor: [0, 0, 0],
@@ -13,7 +14,11 @@ const defaultUniforms = {
 class NativeLinePainter extends Painter {
     constructor(regl, layer, sceneConfig, pluginIndex) {
         super(regl, layer, sceneConfig, pluginIndex);
-        this.colorSymbol = 'lineColor';
+        if (isFunctionDefinition(this.symbolDef['lineColor'])) {
+            const map = layer.getMap();
+            const fn = piecewiseConstant(this.symbolDef['lineColor']);
+            this.colorSymbol = properties => fn(map.getZoom(), properties);
+        }
     }
 
     createGeometry(glData) {

@@ -2,6 +2,7 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import Painter from './Painter';
+import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 const SCALE = [1, 1, 1];
 
@@ -11,7 +12,13 @@ class PhongPainter extends Painter {
         if (!this.sceneConfig.lights) {
             this.sceneConfig.lights = {};
         }
-        this.colorSymbol = 'polygonFill';
+        if (isFunctionDefinition(this.symbolDef['polygonFill'])) {
+            const map = layer.getMap();
+            const fn = piecewiseConstant(this.symbolDef['polygonFill']);
+            this.colorSymbol = properties => fn(map.getZoom(), properties);
+        } else {
+            this.colorSymbol = this.getSymbol()['polygonFill'];
+        }
         this.opacitySymbol = 'polygonOpacity';
     }
 

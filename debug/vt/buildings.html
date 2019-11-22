@@ -193,14 +193,19 @@
           symbol: {
             material: litMaterial,
             polygonOpacity: 1,
-            polygonFill: '#fff'/*{
+            polygonFill: {
               property : 'levels',
+              default: '#fff',
+              type: 'categorical',
               stops : [
-                [5, '#313695'],
-                [3, '#4575b4'],
-                [1, '#74add1']
+                // [5, '#313695'],
+                // [3, '#4575b4'],
+                // [1, '#74add1']
+                [5, '#f00'],
+                [3, '#00f'],
+                [1, '#0f0']
               ]
-            }*/
+            }
           }
         }
       ]
