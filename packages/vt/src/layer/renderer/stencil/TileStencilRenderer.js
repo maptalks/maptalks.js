@@ -65,13 +65,14 @@ export default class TileStencilRenderer {
         this._scene.addMesh(mesh);
     }
 
-    render() {
+    render(fbo) {
         this._renderer.render(
             this._shader,
             {
                 projViewMatrix: this._map.projViewMatrix
             },
-            this._scene
+            this._scene,
+            fbo
         );
     }
 

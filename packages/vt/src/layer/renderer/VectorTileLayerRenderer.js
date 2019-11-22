@@ -504,7 +504,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 return;
             }
             if (enableTileStencil && !stenciled && plugin.canStencil()) {
-                this._drawTileStencil();
+                this._drawTileStencil(parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo);
                 stenciled = true;
             } else if (!enableTileStencil || !plugin.canStencil()) {
                 this.regl.clear({
@@ -538,7 +538,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
-    _drawTileStencil() {
+    _drawTileStencil(fbo) {
         if (!this.isEnableTileStencil()) {
             return;
         }
@@ -566,7 +566,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             ref++;
         }
 
-        stencilRenderer.render();
+        stencilRenderer.render(fbo);
     }
 
     _addTileStencil(tileInfo, ref) {
