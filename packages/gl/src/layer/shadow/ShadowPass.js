@@ -102,16 +102,18 @@ class ShadowPass {
                 return ids;
             }, {});
             this._renderedView = {
-                zoom: map.getZoom(),
                 center: map.getCenter(),
                 bearing: map.getBearing(),
                 pitch: map.getPitch(),
-                lightDirection: vec3.copy([], lightDirection)
+                lightDirection: vec3.copy([], lightDirection),
+                count: scene.getMeshes().length - 1
             };
+            this._updated = true;
         } else {
             matrix = this._lightProjViewMatrix;
             smap = this._shadowMap;
             // fbo = this._blurFBO;
+            this._updated = false;
         }
         this._projMatrix = projMatrix;
         this._viewMatrix = viewMatrix;
@@ -166,6 +168,10 @@ class ShadowPass {
         delete this.renderer;
     }
 
+    isUpdated() {
+        return this._updated !== false;
+    }
+
     _shadowChanged(map, scene, lightDirection) {
         // if (this._rendered || !this._rendered && scene.getMeshes().length > 5) {
         //     this._rendered = true;
@@ -175,10 +181,10 @@ class ShadowPass {
             return true;
         }
         const renderedView = this._renderedView;
-        if (!vec3.equals(lightDirection, renderedView.lightDirection)) {
+        if (scene.getMeshes().length !== renderedView.count) {
             return true;
         }
-        if (!map.isInteracting() && map.getZoom() !== renderedView.zoom) {
+        if (!vec3.equals(lightDirection, renderedView.lightDirection)) {
             return true;
         }
         const meshes = scene.getMeshes();

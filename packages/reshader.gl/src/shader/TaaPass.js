@@ -18,16 +18,15 @@ class TaaPass {
         return this._counter < this._sampleCount;
     }
 
-    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far, canvasUpdated, needClear) {
+    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far, needClear) {
         prevPvMatrix = prevPvMatrix || pvMatrix;
         this._initShaders();
         this._createTextures(sourceTex);
         if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
             this._fbo.resize(sourceTex.width, sourceTex.height);
         }
-        const viewChanged = this._viewChanged(pvMatrix, prevPvMatrix);
         // console.log(viewChanged);
-        if (canvasUpdated || needClear || viewChanged) {
+        if (needClear || this._viewChanged(pvMatrix, prevPvMatrix)) {
             this._jitter.reset();
             this._counter = 0;
             this._clearTex();
@@ -44,7 +43,7 @@ class TaaPass {
         // if (isLowSampling) {
         //     sampleCount = 4;
         // }
-        if (this._counter >= sampleCount && !canvasUpdated) {
+        if (this._counter >= sampleCount && !needClear) {
             // console.log('ended');
             return this._prevTex;
         }

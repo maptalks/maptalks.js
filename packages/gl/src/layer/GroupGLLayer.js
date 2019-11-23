@@ -615,8 +615,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._shadowScene.setMeshes(meshes);
         const map = this.getMap();
         const lightDirection = sceneConfig.shadow.lightDirection || [1, 1, -1];
-        const shadowContext = this._shadowPass.render(map.projMatrix, map.viewMatrix, lightDirection, this._shadowScene, this._jitter, fbo);
-        return shadowContext;
+        const uniforms = this._shadowPass.render(map.projMatrix, map.viewMatrix, lightDirection, this._shadowScene, this._jitter, fbo);
+        this._shadowUpdated = this._shadowPass.isUpdated();
+        return uniforms;
     }
 
     _getFramebufferTarget() {
@@ -726,7 +727,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const enableTAA = config.taa && config.taa.enable;
         if (enableTAA) {
-            const redrawFrame = this.testIfNeedRedraw();
+            // const redrawFrame = this.testIfNeedRedraw();
             const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
                 projViewMatrix: map.projViewMatrix,
                 prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
@@ -735,8 +736,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 jitter: this._jitter,
                 near: map.cameraNear,
                 far: map.cameraFar,
-                canvasUpdated: redrawFrame,
-                needClear: this._outdated
+                needClear: this._outdated || this._shadowUpdated
             });
             tex = outputTex;
             if (!this._prevProjViewMatrix) {
@@ -760,6 +760,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             ssaoRadius: config.ssao && config.ssao.radius || 0.3,
             ssaoPower: config.ssao && config.ssao.power || 0
         });
+        delete this._shadowUpdated;
         this._outdated = false;
     }
 
