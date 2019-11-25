@@ -1,13 +1,8 @@
 import Material from './Material.js';
 
 const DEFAULT_UNIFORMS = {
-    // 'lightPosition' : [0.0, 0.0, 50.0],
-    // 'lightAmbient' : [0.5, 0.5, 0.5, 1.0],
-    // 'lightDiffuse' : [0.8, 0.8, 0.8, 1.0],
-    // 'lightSpecular' : [1.0, 1.0, 1.0, 1.0],
-
     'baseColorFactor': [1, 1, 1, 1],
-    'materialShiness' : 32.0,
+    'materialShininess' : 32.0,
     'ambientStrength' : 1,
     'specularStrength' : 32,
     'opacity' : 1.0,
