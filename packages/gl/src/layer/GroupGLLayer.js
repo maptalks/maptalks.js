@@ -730,19 +730,25 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // const redrawFrame = this.testIfNeedRedraw();
             const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
                 projViewMatrix: map.projViewMatrix,
-                prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
+                // prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
                 cameraWorldMatrix: map.cameraWorldMatrix,
                 fov: map.getFov() * Math.PI / 180,
                 jitter: this._jitter,
                 near: map.cameraNear,
                 far: map.cameraFar,
-                needClear: this._outdated || this._shadowUpdated
+                needClear: this._outdated || this._shadowUpdated || map.getRenderer().isViewChanged()
             });
             tex = outputTex;
-            if (!this._prevProjViewMatrix) {
-                this._prevProjViewMatrix = new Array(16);
-            }
-            mat4.copy(this._prevProjViewMatrix, map.projViewMatrix);
+            // if (!this._prevProjViewMatrix) {
+            //     this._prevProjViewMatrix = new Array(16);
+            // } else if (mat4.equals(map.projViewMatrix, this._prevProjViewMatrix)) {
+            //     if (map.getRenderer().isViewChanged()) {
+            //         console.log('hit');
+            //     }
+            // } else {
+            //     console.log('updated');
+            // }
+            // mat4.copy(this._prevProjViewMatrix, map.projViewMatrix);
             if (redraw) {
                 // console.log('taa.redraw', redraw);
                 this.setToRedraw();

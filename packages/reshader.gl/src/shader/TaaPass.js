@@ -18,15 +18,14 @@ class TaaPass {
         return this._counter < this._sampleCount;
     }
 
-    render(sourceTex, depthTex, pvMatrix, invViewMatrix, prevPvMatrix, fov, jitter, near, far, needClear) {
-        prevPvMatrix = prevPvMatrix || pvMatrix;
+    render(sourceTex, depthTex, pvMatrix, invViewMatrix, fov, jitter, near, far, needClear) {
         this._initShaders();
         this._createTextures(sourceTex);
         if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
             this._fbo.resize(sourceTex.width, sourceTex.height);
         }
         // console.log(viewChanged);
-        if (needClear || this._viewChanged(pvMatrix, prevPvMatrix)) {
+        if (needClear) {
             this._jitter.reset();
             this._counter = 0;
             this._clearTex();
@@ -66,7 +65,7 @@ class TaaPass {
         uniforms['fov'] = fov;
         uniforms['uTaaCurrentFramePVLeft'] = pvMatrix;
         uniforms['uTaaInvViewMatrixLeft'] = invViewMatrix;
-        uniforms['uTaaLastFramePVLeft'] = prevPvMatrix;
+        uniforms['uTaaLastFramePVLeft'] = this._prevPvMatrix || pvMatrix;
         uniforms['TextureDepth'] = depthTex;
         uniforms['TextureInput'] = sourceTex;
         uniforms['TexturePrevious'] = prevTex;
@@ -85,6 +84,7 @@ class TaaPass {
         this._fbo = this._prevFbo;
         this._prevTex = temp;
         this._prevFbo = tempFBO;
+        this._prevPvMatrix = pvMatrix;
         return output;
     }
 
