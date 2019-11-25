@@ -5,15 +5,20 @@ import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type
 
 const vert = `
     attribute vec3 aPosition;
-    attribute vec3 aColor;
+    attribute vec4 aColor;
 
-    uniform mat4 projViewModelMatrix;
+    uniform mat4 projMatrix;
+    uniform mat4 viewModelMatrix;
+    uniform vec2 halton;
+    uniform vec2 globalTexSize;
 
-    varying vec3 vColor;
+    varying vec4 vColor;
 
     void main()
     {
-        gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+        mat4 jitteredProjection = projMatrix;
+        jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
+        gl_Position = jitteredProjection * viewModelMatrix * vec4(aPosition, 1.0);
         vColor = aColor / 255.0;
     }
 `;
@@ -25,11 +30,11 @@ const frag = `
 
     uniform float opacity;
 
-    varying vec3 vColor;
+    varying vec4 vColor;
 
     void main()
     {
-        gl_FragColor = vec4(vColor, opacity);
+        gl_FragColor = vColor * opacity;
     }
 `;
 
@@ -107,15 +112,27 @@ class WireframePainter extends Painter {
             vert,
             frag,
             uniforms: [
+                // {
+                //     name: 'projViewModelMatrix',
+                //     type: 'function',
+                //     fn: function (context, props) {
+                //         const projViewModelMatrix = [];
+                //         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                //         return projViewModelMatrix;
+                //     }
+                // },
+                'projMatrix',
                 {
-                    name: 'projViewModelMatrix',
+                    name: 'viewModelMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        const projViewModelMatrix = [];
-                        mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                        return projViewModelMatrix;
+                        const viewModelMatrix = [];
+                        mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                        return viewModelMatrix;
                     }
                 },
+                'globalTexSize',
+                'halton',
                 'opacity'
             ],
             extraCommandProps: {
@@ -149,11 +166,16 @@ class WireframePainter extends Painter {
         this.shader = new reshader.MeshShader(config);
     }
 
-    getUniformValues(map) {
-        const projViewMatrix = map.projViewMatrix;
+    getUniformValues(map, context) {
+        // const projViewMatrix = map.projViewMatrix;
         const opacity = this.sceneConfig.opacity || 0.3;
+        const canvas = this.layer.getRenderer().canvas;
         return {
-            projViewMatrix,
+            // projViewMatrix,
+            projMatrix: map.projMatrix,
+            viewMatrix: map.viewMatrix,
+            globalTexSize: [canvas.width, canvas.height],
+            halton: context && context.jitter || [0, 0],
             opacity
         };
     }
