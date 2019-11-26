@@ -43,13 +43,18 @@ export default class GLTFPack {
         const geometries = this.getMeshesInfo();
         geometries.forEach(g => {
             g.geometry.dispose();
-            if (g.material) {
-                g.material.dispose();
-            }
-            if (g.node.skin && g.node.skin.jointTexture) {
-                g.node.skin.jointTexture.destroy();
+            for (const m in g.materialInfo) {
+                if (g.materialInfo[m].destroy) {
+                    g.materialInfo[m].destroy();
+                }
             }
         });
+        for (const index in this.gltf.nodes) {
+            const node = this.gltf.nodes[index];
+            if (node.skin && node.skin.jointTexture) {
+                node.skin.jointTexture.destroy();
+            }
+        }
     }
 
     updateAnimation(time, loop, speed) {
