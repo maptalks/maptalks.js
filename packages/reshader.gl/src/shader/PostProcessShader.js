@@ -27,7 +27,7 @@ class PostProcessShader extends QuadShader {
             this.commands['postprocess'] = this.createREGLCommand(
                 regl,
                 null,
-                mesh.getAttributes(),
+                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );

@@ -85,7 +85,7 @@ class SsaoShader extends QuadShader {
             this.commands['ssao'] = this.createREGLCommand(
                 regl,
                 null,
-                mesh.getAttributes(),
+                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );

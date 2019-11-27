@@ -18,7 +18,7 @@ class FxaaShader extends QuadShader {
             this.commands['fxaa'] = this.createREGLCommand(
                 regl,
                 null,
-                mesh.getAttributes(),
+                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );

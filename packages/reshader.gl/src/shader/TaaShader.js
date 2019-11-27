@@ -64,7 +64,7 @@ class TaaShader extends QuadShader {
             this.commands['taa'] = this.createREGLCommand(
                 regl,
                 null,
-                mesh.getAttributes(),
+                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );
