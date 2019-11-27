@@ -167,7 +167,7 @@ class StandardShader extends MeshShader {
 
     getGeometryDefines(geometry) {
         const defines = {};
-        if (geometry.data[this.tangentAttribute]) {
+        if (geometry.data[geometry.desc.tangentAttribute]) {
             defines['HAS_TANGENT'] = 1;
         }
         return defines;
