@@ -726,6 +726,10 @@ export default class CollisionPainter extends BasicPainter {
         // const keys = [];
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
+            if (!mesh.geometry) {
+                //disposed
+                continue;
+            }
             const { meshKey } = mesh.properties;
             this._mergedMeshes[meshKey] = 1;
             const { uniquePlacements } = mesh.geometry.properties;
