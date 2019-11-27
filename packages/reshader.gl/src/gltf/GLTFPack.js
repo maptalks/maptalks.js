@@ -142,7 +142,7 @@ export default class GLTFPack {
             node.mesh = node.meshes[0];
             node.mesh.node = node;
             node.mesh.primitives.forEach(primitive => {
-                const geometry = createGeometry(primitive);
+                const geometry = createGeometry(primitive, this.regl);
                 geometries.push({
                     geometry,
                     nodeMatrix,
@@ -228,8 +228,8 @@ export default class GLTFPack {
             width,
             height,
             data,
-            mag: TEXTURE_SAMPLER[sampler.magFilter] || TEXTURE_SAMPLER['9728'],
-            min: TEXTURE_SAMPLER[sampler.minFilter] || TEXTURE_SAMPLER['9728'],
+            mag: TEXTURE_SAMPLER[sampler.magFilter] || TEXTURE_SAMPLER['9729'],
+            min: TEXTURE_SAMPLER[sampler.minFilter] || TEXTURE_SAMPLER['9729'],
             wrapS: TEXTURE_SAMPLER[sampler.wrapS] || TEXTURE_SAMPLER['10497'],
             wrapT: TEXTURE_SAMPLER[sampler.wrapT] || TEXTURE_SAMPLER['10497']
         });
@@ -247,7 +247,7 @@ export default class GLTFPack {
     }
 }
 
-function createGeometry(primitive) {
+function createGeometry(primitive, regl) {
     const attributes = {};
     for (const attr in primitive.attributes) {
         attributes[attr] =  primitive.attributes[attr].array;
@@ -266,11 +266,15 @@ function createGeometry(primitive) {
         {
             //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
             primitive : isNumber(primitive.mode) ? MODES[primitive.mode] : primitive.mode,
-            positionAttribute : 'POSITION'
+            positionAttribute: 'POSITION',
+            normalAttribute: 'NORMAL',
+            uv0Attribute: 'TEXCOORD_0',
+            uv1Attribute: 'TEXCOORD_1'
         }
     );
     if (!modelGeometry.data['NORMAL']) {
         modelGeometry.createNormal('NORMAL');
     }
+    modelGeometry.generateBuffers(regl);
     return modelGeometry;
 }

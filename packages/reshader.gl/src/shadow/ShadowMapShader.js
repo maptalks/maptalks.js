@@ -37,7 +37,7 @@ class ShadowMapShader extends MeshShader {
             this.commands['shadowmap'] = this.createREGLCommand(
                 regl,
                 null,
-                mesh.getAttributes(),
+                ['aPosition'],
                 null,
                 mesh.getElements()
             );

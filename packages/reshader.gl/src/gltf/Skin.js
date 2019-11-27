@@ -34,10 +34,10 @@ export default class Skin {
             mat4.multiply(dst, globalWorldInverse, joint.nodeMatrix);
             mat4.multiply(dst, dst, this.inverseBindMatrices[j]);
         }
-        const type = this._regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        // const type = this._regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         this.jointTexture({
             width: 4,
-            type,
+            type: 'float',
             height: this.joints.length,
             data: this.jointData
         });
