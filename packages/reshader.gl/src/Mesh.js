@@ -147,7 +147,7 @@ class Mesh {
 
     getREGLProps(regl) {
         const props = this.getUniforms(regl);
-        extend(props, this.geometry.data);
+        extend(props, this.geometry.getREGLData());
         props.elements = this.geometry.getElements();
         props.count = this.geometry.getDrawCount();
         props.offset = this.geometry.getDrawOffset();

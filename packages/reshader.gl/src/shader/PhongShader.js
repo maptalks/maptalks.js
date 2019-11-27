@@ -4,17 +4,17 @@ import phongVert from './glsl/phong.vert';
 import MeshShader from '../shader/MeshShader.js';
 class PhongShader extends MeshShader {
     constructor(config = {}) {
-        const positionAttribute = config.positionAttribute || 'aPosition';
-        const normalAttribute = config.normalAttribute || 'aNormal';
-        let vert = phongVert;
-        if (positionAttribute !== 'aPosition') {
-            vert = vert.replace(/aPosition/g, positionAttribute);
-        }
-        if (normalAttribute !== 'aNormal') {
-            vert = vert.replace(/aNormal/g, normalAttribute);
-        }
+        // const positionAttribute = config.positionAttribute || 'aPosition';
+        // const normalAttribute = config.normalAttribute || 'aNormal';
+        // let vert = phongVert;
+        // if (positionAttribute !== 'aPosition') {
+        //     vert = vert.replace(/aPosition/g, positionAttribute);
+        // }
+        // if (normalAttribute !== 'aNormal') {
+        //     vert = vert.replace(/aNormal/g, normalAttribute);
+        // }
         super({
-            vert,
+            vert: phongVert,
             frag: phongFrag,
             uniforms: [
                 'halton',

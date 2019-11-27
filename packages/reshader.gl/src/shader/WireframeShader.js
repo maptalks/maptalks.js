@@ -8,10 +8,10 @@ class WireframeShader extends MeshShader {
 
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
-        const positionAttribute = config.positionAttribute || 'aPosition',
-            barycentricAttribute = config.barycentricAttribute || 'aBarycentric';
+        // const positionAttribute = config.positionAttribute || 'aPosition',
+        //     barycentricAttribute = config.barycentricAttribute || 'aBarycentric';
         extraCommandProps = extend({}, extraCommandProps, {
-            blend : {
+            blend: {
                 enable: true,
                 func: {
                     src: 'src alpha',
@@ -23,18 +23,18 @@ class WireframeShader extends MeshShader {
                 alpha: true
             }
         });
-        let vert = wireframeVert;
-        //将着色器代码中的aPosition替换成指定的变量名
-        if (positionAttribute !== 'aPosition') {
-            vert = vert.replace(/aPosition/g, positionAttribute);
-        }
-        if (barycentricAttribute !== 'aBarycentric') {
-            vert = vert.replace(/aBarycentric/g, barycentricAttribute);
-        }
+        // let vert = wireframeVert;
+        // //将着色器代码中的aPosition替换成指定的变量名
+        // if (positionAttribute !== 'aPosition') {
+        //     vert = vert.replace(/aPosition/g, positionAttribute);
+        // }
+        // if (barycentricAttribute !== 'aBarycentric') {
+        //     vert = vert.replace(/aBarycentric/g, barycentricAttribute);
+        // }
         super({
-            vert,
-            frag : wireframeFrag,
-            uniforms : [
+            vert: wireframeVert,
+            frag: wireframeFrag,
+            uniforms: [
                 'time',
                 'fill',
                 'stroke',
@@ -54,9 +54,9 @@ class WireframeShader extends MeshShader {
                 'opacity',
                 'projViewMatrix',
                 {
-                    name : 'projViewModelMatrix',
-                    type : 'function',
-                    fn : (context, props) => {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: (context, props) => {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 }

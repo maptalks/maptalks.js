@@ -10,7 +10,8 @@ const DEFAULT_DESC = {
     //name of position attribute
     'positionAttribute': 'aPosition',
     'normalAttribute': 'aNormal',
-    'uv0Attribute': 'aTexCoord'
+    'uv0Attribute': 'aTexCoord',
+    'uv1Attribute': 'aTexCoord1'
 };
 
 export default class Geometry {
@@ -33,6 +34,27 @@ export default class Geometry {
         this.properties = {};
         this._buffers = {};
         this.updateBoundingBox();
+    }
+
+    getREGLData() {
+        const data = this.data;
+        const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute } = this.desc;
+        if (!this._reglData) {
+            this._reglData = {
+                'aPosition': data[positionAttribute]
+            };
+            if (data[normalAttribute]) {
+                this._reglData['aNormal'] = data[normalAttribute];
+            }
+            if (data[uv0Attribute]) {
+                this._reglData['aTexCoord0'] = data[uv0Attribute];
+                this._reglData['aTexCoord'] = data[uv0Attribute];
+            }
+            if (data[uv1Attribute]) {
+                this._reglData['aTexCoord1'] = data[uv1Attribute];
+            }
+        }
+        return this._reglData;
     }
 
     generateBuffers(regl) {
@@ -86,6 +108,7 @@ export default class Geometry {
         this._buffers[key] = {
             data
         };
+        delete this._reglData;
         return this;
     }
 
@@ -99,6 +122,7 @@ export default class Geometry {
         } else {
             this._buffers[key].data = data;
         }
+        delete this._reglData;
         return this;
     }
 
@@ -125,6 +149,7 @@ export default class Geometry {
             buffer.buffer.subdata(data);
             this.data[name] = buffer;
         }
+        delete this._reglData;
         return this;
     }
 

@@ -10,12 +10,12 @@ class StandardShader extends MeshShader {
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
         const extraUniforms = config.uniforms;
-        const positionAttribute  = config.positionAttribute || 'aPosition';
-        const normalAttribute  = config.normalAttribute || 'aNormal';
-        const tangentAttribute  = config.tangentAttribute || 'aTangent';
-        const colorAttribute  = config.colorAttribute || 'aColor';
-        const uv0Attribute = config.uv0Attribute || 'aTexCoord0';
-        const uv1Attribute  = config.uv1Attribute || 'aTexCoord1';
+        // const positionAttribute  = config.positionAttribute || 'aPosition';
+        // const normalAttribute  = config.normalAttribute || 'aNormal';
+        // const tangentAttribute  = config.tangentAttribute || 'aTangent';
+        // const colorAttribute  = config.colorAttribute || 'aColor';
+        // const uv0Attribute = config.uv0Attribute || 'aTexCoord0';
+        // const uv1Attribute  = config.uv1Attribute || 'aTexCoord1';
         extraCommandProps = extend({}, extraCommandProps, {
             blend : {
                 enable: true,
@@ -33,26 +33,26 @@ class StandardShader extends MeshShader {
                 alpha: true
             }
         });
-        let vert = vertSource;
+
         //将着色器代码中的aPosition替换成指定的变量名
-        if (positionAttribute !== 'aPosition') {
-            vert = vert.replace(/aPosition/g, positionAttribute);
-        }
-        if (normalAttribute !== 'aNormal') {
-            vert = vert.replace(/aNormal/g, normalAttribute);
-        }
-        if (tangentAttribute !== 'aTangent') {
-            vert = vert.replace(/aTangent/g, tangentAttribute);
-        }
-        if (colorAttribute !== 'aColor') {
-            vert = vert.replace(/aColor/g, colorAttribute);
-        }
-        if (uv0Attribute !== 'aTexCoord0') {
-            vert = vert.replace(/aTexCoord0/g, uv0Attribute);
-        }
-        if (uv1Attribute !== 'aTexCoord1') {
-            vert = vert.replace(/aTexCoord1/g, uv1Attribute);
-        }
+        // if (positionAttribute !== 'aPosition') {
+        //     vert = vert.replace(/aPosition/g, positionAttribute);
+        // }
+        // if (normalAttribute !== 'aNormal') {
+        //     vert = vert.replace(/aNormal/g, normalAttribute);
+        // }
+        // if (tangentAttribute !== 'aTangent') {
+        //     vert = vert.replace(/aTangent/g, tangentAttribute);
+        // }
+        // if (colorAttribute !== 'aColor') {
+        //     vert = vert.replace(/aColor/g, colorAttribute);
+        // }
+        // if (uv0Attribute !== 'aTexCoord0') {
+        //     vert = vert.replace(/aTexCoord0/g, uv0Attribute);
+        // }
+        // if (uv1Attribute !== 'aTexCoord1') {
+        //     vert = vert.replace(/aTexCoord1/g, uv1Attribute);
+        // }
         const uniforms = [
             'uCameraPosition',
             //vert中的uniforms
@@ -182,18 +182,18 @@ class StandardShader extends MeshShader {
             uniforms.push(...extraUniforms);
         }
         super({
-            vert,
+            vert: vertSource,
             frag,
             uniforms,
             extraCommandProps,
             defines: config.defines
         });
-        this.positionAttribute = positionAttribute;
-        this.normalAttribute = normalAttribute;
-        this.tangentAttribute = tangentAttribute;
-        this.colorAttribute = colorAttribute;
-        this.uv0Attribute = uv0Attribute;
-        this.uv1Attribute = uv1Attribute;
+        // this.positionAttribute = positionAttribute;
+        // this.normalAttribute = normalAttribute;
+        // this.tangentAttribute = tangentAttribute;
+        // this.colorAttribute = colorAttribute;
+        // this.uv0Attribute = uv0Attribute;
+        // this.uv1Attribute = uv1Attribute;
     }
 
     getGeometryDefines(geometry) {
