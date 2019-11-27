@@ -8,8 +8,6 @@ class WireframeShader extends MeshShader {
 
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
-        // const positionAttribute = config.positionAttribute || 'aPosition',
-        //     barycentricAttribute = config.barycentricAttribute || 'aBarycentric';
         extraCommandProps = extend({}, extraCommandProps, {
             blend: {
                 enable: true,
@@ -23,14 +21,6 @@ class WireframeShader extends MeshShader {
                 alpha: true
             }
         });
-        // let vert = wireframeVert;
-        // //将着色器代码中的aPosition替换成指定的变量名
-        // if (positionAttribute !== 'aPosition') {
-        //     vert = vert.replace(/aPosition/g, positionAttribute);
-        // }
-        // if (barycentricAttribute !== 'aBarycentric') {
-        //     vert = vert.replace(/aBarycentric/g, barycentricAttribute);
-        // }
         super({
             vert: wireframeVert,
             frag: wireframeFrag,

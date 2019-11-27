@@ -1,7 +1,7 @@
 attribute vec3 aPosition;
 
 #ifdef HAS_MAP
-    attribute vec2 TEXCOORD_0;
+    attribute vec2 aTexCoord;
     varying vec2 vTexCoords;
 #endif
 #ifdef HAS_COLOR
@@ -82,7 +82,7 @@ void main()
     gl_Position = jitteredProjection * viewModelMatrix * frameUniforms.modelMatrix * localPosition;
     // gl_Position = projViewModelMatrix * frameUniforms.modelMatrix * localPosition;
     #ifdef HAS_MAP
-        vTexCoords = TEXCOORD_0;
+        vTexCoords = aTexCoord;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY
         vExtrusionOpacity = aExtrusionOpacity;

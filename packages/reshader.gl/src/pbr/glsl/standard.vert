@@ -3,7 +3,7 @@ precision highp float;
 
 attribute vec3 aPosition;
 #if defined(HAS_MAP)
-    attribute vec2 aTexCoord0;
+    attribute vec2 aTexCoord;
     uniform vec2 uvScale;
     uniform vec2 uvOffset;
 #endif
@@ -76,7 +76,7 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
 
 void main() {
     #if defined(HAS_MAP)
-        vTexCoord = (aTexCoord0 + uvOffset) * uvScale;
+        vTexCoord = (aTexCoord + uvOffset) * uvScale;
     #endif
 
     #if defined(HAS_TANGENT)

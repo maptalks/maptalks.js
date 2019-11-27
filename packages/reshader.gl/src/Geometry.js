@@ -11,7 +11,8 @@ const DEFAULT_DESC = {
     'positionAttribute': 'aPosition',
     'normalAttribute': 'aNormal',
     'uv0Attribute': 'aTexCoord',
-    'uv1Attribute': 'aTexCoord1'
+    'uv1Attribute': 'aTexCoord1',
+    'tangentAttribute': 'aTangent'
 };
 
 export default class Geometry {
@@ -37,21 +38,27 @@ export default class Geometry {
     }
 
     getREGLData() {
-        const data = this.data;
-        const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute } = this.desc;
         if (!this._reglData) {
-            this._reglData = {
-                'aPosition': data[positionAttribute]
-            };
+            const data = this.data;
+            const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
+            this._reglData = extend({}, this.data);
+            delete this._reglData[positionAttribute];
+            this._reglData['aPosition'] = data[positionAttribute];
             if (data[normalAttribute]) {
+                delete this._reglData[normalAttribute];
                 this._reglData['aNormal'] = data[normalAttribute];
             }
             if (data[uv0Attribute]) {
-                this._reglData['aTexCoord0'] = data[uv0Attribute];
+                delete this._reglData[uv0Attribute];
                 this._reglData['aTexCoord'] = data[uv0Attribute];
             }
             if (data[uv1Attribute]) {
+                delete this._reglData[uv1Attribute];
                 this._reglData['aTexCoord1'] = data[uv1Attribute];
+            }
+            if (data[tangentAttribute]) {
+                delete this._reglData[tangentAttribute];
+                this._reglData['aTangent'] = data[tangentAttribute];
             }
         }
         return this._reglData;
@@ -89,6 +96,7 @@ export default class Geometry {
             }
         }
         this.data = buffers;
+        delete this._reglData;
 
         if (this.elements && !isNumber(this.elements)) {
             this.elements = this.elements.destroy ? this.elements : regl.elements({
@@ -158,7 +166,7 @@ export default class Geometry {
     }
 
     getAttributes() {
-        return Object.keys(this.data);
+        return Object.keys(this.getREGLData());
     }
 
     getElements() {
@@ -207,6 +215,7 @@ export default class Geometry {
         });
         this.data = {};
         this._buffers = {};
+        delete this._reglData;
         this.count = 0;
         this.elements = [];
         this._disposed = true;
@@ -253,11 +262,12 @@ export default class Geometry {
     }
 
     createTangent(name = 'aTangent') {
-        const normals = this.data[this.desc.normalAttribute];
+        const { normalAttribute, positionAttribute, uv0Attribute } = this.desc;
+        const normals = this.data[normalAttribute];
         const tangents = buildTangents(
-            this.data[this.desc.positionAttribute],
+            this.data[positionAttribute],
             normals,
-            this.data[this.desc.uv0Attribute],
+            this.data[uv0Attribute],
             this.elements
         );
         const aTangent = this.data[name] = new Float32Array(tangents.length);
