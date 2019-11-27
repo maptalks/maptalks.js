@@ -103,5 +103,25 @@ describe('GeoJSONVectorTileLayer', () => {
         assert.deepStrictEqual(layer.options.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
     });
 
+    it('should can update sceneConfig with another type of style', () => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points,
+            style: {
+                $root: '.',
+                resources: [],
+                style: [
+                    {
+                        renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
+                        symbol: { markerType: 'square', markerSize: 20 }
+                    }
+                ]
+            }
+        });
+        layer.updateSceneConfig(0, { foo2: 2 });
+        assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle()[0].renderPlugin.sceneConfig);
+        assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle()[0].renderPlugin.sceneConfig);
+        assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
+    });
+
     //TODO 增加url方式的style的测试
 });

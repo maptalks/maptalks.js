@@ -278,7 +278,12 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     updateSceneConfig(idx, sceneConfig) {
         extend(this._vtStyle[idx].renderPlugin.sceneConfig, sceneConfig);
-        extend(this.options.style[idx].renderPlugin.sceneConfig, sceneConfig);
+        if (Array.isArray(this.options.style)) {
+            extend(this.options.style[idx].renderPlugin.sceneConfig, sceneConfig);
+        } else if (this.options.style && Array.isArray(this.options.style.style)) {
+            extend(this.options.style.style[idx].renderPlugin.sceneConfig, sceneConfig);
+        }
+
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.updateSceneConfig(idx, sceneConfig);
