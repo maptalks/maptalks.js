@@ -142,7 +142,7 @@ export default class GLTFPack {
             node.mesh = node.meshes[0];
             node.mesh.node = node;
             node.mesh.primitives.forEach(primitive => {
-                const geometry = createGeometry(primitive, this.regl);
+                const geometry = createGeometry(primitive);
                 geometries.push({
                     geometry,
                     nodeMatrix,
@@ -247,7 +247,7 @@ export default class GLTFPack {
     }
 }
 
-function createGeometry(primitive, regl) {
+function createGeometry(primitive) {
     const attributes = {};
     for (const attr in primitive.attributes) {
         attributes[attr] =  primitive.attributes[attr].array;
@@ -275,6 +275,5 @@ function createGeometry(primitive, regl) {
     if (!modelGeometry.data['NORMAL']) {
         modelGeometry.createNormal('NORMAL');
     }
-    modelGeometry.generateBuffers(regl);
     return modelGeometry;
 }

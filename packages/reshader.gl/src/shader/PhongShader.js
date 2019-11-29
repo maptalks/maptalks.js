@@ -37,13 +37,6 @@ class PhongShader extends MeshShader {
                     }
                 },
                 {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                },
-                {
                     name: 'viewModelMatrix',
                     type: 'function',
                     fn: function (context, props) {

@@ -62,25 +62,24 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
 
 void main()
 {
-    frameUniforms.modelMatrix = getModelMatrix();
+    mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
-    vFragPos = vec3(modelMatrix * frameUniforms.modelMatrix * localPosition);
+    mat4 localNormalMatrix = getNormalMatrix(localPositionMatrix);
+    vFragPos = vec3(modelMatrix * localPositionMatrix * localPosition);
     vec3 Normal;
     #if defined(HAS_TANGENT)
         vec3 t;
         toTangentFrame(aTangent, Normal, t);
-        vTangent = vec4(frameUniforms.normalMatrix * t, aTangent.w);
+        vTangent = vec4(localNormalMatrix * t, aTangent.w);
     #else
         Normal = aNormal;
     #endif
     vec4 localNormal = getNormal(Normal);
-    frameUniforms.normalMatrix = getNormalMatrix(frameUniforms.modelMatrix);
-    vNormal = normalize(vec3(frameUniforms.normalMatrix * localNormal));
+    vNormal = normalize(vec3(localNormalMatrix * localNormal));
 
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
-    gl_Position = jitteredProjection * viewModelMatrix * frameUniforms.modelMatrix * localPosition;
-    // gl_Position = projViewModelMatrix * frameUniforms.modelMatrix * localPosition;
+    gl_Position = jitteredProjection * viewModelMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
         vTexCoords = aTexCoord;
     #endif
