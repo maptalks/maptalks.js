@@ -1,5 +1,6 @@
 import { isString } from '../../../core/util';
 import Coordinate from '../../../geo/Coordinate';
+import Point from '../../../geo/Point';
 import Extent from '../../../geo/Extent';
 import Transformation from '../../../geo/transformation/Transformation';
 import TileSystem from './TileSystem';
@@ -17,12 +18,15 @@ class TileConfig {
      * @param {Extent} fullExtent      - fullExtent of the tile layer
      * @param {Size} tileSize          - tile size
      */
-    constructor(tileSystem, fullExtent, tileSize) {
+    constructor(map, tileSystem, fullExtent, tileSize) {
+        this.map = map;
         this.tileSize = tileSize;
         this.fullExtent = fullExtent;
         this.prepareTileInfo(tileSystem, fullExtent);
         this._xScale = fullExtent['right'] >= fullExtent['left'] ? 1 : -1;
         this._yScale = fullExtent['top'] >= fullExtent['bottom'] ? 1 : -1;
+        this._pointOrigin = map._prjToPoint(new Point(this.tileSystem['origin']), map.getGLZoom());
+        this._glRes = map.getResolution(map.getGLZoom());
     }
 
     prepareTileInfo(tileSystem, fullExtent) {
@@ -190,6 +194,16 @@ class TileConfig {
         return new Coordinate(x, y);
     }
 
+    getTilePointNW(tileX, tileY, res) {
+        // res = res / this._glRes;
+        const scale = this._glRes / res;
+        const tileSystem = this.tileSystem;
+        const tileSize = this['tileSize'];
+        const y = this._pointOrigin.y * scale + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 1 : 0)) * tileSize['height'];
+        const x = this._pointOrigin.x * scale + this._xScale * tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 0 : 1)) * tileSize['width'];
+        return new Point(x, y);
+    }
+
     /**
      * Get tile's south east's projected coordinate
      * @param  {Number} tileX
@@ -203,6 +217,15 @@ class TileConfig {
         const y = tileSystem['origin']['y'] + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * res * tileSize['height'];
         const x = tileSystem['origin']['x'] + this._xScale * tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 1 : 0)) * res * tileSize['width'];
         return new Coordinate(x, y);
+    }
+
+    getTilePointSE(tileX, tileY, res) {
+        const scale = this._glRes / res;
+        const tileSystem = this.tileSystem;
+        const tileSize = this['tileSize'];
+        const y = this._pointOrigin.y * scale + this._yScale * tileSystem['scale']['y'] * (tileY + (tileSystem['scale']['y'] === 1 ? 0 : 1)) * tileSize['height'];
+        const x = this._pointOrigin.x * scale + this._xScale * tileSystem['scale']['x'] * (tileX + (tileSystem['scale']['x'] === 1 ? 1 : 0)) * tileSize['width'];
+        return new Point(x, y);
     }
 
     /**

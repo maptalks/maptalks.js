@@ -2,7 +2,7 @@ import Map from './Map';
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
-import { subtract, add, scale, normalize, dot, set } from '../core/util/vec3';
+import { subtract, add, scale, normalize, dot, set, distance } from '../core/util/vec3';
 import { clamp, interpolate, wrap } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
@@ -351,16 +351,28 @@ Map.include(/** @lends Map.prototype */{
                 h = size.height || 1;
 
             this._glScale = this.getGLScale();
+
+            // camera world matrix
+            const worldMatrix = this._getCameraWorldMatrix();
+
             // get field of view
             const fov = this.getFov() * Math.PI / 180;
-            const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
-            const farZ = maxScale * h / 2 / this._getFovRatio() * 1.4;
+            const pitch = this.getPitch();
+            const cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
+            let farZ;
+            if (pitch === 0) {
+                farZ = cameraCenterDistance + 1;
+            } else {
+                const tanB = Math.tan(fov / 2);
+                const tanP = Math.tan(this.getPitch() * Math.PI / 180);
+                farZ = (cameraCenterDistance * tanB) / (1 / tanP - tanB) + cameraCenterDistance + 1;
+            }
+
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
             this.projMatrix = projMatrix;
-            // camera world matrix
-            const worldMatrix = this._getCameraWorldMatrix();
+
             // view matrix
             this.viewMatrix = mat4.invert(m0, worldMatrix);
             // matrix for world point => screen point

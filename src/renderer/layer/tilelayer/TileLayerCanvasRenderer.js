@@ -313,10 +313,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     clipCanvas(context) {
-        const mask = this.layer.getMask();
-        if (!mask) {
-            return this._clipByPitch(context);
-        }
+        // const mask = this.layer.getMask();
+        // if (!mask) {
+        //     return this._clipByPitch(context);
+        // }
         return super.clipCanvas(context);
     }
 

@@ -620,6 +620,31 @@ class Extent {
             ext.pymax = ext.ymax;
         }
     }
+
+    findClosest(p, out) {
+        out = out || new this._clazz();
+        let dist;
+        out.set(this.xmin, this.ymin);
+        let min = out.distanceTo(p);
+        TEMP_POINT0.set(this.xmax, this.ymin);
+        dist = TEMP_POINT0.distanceTo(p);
+        if (dist < min) {
+            min = dist;
+            out.set(this.xmax, this.ymin);
+        }
+        TEMP_POINT0.set(this.xmax, this.ymax);
+        dist = TEMP_POINT0.distanceTo(p);
+        if (dist < min) {
+            min = dist;
+            out.set(this.xmax, this.ymax);
+        }
+        TEMP_POINT0.set(this.xmin, this.ymax);
+        dist = TEMP_POINT0.distanceTo(p);
+        if (dist < min) {
+            out.set(this.xmin, this.ymax);
+        }
+        return out;
+    }
 }
 
 TEMP_EXTENT = new Extent(0, 0, 0, 0);
