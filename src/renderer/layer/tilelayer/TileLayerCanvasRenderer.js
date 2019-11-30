@@ -540,7 +540,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         let id, tile;
         for (let i = sx; i < ex; i++) {
             for (let ii = sy; ii < ey; ii++) {
-                id = layer._getTileId({ idx : i, idy : ii }, childZoom + zoomOffset, layerId);
+                id = layer._getTileId(i, ii, childZoom + zoomOffset, layerId);
                 if (this.tileCache.has(id)) {
                     tile = this.tileCache.getAndRemove(id);
                     children.push(tile);
@@ -567,7 +567,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const res = sr.getResolution(z + zoomOffset);
             if (!res) continue;
             const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
-            const id = layer._getTileId(tileIndex, z + zoomOffset, info.layer);
+            const id = layer._getTileId(tileIndex.x, tileIndex.y, z + zoomOffset, info.layer);
             if (this.tileCache.has(id)) {
                 const tile = this.tileCache.getAndRemove(id);
                 this.tileCache.add(id, tile);
