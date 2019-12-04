@@ -33,8 +33,8 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
 
         const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z),
-            w = tileInfo.size[0] * scale,
-            h = tileInfo.size[1] * scale;
+            w = tileInfo.size[0],
+            h = tileInfo.size[1];
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
@@ -47,7 +47,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const x = point.x * scale,
             y = point.y * scale;
         const opacity = this.getTileOpacity(tileImage);
-        this.drawGLImage(tileImage, x, y, w, h, opacity);
+        this.drawGLImage(tileImage, x, y, w, h, scale, opacity);
 
         if (opacity < 1) {
             this.setToRedraw();
@@ -152,6 +152,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         if (tile && tile.image) {
             this.disposeImage(tile.image);
         }
+        delete tile.image;
     }
 
     onRemove() {

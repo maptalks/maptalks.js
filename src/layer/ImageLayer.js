@@ -222,7 +222,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
     }
 
     _drawImage(image, extent, opacity) {
-        this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), opacity);
+        this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
     }
 
     createContext() {

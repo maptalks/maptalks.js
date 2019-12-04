@@ -90,22 +90,24 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 const tile = allTiles[i],
                     tileId = tile['id'];
                 //load tile in cache at first if it has.
-                const cached = this._getCachedTile(tileId);
                 let tileLoading = false;
                 if (this._isLoadingTile(tileId)) {
                     tileLoading = loading = true;
                     this.tilesLoading[tileId].current = true;
-                } else if (cached) {
-                    if (this.getTileOpacity(cached.image) < 1) {
-                        tileLoading = loading = true;
-                    }
-                    tiles.push(cached);
                 } else {
-                    tileLoading = loading = true;
-                    const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
-                    if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
-                        loadingCount++;
-                        tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                    const cached = this._getCachedTile(tileId);
+                    if (cached) {
+                        if (this.getTileOpacity(cached.image) < 1) {
+                            tileLoading = loading = true;
+                        }
+                        tiles.push(cached);
+                    } else {
+                        tileLoading = loading = true;
+                        const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
+                        if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
+                            loadingCount++;
+                            tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                        }
                     }
                 }
                 if (!tileLoading) continue;
@@ -591,6 +593,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tilesLoading[tileId].current = false;
                 const { image, info } = tilesLoading[tileId];
                 this.abortTileLoading(image, info);
+                console.log('_getCachedTile');
                 delete tilesLoading[tileId];
             }
         } else {

@@ -45,7 +45,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Boolean} [options.fixCenterOnResize=false]        - whether to fix map center when map is resized
  *
  * @property {Number}  [options.maxPitch=80]                    - max pitch
- * @property {Number}  [options.maxVisualPitch=60]              - the max pitch to be visual
+ * @property {Number}  [options.maxVisualPitch=70]              - the max pitch to be visual
  *
  * @property {Extent}  [options.viewHistory=true]               -  whether to record view history
  * @property {Extent}  [options.viewHistoryCount=10]            -  the count of view history record.
@@ -79,7 +79,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
-    'maxVisualPitch' : 60,
+    'maxVisualPitch' : 70,
     'maxPitch' : 80,
     'centerCross': false,
 
@@ -117,7 +117,9 @@ const options = {
     'checkSize': true,
     'checkSizeInterval' : 1000,
 
-    'renderer': 'canvas'
+    'renderer': 'canvas',
+
+    'cascadePitches': [10, 60]
 };
 
 /**
@@ -479,10 +481,23 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return new PointExtent(0, this.height - visualHeight, this.width, this.height);
     }
 
-    _getVisualHeight(maxVisualPitch) {
-        const pitch = this.getPitch();
-        const visualDistance = this.height / 2 * Math.tan(maxVisualPitch * Math.PI / 180);
-        return this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+    _getVisualHeight(visualPitch) {
+        // const pitch = this.getPitch();
+        // const visualDistance = this.height / 2 * Math.tan(visualPitch * Math.PI / 180);
+        // return this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+
+        const pitch = (90 - this.getPitch()) * Math.PI / 180;
+        const fov = this.getFov() * Math.PI / 180;
+        visualPitch *= Math.PI / 180;
+
+        const cameraToCenter = this.cameraCenterDistance / this.getGLScale();
+        const tanB = Math.tan(fov / 2);
+        const tanP = Math.tan(visualPitch);
+
+        const visualDistance = (cameraToCenter * tanB) / (1 / tanP - tanB) / Math.sin(visualPitch);
+        const x = cameraToCenter * (Math.sin(pitch) * visualDistance / (cameraToCenter + Math.cos(pitch) * visualDistance));
+
+        return this.height / 2 + x;
     }
 
     /**

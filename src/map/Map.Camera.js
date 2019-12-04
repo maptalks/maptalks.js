@@ -351,32 +351,26 @@ Map.include(/** @lends Map.prototype */{
                 h = size.height || 1;
 
             this._glScale = this.getGLScale();
+            const pitch = this.getPitch() * Math.PI / 180;
 
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
 
             // get field of view
             const fov = this.getFov() * Math.PI / 180;
-            const pitch = this.getPitch();
-            const cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
-            let farZ;
-            if (pitch === 0) {
-                farZ = cameraCenterDistance + 1;
-            } else {
-                const tanB = Math.tan(fov / 2);
-                const tanP = Math.tan(this.getPitch() * Math.PI / 180);
-                farZ = (cameraCenterDistance * tanB) / (1 / tanP - tanB) + cameraCenterDistance + 1;
-            }
-
+            const farZ = this._getCameraFar(fov, this.getPitch());
+            this.cameraFar = farZ;
+            this.cameraNear = Math.max(this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(pitch), 0.1);
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
-            mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
+            mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
             this.projMatrix = projMatrix;
 
             // view matrix
             this.viewMatrix = mat4.invert(m0, worldMatrix);
             // matrix for world point => screen point
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
+            this._calcCascadeMatrixes();
             // matrix for screen point => world point
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
             this.domCssMatrix = this._calcDomMatrix();
@@ -386,6 +380,68 @@ Map.include(/** @lends Map.prototype */{
             this._mapGlRes = this._getResolution(this.getGLZoom());
             this._mapExtent2D = this._get2DExtent();
             this._mapGlExtent2D = this._get2DExtent(this.getGLZoom());
+        };
+    }(),
+
+    _getCameraFar(fov, pitch) {
+        const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
+        let farZ = cameraCenterDistance;
+        if (pitch > 0) {
+            const tanB = Math.tan(fov / 2);
+            const tanP = Math.tan(pitch * Math.PI / 180);
+            farZ += (cameraCenterDistance * tanB) / (1 / tanP - tanB);
+        }
+        return farZ + 0.01;
+    },
+
+    _calcCascadeMatrixes: function () {
+        // const cameraLookAt = [];
+        // const cameraPosition = [];
+        // const cameraUp = [];
+        // const cameraForward = [];
+        // const cameraWorldMatrix = createMat4();
+        const projMatrix = createMat4();
+        // const viewMatrix = createMat4();
+        function cal(curPitch, pitch, out) {
+            const w = this.width;
+            const h = this.height;
+            const fov = this.getFov() * Math.PI / 180;
+            // const worldMatrix = this._getCameraWorldMatrix(
+            //     pitch, this.getBearing(),
+            //     cameraLookAt, cameraPosition, cameraUp, cameraForward, cameraWorldMatrix
+            // );
+
+            // get field of view
+            let farZ = this._getCameraFar(fov, pitch);
+            const cameraCenterDistance = this.cameraCenterDistance;
+            farZ = cameraCenterDistance + (farZ - cameraCenterDistance) / Math.cos((90 - pitch) * Math.PI / 180) * Math.cos((90 - curPitch) * Math.PI / 180);
+
+            // camera projection matrix
+            mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
+            // view matrix
+            // mat4.invert(viewMatrix, worldMatrix);
+            const viewMatrix = this.viewMatrix;
+            // matrix for world point => screen point
+            return mat4.multiply(out, projMatrix, viewMatrix);
+        }
+        return function () {
+
+            const pitch = this.getPitch();
+
+            const cascadePitch0 = this.options['cascadePitches'][0];
+            const cascadePitch1 = this.options['cascadePitches'][1];
+            const projViewMatrix0 = this.cascadeFrustumMatrix0 = this.cascadeFrustumMatrix0 || createMat4();
+            const projViewMatrix1 = this.cascadeFrustumMatrix1 = this.cascadeFrustumMatrix1 || createMat4();
+            if (pitch > cascadePitch0) {
+                cal.call(this, pitch, cascadePitch0, projViewMatrix0);
+            } else {
+                mat4.copy(this.cascadeFrustumMatrix0, this.projViewMatrix);
+            }
+            if (pitch > cascadePitch1) {
+                cal.call(this, pitch, cascadePitch1, projViewMatrix1);
+            } else {
+                mat4.copy(this.cascadeFrustumMatrix1, this.cascadeFrustumMatrix0);
+            }
         };
     }(),
 
