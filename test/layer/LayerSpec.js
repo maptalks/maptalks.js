@@ -377,4 +377,187 @@ describe('Layer.Spec', function () {
         // }, 60);
     });
 
+    describe('hitDetect', function () {
+        var innerMap, eventContainer;
+        var layer, center = new maptalks.Coordinate(-0.11304900000004636, 51.49855999999997), pixel;
+
+        beforeEach(function () {
+            var ctx = COMMON_CREATE_MAP(center, null, {
+                width: 500,
+                height: 500,
+                zoomAnimationDuration : 50,
+                zoom: 14,
+            });
+            innerMap = ctx.map;
+
+            var rect = new maptalks.Circle(
+                [-0.11304900000004636, 51.49855999999997], 500,
+                {
+                    symbol: {
+                        lineColor: '#34495e',
+                        lineWidth: 2,
+                        polygonFill: '#1bbc9b',
+                        polygonOpacity: 0.4
+                    }
+                }
+            );
+
+            pixel = innerMap.coordinateToContainerPoint(center);
+
+            layer = new maptalks.VectorLayer('vector', null, {
+                // hitDetect: false,
+            }).addTo(innerMap);
+
+            layer.addGeometry(rect, true);
+
+            container = ctx.container;
+            eventContainer = innerMap._panels.canvasContainer;
+        });
+
+        afterEach(function () {
+            innerMap.remove();
+            REMOVE_CONTAINER(container);
+        });
+
+        it('set layer hitDetect true', function (done) {
+            var spy = sinon.spy();
+            layer.config({
+                hitDetect: true,
+            });
+
+            var renderer = layer._getRenderer();
+
+            renderer.hitDetect = spy;
+
+            happen.mousemove(eventContainer, {
+                'clientX': pixel.x,
+                'clientY': pixel.y
+            });
+            setTimeout(function () {
+                expect(spy.called).to.be.ok();
+                done();
+            }, 100);
+        });
+
+        it('set layer hitDetect false', function (done) {
+            var spy = sinon.spy();
+            layer.config({
+                hitDetect: false,
+            });
+
+            var renderer = layer._getRenderer();
+
+            renderer.hitDetect = spy;
+
+            happen.mousemove(eventContainer, {
+                'clientX': pixel.x,
+                'clientY': pixel.y
+            });
+
+            setTimeout(function () {
+                expect(spy.called).not.to.be.ok();
+                done();
+            }, 100);
+        });
+
+        it('set map hitDetect true and layer hitDetect true', function (done) {
+            var spy = sinon.spy();
+            innerMap.config({
+                hitDetect: true,
+            });
+
+            layer.config({
+                hitDetect: true,
+            });
+
+            var renderer = layer._getRenderer();
+
+            renderer.hitDetect = spy;
+
+            happen.mousemove(eventContainer, {
+                'clientX': pixel.x,
+                'clientY': pixel.y
+            });
+
+            setTimeout(function () {
+                expect(spy.called).to.be.ok();
+                done();
+            }, 100);
+        });
+
+        it('set map hitDetect false and layer hitDetect true', function (done) {
+            var spy = sinon.spy();
+            innerMap.config({
+                hitDetect: false,
+            });
+
+            layer.config({
+                hitDetect: true,
+            });
+
+            var renderer = layer._getRenderer();
+
+            renderer.hitDetect = spy;
+
+            happen.mousemove(eventContainer, {
+                'clientX': pixel.x,
+                'clientY': pixel.y
+            });
+
+            setTimeout(function () {
+                expect(spy.called).not.to.be.ok();
+                done();
+            }, 100);
+        });
+
+        it('set map hitDetect true and layer hitDetect false', function (done) {
+            var spy = sinon.spy();
+            innerMap.config({
+                hitDetect: true,
+            });
+
+            layer.config({
+                hitDetect: false,
+            });
+
+            var renderer = layer._getRenderer();
+
+            renderer.hitDetect = spy;
+
+            happen.mousemove(eventContainer, {
+                'clientX': pixel.x,
+                'clientY': pixel.y
+            });
+
+            setTimeout(function () {
+                expect(spy.called).not.to.be.ok();
+                done();
+            }, 100);
+        });
+
+        it('set map hitDetect false and layer hitDetect false', function (done) {
+            var spy = sinon.spy();
+            innerMap.config({
+                hitDetect: false,
+            });
+
+            layer.config({
+                hitDetect: false,
+            });
+
+            var renderer = layer._getRenderer();
+
+            renderer.hitDetect = spy;
+
+            happen.mousemove(eventContainer, {
+                'clientX': pixel.x,
+                'clientY': pixel.y
+            });
+
+            setTimeout(function () {
+                expect(spy.called).not.to.be.ok();
+                done();
+            }, 100);
+        });
+    });
 });
