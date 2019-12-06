@@ -9,8 +9,8 @@ uniform mat4 positionMatrix;
 
 #include <get_output>
 void main () {
-    mat4 positionMatrix = getPositionMatrix();
-    vec4 POSITION = getPosition(aPosition);
-    gl_Position = projViewMatrix * positionMatrix * POSITION;
+    mat4 localPositionMatrix = getPositionMatrix();
+    vec4 localPosition = getPosition(aPosition);
+    gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * localPosition;
     vBarycentric = aBarycentric;
 }
