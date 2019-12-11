@@ -59,8 +59,8 @@ class TileConfig {
         const tileSystem = this.tileSystem,
             tileSize = this['tileSize'],
             delta = 1E-7;
-        const tileX = Math.floor(delta + point.x / (tileSize['width'] * res));
-        const tileY = Math.ceil(delta + point.y / (tileSize['height'] * res));
+        const tileX = Math.floor(delta * tileSystem['scale']['x'] + point.x / (tileSize['width'] * res));
+        const tileY = Math.ceil(delta * tileSystem['scale']['y'] + point.y / (tileSize['height'] * res));
 
         return {
             'x': tileSystem['scale']['x'] * tileX,
@@ -74,7 +74,7 @@ class TileConfig {
      * @param  {Number} res - current resolution
      * @return {Object}   tile index and offset
      */
-    getTileIndex(pCoord, res) {
+    getTileIndex(pCoord, res, repeatWorld) {
         const tileSystem = this.tileSystem;
         // tileSize = this['tileSize'];
         const point = this.transformation.transform(pCoord, 1);
@@ -96,7 +96,7 @@ class TileConfig {
         }
 
         //有可能tileIndex超出世界范围
-        return this.getNeighorTileIndex(tileIndex['x'], tileIndex['y'], 0, 0, res);
+        return this.getNeighorTileIndex(tileIndex['x'], tileIndex['y'], 0, 0, res, repeatWorld);
     }
 
     /**
@@ -160,6 +160,12 @@ class TileConfig {
     }
 
     _getTileFullIndex(res) {
+        if (!this._tileFullIndex) {
+            this._tileFullIndex = {};
+        }
+        if (this._tileFullIndex[res]) {
+            return this._tileFullIndex[res];
+        }
         const ext = this.fullExtent;
         const transformation = this.transformation;
         const nwIndex = this._getTileNum(transformation.transform(new Coordinate(ext['left'], ext['top']), 1), res);
@@ -176,7 +182,8 @@ class TileConfig {
             nwIndex.y -= 1;
             seIndex.y -= 1;
         }
-        return new Extent(nwIndex, seIndex);
+        this._tileFullIndex[res] = new Extent(nwIndex, seIndex);
+        return this._tileFullIndex[res];
     }
 
     /**

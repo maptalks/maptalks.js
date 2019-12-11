@@ -47,8 +47,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const x = point.x * scale,
             y = point.y * scale;
         const opacity = this.getTileOpacity(tileImage);
-        this.drawGLImage(tileImage, x, y, w, h, scale, opacity);
-
+        this.drawGLImage(tileImage, x, y, w, h, scale, opacity, this.layer.options['debug']);
         if (opacity < 1) {
             this.setToRedraw();
         } else {

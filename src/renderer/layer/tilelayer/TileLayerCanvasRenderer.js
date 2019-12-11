@@ -487,7 +487,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         Canvas2D.image(ctx, tileImage, x, y, w, h);
         if (this.layer.options['debug']) {
             const color = this.layer.options['debugOutline'],
-                xyz = tileId.split('-');
+                xyz = tileId.split('_');
             const length = xyz.length;
             ctx.save();
             ctx.strokeStyle = color;

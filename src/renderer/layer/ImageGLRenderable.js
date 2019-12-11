@@ -38,6 +38,31 @@ const shaders = {
     `
 };
 
+const debugShaders = {
+    'vertexShader': `
+        attribute vec2 a_position;
+
+        uniform mat4 u_matrix;
+
+        void main() {
+            gl_Position = u_matrix * vec4(a_position, 0.0, 1.0);
+        }
+    `,
+    // fragment shader, can be replaced by layer.options.fragmentShader
+    'fragmentShader': `
+        precision mediump float;
+
+        // uniform vec4 u_color;
+
+        void main() {
+
+            // gl_FragColor = u_color;
+            gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+
+        }
+    `
+};
+
 //reusable temporary variables
 const v2 = [0, 0],
     v3 = [0, 0, 0],
@@ -60,7 +85,10 @@ const ImageGLRenderable = Base => {
          * @param {Number} h - height at map's gl zoom
          * @param {Number} opacity
          */
-        drawGLImage(image, x, y, w, h, scale, opacity) {
+        drawGLImage(image, x, y, w, h, scale, opacity, debug) {
+            if (this.gl.program !== this.program) {
+                this.useProgram(this.program);
+            }
             const gl = this.gl;
             this.loadTexture(image);
 
@@ -89,6 +117,26 @@ const ImageGLRenderable = Base => {
             v2[2] = glBuffer.type;
             this.enableVertexAttrib(v2); // ['a_position', 3]
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            if (debug) {
+                this.drawDebug(uMatrix, v2, 0, 0, w, h);
+            }
+        }
+
+        drawDebug(uMatrix, attrib, x, y, w, h) {
+            this.useProgram(this.debugProgram);
+            const gl = this.gl;
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
+            this.enableVertexAttrib(['a_position', 2, 'FLOAT']);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                x, y,
+                x + w, y,
+                x + w, y - h,
+                x, y - h,
+                x, y
+            ]), gl.STATIC_DRAW);
+            gl.uniformMatrix4fv(this.debugProgram['u_matrix'], false, uMatrix);
+            gl.drawArrays(gl.LINE_STRIP, 0, 5);
         }
 
         bufferTileData(x, y, w, h, buffer) {
@@ -175,8 +223,12 @@ const ImageGLRenderable = Base => {
             gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
             this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'], ['u_matrix', 'u_image', 'u_opacity']);
-            this.useProgram(this.program);
+            this.debugProgram = this.createProgram(debugShaders['vertexShader'], debugShaders['fragmentShader'], ['u_matrix'/*, 'u_color'*/]);
 
+            this.useProgram(this.debugProgram);
+            this._debugBuffer = this.createBuffer();
+
+            this.useProgram(this.program);
             // input texture vec data
             this.texBuffer = this.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
