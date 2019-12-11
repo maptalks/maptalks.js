@@ -27,38 +27,16 @@ const shaders = {
         uniform sampler2D u_image;
 
         uniform float u_opacity;
+        uniform float u_debug;
 
         varying vec2 v_texCoord;
 
         void main() {
-
-            gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
-
-        }
-    `
-};
-
-const debugShaders = {
-    'vertexShader': `
-        attribute vec2 a_position;
-
-        uniform mat4 u_matrix;
-
-        void main() {
-            gl_Position = u_matrix * vec4(a_position, 0.0, 1.0);
-        }
-    `,
-    // fragment shader, can be replaced by layer.options.fragmentShader
-    'fragmentShader': `
-        precision mediump float;
-
-        // uniform vec4 u_color;
-
-        void main() {
-
-            // gl_FragColor = u_color;
-            gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-
+            if (u_debug == 1.0) {
+                gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            } else {
+                gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
+            }
         }
     `
 };
@@ -100,6 +78,7 @@ const ImageGLRenderable = Base => {
             mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
+            gl.uniform1f(this.program['u_debug'], 0);
 
             const { glBuffer } = image;
             if (glBuffer && (glBuffer.width !== w || glBuffer.height !== h)) {
@@ -124,7 +103,6 @@ const ImageGLRenderable = Base => {
         }
 
         drawDebug(uMatrix, attrib, x, y, w, h) {
-            this.useProgram(this.debugProgram);
             const gl = this.gl;
             gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
             this.enableVertexAttrib(['a_position', 2, 'FLOAT']);
@@ -134,8 +112,9 @@ const ImageGLRenderable = Base => {
                 x + w, y - h,
                 x, y - h,
                 x, y
-            ]), gl.STATIC_DRAW);
-            gl.uniformMatrix4fv(this.debugProgram['u_matrix'], false, uMatrix);
+            ]), gl.DYNAMIC_DRAW);
+            gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
+            gl.uniform1f(this.program['u_debug'], 1);
             gl.drawArrays(gl.LINE_STRIP, 0, 5);
         }
 
@@ -222,10 +201,8 @@ const ImageGLRenderable = Base => {
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-            this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'], ['u_matrix', 'u_image', 'u_opacity']);
-            this.debugProgram = this.createProgram(debugShaders['vertexShader'], debugShaders['fragmentShader'], ['u_matrix'/*, 'u_color'*/]);
-
-            this.useProgram(this.debugProgram);
+            this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'],
+                ['u_matrix', 'u_image', 'u_opacity', 'u_debug']);
             this._debugBuffer = this.createBuffer();
 
             this.useProgram(this.program);
@@ -389,6 +366,10 @@ const ImageGLRenderable = Base => {
             const gl = this.gl;
             if (!gl) {
                 return;
+            }
+            if (this._debugBuffer) {
+                gl.deleteBuffer(this._debugBuffer);
+                delete this._debugBuffer;
             }
             if (this._buffers) {
                 this._buffers.forEach(function (b) {
