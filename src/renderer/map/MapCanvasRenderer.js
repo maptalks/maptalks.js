@@ -48,6 +48,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (updated) {
             this._drawCenterCross();
         }
+        // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
         // 1. frameend is often used internally by maptalks and plugins
@@ -677,6 +678,31 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
+    _drawContainerExtent() {
+        const { cascadePitches } = this.map.options;
+        const h30 = this.map.height - this.map._getVisualHeight(cascadePitches[0]);
+        const h60 = this.map.height - this.map._getVisualHeight(cascadePitches[1]);
+
+        const extent = this.map.getContainerExtent();
+        const ctx = this.context;
+        ctx.beginPath();
+        ctx.moveTo(0, extent.ymin);
+        ctx.lineTo(extent.xmax, extent.ymin);
+        ctx.stroke();
+
+
+        ctx.beginPath();
+        ctx.moveTo(0, h30);
+        ctx.lineTo(extent.xmax, h30);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, h60);
+        ctx.lineTo(extent.xmax, h60);
+        ctx.stroke();
+        // console.log(extent.ymin, h30, h60);
+    }
+
     _drawFog() {
         const map = this.map;
         if (map.getPitch() <= map.options['maxVisualPitch'] || !map.options['fog']) {
@@ -832,7 +858,7 @@ class MapCanvasRenderer extends MapRenderer {
 Map.registerRenderer('canvas', MapCanvasRenderer);
 
 Map.mergeOptions({
-    'fog' : true,
+    'fog' : false,
     'fogColor' : [233, 233, 233]
 });
 
