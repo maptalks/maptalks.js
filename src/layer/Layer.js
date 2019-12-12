@@ -6,6 +6,7 @@ import Renderable from '../renderer/Renderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import CollisionIndex from '../core/CollisionIndex';
 import Geometry from '../geometry/Geometry';
+import Browser from '../core/Browser';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
@@ -15,6 +16,7 @@ import Geometry from '../geometry/Geometry';
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
  * @property {Number}  [options.zIndex=undefined] - z index of the layer
+ * @property {Boolean} [options.hitDetect=true] - Whether to enable hit detection for layers for cursor styles on this map, disable it to improve performance.
  * @property {String}  [options.renderer=canvas]  - renderer type, "canvas" in default.
  * @property {String}   [options.globalCompositeOperation=null] - (Only for layer rendered with [CanvasRenderer]{@link renderer.CanvasRenderer}) globalCompositeOperation of layer's canvas 2d context.
  * @property {String}   [options.debugOutline='#0f0']  - debug outline's color.
@@ -42,7 +44,10 @@ const options = {
     'forceRenderOnZooming' : false,
     'forceRenderOnRotating' : false,
     'collision' : false,
-    'collisionScope' : 'layer'
+    'collisionScope' : 'layer',
+    'hitDetect': (function () {
+        return !Browser.mobile;
+    })()
 };
 
 /**

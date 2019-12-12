@@ -1,7 +1,7 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault, sign } from '../../../core/util';
 import { isGradient, getGradientStamp } from '../../../core/util/style';
 import { getAlignPoint } from '../../../core/util/strings';
-import { hasFunctionDefinition } from '../../../core/mapbox';
+import { hasFunctionDefinition, isFunctionDefinition } from '../../../core/mapbox';
 import Size from '../../../geo/Size';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
@@ -109,6 +109,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
                 shadow = 2 * (this.symbol['shadowBlur'] || 0), // add some tolerance for shadowOffsetX/Y
                 w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding * 2),
                 h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding * 2);
+            if (isFunctionDefinition(this.symbol['markerWidth']) || isFunctionDefinition(this.symbol['markerHeight'])) {
+                return [w, h];
+            }
             this._size = [w, h];
         }
         return this._size;

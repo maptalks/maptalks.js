@@ -84,15 +84,13 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const map = this.getMap();
         //refresh geometries on zooming
         const count = this.layer.getCount();
+        const res = this.getMap().getResolution();
         if (map.isZooming() &&
-            map.options['seamlessZoom'] &&
-            this._geosToDraw.length < count) {
-            const res = this.getMap().getResolution();
-            if (this._drawnRes !== undefined && res > this._drawnRes * 1.5) {
-                this.prepareToDraw();
-                this.forEachGeo(this.checkGeo, this);
-                this._drawnRes = res;
-            }
+            map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
+            this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
+            this.prepareToDraw();
+            this.forEachGeo(this.checkGeo, this);
+            this._drawnRes = res;
         }
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];

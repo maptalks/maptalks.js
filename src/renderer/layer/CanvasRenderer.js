@@ -123,7 +123,7 @@ class CanvasRenderer extends Class {
      */
     needToRedraw() {
         const map = this.getMap();
-        if (map.isInteracting()) {
+        if (map.isInteracting() || map.getRenderer().isViewChanged()) {
             // don't redraw when map is moving without any pitch
             return !(!map.getPitch() && map.isMoving() && !map.isZooming() && !map.isRotating() && !this.layer.options['forceRenderOnMoving']);
         }

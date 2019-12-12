@@ -392,6 +392,7 @@ class Extent {
         this.ymin = ymin;
         this.xmax = xmax;
         this.ymax = ymax;
+        this._dirty = true;
         return this;
     }
 
@@ -567,7 +568,7 @@ class Extent {
         }
         const e = out || new this.constructor();
         if (out) {
-            e.xmin = e.ymin = e.xmax = e.ymax = 0;
+            e.set(null, null, null, null);
         }
         let coord;
         if (this._clazz === Coordinate) {
@@ -589,6 +590,9 @@ class Extent {
 
     _project(ext) {
         if (!ext || !ext.isValid()) {
+            if (ext) {
+                ext.pxmin = ext.pxmax = ext.pymin = ext.pymax = null;
+            }
             return;
         }
         const proj = this.projection;
