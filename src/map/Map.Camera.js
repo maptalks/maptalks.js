@@ -334,13 +334,9 @@ Map.include(/** @lends Map.prototype */{
      */
     _calcMatrices: function () {
         // closure matrixes to reuse
-        const m0 = Browser.ie9 ? null : createMat4(),
-            m1 = Browser.ie9 ? null : createMat4();
+        const m0 = createMat4(),
+            m1 = createMat4();
         return function () {
-            // get pixel size of map
-            if (Browser.ie9) {
-                return;
-            }
             //必须先删除缓存的常用值，否则后面计算常用值时，会循环引用造成错误
             delete this._mapRes;
             delete this._mapGlRes;
@@ -447,8 +443,8 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _calcDomMatrix: function () {
-        const m = Browser.ie9 ? null : createMat4(),
-            m1 = Browser.ie9 ? null : createMat4(),
+        const m = createMat4(),
+            m1 = createMat4(),
             minusY = [1, -1, 1],
             arr = [0, 0, 0];
         return function () {
