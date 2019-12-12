@@ -134,7 +134,7 @@ export function distance(a, b) {
     const x = b[0] - a[0];
     const y = b[1] - a[1];
     const z = b[2] - a[2];
-    return Math.hypot(x, y, z);
+    return Math.hypot ? Math.hypot(x, y, z) : hypot(x, y, z);
 }
 
 /**
@@ -154,4 +154,11 @@ export function transformMat4(out, a, m) {
     out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
     out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
     return out;
+}
+
+function hypot() {
+    let y = 0;
+    let i = arguments.length;
+    while (i--) y += arguments[i] * arguments[i];
+    return Math.sqrt(y);
 }
