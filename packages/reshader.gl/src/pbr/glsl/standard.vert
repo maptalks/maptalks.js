@@ -24,6 +24,7 @@ vec4 Tangent;
 // uniform mat3 uModelViewNormalMatrix;
 uniform mat4 uModelMatrix;
 uniform mat4 uModelViewMatrix;
+uniform mat4 positionMatrix;
 uniform mat4 uProjectionMatrix;
 // uniform mat4 uProjViewModelMatrix;
 // uniform mat4 uViewMatrix;
@@ -49,6 +50,8 @@ varying vec3 vModelVertex;
     attribute vec4 aColor;
     varying vec4 vColor;
 #endif
+
+#include <get_output>
 
 #ifdef HAS_SHADOWING
     #include <vsm_shadow_vert>
@@ -90,7 +93,8 @@ void main() {
         Normal = aNormal;
     #endif
 
-    vec4 localVertex = vec4(aPosition, 1.0);
+    mat4 localPositionMatrix = getPositionMatrix();
+    vec4 localVertex = getPosition(aPosition);
     vModelVertex = (uModelMatrix * localVertex).xyz;
 
     vec3 localNormal = Normal;
@@ -102,7 +106,7 @@ void main() {
 
     // vViewNormal = uModelViewNormalMatrix * localNormal;
 
-    vec4 viewVertex = uModelViewMatrix * localVertex;
+    vec4 viewVertex = uModelViewMatrix * localPositionMatrix * localVertex;
     // gl_Position = uProjectionMatrix * uModelViewMatrix * localVertex;
     mat4 jitteredProjection = uProjectionMatrix;
     jitteredProjection[2].xy += uHalton.xy / uGlobalTexSize.xy;

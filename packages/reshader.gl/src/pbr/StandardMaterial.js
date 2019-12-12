@@ -6,7 +6,7 @@ const DEFAULT_UNIFORMS = {
     'uvScale': [1, 1],
     'uvOffset': [0, 0],
 
-    'uAlbedoPBR': [1, 1, 1, 1],
+    'uBaseColorFactor': [1, 1, 1, 1],
     'uEmitColor': [0, 0, 0],
 
     'uAlbedoPBRFactor': 1, //1
@@ -18,8 +18,8 @@ const DEFAULT_UNIFORMS = {
     'uClearCoatRoughnessFactor': 0.04, //0.04
     'uClearCoatThickness': 5, //5
     'uEmitColorFactor': 1, //1
-    'uRoughnessPBRFactor': 0.4, //0.4
-    'uMetalnessPBRFactor': 0, //0
+    'uRoughnessFactor': 0.4,
+    'uMetallicFactor': 0, //0
     'uNormalMapFactor': 1, //1
     'uRGBMRange': 7, //7
     // 'uScatteringFactorPacker', //unused
@@ -36,7 +36,7 @@ const DEFAULT_UNIFORMS = {
     'uNormalMapFlipY': 0, //1
     'uOutputLinear': 0, //1
     'uEnvironmentTransform': mat3.identity([]), //0.5063, -0.0000, 0.8624, 0.6889, 0.6016, -0.4044, -0.5188, 0.7988, 0.3046
-    'uAlbedoTexture': null, //albedo color
+    'uBaseColorTexture': null,
     'uNormalTexture': null,
     'uOcclusionTexture': null,
     'uMetallicRoughnessTexture': null,
@@ -48,9 +48,9 @@ const DEFAULT_UNIFORMS = {
 class StandardMaterial extends Material {
     constructor(uniforms) {
         const defaultUniforms = extend({}, DEFAULT_UNIFORMS);
-        if (uniforms['uMetallicRoughnessTexture']) {
-            defaultUniforms['uRoughnessPBRFactor'] = 1;
-            defaultUniforms['uMetalnessPBRFactor'] = 1;
+        if (uniforms['uMetallicRoughnessTexture'] || uniforms['metallicRoughnessTexture']) {
+            defaultUniforms['uRoughnessFactor'] = 1;
+            defaultUniforms['uMetallicFactor'] = 1;
         }
         super(uniforms, defaultUniforms);
     }
@@ -58,7 +58,7 @@ class StandardMaterial extends Material {
     createDefines() {
         const defines = super.createDefines();
         const uniforms = this.uniforms;
-        if (uniforms['uAlbedoTexture']) {
+        if (uniforms['uBaseColorTexture']) {
             defines['HAS_ALBEDO_MAP'] = 1;
         }
         if (uniforms['uMetallicRoughnessTexture']) {

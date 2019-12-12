@@ -85,7 +85,7 @@ class StandardShader extends MeshShader {
             'uGlobalTexSize',
             'uvScale', 'uvOffset',
             'uEmitColor',
-            'uAlbedoPBR',
+            'uBaseColorFactor',
 
             'uAlbedoPBRFactor', //1
             'uAnisotropyDirection', //0
@@ -98,8 +98,8 @@ class StandardShader extends MeshShader {
             'uEmitColorFactor', //1
             'uEnvironmentExposure', //2
             'uFrameMod', //
-            'uRoughnessPBRFactor', //0.4
-            'uMetalnessPBRFactor', //0
+            'uRoughnessFactor', //0.4
+            'uMetallicFactor', //0
             'uNormalMapFactor', //1
             'uRGBMRange', //7
             'uScatteringFactorPacker', //unused
@@ -116,7 +116,7 @@ class StandardShader extends MeshShader {
             'uNormalMapFlipY', //1
             'uOutputLinear', //1
             'uEnvironmentTransform', //0.5063, -0.0000, 0.8624, 0.6889, 0.6016, -0.4044, -0.5188, 0.7988, 0.3046
-            'uAlbedoTexture', //albedo color
+            'uBaseColorTexture',
             'uNormalTexture',
             'uOcclusionTexture',
             'uMetallicRoughnessTexture',
