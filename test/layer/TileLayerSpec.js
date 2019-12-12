@@ -6,8 +6,8 @@ describe('TileLayer', function () {
 
     function createMap(w, h) {
         container = document.createElement('div');
-        container.style.width = w || '3px';
-        container.style.height = h || '3px';
+        container.style.width = w || '150px';
+        container.style.height = h || '150px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,
@@ -129,7 +129,7 @@ describe('TileLayer', function () {
                 renderer : 'canvas',
                 urlTemplate : '#'
             }).addTo(map);
-            expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(1);
+            expect(tile.getTiles().tileGrids[0].tiles.length).to.be.eql(2);
         });
 
         it('tiles out of extent', function () {

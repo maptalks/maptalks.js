@@ -93,7 +93,7 @@ const ImageGLRenderable = Base => {
 
             v2[0] = 'a_position';
             v2[1] = 3;
-            v2[2] = glBuffer.type;
+            v2[2] = image.glBuffer.type;
             this.enableVertexAttrib(v2); // ['a_position', 3]
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 

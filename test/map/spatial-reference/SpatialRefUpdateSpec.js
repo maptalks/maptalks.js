@@ -4,8 +4,8 @@ describe('SpatialReference.Update', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '1px';
-        container.style.height = '1px';
+        container.style.width = '300px';
+        container.style.height = '300px';
         document.body.appendChild(container);
         map = new maptalks.Map(container, {
             'zoom' : 14,
@@ -18,7 +18,7 @@ describe('SpatialReference.Update', function () {
         REMOVE_CONTAINER();
     });
 
-    it('TileLayer', function (done) {
+    it('SpatialReference.TileLayer', function (done) {
         var tileLayer = new maptalks.TileLayer('base', {
             urlTemplate : '#'
         });
@@ -34,7 +34,7 @@ describe('SpatialReference.Update', function () {
         map.setBaseLayer(tileLayer);
         var tiles = tileLayer.getTiles().tileGrids[0].tiles;
         var tile = tiles[tiles.length - 1];
-        expect(tile.point.toArray()).to.be.eql([-256.0000000001879, 256.0000000001879]);
+        expect(tile.point.toArray()).to.be.eql([-256, 256]);
     });
 
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();

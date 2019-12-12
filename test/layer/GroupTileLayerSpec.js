@@ -7,7 +7,7 @@ describe('GroupTileLayer', function () {
     function createMap() {
         container = document.createElement('div');
         container.style.width = '30px';
-        container.style.height = '30px';
+        container.style.height = '150px';
         document.body.appendChild(container);
         var option = {
             zoom: 17,

@@ -6,10 +6,10 @@ describe('#CanvasMap', function () {
 
     beforeEach(function () {
         container = document.createElement('canvas');
-        container.width = 10;
-        container.height = 10;
-        container.style.width = '10px';
-        container.style.height = '10px';
+        container.width = 150;
+        container.height = 150;
+        container.style.width = '150px';
+        container.style.height = '150px';
         document.body.appendChild(container);
         var option = {
             zoomAnimation:true,

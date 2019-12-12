@@ -391,6 +391,7 @@ Map.include(/** @lends Map.prototype */{
             const tanP = Math.tan(pitch * Math.PI / 180);
             farZ += (cameraCenterDistance * tanB) / (1 / tanP - tanB);
         }
+        //TODO 地下的图形无法显示
         return farZ + 0.01;
     },
 

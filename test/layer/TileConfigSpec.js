@@ -4,8 +4,8 @@ describe('TileConfig', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '1px';
-        container.style.height = '1px';
+        container.style.width = '150px';
+        container.style.height = '150px';
         document.body.appendChild(container);
     });
 
@@ -30,7 +30,7 @@ describe('TileConfig', function () {
         var projection = srs.getProjection();
         var tileSystem = maptalks.TileSystem.getDefault(projection);
         var fullExtent = srs.getFullExtent();
-        var tileConfig = new maptalks.TileConfig(tileSystem, fullExtent, new maptalks.Size(size, size));
+        var tileConfig = new maptalks.TileConfig(map, tileSystem, fullExtent, new maptalks.Size(size, size));
 
         // tileCoordToExtent
         var res = srs.getResolution(z);
@@ -57,7 +57,7 @@ describe('TileConfig', function () {
         var projection = srs.getProjection();
         var tileSystem = maptalks.TileSystem.getDefault(projection);
         var fullExtent = srs.getFullExtent();
-        var tileConfig = new maptalks.TileConfig(tileSystem, fullExtent, new maptalks.Size(size, size));
+        var tileConfig = new maptalks.TileConfig(map, tileSystem, fullExtent, new maptalks.Size(size, size));
 
         // tileCoordToExtent
         var res = srs.getResolution(z);
@@ -75,7 +75,7 @@ describe('TileConfig', function () {
             top: 3579213.587178574
         };
 
-        var tileConfig = new maptalks.TileConfig(tileSystem, fullExtent, new maptalks.Size(256, 256));
+        var tileConfig = new maptalks.TileConfig(map, tileSystem, fullExtent, new maptalks.Size(256, 256));
         var fullIndex = tileConfig._getTileFullIndex(19.109257071294063);
         console.log(fullIndex.toString());
         expect(fullIndex.toString()).to.be.eql('6463,4826,6464,4827');

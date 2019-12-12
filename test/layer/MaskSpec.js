@@ -10,8 +10,8 @@ describe('Spec of Masks', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '100px';
-        container.style.height = '100px';
+        container.style.width = '150px';
+        container.style.height = '150px';
         document.body.appendChild(container);
         var option = {
             centerCross : true,

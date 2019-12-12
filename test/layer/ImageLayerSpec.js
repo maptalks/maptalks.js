@@ -7,8 +7,8 @@ describe('Layer.ImageLayer', function () {
 
     beforeEach(function () {
         container = document.createElement('div');
-        container.style.width = '100px';
-        container.style.height = '100px';
+        container.style.width = '150px';
+        container.style.height = '150px';
         document.body.appendChild(container);
         var option = {
             zoom: 14,
@@ -71,7 +71,7 @@ describe('Layer.ImageLayer', function () {
             if (maptalks.Browser.ie) {
                 expect(layer).to.be.painted(0, 1, [0, 0, 0, 58]);
             } else {
-                expect(layer).to.be.painted(0, 1, [0, 0, 0, 104]);
+                expect(layer).to.be.painted(0, 1, [0, 0, 0, 102]);
             }
             done();
         });
