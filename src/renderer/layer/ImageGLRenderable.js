@@ -27,13 +27,16 @@ const shaders = {
         uniform sampler2D u_image;
 
         uniform float u_opacity;
+        uniform float u_debug;
 
         varying vec2 v_texCoord;
 
         void main() {
-
-            gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
-
+            if (u_debug == 1.0) {
+                gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            } else {
+                gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
+            }
         }
     `
 };
@@ -60,7 +63,10 @@ const ImageGLRenderable = Base => {
          * @param {Number} h - height at map's gl zoom
          * @param {Number} opacity
          */
-        drawGLImage(image, x, y, w, h, opacity) {
+        drawGLImage(image, x, y, w, h, scale, opacity, debug) {
+            if (this.gl.program !== this.program) {
+                this.useProgram(this.program);
+            }
             const gl = this.gl;
             this.loadTexture(image);
 
@@ -68,9 +74,11 @@ const ImageGLRenderable = Base => {
             v3[1] = y || 0;
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
+            mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
             mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
+            gl.uniform1f(this.program['u_debug'], 0);
 
             const { glBuffer } = image;
             if (glBuffer && (glBuffer.width !== w || glBuffer.height !== h)) {
@@ -85,8 +93,29 @@ const ImageGLRenderable = Base => {
 
             v2[0] = 'a_position';
             v2[1] = 3;
+            v2[2] = image.glBuffer.type;
             this.enableVertexAttrib(v2); // ['a_position', 3]
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            if (debug) {
+                this.drawDebug(uMatrix, v2, 0, 0, w, h);
+            }
+        }
+
+        drawDebug(uMatrix, attrib, x, y, w, h) {
+            const gl = this.gl;
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
+            this.enableVertexAttrib(['a_position', 2, 'FLOAT']);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                x, y,
+                x + w, y,
+                x + w, y - h,
+                x, y - h,
+                x, y
+            ]), gl.DYNAMIC_DRAW);
+            gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
+            gl.uniform1f(this.program['u_debug'], 1);
+            gl.drawArrays(gl.LINE_STRIP, 0, 5);
         }
 
         bufferTileData(x, y, w, h, buffer) {
@@ -94,13 +123,24 @@ const ImageGLRenderable = Base => {
             const x2 = x + w;
             const y1 = y;
             const y2 = y - h;
-            const glBuffer = this.loadImageBuffer(this.set12(
-                x1, y1, 0,
-                x1, y2, 0,
-                x2, y1, 0,
-                x2, y2, 0), buffer);
+            let data;
+            if (isInteger(x1) && isInteger(x2) && isInteger(y1) && isInteger(y2)) {
+                data = this.set12Int(
+                    x1, y1, 0,
+                    x1, y2, 0,
+                    x2, y1, 0,
+                    x2, y2, 0);
+            } else {
+                data = this.set12(
+                    x1, y1, 0,
+                    x1, y2, 0,
+                    x2, y1, 0,
+                    x2, y2, 0);
+            }
+            const glBuffer = this.loadImageBuffer(data, buffer);
             glBuffer.width = w;
             glBuffer.height = h;
+            glBuffer.type = data instanceof Int16Array ? 'SHORT' : 'FLOAT';
             return glBuffer;
         }
 
@@ -161,14 +201,16 @@ const ImageGLRenderable = Base => {
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-            this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'], ['u_matrix', 'u_image', 'u_opacity']);
-            this.useProgram(this.program);
+            this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'],
+                ['u_matrix', 'u_image', 'u_opacity', 'u_debug']);
+            this._debugBuffer = this.createBuffer();
 
+            this.useProgram(this.program);
             // input texture vec data
             this.texBuffer = this.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
-            this.enableVertexAttrib(['a_texCoord', 2]);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            this.enableVertexAttrib(['a_texCoord', 2, 'UNSIGNED_BYTE']);
+            gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array([
                 0.0, 0.0,
                 0.0, 1.0,
                 1.0, 0.0,
@@ -181,14 +223,6 @@ const ImageGLRenderable = Base => {
             gl.activeTexture(gl['TEXTURE0']);
 
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-
-            this.posBuffer = this.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-            this.enableVertexAttrib(['a_position', 3]);
-
-            // Enable indices buffer
-            this.indicesBuffer = this.createBuffer();
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
         }
 
         /**
@@ -333,6 +367,10 @@ const ImageGLRenderable = Base => {
             if (!gl) {
                 return;
             }
+            if (this._debugBuffer) {
+                gl.deleteBuffer(this._debugBuffer);
+                delete this._debugBuffer;
+            }
             if (this._buffers) {
                 this._buffers.forEach(function (b) {
                     gl.deleteBuffer(b);
@@ -343,7 +381,6 @@ const ImageGLRenderable = Base => {
                 this._textures.forEach(t => gl.deleteTexture(t));
                 delete this._textures;
             }
-            delete this.posBuffer;
             const program = gl.program;
             gl.deleteShader(program.fragmentShader);
             gl.deleteShader(program.vertexShader);
@@ -457,6 +494,25 @@ const ImageGLRenderable = Base => {
     extend(renderable.prototype, {
         set12: function () {
             const out = Browser.ie9 ? null : new Float32Array(12);
+            return function (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+                out[0] = a0;
+                out[1] = a1;
+                out[2] = a2;
+                out[3] = a3;
+                out[4] = a4;
+                out[5] = a5;
+                out[6] = a6;
+                out[7] = a7;
+                out[8] = a8;
+                out[9] = a9;
+                out[10] = a10;
+                out[11] = a11;
+                return out;
+            };
+        }(),
+
+        set12Int: function () {
+            const out = Browser.ie9 ? null : new Int16Array(12);
             return function (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
                 out[0] = a0;
                 out[1] = a1;

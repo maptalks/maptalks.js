@@ -2,7 +2,7 @@ import Map from './Map';
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
-import { subtract, add, scale, normalize, dot, set, dist as distance } from '../core/util/vec3';
+import { subtract, add, scale, normalize, dot, set, distance } from '../core/util/vec3';
 import { clamp, interpolate, wrap } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
@@ -334,14 +334,9 @@ Map.include(/** @lends Map.prototype */{
      */
     _calcMatrices: function () {
         // closure matrixes to reuse
-        const m0 = Browser.ie9 ? null : createMat4(),
-            m1 = Browser.ie9 ? null : createMat4();
+        const m0 = createMat4(),
+            m1 = createMat4();
         return function () {
-            // get pixel size of map
-            if (Browser.ie9) {
-                return;
-            }
-            const sr = this.getSpatialReference();
             //必须先删除缓存的常用值，否则后面计算常用值时，会循环引用造成错误
             delete this._mapRes;
             delete this._mapGlRes;
@@ -352,39 +347,26 @@ Map.include(/** @lends Map.prototype */{
                 h = size.height || 1;
 
             this._glScale = this.getGLScale();
+            const pitch = this.getPitch() * Math.PI / 180;
 
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
 
-            const fov = this.getFov() * RADIAN,
-                pitch = this.getPitch() * RADIAN;
-
-            const halfFov = fov / 2;
-            const groundAngle = Math.PI / 2 + pitch;
-            const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
-
-            // Calculate z distance of the farthest fragment that should be rendered.
-            const furthestDistance = Math.cos(Math.PI / 2 - pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
-
-            // const maxScale = this.getScale(this.getMinZoom()) / this.getScale(this.getMaxNativeZoom());
-            this.cameraFar = furthestDistance * 10.01; //this._glScale * h / 2 / this._getFovRatio() * 2;
-            if (sr.isEPSG) {
-                // dynamic cameraNear for predefined EPSG* projections
-                // this can help to increase depth resolutions
-                //TODO cameraNear会出现过大，而导致图形不显示的问题
-                this.cameraNear = Math.max(this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(this.getPitch() * RADIAN), 0.1);
-            } else {
-                this.cameraNear = 0.1;
-            }
-
+            // get field of view
+            const fov = this.getFov() * Math.PI / 180;
+            const farZ = this._getCameraFar(fov, this.getPitch());
+            this.cameraFar = farZ;
+            this.cameraNear = Math.max(this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(pitch), 0.1);
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
-            mat4.perspective(projMatrix, fov, w / h, this.cameraNear, this.cameraFar);
+            mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
             this.projMatrix = projMatrix;
+
             // view matrix
             this.viewMatrix = mat4.invert(m0, worldMatrix);
             // matrix for world point => screen point
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
+            this._calcCascadeMatrixes();
             // matrix for screen point => world point
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
             this.domCssMatrix = this._calcDomMatrix();
@@ -397,9 +379,72 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
+    _getCameraFar(fov, pitch) {
+        const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
+        let farZ = cameraCenterDistance;
+        if (pitch > 0) {
+            const tanB = Math.tan(fov / 2);
+            const tanP = Math.tan(pitch * Math.PI / 180);
+            farZ += (cameraCenterDistance * tanB) / (1 / tanP - tanB);
+        }
+        //TODO 地下的图形无法显示
+        return farZ + 0.01;
+    },
+
+    _calcCascadeMatrixes: function () {
+        // const cameraLookAt = [];
+        // const cameraPosition = [];
+        // const cameraUp = [];
+        // const cameraForward = [];
+        // const cameraWorldMatrix = createMat4();
+        const projMatrix = createMat4();
+        // const viewMatrix = createMat4();
+        function cal(curPitch, pitch, out) {
+            const w = this.width;
+            const h = this.height;
+            const fov = this.getFov() * Math.PI / 180;
+            // const worldMatrix = this._getCameraWorldMatrix(
+            //     pitch, this.getBearing(),
+            //     cameraLookAt, cameraPosition, cameraUp, cameraForward, cameraWorldMatrix
+            // );
+
+            // get field of view
+            let farZ = this._getCameraFar(fov, pitch);
+            const cameraCenterDistance = this.cameraCenterDistance;
+            farZ = cameraCenterDistance + (farZ - cameraCenterDistance) / Math.cos((90 - pitch) * Math.PI / 180) * Math.cos((90 - curPitch) * Math.PI / 180);
+
+            // camera projection matrix
+            mat4.perspective(projMatrix, fov, w / h, 0.1, farZ);
+            // view matrix
+            // mat4.invert(viewMatrix, worldMatrix);
+            const viewMatrix = this.viewMatrix;
+            // matrix for world point => screen point
+            return mat4.multiply(out, projMatrix, viewMatrix);
+        }
+        return function () {
+
+            const pitch = this.getPitch();
+
+            const cascadePitch0 = this.options['cascadePitches'][0];
+            const cascadePitch1 = this.options['cascadePitches'][1];
+            const projViewMatrix0 = this.cascadeFrustumMatrix0 = this.cascadeFrustumMatrix0 || createMat4();
+            const projViewMatrix1 = this.cascadeFrustumMatrix1 = this.cascadeFrustumMatrix1 || createMat4();
+            if (pitch > cascadePitch0) {
+                cal.call(this, pitch, cascadePitch0, projViewMatrix0);
+            } else {
+                mat4.copy(this.cascadeFrustumMatrix0, this.projViewMatrix);
+            }
+            if (pitch > cascadePitch1) {
+                cal.call(this, pitch, cascadePitch1, projViewMatrix1);
+            } else {
+                mat4.copy(this.cascadeFrustumMatrix1, this.cascadeFrustumMatrix0);
+            }
+        };
+    }(),
+
     _calcDomMatrix: function () {
-        const m = Browser.ie9 ? null : createMat4(),
-            m1 = Browser.ie9 ? null : createMat4(),
+        const m = createMat4(),
+            m1 = createMat4(),
             minusY = [1, -1, 1],
             arr = [0, 0, 0];
         return function () {

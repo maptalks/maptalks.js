@@ -90,22 +90,24 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 const tile = allTiles[i],
                     tileId = tile['id'];
                 //load tile in cache at first if it has.
-                const cached = this._getCachedTile(tileId);
                 let tileLoading = false;
                 if (this._isLoadingTile(tileId)) {
                     tileLoading = loading = true;
                     this.tilesLoading[tileId].current = true;
-                } else if (cached) {
-                    if (this.getTileOpacity(cached.image) < 1) {
-                        tileLoading = loading = true;
-                    }
-                    tiles.push(cached);
                 } else {
-                    tileLoading = loading = true;
-                    const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
-                    if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
-                        loadingCount++;
-                        tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                    const cached = this._getCachedTile(tileId);
+                    if (cached) {
+                        if (this.getTileOpacity(cached.image) < 1) {
+                            tileLoading = loading = true;
+                        }
+                        tiles.push(cached);
+                    } else {
+                        tileLoading = loading = true;
+                        const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
+                        if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
+                            loadingCount++;
+                            tileQueue[tileId + '@' + tile['point'].toArray().join()] = tile;
+                        }
                     }
                 }
                 if (!tileLoading) continue;
@@ -194,7 +196,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         const layer = this.layer,
             map = this.getMap();
-        if (!layer.options['cascadeTiles'] || map.getPitch() <= layer.options['minPitchToCascade']) {
+        if (!layer.options['cascadeTiles'] || map.getPitch() <= map.options['cascadePitches'][0]) {
             tiles.forEach(t => this._drawTileAndCache(t));
         } else {
             //write current tiles and update stencil buffer to clip parent|child tiles with current tiles
@@ -313,10 +315,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     clipCanvas(context) {
-        const mask = this.layer.getMask();
-        if (!mask) {
-            return this._clipByPitch(context);
-        }
+        // const mask = this.layer.getMask();
+        // if (!mask) {
+        //     return this._clipByPitch(context);
+        // }
         return super.clipCanvas(context);
     }
 
@@ -485,7 +487,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         Canvas2D.image(ctx, tileImage, x, y, w, h);
         if (this.layer.options['debug']) {
             const color = this.layer.options['debugOutline'],
-                xyz = tileId.split('-');
+                xyz = tileId.split('_');
             const length = xyz.length;
             ctx.save();
             ctx.strokeStyle = color;
@@ -540,7 +542,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         let id, tile;
         for (let i = sx; i < ex; i++) {
             for (let ii = sy; ii < ey; ii++) {
-                id = layer._getTileId({ idx : i, idy : ii }, childZoom + zoomOffset, layerId);
+                id = layer._getTileId(i, ii, childZoom + zoomOffset, layerId);
                 if (this.tileCache.has(id)) {
                     tile = this.tileCache.getAndRemove(id);
                     children.push(tile);
@@ -567,7 +569,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const res = sr.getResolution(z + zoomOffset);
             if (!res) continue;
             const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
-            const id = layer._getTileId(tileIndex, z + zoomOffset, info.layer);
+            const id = layer._getTileId(tileIndex.x, tileIndex.y, z + zoomOffset, info.layer);
             if (this.tileCache.has(id)) {
                 const tile = this.tileCache.getAndRemove(id);
                 this.tileCache.add(id, tile);
@@ -591,6 +593,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tilesLoading[tileId].current = false;
                 const { image, info } = tilesLoading[tileId];
                 this.abortTileLoading(image, info);
+                console.log('_getCachedTile');
                 delete tilesLoading[tileId];
             }
         } else {
