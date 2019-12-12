@@ -196,7 +196,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         const layer = this.layer,
             map = this.getMap();
-        if (!layer.options['cascadeTiles'] || map.getPitch() <= layer.options['minPitchToCascade']) {
+        if (!layer.options['cascadeTiles'] || map.getPitch() <= map.options['cascadePitches'][0]) {
             tiles.forEach(t => this._drawTileAndCache(t));
         } else {
             //write current tiles and update stencil buffer to clip parent|child tiles with current tiles

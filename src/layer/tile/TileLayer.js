@@ -62,7 +62,6 @@ class TileHashset {
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
  * @property {Number}              [options.maxCacheSize=256]    - maximum number of tiles to cache
  * @property {Boolean}             [options.cascadeTiles=true]      - draw cascaded tiles of different zooms to reduce tiles
- * @property {Number}              [options.minPitchToCascade=35]   - minimum pitch degree to begin tile cascade
  * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
  * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
  * @memberOf TileLayer
@@ -109,7 +108,6 @@ const options = {
     'maxAvailableZoom' : null,
 
     'cascadeTiles' : true,
-    'minPitchToCascade' : 30,
 
     'zoomOffset' : 0
 };
