@@ -525,7 +525,7 @@ class TileLayer extends Layer {
                     p._sub(offset);
                 }
                 const tileExtent = tileInfo && tileInfo.extent2d || new PointExtent(p.x, p.y, p.x + width, p.y - height);
-                if (allCount < 4 || rightVisitEnd || this._isTileInExtent(frustumMatrix, tileExtent, glScale)) {
+                if (allCount <= 4 || rightVisitEnd || this._isTileInExtent(frustumMatrix, tileExtent, glScale)) {
                     if (this._visitedTiles && cascadeLevel === 0) {
                         this._visitedTiles.add(tileId);
                     }
