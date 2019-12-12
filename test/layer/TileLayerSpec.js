@@ -133,7 +133,7 @@ describe('TileLayer', function () {
         });
 
         it('tiles out of extent', function () {
-            createMap();
+            createMap(1000, 1000);
             var p = map.getProjection().project(map.getCenter());
             var layer = new maptalks.TileLayer('base', {
                 renderer : 'canvas',
