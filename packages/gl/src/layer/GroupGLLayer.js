@@ -412,12 +412,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     clearCanvas() {
         super.clearCanvas();
-        const gl = this.glCtx;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-
-        // only clear main framebuffer
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this._regl.clear({
+            color: [0, 0, 0, 0],
+            depth: 1,
+            stencil: 0xFF
+        });
         if (this._targetFBO) {
             this._regl.clear({
                 color: [0, 0, 0, 0],
@@ -430,7 +429,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     resizeCanvas() {
         super.resizeCanvas();
-        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         if (this._targetFBO && (this._targetFBO.width !== this.canvas.width ||
             this._targetFBO.height !== this.canvas.height)) {
             this._targetFBO.resize(this.canvas.width, this.canvas.height);
