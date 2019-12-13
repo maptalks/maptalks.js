@@ -4,6 +4,7 @@ import clipLine from './util/clip_line';
 import { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
+import {getHeightValue } from './util/util';
 
 const MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
@@ -21,7 +22,7 @@ export default class NativePointPack extends VectorPack {
         return [
             {
                 type: Int16Array,
-                width: this.positionSize,
+                width: 3,
                 name: 'aPosition'
             }
         ];
@@ -32,12 +33,13 @@ export default class NativePointPack extends VectorPack {
         const placement = this.symbol['markerPlacement'] || 'point';
         const anchors = this._getAnchors(point, spacing, placement);
 
+        const altitude = this.getAltitude(point.feature.properties);
+
         for (let ii = 0; ii < anchors.length; ii++) {
             const point = anchors[ii];
             this.data.push(point.x, point.y);
-            if (this.positionSize === 3) {
-                this.data.push(0);
-            }
+            this.data.push(altitude);
+
             const max = Math.max(Math.abs(point.x), Math.abs(point.y));
             if (max > this.maxPos) {
                 this.maxPos = max;

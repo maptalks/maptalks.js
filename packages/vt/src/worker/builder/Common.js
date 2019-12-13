@@ -85,13 +85,13 @@ export function calculateSignedArea(ring) {
 export function getHeightValue(properties, heightProp, defaultValue) {
     //prepare altitude property
     let height = defaultValue;
-    if (heightProp) {
+    if (heightProp && properties) {
         height = properties[heightProp];
     }
     if (height === undefined) {
         height = defaultValue;
     }
-    return height * 100;//乘以100是因为 tileTransform 中是以厘米为单位，但这里是以米为单位
+    return (height || 0) * 10;//乘以10是因为 tileTransform 中是以分米为单位，但这里是以米为单位
 }
 
 export function isClippedEdge(vertices, i0, i1, EXTENT) {

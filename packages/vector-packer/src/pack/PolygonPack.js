@@ -34,7 +34,7 @@ export default class PolygonPack extends VectorPack {
         const format = [
             {
                 type: Int16Array,
-                width: this.positionSize,
+                width: 3,
                 name: 'aPosition'
             }
             //TODO 动态color
@@ -106,6 +106,9 @@ export default class PolygonPack extends VectorPack {
         const uvSize = 256;
         const hasUV = !!this.symbol['polygonPatternFile'];
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
+
+        const altitude = this.getAltitude(feature.properties);
+
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
             const triangleIndex = this.data.length / this.formatWidth;
@@ -126,11 +129,8 @@ export default class PolygonPack extends VectorPack {
                 const lineIndex = this.lineElements.length;
 
                 this.data.push(
-                    ring[0].x, ring[0].y
+                    ring[0].x, ring[0].y, altitude
                 );
-                if (this.positionSize === 3) {
-                    this.data.push(0);
-                }
                 if (hasUV) {
                     this.data.push(ring[0].x * 32 / uvSize, ring[0].y * 32 / uvSize);
                 }
@@ -148,11 +148,8 @@ export default class PolygonPack extends VectorPack {
 
                 for (let i = 1; i < ring.length; i++) {
                     this.data.push(
-                        ring[i].x, ring[i].y
+                        ring[i].x, ring[i].y, altitude
                     );
-                    if (this.positionSize === 3) {
-                        this.data.push(0);
-                    }
                     if (hasUV) {
                         this.data.push(ring[i].x * 32 / uvSize, ring[i].y * 32 / uvSize);
                     }

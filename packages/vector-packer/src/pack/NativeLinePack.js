@@ -32,7 +32,7 @@ export default class NativeLinePack extends VectorPack {
         return [
             {
                 type: Int16Array,
-                width: this.positionSize,
+                width: 3,
                 name: 'aPosition'
             }
             //当前点距离起点的距离
@@ -152,9 +152,8 @@ export default class NativeLinePack extends VectorPack {
             point.y
             // linesofar
         );
-        if (this.positionSize === 3) {
-            data.push(0);
-        }
+        data.push(0);
+
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
 

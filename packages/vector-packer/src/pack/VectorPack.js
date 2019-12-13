@@ -10,6 +10,7 @@ import { extend } from '../style/Util';
 import { loadFunctionTypes, interpolated } from '@maptalks/function-type';
 import { createFilter } from '@maptalks/feature-filter';
 import { isFnTypeSymbol } from '../style/Util';
+import { getHeightValue } from './util/util';
 
 //feature index defined in BaseLayerWorker
 export const KEY_IDX = '__fea_idx';
@@ -27,7 +28,6 @@ export default class VectorPack {
             return [options.zoom];
         });
         //TODO 数据只包含二维数据时，也认为是only2D
-        this.positionSize = options['only2D'] ? 2 : 3;
         this.styledVectors = [];
         this.properties = {};
         if (isFnTypeSymbol('visible', this.symbolDef)) {
@@ -207,6 +207,7 @@ export default class VectorPack {
         }
         this.maxIndex = 0;
         this.maxPos = 0;
+        this.maxAltitude = 0;
         const data = this.data = [];
         let elements = this.elements = [];
         //uniforms: opacity, u_size_t
@@ -243,10 +244,21 @@ export default class VectorPack {
         featureIndexes = new ArrType(featureIndexes);
 
         //update aPosition's type
-        format[0].type = getPosArrayType(this.maxPos);
+        format[0].type = getPosArrayType(Math.max(this.maxPos, this.maxAltitude));
 
         const arrays = fillTypedArray(format, data);
         arrays.aPickingId = featureIndexes;
+
+
+        if (!this.maxAltitude) {
+            //only2D
+            const positions = new arrays.aPosition.constructor(arrays.aPosition.length * 2 / 3);
+            for (let i = 0; i < positions.length; i += 2) {
+                positions[i] = arrays.aPosition[i / 2 * 3];
+                positions[i + 1] = arrays.aPosition[i / 2 * 3 + 1];
+            }
+            arrays.aPosition = positions;
+        }
 
         const buffers = [];
         for (const p in arrays) {
@@ -260,7 +272,7 @@ export default class VectorPack {
             data: arrays,
             // format,
             indices: elements,
-            positionSize: this.positionSize,
+            positionSize: !this.maxAltitude ? 2 : 3,
             buffers
         };
     }
@@ -272,6 +284,13 @@ export default class VectorPack {
 
     hasElements() {
         return true;
+    }
+
+    getAltitude(properties) {
+        const { altitudeProperty, defaultAltitude } = this.options;
+        const altitude = getHeightValue(properties, altitudeProperty, defaultAltitude);
+        this.maxAltitude = Math.max(this.maxAltitude, Math.abs(altitude));
+        return altitude;
     }
 }
 

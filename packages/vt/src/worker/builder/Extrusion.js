@@ -1,6 +1,6 @@
 import { calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
-import { pushIn, getIndexArrayType } from '../../common/Util';
+import { pushIn, getIndexArrayType, getPosArrayType } from '../../common/Util';
 import { clipPolygon } from './clip';
 import earcut from 'earcut';
 import { KEY_IDX } from './Constant';
@@ -24,8 +24,8 @@ export function buildExtrudeFaces(
     // const size = countVertexes(features) * 2;
     //featIndexes : index of indices for each feature
     // const arrCtor = getIndexArrayType(features.length);
-    const featIndexes = [],
-        vertices = [];
+    const featIndexes = [];
+    const vertices = [];
     const indices = [];
     const generateUV = !!uv,
         generateTop = !!top;
@@ -132,7 +132,7 @@ export function buildExtrudeFaces(
         return offset;
     }
 
-
+    let maxAltitude = 0;
     let offset = 0;
     // debugger
     for (let r = 0, n = features.length; r < n; r++) {
@@ -141,6 +141,7 @@ export function buildExtrudeFaces(
         const geometry = feature.geometry;
 
         const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
+        maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
         const height = heightProperty ? getHeightValue(feature.properties, heightProperty, defaultHeight) * altitudeScale : altitude;
 
         const verticeCount = vertices.length;
@@ -186,11 +187,12 @@ export function buildExtrudeFaces(
         }
     }
     const feaCtor = getIndexArrayType(features.length);
+    const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
-        vertices : new Int16Array(vertices),        // vertexes
+        vertices: new posArrayType(vertices),        // vertexes
         indices,                                    // indices for drawElements
-        featureIndexes : new feaCtor(featIndexes)   // vertex index of each feature
+        featureIndexes: new feaCtor(featIndexes)   // vertex index of each feature
     };
     if (uvs) {
         data.uvs = new Float32Array(uvs);

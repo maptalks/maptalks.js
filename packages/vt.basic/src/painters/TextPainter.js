@@ -144,7 +144,7 @@ export default class TextPainter extends CollisionPainter {
         this._updateLabels(context.timestamp);
     }
 
-    callCurrentTileShader(uniforms) {
+    callCurrentTileShader(uniforms, context) {
         // let size = 0;
         // const meshes = this.scene.getMeshes();
         // for (let i = 0; i < meshes.length; i++) {
@@ -155,19 +155,19 @@ export default class TextPainter extends CollisionPainter {
         // console.log('Buffer内存总大小', size);
 
         //1. render current tile level's meshes
-        this.shader.filter = this._filter0;
-        this.renderer.render(this.shader, uniforms, this.scene);
+        this.shader.filter = context.sceneFilter ? [this._filter0, context.sceneFilter] : this._filter0;
+        this.renderer.render(this.shader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
 
-        this._shaderAlongLine.filter = this._lineFilter0;
-        this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
+        this._shaderAlongLine.filter = context.sceneFilter ? [this._lineFilter0, context.sceneFilter] : this._lineFilter0;
+        this.renderer.render(this._shaderAlongLine, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
     }
 
-    callBackgroundTileShader(uniforms) {
-        this.shader.filter = this._filter1;
-        this.renderer.render(this.shader, uniforms, this.scene);
+    callBackgroundTileShader(uniforms, context) {
+        this.shader.filter = context.sceneFilter ? [this._filter1, context.sceneFilter] : this._filter1;
+        this.renderer.render(this.shader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
 
-        this._shaderAlongLine.filter = this._lineFilter1;
-        this.renderer.render(this._shaderAlongLine, uniforms, this.scene);
+        this._shaderAlongLine.filter = context.sceneFilter ? [this._lineFilter1, context.sceneFilter] : this._lineFilter1;
+        this.renderer.render(this._shaderAlongLine, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
     }
 
     /**

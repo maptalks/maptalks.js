@@ -13,13 +13,13 @@ import Color from 'color';
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
 
-function getPackSDFFormat(symbol, positionSize) {
+function getPackSDFFormat(symbol) {
     if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
         //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
         return [
             {
                 type: Int16Array,
-                width: positionSize,
+                width: 3,
                 name: 'aPosition'
             },
             {
@@ -58,7 +58,7 @@ function getPackSDFFormat(symbol, positionSize) {
         return [
             {
                 type: Int16Array,
-                width: positionSize,
+                width: 3,
                 name: 'aPosition'
             },
             {
@@ -80,11 +80,11 @@ function getPackSDFFormat(symbol, positionSize) {
     }
 }
 
-function getPackMarkerFormat(positionSize) {
+function getPackMarkerFormat() {
     return [
         {
             type: Int16Array,
-            width: positionSize,
+            width: 3,
             name: 'aPosition'
         },
         {
@@ -195,7 +195,7 @@ export default class PointPack extends VectorPack {
 
     getFormat(symbol) {
         const isText = symbol['textName'] !== undefined;
-        const format = isText ? getPackSDFFormat(symbol, this.positionSize) : getPackMarkerFormat(this.positionSize);
+        const format = isText ? getPackSDFFormat(symbol) : getPackMarkerFormat();
         if (isText) {
             format.push(...this._getTextFnTypeFormats());
         } else {
@@ -374,7 +374,7 @@ export default class PointPack extends VectorPack {
             }
         }
         const textCount = quads.length;
-        const only2D = this.options['only2D'];
+        const altitude = this.getAltitude(point.feature.properties);
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
             const l = quads.length;
@@ -384,10 +384,7 @@ export default class PointPack extends VectorPack {
                 //把line的端点存到line vertex array里
                 const { tl, tr, bl, br, tex } = quad;
                 //char's quad if flipped
-                data.push(anchor.x, anchor.y);
-                if (!only2D) {
-                    data.push(0);
-                }
+                data.push(anchor.x, anchor.y, altitude);
                 data.push(
                     tl.x * 10, tl.y * 10,
                     tex.x, tex.y + tex.h
@@ -397,10 +394,7 @@ export default class PointPack extends VectorPack {
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
-                data.push(anchor.x, anchor.y);
-                if (!only2D) {
-                    data.push(0);
-                }
+                data.push(anchor.x, anchor.y, altitude);
                 data.push(
                     tr.x * 10, tr.y * 10,
                     tex.x + tex.w, tex.y + tex.h
@@ -410,10 +404,7 @@ export default class PointPack extends VectorPack {
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
-                data.push(anchor.x, anchor.y);
-                if (!only2D) {
-                    data.push(0);
-                }
+                data.push(anchor.x, anchor.y, altitude);
                 data.push(
                     bl.x * 10, bl.y * 10,
                     tex.x, tex.y
@@ -423,10 +414,7 @@ export default class PointPack extends VectorPack {
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
-                data.push(anchor.x, anchor.y);
-                if (!only2D) {
-                    data.push(0);
-                }
+                data.push(anchor.x, anchor.y, altitude);
                 data.push(
                     br.x * 10, br.y * 10,
                     tex.x + tex.w, tex.y

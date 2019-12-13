@@ -33,3 +33,17 @@ export function isClippedEdge(vertices, i0, i1, width, EXTENT) {
     return x0 === x1 && (x0 < 0 || x0 > EXTENT) && y0 !== y1 ||
         y0 === y1 && (y0 < 0 || y0 > EXTENT) && x0 !== x1;
 }
+
+
+// get height value from properties
+export function getHeightValue(properties, heightProp, defaultValue) {
+    //prepare altitude property
+    let height = defaultValue;
+    if (heightProp && properties) {
+        height = properties[heightProp];
+    }
+    if (height === undefined) {
+        height = defaultValue;
+    }
+    return (height || 0) * 10;//乘以10是因为 tileTransform 中是以分米为单位，但这里是以米为单位
+}

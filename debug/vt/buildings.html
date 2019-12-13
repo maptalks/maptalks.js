@@ -37,12 +37,12 @@
       pitch : 45,
       fog: false,
       centerCross: true,
-      baseLayer: new maptalks.MapboxVectorTileLayer('vt', {
-        urlTemplate: mapboxURL,
-        background: [0.925,0.878,0.792,1],
-        style: 'mbtiles.json',
-        debug: true
-      }),
+      // baseLayer: new maptalks.MapboxVectorTileLayer('vt', {
+      //   urlTemplate: mapboxURL,
+      //   background: [0.925,0.878,0.792,1],
+      //   style: 'mbtiles.json',
+      //   debug: true
+      // }),
       "center":[13.414627196474385,52.52909578112681],"zoom":16.309955844160633,"pitch":52.20000000000007,"bearing":0,
       "center":[13.418531244478004,52.533396361654326],"zoom":18.582413946875466,"pitch":52.20000000000007,"bearing":0,
 
@@ -95,7 +95,7 @@
           type : '3d-extrusion',
           altitudeProperty : 'height',
           altitudeScale : 1,
-          defaultAltitude : 1,
+          defaultAltitude : 0,
           normal : true,
           uv : true,
           uvScale : [1, 1],
@@ -105,16 +105,16 @@
         },
         sceneConfig : {
           animation : 'easeOutBounce',
-          shadow : {
-            type : 'esm',
-            // type : 'stencil',
-            enable : true,
-            quality : 'high',
-            opacity : 0.0,
-            color : [0, 0, 0],
-            blurOffset : 1,
-            // debug : ['shadow', 'shadow2']
-          },
+          // shadow : {
+          //   type : 'esm',
+          //   // type : 'stencil',
+          //   enable : true,
+          //   quality : 'high',
+          //   opacity : 0.0,
+          //   color : [0, 0, 0],
+          //   blurOffset : 1,
+          //   // debug : ['shadow', 'shadow2']
+          // },
           lights : {
             ambient: {
               resource: {
@@ -210,6 +210,32 @@
               ]
             }
           }
+        },
+        {
+          filter: true,
+          renderPlugin: {
+            type : 'text',
+            dataConfig : {
+              type : 'point',
+              altitudeProperty : 'height',
+              altitudeScale : 1,
+              defaultAltitude : 0,
+            }
+          },
+          symbol: {
+              textFaceName : 'Arial',
+              textWeight : 'medium',
+              textName : '{height}',
+              textSize : 18,
+              textFill : '#000',
+              textHaloRadius : 1,
+              textHaloFill : '#fff',
+              textHaloBlur : 0.1,
+              textPitchAlignment : 'map',
+              // textRotationAlignment : 'map',
+              textPerspectiveRatio : 1,
+              // textPlacement : 'line'
+          }
         }
       ]
     };
@@ -247,7 +273,7 @@
         // type : 'stencil',
         enable : true,
         quality : 'high',
-        opacity : 1.0,
+        opacity : 0.8,
         color : [0, 0, 0],
         blurOffset : 1,
         lightDirection : renderPlugin.sceneConfig.lights.directional.direction

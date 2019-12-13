@@ -71,7 +71,7 @@ export default class LinePack extends VectorPack {
         const format = [
             {
                 type: Int16Array,
-                width: this.positionSize,
+                width: 3,
                 name: 'aPosition'
             },
             //当前点距离aPos的凸起方向
@@ -590,9 +590,8 @@ export default class LinePack extends VectorPack {
         const x = (point.x << 1) + (round ? 1 : 0);
         const y = (point.y << 1) + (up ? 1 : 0);
         data.push(x, y);
-        if (this.positionSize === 3) {
-            data.push(0);
-        }
+        data.push(0);
+
         data.push(
             // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             EXTRUDE_SCALE * extrude.x,

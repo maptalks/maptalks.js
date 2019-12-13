@@ -1,5 +1,5 @@
 import { countVertexes, isClippedEdge, fillPosArray, getHeightValue } from './Common';
-import { getIndexArrayType } from '../../common/Util';
+import { getIndexArrayType, getPosArrayType } from '../../common/Util';
 import { KEY_IDX } from './Constant';
 
 export function buildWireframe(
@@ -61,12 +61,14 @@ export function buildWireframe(
     }
 
     let offset = 0;
+    let maxAltitude = 0;
 
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
 
         const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
+        maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
         const height = heightProperty ? getHeightValue(feature.properties, heightProperty, defaultHeight) * altitudeScale : altitude;
 
         let start = offset;
@@ -95,9 +97,10 @@ export function buildWireframe(
     const tIndices = new ctor(indices);
 
     const feaCtor = getIndexArrayType(features.length);
+    const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
-        aPosition: vertices,  // vertexes
+        aPosition: new posArrayType(vertices),  // vertexes
         indices : tIndices,    // indices for drawElements
         aPickingId : new feaCtor(featIndexes)     // vertex index of each feature
     };
