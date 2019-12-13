@@ -17,11 +17,16 @@ class Scene {
         if (!meshes || (Array.isArray(meshes) && !meshes.length) || meshes === this.meshes) {
             return this;
         }
-        this.meshes = Array.isArray(meshes) ? meshes : [meshes];
-        for (let i = 0; i < this.meshes.length; i++) {
-            const mesh = this.meshes[i];
+        meshes = Array.isArray(meshes) ? meshes : [meshes];
+        this.meshes = [];
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            if (!mesh) {
+                continue;
+            }
             mesh._scenes = mesh._scenes || {};
             mesh._scenes[this._id] = 1;
+            this.meshes.push(mesh);
         }
         this.dirty();
         return this;
