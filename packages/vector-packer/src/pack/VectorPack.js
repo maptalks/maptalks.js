@@ -249,16 +249,16 @@ export default class VectorPack {
         const arrays = fillTypedArray(format, data);
         arrays.aPickingId = featureIndexes;
 
-
-        if (!this.maxAltitude) {
-            //only2D
-            const positions = new arrays.aPosition.constructor(arrays.aPosition.length * 2 / 3);
-            for (let i = 0; i < positions.length; i += 2) {
-                positions[i] = arrays.aPosition[i / 2 * 3];
-                positions[i + 1] = arrays.aPosition[i / 2 * 3 + 1];
-            }
-            arrays.aPosition = positions;
-        }
+        //因为 IS_2D_POSITION 会导致program切换，2位aPosition和3位aPosition的性能变化不大，所以不再执行only2D逻辑
+        // if (!this.maxAltitude) {
+        //     //only2D
+        //     const positions = new arrays.aPosition.constructor(arrays.aPosition.length * 2 / 3);
+        //     for (let i = 0; i < positions.length; i += 2) {
+        //         positions[i] = arrays.aPosition[i / 2 * 3];
+        //         positions[i + 1] = arrays.aPosition[i / 2 * 3 + 1];
+        //     }
+        //     arrays.aPosition = positions;
+        // }
 
         const buffers = [];
         for (const p in arrays) {
@@ -272,7 +272,7 @@ export default class VectorPack {
             data: arrays,
             // format,
             indices: elements,
-            positionSize: !this.maxAltitude ? 2 : 3,
+            positionSize: 3, //!this.maxAltitude ? 2 : 3,
             buffers
         };
     }
