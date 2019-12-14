@@ -491,7 +491,7 @@ export default class CollisionPainter extends BasicPainter {
     paint(context) {
         const status = super.paint(context);
 
-        this._renderCollisionBox();
+        this._renderCollisionBox(context);
         if (this._canProceed === false) {
             this.setToRedraw();
         }
@@ -541,7 +541,7 @@ export default class CollisionPainter extends BasicPainter {
         }
     }
 
-    _renderCollisionBox() {
+    _renderCollisionBox(context) {
         if (!this._collisionBoxes || !this.layer.options['debugCollision']) {
             return;
         }
@@ -577,7 +577,8 @@ export default class CollisionPainter extends BasicPainter {
             {
                 size: [this.canvas.width, this.canvas.height]
             },
-            this._collisionScene
+            this._collisionScene,
+            context.renderTarget && context.renderTarget.fbo
         );
         delete this._collisionBoxes;
     }
