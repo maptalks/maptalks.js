@@ -152,8 +152,9 @@ function createPainterPlugin(type, Painter) {
                         m.properties.level = level;
                         m.setUniform('level', level);
                         if (enableTileStencil) {
-                            m.defines['ENABLE_TILE_STENCIL'] = 1;
-                            m.setDefines(m.defines);
+                            const defines = m.defines || {};
+                            defines['ENABLE_TILE_STENCIL'] = 1;
+                            m.setDefines(defines);
                             if (!m.material.uniforms.hasOwnProperty('stencilRef')) {
                                 Object.defineProperty(m.material.uniforms, 'stencilRef', {
                                     enumerable: true,
@@ -169,8 +170,9 @@ function createPainterPlugin(type, Painter) {
                     mesh.properties.level = level;
                     mesh.setUniform('level', level);
                     if (enableTileStencil) {
-                        mesh.defines['ENABLE_TILE_STENCIL'] = 1;
-                        mesh.setDefines(mesh.defines);
+                        const defines = mesh.defines || {};
+                        defines['ENABLE_TILE_STENCIL'] = 1;
+                        mesh.setDefines(defines);
                         if (!mesh.material.uniforms.hasOwnProperty('stencilRef')) {
                             Object.defineProperty(mesh.material.uniforms, 'stencilRef', {
                                 enumerable: true,
