@@ -294,8 +294,10 @@ class PhongPainter extends Painter {
             #include <get_output>
             void main()
             {
-                frameUniforms.modelMatrix = getModelMatrix();
-                gl_Position = projViewModelMatrix * frameUniforms.modelMatrix * getPosition(aPosition);
+                mat4 localPositionMatrix = getPositionMatrix();
+                vec4 localPosition = getPosition(aPosition);
+
+                gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
                 //传入gl_Position的depth值
                 fbo_picking_setData(gl_Position.w, true);
             }

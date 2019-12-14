@@ -2,7 +2,7 @@ import { vec3, mat4, quat, reshader } from '@maptalks/gl';
 import PhongPainter from './PhongPainter';
 
 const pickingVert = `
-    attribute vec3 POSITION;
+    attribute vec3 aPosition;
     uniform mat4 projViewModelMatrix;
     uniform mat4 modelMatrix;
     uniform mat4 positionMatrix;
@@ -11,8 +11,10 @@ const pickingVert = `
     #include <get_output>
     void main()
     {
-        frameUniforms.modelMatrix = getModelMatrix();
-        gl_Position = projViewModelMatrix * frameUniforms.modelMatrix * getPosition(POSITION);
+        mat4 localPositionMatrix = getPositionMatrix();
+        vec4 localPosition = getPosition(aPosition);
+
+        gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
         //传入gl_Position的depth值
         fbo_picking_setData(gl_Position.w, true);
     }`;
