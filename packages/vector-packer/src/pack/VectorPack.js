@@ -287,8 +287,11 @@ export default class VectorPack {
     }
 
     getAltitude(properties) {
-        const { altitudeProperty, defaultAltitude } = this.options;
-        const altitude = getHeightValue(properties, altitudeProperty, defaultAltitude);
+        const { altitudeProperty, defaultAltitude, altitudeScale } = this.options;
+        let altitude = getHeightValue(properties, altitudeProperty, defaultAltitude);
+        if (altitudeScale) {
+            altitude *= altitudeScale;
+        }
         this.maxAltitude = Math.max(this.maxAltitude, Math.abs(altitude));
         return altitude;
     }
