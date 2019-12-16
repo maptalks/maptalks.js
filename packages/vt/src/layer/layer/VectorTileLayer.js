@@ -187,6 +187,23 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._vtStyleResources && this._vtStyleResources[index];
     }
 
+    getPolygonOffsetCount() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return 0;
+        }
+        return renderer.plugins && renderer.plugins.length || 0;
+    }
+
+    getPolygonOffset() {
+        return this._polygonOffset || 0;
+    }
+
+    setPolygonOffset(offset) {
+        this._polygonOffset = offset;
+        return this;
+    }
+
     _parseStylePath() {
         const styles = this._vtStyle;
         for (let i = 0; i < styles.length; i++) {

@@ -60,6 +60,7 @@ class Painter {
     }
 
     render(context) {
+        this.pluginIndex = context.pluginIndex;
         if (!this._inited) {
             this.init(context);
             this._inited = true;
