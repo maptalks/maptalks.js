@@ -38,6 +38,7 @@ function glsl() {
 }
 
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
+const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 
 module.exports = {
     input: 'src/index.js',
@@ -61,6 +62,7 @@ module.exports = {
             'format': 'umd',
             'name': 'maptalks.vt.basic',
             'banner': banner,
+            'outro': outro,
             'globals': {
                 '@maptalks/gl': 'maptalksgl',
                 '@maptalks/vt': 'maptalks',

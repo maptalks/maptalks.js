@@ -32,6 +32,9 @@ function removeGlobal() {
     };
 }
 
+const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
+const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
+
 module.exports = [{
     input: 'src/worker/index.js',
     plugins: [
@@ -92,6 +95,8 @@ module.exports = [{
             'maptalks': 'maptalks',
             '@maptalks/gl': 'maptalksgl'
         },
+        banner,
+        outro,
         extend: true,
         name: 'maptalks',
         file: outputFile,
