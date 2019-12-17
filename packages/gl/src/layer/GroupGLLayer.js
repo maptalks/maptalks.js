@@ -115,6 +115,16 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
+    _updatePolygonOffset() {
+        let offset = 0;
+        for (let i = 0; i < this.layers.length; i++) {
+            if (this.layers[i].setPolygonOffset && this.layers[i].getPolygonOffsetCount) {
+                this.layers[i].setPolygonOffset(offset);
+                offset += this.layers[i].getPolygonOffsetCount();
+            }
+        }
+    }
+
     /**
      * Get children TileLayer
      * @returns {TileLayer[]}
@@ -277,6 +287,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         this.prepareRender();
         this.prepareCanvas();
+        this.layer._updatePolygonOffset();
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
                 return;
