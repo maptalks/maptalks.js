@@ -95,15 +95,9 @@ class PhongPainter extends Painter {
     }
 
     updateSceneConfig(config) {
-        const keys = Object.keys(config);
-        if (keys.length === 1 && keys[0] === 'material') {
-            this.sceneConfig.material = config.material;
-            this._updateMaterial();
-        } else {
-            extend(this.sceneConfig, config);
-            this.init();
-            this.setToRedraw();
-        }
+        extend(this.sceneConfig, config);
+        this.init();
+        this.setToRedraw();
     }
 
     delete(context) {

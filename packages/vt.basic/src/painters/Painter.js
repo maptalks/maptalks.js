@@ -61,10 +61,6 @@ class Painter {
 
     render(context) {
         this.pluginIndex = context.pluginIndex;
-        if (!this._inited) {
-            this.init(context);
-            this._inited = true;
-        }
         if (this._preparedTime !== context.timestamp) {
             this.preparePaint(context);
             this._preparedTime = context.timestamp;
@@ -177,6 +173,7 @@ class Painter {
                     meshes[i].material.dispose();
                 }
                 meshes[i].dispose();
+                meshes[i]['___debug__disposed_by_painter'] = 1;
             }
         } else {
             if (!meshes.isValid()) {
@@ -189,10 +186,15 @@ class Painter {
                 meshes.material.dispose();
             }
             meshes.dispose();
+            meshes['___debug__disposed_by_painter'] = 1;
         }
     }
 
-    startFrame() {
+    startFrame(context) {
+        if (!this._inited) {
+            this.init(context);
+            this._inited = true;
+        }
         this._redraw = false;
         this.scene.clear();
     }
