@@ -5,7 +5,7 @@ module.exports = {
     'point': {
         type: 'FeatureCollection',
         features: [
-            { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } }
+            { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1, height: 20000 } }
         ]
     },
     'line': {
