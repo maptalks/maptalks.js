@@ -405,24 +405,48 @@ export default class BaseLayerWorker {
     }
 
     _updateLayerPluginConfig(layers) {
-        let plugins = this._layerPlugins;
+        let layerPlugins = this._layerPlugins;
         if (!this._layerPlugins) {
-            plugins = this._layerPlugins = {};
+            layerPlugins = this._layerPlugins = {};
         }
+        const TYPES = [
+            '',
+            'Point',
+            'LineString',
+            'Polygon',
+            'MultiPoint',
+            'MultiLineString',
+            'MultiPolygon'
+        ];
         const framePlugins = [];
         for (const p in layers) {
             const layer = p;
-            const type = Math.min(...layers[p].types);
-            if (!plugins[layer]) {
-                const def = ['==', '$layer', layer];
-                plugins[layer] = {
-                    filter: createFilter(def),
-                    renderPlugin: getDefaultRenderPlugin(type),
-                    symbol: getDefaultSymbol(type)
-                };
-                plugins[layer].filter.def = def;
+            if (!layerPlugins[p]) {
+                const stylePlugins = [];
+                for (let i = 0; i < layers[p].types.length; i++) {
+                    const type = layers[p].types[i];
+                    const def = ['all', ['==', '$layer', layer], ['==', '$type', TYPES[type]]];
+                    const plugin = {
+                        filter: createFilter(def),
+                        renderPlugin: getDefaultRenderPlugin(type),
+                        symbol: getDefaultSymbol(type)
+                    };
+                    plugin.filter.def = def;
+                    stylePlugins.push(plugin);
+                }
+                layerPlugins[layer] = stylePlugins;
             }
-            framePlugins.push(plugins[layer]);
+            // const type = Math.min(...layers[p].types);
+            // if (!layerPlugins[layer]) {
+            //     const def = ['==', '$layer', layer];
+            //     layerPlugins[layer] = {
+            //         filter: createFilter(def),
+            //         renderPlugin: getDefaultRenderPlugin(type),
+            //         symbol: getDefaultSymbol(type)
+            //     };
+            //     layerPlugins[layer].filter.def = def;
+            // }
+            framePlugins.push(...layerPlugins[layer]);
         }
         return framePlugins;
     }

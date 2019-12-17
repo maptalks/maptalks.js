@@ -377,16 +377,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _updateSchema(target, source) {
-        const useDefault = this.layer.isDefaultRender();
+        // const useDefault = this.layer.isDefaultRender();
         for (const layer in source) {
             if (!target[layer]) {
                 target[layer] = {
                     types: source[layer].types,
                     properties: {}
                 };
-                if (useDefault && this._layerPlugins) {
-                    target[layer].symbol = this._layerPlugins[layer].symbol;
-                }
+                // if (useDefault && this._layerPlugins) {
+                //     target[layer].symbol = this._layerPlugins[layer].symbol;
+                // }
             }
             const srcProps = source[layer].properties;
             const targetProps = target[layer].properties;
@@ -407,37 +407,28 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const layerStyles = layer._getComputedStyle();
         const useDefault = layer.isDefaultRender();
         if (useDefault) {
+            let layerPlugins = this._layerPlugins;
+            if (!layerPlugins) {
+                layerPlugins = this._layerPlugins = {};
+            }
             //没有定义任何图层，采用图层默认的plugin渲染
             const layerId = pluginData.data.layer;
-            const { updateAction, symbol, renderPlugin } = this._updateDefaultPluginPerLayer(pluginData.data.type, layerId);
-            if (updateAction) {
-                style = {
-                    filter: ['==', '$layer', layerId],
-                    symbol,
-                    renderPlugin
-                };
-                if (updateAction === 'add') {
-                    layerStyles.push(style);
-                } else {
-                    for (let ii = 0; ii < layerStyles.length; ii++) {
-                        if (layerStyles[ii].filter[2] === layerId) {
-                            layerStyles[ii] = style;
-                            break;
-                        }
-                    }
-                }
+            const type = pluginData.data.type;
+            if (!layerPlugins[layerId]) {
+                layerPlugins[layerId] = [];
+            }
+            if (!layerPlugins[layerId]['plugin_' + type]) {
+                style = this._getDefaultRenderPlugin(type);
+                layerPlugins[layerId].push(style);
+                layerPlugins[layerId]['plugin_' + type] = style;
                 isUpdated = true;
+                layerStyles.push(style);
             } else {
-                for (let ii = 0; ii < layerStyles.length; ii++) {
-                    if (layerStyles[ii].filter[2] === layerId) {
-                        style = layerStyles[ii];
-                        break;
-                    }
-                }
+                style = layerPlugins[layerId]['plugin_' + type];
             }
         } else {
             style = layerStyles[i];
-            if (!style.symbol) {
+            if (!style.renderPlugin) {
                 isUpdated = true;
                 const { plugin, symbol, renderPlugin } = this._getDefaultRenderPlugin(pluginData.data.type);
                 this.plugins[i] = plugin;
@@ -451,10 +442,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     _getFramePlugins(tileData) {
         let plugins = this.plugins || [];
         if (this.layer.isDefaultRender() && this._layerPlugins) {
+            plugins = [];
             if (tileData) {
-                plugins = tileData.layers.map(layer => this._layerPlugins[layer].plugin);
+                tileData.layers.forEach(layer => {
+                    for (let i = 0; i < this._layerPlugins[layer].length; i++) {
+                        plugins.push(this._layerPlugins[layer][i].plugin);
+                    }
+                });
             } else {
-                plugins = Object.values(this._layerPlugins).map(config => config.plugin);
+                Object.keys(this._layerPlugins).forEach(layer => {
+                    for (let i = 0; i < this._layerPlugins[layer].length; i++) {
+                        plugins.push(this._layerPlugins[layer][i].plugin);
+                    }
+                });
             }
         }
         return plugins;
@@ -462,7 +462,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getAllPlugins() {
         if (this.layer.isDefaultRender() && this._layerPlugins) {
-            return Object.values(this._layerPlugins).map(config => config.plugin);
+            const plugins = [];
+            Object.keys(this._layerPlugins).forEach(layer => {
+                for (let i = 0; i < this._layerPlugins[layer].length; i++) {
+                    plugins.push(this._layerPlugins[layer][i].plugin);
+                }
+            });
+            return plugins;
         }
         return this.plugins;
     }
@@ -867,31 +873,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         ctx.putImageData(imgdata, 0, 0);
     }
 
-    _updateDefaultPluginPerLayer(type, layer) {
-        let layerPlugins = this._layerPlugins;
-        if (!layerPlugins) {
-            layerPlugins = this._layerPlugins = {};
-        }
-        let updateAction = false;
-        if (!layerPlugins[layer]) {
-            layerPlugins[layer] = this._getDefaultRenderPlugin(type);
-            updateAction = 'add';
-        } else {
-            //当图层数据存在类型降级(面=>线=>点)时，则更新默认插件到低级别上
-            const current = layerPlugins[layer].renderPlugin.type;
-            if (DEFAULT_PLUGIN_ORDERS.indexOf(current) > DEFAULT_PLUGIN_ORDERS.indexOf(type)) {
-                layerPlugins[layer] = this._getDefaultRenderPlugin(type);
-                updateAction = 'update';
-            }
-        }
-        const { plugin, symbol, renderPlugin } = layerPlugins[layer];
-        return {
-            updateAction,
-            plugin,
-            symbol,
-            renderPlugin
-        };
-    }
     //TODO 可以把图层合并为只用这三个默认插件绘制
     _getDefaultRenderPlugin(type) {
         let renderPlugin;
