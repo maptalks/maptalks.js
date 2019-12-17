@@ -314,7 +314,7 @@ export function createTextShader(layer, sceneConfig) {
             equation: 'add'
         },
         depth: {
-            enable: false,
+            enable: true,
             range: sceneConfig.depthRange || [0, 1],
             func: sceneConfig.depthFunc || 'always'
         },

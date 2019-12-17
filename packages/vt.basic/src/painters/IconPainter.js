@@ -591,7 +591,7 @@ class IconPainter extends CollisionPainter {
                     // color: [0, 0, 0, 0]
                 },
                 depth: {
-                    enable: false,
+                    enable: true,
                     range: this.sceneConfig.depthRange || [0, 1],
                     func: this.sceneConfig.depthFunc || 'always'
                 },
