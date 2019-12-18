@@ -20,8 +20,8 @@ const pickingVert = `
     }`;
 
 class GLTFPhongPainter extends PhongPainter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex);
         this._ready = false;
     }
 

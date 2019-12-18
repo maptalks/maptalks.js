@@ -7,13 +7,13 @@ import pickingVert from './glsl/native-line.picking.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 const defaultUniforms = {
-    lineColor: [0, 0, 0],
+    lineColor: [0, 0, 0, 1],
     lineOpacity: 1
 };
 
 class NativeLinePainter extends Painter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex);
         if (isFunctionDefinition(this.symbolDef['lineColor'])) {
             const map = layer.getMap();
             const fn = piecewiseConstant(this.symbolDef['lineColor']);

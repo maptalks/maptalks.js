@@ -55,8 +55,8 @@ const PROJ_MATRIX = [];
 const U8 = new Uint16Array(1);
 
 class IconPainter extends CollisionPainter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex);
 
         this.propAllowOverlap = 'markerAllowOverlap';
         this.propIgnorePlacement = 'markerIgnorePlacement';

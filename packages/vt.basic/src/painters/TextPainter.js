@@ -56,8 +56,8 @@ const INT16 = new Int16Array(2);
 const FIRST_CHAROFFSET = [], LAST_CHAROFFSET = [];
 
 export default class TextPainter extends CollisionPainter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex);
         this.propAllowOverlap = 'textAllowOverlap';
         this.propIgnorePlacement = 'textIgnorePlacement';
         // this.layer.getRenderer().canvas.addEventListener('webglcontextlost', e => {

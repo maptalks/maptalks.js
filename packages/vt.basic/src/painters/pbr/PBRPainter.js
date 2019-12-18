@@ -8,8 +8,8 @@ import StencilShadowPass from './StencilShadowPass.js';
 const SCALE = [1, 1, 1];
 
 class PBRPainter extends Painter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex);
         this.colorSymbol = 'polygonFill';
     }
 

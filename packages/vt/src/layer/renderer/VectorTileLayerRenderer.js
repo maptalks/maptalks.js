@@ -323,7 +323,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (isUpdated) { needCompile = true; }
 
             if (useDefault) {
-                layers.push(pluginData.data.layer);
+                layers.push({ layer: pluginData.data.layer, type: pluginData.data.type });
             }
 
             const symbol = style.symbol;
@@ -423,7 +423,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 layerPlugins[layerId].push(style);
                 layerPlugins[layerId]['plugin_' + type] = style;
                 isUpdated = true;
-                layerStyles.push(style);
+                // layerStyles.push(style);
             } else {
                 style = layerPlugins[layerId]['plugin_' + type];
             }
@@ -445,10 +445,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this.layer.isDefaultRender() && this._layerPlugins) {
             plugins = [];
             if (tileData) {
-                tileData.layers.forEach(layer => {
-                    for (let i = 0; i < this._layerPlugins[layer].length; i++) {
-                        plugins.push(this._layerPlugins[layer][i].plugin);
-                    }
+                tileData.layers.forEach(info => {
+                    plugins.push(this._layerPlugins[info.layer]['plugin_' + info.type].plugin);
                 });
             } else {
                 Object.keys(this._layerPlugins).forEach(layer => {
@@ -475,6 +473,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _startFrame(timestamp) {
+        const useDefault = this.layer.isDefaultRender() && this._layerPlugins;
         const parentContext = this._parentContext;
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
@@ -482,9 +481,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!plugin || !visible) {
                 return;
             }
+            let symbol;
+            if (useDefault) {
+                symbol = plugin.defaultSymbol;
+            } else {
+                const styles = this.layer._getCompiledStyle();
+                symbol = styles[idx].symbol;
+            }
             const context = {
                 regl: this.regl,
                 layer: this.layer,
+                symbol,
                 gl: this.gl,
                 sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
                 pluginIndex: idx,
@@ -568,8 +575,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             ref++;
         }
         //默认情况下瓦片是按照level从小到大排列的，所以倒序排列，让level较小的tile最后画（优先级最高）
-        for (let i = tiles.length - 1; i >= 0; i--) {
-            this._addTileStencil(tiles[i].info, ref);
+        const currentTiles = tiles.sort(sortByLevel);
+        for (let i = currentTiles.length - 1; i >= 0; i--) {
+            this._addTileStencil(currentTiles[i].info, ref);
             ref++;
         }
 
@@ -901,6 +909,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const symbol = getDefaultSymbol(type);
         const plugin = this._createRenderPlugin(renderPlugin);
+        plugin.defaultSymbol = symbol;
         return {
             plugin, symbol, renderPlugin
         };

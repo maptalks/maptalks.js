@@ -19,8 +19,8 @@ const COLLISION_OFFSET_THRESHOLD = 2;
 const MESH_ANCHORS = [];
 
 export default class CollisionPainter extends BasicPainter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
-        super(regl, layer, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex);
         this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
         this._fadingRecords = {};
     }

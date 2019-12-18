@@ -16,7 +16,7 @@ const levelNFilter = mesh => {
 };
 
 class Painter {
-    constructor(regl, layer, sceneConfig, pluginIndex) {
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         this.regl = regl;
         this.layer = layer;
         this.canvas = layer.getRenderer().canvas;
@@ -29,8 +29,7 @@ class Painter {
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
-        const styles = this.layer.getCompiledStyle();
-        this.symbolDef = styles[pluginIndex].symbol;
+        this.symbolDef = symbol;
     }
 
     getMap() {
