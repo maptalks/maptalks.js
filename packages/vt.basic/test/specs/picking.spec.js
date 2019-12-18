@@ -77,7 +77,7 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, 368, 0], 'type': 'icon' }];
+            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1, 'height': 20000 }, 'id': 0, 'layer': 0 }, }, 'point': [368, 368, 0], 'type': 'icon' }];
             runner(options, coord, expected, true, done);
         });
 
@@ -106,7 +106,7 @@ describe('picking specs', () => {
                 pickingPoint: true
             };
             const coord = [0.5, 0.5];
-            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1 }, 'id': 0, 'layer': 0 }, }, 'point': [368, 368, 0], 'type': 'icon' }];
+            const expected = [{ 'data': { 'feature': { 'type': 'Feature', 'geometry': { 'type': 'Point', 'coordinates': [0.5, 0.5] }, 'properties': { 'type': 1, 'height': 20000 }, 'id': 0, 'layer': 0 }, }, 'point': [368, 368, 0], 'type': 'icon' }];
             runner(options, coord, expected, true, done);
         });
 
