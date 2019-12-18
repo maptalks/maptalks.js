@@ -485,7 +485,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (useDefault) {
                 symbol = plugin.defaultSymbol;
             } else {
-                const styles = this.layer._getCompiledStyle();
+                const styles = this.layer.getCompiledStyle();
                 symbol = styles[idx].symbol;
             }
             const context = {
