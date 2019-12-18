@@ -6,7 +6,7 @@ import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
 import { extend } from '../../common/Util';
 
-const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
+// const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 const EMPTY_ARRAY = [];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
@@ -419,6 +419,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             if (!layerPlugins[layerId]['plugin_' + type]) {
                 style = this._getDefaultRenderPlugin(type);
+                style.filter = pluginData.data.filter;
                 layerPlugins[layerId].push(style);
                 layerPlugins[layerId]['plugin_' + type] = style;
                 isUpdated = true;
