@@ -177,8 +177,8 @@ export default class CollisionPainter extends BasicPainter {
             }
             // const stamps = this._getBoxTimestamps(meshKey);
             fadingOpacity = this._getBoxFading(tile.id, visible, stamps, boxIndex);
-            //level <= 2，或者level较大，但存在unique placement时，就不直接隐藏
-            if (level <= 2) {
+            //如果是当前tile，执行fading逻辑
+            if (renderer.isCurrentTile(tile.id)) {
                 if (fadingOpacity > 0) {
                     visible = true;
                 }
@@ -187,8 +187,8 @@ export default class CollisionPainter extends BasicPainter {
                     this.setToRedraw();
                 }
             } else if (!visible) {
-                //未解决zoom in 过程中，大量box挤在一起，造成的用户体验不佳的问题
-                //当瓦片层级与当前层级相差较大，则跳过fading阶段，立即隐藏有collision的box
+                //为解决zoom in 过程中，大量box挤在一起，造成的用户体验不佳的问题
+                //当瓦片不是当前tile，则跳过fading，立即隐藏有collision的box
                 this._markFadingCollided(stamps, boxIndex);
                 fadingOpacity = 0;
             }
