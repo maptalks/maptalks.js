@@ -52,11 +52,6 @@ export function buildExtrudeFaces(
                 // clipEdges.push(0, 0, 0);
             }
 
-            // //cw widing
-            // for (let i = 0, l = triangles.length; i < l; i++) {
-            //     triangles[i] += start / 3;
-            // }
-
             //top face indices
             pushIn(indices, triangles);
             if (generateUV) {
@@ -64,9 +59,7 @@ export function buildExtrudeFaces(
                 buildFaceUV(start, offset, uvs, vertices, uvSize[0] / glScale, uvSize[1] / glScale);
             }
         }
-        //在末尾添加 第一个端点
-        top.push(top[0], top[1], top[2]);
-        const count = offset - start + 3;
+        const count = offset - start;
 
         //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
         //top vertexes
@@ -101,15 +94,17 @@ export function buildExtrudeFaces(
         if (height > 0) {
             //side face indices
             const s = indices.length;
-            const startIdx = (start + count - 3) / 3;
+            const startIdx = (start + count) / 3;
             const vertexCount = count / 3;
             let ringStartIdx = startIdx, current, next;
-            for (let i = startIdx, l = vertexCount + startIdx; i < l - 1; i++) {
+            for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
                 current = i;
-                if (holes.indexOf(i - startIdx + 1) >= 0) {
+                if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
                     next = ringStartIdx;
-                    ringStartIdx = i + 1;
-                } else {
+                    if (i < l - 1) {
+                        ringStartIdx = i + 1;
+                    }
+                } else if (i < l - 1) {
                     next = i + 1;
                 }
                 if (isClippedEdge(vertices, current, next, EXTENT)) {
@@ -131,7 +126,7 @@ export function buildExtrudeFaces(
         }
         return offset;
     }
-
+    // debugger
     let maxAltitude = 0;
     let offset = 0;
     // debugger
@@ -166,12 +161,12 @@ export function buildExtrudeFaces(
                 }
                 continue;
             }
-            //earcut required the first and last position must be different
             const ringLen = ring.length;
-            if (ring[0][0] === ring[ringLen - 1][0] && ring[0][1] === ring[ringLen - 1][1]) {
-                ring = ring.slice(0, ringLen - 1);
+            if (ring[0][0] !== ring[ringLen - 1][0] || ring[0][1] !== ring[ringLen - 1][1]) {
+                //首尾不一样时，在末尾添加让首尾封闭
+                ring.push([ring[0][0], ring[0][1]]);
             }
-            // a seg or a ring in line or polygon
+            //a seg or a ring in line or polygon
             offset = fillPosArray(vertices, offset, ring, scale, altitude);
             if (isHole) {
                 holes.push(segStart / 3);
