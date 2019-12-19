@@ -3,6 +3,7 @@ import { mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import Painter from './Painter';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
+import { setUniformFromSymbol } from '../../Util';
 
 const SCALE = [1, 1, 1];
 
@@ -65,6 +66,19 @@ class PhongPainter extends Painter {
             transform = mat;
         }
         const defines = {};
+        if (geometry.data.aExtrude) {
+            defines['IS_LINE_EXTRUSION'] = 1;
+            const symbol = this.getSymbol();
+            const { tileResolution, tileRatio } = geometry.properties;
+            const map = this.getMap();
+            Object.defineProperty(mesh.uniforms, 'linePixelScale', {
+                enumerable: true,
+                get: function () {
+                    return tileRatio * map.getResolution() / tileResolution;
+                }
+            });
+            setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
+        }
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
