@@ -1,4 +1,11 @@
 attribute vec3 aPosition;
+#ifdef IS_LINE_EXTRUSION
+    #define EXTRUDE_SCALE 63.0;
+    attribute vec2 aExtrude;
+    uniform float lineWidth;
+    uniform float lineHeight;
+    uniform float linePixelScale;
+#endif
 
 #ifdef HAS_MAP
     attribute vec2 aTexCoord;
@@ -62,8 +69,17 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
 
 void main()
 {
+    #ifdef IS_LINE_EXTRUSION
+        float halfwidth = lineWidth / 2.0;
+        float outset = halfwidth;
+        vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
+        //linePixelScale = tileRatio * resolution / tileResolution
+        vec4 localPosition = getPosition(aPosition + vec3(dist, 0.0) * linePixelScale);
+    #else
+        vec4 localPosition = getPosition(aPosition);
+    #endif
     mat4 localPositionMatrix = getPositionMatrix();
-    vec4 localPosition = getPosition(aPosition);
+
     mat4 localNormalMatrix = getNormalMatrix(localPositionMatrix);
     vFragPos = vec3(modelMatrix * localPositionMatrix * localPosition);
     vec3 Normal;

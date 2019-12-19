@@ -2,6 +2,13 @@
 precision highp float;
 
 attribute vec3 aPosition;
+#ifdef IS_LINE_EXTRUSION
+    #define EXTRUDE_SCALE 63.0;
+    attribute vec2 aExtrude;
+    uniform float lineWidth;
+    uniform float lineHeight;
+    uniform float linePixelScale;
+#endif
 #if defined(HAS_MAP)
     attribute vec2 aTexCoord;
     uniform vec2 uvScale;
@@ -94,7 +101,15 @@ void main() {
     #endif
 
     mat4 localPositionMatrix = getPositionMatrix();
-    vec4 localVertex = getPosition(aPosition);
+    #ifdef IS_LINE_EXTRUSION
+        float halfwidth = lineWidth / 2.0;
+        float outset = halfwidth;
+        vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
+        //linePixelScale = tileRatio * resolution / tileResolution
+        vec4 localVertex = getPosition(aPosition + vec3(dist, 0.0) * linePixelScale);
+    #else
+        vec4 localVertex = getPosition(aPosition);
+    #endif
     vModelVertex = (uModelMatrix * localVertex).xyz;
 
     vec3 localNormal = Normal;
