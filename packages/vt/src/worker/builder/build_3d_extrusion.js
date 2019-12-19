@@ -17,7 +17,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         defaultAltitude,
         heightProperty,
         defaultHeight,
-        normal, tangent,
+        tangent,
         uv, uvScale,
         top, side
     } = dataConfig;
@@ -51,13 +51,12 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
     buffers.push(indices.buffer, faces.vertices.buffer, faces.featureIndexes.buffer);
 
     // debugger
-    if (tangent || normal) {
-        const normals = buildNormals(faces.vertices, indices);
-        for (let i = 0; i < normals.length; i++) {
-            normals[i] = -normals[i];
-        }
-        faces.normals = normals;
+    const normals = buildNormals(faces.vertices, indices);
+    for (let i = 0; i < normals.length; i++) {
+        normals[i] = -normals[i];
     }
+    faces.normals = normals;
+
     if (tangent) {
         let tangents = buildTangents(faces.vertices, faces.normals, faces.uvs, indices);
         tangents = createQuaternion(faces.normals, tangents);

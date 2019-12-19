@@ -305,6 +305,13 @@ export default class BaseLayerWorker {
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
+            const t = hasTexture(symbol);
+            if (t) {
+                dataConfig.uv = 1;
+                if (t === 2) {
+                    dataConfig.tangent = 1;
+                }
+            }
             return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1]));
         } else if (type === '3d-wireframe') {
             return Promise.resolve(buildWireframe(features, dataConfig, extent));
@@ -355,6 +362,13 @@ export default class BaseLayerWorker {
             delete symbol['lineGradientProperty'];
             symbol['lineJoin'] = 'miter';
             symbol['lineCap'] = 'butt';
+            const t = hasTexture(symbol);
+            if (t) {
+                dataConfig.uv = 1;
+                if (t === 2) {
+                    dataConfig.tangent = 1;
+                }
+            }
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 tileSize,
@@ -584,4 +598,24 @@ function splitPointSymbol(symbol) {
         }
     }
     return results;
+}
+
+function hasTexture(symbol) {
+    if (!symbol) {
+        return 0;
+    }
+    let t = 0;
+    for (const p in symbol) {
+        if (p === 'normalTexture') {
+            return 2;
+        } else if (p.indexOf('Texture') > 0) {
+            t = 1;
+        } else if (isObject(symbol[p])) {
+            const t = hasTexture(symbol[p]);
+            if (t === 2) {
+                return t;
+            }
+        }
+    }
+    return t;
 }
