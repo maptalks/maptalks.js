@@ -105,7 +105,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     updateBoxCollisionFading(boxVisible, mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
-        const { level, meshKey, tile } = mesh.properties;
+        const { meshKey, tile } = mesh.properties;
         const layer = this.layer;
         const renderer = layer.getRenderer();
         if (this.shouldIgnoreBgTiles() && !renderer.isCurrentTile(tile.id)) {
