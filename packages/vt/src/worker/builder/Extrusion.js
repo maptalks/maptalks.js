@@ -11,6 +11,7 @@ export function buildExtrudeFaces(
         altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight
     },
     {
+        side,
         top,
         uv,
         uvSize,
@@ -28,7 +29,8 @@ export function buildExtrudeFaces(
     const vertices = [];
     const indices = [];
     const generateUV = !!uv,
-        generateTop = !!top;
+        generateTop = !!top,
+        generateSide = !!side;
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
     function fillData(start, offset, holes, height) {
@@ -59,39 +61,39 @@ export function buildExtrudeFaces(
                 buildFaceUV(start, offset, uvs, vertices, uvSize[0] / glScale, uvSize[1] / glScale);
             }
         }
-        const count = offset - start;
-
-        //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
-        //top vertexes
-        for (let i = 2, l = count; i < l; i += 3) {
-            vertices[offset + i - 2] = top[i - 2];
-            vertices[offset + i - 1] = top[i - 1];
-            vertices[offset + i - 0] = top[i];
-        }
-        offset += count;
-        //bottom vertexes
-        for (let i = 2, l = count; i < l; i += 3) {
-            vertices[offset + i - 2] = top[i - 2];
-            vertices[offset + i - 1] = top[i - 1];
-            vertices[offset + i - 0] = top[i] - height;
-        }
-        offset += count;
-        //top vertexes
-        for (let i = 2, l = count; i < l; i += 3) {
-            vertices[offset + i - 2] = top[i - 2];
-            vertices[offset + i - 1] = top[i - 1];
-            vertices[offset + i - 0] = top[i];
-        }
-        offset += count;
-        //bottom vertexes
-        for (let i = 2, l = count; i < l; i += 3) {
-            vertices[offset + i - 2] = top[i - 2];
-            vertices[offset + i - 1] = top[i - 1];
-            vertices[offset + i - 0] = top[i] - height;
-        }
-        offset += count;
         // debugger
-        if (height > 0) {
+        if (generateSide && height > 0) {
+            const count = offset - start;
+            //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
+            //top vertexes
+            for (let i = 2, l = count; i < l; i += 3) {
+                vertices[offset + i - 2] = top[i - 2];
+                vertices[offset + i - 1] = top[i - 1];
+                vertices[offset + i - 0] = top[i];
+            }
+            offset += count;
+            //bottom vertexes
+            for (let i = 2, l = count; i < l; i += 3) {
+                vertices[offset + i - 2] = top[i - 2];
+                vertices[offset + i - 1] = top[i - 1];
+                vertices[offset + i - 0] = top[i] - height;
+            }
+            offset += count;
+            //top vertexes
+            for (let i = 2, l = count; i < l; i += 3) {
+                vertices[offset + i - 2] = top[i - 2];
+                vertices[offset + i - 1] = top[i - 1];
+                vertices[offset + i - 0] = top[i];
+            }
+            offset += count;
+            //bottom vertexes
+            for (let i = 2, l = count; i < l; i += 3) {
+                vertices[offset + i - 2] = top[i - 2];
+                vertices[offset + i - 1] = top[i - 1];
+                vertices[offset + i - 0] = top[i] - height;
+            }
+            offset += count;
+
             //side face indices
             const s = indices.length;
             const startIdx = (start + count) / 3;

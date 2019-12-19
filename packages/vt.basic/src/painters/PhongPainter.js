@@ -153,11 +153,7 @@ class PhongPainter extends Painter {
                 //enable cullFace
                 cull: {
                     enable: () => {
-                        const cull = this.sceneConfig.cullFace;
-                        if (cull === false) {
-                            return false;
-                        }
-                        return true;
+                        return this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace;
                     },
                     face: () => {
                         let cull = this.sceneConfig.cullFace;

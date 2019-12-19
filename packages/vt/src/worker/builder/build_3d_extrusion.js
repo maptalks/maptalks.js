@@ -8,6 +8,9 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
+    if (dataConfig.side === undefined) {
+        dataConfig.side = true;
+    }
     const {
         altitudeScale,
         altitudeProperty,
@@ -16,7 +19,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         defaultHeight,
         normal, tangent,
         uv, uvScale,
-        top
+        top, side
     } = dataConfig;
     const faces = buildExtrudeFaces(
         features, extent,
@@ -27,7 +30,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
             defaultHeight : defaultHeight || 0
         },
         {
-            top,
+            top, side,
             uv: uv || tangent, //tangent也需要计算uv
             uvSize : uvScale ? [128 * uvScale[0], 128 * uvScale[1]] : [128, 128],
             //>> needed by uv computation

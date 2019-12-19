@@ -214,7 +214,9 @@ class StandardPainter extends Painter {
             defines: this._getDefines(context.shadow && context.shadow.defines),
             extraCommandProps: {
                 cull: {
-                    enable: true,
+                    enable: () => {
+                        return this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace;
+                    },
                     face: 'back'
                 },
                 stencil: {
