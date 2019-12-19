@@ -62,15 +62,15 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 indexMaxZoom: 5,       // max zoom in the initial tile index
                 indexMaxPoints: 100000 // max number of points per tile in the index
             });
+            cb();
         }
-        cb();
     }
 
     getTileFeatures(tileInfo, cb) {
         const features = [];
         if (!this.index) {
             setTimeout(function () {
-                cb(null, features, []);
+                cb({ loading: true });
             }, 1);
             return 1;
         }

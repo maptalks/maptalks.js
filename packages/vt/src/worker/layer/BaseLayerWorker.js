@@ -83,7 +83,9 @@ export default class BaseLayerWorker {
             }
             delete this.requests[url];
             if (err) {
-                this._cache.add(url, { features: [], layers: [] });
+                if (!err.loading) {
+                    this._cache.add(url, { features: [], layers: [] });
+                }
                 this._callWaitings(waitings, err);
                 return;
             }

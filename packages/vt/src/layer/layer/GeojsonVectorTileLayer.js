@@ -44,6 +44,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             const workerConn = renderer.getWorkerConnection();
             if (workerConn) {
                 workerConn.setData(this.features, () => {
+                    this.fire('dataload');
                     renderer.setToRedraw();
                 });
             }
