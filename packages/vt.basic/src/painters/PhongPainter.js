@@ -3,7 +3,7 @@ import { mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import Painter from './Painter';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { setUniformFromSymbol } from '../../Util';
+import { setUniformFromSymbol } from '../Util';
 
 const SCALE = [1, 1, 1];
 
