@@ -145,10 +145,9 @@ function createPainterPlugin(type, Painter) {
             if (!mesh || Array.isArray(mesh) && !mesh.length) {
                 return NO_REDRAW;
             }
-            //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
-            //level:    4       2     0     1       3
+
             //更新stencil level值，不同zoom会发生变化
-            var level = tileInfo.z - tileZoom > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
+            var level = getUniformLevel(tileInfo.z, tileZoom);
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
                     m.properties.tile = tileInfo;
@@ -427,4 +426,10 @@ export function extend(dest) {
         }
     }
     return dest;
+}
+
+//zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
+//level:    4       2     0     1       3
+export function getUniformLevel(z, currentTileZoom) {
+    return z - currentTileZoom > 0 ? 2 * (z - currentTileZoom) - 1 : 2 * (currentTileZoom - z);
 }

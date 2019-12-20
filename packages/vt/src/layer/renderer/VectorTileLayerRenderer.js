@@ -1,5 +1,6 @@
 import * as maptalks from 'maptalks';
 import { mat4, vec3, createREGL } from '@maptalks/gl';
+import { getUniformLevel } from '@maptalks/vt-plugin';
 import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
@@ -507,8 +508,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _endFrame(timestamp) {
         const parentContext = this._parentContext;
-        let stenciled = false;
-        const enableTileStencil = this.isEnableTileStencil();
+        const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getFramePlugins();
         let dirty = false;
@@ -517,15 +517,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!plugin || !visible) {
                 return;
             }
-            if (enableTileStencil && !stenciled && plugin.canStencil()) {
-                this._drawTileStencil(parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo);
-                stenciled = true;
-            } else if (!enableTileStencil || !plugin.canStencil()) {
-                this.regl.clear({
-                    stencil: 0xFF
-                });
-                stenciled = false;
-            }
+            this._drawTileStencil(targetFBO);
             const context = {
                 regl: this.regl,
                 layer: this.layer,
@@ -553,9 +545,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _drawTileStencil(fbo) {
-        if (!this.isEnableTileStencil()) {
-            return;
-        }
+        const only2D = this.isEnableTileStencil();
+        const tileZoom = this.getCurrentTileZoom();
         let stencilRenderer = this._stencilRenderer;
         if (!stencilRenderer) {
             stencilRenderer = this._stencilRenderer = new TileStencilRenderer(this.regl, this.canvas, this.getMap());
@@ -566,18 +557,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let ref = 1;
         childTiles = childTiles.sort(sortByLevel);
         for (let i = 0; i < childTiles.length; i++) {
-            this._addTileStencil(childTiles[i].info, ref);
+            this._addTileStencil(childTiles[i].info, only2D ? ref : getUniformLevel(childTiles[i].info.z, tileZoom));
             ref++;
         }
         parentTiles = parentTiles.sort(sortByLevel);
         for (let i = 0; i < parentTiles.length; i++) {
-            this._addTileStencil(parentTiles[i].info, ref);
+            this._addTileStencil(parentTiles[i].info, only2D ? ref : getUniformLevel(parentTiles[i].info.z, tileZoom));
             ref++;
         }
         //默认情况下瓦片是按照level从小到大排列的，所以倒序排列，让level较小的tile最后画（优先级最高）
         const currentTiles = tiles.sort(sortByLevel);
         for (let i = currentTiles.length - 1; i >= 0; i--) {
-            this._addTileStencil(currentTiles[i].info, ref);
+            this._addTileStencil(currentTiles[i].info, only2D ? ref : getUniformLevel(currentTiles[i].info.z, tileZoom));
             ref++;
         }
 
@@ -605,9 +596,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         for (let i = 0; i < parentTiles.length; i++) {
             this._bgTiles[parentTiles[i].info.id] = 1;
         }
-        if (this.isEnableTileStencil()) {
-            this._stencilTiles = context;
-        }
+        this._stencilTiles = context;
     }
 
     isEnableTileStencil() {
