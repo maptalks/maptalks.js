@@ -26,7 +26,9 @@ class LineGradientPainter extends BasicPainter {
     }
 
     needToRedraw() {
-        return this._redraw;
+        const animation = this.sceneConfig.trailAnimation;
+
+        return this._redraw || animation && animation.enable;
     }
 
     createGeometry(glData, features) {
@@ -152,6 +154,12 @@ class LineGradientPainter extends BasicPainter {
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
     }
 
+    updateSceneConfig(config) {
+        if (config.trailAnimation) {
+            this.createShader(this._context);
+        }
+    }
+
     canStencil() {
         return true;
     }
@@ -197,6 +205,7 @@ class LineGradientPainter extends BasicPainter {
     }
 
     createShader(context) {
+        this._context = context;
         const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
         const defines = context.shadow && context.shadow.defines || {};
         uniforms.push(
@@ -294,8 +303,13 @@ class LineGradientPainter extends BasicPainter {
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
+        const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
-            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize
+            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
+            trailSpeed: animation.speed || 1,
+            trailLength: animation.trailLength || 500,
+            trailCircle: animation.trailCircle || 1000,
+            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0
         };
         if (context && context.shadow && context.shadow.renderUniforms) {
             extend(uniforms, context.shadow.renderUniforms);

@@ -20,7 +20,7 @@
     attribute vec3 aPosition;
 #endif
 attribute vec2 aExtrude;
-#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
     attribute float aLinesofar;
     varying highp float vLinesofar;
 #endif

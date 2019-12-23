@@ -30,7 +30,9 @@ class LinePainter extends BasicPainter {
     }
 
     needToRedraw() {
-        return this._redraw;
+        const animation = this.sceneConfig.trailAnimation;
+
+        return this._redraw || animation && animation.enable;
     }
 
     createMesh(geometry, transform) {
@@ -194,6 +196,12 @@ class LinePainter extends BasicPainter {
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
     }
 
+    updateSceneConfig(config) {
+        if (config.trailAnimation) {
+            this.createShader(this._context);
+        }
+    }
+
     canStencil() {
         return true;
     }
@@ -238,8 +246,12 @@ class LinePainter extends BasicPainter {
     }
 
     createShader(context) {
+        this._context = context;
         const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
         const defines = context.shadow && context.shadow.defines || {};
+        if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
+            defines['HAS_TRAIL'] = 1;
+        }
         uniforms.push(
             'cameraToCenterDistance',
             'lineWidth',
@@ -264,7 +276,13 @@ class LinePainter extends BasicPainter {
             'lineDx',
             'lineDy',
             'lineOffset',
-            'canvasSize'
+            'canvasSize',
+
+            'enableTrail',
+            'trailLength',
+            'trailSpeed',
+            'trailCircle',
+            'currentTime'
         );
 
         const stencil = this.layer.getRenderer().isEnableTileStencil();
@@ -313,16 +331,10 @@ class LinePainter extends BasicPainter {
                     enable: true,
                     func: {
                         src: (context, props) => {
-                            return props['linePatternFile'] ? 'src alpha' : 'one';
+                            return props['linePatternFile'] ? 'src alpha' : this.sceneConfig.blendSrc || 'one';
                         },
-                        dst: 'one minus src alpha'
+                        dst: this.sceneConfig.blendDst || 'one minus src alpha'
                     },
-                    // func : {
-                    //     srcRGB: 'src alpha',
-                    //     srcAlpha: 'src alpha',
-                    //     dstRGB: 'one minus src alpha',
-                    //     dstAlpha: 1
-                    // },
                     equation: 'add'
                 },
                 polygonOffset: {
@@ -343,9 +355,15 @@ class LinePainter extends BasicPainter {
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
+        const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
-            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize
+            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
+            trailSpeed: animation.speed || 1,
+            trailLength: animation.trailLength || 500,
+            trailCircle: animation.trailCircle || 1000,
+            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0
         };
+
         if (context && context.shadow && context.shadow.renderUniforms) {
             extend(uniforms, context.shadow.renderUniforms);
         }

@@ -32,9 +32,15 @@ uniform float tileExtent;
     uniform vec4 lineDasharray;
     uniform vec4 lineDashColor;
 #endif
-
-#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
     varying highp float vLinesofar;
+#endif
+
+#ifdef HAS_TRAIL
+    uniform float trailSpeed;
+    uniform float trailLength;
+    uniform float trailCircle;
+    uniform float currentTime;
 #endif
 
 float dashAntialias(float dashMod, float dashWidth) {
@@ -91,6 +97,14 @@ void main() {
         float secondDashAlpha = dashAntialias(secondDashMod, lineDasharray[2]);;
 
         color *= mix(1.0, firstDashAlpha * firstInDash + secondDashAlpha * secondDashAlpha, isInDash);
+    #endif
+
+    #ifdef HAS_TRAIL
+        if (enableTrail == 1.0) {
+            float d = mod(vLinesofar - currentTime * trailSpeed * 0.1, trailCircle);
+            float a = d < trailLength ? mix(0.0, 1.0, d / trailLength) : 0.0;
+            color *= a;
+        }
     #endif
 
     gl_FragColor = color * lineOpacity;
