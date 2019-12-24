@@ -159,6 +159,7 @@ class StandardPainter extends Painter {
         lightConfig.ambient = lightConfig.ambient || {};
 
         this._initHDR();
+        this._dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
@@ -289,13 +290,11 @@ class StandardPainter extends Painter {
             envCubeSize: PREFILTER_CUBE_SIZE,
             prefilterCubeSize: PREFILTER_CUBE_SIZE
         });
-        const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
         if (config['sh']) {
             maps.sh = config['sh'];
         }/* else {
             console.log(JSON.stringify(maps.sh));
         }*/
-        maps['dfgLUT'] = dfgLUT;
         return maps;
     }
 
@@ -476,14 +475,10 @@ class StandardPainter extends Painter {
         if (iblMaps) {
             const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
             uniforms = {
-                'uEnvironmentExposure': isNumber(lightConfig.ambient.exposure) ? lightConfig.ambient.exposure : 1, //2
-                'sIntegrateBRDF': iblMaps.dfgLUT,
                 'sSpecularPBR': iblMaps.prefilterMap,
                 'uDiffuseSPH': iblMaps.sh,
                 'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
                 'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
-
-
                 // 'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
                 // 'light_iblDFG': iblMaps.dfgLUT,
                 // 'light_iblSpecular': iblMaps.prefilterMap,
@@ -494,6 +489,9 @@ class StandardPainter extends Painter {
                 // 'sun': [1, 1, 1, -1],
             };
         } else {
+            uniforms = {
+                'uAmbientColor': lightConfig.ambient.color || [0.08, 0.08, 0.08]
+            };
             // uniforms = {
             //     'light_ambientColor': lightConfig.ambient.color || [0.05, 0.05, 0.05],
             //     'iblLuminance': lightConfig.ambient.luminance || 12000,
@@ -502,6 +500,8 @@ class StandardPainter extends Painter {
             //     'sun': [1, 1, 1, -1]
             // };
         }
+        uniforms['uEnvironmentExposure'] = isNumber(lightConfig.ambient.exposure) ? lightConfig.ambient.exposure : 1; //2]
+        uniforms['sIntegrateBRDF'] = this._dfgLUT;
 
         if (lightConfig.directional) {
             uniforms['uSketchfabLight0_diffuse'] = [...(lightConfig.directional.color || [1, 1, 1]), 1];
@@ -522,6 +522,9 @@ class StandardPainter extends Painter {
     }
 
     _disposeIblMaps() {
+        if (this._dfgLUT) {
+            this._dfgLUT.destroy();
+        }
         if (!this.iblMaps) {
             return;
         }

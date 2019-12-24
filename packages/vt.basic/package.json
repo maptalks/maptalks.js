@@ -13,7 +13,7 @@
     "pretest": "npm run lint && cd ../vt && npm run build && cd ../vt.basic && npm run build",
     "preversion": "npm test",
     "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
-    "tdd": "cd ../vt && npm run build-dev && cd ../vt.basic && npm run build-dev && electron-mocha --interactive --renderer ./test/**/*.spec.js",
+    "tdd": "electron-mocha --interactive --renderer ./test/**/*.spec.js",
     "prepare": "npm run build"
   },
   "files": [
@@ -28,7 +28,7 @@
   "dependencies": {
     "@mapbox/point-geometry": "^0.1.0",
     "@maptalks/function-type": "^1.2.3",
-    "@maptalks/gl": "^0.8.5",
+    "@maptalks/gl": "^0.9.0",
     "@maptalks/vt-plugin": "^0.8.3",
     "color": "^3.0.0"
   },

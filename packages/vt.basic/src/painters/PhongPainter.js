@@ -24,13 +24,7 @@ class PhongPainter extends Painter {
     }
 
     createGeometry(glData) {
-        const data = {
-            aPosition: glData.data.aPosition,
-            aNormal: glData.data.aNormal,
-            aTangent: glData.data.aTangent,
-            aColor: glData.data.aColor,
-            aPickingId: glData.data.aPickingId
-        };
+        const data = glData.data;
         const extrusionOpacity = this.getSymbol().material && this.getSymbol().material.extrusionOpacity;
         if (extrusionOpacity) {
             const aExtrusionOpacity = new Uint8Array(data.aPosition.length / 3);
