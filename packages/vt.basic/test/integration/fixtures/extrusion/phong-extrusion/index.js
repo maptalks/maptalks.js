@@ -29,7 +29,7 @@ const data = {
         }
     ]
 };
-var plugin = {
+const plugin = {
     type: 'phong',
     dataConfig: {
         type: '3d-extrusion',
@@ -55,7 +55,7 @@ const material = {
     'extrusionOpacity': 0,
     'extrusionOpacityRange': [0, 1.8]
 };
-var style = [{
+const style = [{
     renderPlugin: plugin,
     symbol: {
         polygonOpacity: 1,

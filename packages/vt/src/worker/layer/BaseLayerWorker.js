@@ -611,9 +611,11 @@ function hasTexture(symbol) {
         } else if (p.indexOf('Texture') > 0) {
             t = 1;
         } else if (isObject(symbol[p])) {
-            const t = hasTexture(symbol[p]);
-            if (t === 2) {
-                return t;
+            const t0 = hasTexture(symbol[p]);
+            if (t0 === 2) {
+                return t0;
+            } else if (t0 === 1) {
+                t = 1;
             }
         }
     }

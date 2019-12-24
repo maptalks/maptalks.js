@@ -29,7 +29,7 @@ const data = {
         }
     ]
 };
-var plugin = {
+const plugin = {
     type: 'lit',
     dataConfig: {
         type: '3d-extrusion',
@@ -55,7 +55,7 @@ const material = {
     'metalnessFactor': 1,
     'outputLinear': 1
 };
-var style = [{
+const style = [{
     renderPlugin: plugin,
     symbol: {
         polygonOpacity: 1,

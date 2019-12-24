@@ -26,6 +26,37 @@ const point = {
     ]
 };
 
+const polygon = {
+    type: 'FeatureCollection',
+    features: [
+        {
+            type: 'Feature',
+            geometry: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [-1., 1.0],
+                        [1., 1.0],
+                        [1., -1.0],
+                        [-1., -1],
+                        [-1., 1]
+                    ],
+                    [
+                        [-0.5, 0.5],
+                        [0.5, 0.5],
+                        [0.5, -0.5],
+                        [-0.5, -0.5],
+                        [-0.5, 0.5]
+                    ]
+                ]
+            },
+            properties: {
+                levels: 3000
+            }
+        }
+    ]
+};
+
 describe('update style specs', () => {
     let container, map;
     before(() => {
@@ -343,6 +374,67 @@ describe('update style specs', () => {
                 //确保glyphAtlas是有效的（否则会绘制一个矩形）
                 const pixel2 = readPixel(canvas, canvas.width / 2 + 6, canvas.height / 2);
                 assert.deepEqual(pixel2, [0, 0, 0, 0]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('should can update texture to none', done => {
+        const plugin = {
+            type: 'lit',
+            dataConfig: {
+                type: '3d-extrusion',
+                altitudeProperty: 'levels',
+                altitudeScale: 5,
+                defaultAltitude: 0
+            },
+            sceneConfig: {
+                lights: {
+                    ambient: {
+                        color: [0.1, 0.1, 0.1]
+                    },
+                    directional: {
+                        color: [0.1, 0.1, 0.1],
+                        direction: [1, 0, -1],
+                    }
+                }
+            },
+        };
+        const material = {
+            'baseColorTexture': 'file://' + path.resolve(__dirname, './resources/609-normal.jpg'),
+            'baseColorFactor': [1, 1, 1, 1],
+            'roughnessFactor': 0,
+            'metalnessFactor': 1,
+            'outputLinear': 1
+        };
+        const style = [
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: { material }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        let count = 0;
+        let color;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                material.baseColorTexture = undefined;
+                const canvas = layer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+                assert.deepEqual(pixel, [15, 13, 52, 255]);
+                color = pixel;
+                layer.updateSymbol(0, { material });
+            } else if (count === 3) {
+                const canvas = layer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+                assert.notDeepEqual(pixel, color);
+                assert.deepEqual(pixel, [52, 52, 52, 255]);
                 done();
             }
         });
