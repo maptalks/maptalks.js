@@ -17,19 +17,17 @@ export default class OutlinePass {
         this._init();
     }
 
-    render(meshes, { projViewMatrix, lineColor, hiddenEdgeColor }) {
+    render(meshes, targetFBO, { projViewMatrix, lineColor }) {
         this._clear();
         this._resize();
         const renderScene = new Scene(meshes);
-        //绘制Meshes的范围
+        //绘制有outline的Meshes的范围
         this._drawExtentFBO(renderScene, projViewMatrix);
-        //
-        this._drawOutlineFBO(lineColor, hiddenEdgeColor);
-        return this.fboEdge;
+        //绘制有outline的Meshes的边线，同时和targetFBO做混合，画到targetFBO
+        this._drawOutlineFBO(lineColor, targetFBO);
     }
 
     _init() {
-        this.fboEdge = this._createFBO();
         this.fboExtent = this._createFBO();
         this.extentShader = new MeshShader({
             vert: sceneVert,
@@ -53,12 +51,24 @@ export default class OutlinePass {
             uniforms : [
                 'texSize',
                 'visibleEdgeColor',
-                'hiddenEdgeColor',
                 'maskTexture'
             ],
             positionAttribute : 'POSITION',
-            extraCommandProps: { viewport: this._viewport
-            },
+            extraCommandProps: { viewport: this._viewport,
+                depth: {
+                    enable: true,
+                    mask: false,
+                    func: 'always'
+                },
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 'one',
+                        dst: 'one minus src alpha'
+                    },
+                    equation: 'add'
+                }
+            }
         });
     }
 
@@ -68,13 +78,12 @@ export default class OutlinePass {
         }, scene, this.fboExtent);
     }
 
-    _drawOutlineFBO(lineColor, hiddenEdgeColor) {
+    _drawOutlineFBO(lineColor, targetFBO) {
         this._renderer.render(this.outlineShader, {
             'texSize' : [this._width / 2, this._height / 2],
             'visibleEdgeColor' : lineColor,
-            'hiddenEdgeColor' : hiddenEdgeColor,
             'maskTexture' : this.fboExtent
-        }, null, this.fboEdge);
+        }, null, targetFBO);
     }
 
     _createFBO() {
@@ -96,19 +105,11 @@ export default class OutlinePass {
             depth: 1,
             framebuffer: this.fboExtent
         });
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            depth: 1,
-            framebuffer: this.fboEdge
-        });
     }
 
     dispose() {
         if (this.fboExtent) {
             this.fboExtent.destroy();
-        }
-        if (this.fboEdge) {
-            this.fboEdge.destroy();
         }
     }
 
@@ -117,9 +118,6 @@ export default class OutlinePass {
         this._height = isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
         if (this.fboExtent && (this.fboExtent.width !== this._width || this.fboExtent.height !== this._height)) {
             this.fboExtent.resize(this._width, this._height);
-        }
-        if (this.fboEdge && (this.fboEdge.width !== this._width || this.fboEdge.height !== this._height)) {
-            this.fboEdge.resize(this._width, this._height);
         }
     }
 }

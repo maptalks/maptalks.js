@@ -5,7 +5,6 @@ varying vec2 vTexCoord;
 uniform sampler2D maskTexture;
 uniform vec2 texSize;
 uniform vec3 visibleEdgeColor;
-uniform vec3 hiddenEdgeColor;
 void main() {
     vec2 invSize = 1.0 / texSize;
     vec4 uvOffset = vec4(1.0, 0.0, 0.0, 1.0) * vec4(invSize, invSize);
@@ -19,6 +18,5 @@ void main() {
     float a1 = min(c1.g, c2.g);
     float a2 = min(c3.g, c4.g);
     float visibilityFactor = min(a1, a2);
-    vec3 edgeColor = 1.0 - visibilityFactor > 0.001 ? visibleEdgeColor : hiddenEdgeColor;
-    gl_FragColor = vec4(edgeColor, 1.0) * vec4(d);
+    gl_FragColor = 1.0 - visibilityFactor > 0.001 ? vec4(visibleEdgeColor, 1.0) * vec4(d) : vec4(0.0);
 }
