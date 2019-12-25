@@ -35,13 +35,14 @@ class GLTFPhongPainter extends PhongPainter {
         }
         const { data, positionSize } = glData;
         return {
+            properties: {},
             data,
             positionSize,
             features
         };
     }
 
-    createMesh(geometry, transform, { tileTranslationMatrix, tileExtent, tileZoom }) {
+    createMesh(geometry, transform, { tileTranslationMatrix, tileExtent }) {
         const { positionSize, features } = geometry;
         const { aPosition } = geometry.data;
         const count = aPosition.length / positionSize;
@@ -56,7 +57,7 @@ class GLTFPhongPainter extends PhongPainter {
             // 'instance_color': [],
             'aPickingId': []
         };
-        this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize);
+        this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, positionSize);
         const instanceBuffers = {};
         //所有mesh共享一个instance buffer，以节省内存
         for (const p in instanceData) {
@@ -69,7 +70,7 @@ class GLTFPhongPainter extends PhongPainter {
         const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
         const meshInfos = this._gltfMeshInfos;
         const meshes = meshInfos.map(info => {
-            const { geometry, materialInfo, node } = info;
+            const { geometry, nodeMatrix, materialInfo } = info;
             const MatClazz = materialInfo.diffuseFactor ? reshader.PhongSpecularGlossinessMaterial : reshader.PhongMaterial;
             const material = new MatClazz(materialInfo);
             const mesh = new reshader.InstancedMesh(instanceBuffers, count, geometry, material, {
@@ -78,7 +79,7 @@ class GLTFPhongPainter extends PhongPainter {
                 picking: true
             });
 
-            mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, node.nodeMatrix));
+            mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
             mesh.setLocalTransform(tileTranslationMatrix);
 
             geometry.generateBuffers(this.regl);
@@ -99,6 +100,18 @@ class GLTFPhongPainter extends PhongPainter {
         };
 
         return meshes;
+    }
+
+    addMesh(meshes) {
+        if (!meshes) {
+            return null;
+        }
+        const level = meshes[0].properties.level;
+        if (level > 2) {
+            return null;
+        }
+        this.scene.addMesh(meshes);
+        return this;
     }
 
     _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize) {
@@ -141,23 +154,23 @@ class GLTFPhongPainter extends PhongPainter {
         return config;
     }
 
-    addMesh(mesh) {
-        // if (progress !== null) {
-        //     const mat = mesh.localTransform;
-        //     if (progress === 0) {
-        //         progress = 0.01;
-        //     }
-        //     SCALE[2] = progress;
-        //     mat4.fromScaling(mat, SCALE);
-        //     mat4.multiply(mat, mesh.properties.tileTransform, mat);
-        //     mesh.setLocalTransform(mat);
-        // } else {
-        //     mesh.setLocalTransform(mesh.properties.tileTransform);
-        // }
+    // addMesh(mesh) {
+    //     // if (progress !== null) {
+    //     //     const mat = mesh.localTransform;
+    //     //     if (progress === 0) {
+    //     //         progress = 0.01;
+    //     //     }
+    //     //     SCALE[2] = progress;
+    //     //     mat4.fromScaling(mat, SCALE);
+    //     //     mat4.multiply(mat, mesh.properties.tileTransform, mat);
+    //     //     mesh.setLocalTransform(mat);
+    //     // } else {
+    //     //     mesh.setLocalTransform(mesh.properties.tileTransform);
+    //     // }
 
-        this.scene.addMesh(mesh);
-        return this;
-    }
+    //     this.scene.addMesh(mesh);
+    //     return this;
+    // }
 
     init(context) {
         super.init(context);
