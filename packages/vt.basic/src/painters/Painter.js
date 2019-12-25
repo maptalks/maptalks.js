@@ -308,7 +308,7 @@ class Painter {
         return true;
     }
 
-    canStencil() {
+    needClearStencil() {
         return false;
     }
 

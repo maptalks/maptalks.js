@@ -517,7 +517,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!plugin || !visible) {
                 return;
             }
-            this._drawTileStencil(targetFBO);
+            if (plugin.painter && plugin.painter.needClearStencil()) {
+                this.regl.clear({
+                    stencil: 0xFF,
+                    fbo: targetFBO
+                });
+            } else {
+                this._drawTileStencil(targetFBO);
+            }
+
             const context = {
                 regl: this.regl,
                 layer: this.layer,

@@ -54,10 +54,6 @@ class NativeLinePainter extends Painter {
         return uniforms;
     }
 
-    canStencil() {
-        return true;
-    }
-
     init() {
         const stencil = this.layer.getRenderer().isEnableTileStencil();
         const regl = this.regl;

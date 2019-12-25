@@ -160,10 +160,6 @@ class LineGradientPainter extends BasicPainter {
         }
     }
 
-    canStencil() {
-        return true;
-    }
-
     init(context) {
 
         const regl = this.regl;

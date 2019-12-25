@@ -596,6 +596,10 @@ export default class TextPainter extends CollisionPainter {
         }
     }
 
+    needClearStencil() {
+        return true;
+    }
+
     init() {
         // const map = this.getMap();
         const regl = this.regl;

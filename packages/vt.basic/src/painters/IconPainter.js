@@ -600,7 +600,7 @@ class IconPainter extends CollisionPainter {
 
         const { uniforms, extraCommandProps } = createTextShader(this.layer, this.sceneConfig);
         //icon的text在intel gpu下不会引起崩溃，可以关闭模板
-        extraCommandProps.stencil.enable = false;
+        // extraCommandProps.stencil.enable = false;
 
         this._textShader = new reshader.MeshShader({
             vert: textVert, frag: textFrag,

@@ -293,13 +293,6 @@ function createPainterPlugin(type, Painter) {
             return this.painter.needToRedraw();
         },
 
-        canStencil: function () {
-            if (!this.painter) {
-                return false;
-            }
-            return this.painter.canStencil();
-        },
-
         _generateColorArray: function (features, featureIndexes, indices, vertices, positionSize = 3) {
             if (!vertices || !features || !features.length) {
                 return null;

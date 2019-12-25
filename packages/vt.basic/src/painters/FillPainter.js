@@ -272,10 +272,6 @@ class FillPainter extends BasicPainter {
         }
         return uniforms;
     }
-
-    canStencil() {
-        return true;
-    }
 }
 
 export default FillPainter;
