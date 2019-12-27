@@ -99,14 +99,14 @@ export function buildExtrudeFaces(
             const startIdx = (start + count) / 3;
             const vertexCount = count / 3;
             let ringStartIdx = startIdx, current, next;
-            for (let i = startIdx, l = vertexCount + startIdx; i < l; i++) {
+            for (let i = startIdx, l = vertexCount + startIdx; i < l - 1; i++) {
                 current = i;
-                if (i === l - 1 || holes.indexOf(i - startIdx + 1) >= 0) {
+                if (holes.indexOf(i - startIdx + 1) >= 0) {
                     next = ringStartIdx;
-                    if (i < l - 1) {
-                        ringStartIdx = i + 1;
-                    }
-                } else if (i < l - 1) {
+                    ringStartIdx = i + 1;
+                } else {
+
+
                     next = i + 1;
                 }
                 if (isClippedEdge(vertices, current, next, EXTENT)) {

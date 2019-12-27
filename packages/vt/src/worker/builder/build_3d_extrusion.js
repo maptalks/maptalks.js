@@ -59,6 +59,13 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
 
     if (tangent) {
         let tangents = buildTangents(faces.vertices, faces.normals, faces.uvs, indices);
+        const len = tangents.length;
+        if (tangents[len - 1] === undefined) {
+            tangents[len - 4] = tangents[0];
+            tangents[len - 3] = tangents[1];
+            tangents[len - 2] = tangents[2];
+            tangents[len - 1] = tangents[3];
+        }
         tangents = createQuaternion(faces.normals, tangents);
         faces.tangents = tangents;
         buffers.push(tangents.buffer);
