@@ -4,11 +4,9 @@ varying vec2 vTexCoord;
 
 
 uniform float enableFXAA;
-uniform float enableSSAO;
 uniform float enableToneMapping;
 uniform vec2 resolution;
 uniform sampler2D textureSource;
-uniform sampler2D ssaoTexture;
 
 uniform float cameraNear;
 uniform float cameraFar;
@@ -174,10 +172,6 @@ vec4 fxaa() {
     return  (texture2D(textureSource, (min(posM, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
 }
 
-float ssao() {
-    return texture2D(ssaoTexture, vTexCoord).r;
-}
-
 //---------------tone mapping-------------------
 vec3 HDR_ACES(const vec3 x) {
     // Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
@@ -214,13 +208,8 @@ void main() {
     } else {
         color = texture2D(textureSource, vTexCoord);
     }
-    if (enableSSAO == 1.0) {
-        color.rgb = color.rgb * ssao();
-        // color = texture2D(ssaoTexture, vTexCoord);
-    }
     if (enableToneMapping == 1.0) {
         color.rgb = tonemap(color.rgb);
     }
-    // color = texture2D(ssaoTexture, vTexCoord);
     gl_FragColor = color;
 }

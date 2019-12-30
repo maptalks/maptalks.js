@@ -48,8 +48,7 @@ import skin_vert from '../shader/glsl/skin.vert';
 // import fl_gl_post_process_frag from '../pbr/glsl/frag/gl_post_process.frag';
 // //main
 // import fl_main from '../pbr/glsl/frag/main.frag';
-//ssao
-import ssao_frag from '../shader/glsl/ssao.frag';
+
 
 //Shader Chunks for includes
 const ShaderChunk = {
@@ -91,8 +90,7 @@ const ShaderChunk = {
     invert_matrix,
     get_output,
     instance_vert,
-    skin_vert,
-    ssao_frag,
+    skin_vert
 };
 /* eslint-enable camelcase */
 

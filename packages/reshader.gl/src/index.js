@@ -26,7 +26,7 @@ export { default as MeshShader } from './shader/MeshShader.js';
 export { default as WireframeShader } from './shader/WireframeShader.js';
 export { default as PhongShader } from './shader/PhongShader.js';
 export { default as FxaaShader } from './shader/FxaaShader.js';
-export { default as SsaoPass } from './shader/SsaoPass.js';
+export { default as SsaoPass } from './ssao/SsaoPass.js';
 export { default as PostProcessShader } from './shader/PostProcessShader.js';
 export { default as TaaPass } from './shader/TaaPass.js';
 export { default as Jitter } from './shader/Jitter.js';

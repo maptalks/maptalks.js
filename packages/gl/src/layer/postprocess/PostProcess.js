@@ -35,63 +35,28 @@ export default class PostProcess {
         };
     }
 
-    layer(fbo, depthTex, uniforms, src) {
-        const source = src || fbo;
-        if (uniforms['enableSSAO']) {
-            const regl = this._regl;
-            // this._ssaoTexture = this._ssaoTexture || regl.texture({
-            //     width: source.width,
-            //     height: source.height,
-            //     'min': 'linear',
-            //     'mag': 'linear',
-            //     'format': 'rgba',
-            //     'type': 'uint8'
-            // });
-            this._ssaoFBO = this._ssaoFBO || regl.framebuffer({
-                width: source.width,
-                height: source.height,
-                // colors: [this._ssaoTexture],
-                colorFormat: 'rgba',
-                colorCount: 1,
-                // depth: true,
-                // stencil: true
-            });
-            if (this._ssaoFBO.width !== source.width ||
-                this._ssaoFBO.height !== source.height) {
-                this._ssaoFBO.resize(source.width, source.height);
-            }
-            if (!this._ssaoPass) {
-                this._ssaoPass = new reshader.SsaoPass(this._renderer, this._ssaoFBO);
-            }
-            // regl.clear({
-            //     color: EMPTY_COLOR,
-            //     depth: 1,
-            //     framebuffer: this._ssaoFBO
-            // });
-            // this._renderer.render(this._ssaoShader, {
-            //     projMatrix: uniforms['projMatrix'],
-            //     cameraNear: uniforms['cameraNear'],
-            //     cameraFar: uniforms['cameraFar'],
-            //     resolution: vec2.set(RESOLUTION, source.width, source.height),
-            //     'materialParams_depth': fbo.depth,
-            //     bias: uniforms['ssaoBias'],
-            //     radius: uniforms['ssaoRadius'],
-            //     power: uniforms['ssaoPower'],
-            // }, null, this._ssaoFBO);
-            this._ssaoPass.render({
-                projMatrix: uniforms['projMatrix'],
-                // cameraNear: uniforms['cameraNear'],
-                // cameraFar: uniforms['cameraFar'],
-                bias: uniforms['ssaoBias'],
-                radius: uniforms['ssaoRadius'],
-                power: uniforms['ssaoPower'],
-            }, depthTex, this._ssaoFBO);
+    ssao(sourceTex, depthTex, uniforms) {
+        if (!this._ssaoPass) {
+            this._ssaoPass = new reshader.SsaoPass(this._renderer);
         }
-        uniforms['textureSource'] = source;
-        uniforms['resolution'] = vec2.set(RESOLUTION, source.width, source.height);
-        uniforms['ssaoTexture'] = uniforms['enableSSAO'] ? this._ssaoFBO : this._emptyTexture;
-        this._renderer.render(this._fxaaShader, uniforms);
-        return fbo;
+        return this._ssaoPass.render({
+            projMatrix: uniforms['projMatrix'],
+            cameraNear: uniforms['cameraNear'],
+            cameraFar: uniforms['cameraFar'],
+            bias: uniforms['ssaoBias'],
+            radius: uniforms['ssaoRadius'],
+            intensity: uniforms['ssaoIntensity'],
+            quality: 0.6
+        }, sourceTex, depthTex);
+    }
+
+    fxaa(source, enableFXAA, enableToneMapping) {
+        this._renderer.render(this._fxaaShader, {
+            textureSource: source,
+            resolution: vec2.set(RESOLUTION, source.width, source.height),
+            enableFXAA,
+            enableToneMapping
+        });
     }
 
     //filmic grain + vigenett
@@ -109,13 +74,9 @@ export default class PostProcess {
             this._taaPass.dispose();
             delete this._taaPass;
         }
-        if (this._ssaoFBO) {
-            this._ssaoFBO.destroy();
-            delete this._ssaoFBO;
-        }
-        if (this._ssaoTexture) {
-            this._ssaoTexture.destroy();
-            delete this._ssaoTexture;
+        if (this._ssaoPass) {
+            this._ssaoPass.dispose();
+            delete this._ssaoPass;
         }
     }
 }

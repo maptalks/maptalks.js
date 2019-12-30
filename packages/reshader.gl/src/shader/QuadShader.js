@@ -26,7 +26,8 @@ class QuadShader extends MeshShader {
         if (!config.extraCommandProps.depth) {
             //disable depth
             config.extraCommandProps.depth = {
-                enable: false
+                enable: false,
+                mask: false
             };
         }
         if (!config.extraCommandProps.stencil) {

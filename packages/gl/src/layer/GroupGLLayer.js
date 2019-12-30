@@ -724,6 +724,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         let tex = this._targetFBO.color[0];
 
+        const enableSSAO = config.ssao && config.ssao.enable;
+        if (enableSSAO) {
+            tex = this._postProcessor.ssao(tex, this._depthTex, {
+                projMatrix: map.projMatrix,
+                cameraNear: map.cameraNear,
+                cameraFar: map.cameraFar,
+                ssaoBias: config.ssao && config.ssao.bias || 10,
+                ssaoRadius: config.ssao && config.ssao.radius || 100,
+                ssaoIntensity: config.ssao && config.ssao.intensity || 0.5
+            });
+        }
+
         const enableBloom = config.bloom && config.bloom.enable;
         if (enableBloom) {
             this._drawBloom();
@@ -759,22 +771,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // }
             // mat4.copy(this._prevProjViewMatrix, map.projViewMatrix);
             if (redraw) {
-                // console.log('taa.redraw', redraw);
                 this.setToRedraw();
             }
         }
 
         // this._displayShadow();
-        this._postProcessor.layer(tex, this._depthTex, {
-            enableSSAO: +!!(config.ssao && config.ssao.enable),
-            enableFXAA: +!!(config.antialias && config.antialias.enable),
-            enableToneMapping: +!!(config.toneMapping && config.toneMapping.enable),
-            cameraNear: map.cameraNear,
-            cameraFar: map.cameraFar,
-            ssaoBias: config.ssao && config.ssao.bias || 0.005,
-            ssaoRadius: config.ssao && config.ssao.radius || 0.3,
-            ssaoPower: config.ssao && config.ssao.power || 0
-        });
+        this._postProcessor.fxaa(tex,
+            +!!(config.antialias && config.antialias.enable),
+            +!!(config.toneMapping && config.toneMapping.enable)
+        );
         delete this._shadowUpdated;
         this._outdated = false;
     }

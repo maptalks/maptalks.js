@@ -3,11 +3,12 @@ precision mediump float;
 varying vec2 vTexCoord;
 
 uniform vec2 axis;
-uniform vec2 resolution;
+uniform vec2 uTextureOutputSize;
 uniform mat4 projMatrix;
 
 uniform sampler2D materialParams_ssao;
 uniform sampler2D materialParams_depth;
+uniform sampler2D TextureInput;
 
 mat4 getClipFromViewMatrix() {
     return projMatrix;
@@ -24,7 +25,7 @@ float kGaussianSamples[5];
 const float kGaussianWeightSum = 0.993872;
 
 vec2 clampToEdge(const sampler2D s, vec2 uv) {
-    vec2 size = resolution;
+    vec2 size = uTextureOutputSize;
     return clamp(uv, vec2(0), size - vec2(1));
 }
 
@@ -46,7 +47,7 @@ float bilateralWeight(const vec2 p, in float depth) {
 
 void tap(inout float sum, inout float totalWeight, float weight, float depth, vec2 position) {
     position = clampToEdge(materialParams_ssao, position);
-    vec2 uv = position / resolution;
+    vec2 uv = position / uTextureOutputSize;
     // ambient occlusion sample
     float ao = texture2D(materialParams_ssao, uv).r;
     // bilateral sample
@@ -66,7 +67,7 @@ void initKernels() {
 
 void main() {
     initKernels();
-    vec2 uv = vTexCoord.xy * resolution.xy;
+    vec2 uv = vTexCoord.xy * uTextureOutputSize.xy;
 
     float depth = texture2D(materialParams_depth, vTexCoord).r;
 
@@ -82,5 +83,12 @@ void main() {
         tap(sum, totalWeight, weight, depth, uv - offset);
     }
 
-    gl_FragColor = vec4(vec3(sum * (1.0 / totalWeight)), 1.0);
+    float occlusion = sum * (1.0 / totalWeight);
+
+    if (axis.y == 1.0) {
+        vec4 color = texture2D(TextureInput, vTexCoord);
+        gl_FragColor = vec4(color.rgb * occlusion, color.a);
+    } else {
+        gl_FragColor = vec4(occlusion);
+    }
 }
