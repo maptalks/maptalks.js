@@ -2,6 +2,7 @@ const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
+const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
 
 const production = process.env.BUILD === 'production';
 
@@ -22,10 +23,16 @@ function glsl() {
         }
     };
 }
+
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 
 const plugins = [
-    glsl(),
+    // glsl(),
+    production ? glslMinify({
+        commons: [
+            './src/shaderlib/glsl'
+        ]
+    }) : glsl(),
     resolve({
         module : true,
         jsnext : true,
@@ -43,6 +50,7 @@ if (production) {
         //     }
         // },
         output : {
+            beautify: true,
             comments : '/^!/'
         }
     }));

@@ -3,12 +3,12 @@ import vsm_shadow_vert from './glsl/vsm_shadow.vert';
 import vsm_shadow_frag from './glsl/vsm_shadow.frag';
 import fbo_picking_vert from './glsl/fbo_picking.vert';
 import common_pack_float from './glsl/common_pack_float.glsl';
-import invert_matrix from '../shader/glsl/invert_matrix.vert';
-import get_output from '../shader/glsl/output.vert';
+import invert_matrix from './glsl/invert_matrix.vert';
+import get_output from './glsl/output.vert';
 //instance.vert
-import instance_vert from '../shader/glsl/instance.vert';
+import instance_vert from './glsl/instance.vert';
 //skin.vert
-import skin_vert from '../shader/glsl/skin.vert';
+import skin_vert from './glsl/skin.vert';
 
 
 //webgl 2.0中的函数实现

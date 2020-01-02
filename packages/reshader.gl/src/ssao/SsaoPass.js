@@ -119,7 +119,7 @@ class SsaoPass {
             delete this._extractFBO;
             this._blurVFBO.destroy();
             this._blurHFBO.destroy();
-            delete this._ssaoMipmapShader;
+            delete this._ssaoExtractShader;
             this._ssaoExtractShader.dispose();
             this._ssaoBlurHShader.dispose();
             this._ssaoCombineShader.dispose();
@@ -139,7 +139,6 @@ class SsaoPass {
                 }
             };
             this._ssaoExtractShader = new SsaoExtractShader(viewport);
-            delete this._ssaoExtractShader;
             this._ssaoBlurShader = new SsaoBlurShader(viewport);
             this._ssaoCombineShader = new SsaoCombineShader(viewport);
         }
