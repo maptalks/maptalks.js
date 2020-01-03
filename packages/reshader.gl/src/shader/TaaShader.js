@@ -1,16 +1,13 @@
-import { isFunction } from '../common/Util.js';
 import QuadShader from './QuadShader.js';
 import vert from './glsl/quad.vert';
 import frag from './glsl/taa.frag';
 import { vec4 } from 'gl-matrix';
 
 class TaaShader extends QuadShader {
-    constructor(viewport) {
+    constructor() {
         const corners = [
             [], []
         ];
-        const isFnWidth = isFunction(viewport.width);
-        const isFnHeight = isFunction(viewport.height);
         super({
             vert, frag,
             uniforms : [
@@ -39,8 +36,8 @@ class TaaShader extends QuadShader {
                     length: 2,
                     fn: function (context, props) {
                         const cornerY = Math.tan(0.5 * props['fov']);
-                        const width = isFnWidth ? viewport.width.data() : viewport.width;
-                        const height = isFnHeight ? viewport.height.data() : viewport.height;
+                        const width = props['uTextureOutputSize'][0];
+                        const height = props['uTextureOutputSize'][1];
                         const aspect = width / height;
                         const cornerX = aspect * cornerY;
                         vec4.set(corners[0], cornerX, cornerY, cornerX, -cornerY);
@@ -50,7 +47,16 @@ class TaaShader extends QuadShader {
                 }
             ],
             extraCommandProps: {
-                viewport,
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: (context, props) => {
+                        return props['uTextureOutputSize'][0];
+                    },
+                    height: (context, props) => {
+                        return props['uTextureOutputSize'][1];
+                    }
+                },
                 blend: {
                     enable: false
                 },

@@ -3,7 +3,7 @@ import vert from '../shader/glsl/quad.vert';
 import frag from './glsl/ssao_mipmap.frag';
 
 class SsaoMipmapShader extends QuadShader {
-    constructor(viewport) {
+    constructor() {
         super({
             vert, frag,
             uniforms : [
@@ -31,7 +31,16 @@ class SsaoMipmapShader extends QuadShader {
                 'projMatrix'
             ],
             extraCommandProps: {
-                viewport
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: (context, props) => {
+                        return props['uTextureOutputSize'][0];
+                    },
+                    height: (context, props) => {
+                        return props['uTextureOutputSize'][1];
+                    }
+                }
             }
         });
     }

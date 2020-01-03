@@ -710,17 +710,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         const map = this.layer.getMap();
         if (!this._postProcessor) {
-            const viewport = {
-                x: 0,
-                y: 0,
-                width: () => {
-                    return this.canvas.width;
-                },
-                height: () => {
-                    return this.canvas.height;
-                }
-            };
-            this._postProcessor = new PostProcess(this._regl, viewport, this._jitGetter);
+            this._postProcessor = new PostProcess(this._regl, this._jitGetter);
         }
         let tex = this._targetFBO.color[0];
 

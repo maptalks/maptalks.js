@@ -21,18 +21,6 @@ class ShadowPass {
     }
 
     _init() {
-        const canvas = this._layer.getRenderer().canvas;
-        const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return canvas ? canvas.width : 1;
-            },
-            height: () => {
-                return canvas ? canvas.height : 1;
-            }
-        };
-
         const shadowConfig = this.sceneConfig.shadow;
         let shadowRes = 512;
         const quality = shadowConfig.quality;
@@ -43,7 +31,7 @@ class ShadowPass {
         }
         const defines = this.getDefines();
         this._shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: shadowConfig.blurOffset, defines });
-        this._shadowDisplayShader = new reshader.ShadowDisplayShader(viewport, defines);
+        this._shadowDisplayShader = new reshader.ShadowDisplayShader(defines);
 
         this._createGround();
     }

@@ -2,10 +2,9 @@ import TaaShader from './TaaShader.js';
 import { vec2, vec4, mat4 } from 'gl-matrix';
 
 class TaaPass {
-    constructor(renderer, viewport, jitter) {
+    constructor(renderer, jitter) {
         this._jitter = jitter;
         this._renderer = renderer;
-        this._viewport = viewport;
         this._halton = [];
         this._nearfar = [];
         this._counter = 0;
@@ -148,7 +147,7 @@ class TaaPass {
 
     _initShaders() {
         if (!this._shader) {
-            this._shader = new TaaShader(this._viewport);
+            this._shader = new TaaShader();
         }
     }
 

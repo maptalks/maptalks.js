@@ -42,7 +42,7 @@ const KERNEL_NOISE_SAMPLES = [
 ];
 
 class SsaoShader extends QuadShader {
-    constructor(viewport) {
+    constructor() {
         super({
             vert, frag,
             uniforms : [
@@ -75,7 +75,16 @@ class SsaoShader extends QuadShader {
                 },
             ],
             extraCommandProps: {
-                viewport
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: (context, props) => {
+                        return props['resolution'][0];
+                    },
+                    height: (context, props) => {
+                        return props['resolution'][1];
+                    }
+                }
             }
         });
     }

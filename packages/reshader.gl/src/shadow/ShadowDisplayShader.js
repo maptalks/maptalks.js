@@ -5,7 +5,7 @@ import MeshShader from '../shader/MeshShader.js';
 
 class ShadowDisplayShader extends MeshShader {
 
-    constructor(viewport, defines) {
+    constructor(defines) {
         super({
             vert : shadowDisplayVert,
             frag : shadowDisplayFrag,
@@ -41,7 +41,16 @@ class ShadowDisplayShader extends MeshShader {
                 'USE_ESM': 1
             },
             extraCommandProps: {
-                viewport
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: (context, props) => {
+                        return props['globalTexSize'][0];
+                    },
+                    height: (context, props) => {
+                        return props['globalTexSize'][1];
+                    }
+                }
             }
         });
     }

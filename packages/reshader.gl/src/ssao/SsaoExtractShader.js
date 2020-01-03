@@ -22,7 +22,7 @@ const KERNEL_SPHERE_SAMPLES = [
 ];
 
 class SsaoExtactShader extends QuadShader {
-    constructor(viewport) {
+    constructor() {
         super({
             vert, frag,
             uniforms : [
@@ -52,8 +52,16 @@ class SsaoExtactShader extends QuadShader {
                 },
             ],
             extraCommandProps: {
-                viewport,
-                dither: true
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: (context, props) => {
+                        return props['uTextureOutputSize'][0];
+                    },
+                    height: (context, props) => {
+                        return props['uTextureOutputSize'][1];
+                    }
+                }
             }
         });
     }

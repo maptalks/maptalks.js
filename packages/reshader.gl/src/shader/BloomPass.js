@@ -1,18 +1,13 @@
 import BloomExtractShader from './BloomExtractShader.js';
 import QuadShader from './QuadShader.js';
+import BlurPass from './BlurPass.js';
 import quadVert from './glsl/quad.vert';
-import blur0Frag from './glsl/bloom_blur0.frag';
-import blur1Frag from './glsl/bloom_blur1.frag';
-import blur2Frag from './glsl/bloom_blur2.frag';
-import blur3Frag from './glsl/bloom_blur3.frag';
-import blur4Frag from './glsl/bloom_blur4.frag';
 import combineFrag from './glsl/bloom_combine.frag';
 import { vec2 } from 'gl-matrix';
 
 class BloomPass {
-    constructor(renderer, viewport) {
+    constructor(renderer) {
         this._renderer = renderer;
-        this._viewport = viewport;
     }
 
     render(sourceTex, bloomTex, bloomThreshold, bloomFactor, bloomRadius, paintToScreen) {
@@ -40,63 +35,14 @@ class BloomPass {
         this._renderer.render(this._extractShader, uniforms, null, this._targetFBO);
 
         //blur
-        output = this._blur(this._targetFBO.color[0]);
+        const blurTexes = this._blurPass.render(this._outputTex);
         //combine
-        output = this._combine(sourceTex, bloomTex, bloomFactor, bloomRadius, paintToScreen);
+        output = this._combine(sourceTex, blurTexes, bloomTex, bloomFactor, bloomRadius, paintToScreen);
 
         return output;
     }
 
-    _blur(curTex) {
-        let uniforms = this._blurUniforms;
-        if (!uniforms) {
-            uniforms = this._blurUniforms = {
-                'uRGBMRange': 7,
-                'uBlurDir': [0, 0],
-                'uGlobalTexSize': [0, 0],
-                'uPixelRatio': [1, 1],
-                'uTextureBlurInputRatio': [1, 1],
-                'uTextureBlurInputSize': [0, 0],
-                'uTextureOutputRatio': [1, 1],
-                'uTextureOutputSize': [0, 0],
-            };
-        }
-        vec2.set(uniforms['uGlobalTexSize'], curTex.width, curTex.height);
-
-        this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 1);
-        this._blurOnce(this._blur1Shader, this._blur01FBO.color[0], this._blur10FBO, this._blur11FBO, 0.5);
-        this._blurOnce(this._blur2Shader, this._blur11FBO.color[0], this._blur20FBO, this._blur21FBO, 0.5);
-        this._blurOnce(this._blur3Shader, this._blur21FBO.color[0], this._blur30FBO, this._blur31FBO, 0.5);
-        this._blurOnce(this._blur4Shader, this._blur31FBO.color[0], this._blur40FBO, this._blur41FBO, 0.5);
-
-        return this._blur41FBO.color[0];
-    }
-
-    _blurOnce(shader, inputTex, output0, output1, sizeRatio) {
-        const w = Math.ceil(sizeRatio * inputTex.width);
-        const h = Math.ceil(sizeRatio * inputTex.height);
-        if (output0.width !== w || output0.height !== h) {
-            output0.resize(w, h);
-        }
-        if (output1.width !== w || output1.height !== h) {
-            output1.resize(w, h);
-        }
-
-        const uniforms = this._blurUniforms;
-        uniforms['TextureBlurInput'] = inputTex;
-        vec2.set(uniforms['uBlurDir'], 0, 1);
-        vec2.set(uniforms['uTextureBlurInputSize'], inputTex.width, inputTex.height);
-        vec2.set(uniforms['uTextureOutputSize'], output0.width, output0.height);
-        this._renderer.render(shader, uniforms, null, output0);
-
-
-        vec2.set(uniforms['uBlurDir'], 1, 0);
-        uniforms['TextureBlurInput'] = output0.color[0];
-        vec2.set(uniforms['uTextureBlurInputSize'], output0.width, output0.height);
-        this._renderer.render(shader, uniforms, null, output1);
-    }
-
-    _combine(sourceTex, inputTex, bloomFactor, bloomRadius, paintToScreen) {
+    _combine(sourceTex, blurTexes, inputTex, bloomFactor, bloomRadius, paintToScreen) {
         if (!paintToScreen) {
             if (this._combineTex.width !== sourceTex.width || this._combineTex.height !== sourceTex.height) {
                 this._combineFBO.resize(sourceTex.width, sourceTex.height);
@@ -105,16 +51,17 @@ class BloomPass {
 
 
         let uniforms = this._combineUniforms;
+        const { blurTex0, blurTex1, blurTex2, blurTex3, blurTex4 } = blurTexes;
         if (!uniforms) {
             uniforms = this._combineUniforms = {
                 'uBloomFactor': 0,
                 'uBloomRadius': 0,
                 'uRGBMRange': 7,
-                'TextureBloomBlur1': this._blur01Tex,
-                'TextureBloomBlur2': this._blur11Tex,
-                'TextureBloomBlur3': this._blur21Tex,
-                'TextureBloomBlur4': this._blur31Tex,
-                'TextureBloomBlur5': this._blur41Tex,
+                'TextureBloomBlur1': blurTex0,
+                'TextureBloomBlur2': blurTex1,
+                'TextureBloomBlur3': blurTex2,
+                'TextureBloomBlur4': blurTex3,
+                'TextureBloomBlur5': blurTex4,
                 'TextureInput': null,
                 'TextureSource': null,
                 'uTextureBloomBlur1Ratio': [1, 1],
@@ -137,11 +84,11 @@ class BloomPass {
         uniforms['uBloomRadius'] = bloomRadius;
         uniforms['TextureInput'] = inputTex;
         uniforms['TextureSource'] = sourceTex;
-        vec2.set(uniforms['uTextureBloomBlur1Size'], this._blur01Tex.width, this._blur01Tex.height);
-        vec2.set(uniforms['uTextureBloomBlur2Size'], this._blur11Tex.width, this._blur11Tex.height);
-        vec2.set(uniforms['uTextureBloomBlur3Size'], this._blur21Tex.width, this._blur21Tex.height);
-        vec2.set(uniforms['uTextureBloomBlur4Size'], this._blur31Tex.width, this._blur31Tex.height);
-        vec2.set(uniforms['uTextureBloomBlur5Size'], this._blur41Tex.width, this._blur41Tex.height);
+        vec2.set(uniforms['uTextureBloomBlur1Size'], blurTex0.width, blurTex0.height);
+        vec2.set(uniforms['uTextureBloomBlur2Size'], blurTex1.width, blurTex1.height);
+        vec2.set(uniforms['uTextureBloomBlur3Size'], blurTex2.width, blurTex2.height);
+        vec2.set(uniforms['uTextureBloomBlur4Size'], blurTex3.width, blurTex3.height);
+        vec2.set(uniforms['uTextureBloomBlur5Size'], blurTex4.width, blurTex4.height);
         vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
         vec2.set(uniforms['uTextureOutputSize'], sourceTex.width, sourceTex.height);
 
@@ -153,12 +100,16 @@ class BloomPass {
         if (this._extractShader) {
             this._extractShader.dispose();
             delete this._extractShader;
+            this._combineShader.dispose();
         }
         if (this._targetFBO) {
             this._targetFBO.destroy();
+            delete this._targetFBO;
+            this._combineFBO.destroy();
         }
-        if (this._outputTex) {
-            this._outputTex.destroy();
+        if (this._blurPass) {
+            this._blurPass.dispose();
+            delete this._blurPass;
         }
         delete this._uniforms;
     }
@@ -182,39 +133,6 @@ class BloomPass {
 
         this._combineTex = this._createColorTex(tex, w, h, 'uint8');
         this._combineFBO = this._createBlurFBO(this._combineTex);
-
-        this._blur00Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur00FBO = this._createBlurFBO(this._blur00Tex);
-        this._blur01Tex = this._createColorTex(tex);
-        this._blur01FBO = this._createBlurFBO(this._blur01Tex);
-
-        w = Math.ceil(w / 2);
-        h = Math.ceil(h / 2);
-        this._blur10Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur10FBO = this._createBlurFBO(this._blur10Tex);
-        this._blur11Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur11FBO = this._createBlurFBO(this._blur11Tex);
-
-        w = Math.ceil(w / 2);
-        h = Math.ceil(h / 2);
-        this._blur20Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur20FBO = this._createBlurFBO(this._blur20Tex);
-        this._blur21Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur21FBO = this._createBlurFBO(this._blur21Tex);
-
-        w = Math.ceil(w / 2);
-        h = Math.ceil(h / 2);
-        this._blur30Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur30FBO = this._createBlurFBO(this._blur30Tex);
-        this._blur31Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur31FBO = this._createBlurFBO(this._blur31Tex);
-
-        w = Math.ceil(w / 2);
-        h = Math.ceil(h / 2);
-        this._blur40Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur40FBO = this._createBlurFBO(this._blur40Tex);
-        this._blur41Tex = this._createColorTex(tex, w, h, 'uint8');
-        this._blur41FBO = this._createBlurFBO(this._blur41Tex);
 
     }
 
@@ -245,36 +163,18 @@ class BloomPass {
 
     _initShaders() {
         if (!this._extractShader) {
-            this._extractShader = new BloomExtractShader(this._viewport);
-            const config = {
-                vert: quadVert,
-                uniforms: [
-                    'uRGBMRange',
-                    'TextureBlurInput',
-                    'uBlurDir',
-                    'uGlobalTexSize',
-                    'uPixelRatio',
-                    'uTextureBlurInputRatio',
-                    'uTextureBlurInputSize',
-                    'uTextureOutputRatio',
-                    'uTextureOutputSize',
-                ],
-                extraCommandProps: {
-                    viewport: this._viewport
+            const viewport = {
+                x: 0,
+                y: 0,
+                width : (context, props) => {
+                    return props['uTextureOutputSize'][0];
+                },
+                height : (context, props) => {
+                    return props['uTextureOutputSize'][1];
                 }
             };
-
-            config.frag = blur0Frag;
-            this._blur0Shader = new QuadShader(config);
-            config.frag = blur1Frag;
-            this._blur1Shader = new QuadShader(config);
-            config.frag = blur2Frag;
-            this._blur2Shader = new QuadShader(config);
-            config.frag = blur3Frag;
-            this._blur3Shader = new QuadShader(config);
-            config.frag = blur4Frag;
-            this._blur4Shader = new QuadShader(config);
-
+            this._blurPass = new BlurPass(this._renderer);
+            this._extractShader = new BloomExtractShader();
             this._combineShader = new QuadShader({
                 vert: quadVert,
                 frag: combineFrag,
@@ -305,7 +205,7 @@ class BloomPass {
                     'uTextureOutputSize',
                 ],
                 extraCommandProps: {
-                    viewport: this._viewport
+                    viewport
                 }
             });
         }

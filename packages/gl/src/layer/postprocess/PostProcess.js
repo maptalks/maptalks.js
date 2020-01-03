@@ -4,13 +4,13 @@ import { vec2 } from 'gl-matrix';
 const RESOLUTION = [];
 
 export default class PostProcess {
-    constructor(regl, viewport, jitter) {
+    constructor(regl, jitter) {
         this._regl = regl;
         this._renderer = new reshader.Renderer(regl);
-        this._fxaaShader = new reshader.FxaaShader(viewport);
-        this._taaPass = new reshader.TaaPass(this._renderer, viewport, jitter);
-        this._bloomPass = new reshader.BloomPass(this._renderer, viewport);
-        this._postProcessShader = new reshader.PostProcessShader(viewport);
+        this._fxaaShader = new reshader.FxaaShader();
+        this._taaPass = new reshader.TaaPass(this._renderer, jitter);
+        this._bloomPass = new reshader.BloomPass(this._renderer);
+        this._postProcessShader = new reshader.PostProcessShader();
         this._emptyTexture = regl.texture();
     }
 

@@ -3,7 +3,7 @@ import vert from './glsl/quad.vert';
 import frag from './glsl/bloom_extract.frag';
 
 class BloomExtractShader extends QuadShader {
-    constructor(viewport) {
+    constructor() {
         super({
             vert, frag,
             uniforms : [
@@ -12,7 +12,16 @@ class BloomExtractShader extends QuadShader {
                 'uTextureOutputSize'
             ],
             extraCommandProps: {
-                viewport
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width : (context, props) => {
+                        return props['uTextureOutputSize'][0];
+                    },
+                    height : (context, props) => {
+                        return props['uTextureOutputSize'][1];
+                    }
+                }
             }
         });
     }

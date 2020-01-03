@@ -3,7 +3,7 @@ import vert from '../shader/glsl/quad.vert';
 import frag from './glsl/ssao_blur_h.frag';
 
 class SsaoBlurHShader extends QuadShader {
-    constructor(viewport) {
+    constructor() {
         super({
             vert, frag,
             uniforms : [
@@ -14,7 +14,16 @@ class SsaoBlurHShader extends QuadShader {
                 'uTextureOutputSize'
             ],
             extraCommandProps: {
-                viewport
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: (context, props) => {
+                        return props['uTextureOutputSize'][0];
+                    },
+                    height: (context, props) => {
+                        return props['uTextureOutputSize'][1];
+                    }
+                }
             }
         });
     }
