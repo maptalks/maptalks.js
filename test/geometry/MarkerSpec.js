@@ -103,6 +103,22 @@ describe('Geometry.Marker', function () {
             expect(marker.getSize().toArray()).to.be.eql([30, 22]);
         });
 
+        it('icon url', function (done) {
+            var marker = new maptalks.Marker(center, {
+                symbol: {
+                    markerFile: 'images/control/2.png',
+                    markerWidth: 30,
+                    markerHeight: 22
+                }
+            });
+
+            var url = marker.toJSON().symbol.markerFile;
+
+            expect(url).to.be('images/control/2.png');
+
+            done();
+        });
+
         it('can be text', function () {
             var marker = new maptalks.Marker(center, {
                 symbol: {

@@ -235,21 +235,18 @@ export function isArrayHasData(obj) {
 }
 
 /**
- * Whether the input string is a valid url.
+ * Whether the input string is a valid url.(form: https://github.com/axios/axios/blob/master/lib/helpers/isAbsoluteURL.js)
  * @param  {String}  url - url to check
  * @return {Boolean}
  * @memberOf Util
  * @private
  */
-export function isURL(url) {
-    if (!url) {
-        return false;
-    }
-    const head = url.slice(0, 6);
-    if (head === 'http:/' || head === 'https:' || head === 'file:/') {
-        return true;
-    }
-    return false;
+export function isURL(url) { // TODO: should rename isAbsoluteURL
+    // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+    // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+    // by any combination of letters, digits, plus, period, or hyphen.
+    // eslint-disable-next-line no-useless-escape
+    return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 }
 
 //改原先的regex名字为xWithQuote；不带引号的regex，/^url\(([^\'\"].*[^\'\"])\)$/i，为xWithoutQuote。然后在is函数里||测试，extract函数里if...else处理。没引号的匹配后，取matches[1]
