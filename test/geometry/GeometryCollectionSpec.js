@@ -260,7 +260,7 @@ describe('#GeometryCollection', function () {
                 'markerHeight' : 50
             };
             var expected = {
-                'markerFile' : 'http://localhost:9876/test',
+                'markerFile' : 'test',
                 'markerWidth' : 40,
                 'markerHeight' : 50
             };
