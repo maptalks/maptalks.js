@@ -5,8 +5,6 @@ import {
     isString,
     isArrayHasData,
     isSVG,
-    isCssUrl,
-    extractCssUrl,
     computeDegree
 } from './util';
 import { isGradient } from './util/style';
@@ -938,15 +936,25 @@ function drawDashLine(ctx, startPoint, endPoint, dashArray) {
 }
 
 const prefix = 'data:image/';
+/*
+ * 判断是否是图片路径
+ * FIXME: 需要对后续url做进一步判断，但是目前没有好的方式
+ * @param {string} url 字符串
+ */
 function isImageUrl(url) {
-    return url.length > prefix.length && url.substring(0, prefix.length) === prefix || isCssUrl(url);
+    return url.length > prefix.length && url.substring(0, prefix.length) === prefix || url;
 }
 
+/**
+ * 提取图片路径
+ * FIXME: 需要对后续url做进一步判断，但是目前没有好的方式
+ * @param {string} url
+ */
 function extractImageUrl(url) {
     if (url.substring(0, prefix.length) === prefix) {
         return url;
     }
-    return extractCssUrl(url);
+    return url;
 }
 
 function copyProperties(ctx, savedCtx) {
