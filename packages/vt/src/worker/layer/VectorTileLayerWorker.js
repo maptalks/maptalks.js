@@ -4,8 +4,8 @@ import { VectorTile } from '@mapbox/vector-tile';
 import Ajax from '../util/Ajax';
 
 export default class VectorTileLayerWorker extends LayerWorker {
-    constructor(id, options, uploader, callback) {
-        super(id, options, uploader);
+    constructor(id, options, uploader, cache, loadings, callback) {
+        super(id, options, uploader, cache, loadings);
         options = options || {};
         callback();
     }

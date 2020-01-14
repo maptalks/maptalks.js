@@ -14,8 +14,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
      * @param {*} uploader
      * @param {*} cb
      */
-    constructor(id, options, uploader, cb) {
-        super(id, options, uploader);
+    constructor(id, options, uploader, cache, loadings, cb) {
+        super(id, options, uploader, cache, loadings);
         options = options || {};
         if (!options.extent) {
             options.extent = 8192;

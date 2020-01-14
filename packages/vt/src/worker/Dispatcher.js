@@ -1,7 +1,12 @@
 import GeoJSONLayerWorker from './layer/GeojsonLayerWorker';
 import VectorTileLayerWorker from './layer/VectorTileLayerWorker';
+import { LRUCache } from '@maptalks/vector-packer';
 
 let callbackId = 0;
+
+//global level 1 cache for layers sharing the same urlTemplate
+const TILE_CACHE = new LRUCache(128);
+const TILE_LOADINGS = {};
 
 export default class Dispatcher {
 
@@ -29,9 +34,9 @@ export default class Dispatcher {
         const options = params.options;
         const uploader = this.send.bind(this, actorId);
         if (type === 'GeoJSONVectorTileLayer') {
-            this._layers[key] = new GeoJSONLayerWorker(layerId, options, uploader, callback);
+            this._layers[key] = new GeoJSONLayerWorker(layerId, options, uploader, TILE_CACHE, TILE_LOADINGS, callback);
         } else {
-            this._layers[key] = new VectorTileLayerWorker(layerId, options, uploader, callback);
+            this._layers[key] = new VectorTileLayerWorker(layerId, options, uploader, TILE_CACHE, TILE_LOADINGS, callback);
         }
     }
 
@@ -48,6 +53,11 @@ export default class Dispatcher {
         if (layer) {
             layer.onRemove(callback);
         }
+        const keys = Object.keys(TILE_LOADINGS);
+        for (let i = 0; i < keys.length; i++) {
+            delete TILE_LOADINGS[keys[i]];
+        }
+        TILE_CACHE.reset();
     }
 
     /**

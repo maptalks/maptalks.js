@@ -1,5 +1,4 @@
 import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber } from '../../common/Util';
-import { LRUCache } from '@maptalks/vector-packer';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
@@ -10,20 +9,16 @@ import { KEY_IDX } from '../builder/Constant';
 
 // let FONT_CANVAS;
 
-//global level 1 cache for layers sharing the same urlTemplate
-const TILE_CACHE = new LRUCache(128);
-const TILE_LOADINGS = {};
-
 export default class BaseLayerWorker {
-    constructor(id, options, upload) {
+    constructor(id, options, upload, tileCache, tileLoading) {
         this.id = id;
         this.options = options;
         this.upload = upload;
         this._compileStyle(options.style || []);
         this.requests = {};
         this._styleCounter = 0;
-        this._cache = TILE_CACHE;
-        this.loadings = TILE_LOADINGS;
+        this._cache = tileCache;
+        this.loadings = tileLoading;
     }
 
     updateStyle(style, cb) {
@@ -44,7 +39,7 @@ export default class BaseLayerWorker {
      * @param {Function} cb - callback function when finished
      */
     loadTile(context, cb) {
-        const loadings = TILE_LOADINGS;
+        const loadings = this.loadings;
         const url = context.tileInfo.url;
         if (this._cache.has(url)) {
             const { features, layers } = this._cache.get(url);
@@ -123,13 +118,13 @@ export default class BaseLayerWorker {
     }
 
     _cancelLoadings(url) {
-        const waitings = TILE_LOADINGS[url];
+        const waitings = this.loadings[url];
         if (waitings) {
             for (let i = 0; i < waitings.length; i++) {
                 waitings[i].callback(null, { canceled: true });
             }
         }
-        delete TILE_LOADINGS[url];
+        delete this.loadings[url];
     }
 
     _callWaitings(waitings, err, data) {
