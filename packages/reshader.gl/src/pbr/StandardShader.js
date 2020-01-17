@@ -28,6 +28,14 @@ class StandardShader extends MeshShader {
             }
         });
 
+        const modelMatrix = [1, -0.0000, -0.0000, 0, 0, 0.0000, 1, 0, 0.0000, -1, 0.0000, 0, -155.4500, 0, 287.6630, 1];
+        const modelViewMatrix = [-0.2274, -0.5468, 0.8058, 0, 0, 0.8275, 0.5615, 0, -0.9738, 0.1277, -0.1882, 0, 71.0551, 174.0461, -2710.2300, 1];
+        const viewMatrix = mat4.multiply([], modelViewMatrix, mat4.invert([], modelMatrix));
+        const modelView = mat4.multiply([], viewMatrix, modelMatrix);
+        const inverted = mat4.invert(modelView, modelView);
+        const transposed = mat4.transpose(inverted, inverted);
+        console.log(mat3.fromMat4([], transposed));
+
         const uniforms = [
             'uCameraPosition',
             //vert中的uniforms
@@ -42,11 +50,11 @@ class StandardShader extends MeshShader {
                 name: 'uModelNormalMatrix',
                 type: 'function',
                 fn: (context, props) => {
-                    const model3 = mat3.fromMat4([], props['modelMatrix']);
-                    const transposed = mat3.transpose(model3, model3);
-                    const inverted = mat3.invert(transposed, transposed);
-                    return inverted;
-                    // return mat3.fromMat4([], props['modelMatrix']);
+                    // const model3 = mat3.fromMat4([], props['modelMatrix']);
+                    // const transposed = mat3.transpose(model3, model3);
+                    // const inverted = mat3.invert(transposed, transposed);
+                    // return inverted;
+                    return mat3.fromMat4([], props['modelMatrix']);
                 }
             },
             {
@@ -61,6 +69,13 @@ class StandardShader extends MeshShader {
                     // return mat3.fromMat4([], modelView);
                 }
             },
+            {
+                name : 'uProjectionMatrix',
+                type : 'function',
+                fn : (context, props) => {
+                    return props['projMatrix'];
+                }
+            },
             // {
             //     name : 'uProjViewModelMatrix',
             //     type : 'function',
@@ -73,13 +88,6 @@ class StandardShader extends MeshShader {
                 type : 'function',
                 fn : (context, props) => {
                     return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
-                }
-            },
-            {
-                name : 'uProjectionMatrix',
-                type : 'function',
-                fn : (context, props) => {
-                    return props['projMatrix'];
                 }
             },
             'uGlobalTexSize',

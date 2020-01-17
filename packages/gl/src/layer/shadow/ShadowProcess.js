@@ -5,7 +5,7 @@ import * as reshader from '@maptalks/reshader.gl';
 
 const COORD_THRESHOLD = 100;
 
-class ShadowPass {
+class ShadowProcess {
     constructor(regl, sceneConfig, layer) {
         this.renderer = new reshader.Renderer(regl);
         this.sceneConfig = sceneConfig;
@@ -140,7 +140,7 @@ class ShadowPass {
         }, this._groundScene, framebuffer);
     }
 
-    delete() {
+    dispose() {
         this._shadowPass.dispose();
         this._shadowDisplayShader.dispose();
         // if (this._shadowMap) {
@@ -211,4 +211,4 @@ class ShadowPass {
     }
 }
 
-export default ShadowPass;
+export default ShadowProcess;

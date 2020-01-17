@@ -28,7 +28,6 @@ vec4 Tangent;
 // uniform float uDisplay2D;//0
 // uniform float uPointSize;//1070.9412
 
-// uniform mat3 uModelViewNormalMatrix;
 uniform mat4 uModelMatrix;
 uniform mat4 uModelViewMatrix;
 uniform mat4 positionMatrix;
@@ -41,8 +40,13 @@ uniform vec2 uHalton;
 
 uniform mat3 uModelNormalMatrix;
 
-// varying vec3 vViewNormal;
+#ifdef HAS_SSR
+    uniform mat3 uModelViewNormalMatrix;
+    varying vec3 vViewNormal;
+#endif
 varying vec3 vModelNormal;
+varying vec4 vViewVertex;
+
 #if defined(HAS_TANGENT)
     varying vec4 vModelTangent;
     varying vec3 vModelBiTangent;
@@ -119,9 +123,17 @@ void main() {
         vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);
     #endif
 
-    // vViewNormal = uModelViewNormalMatrix * localNormal;
+    #ifdef HAS_SSR
+        vViewNormal = uModelViewNormalMatrix * localNormal;
+         #if defined(HAS_TANGENT)
+            // Tangent = vec4(t, aTangent.w);
+            vec4 localTangent = vec4(t, aTangent.w);;
+            vViewTangent = vec4(uModelViewNormalMatrix * localTangent.xyz, localTangent.w);
+        #endif
+    #endif
 
     vec4 viewVertex = uModelViewMatrix * localPositionMatrix * localVertex;
+    vViewVertex = viewVertex;
     // gl_Position = uProjectionMatrix * uModelViewMatrix * localVertex;
     mat4 jitteredProjection = uProjectionMatrix;
     jitteredProjection[2].xy += uHalton.xy / uGlobalTexSize.xy;

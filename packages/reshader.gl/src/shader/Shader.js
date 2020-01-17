@@ -11,7 +11,7 @@ class Shader {
         this.vert = vert;
         this.frag = frag;
         //defines besides meshes : lights, etc
-        this.shaderDefines = defines || {};
+        this.shaderDefines = defines && extend({}, defines) || {};
 
         uniforms = uniforms || [];
         this.contextDesc = {};
@@ -39,7 +39,7 @@ class Shader {
                 this.contextDesc[p.name] = p;
             }
         }
-        this.extraCommandProps = extraCommandProps || {};
+        this.extraCommandProps = extraCommandProps && extend({}, extraCommandProps) || {};
         this.commands = {};
         this._compileSource();
     }

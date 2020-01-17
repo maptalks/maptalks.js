@@ -1,3 +1,4 @@
+import Renderer from '../Renderer.js';
 import BloomExtractShader from './BloomExtractShader.js';
 import QuadShader from './QuadShader.js';
 import BlurPass from './BlurPass.js';
@@ -6,8 +7,9 @@ import combineFrag from './glsl/bloom_combine.frag';
 import { vec2 } from 'gl-matrix';
 
 class BloomPass {
-    constructor(renderer) {
-        this._renderer = renderer;
+    constructor(regl) {
+        this._regl = regl;
+        this._renderer = new Renderer(regl);
     }
 
     render(sourceTex, bloomTex, bloomThreshold, bloomFactor, bloomRadius, paintToScreen) {
@@ -173,7 +175,7 @@ class BloomPass {
                     return props['uTextureOutputSize'][1];
                 }
             };
-            this._blurPass = new BlurPass(this._renderer);
+            this._blurPass = new BlurPass(this._regl);
             this._extractShader = new BloomExtractShader();
             this._combineShader = new QuadShader({
                 vert: quadVert,

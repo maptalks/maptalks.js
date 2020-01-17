@@ -9,7 +9,7 @@ export default class PostProcess {
         this._renderer = new reshader.Renderer(regl);
         this._fxaaShader = new reshader.FxaaShader();
         this._taaPass = new reshader.TaaPass(this._renderer, jitter);
-        this._bloomPass = new reshader.BloomPass(this._renderer);
+        this._bloomPass = new reshader.BloomPass(regl);
         this._postProcessShader = new reshader.PostProcessShader();
         this._emptyTexture = regl.texture();
     }

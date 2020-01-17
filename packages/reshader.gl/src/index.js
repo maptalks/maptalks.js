@@ -31,6 +31,7 @@ export { default as PostProcessShader } from './shader/PostProcessShader.js';
 export { default as TaaPass } from './shader/TaaPass.js';
 export { default as Jitter } from './shader/Jitter.js';
 export { default as BloomPass } from './shader/BloomPass.js';
+export { default as SsrPass } from './shader/SsrPass.js';
 export { default as OutlinePass } from './outline/OutlinePass.js';
 export { default as QuadShader } from './shader/QuadShader.js';
 
@@ -50,13 +51,14 @@ import * as PBRHelper from './pbr/PBRHelper.js';
 import StandardMaterial from './pbr/StandardMaterial.js';
 import PBRSpecularGlossinessMaterial from './pbr/PBRSpecularGlossinessMaterial.js';
 import StandardShader from './pbr/StandardShader';
+import StandardDepthShader from './pbr/StandardDepthShader';
 
 const pbr = {
     PBRHelper,
     StandardMaterial,
     PBRSpecularGlossinessMaterial,
-    StandardShader
-
+    StandardShader,
+    StandardDepthShader
     // LitShader,
     // LitMaterial,
     // ClothShader,

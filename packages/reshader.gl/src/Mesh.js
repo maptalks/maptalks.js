@@ -1,5 +1,5 @@
 import { extend, isNil } from './common/Util.js';
-import { mat4 } from 'gl-matrix';
+import { vec4, mat4 } from 'gl-matrix';
 
 /**
  * Config:
@@ -165,6 +165,19 @@ class Mesh {
 
     isValid() {
         return this.geometry && !this.geometry.isDisposed() && (!this.material || !this.material.isDisposed());
+    }
+
+    getBoundingBox() {
+        if (!this._bbox) {
+            this._bbox = [[], []];
+        }
+        const box = this.geometry.boundingBox;
+        const { min, max } = box;
+        vec4.set(this._bbox[0], min[0], min[1], min[2], 1);
+        vec4.set(this._bbox[1], max[0], max[1], max[2], 1);
+        vec4.transformMat4(this._bbox[0], this._bbox[0], this.localTransform);
+        vec4.transformMat4(this._bbox[1], this._bbox[1], this.localTransform);
+        return this._bbox;
     }
 
     _createDefinesKey(defines) {

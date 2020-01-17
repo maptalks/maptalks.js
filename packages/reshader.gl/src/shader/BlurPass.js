@@ -1,15 +1,20 @@
+import Renderer from '../Renderer.js';
 import QuadShader from './QuadShader.js';
 import quadVert from './glsl/quad.vert';
-import blur0Frag from './glsl/bloom_blur0.frag';
-import blur1Frag from './glsl/bloom_blur1.frag';
-import blur2Frag from './glsl/bloom_blur2.frag';
-import blur3Frag from './glsl/bloom_blur3.frag';
-import blur4Frag from './glsl/bloom_blur4.frag';
+import blur0Frag from './glsl/blur0.frag';
+import blur1Frag from './glsl/blur1.frag';
+import blur2Frag from './glsl/blur2.frag';
+import blur3Frag from './glsl/blur3.frag';
+import blur4Frag from './glsl/blur4.frag';
+import blur5Frag from './glsl/blur5.frag';
+import blur6Frag from './glsl/blur6.frag';
 import { vec2 } from 'gl-matrix';
 
 class BlurPass {
-    constructor(renderer) {
-        this._renderer = renderer;
+    constructor(regl, level = 5) {
+        this._regl = regl;
+        this._renderer = new Renderer(regl);
+        this._level = level;
     }
 
     render(sourceTex) {
@@ -19,33 +24,18 @@ class BlurPass {
         //blur
         this._blur(sourceTex);
 
-        return {
+        const result = {
             blurTex0: this._blur01Tex,
             blurTex1: this._blur11Tex,
             blurTex2: this._blur21Tex,
             blurTex3: this._blur31Tex,
             blurTex4: this._blur41Tex
         };
-    }
-
-    getTex0() {
-        return this._blur01Tex;
-    }
-
-    getTex1() {
-        return this._blur11Tex;
-    }
-
-    getTex2() {
-        return this._blur21Tex;
-    }
-
-    getTex3() {
-        return this._blur31Tex;
-    }
-
-    getTex4() {
-        return this._blur41Tex;
+        if (this._level > 5) {
+            result.blurTex5 = this._blur51Tex;
+            result.blurTex6 = this._blur61Tex;
+        }
+        return result;
     }
 
     _blur(curTex) {
@@ -64,11 +54,15 @@ class BlurPass {
         }
         vec2.set(uniforms['uGlobalTexSize'], curTex.width, curTex.height);
 
-        this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 1);
+        this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, this._level > 5 ? 0.5 : 1);
         this._blurOnce(this._blur1Shader, this._blur01FBO.color[0], this._blur10FBO, this._blur11FBO, 0.5);
         this._blurOnce(this._blur2Shader, this._blur11FBO.color[0], this._blur20FBO, this._blur21FBO, 0.5);
         this._blurOnce(this._blur3Shader, this._blur21FBO.color[0], this._blur30FBO, this._blur31FBO, 0.5);
         this._blurOnce(this._blur4Shader, this._blur31FBO.color[0], this._blur40FBO, this._blur41FBO, 0.5);
+        if (this._level > 5) {
+            this._blurOnce(this._blur5Shader, this._blur41FBO.color[0], this._blur50FBO, this._blur51FBO, 0.5);
+            this._blurOnce(this._blur6Shader, this._blur51FBO.color[0], this._blur60FBO, this._blur51FBO, 0.5);
+        }
     }
 
     _blurOnce(shader, inputTex, output0, output1, sizeRatio) {
@@ -103,6 +97,11 @@ class BlurPass {
             this._blur2Shader.dispose();
             this._blur3Shader.dispose();
             this._blur4Shader.dispose();
+            if (this._blur5Shader) {
+                this._blur5Shader.dispose();
+                this._blur6Shader.dispose();
+                delete this._blur5Shader;
+            }
         }
         if (this._blur00Tex) {
             delete this._blur00Tex;
@@ -116,6 +115,12 @@ class BlurPass {
             this._blur31FBO.destroy();
             this._blur40FBO.destroy();
             this._blur41FBO.destroy();
+            if (this._blur50FBO) {
+                this._blur50FBO.destroy();
+                this._blur51FBO.destroy();
+                this._blur60FBO.destroy();
+                this._blur61FBO.destroy();
+            }
         }
     }
 
@@ -158,10 +163,26 @@ class BlurPass {
         this._blur41Tex = this._createColorTex(tex, w, h, 'uint8');
         this._blur41FBO = this._createBlurFBO(this._blur41Tex);
 
+        if (this._level > 5) {
+            w = Math.ceil(w / 2);
+            h = Math.ceil(h / 2);
+            this._blur50Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur50FBO = this._createBlurFBO(this._blur50Tex);
+            this._blur51Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur51FBO = this._createBlurFBO(this._blur51Tex);
+
+            w = Math.ceil(w / 2);
+            h = Math.ceil(h / 2);
+            this._blur60Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur60FBO = this._createBlurFBO(this._blur60Tex);
+            this._blur61Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur61FBO = this._createBlurFBO(this._blur61Tex);
+        }
+
     }
 
     _createColorTex(curTex, w, h, dataType) {
-        const regl = this._renderer.regl;
+        const regl = this._regl;
         const type = dataType || (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
         const width = w || curTex.width, height = h || curTex.height;
         const color = regl.texture({
@@ -175,7 +196,7 @@ class BlurPass {
     }
 
     _createBlurFBO(tex) {
-        const regl = this._renderer.regl;
+        const regl = this._regl;
         return regl.framebuffer({
             width: tex.width,
             height: tex.height,
@@ -224,6 +245,14 @@ class BlurPass {
             this._blur3Shader = new QuadShader(config);
             config.frag = blur4Frag;
             this._blur4Shader = new QuadShader(config);
+
+            if (this._level > 5) {
+                config.frag = blur5Frag;
+                this._blur5Shader = new QuadShader(config);
+
+                config.frag = blur6Frag;
+                this._blur6Shader = new QuadShader(config);
+            }
         }
     }
 }

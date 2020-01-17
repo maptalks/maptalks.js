@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import { vec2 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
-import ShadowPass from './shadow/ShadowPass';
+import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
 import createREGL from '@maptalks/regl';
 import PostProcess from './postprocess/PostProcess.js';
@@ -25,7 +25,10 @@ const options = {
 };
 
 const bloomFilter = m => m.getUniform('bloom');
+const ssrFilter = m => m.getUniform('ssr');
+const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
+const noSsrFilter = m => !m.getUniform('ssr');
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -191,6 +194,10 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (this._bloomFBO) {
             this._bloomFBO.destroy();
             delete this._bloomFBO;
+        }
+        if (this._ssrFBO) {
+            this._ssrFBO.destroy();
+            delete this._ssrFBO;
         }
         if (this._postProcessor) {
             this._postProcessor.delete();
@@ -563,9 +570,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             } else {
                 vec2.set(this._jitter, 0, 0);
             }
-            if (config.bloom && config.bloom.enable) {
+            const enableBloom = config.bloom && config.bloom.enable;
+            const enableSsr = config.ssr && config.ssr.enable;
+            if (enableBloom && enableSsr) {
+                context['bloom'] = 1;
+                context['sceneFilter'] = noPostFilter;
+            } else if (enableBloom) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noBloomFilter;
+            } else if (enableSsr) {
+                context['sceneFilter'] = noSsrFilter;
             }
             framebuffer = this._getFramebufferTarget();
             if (framebuffer) {
@@ -584,7 +598,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         if (!sceneConfig || !sceneConfig.shadow || !sceneConfig.shadow.enable) {
             if (this._shadowPass) {
-                this._shadowPass.delete();
+                this._shadowPass.dispose();
                 delete this._shadowPass;
             }
             return null;
@@ -662,7 +676,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // colorCount,
             colorFormat: 'rgba'
         };
-        const needDepth = config && (config.ssao && config.ssao.enable || config.taa && config.taa.enable);
+        const needDepth = config && (config.ssao && config.ssao.enable ||
+            config.taa && config.taa.enable ||
+            config.ssr && config.ssr.enable);
         //depth(stencil) buffer 是可以共享的
         if (needDepth) {
             const depthStencilTexture = depthTex || regl.texture({
@@ -713,6 +729,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor = new PostProcess(this._regl, this._jitGetter);
         }
         let tex = this._targetFBO.color[0];
+
+        const enableSSR = config.ssr && config.ssr.enable;
+        if (enableSSR) {
+            const ssrTex = this._drawSsr();
+            tex = this._ssrPass.combine(tex, ssrTex);
+        } else if (this._ssrPass) {
+            this._ssrPass.dispose();
+            delete this._ssrPass;
+        }
 
         const enableSSAO = config.ssao && config.ssao.enable;
         if (enableSSAO) {
@@ -770,8 +795,70 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             +!!(config.antialias && config.antialias.enable),
             +!!(config.toneMapping && config.toneMapping.enable)
         );
+
+        if (this._ssrPass) {
+            this._ssrPass.genMipMap(tex);
+        }
+
         delete this._shadowUpdated;
         this._outdated = false;
+    }
+
+
+    _drawSsr() {
+        const regl = this._regl;
+        if (!this._ssrPass) {
+            this._ssrPass = new reshader.SsrPass(regl);
+        }
+        const ssrFBO = this._ssrFBO;
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        if (!ssrFBO) {
+            const info = this._createFBOInfo(config);
+            this._ssrFBO = regl.framebuffer(info);
+        } else {
+            if (ssrFBO.width !== this._targetFBO.width || ssrFBO.height !== this._targetFBO.height) {
+                ssrFBO.resize(this._targetFBO.width, this._targetFBO.height);
+            }
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1,
+                framebuffer: ssrFBO
+            });
+        }
+        const timestamp = this._contextFrameTime;
+        const event = this._frameEvent;
+        const context = this._drawContext;
+        context['sceneFilter'] = ssrFilter;
+        const texture = this._ssrPass.getMipmapTexture();
+        context.ssr = {
+            renderUniforms: {
+                'TextureDepth': this._depthTex,
+                'TextureSource': this._targetFBO.color[0],
+                'TextureToBeRefracted': texture,
+                'uSsrFactor': config.ssr.factor || 1,
+                'uSsrQuality': config.ssr.quality || 2,
+                'uPreviousGlobalTexSize': [texture.width, texture.height / 2],
+                'uGlobalTexSize': [this._depthTex.width, this._depthTex.height],
+                'uTextureToBeRefractedSize': [texture.width, texture.height],
+                'fov': this.layer.getMap().getFov() * Math.PI / 180
+            },
+            fbo: this._ssrFBO
+        };
+        if (event) {
+            this.forEachRenderer(renderer => {
+                this._clearStencil(renderer, ssrFBO);
+                renderer.drawOnInteracting(event, timestamp, context);
+            });
+        } else {
+            this.forEachRenderer(renderer => {
+                this._clearStencil(renderer, ssrFBO);
+                renderer.draw(timestamp, context);
+            });
+        }
+        //以免和bloom冲突
+        delete context.ssr;
+        return this._ssrFBO.color[0];
     }
 
     _drawBloom() {
