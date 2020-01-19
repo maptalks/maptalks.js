@@ -772,6 +772,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._getFramePlugins().forEach(plugin => {
             plugin.remove();
         });
+        this.plugins = [];
     }
 
     hitDetect(point) {
