@@ -15,6 +15,10 @@ const plugins = production ? [
                 'keep_quoted': true,
                 'reserved': ['on', 'once', 'off']
             }
+        },
+        output: {
+            beautify: true,
+            comments: '/^!/'
         }
     })] : [];
 //worker.js中的global可能被webpack替换为全局变量，造成worker代码执行失败，所以这里统一把typeof global替换为typeof undefined

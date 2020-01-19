@@ -102,7 +102,7 @@ class StandardPainter extends Painter {
         this._hasShadow = hasShadow;
         const isSsr = !!context.ssr;
         const shader = this.shader;
-        const fbo = context && context.renderTarget.fbo;
+        const fbo = context && context.renderTarget && context.renderTarget.fbo;
         if (isSsr) {
             this._renderSsrDepth(context);
             context.renderTarget.fbo = context.ssr.fbo;
@@ -291,8 +291,7 @@ class StandardPainter extends Painter {
         };
 
         this.shader = new reshader.pbr.StandardShader(config);
-        const isSsr = !!context.ssr;
-        if (isSsr && !this._ssrShader) {
+        if (reshader.SsrPass && !this._ssrShader) {
             uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
             this._ssrShader = new reshader.pbr.StandardShader({
                 uniforms: uniformDeclares,

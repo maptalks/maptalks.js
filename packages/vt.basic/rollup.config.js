@@ -14,6 +14,10 @@ const plugins = production ? [
                 'regex': /^_/,
                 'keep_quoted': true
             }
+        },
+        output: {
+            beautify: true,
+            comments: '/^!/'
         }
     })] : [];
 

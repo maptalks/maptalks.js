@@ -27,14 +27,16 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     setData(data) {
         if (isString(data)) {
-            Ajax.getJSON(data, (err, data) => {
+            Ajax.getJSON(data, (err, json) => {
                 if (err) {
                     throw err;
                 }
-                this.setData(data);
+                this.setData(json);
+                this.options.data = data;
             });
             return this;
         }
+        this.options.data = data;
         this.features = data;
         this._generateIdMap();
         const renderer = this.getRenderer();
