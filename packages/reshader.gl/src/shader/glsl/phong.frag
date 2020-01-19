@@ -12,6 +12,11 @@ uniform vec3 lightDiffuse;
 uniform vec3 lightSpecular;
 uniform vec3 cameraPosition;
 
+#ifdef HAS_TOON
+    uniform float toons;
+    uniform float specularToons;
+#endif
+
 #ifdef HAS_TANGENT
     varying vec4 vTangent;
 #endif
@@ -118,7 +123,10 @@ void main() {
     vec3 norm = transformNormal();
     vec3 lightDir = normalize(-lightDirection);
     float diff = max(dot(norm, lightDir), 0.0);
-
+    #ifdef HAS_TOON
+        float toon = floor(diff * toons);
+        diff = toon / toons;
+    #endif
     vec3 diffuse = lightDiffuse * diff * baseColor.rgb;
     #ifdef HAS_COLOR
         ambient *= vColor.rgb;
@@ -129,6 +137,10 @@ void main() {
     // vec3 reflectDir = reflect(-lightDir, norm);
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(norm, halfwayDir), 0.0), materialShininess);
+    #ifdef HAS_TOON
+        float specToon = floor(spec * specularToons);
+        spec = specToon / specularToons;
+    #endif
     vec3 specular = specularStrength * lightSpecular * spec * getSpecularColor();
     #ifdef HAS_OCCLUSION_MAP
         float ao = texture2D(occlusionTexture, vTexCoords).r;
