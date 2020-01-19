@@ -52,12 +52,8 @@ export default class Dispatcher {
         delete this._layers[key];
         if (layer) {
             layer.onRemove(callback);
+            this._resetCache();
         }
-        const keys = Object.keys(TILE_LOADINGS);
-        for (let i = 0; i < keys.length; i++) {
-            delete TILE_LOADINGS[keys[i]];
-        }
-        TILE_CACHE.reset();
     }
 
     /**
@@ -99,6 +95,7 @@ export default class Dispatcher {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
             layer.updateStyle(params, callback);
+            this._resetCache();
         }
     }
 
@@ -106,6 +103,7 @@ export default class Dispatcher {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
             layer.updateOptions(params, callback);
+            this._resetCache();
         }
     }
 
@@ -113,6 +111,7 @@ export default class Dispatcher {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
             layer.setData(params.data, callback);
+            this._resetCache();
         }
     }
 
@@ -159,5 +158,13 @@ export default class Dispatcher {
     _getLayerById(mapId, layerId) {
         const key = this._genKey(mapId, layerId);
         return this._layers[key];
+    }
+
+    _resetCache() {
+        const keys = Object.keys(TILE_LOADINGS);
+        for (let i = 0; i < keys.length; i++) {
+            delete TILE_LOADINGS[keys[i]];
+        }
+        TILE_CACHE.reset();
     }
 }

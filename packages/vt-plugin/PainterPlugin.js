@@ -61,7 +61,7 @@ function createPainterPlugin(type, Painter) {
             if (!painter || !painter.getShadowMeshes) {
                 return EMPTY_ARRAY;
             }
-            return painter.getShadowMeshes();
+            return painter.getShadowMeshes() || EMPTY_ARRAY;
         },
 
         paintTile: function (context) {
@@ -176,12 +176,14 @@ function createPainterPlugin(type, Painter) {
                         redraw = true;
                     }
                 }
-                bloom = bloom && painter.getSymbol()['bloom'];
-                if (Array.isArray(mesh)) {
-                    mesh.forEach(m => m.setUniform('bloom', bloom ? 1 : 0));
-                } else {
-                    mesh.setUniform('bloom', bloom ? 1 : 0);
+                if (bloom && painter.getSymbol()['bloom']) {
+                    if (Array.isArray(mesh)) {
+                        mesh.forEach(m => m.setUniform('bloom', 1));
+                    } else {
+                        mesh.setUniform('bloom', 1);
+                    }
                 }
+
                 painter.addMesh(mesh, progress);
                 this._frameCache[key] = 1;
             }

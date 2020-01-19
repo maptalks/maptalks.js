@@ -35,7 +35,6 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             });
             return this;
         }
-        this.options.data = data;
         this.features = data;
         this._generateIdMap();
         const renderer = this.getRenderer();

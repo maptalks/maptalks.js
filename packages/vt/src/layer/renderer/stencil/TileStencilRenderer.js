@@ -10,6 +10,7 @@ const vertices = new Uint8Array([
 ]);
 
 const vert = `
+#define SHADER_NAME TILE_STENCIL_VERT
 attribute vec2 aPosition;
 uniform mat4 projViewModelMatrix;
 
@@ -20,6 +21,7 @@ void main()
 `;
 
 const frag = `
+#define SHADER_NAME TILE_STENCIL_FRAG
 void main()
 {
     gl_FragColor = vec4(1.0, 0.0, 0.0, 0.1);
