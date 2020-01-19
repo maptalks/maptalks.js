@@ -65,7 +65,9 @@ class StandardPainter extends Painter {
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
-
+        if (this.getSymbol().ssr) {
+            mesh.setUniform('ssr', 1);
+        }
         return mesh;
     }
 
@@ -98,7 +100,24 @@ class StandardPainter extends Painter {
             this._createShader(context);
         }
         this._hasShadow = hasShadow;
+        const isSsr = !!context.ssr;
+        const shader = this.shader;
+        const fbo = context && context.renderTarget.fbo;
+        if (isSsr) {
+            this._renderSsrDepth(context);
+            context.renderTarget.fbo = context.ssr.fbo;
+            this.shader = this._ssrShader;
+        }
         super.paint(context);
+        if (isSsr) {
+            context.renderTarget.fbo = fbo;
+            this.shader = shader;
+        }
+    }
+
+    _renderSsrDepth(context) {
+        this._depthShader.filter = context.sceneFilter;
+        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, context.renderTarget.fbo);
     }
 
     getShadowMeshes() {
@@ -140,6 +159,10 @@ class StandardPainter extends Painter {
         this.material.dispose();
         if (this._hdr) {
             this._hdr.dispose();
+        }
+        if (this._depthShader) {
+            this._depthShader.dispose();
+            this._ssrShader.dispose();
         }
     }
 
@@ -209,54 +232,83 @@ class StandardPainter extends Painter {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
-
-        const config = {
-            uniforms: context.shadow && context.shadow.uniformDeclares || null,
-            defines: this._getDefines(context.shadow && context.shadow.defines),
-            extraCommandProps: {
-                cull: {
-                    enable: () => {
-                        return this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace;
-                    },
-                    face: 'back'
+        const uniformDeclares = [];
+        if (context.shadow && context.shadow.uniformDeclares) {
+            uniformDeclares.push(...context.shadow.uniformDeclares);
+        }
+        if (context.ssr && context.ssr.uniformDeclares) {
+            uniformDeclares.push(...context.ssr.uniformDeclares);
+        }
+        const defines = {};
+        if (context.shadow && context.shadow.defines) {
+            extend(defines, context.shadow.defines);
+        }
+        const extraCommandProps = {
+            cull: {
+                enable: () => {
+                    return this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace;
                 },
-                stencil: {
-                    enable: true,
-                    func: {
-                        cmp: '<=',
-                        ref: (context, props) => {
-                            return props.level;
-                        },
-                        // mask: 0xff
+                face: 'back'
+            },
+            stencil: {
+                enable: true,
+                func: {
+                    cmp: '<=',
+                    ref: (context, props) => {
+                        return props.level;
                     },
-                    opFront: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    },
-                    opBack: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
+                    // mask: 0xff
                 },
-                viewport,
-                depth: {
-                    enable: true,
-                    range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<='
+                opFront: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
                 },
-                polygonOffset: {
-                    enable: true,
-                    offset: {
-                        factor: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); },
-                        units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
-                    }
+                opBack: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
+            viewport,
+            depth: {
+                enable: true,
+                range: this.sceneConfig.depthRange || [0, 1],
+                func: this.sceneConfig.depthFunc || '<='
+            },
+            polygonOffset: {
+                enable: true,
+                offset: {
+                    factor: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); },
+                    units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
                 }
             }
         };
+        const config = {
+            uniforms: uniformDeclares,
+            defines: this._getDefines(defines),
+            extraCommandProps
+        };
 
         this.shader = new reshader.pbr.StandardShader(config);
+        const isSsr = !!context.ssr;
+        if (isSsr && !this._ssrShader) {
+            uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
+            this._ssrShader = new reshader.pbr.StandardShader({
+                uniforms: uniformDeclares,
+                defines: this._getDefines(reshader.SsrPass.getDefines()),
+                extraCommandProps
+            });
+
+            // extraCommandProps.depth = {
+            //     enable: true,
+            //     func: 'always',
+            //     range: [0, 1]
+            // };
+            this._depthShader = new reshader.pbr.StandardDepthShader({
+                extraCommandProps
+            });
+        }
     }
 
     _initHDR() {
@@ -453,12 +505,17 @@ class StandardPainter extends Painter {
         const uniforms = extend({
             viewMatrix,
             projMatrix,
+            projectionMatrix: projMatrix,
             projViewMatrix: map.projViewMatrix,
             uCameraPosition: cameraPosition,
-            uGlobalTexSize: [canvas.width, canvas.height]
+            uGlobalTexSize: [canvas.width, canvas.height],
+            uNearFar: [map.cameraNear, map.cameraFar]
         }, lightUniforms);
         if (context && context.shadow && context.shadow.renderUniforms) {
             extend(uniforms, context.shadow.renderUniforms);
+        }
+        if (context && context.ssr && context.ssr.renderUniforms) {
+            extend(uniforms, context.ssr.renderUniforms);
         }
         if (context && context.jitter) {
             uniforms['uHalton'] = context.jitter;
