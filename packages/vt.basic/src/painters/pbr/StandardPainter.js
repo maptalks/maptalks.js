@@ -113,6 +113,13 @@ class StandardPainter extends Painter {
             context.renderTarget.fbo = fbo;
             this.shader = shader;
         }
+        if (this._shadowCount !== undefined && hasShadow) {
+            const count = this.scene.getMeshes().length;
+            if (this._shadowCount !== count) {
+                this.setToRedraw();
+            }
+        }
+        delete this._shadowCount;
     }
 
     _renderSsrDepth(context) {
@@ -121,6 +128,7 @@ class StandardPainter extends Painter {
     }
 
     getShadowMeshes() {
+        this._shadowCount = this.scene.getMeshes().length;
         return this.scene.getMeshes();
     }
 
@@ -332,7 +340,7 @@ class StandardPainter extends Painter {
     _createIBLMaps(hdr) {
         const config = this.sceneConfig.lights.ambient.resource;
         if (this.iblMaps) {
-            this._disposeIblMaps();
+            this._disposeIblMaps(true);
         }
         const regl = this.regl;
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
@@ -427,7 +435,7 @@ class StandardPainter extends Painter {
             } else if (config && config.url === this._iblConfig.url) {
                 return;
             }
-            this._disposeIblMaps();
+            this._disposeIblMaps(true);
         }
         this._initCubeLight();
     }
@@ -577,8 +585,8 @@ class StandardPainter extends Painter {
         return defines;
     }
 
-    _disposeIblMaps() {
-        if (this._dfgLUT) {
+    _disposeIblMaps(reserveDFG) {
+        if (!reserveDFG && this._dfgLUT) {
             this._dfgLUT.destroy();
         }
         if (!this.iblMaps) {
