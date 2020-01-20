@@ -1,3 +1,11 @@
+/* Basic FXAA implementation based on the code on geeks3d.com with the
+   modification that the texture2DLod stuff was removed since it's
+   unsupported by WebGL. */
+
+#define FXAA_REDUCE_MIN   (1.0/ 128.0)
+#define FXAA_REDUCE_MUL   (1.0 / 8.0)
+#define FXAA_SPAN_MAX     8.0
+
 precision mediump float;
 
 varying vec2 vTexCoord;
@@ -15,19 +23,66 @@ vec2 gTexCoord;
 vec2 uTextureInputSize;
 vec2 uTextureInputRatio;
 
-vec4 fxaa() {
+
+vec4 applyFXAA(vec2 fragCoord, sampler2D tex)
+{
+    vec4 color;
+  mediump vec2 inverseVP = vec2(1.0 / resolution.x, 1.0 / resolution.y);
+  vec3 rgbNW = texture2D(tex, (fragCoord + vec2(-1.0, -1.0)) * inverseVP).xyz;
+    vec3 rgbNE = texture2D(tex, (fragCoord + vec2(1.0, -1.0)) * inverseVP).xyz;
+    vec3 rgbSW = texture2D(tex, (fragCoord + vec2(-1.0, 1.0)) * inverseVP).xyz;
+    vec3 rgbSE = texture2D(tex, (fragCoord + vec2(1.0, 1.0)) * inverseVP).xyz;
+  vec4 texColor = texture2D(tex, fragCoord  * inverseVP);
+  vec3 rgbM  = texColor.xyz;
+  vec3 luma = vec3(0.299, 0.587, 0.114);
+  float lumaNW = dot(rgbNW, luma);
+  float lumaNE = dot(rgbNE, luma);
+  float lumaSW = dot(rgbSW, luma);
+  float lumaSE = dot(rgbSE, luma);
+  float lumaM  = dot(rgbM,  luma);
+  float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+  float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+
+  mediump vec2 dir;
+  dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
+  dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+
+  float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *
+                        (0.25 * FXAA_REDUCE_MUL), FXAA_REDUCE_MIN);
+
+  float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
+  dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),
+            max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
+            dir * rcpDirMin)) * inverseVP;
+
+  vec4 rgbA = 0.5 * (
+      texture2D(tex, fragCoord * inverseVP + dir * (1.0 / 3.0 - 0.5)) +
+      texture2D(tex, fragCoord * inverseVP + dir * (2.0 / 3.0 - 0.5)));
+  vec4 rgbB = rgbA * 0.5 + 0.25 * (
+      texture2D(tex, fragCoord * inverseVP + dir * -0.5) +
+      texture2D(tex, fragCoord * inverseVP + dir * 0.5));
+
+  float lumaB = dot(rgbB.xyz, luma);
+  if ((lumaB < lumaMin) || (lumaB > lumaMax))
+      color = rgbA;
+  else
+      color = rgbB;
+  return color;
+}
+
+vec4 fxaa(sampler2D TextureInput) {
     vec2 fxaaQualityRcpFrame = 1.0 / uTextureInputSize;
     float fxaaQualitySubpix = 0.75;
     float fxaaQualityEdgeThreshold = 0.125;
     float fxaaQualityEdgeThresholdMin = 0.0625;
     vec2 posM = gTexCoord;
-    vec4 rgbyM = (texture2D(textureSource, (min(posM, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
+    vec4 rgbyM = (texture2D(TextureInput, (min(posM, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     float lumaM = rgbyM.y;
     vec4 sw = vec4(-1.0, 1.0, 1.0, -1.0) * fxaaQualityRcpFrame.xxyy;
-    float lumaS = (texture2D(textureSource, (min(posM + vec2(0.0, sw.z), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-    float lumaE = (texture2D(textureSource, (min(posM + vec2(sw.y, 0.0), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-    float lumaN = (texture2D(textureSource, (min(posM + vec2(0.0, sw.w), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-    float lumaW = (texture2D(textureSource, (min(posM + vec2(sw.x, 0.0), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaS = (texture2D(TextureInput, (min(posM + vec2(0.0, sw.z), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaE = (texture2D(TextureInput, (min(posM + vec2(sw.y, 0.0), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaN = (texture2D(TextureInput, (min(posM + vec2(0.0, sw.w), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaW = (texture2D(TextureInput, (min(posM + vec2(sw.x, 0.0), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
     float maxSM = max(lumaS, lumaM);
     float minSM = min(lumaS, lumaM);
     float maxESM = max(lumaE, maxSM);
@@ -41,10 +96,10 @@ vec4 fxaa() {
     float rangeMaxClamped = max(fxaaQualityEdgeThresholdMin, rangeMaxScaled);
     bool earlyExit = range < rangeMaxClamped;
     if (earlyExit) return rgbyM;
-    float lumaNW = (texture2D(textureSource, (min(posM + sw.xw, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-    float lumaSE = (texture2D(textureSource, (min(posM + sw.yz, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-    float lumaNE = (texture2D(textureSource, (min(posM + sw.yw, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-    float lumaSW = (texture2D(textureSource, (min(posM + sw.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaNW = (texture2D(TextureInput, (min(posM + sw.xw, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaSE = (texture2D(TextureInput, (min(posM + sw.yz, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaNE = (texture2D(TextureInput, (min(posM + sw.yw, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaSW = (texture2D(TextureInput, (min(posM + sw.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
     float lumaNS = lumaN + lumaS;
     float lumaWE = lumaW + lumaE;
     float subpixRcpRange = 1.0/range;
@@ -92,9 +147,9 @@ vec4 fxaa() {
     posP.x = posB.x + offNP.x;
     posP.y = posB.y + offNP.y;
     float subpixD = ((-2.0)*subpixC) + 3.0;
-    float lumaEndN = (texture2D(textureSource, (min(posN, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaEndN = (texture2D(TextureInput, (min(posN, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
     float subpixE = subpixC * subpixC;
-    float lumaEndP = (texture2D(textureSource, (min(posP, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+    float lumaEndP = (texture2D(TextureInput, (min(posP, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
     if(!pairN) lumaNN = lumaSS;
     float gradientScaled = gradient * 1.0/4.0;
     float lumaMM = lumaM - lumaNN * 0.5;
@@ -110,8 +165,8 @@ vec4 fxaa() {
     if(!doneP) posP.x += offNP.x * 1.5;
     if(!doneP) posP.y += offNP.y * 1.5;
     if(doneNP) {
-        if(!doneN) lumaEndN = (texture2D(textureSource, (min(posN.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-        if(!doneP) lumaEndP = (texture2D(textureSource, (min(posP.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+        if(!doneN) lumaEndN = (texture2D(TextureInput, (min(posN.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+        if(!doneP) lumaEndP = (texture2D(TextureInput, (min(posP.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
         if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
         if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
         doneN = abs(lumaEndN) >= gradientScaled;
@@ -122,8 +177,8 @@ vec4 fxaa() {
         if(!doneP) posP.x += offNP.x * 2.0;
         if(!doneP) posP.y += offNP.y * 2.0;
         if(doneNP) {
-            if(!doneN) lumaEndN = (texture2D(textureSource, (min(posN.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-            if(!doneP) lumaEndP = (texture2D(textureSource, (min(posP.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+            if(!doneN) lumaEndN = (texture2D(TextureInput, (min(posN.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+            if(!doneP) lumaEndP = (texture2D(TextureInput, (min(posP.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
             if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
             if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
             doneN = abs(lumaEndN) >= gradientScaled;
@@ -134,8 +189,8 @@ vec4 fxaa() {
             if(!doneP) posP.x += offNP.x * 4.0;
             if(!doneP) posP.y += offNP.y * 4.0;
             if(doneNP) {
-                if(!doneN) lumaEndN = (texture2D(textureSource, (min(posN.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
-                if(!doneP) lumaEndP = (texture2D(textureSource, (min(posP.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+                if(!doneN) lumaEndN = (texture2D(TextureInput, (min(posN.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
+                if(!doneP) lumaEndP = (texture2D(TextureInput, (min(posP.xy, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).y;
                 if(!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
                 if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                 doneN = abs(lumaEndN) >= gradientScaled;
@@ -168,8 +223,7 @@ vec4 fxaa() {
     float pixelOffsetSubpix = max(pixelOffsetGood, subpixH);
     if(!horzSpan) posM.x += pixelOffsetSubpix * lengthSign;
     if( horzSpan) posM.y += pixelOffsetSubpix * lengthSign;
-    // return vec4(0.0, 0.0, 0.0, 1.0);
-    return  (texture2D(textureSource, (min(posM, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
+    return  (texture2D(TextureInput, (min(posM, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
 }
 
 //---------------tone mapping-------------------
@@ -204,7 +258,8 @@ void main() {
     // );
     vec4 color;
     if (enableFXAA == 1.0) {
-        color = fxaa();
+        // color = fxaa(textureSource);
+        color = applyFXAA(gTexCoord * resolution, textureSource);
     } else {
         color = texture2D(textureSource, vTexCoord);
     }
