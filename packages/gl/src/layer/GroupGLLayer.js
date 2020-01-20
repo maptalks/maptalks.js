@@ -64,7 +64,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this.options.sceneConfig = sceneConfig;
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.setToRedraw();
+            renderer.updateSceneConfig();
         }
         return this;
     }
@@ -278,6 +278,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     onAdd() {
         super.onAdd();
         this.prepareCanvas();
+    }
+
+    updateSceneConfig() {
+        this.setToRedraw();
     }
 
     render(...args) {
@@ -637,8 +641,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         this._shadowScene.setMeshes(meshes);
         const map = this.getMap();
-        const lightDirection = sceneConfig.shadow.lightDirection || [1, 1, -1];
-        const uniforms = this._shadowPass.render(map.projMatrix, map.viewMatrix, lightDirection, this._shadowScene, this._jitter, fbo);
+        const shadowConfig = sceneConfig.shadow;
+        const lightDirection = shadowConfig.lightDirection || [1, 1, -1];
+        const uniforms = this._shadowPass.render(map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo);
         this._shadowUpdated = this._shadowPass.isUpdated();
         return uniforms;
     }

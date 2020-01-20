@@ -66,11 +66,10 @@ class ShadowProcess {
         return defines;
     }
 
-    render(projMatrix, viewMatrix, lightDirection, scene, halton, framebuffer) {
+    render(projMatrix, viewMatrix, color, opacity, lightDirection, scene, halton, framebuffer, forceRefresh) {
         this._transformGround();
         const map = this._layer.getMap();
-        const shadowConfig = this.sceneConfig.shadow;
-        const changed = this._shadowChanged(map, scene, lightDirection);
+        const changed = forceRefresh || this._shadowChanged(map, scene, lightDirection);
         let matrix, smap;
         if (changed) {
             const cameraProjViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
@@ -106,21 +105,20 @@ class ShadowProcess {
         this._projMatrix = projMatrix;
         this._viewMatrix = viewMatrix;
         if (scene.getMeshes().length) {
-            this.displayShadow(halton, framebuffer);
+            this.displayShadow(color, opacity, halton, framebuffer);
         }
         const uniforms = {
             'shadow_lightProjViewMatrix': matrix,
             'shadow_shadowMap': smap,
-            'shadow_opacity': shadowConfig.opacity,
+            'shadow_opacity': opacity,
             'esm_shadow_threshold': this._esmShadowThreshold
         };
 
         return uniforms;
     }
 
-    displayShadow(halton, framebuffer) {
+    displayShadow(color, opacity, halton, framebuffer) {
         const matrix = this._lightProjViewMatrix;
-        const shadowConfig = this.sceneConfig.shadow;
         const ground = this._ground;
         const groundLightProjViewModelMatrix = this._groundLightProjViewModelMatrix || [];
         const canvas = this._layer.getRenderer().canvas;
@@ -134,9 +132,8 @@ class ShadowProcess {
             'shadow_lightProjViewModelMatrix': mat4.multiply(groundLightProjViewModelMatrix, matrix, ground.localTransform),
             'shadow_shadowMap': this._shadowMap,
             'esm_shadow_threshold': this._esmShadowThreshold,
-            'shadow_opacity': shadowConfig.opacity,
-            'color': shadowConfig.color || [0, 0, 0],
-            'opacity': !shadowConfig.opacity && shadowConfig.opacity !== 0 ? 1 : shadowConfig.opacity
+            'shadow_opacity': opacity,
+            'color': color || [0, 0, 0]
         }, this._groundScene, framebuffer);
     }
 
