@@ -12,8 +12,8 @@ void main() {
     vec4 c2 = texture2D(maskTexture, vTexCoord - uvOffset.xy);
     vec4 c3 = texture2D(maskTexture, vTexCoord + uvOffset.yw);
     vec4 c4 = texture2D(maskTexture, vTexCoord - uvOffset.yw);
-    float diff1 = (c1.r - c2.r)*0.5;
-    float diff2 = (c3.r - c4.r)*0.5;
+    float diff1 = (c1.r - c2.r)*0.7;
+    float diff2 = (c3.r - c4.r)*0.7;
     float d = length(vec2(diff1, diff2) );
     float a1 = min(c1.g, c2.g);
     float a2 = min(c3.g, c4.g);
