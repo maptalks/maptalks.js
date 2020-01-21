@@ -213,7 +213,7 @@
     ],
     "materials": [
         {
-            "name": "材质",
+            "name": "地板",
             "alphaMode": "OPAQUE",
             "extras": {
                 "fromFBX": {
@@ -223,17 +223,17 @@
             },
             "pbrMetallicRoughness": {
                 "baseColorFactor": [
-                    0.435294117647058,
-                    0.149019607843137,
-                    0.149019607843137,
+                    1.0,
+                    1.0,
+                    1.0,
                     1.0
                 ],
-                "metallicFactor": 0,
-                "roughnessFactor": 0.1
+                "metallicFactor": 1.0,
+                "roughnessFactor": 0.0
             }
         },
         {
-            "name": "材质.1",
+            "name": "短柱子",
             "alphaMode": "OPAQUE",
             "extras": {
                 "fromFBX": {
@@ -253,7 +253,7 @@
             }
         },
         {
-            "name": "材质.2",
+            "name": "长柱子",
             "alphaMode": "OPAQUE",
             "extras": {
                 "fromFBX": {

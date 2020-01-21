@@ -1,3 +1,5 @@
+/* https://github.com/mitsuhiko/webgl-meincraft */
+
 /* Basic FXAA implementation based on the code on geeks3d.com with the
    modification that the texture2DLod stuff was removed since it's
    unsupported by WebGL. */

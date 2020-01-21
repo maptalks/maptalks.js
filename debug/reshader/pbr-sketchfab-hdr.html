@@ -17,7 +17,7 @@
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
     <script type="module">
         import sphereData from './common/sphere.js';
-        const PREFILTER_CUBE_SIZE = 64;
+        const PREFILTER_CUBE_SIZE = 256;
         const { createREGL, mat4, reshader, vec2 } = maptalksgl;
         const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 
@@ -147,7 +147,7 @@
             stencil: false
         });
         const emptyTexture = regl.texture();
-        let taaPass, fxaaShader, jitter, prevProjViewMatrix;
+        let taaPass, fxaaShader, jitter, prevProjViewMatrix, needClear = true;
         function drawScene() {
             if (paused) {
                 requestAnimationFrame(drawScene);
@@ -174,9 +174,11 @@
                 fbo
             );
             let output = fbo.color[0];
+            //sourceTex, depthTex, pvMatrix, invViewMatrix, fov, jitter, near, far, needClear
             output = taaPass.render(
-                fbo.color[0], fbo.depth, projViewMatrix, cameraWorldMatrix, prevProjViewMatrix, 60 * Math.PI / 180, halton, 0.1, 200
+                fbo.color[0], fbo.depth, projViewMatrix, cameraWorldMatrix, /*prevProjViewMatrix,*/ 60 * Math.PI / 180, halton, 0.1, 200, needClear
             );
+            needClear = taaPass.needToRedraw();
             jitter.frame();
             prevProjViewMatrix = projViewMatrix;
             regl.clear({
@@ -205,8 +207,8 @@
                 height: canvas.height
             };
             jitter = new reshader.Jitter(0.8);
-            taaPass = new reshader.TaaPass(renderer, viewport, jitter);
-            fxaaShader = new reshader.FxaaShader(viewport);
+            taaPass = new reshader.TaaPass(renderer, jitter);
+            fxaaShader = new reshader.FxaaShader();
 
             SHADER = new reshader.pbr.StandardShader({
                 positionAttribute : 'POSITION',
@@ -302,16 +304,16 @@
                                         if (textures.baseColorTexture) {
                                             uniforms.uAlbedoTexture = toTexture(textures.baseColorTexture);
                                         } else if (textures.baseColorFactor) {
-                                            uniforms.uAlbedoPBR = textures.baseColorFactor;
+                                            uniforms.uBaseColorFactor = textures.baseColorFactor;
                                         }
                                         if (textures.metallicRoughnessTexture) {
                                             uniforms.uMetallicRoughnessTexture = toTexture(textures.metallicRoughnessTexture);
                                         } else {
                                             if (textures.metallicFactor !== undefined) {
-                                                uniforms.uMetalnessPBRFactor = textures.metallicFactor;
+                                                uniforms.uMetallicFactor = textures.metallicFactor;
                                             }
                                             if (textures.roughnessFactor !== undefined) {
-                                                uniforms.uRoughnessPBRFactor = textures.roughnessFactor;
+                                                uniforms.uRoughnessFactor = textures.roughnessFactor;
                                             }
                                         }
 
@@ -326,8 +328,8 @@
                                         }
                                     } else {
                                         uniforms = {
-                                            uMetalnessPBRFactor : 1,
-                                            uRoughnessPBRFactor : 0
+                                            uMetallicFactor : 1,
+                                            uRoughnessFactor : 0
                                         };
                                     }
                                     uniforms['uOutputLinear'] = 0;
@@ -441,6 +443,7 @@
         }
         let timeout;
         function updateCamera() {
+            needClear = true;
             clearTimeout(timeout);
             paused = false;
             camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
