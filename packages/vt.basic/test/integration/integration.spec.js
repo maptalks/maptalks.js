@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { match, readSpecs } = require('./util');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
+const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
 
 const GENERATE_MODE = (process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
@@ -74,6 +75,64 @@ describe('vector tile integration specs', () => {
         };
     };
 
+    const postProcessRunner = (p, style) => {
+        return done => {
+            const options = style.view || DEFAULT_VIEW;
+            options.centerCross = true;
+            map = new maptalks.Map(container, options);
+            style.debugCollision = true;
+            const layer = new GeoJSONVectorTileLayer('gvt', style);
+            let groupLayer;
+            let generated = false;
+            const limit = style.renderingCount || 1;
+            let count = 0;
+            layer.on('canvasisdirty', () => {
+                //因为某些后处理（如阴影）是在第二帧才会正常绘制的，所以要监听第二次
+                count++;
+                if (count < limit) {
+                    return;
+                }
+                groupLayer.once('layerload', () => {
+                    const canvas = map.getRenderer().canvas;
+                    const expectedPath = style.expected;
+                    if (GENERATE_MODE) {
+                        //生成fixtures
+                        const dataURL = canvas.toDataURL();
+                        // remove Base64 stuff from the Image
+                        const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
+                        fs.writeFile(expectedPath, base64Data, 'base64', () => {});
+                        if (!generated) {
+                            generated = true;
+                            done();
+                        }
+                    } else {
+                        //比对测试
+                        match(canvas, expectedPath, (err, result) => {
+                            if (err) {
+                                done(err);
+                                return;
+                            }
+                            if (result.diffCount > 0) {
+                                //保存差异图片
+                                const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
+                                const diffPath = dir + 'diff.png';
+                                writeImageData(diffPath, result.diffImage, result.width, result.height);
+                                const actualPath = dir + 'actual.png';
+                                writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                            }
+                            assert(result.diffCount === 0);
+                            done();
+                        });
+                    }
+                });
+            });
+            const sceneConfig = style.sceneConfig;
+            groupLayer = new GroupGLLayer('group', [layer], { sceneConfig }).addTo(map);
+            // layer.addTo(map);
+        };
+    };
+
+
     context('icon specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'icon'));
         for (const p in specs) {
@@ -128,6 +187,23 @@ describe('vector tile integration specs', () => {
         }
     });
 
+    context('extrusion render specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'extrusion'));
+        for (const p in specs) {
+            if (specs.hasOwnProperty(p)) {
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
+
+    context('post process render specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'post-process'));
+        for (const p in specs) {
+            if (specs.hasOwnProperty(p)) {
+                it(p, postProcessRunner(p, specs[p]));
+            }
+        }
+    });
 });
 
 const canvas = document.createElement('canvas');
