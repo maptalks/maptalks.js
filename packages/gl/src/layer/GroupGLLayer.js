@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { vec2 } from 'gl-matrix';
+import { mat4, vec2 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
@@ -803,6 +803,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         if (this._ssrPass) {
             this._ssrPass.genMipMap(tex);
+            if (!this._ssrFBO._projViewMatrix) {
+                this._ssrFBO._projViewMatrix = [];
+            }
+            mat4.copy(this._ssrFBO._projViewMatrix, this.getMap().projViewMatrix);
         }
 
         delete this._shadowUpdated;
@@ -831,6 +835,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 framebuffer: ssrFBO
             });
         }
+        const map = this.getMap();
         const timestamp = this._contextFrameTime;
         const event = this._frameEvent;
         const context = this._drawContext;
@@ -846,7 +851,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 'uPreviousGlobalTexSize': [texture.width, texture.height / 2],
                 'uGlobalTexSize': [this._depthTex.width, this._depthTex.height],
                 'uTextureToBeRefractedSize': [texture.width, texture.height],
-                'fov': this.layer.getMap().getFov() * Math.PI / 180
+                'fov': this.layer.getMap().getFov() * Math.PI / 180,
+                'prevProjViewMatrix': this._ssrFBO._projViewMatrix || map.projViewMatrix,
+                'cameraWorldMatrix': map.cameraWorldMatrix
             },
             fbo: this._ssrFBO
         };

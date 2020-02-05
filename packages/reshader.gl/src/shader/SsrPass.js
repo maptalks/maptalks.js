@@ -44,7 +44,7 @@ class SsrPass {
                 name: 'uReprojectViewProj',
                 type : 'function',
                 fn : (context, props) => {
-                    return props['projViewMatrix'];
+                    return mat4.multiply([], props['prevProjViewMatrix'], props['cameraWorldMatrix']);
                 }
             }
         ];
@@ -109,7 +109,6 @@ class SsrPass {
             'uTextureRefractionBlur7Ratio': [1, 1],
             'uTextureRefractionBlur7Size': [0, 0]
         };
-        // uniforms['uExtractBright'] = extractBright ? 1 : 0;
         uniforms['TextureRefractionBlur0'] = sourceTex;
         uniforms['TextureRefractionBlur1'] = blurTex0;
         uniforms['TextureRefractionBlur2'] = blurTex1;
