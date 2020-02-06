@@ -5,7 +5,7 @@ import Painter from '../Painter';
 import { setUniformFromSymbol } from '../../Util';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
-const PREFILTER_CUBE_SIZE = 32;
+const PREFILTER_CUBE_SIZE = 256;
 const SCALE = [1, 1, 1];
 
 class StandardPainter extends Painter {
@@ -102,7 +102,7 @@ class StandardPainter extends Painter {
         this._hasShadow = hasShadow;
         const isSsr = !!context.ssr;
         const shader = this.shader;
-        const fbo = context && context.renderTarget && context.renderTarget.fbo;
+        const fbo = this.getRenderFBO(context);
         if (isSsr) {
             this._renderSsrDepth(context);
             context.renderTarget.fbo = context.ssr.fbo;
@@ -124,7 +124,7 @@ class StandardPainter extends Painter {
 
     _renderSsrDepth(context) {
         this._depthShader.filter = context.sceneFilter;
-        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, context.renderTarget.fbo);
+        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, this.getRenderFBO(context));
     }
 
     getShadowMeshes() {

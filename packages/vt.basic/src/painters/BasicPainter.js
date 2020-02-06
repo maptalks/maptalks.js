@@ -29,6 +29,11 @@ export default class BasicPainter extends Painter {
         return geometry;
     }
 
+    getRenderFBO(context) {
+        //优先采用不aa的fbo
+        return context && context.renderTarget && (context.renderTarget.noAaFbo || context.renderTarget.fbo);
+    }
+
     createAtlasTexture(atlas) {
         const regl = this.regl;
         const image = atlas;

@@ -578,7 +578,7 @@ export default class CollisionPainter extends BasicPainter {
                 size: [this.canvas.width, this.canvas.height]
             },
             this._collisionScene,
-            context.renderTarget && context.renderTarget.fbo
+            this.getRenderFBO(context)
         );
         delete this._collisionBoxes;
     }

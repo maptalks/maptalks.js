@@ -22,7 +22,7 @@
 <body>
 
   <div id="main">
-    <div id="map2" style="position:absolute;top:80px;width:1100px;height:1000px;background-color:#fff;"></div>
+    <div id="map2" style="position:absolute;top:80px;width:100%;height:100%;background-color:#fff;"></div>
     <!-- <canvas id="shadow" width=512 height=512 style="float:left;border:1px red solid"></canvas>
     <canvas id="shadow2" width=512 height=512 style="float:left;border:1px red solid"></canvas> -->
 
@@ -37,6 +37,7 @@
       pitch : 45,
       fog: false,
       centerCross: true,
+      // maxPitch: 60,
       // baseLayer: new maptalks.MapboxVectorTileLayer('vt', {
       //   urlTemplate: mapboxURL,
       //   background: [0.925,0.878,0.792,1],
@@ -45,6 +46,7 @@
       // }),
       "center":[13.414627196474385,52.52909578112681],"zoom":16.309955844160633,"pitch":52.20000000000007,"bearing":0,
       "center":[13.418531244478004,52.533396361654326],"zoom":18.582413946875466,"pitch":52.20000000000007,"bearing":0,
+      "center":[13.412189760922047,52.52716426491233],"zoom":19.136793519083586,"pitch":13.600000000000058,"bearing":150,
 
       //纽约
       // "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
@@ -95,7 +97,7 @@
           type : '3d-extrusion',
           altitudeProperty : 'height',
           altitudeScale : 1,
-          defaultAltitude : 0,
+          defaultAltitude : 10,
           normal : true,
           uv : true,
           uvScale : [1, 1],
@@ -135,8 +137,8 @@
                 // ]
                 // exposure: 1.5
               },
-              // color: [0.05, 0.05, 0.05],
-              exposure: 1.0
+              // color: [0.1, 0.1, 0.1],
+              exposure: 2
             },
             directional: {
               color : [0.1, 0.1, 0.1],
@@ -164,9 +166,9 @@
       // 'uvScale': [1, 1],  //纹理坐标的缩放比例
       // 'uvScaleFactor': 1,
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
-      'uAlbedoPBR': [1, 1, 1, 1],
-      'uRoughnessPBRFactor': 0,
-      'uMetalnessPBRFactor': 0,
+      'uBaseColorFactor': [1, 1, 1, 1],
+      'uRoughnessFactor': 0.0,
+      'uMetalnessFactor': 1,
       'uOutputLinear': 1
     };
 
@@ -194,6 +196,7 @@
           filter : true,
           renderPlugin,
           symbol: {
+            // ssr: true,
             material: litMaterial,
             polygonOpacity: 1,
             polygonFill: {
@@ -204,7 +207,7 @@
                 // [5, '#313695'],
                 // [3, '#4575b4'],
                 // [1, '#74add1']
-                [5, '#f00'],
+                [5, '#6358F1'],
                 [3, '#00f'],
                 [1, '#0f0']
               ]
@@ -226,7 +229,7 @@
               textFaceName : 'Arial',
               textWeight : 'medium',
               textName : '{height}',
-              textSize : 18,
+              textSize : 30,
               textFill : '#000',
               textHaloRadius : 1,
               textHaloFill : '#fff',
@@ -245,12 +248,37 @@
       debug : false,
       // canvas: debugCanvas,
       data: data,
+      debugCollision: true,
       hitDetect : false,
       antialias: false,
       pickingPoint: true,
       cascadeTiles: true
     });
     layer.setStyle(style);
+
+    var extent = map.getExtent();
+    var floorData = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              extent.toArray().map(c => [c.x, c.y])
+            ]
+          }
+        }
+      ]
+    };
+
+    var layer1 = new maptalks.GeoJSONVectorTileLayer('floor', {
+      // canvas: debugCanvas,
+      data: floorData
+    });
+    // style.style[0].symbol.ssr = true;
+    style.style[0].renderPlugin.dataConfig.defaultAltitude = 0;
+    layer1.setStyle(style);
 
     // style.style[0].filter = [
     //   "==",
@@ -284,16 +312,23 @@
         antialias: {
           enable: true
         },
+        // ssr: {
+        //   enable: true
+        // },
         ssao: {
-          enable: false
+          enable: false,
+          bias: 0.1,
+          radius: 0.05,
+          intensity: 0.5
         },
         taa: {
           enable: true
         }
       }
     };
+    // layer1.addTo(map);
     // map.addLayer(layer);
-    var groupLayer = new maptalks.GroupGLLayer('group', [layer], { antialias: false, sceneConfig }).addTo(map);
+    var groupLayer = new maptalks.GroupGLLayer('group', [layer, layer1], { antialias: false, sceneConfig }).addTo(map);
 
     function addLayer() {
       groupLayer.addTo(map);
@@ -350,6 +385,18 @@
         groupLayer.setSceneConfig(sceneConfig);
       });
 
+      const ssaoConfig = sceneConfig.postProcess.ssao;
+      const ssao = gui.addFolder('ssao');
+      ssao.open();
+      const biasCtrl = ssao.add(ssaoConfig, 'bias', 0.01, 1, 0.1);
+      const radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.1, 1, 0.1);
+      const intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.1, 5, 0.1);
+      function onChange() {
+        groupLayer.setSceneConfig(sceneConfig);
+      }
+      biasCtrl.onChange(onChange);
+      radiusCtrl.onChange(onChange);
+      intensityCtrl.onChange(onChange);
     }
 
     function updateMaterial(key, value) {

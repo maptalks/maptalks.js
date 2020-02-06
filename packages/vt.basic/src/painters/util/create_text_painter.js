@@ -316,7 +316,8 @@ export function createTextShader(layer, sceneConfig) {
         depth: {
             enable: true,
             range: sceneConfig.depthRange || [0, 1],
-            func: sceneConfig.depthFunc || 'always'
+            func: sceneConfig.depthFunc || 'always',
+            mask: false
         },
     };
     return {

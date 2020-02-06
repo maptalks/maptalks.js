@@ -331,18 +331,18 @@ class IconPainter extends CollisionPainter {
 
     callCurrentTileShader(uniforms, context) {
         this.shader.filter = context.sceneFilter ? [this._iconFilter0, context.sceneFilter] : this._iconFilter0;
-        this.renderer.render(this.shader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
+        this.renderer.render(this.shader, uniforms, this.scene, this.getRenderFBO(context));
 
         this._textShader.filter = context.sceneFilter ? [this._textFilter0, context.sceneFilter] : this._textFilter0;
-        this.renderer.render(this._textShader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
+        this.renderer.render(this._textShader, uniforms, this.scene, this.getRenderFBO(context));
     }
 
     callBackgroundTileShader(uniforms, context) {
         this.shader.filter = context.sceneFilter ? [this._iconFilter1, context.sceneFilter] : this._iconFilter1;
-        this.renderer.render(this.shader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
+        this.renderer.render(this.shader, uniforms, this.scene, this.getRenderFBO(context));
 
         this._textShader.filter = context.sceneFilter ? [this._textFilter1, context.sceneFilter] : this._textFilter1;
-        this.renderer.render(this._textShader, uniforms, this.scene, context.renderTarget && context.renderTarget.fbo);
+        this.renderer.render(this._textShader, uniforms, this.scene, this.getRenderFBO(context));
     }
 
     isMeshIterable(mesh) {
@@ -593,7 +593,8 @@ class IconPainter extends CollisionPainter {
                 depth: {
                     enable: true,
                     range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || 'always'
+                    func: this.sceneConfig.depthFunc || 'always',
+                    mask: false
                 },
             }
         });

@@ -75,6 +75,11 @@ class FillPainter extends BasicPainter {
         updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
+    getRenderFBO(context) {
+        //采用BasicPainter的getRenderFBO，即允许aa
+        return super.super.getRenderFBO(context);
+    }
+
     _getFnTypeConfig() {
         this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
         this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
