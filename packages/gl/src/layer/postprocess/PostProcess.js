@@ -50,9 +50,10 @@ export default class PostProcess {
         }, sourceTex, depthTex);
     }
 
-    fxaa(source, enableFXAA, enableToneMapping) {
+    fxaa(source, noAaSource, enableFXAA, enableToneMapping) {
         this._renderer.render(this._fxaaShader, {
             textureSource: source,
+            noAaTextureSource: noAaSource,
             resolution: vec2.set(RESOLUTION, source.width, source.height),
             enableFXAA,
             enableToneMapping

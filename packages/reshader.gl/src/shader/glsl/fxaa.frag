@@ -17,6 +17,7 @@ uniform float enableFXAA;
 uniform float enableToneMapping;
 uniform vec2 resolution;
 uniform sampler2D textureSource;
+uniform sampler2D noAaTextureSource;
 
 uniform float cameraNear;
 uniform float cameraFar;
@@ -265,6 +266,8 @@ void main() {
     } else {
         color = texture2D(textureSource, vTexCoord);
     }
+    vec4 color1 = texture2D(noAaTextureSource, vTexCoord);
+    color = color1 * color1.a + color * (1.0 - color1.a);
     if (enableToneMapping == 1.0) {
         color.rgb = tonemap(color.rgb);
     }

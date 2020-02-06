@@ -189,7 +189,9 @@ export default class GroupGLLayer extends maptalks.Layer {
         });
         if (this._targetFBO) {
             this._targetFBO.destroy();
+            this._noAaFBO.destroy();
             delete this._targetFBO;
+            delete this._noAaFBO;
         }
         if (this._bloomFBO) {
             this._bloomFBO.destroy();
@@ -446,6 +448,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 stencil: 0xFF,
                 framebuffer: this._targetFBO
             });
+            this._regl.clear({
+                color: [0, 0, 0, 0],
+                framebuffer: this._noAaFBO
+            });
         }
     }
 
@@ -454,10 +460,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this._targetFBO && (this._targetFBO.width !== this.canvas.width ||
             this._targetFBO.height !== this.canvas.height)) {
             this._targetFBO.resize(this.canvas.width, this.canvas.height);
+            this._noAaFBO.resize(this.canvas.width, this.canvas.height);
         }
         if (this._bloomFBO && (this._bloomFBO.width !== this.canvas.width ||
             this._bloomFBO.height !== this.canvas.height)) {
             this._bloomFBO.resize(this.canvas.width, this.canvas.height);
+        }
+        if (this._ssrFBO && (this._ssrFBO.width !== this.canvas.width ||
+            this._ssrFBO.height !== this.canvas.height)) {
+            this._ssrFBO.resize(this.canvas.width, this.canvas.height);
         }
         this.forEachRenderer(renderer => {
             if (renderer.canvas) {
@@ -560,11 +571,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!config || !config.enable) {
             if (this._targetFBO) {
                 this._targetFBO.destroy();
+                this._noAaFBO.destroy();
                 delete this._targetFBO;
+                delete this._noAaFBO;
             }
             if (this._bloomFBO) {
                 this._bloomFBO.destroy();
                 delete this._bloomFBO;
+            }
+            if (this._ssrFBO) {
+                this._ssrFBO.destroy();
+                delete this._ssrFBO;
             }
         } else {
             const hasJitter = config.taa && config.taa.enable || config.ssaa && config.ssaa.enable;
@@ -653,12 +670,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const config = sceneConfig && sceneConfig.postProcess;
         if (!this._targetFBO) {
             const regl = this._regl;
-            const info = this._createFBOInfo(config);
-            this._depthTex = info.depth || info.depthStencil;
-            this._targetFBO = regl.framebuffer(info);
+            const fboInfo = this._createFBOInfo(config);
+            this._depthTex = fboInfo.depth || fboInfo.depthStencil;
+            this._targetFBO = regl.framebuffer(fboInfo);
+            const noAaInfo = this._createFBOInfo(config, this._depthTex);
+            this._noAaFBO = regl.framebuffer(noAaInfo);
         }
         return {
-            fbo: this._targetFBO
+            fbo: this._targetFBO,
+            noAaFbo: this._noAaFBO
         };
     }
 
@@ -796,7 +816,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         // this._displayShadow();
-        this._postProcessor.fxaa(tex,
+        this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
             +!!(config.antialias && config.antialias.enable),
             +!!(config.toneMapping && config.toneMapping.enable)
         );

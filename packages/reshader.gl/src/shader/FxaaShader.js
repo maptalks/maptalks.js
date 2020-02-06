@@ -6,7 +6,7 @@ class FxaaShader extends QuadShader {
     constructor() {
         super({
             vert, frag,
-            uniforms : ['enableFXAA', 'enableSSAO', 'enableToneMapping', 'textureSource', 'resolution', 'ssaoTexture', 'cameraNear', 'cameraFar'],
+            uniforms : ['enableFXAA', 'enableSSAO', 'enableToneMapping', 'textureSource', 'noAaTextureSource', 'resolution', 'ssaoTexture', 'cameraNear', 'cameraFar'],
             extraCommandProps: {
                 viewport: {
                     x: 0,
