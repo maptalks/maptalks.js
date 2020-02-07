@@ -1,6 +1,8 @@
 import { extend, isNil } from './common/Util.js';
 import { vec4, mat4 } from 'gl-matrix';
 
+const MAT4 = [];
+
 /**
  * Config:
  *  transparent, castShadow
@@ -169,14 +171,22 @@ class Mesh {
 
     getBoundingBox() {
         if (!this._bbox) {
+            this.updateBoundingBox();
+        }
+        return this._bbox;
+    }
+
+    updateBoundingBox() {
+        if (!this._bbox) {
             this._bbox = [[], []];
         }
         const box = this.geometry.boundingBox;
         const { min, max } = box;
         vec4.set(this._bbox[0], min[0], min[1], min[2], 1);
         vec4.set(this._bbox[1], max[0], max[1], max[2], 1);
-        vec4.transformMat4(this._bbox[0], this._bbox[0], this.localTransform);
-        vec4.transformMat4(this._bbox[1], this._bbox[1], this.localTransform);
+        const matrix = mat4.multiply(MAT4, this.localTransform, this.positionMatrix);
+        vec4.transformMat4(this._bbox[0], this._bbox[0], matrix);
+        vec4.transformMat4(this._bbox[1], this._bbox[1], matrix);
         return this._bbox;
     }
 
