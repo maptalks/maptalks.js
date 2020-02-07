@@ -114,7 +114,12 @@ export default class GroupGLLayer extends maptalks.Layer {
         layer.off('show hide', this._onLayerShowHide, this);
         delete this._layerMap[layer.getId()];
         this.layers.splice(idx, 1);
-        this.getRenderer().setToRedraw();
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            // not loaded yet
+            return this;
+        }
+        renderer.setToRedraw();
         return this;
     }
 
@@ -177,7 +182,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         layer['_canvas'] = this.getRenderer().canvas;
         layer['_bindMap'](map);
         layer.once('renderercreate', this._onChildRendererCreate, this);
-        layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
+        // layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
         layer.load();
         this._bindChildListeners(layer);
     }
@@ -233,12 +238,12 @@ export default class GroupGLLayer extends maptalks.Layer {
         e.renderer.clearCanvas = empty;
     }
 
-    _onChildLayerStyleChanged() {
-        const renderer = this.getRenderer();
-        if (renderer) {
-            renderer.setOutdated();
-        }
-    }
+    // _onChildLayerStyleChanged() {
+    //     const renderer = this.getRenderer();
+    //     if (renderer) {
+    //         renderer.setTaaOutdated();
+    //     }
+    // }
 
     isVisible() {
         if (!super.isVisible()) {
@@ -273,7 +278,7 @@ GroupGLLayer.registerJSONType('GroupGLLayer');
 class Renderer extends maptalks.renderer.CanvasRenderer {
 
     setToRedraw() {
-        this.setOutdated();
+        this.setTaaOutdated();
         super.setToRedraw();
     }
 
@@ -336,6 +341,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && renderer.testIfNeedRedraw()) {
+                this.setTaaOutdated();
                 return true;
             }
         }
@@ -529,8 +535,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         super.onRemove();
     }
 
-    setOutdated() {
-        this._outdated = true;
+    setTaaOutdated() {
+        this._aaOutdated = true;
     }
 
     _buildDrawFn(drawMethod) {
@@ -558,7 +564,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _buildSetToRedrawFn(fn) {
         const parent = this;
         return function (...args) {
-            parent.setOutdated();
+            parent.setTaaOutdated();
             return fn.apply(this, args);
         };
     }
@@ -739,14 +745,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _postProcess() {
         if (!this._targetFBO) {
-            this._outdated = false;
-            // this._displayShadow();
+            this._aaOutdated = false;
             return;
         }
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !config.enable) {
-            // this._displayShadow();
             return;
         }
         const map = this.layer.getMap();
@@ -797,7 +801,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 jitter: this._jitter,
                 near: map.cameraNear,
                 far: map.cameraFar,
-                needClear: this._outdated || this._shadowUpdated || map.getRenderer().isViewChanged()
+                needClear: this._aaOutdated || this._shadowUpdated || map.getRenderer().isViewChanged()
             });
             tex = outputTex;
             // if (!this._prevProjViewMatrix) {
@@ -813,9 +817,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (redraw) {
                 this.setToRedraw();
             }
+            this._aaOutdated = false;
         }
 
-        // this._displayShadow();
         this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
             +!!(config.antialias && config.antialias.enable),
             +!!(config.toneMapping && config.toneMapping.enable)
@@ -830,7 +834,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         delete this._shadowUpdated;
-        this._outdated = false;
     }
 
 
