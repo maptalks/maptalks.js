@@ -645,6 +645,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _renderShadow(fbo) {
         const sceneConfig =  this.layer._getSceneConfig();
         const meshes = [];
+        let forceUpdate = false;
         this.forEachRenderer(renderer => {
             if (!renderer.getShadowMeshes) {
                 return;
@@ -652,6 +653,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             const shadowMeshes = renderer.getShadowMeshes();
             if (Array.isArray(shadowMeshes)) {
                 for (let i = 0; i < shadowMeshes.length; i++) {
+                    if (shadowMeshes[i].needUpdateShadow) {
+                        forceUpdate = true;
+                    }
+                    shadowMeshes[i].needUpdateShadow = false;
                     meshes.push(shadowMeshes[i]);
                 }
             }
@@ -666,7 +671,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const map = this.getMap();
         const shadowConfig = sceneConfig.shadow;
         const lightDirection = shadowConfig.lightDirection || [1, 1, -1];
-        const uniforms = this._shadowPass.render(map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo);
+        const uniforms = this._shadowPass.render(map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
         this._shadowUpdated = this._shadowPass.isUpdated();
         return uniforms;
     }
