@@ -15,12 +15,12 @@ varying vec2 vTexCoord;
 
 uniform float enableFXAA;
 uniform float enableToneMapping;
+uniform float enableSharpen;
 uniform vec2 resolution;
 uniform sampler2D textureSource;
 uniform sampler2D noAaTextureSource;
-
-uniform float cameraNear;
-uniform float cameraFar;
+uniform float pixelRatio;
+uniform float sharpFactor;//0 - 5
 
 vec2 gTexCoord;
 vec2 uTextureInputSize;
@@ -229,6 +229,28 @@ vec4 fxaa(sampler2D TextureInput) {
     return  (texture2D(TextureInput, (min(posM, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
 }
 
+//---------------sharpen-----------------------
+vec3 sharpColorFactor(const in vec3 color, const float sharp) {
+    vec2 off = pixelRatio / uTextureInputSize.xy;
+    float count = 0.0;
+    vec4 rgbNW = texture2D(textureSource, gTexCoord + off * vec2(-1.0, -1.0));
+    rgbNW.rgb = mix(vec3(0.0), rgbNW.rgb, sign(rgbNW.a));
+    count += mix(0.0, 1.0, sign(rgbNW.a));
+    vec4 rgbSE = texture2D(textureSource, gTexCoord + off * vec2(1.0, 1.0));
+    rgbSE.rgb = mix(vec3(0.0), rgbSE.rgb, sign(rgbSE.a));
+    count += mix(0.0, 1.0, sign(rgbSE.a));
+    vec4 rgbNE = texture2D(textureSource, gTexCoord + off * vec2(1.0, -1.0));
+    rgbNE.rgb = mix(vec3(0.0), rgbNE.rgb, sign(rgbNE.a));
+    count += mix(0.0, 1.0, sign(rgbNE.a));
+    vec4 rgbSW = texture2D(textureSource, gTexCoord + off * vec2(-1.0, 1.0));
+    rgbSW.rgb = mix(vec3(0.0), rgbSW.rgb, sign(rgbSW.a));
+    count += mix(0.0, 1.0, sign(rgbSW.a));
+    return color + sharp * (count * color - rgbNW.rgb - rgbNE.rgb - rgbSW.rgb - rgbSE.rgb);
+}
+vec4 sharpen(const in vec4 color) {
+    return vec4(sharpColorFactor(color.rgb, sharpFactor), color.a);
+}
+
 //---------------tone mapping-------------------
 vec3 HDR_ACES(const vec3 x) {
     // Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
@@ -266,8 +288,14 @@ void main() {
     } else {
         color = texture2D(textureSource, vTexCoord);
     }
+    if (enableSharpen == 1.0) {
+        color = sharpen(color);
+    }
     vec4 color1 = texture2D(noAaTextureSource, vTexCoord);
     color = color1 * color1.a + color * (1.0 - color1.a);
+
+
+
     if (enableToneMapping == 1.0) {
         color.rgb = tonemap(color.rgb);
     }

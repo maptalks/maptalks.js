@@ -824,10 +824,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             this._aaOutdated = false;
         }
-
+        let sharpFactor = config.sharpen && config.sharpen.factor;
+        if (!sharpFactor && sharpFactor !== 0) {
+            sharpFactor = 0.2;// 0 - 5
+        }
         this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
             +!!(config.antialias && config.antialias.enable),
-            +!!(config.toneMapping && config.toneMapping.enable)
+            +!!(config.toneMapping && config.toneMapping.enable),
+            +!!(config.sharpen && config.sharpen.enable),
+            map.getDevicePixelRatio(),
+            sharpFactor
         );
 
         if (this._ssrPass) {
