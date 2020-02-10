@@ -185,16 +185,20 @@ class TileLayer extends Layer {
         let count = 0;
         const minZoom = this.getMinZoom();
         const cascadePitch0 = map.options['cascadePitches'][0];
+        const cascadePitch1 = map.options['cascadePitches'][1];
+        const visualHeight1 = Math.floor(map._getVisualHeight(cascadePitch1));
         const tileZoom = isNil(z) ? this._getTileZoom(map.getZoom()) : z;
         this._visitedTiles = new TileHashset();
         this._coordCache = {};
+        delete this._stencilExtent;
         if (
             !isNil(z) ||
             !this.options['cascadeTiles'] ||
             pitch <= cascadePitch0 ||
             !isNil(minZoom) && tileZoom <= minZoom
         ) {
-            const currentTiles = this._getTiles(tileZoom, mapExtent, 2, parentRenderer);
+            const containerExtent = pitch <= cascadePitch1 ? mapExtent : new PointExtent(0, map.height - visualHeight1, map.width, map.height);
+            const currentTiles = this._getTiles(tileZoom, containerExtent, 2, parentRenderer);
             if (currentTiles) {
                 count += currentTiles.tiles.length;
                 tileGrids.push(currentTiles);
@@ -202,6 +206,9 @@ class TileLayer extends Layer {
             return {
                 tileGrids, count
             };
+        }
+        if (pitch > cascadePitch1) {
+            this._stencilExtent = [[], [], [], []];
         }
         const visualHeight0 = Math.floor(map._getVisualHeight(cascadePitch0));
         const extent0 = new PointExtent(0, map.height - visualHeight0, map.width, map.height);
@@ -212,14 +219,12 @@ class TileLayer extends Layer {
         let cascadeHeight = extent0.ymin;
 
         const d = map.getSpatialReference().getZoomDirection();
-        const cascadePitch1 = map.options['cascadePitches'][1];
         let cascadeLevels = d;
         let cascadeTiles1;
         if (pitch > cascadePitch1) {
             if (tileZoom - cascadeLevels <= minZoom) {
                 cascadeLevels = 0;
             }
-            const visualHeight1 = Math.floor(map._getVisualHeight(cascadePitch1));
             const extent1 = new PointExtent(0, map.height - visualHeight1, map.width, cascadeHeight);
             cascadeTiles1 = this._getTiles(tileZoom - cascadeLevels, extent1, 1, parentRenderer);
             count += cascadeTiles1 ? cascadeTiles1.tiles.length : 0;
@@ -235,8 +240,9 @@ class TileLayer extends Layer {
             tileGrids.push(cascadeTiles2);
         }
 
-        if (cascadeTiles1) {
-            tileGrids.push(cascadeTiles1);
+        if (cascadeTiles1 && cascadeTiles2) {
+            tileGrids[1] = cascadeTiles2;
+            tileGrids[2] = cascadeTiles1;
         }
 
         // console.log(currentTiles && currentTiles.tiles.length, cascadeTiles1 && cascadeTiles1.tiles.length, cascadeTiles2 && cascadeTiles2.tiles.length);
@@ -409,17 +415,32 @@ class TileLayer extends Layer {
         const mapSR = map.getSpatialReference();
         const res = sr.getResolution(zoom);
         const glScale = map.getGLScale(z);
+        const glScale0 = map.getGLScale();
         const repeatWorld = sr === mapSR && this.options['repeatWorld'];
 
         const extent2d = containerExtent.convertTo(c => {
+            let result;
             if (c.y > 0 && c.y < map.height) {
                 const key = (c.x === 0 ? 0 : 1) + c.y;
                 if (!this._coordCache[key]) {
                     this._coordCache[key] = map._containerPointToPoint(c);
                 }
-                return this._coordCache[key];
+                result = this._coordCache[key];
             }
-            return map._containerPointToPoint(c, undefined, TEMP_POINT);
+            result = map._containerPointToPoint(c, undefined, TEMP_POINT);
+            if (this._stencilExtent && cascadeLevel < 2) {
+                const targetY = cascadeLevel === 0 ? map.height : containerExtent.ymin;
+                if (c.y === targetY) {
+                    if (c.x === 0) {
+                        this._stencilExtent[cascadeLevel * 2][0] = result.x * glScale0;
+                        this._stencilExtent[cascadeLevel * 2][1] = result.y * glScale0;
+                    } else {
+                        this._stencilExtent[cascadeLevel * 2 + 1][0] = result.x * glScale0;
+                        this._stencilExtent[cascadeLevel * 2 + 1][1] = result.y * glScale0;
+                    }
+                }
+            }
+            return result;
         });
         // const innerExtent2D = this._getInnerExtent(z, containerExtent, extent2d)._add(offset);
         extent2d._add(offset);
@@ -581,7 +602,8 @@ class TileLayer extends Layer {
             'offset' : offset,
             'zoom' : tileZoom,
             'extent' : extent,
-            'tiles': tiles
+            'tiles': tiles,
+            'viewExtent': extent2d
         };
     }
 
@@ -644,6 +666,10 @@ class TileLayer extends Layer {
             tileInfo.point.set(nw.x, nw.y)._add(offset);
         }
         return tileInfo;
+    }
+
+    getCascadeStencilExtent() {
+        return this._stencilExtent;
     }
 
     _getTileOffset(z) {
