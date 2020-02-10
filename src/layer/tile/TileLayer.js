@@ -190,7 +190,6 @@ class TileLayer extends Layer {
         const tileZoom = isNil(z) ? this._getTileZoom(map.getZoom()) : z;
         this._visitedTiles = new TileHashset();
         this._coordCache = {};
-        delete this._stencilExtent;
         if (
             !isNil(z) ||
             !this.options['cascadeTiles'] ||
@@ -206,9 +205,6 @@ class TileLayer extends Layer {
             return {
                 tileGrids, count
             };
-        }
-        if (pitch > cascadePitch1) {
-            this._stencilExtent = [[], [], [], []];
         }
         const visualHeight0 = Math.floor(map._getVisualHeight(cascadePitch0));
         const extent0 = new PointExtent(0, map.height - visualHeight0, map.width, map.height);
@@ -415,7 +411,6 @@ class TileLayer extends Layer {
         const mapSR = map.getSpatialReference();
         const res = sr.getResolution(zoom);
         const glScale = map.getGLScale(z);
-        const glScale0 = map.getGLScale();
         const repeatWorld = sr === mapSR && this.options['repeatWorld'];
 
         const extent2d = containerExtent.convertTo(c => {
@@ -428,18 +423,6 @@ class TileLayer extends Layer {
                 result = this._coordCache[key];
             }
             result = map._containerPointToPoint(c, undefined, TEMP_POINT);
-            if (this._stencilExtent && cascadeLevel < 2) {
-                const targetY = cascadeLevel === 0 ? map.height : containerExtent.ymin;
-                if (c.y === targetY) {
-                    if (c.x === 0) {
-                        this._stencilExtent[cascadeLevel * 2][0] = result.x * glScale0;
-                        this._stencilExtent[cascadeLevel * 2][1] = result.y * glScale0;
-                    } else {
-                        this._stencilExtent[cascadeLevel * 2 + 1][0] = result.x * glScale0;
-                        this._stencilExtent[cascadeLevel * 2 + 1][1] = result.y * glScale0;
-                    }
-                }
-            }
             return result;
         });
         // const innerExtent2D = this._getInnerExtent(z, containerExtent, extent2d)._add(offset);
@@ -602,8 +585,7 @@ class TileLayer extends Layer {
             'offset' : offset,
             'zoom' : tileZoom,
             'extent' : extent,
-            'tiles': tiles,
-            'viewExtent': extent2d
+            'tiles': tiles
         };
     }
 
@@ -666,10 +648,6 @@ class TileLayer extends Layer {
             tileInfo.point.set(nw.x, nw.y)._add(offset);
         }
         return tileInfo;
-    }
-
-    getCascadeStencilExtent() {
-        return this._stencilExtent;
     }
 
     _getTileOffset(z) {
