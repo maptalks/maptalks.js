@@ -234,22 +234,22 @@ export function isArrayHasData(obj) {
     return Array.isArray(obj) && obj.length > 0;
 }
 
+
+const urlPattern = /^([a-z][a-z\d+\-.]*:)?\/\//i;
 /**
  * Whether the input string is a valid url.
+ * form: https://github.com/axios/axios/blob/master/lib/helpers/isAbsoluteURL.js
  * @param  {String}  url - url to check
  * @return {Boolean}
  * @memberOf Util
  * @private
  */
 export function isURL(url) {
-    if (!url) {
-        return false;
-    }
-    const head = url.slice(0, 6);
-    if (head === 'http:/' || head === 'https:' || head === 'file:/') {
-        return true;
-    }
-    return false;
+    // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+    // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+    // by any combination of letters, digits, plus, period, or hyphen.
+    // eslint-disable-next-line no-useless-escape
+    return urlPattern.test(url);
 }
 
 //改原先的regex名字为xWithQuote；不带引号的regex，/^url\(([^\'\"].*[^\'\"])\)$/i，为xWithoutQuote。然后在is函数里||测试，extract函数里if...else处理。没引号的匹配后，取matches[1]
@@ -270,12 +270,10 @@ export function isCssUrl(str) {
     if (cssUrlReWithQuote.test(str)) {
         return 2;
     }
-    // const head = str.slice(0, 6);
-    // if (head === 'http:/' || head === 'https:' || head === 'file:/') {
-    //     return 3;
-    // }
-    // return 0;
-    return 3;
+    if (isURL(str) || str.slice(0, 2) === './' || str.slice(0, 3) === '../') {
+        return 3;
+    }
+    return 0;
 }
 
 export function extractCssUrl(str) {

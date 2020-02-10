@@ -1,7 +1,7 @@
 import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES } from '../Constants';
 import { IS_NODE } from './env';
 import { extend, isNil, isNumber, isString } from './common';
-import { extractCssUrl, btoa } from './util';
+import { isURL, extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
 
 
@@ -202,21 +202,28 @@ export function convertResourceUrl(symbol) {
         if (!res) {
             continue;
         }
-        s[props[ii]] = _convertUrlToAbsolute(res);
+        s[props[ii]] = _convertUrl(res);
     }
     return s;
 }
 
-function _convertUrlToAbsolute(res) {
+function _convertUrl(res) {
     if (isFunctionDefinition(res)) {
         const stops = res.stops;
         for (let i = 0; i < stops.length; i++) {
-            stops[i][1] = _convertUrlToAbsolute(stops[i][1]);
+            stops[i][1] = _convertUrl(stops[i][1]);
         }
         return res;
     }
     if (res.slice(0, 4) === 'url(') {
         res = extractCssUrl(res);
+    }
+    const embed = 'data:';
+    if (!isURL(res) &&
+        (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
+        if (res[0] !== '.') {
+            res = './' + res;
+        }
     }
     return res;
 }
