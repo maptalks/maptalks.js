@@ -383,12 +383,19 @@ Map.include(/** @lends Map.prototype */{
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
         let farZ = cameraCenterDistance;
         if (pitch > 0) {
-            const tanB = Math.tan(fov / 2);
-            const tanP = Math.tan(pitch * Math.PI / 180);
-            farZ += (cameraCenterDistance * tanB) / (1 / tanP - tanB);
+            pitch = pitch * Math.PI / 180;
+            let y;
+            if (2 / Math.PI - pitch <= fov / 2) {
+                y = 4 * cameraCenterDistance;
+            } else {
+                const tanFov = Math.tan(fov / 2);
+                const tanP = Math.tan(pitch);
+                y = (cameraCenterDistance * tanFov) / (1 / tanP - tanFov);
+            }
+            farZ += y;
         }
         //TODO 地下的图形无法显示
-        return farZ + 0.01;
+        return farZ + 1.0;
     },
 
     _calcCascadeMatrixes: function () {
