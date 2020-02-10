@@ -1,7 +1,7 @@
 import { RESOURCE_PROPERTIES, RESOURCE_SIZE_PROPERTIES } from '../Constants';
 import { IS_NODE } from './env';
 import { extend, isNil, isNumber, isString } from './common';
-import { isURL, extractCssUrl, btoa } from './util';
+import { extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
 
 
@@ -215,33 +215,8 @@ function _convertUrlToAbsolute(res) {
         }
         return res;
     }
-    const embed = 'data:';
     if (res.slice(0, 4) === 'url(') {
         res = extractCssUrl(res);
     }
-    if (!isURL(res) &&
-        (res.length <= embed.length || res.substring(0, embed.length) !== embed)) {
-        res = _absolute(location.href, res);
-    }
     return res;
-}
-
-function _absolute(base, relative) {
-    const stack = base.split('/'),
-        parts = relative.split('/');
-    if (relative.slice(0, 1) === 0) {
-        return stack.slice(0, 3).join('/') + relative;
-    } else {
-        stack.pop(); // remove current file name (or empty string)
-        // (omit if "base" is the current folder without trailing slash)
-        for (let i = 0; i < parts.length; i++) {
-            if (parts[i] === '.')
-                continue;
-            if (parts[i] === '..')
-                stack.pop();
-            else
-                stack.push(parts[i]);
-        }
-        return stack.join('/');
-    }
 }

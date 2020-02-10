@@ -264,17 +264,18 @@ export function isCssUrl(str) {
     if (!isString(str)) {
         return 0;
     }
-    const head = str.slice(0, 6);
-    if (head === 'http:/' || head === 'https:') {
-        return 3;
-    }
     if (cssUrlRe.test(str)) {
         return 1;
     }
     if (cssUrlReWithQuote.test(str)) {
         return 2;
     }
-    return 0;
+    // const head = str.slice(0, 6);
+    // if (head === 'http:/' || head === 'https:' || head === 'file:/') {
+    //     return 3;
+    // }
+    // return 0;
+    return 3;
 }
 
 export function extractCssUrl(str) {
@@ -282,8 +283,7 @@ export function extractCssUrl(str) {
     let matches;
     if (test === 3) {
         return str;
-    }
-    if (test === 1) {
+    } else if (test === 1) {
         matches = cssUrlRe.exec(str);
         return matches[1];
     } else if (test === 2) {
