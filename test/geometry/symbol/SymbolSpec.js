@@ -65,7 +65,6 @@ describe('SymbolSpec', function () {
     });
 
     it('marker file', function () {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
         var marker = new maptalks.Marker([100, 0], {
             symbol:{
                 'markerFile' : 'resources/x.svg',
@@ -75,7 +74,7 @@ describe('SymbolSpec', function () {
         });
         var res = marker._getExternalResources();
         expect(res).to.have.length(1);
-        expect(res[0][0]).to.be.eql(expected);
+        expect(res[0][0]).to.be.eql('resources/x.svg');
         expect(res[0][1]).to.be.eql(20);
         expect(res[0][2]).to.be.eql(30);
     });
@@ -184,7 +183,6 @@ describe('SymbolSpec', function () {
     });
 
     it('line pattern file', function () {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
         var line = new maptalks.Polygon([[100, 0], [101, 1], [105, 10], [100, 0]], {
             symbol:{
                 'linePatternFile' : 'resources/x.svg'
@@ -192,11 +190,10 @@ describe('SymbolSpec', function () {
         });
         var res = line._getExternalResources();
         expect(res).to.have.length(1);
-        expect(res[0][0]).to.be.eql(expected);
+        expect(res[0][0]).to.be.eql(resources/x.svg);
     });
 
     it('polygon pattern file', function () {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/x.svg';
         var polygon = new maptalks.Polygon([[100, 0], [101, 1], [105, 10], [100, 0]], {
             symbol:{
                 'polygonPatternFile' : 'resources/x.svg'
@@ -204,7 +201,7 @@ describe('SymbolSpec', function () {
         });
         var res = polygon._getExternalResources();
         expect(res).to.have.length(1);
-        expect(res[0][0]).to.be.eql(expected);
+        expect(res[0][0]).to.be.eql(resources/x.svg);
     });
 
     it('with a non-exist svg icon', function (done) {
@@ -267,7 +264,6 @@ describe('SymbolSpec', function () {
     });
 
     it('function type markerFile', function () {
-        var expected = location.href.substring(0, location.href.lastIndexOf('/')) + '/resources/';
         var marker = new maptalks.Marker([100, 0], {
             symbol:{
                 'markerFile' : {
@@ -285,9 +281,9 @@ describe('SymbolSpec', function () {
         });
         var res = marker._getExternalResources();
         expect(res).to.have.length(3);
-        expect(res[0]).to.be.eql([expected + 'x.svg', 20, 30]);
-        expect(res[1]).to.be.eql([expected + 'x1.svg', 20, 30]);
-        expect(res[2]).to.be.eql([expected + 'x2.svg', 20, 30]);
+        expect(res[0]).to.be.eql(['resources/x.svg', 20, 30]);
+        expect(res[1]).to.be.eql(['resources/x1.svg', 20, 30]);
+        expect(res[2]).to.be.eql(['resources/x2.svg', 20, 30]);
     });
 
     it('function type markerPath', function () {
