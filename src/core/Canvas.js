@@ -5,7 +5,6 @@ import {
     isString,
     isArrayHasData,
     isSVG,
-    isCssUrl,
     extractCssUrl,
     computeDegree
 } from './util';
