@@ -66,15 +66,16 @@ const Canvas = {
         if (!isNil(strokeWidth) && ctx.lineWidth !== strokeWidth) {
             ctx.lineWidth = strokeWidth;
         }
-        const strokeColor = style['linePatternFile'] || style['lineColor'] || DEFAULT_STROKE_COLOR;
+        const strokePattern = style['linePatternFile'];
+        const strokeColor = style['lineColor'] || DEFAULT_STROKE_COLOR;
         if (testing) {
             ctx.strokeStyle = '#000';
-        } else if (isImageUrl(strokeColor) && resources) {
+        } else if (strokePattern && resources) {
             let patternOffset;
             if (style['linePatternDx'] || style['linePatternDy']) {
                 patternOffset = [style['linePatternDx'], style['linePatternDy']];
             }
-            Canvas._setStrokePattern(ctx, strokeColor, strokeWidth, patternOffset, resources);
+            Canvas._setStrokePattern(ctx, strokePattern, strokeWidth, patternOffset, resources);
             //line pattern will override stroke-dasharray
             style['lineDasharray'] = [];
         } else if (isGradient(strokeColor)) {
@@ -95,11 +96,12 @@ const Canvas = {
         if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
-        const fill = style['polygonPatternFile'] || style['polygonFill'] || DEFAULT_FILL_COLOR;
+        const polygonPattern = style['polygonPatternFile'];
+        const fill = style['polygonFill'] || DEFAULT_FILL_COLOR;
         if (testing) {
             ctx.fillStyle = '#000';
-        } else if (isImageUrl(fill) && resources) {
-            const fillImgUrl = extractImageUrl(fill);
+        } else if (polygonPattern && resources) {
+            const fillImgUrl = extractImageUrl(polygonPattern);
             let fillTexture = resources.getImage([fillImgUrl, null, null]);
             if (!fillTexture) {
                 //if the linestring has a arrow and a linePatternFile, polygonPatternFile will be set with the linePatternFile.
@@ -938,9 +940,6 @@ function drawDashLine(ctx, startPoint, endPoint, dashArray) {
 }
 
 const prefix = 'data:image/';
-function isImageUrl(url) {
-    return url.length > prefix.length && url.substring(0, prefix.length) === prefix || isCssUrl(url);
-}
 
 function extractImageUrl(url) {
     if (url.substring(0, prefix.length) === prefix) {

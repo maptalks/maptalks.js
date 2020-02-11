@@ -270,10 +270,7 @@ export function isCssUrl(str) {
     if (cssUrlReWithQuote.test(str)) {
         return 2;
     }
-    if (isURL(str) || str.slice(0, 2) === './' || str.slice(0, 3) === '../') {
-        return 3;
-    }
-    return 0;
+    return 3;
 }
 
 export function extractCssUrl(str) {
