@@ -3,10 +3,11 @@ import { createGLContext, createProgram, enableVertexAttrib } from '../../core/u
 import Browser from '../../core/Browser';
 import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
+import Point from '../../geo/Point';
 
 const shaders = {
     'vertexShader': `
-        attribute vec3 a_position;
+        attribute vec2 a_position;
 
         attribute vec2 a_texCoord;
 
@@ -15,7 +16,7 @@ const shaders = {
         varying vec2 v_texCoord;
 
         void main() {
-            gl_Position = u_matrix * vec4(a_position, 1.0);
+            gl_Position = u_matrix * vec4(a_position, 0., 1.);
 
             v_texCoord = a_texCoord;
         }
@@ -27,13 +28,13 @@ const shaders = {
         uniform sampler2D u_image;
 
         uniform float u_opacity;
-        uniform float u_debug;
+        uniform float u_debug_line;
 
         varying vec2 v_texCoord;
 
         void main() {
-            if (u_debug == 1.0) {
-                gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            if (u_debug_line == 1.) {
+                gl_FragColor = vec4(0., 1., 0., 1.);
             } else {
                 gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
             }
@@ -45,6 +46,7 @@ const shaders = {
 const v2 = [0, 0],
     v3 = [0, 0, 0],
     arr16 = new Array(16);
+const DEBUG_POINT = new Point(20, 16);
 
 /**
  * A mixin providing image support in WebGL env
@@ -78,7 +80,7 @@ const ImageGLRenderable = Base => {
             mat4.multiply(uMatrix, this.getMap().projViewMatrix, uMatrix);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
-            gl.uniform1f(this.program['u_debug'], 0);
+            gl.uniform1f(this.program['u_debug_line'], 0);
 
             const { glBuffer } = image;
             if (glBuffer && (glBuffer.width !== w || glBuffer.height !== h)) {
@@ -92,17 +94,17 @@ const ImageGLRenderable = Base => {
             }
 
             v2[0] = 'a_position';
-            v2[1] = 3;
+            v2[1] = 2;
             v2[2] = image.glBuffer.type;
             this.enableVertexAttrib(v2); // ['a_position', 3]
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             if (debug) {
-                this.drawDebug(uMatrix, v2, 0, 0, w, h);
+                this.drawDebug(uMatrix, v2, 0, 0, w, h, debug);
             }
         }
 
-        drawDebug(uMatrix, attrib, x, y, w, h) {
+        drawDebug(uMatrix, attrib, x, y, w, h, debugInfo) {
             const gl = this.gl;
             gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
             this.enableVertexAttrib(['a_position', 2, 'FLOAT']);
@@ -114,8 +116,39 @@ const ImageGLRenderable = Base => {
                 x, y
             ]), gl.DYNAMIC_DRAW);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
-            gl.uniform1f(this.program['u_debug'], 1);
+            gl.uniform1f(this.program['u_debug_line'], 1);
             gl.drawArrays(gl.LINE_STRIP, 0, 5);
+            //draw debug info
+            let canvas = this._debugInfoCanvas;
+            if (!canvas) {
+                const dpr = this.getMap().getDevicePixelRatio() > 1 ? 2 : 1;
+                canvas = this._debugInfoCanvas = document.createElement('canvas');
+                canvas.width = 256 * dpr;
+                canvas.height = 32 * dpr;
+                const ctx = canvas.getContext('2d');
+                ctx.font = '20px monospace';
+                ctx.scale(dpr, dpr);
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const color = this.layer.options['debugOutline'];
+            Canvas.fillText(ctx, debugInfo, DEBUG_POINT, color);
+            this.loadTexture(canvas);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+            w = 256;
+            h = 32;
+            const x1 = x;
+            const x2 = x + w;
+            const y1 = y;
+            const y2 = y - h;
+            gl.bufferData(gl.ARRAY_BUFFER, this.set8(
+                x1, y1,
+                x1, y2,
+                x2, y1,
+                x2, y2
+            ), gl.DYNAMIC_DRAW);
+            gl.uniform1f(this.program['u_debug_line'], 0);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
 
         bufferTileData(x, y, w, h, buffer) {
@@ -125,17 +158,17 @@ const ImageGLRenderable = Base => {
             const y2 = y - h;
             let data;
             if (isInteger(x1) && isInteger(x2) && isInteger(y1) && isInteger(y2)) {
-                data = this.set12Int(
-                    x1, y1, 0,
-                    x1, y2, 0,
-                    x2, y1, 0,
-                    x2, y2, 0);
+                data = this.set8Int(
+                    x1, y1,
+                    x1, y2,
+                    x2, y1,
+                    x2, y2);
             } else {
-                data = this.set12(
-                    x1, y1, 0,
-                    x1, y2, 0,
-                    x2, y1, 0,
-                    x2, y2, 0);
+                data = this.set8(
+                    x1, y1,
+                    x1, y2,
+                    x2, y1,
+                    x2, y2);
             }
             const glBuffer = this.loadImageBuffer(data, buffer);
             glBuffer.width = w;
@@ -202,7 +235,7 @@ const ImageGLRenderable = Base => {
             gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
             this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'],
-                ['u_matrix', 'u_image', 'u_opacity', 'u_debug']);
+                ['u_matrix', 'u_image', 'u_opacity', 'u_debug_line']);
             this._debugBuffer = this.createBuffer();
 
             this.useProgram(this.program);
@@ -381,6 +414,14 @@ const ImageGLRenderable = Base => {
                 this._textures.forEach(t => gl.deleteTexture(t));
                 delete this._textures;
             }
+            if (this._debugInfoCanvas) {
+                const texture = this._debugInfoCanvas.texture;
+                if (texture) {
+                    gl.deleteTexture(texture);
+                }
+                delete this._debugInfoCanvas.texture;
+                delete this._debugInfoCanvas;
+            }
             const program = gl.program;
             gl.deleteShader(program.fragmentShader);
             gl.deleteShader(program.vertexShader);
@@ -492,9 +533,9 @@ const ImageGLRenderable = Base => {
     };
 
     extend(renderable.prototype, {
-        set12: function () {
-            const out = Browser.ie9 ? null : new Float32Array(12);
-            return function (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+        set8: function () {
+            const out = Browser.ie9 ? null : new Float32Array(8);
+            return function (a0, a1, a2, a3, a4, a5, a6, a7) {
                 out[0] = a0;
                 out[1] = a1;
                 out[2] = a2;
@@ -503,17 +544,13 @@ const ImageGLRenderable = Base => {
                 out[5] = a5;
                 out[6] = a6;
                 out[7] = a7;
-                out[8] = a8;
-                out[9] = a9;
-                out[10] = a10;
-                out[11] = a11;
                 return out;
             };
         }(),
 
-        set12Int: function () {
-            const out = Browser.ie9 ? null : new Int16Array(12);
-            return function (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) {
+        set8Int: function () {
+            const out = Browser.ie9 ? null : new Int16Array(8);
+            return function (a0, a1, a2, a3, a4, a5, a6, a7) {
                 out[0] = a0;
                 out[1] = a1;
                 out[2] = a2;
@@ -522,10 +559,6 @@ const ImageGLRenderable = Base => {
                 out[5] = a5;
                 out[6] = a6;
                 out[7] = a7;
-                out[8] = a8;
-                out[9] = a9;
-                out[10] = a10;
-                out[11] = a11;
                 return out;
             };
         }()
