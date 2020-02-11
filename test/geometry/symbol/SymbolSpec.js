@@ -201,7 +201,7 @@ describe('SymbolSpec', function () {
         });
         var res = polygon._getExternalResources();
         expect(res).to.have.length(1);
-        expect(res[0][0]).to.be.eql(resources/x.svg);
+        expect(res[0][0]).to.be.eql('resources/x.svg');
     });
 
     it('with a non-exist svg icon', function (done) {

@@ -71,7 +71,7 @@ describe('Layer.ImageLayer', function () {
             if (maptalks.Browser.ie) {
                 expect(layer).to.be.painted(1, 1, [0, 0, 0, 128]);
             } else {
-                expect(layer).to.be.painted(1, 1, [0, 0, 0, 58]);
+                expect(layer).to.be.painted(1, 1, [0, 0, 0, 56]);
             }
             done();
         });
