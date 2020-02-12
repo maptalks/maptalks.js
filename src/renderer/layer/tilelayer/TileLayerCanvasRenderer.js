@@ -491,7 +491,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
             ctx.strokeWidth = 10;
-            ctx.font = '15px monospace';
+            ctx.font = '20px monospace';
             const point = new Point(x, y);
             Canvas2D.rectangle(ctx, point, { width: w, height: h }, 1, 0);
             Canvas2D.fillText(ctx, this.getDebugInfo(tileId), point._add(10, 20), color);

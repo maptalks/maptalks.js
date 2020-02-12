@@ -46,7 +46,7 @@ const shaders = {
 const v2 = [0, 0],
     v3 = [0, 0, 0],
     arr16 = new Array(16);
-const DEBUG_POINT = new Point(20, 16);
+const DEBUG_POINT = new Point(20, 20);
 
 /**
  * A mixin providing image support in WebGL env
