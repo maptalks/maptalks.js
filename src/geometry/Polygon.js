@@ -140,6 +140,11 @@ class Polygon extends Path {
         this.onShapeChanged();
     }
 
+    _setPrjCoordinates(prjCoords) {
+        this._prjCoords = prjCoords;
+        this.onShapeChanged();
+    }
+
     _cleanRing(ring) {
         for (let i = ring.length - 1; i >= 0; i--) {
             if (!ring[i]) {
@@ -198,12 +203,9 @@ class Polygon extends Path {
         if (this.getJSONType() === JSON_TYPE) {
             return this._getPrjCoordinates();
         }
-        const projection = this._getProjection();
-        if (!projection) {
-            return null;
-        }
+        //r.g. for Rectangle
         this._verifyProjection();
-        if (!this._prjShell) {
+        if (this._getProjection() && !this._prjShell) {
             this._prjShell = this._projectCoords(this.getShell());
         }
         return this._prjShell;
@@ -211,11 +213,8 @@ class Polygon extends Path {
 
     _getPrjHoles() {
         const projection = this._getProjection();
-        if (!projection) {
-            return null;
-        }
         this._verifyProjection();
-        if (!this._prjHoles) {
+        if (projection && !this._prjHoles) {
             this._prjHoles = this._projectCoords(this.getHoles());
         }
         return this._prjHoles;

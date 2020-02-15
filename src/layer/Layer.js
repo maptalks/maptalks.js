@@ -379,7 +379,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
-
+        mask._bindLayer(this);
         if (mask.type === 'Point') {
             mask.updateSymbol({
                 'markerLineColor': 'rgba(0, 0, 0, 0)',
@@ -391,7 +391,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
                 'polygonOpacity': 0
             });
         }
-        mask._bindLayer(this);
         this._mask = mask;
         this.options.mask = mask.toJSON();
         if (!this.getMap() || this.getMap().isZooming()) {

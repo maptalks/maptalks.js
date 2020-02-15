@@ -228,7 +228,7 @@ describe('DrawTool', function () {
                 var coordinates = param.geometry.getCoordinates()[0];
                 expect(coordinates.length === 5).to.be.ok();
                 if (!maptalks.Browser.ie) {
-                    expect(coordinates[1].toArray()).to.be.eql([118.84675603637106, 32.046603663660306]);
+                    expect(coordinates[1].toArray()).to.be.closeTo([118.846756, 32.046603]);
                 }
                 done();
             }

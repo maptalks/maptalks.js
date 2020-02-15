@@ -322,11 +322,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     getExtent() {
         const prjExt = this._getPrjExtent();
-        if (prjExt) {
-            const p = this._getProjection();
-            const min = p.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])),
-                max = p.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax']));
-            return new Extent(min, max, this._getProjection());
+        const projection = this._getProjection();
+        if (prjExt && projection) {
+            const min = projection.unproject(new Coordinate(prjExt['xmin'], prjExt['ymin'])),
+                max = projection.unproject(new Coordinate(prjExt['xmax'], prjExt['ymax']));
+            return new Extent(min, max, projection);
         } else {
             return this._computeExtent(this._getMeasurer());
         }
@@ -833,7 +833,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         this._layer = layer;
         this._clearCache();
-        this._clearProjection();
+        // this._clearProjection();
         // this.callInitHooks();
     }
 
@@ -954,10 +954,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _verifyProjection() {
         const projection = this._getProjection();
-        if (this._projCode && (!projection || this._projCode !== projection.code)) {
+        if (this._projCode && projection && this._projCode !== projection.code) {
             this._clearProjection();
         }
-        this._projCode = projection ? projection.code : null;
+        this._projCode = projection ? projection.code : this._projCode;
     }
 
     //获取geometry样式中依赖的外部图片资源

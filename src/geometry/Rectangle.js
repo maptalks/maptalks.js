@@ -145,11 +145,8 @@ class Rectangle extends Polygon {
 
     _getPrjCoordinates() {
         const projection = this._getProjection();
-        if (!projection) {
-            return null;
-        }
         this._verifyProjection();
-        if (!this._pnw) {
+        if (!this._pnw && projection) {
             if (this._coordinates) {
                 this._pnw = projection.project(this._coordinates);
             }

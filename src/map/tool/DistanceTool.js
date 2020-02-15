@@ -229,9 +229,13 @@ class DistanceTool extends DrawTool {
             this._tailLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
                 .addTo(this._measureMarkerLayer);
         }
+        const prjCoords = this._geometry._getPrjCoordinates();
+        const lastCoord = prjCoords[prjCoords.length - 1];
         this._tailMarker.setCoordinates(param['coordinate']);
+        this._tailMarker._setPrjCoordinates(lastCoord);
         this._tailLabel.setContent(ms);
         this._tailLabel.setCoordinates(param['coordinate']);
+        this._tailLabel._setPrjCoordinates(lastCoord);
     }
 
     _msGetCoordsToMeasure(param) {
@@ -239,14 +243,19 @@ class DistanceTool extends DrawTool {
     }
 
     _msOnDrawVertex(param) {
+        const prjCoords = this._geometry._getPrjCoordinates();
+        const lastCoord = prjCoords[prjCoords.length - 1];
         const geometry = param['geometry'];
         //vertex marker
-        new Marker(param['coordinate'], {
+        const marker = new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
-        }).addTo(this._measureMarkerLayer);
+        });
+
         const length = this._measure(geometry);
         const vertexLabel = new Label(length, param['coordinate'], this.options['labelOptions']);
-        this._measureMarkerLayer.addGeometry(vertexLabel);
+        this._measureMarkerLayer.addGeometry(vertexLabel, marker);
+        vertexLabel._setPrjCoordinates(lastCoord);
+        marker._setPrjCoordinates(lastCoord);
         this._lastVertex = vertexLabel;
     }
 
@@ -256,13 +265,13 @@ class DistanceTool extends DrawTool {
         if (!size) {
             size = new Size(10, 10);
         }
-        this._addClearMarker(this._lastVertex.getCoordinates(), size['width']);
+        this._addClearMarker(this._lastVertex.getCoordinates(), this._lastVertex._getPrjCoordinates(), size['width']);
         const geo = param['geometry'].copy();
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getLength();
     }
 
-    _addClearMarker(coordinates, dx) {
+    _addClearMarker(coordinates, prjCoord, dx) {
         let symbol = this.options['clearButtonSymbol'];
         let dxSymbol = {
             'markerDx' : (symbol['markerDx'] || 0) + dx,
@@ -291,6 +300,7 @@ class DistanceTool extends DrawTool {
             //return false to stop propagation of event.
             return false;
         }, this);
+        endMarker._setPrjCoordinates(prjCoord);
         endMarker.addTo(this._measureMarkerLayer);
     }
 
