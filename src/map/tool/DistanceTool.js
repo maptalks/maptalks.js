@@ -195,6 +195,7 @@ class DistanceTool extends DrawTool {
 
     _msOnDrawStart(param) {
         const map = this.getMap();
+        const prjCoord = map._pointToPrj(param['point2d']);
         const uid = UID();
         const layerId = 'distancetool_' + uid;
         const markerLayerId = 'distancetool_markers_' + uid;
@@ -208,11 +209,13 @@ class DistanceTool extends DrawTool {
         this._measureLayers.push(this._measureLineLayer);
         this._measureLayers.push(this._measureMarkerLayer);
         //start marker
-        new Marker(param['coordinate'], {
+        const marker = new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
+        marker._setPrjCoordinates(prjCoord);
         const content = (this.options['language'] === 'zh-CN' ? '起点' : 'start');
         const startLabel = new Label(content, param['coordinate'], this.options['labelOptions']);
+        startLabel._setPrjCoordinates(prjCoord);
         this._lastVertex = startLabel;
         this._measureMarkerLayer.addGeometry(startLabel);
     }
@@ -267,6 +270,7 @@ class DistanceTool extends DrawTool {
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), this._lastVertex._getPrjCoordinates(), size['width']);
         const geo = param['geometry'].copy();
+        geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getLength();
     }
@@ -300,8 +304,8 @@ class DistanceTool extends DrawTool {
             //return false to stop propagation of event.
             return false;
         }, this);
-        endMarker._setPrjCoordinates(prjCoord);
         endMarker.addTo(this._measureMarkerLayer);
+        endMarker._setPrjCoordinates(prjCoord);
     }
 
     _clearTailMarker() {

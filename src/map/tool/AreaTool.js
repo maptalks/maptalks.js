@@ -100,25 +100,29 @@ class AreaTool extends DistanceTool {
     }
 
     _msOnDrawVertex(param) {
+        const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const vertexMarker = new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
         }).addTo(this._measureMarkerLayer);
+        vertexMarker._setPrjCoordinates(prjCoord);
         this._measure(param['geometry']);
         this._lastVertex = vertexMarker;
     }
 
     _msOnDrawEnd(param) {
         this._clearTailMarker();
-
+        const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const ms = this._measure(param['geometry']);
         const endLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
             .addTo(this._measureMarkerLayer);
+        endLabel._setPrjCoordinates(prjCoord);
         let size = endLabel.getSize();
         if (!size) {
             size = new Size(10, 10);
         }
-        this._addClearMarker(param['coordinate'], size['width']);
+        this._addClearMarker(param['coordinate'], prjCoord, size['width']);
         const geo = param['geometry'].copy();
+        geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getArea();
     }
