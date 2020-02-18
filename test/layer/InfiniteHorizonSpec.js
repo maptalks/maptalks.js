@@ -76,9 +76,8 @@ describe('Infinite Horizon Specs', function () {
             urlTemplate : '#'
         }).addTo(map);
         var tiles = tile.getTiles();
-        expect(tiles.tileGrids.length).to.be.eql(2);
+        expect(tiles.tileGrids.length).to.be.eql(1);
         expect(tiles.tileGrids[0].tiles.length).to.be.eql(36);
-        expect(tiles.tileGrids[1].tiles.length).to.be.eql(16);
     });
 
     it('cascade level 2 tiles', function () {
@@ -91,7 +90,7 @@ describe('Infinite Horizon Specs', function () {
         var tiles = tile.getTiles();
         expect(tiles.tileGrids.length).to.be.eql(3);
         expect(tiles.tileGrids[0].tiles.length).to.be.eql(30);
-        expect(tiles.tileGrids[1].tiles.length).to.be.eql(5);
+        expect(tiles.tileGrids[1].tiles.length).to.be.eql(2);
         expect(tiles.tileGrids[2].tiles.length).to.be.eql(22);
     });
 });
