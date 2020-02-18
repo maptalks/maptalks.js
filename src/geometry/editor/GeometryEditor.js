@@ -1044,6 +1044,16 @@ class GeometryEditor extends Eventable(Class) {
         this._geometry.fire('editrecord');
     }
 
+    cancel() {
+        if (!this._history || this._historyPointer === 0) {
+            return this;
+        }
+        this._historyPointer = 0;
+        const record = this._history[0];
+        this._exeAndReset(record);
+        return this;
+    }
+
     /**
      * Get previous map view in view history
      * @return {Object} map view
@@ -1063,7 +1073,7 @@ class GeometryEditor extends Eventable(Class) {
      */
     redo() {
         if (!this._history || this._historyPointer === this._history.length - 1) {
-            return null;
+            return this;
         }
         const record = this._history[++this._historyPointer];
         this._exeAndReset(record);

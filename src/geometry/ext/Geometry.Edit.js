@@ -96,6 +96,27 @@ Geometry.include(/** @lends Geometry.prototype */ {
     },
 
     /**
+     * cancel the edit
+     * @return {Geometry} this
+     */
+    cancelEdit() {
+        if (!this.isEditing()) {
+            return this;
+        }
+        this._editor.cancel();
+        /**
+         * cancel edit event
+         *
+         * @event Geometry#canceledit
+         * @type {Object}
+         * @property {String} type - canceledit
+         * @property {Geometry} target - the geometry fires the event
+         */
+        this.fire('canceledit');
+        return this;
+    },
+
+    /**
      * Whether the geometry is being edited.
      * @return {Boolean}
      */
