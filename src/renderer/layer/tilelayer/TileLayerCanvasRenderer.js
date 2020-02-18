@@ -471,12 +471,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             y = cp.y;
         let w = tileSize[0], h = tileSize[1];
         if (transformed) {
-            w += 0.1;
-            h += 0.1;
             ctx.save();
             ctx.translate(x, y);
             if (bearing) {
                 ctx.rotate(-bearing * Math.PI / 180);
+                w += 0.1;
+                h += 0.1;
             }
             if (zoom !== tileZoom) {
                 const scale = map._getResolution(tileZoom) / map._getResolution();
@@ -486,17 +486,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         Canvas2D.image(ctx, tileImage, x, y, w, h);
         if (this.layer.options['debug']) {
-            const color = this.layer.options['debugOutline'],
-                xyz = tileId.split('_');
-            const length = xyz.length;
+            const color = this.layer.options['debugOutline'];
             ctx.save();
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
             ctx.strokeWidth = 10;
-            ctx.font = '15px monospace';
+            ctx.font = '20px monospace';
             const point = new Point(x, y);
             Canvas2D.rectangle(ctx, point, { width: w, height: h }, 1, 0);
-            Canvas2D.fillText(ctx, 'x:' + xyz[length - 2] + ', y:' + xyz[length - 3] + ', z:' + xyz[length - 1], point._add(10, 20), color);
+            Canvas2D.fillText(ctx, this.getDebugInfo(tileId), point._add(10, 20), color);
             Canvas2D.drawCross(ctx, x + w / 2, y + h / 2, 2, color);
             ctx.restore();
         }
@@ -507,6 +505,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.globalAlpha = alpha;
         }
         this.setCanvasUpdated();
+    }
+
+    getDebugInfo(tileId) {
+        const xyz = tileId.split('_');
+        const length = xyz.length;
+        return 'x:' + xyz[length - 2] + ', y:' + xyz[length - 3] + ', z:' + xyz[length - 1];
     }
 
     _findChildTiles(info) {

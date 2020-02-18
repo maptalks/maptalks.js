@@ -248,12 +248,8 @@ class Path extends Geometry {
     }
 
     _getPrjCoordinates() {
-        const projection = this._getProjection();
-        if (!projection) {
-            return null;
-        }
         this._verifyProjection();
-        if (!this._prjCoords) {
+        if (!this._prjCoords && this._getProjection()) {
             this._prjCoords = this._projectCoords(this._coordinates);
         }
         return this._prjCoords;

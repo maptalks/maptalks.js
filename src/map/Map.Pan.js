@@ -59,6 +59,16 @@ Map.include(/** @lends Map.prototype */ {
             options = {};
         }
         offset = new Point(offset);
+        const containerExtent = this.getContainerExtent();
+        const ymin = containerExtent.ymin;
+        if (ymin > 0 && offset.y > 30) {
+            //limit offset'y when tilted to max pitch
+            const y = offset.y;
+            offset.y = 30;
+            offset.x = offset.x * 30 / y;
+            console.warn('offset is limited to panBy when pitch is above maxPitch');
+            // return this;
+        }
         this.onMoveStart();
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
             offset = offset.multi(-1);

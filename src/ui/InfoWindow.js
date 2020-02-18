@@ -252,7 +252,7 @@ class InfoWindow extends UIComponent {
     _onAutoOpen(e) {
         const owner = this.getOwner();
         setTimeout(() => {
-            if (owner instanceof Marker) {
+            if (owner instanceof Marker || owner instanceof UIComponent) {
                 this.show(owner.getCoordinates());
             } else if (owner instanceof MultiPoint) {
                 this.show(owner.findClosest(e.coordinate));

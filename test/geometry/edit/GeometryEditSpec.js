@@ -89,6 +89,10 @@ describe('Geometry.Edit', function () {
                         expect(c.y).to.be.approx(center.y, 1E-4);
                         geo.redoEdit();
                         expect(geo.getCenter()).to.closeTo(newCenter);
+                        geo.cancelEdit();
+                        var c = geo.getCenter();
+                        expect(c.x).to.be.approx(center.x, 1E-4);
+                        expect(c.y).to.be.approx(center.y, 1E-4);
                     }
                     geo.endEdit();
                 };

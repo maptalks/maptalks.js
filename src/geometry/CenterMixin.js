@@ -54,11 +54,8 @@ export default function (Base) {
 
         _getPrjCoordinates() {
             const projection = this._getProjection();
-            if (!projection) {
-                return null;
-            }
             this._verifyProjection();
-            if (!this._pcenter) {
+            if (!this._pcenter && projection) {
                 if (this._coordinates) {
                     this._pcenter = projection.project(this._coordinates);
                 }

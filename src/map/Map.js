@@ -1446,7 +1446,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @fires Map#movestart
      */
     onMoveStart(param) {
-        this._originCenter = this._getPrjCenter();
+        const prjCenter = this._getPrjCenter();
+        if (!this._originCenter || this._verifyExtent(prjCenter)) {
+            this._originCenter = prjCenter;
+        }
         this._moving = true;
         this._trySetCursor('move');
         /**
@@ -1494,10 +1497,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
          */
         this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
         if (!this._verifyExtent(this._getPrjCenter())) {
-            let moveTo = this._originCenter;
-            if (!this._verifyExtent(moveTo)) {
-                moveTo = this.getMaxExtent().getCenter();
-            }
+            const moveTo = this._originCenter;
             this._panTo(moveTo);
         }
     }
