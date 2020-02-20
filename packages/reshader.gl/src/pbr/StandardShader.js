@@ -160,6 +160,9 @@ class StandardShader extends MeshShader {
             'uGlossinessFactor',
             'uDiffuseTexture',
             'uSpecularGlossinessTexture',
+            //viewshed
+            'viewshed_depthMapFromViewpoint',
+            'viewshed_projViewMatrixFromViewpoint'
         ];
         if (extraUniforms) {
             uniforms.push(...extraUniforms);

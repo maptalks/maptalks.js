@@ -31,6 +31,7 @@ uniform float opacity;
 #endif
 #extension GL_OES_standard_derivatives : enable
 
+#include <viewshed_frag>
 const float PI = 3.14159265;
 
 // This is like
@@ -109,4 +110,7 @@ vec4 getStyledWireframe (vec3 barycentric) {
 
 void main () {
   gl_FragColor = getStyledWireframe(vBarycentric) * opacity;
+  #ifdef HAS_VIEWSHED
+      viewshed_draw();
+  #endif
 }

@@ -49,7 +49,10 @@ class WireframeShader extends MeshShader {
                     fn: (context, props) => {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
-                }
+                },
+                //viewshed
+                'viewshed_depthMapFromViewpoint',
+                'viewshed_projViewMatrixFromViewpoint'
             ],
             extraCommandProps
         });

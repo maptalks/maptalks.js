@@ -67,6 +67,8 @@ varying vec3 vFragPos;
     #endif
 #endif
 
+#include <viewshed_frag>
+
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
         vec3 n = normalize(vNormal);
@@ -164,6 +166,10 @@ void main() {
         float alpha = topAlpha + vExtrusionOpacity * (bottomAlpha - topAlpha);
         alpha = clamp(alpha, 0.0, 1.0);
         gl_FragColor *= alpha;
+    #endif
+
+    #ifdef HAS_VIEWSHED
+        viewshed_draw();
     #endif
     // gl_FragColor.a = 0.7;
 }

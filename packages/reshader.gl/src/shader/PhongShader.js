@@ -2,6 +2,7 @@ import { mat4 } from 'gl-matrix';
 import phongFrag from './glsl/phong.frag';
 import phongVert from './glsl/phong.vert';
 import MeshShader from '../shader/MeshShader.js';
+
 class PhongShader extends MeshShader {
     constructor(config = {}) {
         super({
@@ -49,6 +50,9 @@ class PhongShader extends MeshShader {
                 'glossinessFactor',
                 'diffuseTexture',
                 'specularGlossinessTexture',
+                //viewshed
+                'viewshed_depthMapFromViewpoint',
+                'viewshed_projViewMatrixFromViewpoint'
             ],
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}

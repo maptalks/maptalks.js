@@ -8,9 +8,13 @@ uniform mat4 projViewModelMatrix;
 uniform mat4 positionMatrix;
 
 #include <get_output>
+#include <viewshed_vert>
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
     gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * localPosition;
     vBarycentric = aBarycentric;
+    #ifdef HAS_VIEWSHED
+        viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localPosition);
+    #endif
 }

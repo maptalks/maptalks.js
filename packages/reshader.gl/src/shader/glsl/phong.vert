@@ -21,6 +21,7 @@ attribute vec3 aPosition;
 #else
     attribute vec3 aNormal;
 #endif
+
 varying vec3 vFragPos;
 varying vec3 vNormal;
 
@@ -36,6 +37,7 @@ uniform mat4 projViewMatrix;
 // uniform mat4 projViewModelMatrix;
 
 #include <get_output>
+#include <viewshed_vert>
 
 #ifdef HAS_EXTRUSION_OPACITY
     attribute float aExtrusionOpacity;
@@ -104,5 +106,9 @@ void main()
     #endif
     #ifdef HAS_COLOR
         vColor = aColor / 255.0;
+    #endif
+
+    #ifdef HAS_VIEWSHED
+        viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localPosition);
     #endif
 }

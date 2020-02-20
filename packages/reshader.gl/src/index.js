@@ -35,6 +35,7 @@ export { default as Jitter } from './shader/Jitter.js';
 export { default as BloomPass } from './shader/BloomPass.js';
 export { default as SsrPass } from './shader/SsrPass.js';
 export { default as OutlinePass } from './outline/OutlinePass.js';
+export { default as ViewshedPass } from './viewshed/ViewshedPass.js';
 export { default as QuadShader } from './shader/QuadShader.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';

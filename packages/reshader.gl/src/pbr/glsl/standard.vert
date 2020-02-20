@@ -63,7 +63,7 @@ varying vec3 vModelVertex;
 #endif
 
 #include <get_output>
-
+#include <viewshed_vert>
 #ifdef HAS_SHADOWING
     #include <vsm_shadow_vert>
 #endif
@@ -146,5 +146,9 @@ void main() {
 
     #if defined(HAS_SHADOWING)
         shadow_computeShadowPars(localVertex);
+    #endif
+
+    #ifdef HAS_VIEWSHED
+        viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localVertex);
     #endif
 }

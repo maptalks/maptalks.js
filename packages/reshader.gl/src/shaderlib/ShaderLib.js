@@ -10,6 +10,9 @@ import instance_vert from './glsl/instance.vert';
 //skin.vert
 import skin_vert from './glsl/skin.vert';
 
+import viewshed_frag from './glsl/viewshed.frag';
+import viewshed_vert from './glsl/viewshed.vert';
+
 
 //webgl 2.0中的函数实现
 // import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
@@ -90,7 +93,9 @@ const ShaderChunk = {
     invert_matrix,
     get_output,
     instance_vert,
-    skin_vert
+    skin_vert,
+    viewshed_frag,
+    viewshed_vert
 };
 /* eslint-enable camelcase */
 
