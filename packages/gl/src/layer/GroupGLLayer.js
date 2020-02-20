@@ -712,11 +712,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // colorCount,
             colorFormat: 'rgba'
         };
-        const needDepth = config && (config.ssao && config.ssao.enable ||
-            config.taa && config.taa.enable ||
-            config.ssr && config.ssr.enable);
+        const enableDepthTex = regl.hasExtension('WEBGL_depth_texture');
         //depth(stencil) buffer 是可以共享的
-        if (needDepth) {
+        if (enableDepthTex) {
             const depthStencilTexture = depthTex || regl.texture({
                 min: 'nearest',
                 mag: 'nearest',
@@ -727,16 +725,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 format: 'depth stencil'
             });
             fboInfo.depthStencil = depthStencilTexture;
-            // const depthBuffer = depthTex || regl.texture({
-            //     min: 'nearest',
-            //     mag: 'nearest',
-            //     mipmap: false,
-            //     type: 'uint16',
-            //     width,
-            //     height,
-            //     format: 'depth'
-            // });
-            // fboInfo.depth = depthBuffer;
         } else {
             const renderbuffer = depthTex || regl.renderbuffer({
                 width,
