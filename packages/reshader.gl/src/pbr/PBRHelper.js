@@ -66,8 +66,8 @@ export function createIBLMaps(regl, config = {}) {
         // cubeMap = createSkybox(regl, cube, size, false);
         // cube.destroy();
         // }
-        const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
-        const faces = getEnvmapPixels(regl, prefilterMap, size, lod);
+        // const lod = regl.hasExtension('EXT_shader_texture_lod') ? '1.0' : undefined;
+        const faces = getEnvmapPixels(regl, prefilterMap, size);
         sh = coefficients(faces, size, size);
         // cubeMap.destroy();
     }
@@ -83,12 +83,28 @@ export function createIBLMaps(regl, config = {}) {
     if (sh) {
         maps['sh'] = sh;
     }
+
+    if (config.format === 'array') {
+        maps['envMap'] = {
+            width: envMap.width,
+            height: envMap.height,
+            faces: getEnvmapPixels(regl, envMap, envCubeSize)
+        };
+        maps['prefilterMap'] = {
+            width: prefilterMap.width,
+            height: prefilterMap.height,
+            faces: getEnvmapPixels(regl, prefilterMap, prefilterCubeSize)
+        };
+        envMap.destroy();
+        prefilterMap.destroy();
+    }
+
     return maps;
 }
 
-function createSkybox(regl, cubemap, envCubeSize, rgbm) {
+function createSkybox(regl, cubemap, envCubeSize, encRgbm) {
     const drawCube = regl({
-        frag : rgbm ? '#define ENC_RGBM 1\n' + skyboxFrag : skyboxFrag,
+        frag : encRgbm ? '#define ENC_RGBM 1\n' + skyboxFrag : skyboxFrag,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -129,9 +145,9 @@ function createSkybox(regl, cubemap, envCubeSize, rgbm) {
     return color;
 }
 
-function getEnvmapPixels(regl, cubemap, envCubeSize, lod) {
+function getEnvmapPixels(regl, cubemap, envCubeSize) {
     const drawCube = regl({
-        frag : lod !== undefined ? `#define LOD ${lod}\n` + skyboxFrag : skyboxFrag,
+        frag : skyboxFrag,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices
@@ -149,7 +165,7 @@ function getEnvmapPixels(regl, cubemap, envCubeSize, lod) {
         size : envCubeSize
     }, function (/* context, props, batchId */) {
         const pixels = regl.read();
-        faces.push(pixels);
+        faces.push(new pixels.constructor(pixels));
     });
     tmpFBO.destroy();
     return faces;
