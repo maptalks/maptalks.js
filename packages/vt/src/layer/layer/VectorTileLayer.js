@@ -128,20 +128,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             };
         }
         this.ready = true;
-        if (style['resources']) {
-            const renderer = this.getRenderer();
-            if (renderer && renderer.regl) {
-                this._loadStyleResources(style['resources']).then(() => {
-                    style = style.style || [];
-                    this.setStyle(style);
-                });
-                return this;
-            } else {
-                this.ready = false;
-                //先记录styles，renderer初始化后再加载
-                this._loadingStyleRes = style['resources'];
-            }
-        }
         if (!Array.isArray(style) && !style.plugins) {
             //有plugins说明是个compressed style
             style = style.style || [];
@@ -172,19 +158,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             'computedStyle': this.getComputedStyle()
         });
         return this;
-    }
-
-    onCanvasCreate() {
-        super.onCanvasCreate();
-        if (this._loadingStyleRes) {
-            this._loadStyleResources(this._loadingStyleRes).then(() => {
-                this.getRenderer().setToRedraw();
-            });
-        }
-    }
-
-    getStyleResource(index) {
-        return this._vtStyleResources && this._vtStyleResources[index];
     }
 
     getPolygonOffsetCount() {
@@ -245,52 +218,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             }
         }
         return value;
-    }
-
-    _loadStyleResources(resources) {
-        const vtResources = this._vtStyleResources;
-        const promises = resources.map(res => {
-            if (vtResources) {
-                for (let i = 0; i < vtResources.length; i++) {
-                    if (vtResources[i].url === res.url) {
-                        return vtResources[i];
-                    }
-                }
-            }
-            if (res.type === 'ambient') {
-                const regl = this.getRenderer().regl;
-                const url = res.url;
-                if (this._replacer) {
-                    res = extend({}, res);
-                    res.url = url.replace(URL_PATTERN, this._replacer);
-                }
-                return loadAmbientTexture(res, regl).then(maps => {
-                    return {
-                        url: url,
-                        type: res.type,
-                        resource: maps
-                    };
-                });
-            }
-            //TODO 其他类型的资源加载
-            return null;
-        });
-        return Promise.all(promises).then(resources => {
-            delete this._loadingStyleRes;
-            this.ready = true;
-            const unused = [];
-            if (this._vtStyleResources) {
-                for (let i = 0; i < this._vtStyleResources.length; i++) {
-                    const res = this._vtStyleResources[i];
-                    if (res && resources.indexOf(res) === -1) {
-                        unused.push(res);
-                    }
-                }
-            }
-            this._disposeResources(unused);
-            this._vtStyleResources = resources;
-            return resources;
-        });
     }
 
     updateSceneConfig(idx, sceneConfig) {
@@ -476,27 +403,6 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     onRemove() {
         super.onRemove();
-        if (this._vtStyleResources) {
-            this._disposeResources(this._vtStyleResources);
-            delete this._vtStyleResources;
-            delete this._loadingStyleRes;
-        }
-    }
-
-    _disposeResources(resources) {
-        //删除全局资源
-        for (let i = 0; i < resources.length; i++) {
-            const res = resources[i].resource;
-            if (res.destroy) {
-                res.destroy();
-            } else {
-                for (const p in res) {
-                    if (res[p] && res[p].destroy) {
-                        res[p].destroy();
-                    }
-                }
-            }
-        }
     }
 
     static fromJSON(layerJSON) {

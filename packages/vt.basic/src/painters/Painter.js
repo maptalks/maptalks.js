@@ -267,9 +267,10 @@ class Painter {
     }
 
     addCachedTexture(url, data) {
-        let cached = this.getMap()[TEX_CACHE_KEY][url];
+        const map = this.getMap();
+        let cached = map[TEX_CACHE_KEY][url];
         if (!cached) {
-            cached = this.getMap()[TEX_CACHE_KEY][url] = {
+            cached = map[TEX_CACHE_KEY][url] = {
                 data,
                 count: 0
             };

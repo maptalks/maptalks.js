@@ -1,11 +1,10 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import { isNil, extend, isNumber } from '../../Util';
+import { extend, isNumber } from '../../Util';
 import Painter from '../Painter';
 import { setUniformFromSymbol } from '../../Util';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
-const PREFILTER_CUBE_SIZE = 256;
 const SCALE = [1, 1, 1];
 
 class StandardPainter extends Painter {
@@ -101,6 +100,7 @@ class StandardPainter extends Painter {
         }
         this._hasShadow = hasShadow;
         const isSsr = !!context.ssr;
+        this.shader = this.hasIBL() ? this._iblShader : this._noIblShader;
         const shader = this.shader;
         const fbo = this.getRenderFBO(context);
         if (isSsr) {
@@ -122,6 +122,12 @@ class StandardPainter extends Painter {
         delete this._shadowCount;
     }
 
+    hasIBL() {
+        const lightManager = this.getMap().getLightManager();
+        const resource = lightManager.getAmbientResource();
+        return !!resource;
+    }
+
     _renderSsrDepth(context) {
         this._depthShader.filter = context.sceneFilter;
         this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, this.getRenderFBO(context));
@@ -134,7 +140,6 @@ class StandardPainter extends Painter {
 
     updateSceneConfig(config) {
         extend(this.sceneConfig, config);
-        this._updateCubeLight();
         this.setToRedraw();
     }
 
@@ -159,18 +164,23 @@ class StandardPainter extends Painter {
     }
 
     delete() {
+        this.getMap().off('updatelights', this._updateLights, this);
         super.delete();
-        this._disposeIblMaps();
-        if (this._emptyCube) {
-            this._emptyCube.destroy();
+        if (this._dfgLUT) {
+            this._dfgLUT.destroy();
+            delete this._dfgLUT;
         }
+        this._disposeIblTextures();
         this.material.dispose();
-        if (this._hdr) {
-            this._hdr.dispose();
-        }
         if (this._depthShader) {
             this._depthShader.dispose();
             this._ssrShader.dispose();
+        }
+        if (this._iblShader) {
+            this._iblShader.dispose();
+        }
+        if (this._noIblShader) {
+            this._noIblShader.dispose();
         }
     }
 
@@ -180,19 +190,11 @@ class StandardPainter extends Painter {
     }
 
     init(context) {
+        this.getMap().on('updatelights', this._updateLights, this);
         //保存context，updateSceneConfig时读取
         this._context = this._context || context;
-        if (!this.sceneConfig.lights) {
-            this.sceneConfig.lights = {};
-        }
-        const lightConfig = this.sceneConfig.lights;
-        lightConfig.camera = lightConfig.camera || {};
-        lightConfig.ambient = lightConfig.ambient || {};
-
-        this._initHDR();
         this._dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
         const regl = this.regl;
-
         this.renderer = new reshader.Renderer(regl);
 
         this._createShader(context);
@@ -201,8 +203,6 @@ class StandardPainter extends Painter {
         this._bindDisposeCachedTexture = this.disposeCachedTexture.bind(this);
 
         this._updateMaterial();
-
-        this._initCubeLight();
 
         const pickingConfig = {
             vert: `
@@ -227,6 +227,13 @@ class StandardPainter extends Painter {
         };
         this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
 
+    }
+
+    _updateLights(param) {
+        if (param.ambientUpdate) {
+            this._createIBLTextures();
+        }
+        this.setToRedraw();
     }
 
     _createShader(context) {
@@ -298,7 +305,9 @@ class StandardPainter extends Painter {
             extraCommandProps
         };
 
-        this.shader = new reshader.pbr.StandardShader(config);
+        this._iblShader = new reshader.pbr.StandardShader(config);
+        delete config.defines['HAS_IBL_LIGHTING'];
+        this._noIblShader = new reshader.pbr.StandardShader(config);
         if (reshader.SsrPass && !this._ssrShader) {
             uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
             this._ssrShader = new reshader.pbr.StandardShader({
@@ -318,43 +327,30 @@ class StandardPainter extends Painter {
         }
     }
 
-    _initHDR() {
-        const regl = this.regl;
-        this._emptyCube = regl.texture(2);
-        this._loader = new reshader.ResourceLoader(this._emptyCube);
-        this._hdr = null;
-    }
-
     _onTextureLoad({ resources }) {
-        if (this._hdr && this._hdr.isReady() && !this._isIBLRecreated) {
-            //环境光纹理载入，重新生成ibl纹理
-            this.iblMaps = this._createIBLMaps(this._hdr);
-            this._isIBLRecreated = true;
-        }
         for (let i = 0; i < resources.length; i++) {
             this.addCachedTexture(resources[i].url, resources[i].data);
         }
         this.setToRedraw();
     }
 
-    _createIBLMaps(hdr) {
-        const config = this.sceneConfig.lights.ambient.resource;
-        if (this.iblMaps) {
-            this._disposeIblMaps(true);
+    _createIBLTextures() {
+        const resource = this.getMap().getLightManager().getAmbientResource();
+        if (this._iblTexes) {
+            this._disposeIblTextures();
         }
         const regl = this.regl;
-        const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
-            envTexture: hdr.getREGLTexture(regl),
-            ignoreSH: !!config['sh'],
-            envCubeSize: PREFILTER_CUBE_SIZE,
-            prefilterCubeSize: PREFILTER_CUBE_SIZE
-        });
-        if (config['sh']) {
-            maps.sh = config['sh'];
-        }/* else {
-            console.log(JSON.stringify(maps.sh));
-        }*/
-        return maps;
+        this._iblTexes = {
+            'prefilterMap': regl.cube({
+                width: resource.prefilterMap.width,
+                height: resource.prefilterMap.height,
+                faces: resource.prefilterMap.faces,
+                min: 'linear',
+                mag: 'linear',
+                format: 'rgba',
+            }),
+            'sh': resource.sh
+        };
     }
 
     _updateMaterial() {
@@ -418,91 +414,6 @@ class StandardPainter extends Painter {
         this.material = new reshader.pbr.StandardMaterial(material);
     }
 
-    _getHDRResource() {
-        return this.sceneConfig.lights && this.sceneConfig.lights.ambient && this.sceneConfig.lights.ambient.resource;
-    }
-
-    _updateCubeLight() {
-        if (!this.iblMaps) {
-            return;
-        }
-        if (this.iblMaps) {
-            const config = this._getHDRResource();
-            if (isNumber(config)) {
-                if (config === this._iblConfig) {
-                    return;
-                }
-            } else if (config && config.url === this._iblConfig.url) {
-                return;
-            }
-            this._disposeIblMaps(true);
-        }
-        this._initCubeLight();
-    }
-
-    _initCubeLight() {
-        const config = this._getHDRResource();
-        if (!config && config !== 0) {
-            return;
-        }
-        this._iblConfig = config;
-        if (isNumber(config)) {
-            //从图层的全局resources中读取
-            const { resource } = this.layer.getStyleResource(config);
-            this.iblMaps = this._createIBLMapFromResource(resource);
-            return;
-        } else if (config.url || config.data) {
-            //a url
-            const cached = config.url && this.getCachedTexture(config.url);
-            const props = {
-                url: config.url,
-                arrayBuffer: true,
-                hdr: true,
-                type: 'float',
-                format: 'rgba',
-                flipY: true
-            };
-            if (cached) {
-                if (cached.then) {
-                    props.promise = cached;
-                } else {
-                    props.data = cached;
-                }
-            }
-            this._isIBLRecreated = !!config.data;
-            if (!props.data && config.data) {
-                let data = config.data;
-                if (config.data instanceof ArrayBuffer) {
-                    // HDR raw data
-                    data = reshader.HDR.parseHDR(config.data);
-                    props.data = data.pixels;
-                    props.width = data.width;
-                    props.height = data.height;
-                } else {
-                    props.data = data;
-                }
-            }
-            this._hdr = new reshader.Texture2D(
-                props,
-                this._loader
-            );
-            this._hdr.once('complete', this._bindedOnTextureLoad);
-            this._hdr.once('disposed', this._bindDisposeCachedTexture);
-            //生成ibl纹理
-            this.iblMaps = this._createIBLMaps(this._hdr);
-            return;
-        }
-    }
-
-    _createIBLMapFromResource(resource) {
-        const { prefilterMap, dfgLUT, sh } = resource;
-        return {
-            prefilterMap,
-            dfgLUT,
-            sh
-        };
-    }
-
     getUniformValues(map, context) {
         const viewMatrix = map.viewMatrix;
         const projMatrix = map.projMatrix;
@@ -533,76 +444,59 @@ class StandardPainter extends Painter {
     }
 
     _getLightUniforms() {
-        const iblMaps = this.iblMaps;
-        const lightConfig = this.sceneConfig.lights;
+        const lightManager = this.getMap().getLightManager();
+        const iblMaps = lightManager.getAmbientResource();
+        const ambientLight = lightManager.getAmbientLight();
+        const directionalLight = lightManager.getDirectionalLight();
         let uniforms;
         if (iblMaps) {
-            const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+            if (!this._iblTexes) {
+                this._createIBLTextures();
+            }
+            const iblTexes = this._iblTexes;
+            const cubeSize = iblTexes.prefilterMap.width;
+            const mipLevel = Math.log(cubeSize) / Math.log(2);
             uniforms = {
-                'sSpecularPBR': iblMaps.prefilterMap,
-                'uDiffuseSPH': iblMaps.sh,
+                'sSpecularPBR': iblTexes.prefilterMap,
+                'uDiffuseSPH': iblTexes.sh,
                 'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
-                'uTextureEnvironmentSpecularPBRTextureSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
-                // 'iblMaxMipLevel': [mipLevel, 1 << mipLevel],
-                // 'light_iblDFG': iblMaps.dfgLUT,
-                // 'light_iblSpecular': iblMaps.prefilterMap,
-                // 'iblSH': iblMaps.sh,
-                // 'iblLuminance': lightConfig.ambient.luminance || 12000,
-                // 'exposure': ev100toExposure(ev100),
-                // 'ev100': ev100,
-                // 'sun': [1, 1, 1, -1],
+                'uTextureEnvironmentSpecularPBRTextureSize': [cubeSize, cubeSize],
             };
         } else {
             uniforms = {
-                'uAmbientColor': lightConfig.ambient.color || [0.08, 0.08, 0.08]
+                'uAmbientColor': ambientLight.color || [0.2, 0.2, 0.2]
             };
-            // uniforms = {
-            //     'light_ambientColor': lightConfig.ambient.color || [0.05, 0.05, 0.05],
-            //     'iblLuminance': lightConfig.ambient.luminance || 12000,
-            //     'exposure': ev100toExposure(ev100),
-            //     'ev100': ev100,
-            //     'sun': [1, 1, 1, -1]
-            // };
         }
-        uniforms['uEnvironmentExposure'] = isNumber(lightConfig.ambient.exposure) ? lightConfig.ambient.exposure : 1; //2]
+        uniforms['uEnvironmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
         uniforms['sIntegrateBRDF'] = this._dfgLUT;
 
-        if (lightConfig.directional) {
-            uniforms['uSketchfabLight0_diffuse'] = [...(lightConfig.directional.color || [1, 1, 1]), 1];
-            uniforms['uSketchfabLight0_viewDirection'] = lightConfig.directional.direction || [1, 1, -1];
+        if (directionalLight) {
+            uniforms['uSketchfabLight0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];
+            uniforms['uSketchfabLight0_viewDirection'] = directionalLight.direction || [1, 1, -1];
         }
         return uniforms;
     }
 
     _getDefines(shadowDefines) {
         const defines = {};
-        if (!isNil(this._getHDRResource())) {
-            defines['HAS_IBL_LIGHTING'] = 1;
-        }
+        defines['HAS_IBL_LIGHTING'] = 1;
+
         if (shadowDefines) {
             extend(defines, shadowDefines);
         }
         return defines;
     }
 
-    _disposeIblMaps(reserveDFG) {
-        if (!reserveDFG && this._dfgLUT) {
-            this._dfgLUT.destroy();
-        }
-        if (!this.iblMaps) {
+    _disposeIblTextures() {
+        if (!this._iblTexes) {
             return;
         }
-        const resource = this.sceneConfig.lights.ambient.resource;
-        if (!isNumber(resource)) {
-            //如果是数字，说明是图层定义的全局resource中的资源，不能dispose
-            for (const p in this.iblMaps) {
-                if (this.iblMaps[p].destroy) {
-                    this.iblMaps[p].destroy();
-                }
+        for (const p in this._iblTexes) {
+            if (this._iblTexes[p].destroy) {
+                this._iblTexes[p].destroy();
             }
         }
-
-        delete this.iblMaps;
+        delete this._iblTexes;
     }
 
     shouldDeleteMeshOnUpdateSymbol() {

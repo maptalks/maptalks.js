@@ -10,9 +10,6 @@ const SCALE = [1, 1, 1];
 class PhongPainter extends Painter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
-        if (!this.sceneConfig.lights) {
-            this.sceneConfig.lights = {};
-        }
         if (isFunctionDefinition(this.symbolDef['polygonFill'])) {
             const map = layer.getMap();
             const fn = piecewiseConstant(this.symbolDef['polygonFill']);
@@ -103,17 +100,27 @@ class PhongPainter extends Painter {
     }
 
     updateSceneConfig(config) {
+        let needRefresh;
+        if (this.sceneConfig.cullFace !== config.cullFace) {
+            needRefresh = true;
+        }
         extend(this.sceneConfig, config);
-        this.init();
+        if (needRefresh) {
+            const config = this.getShaderConfig();
+            this.shader.dispose();
+            this.shader = new reshader.PhongShader(config);
+        }
         this.setToRedraw();
     }
 
     delete(context) {
+        this.getMap().off('updatelights', this._updateLights, this);
         super.delete(context);
         this._material.dispose();
     }
 
     init() {
+        this.getMap().on('updatelights', this._updateLights, this);
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
@@ -142,6 +149,10 @@ class PhongPainter extends Painter {
         };
         this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
 
+    }
+
+    _updateLights() {
+        this.setToRedraw();
     }
 
     getShaderConfig() {
@@ -303,13 +314,15 @@ class PhongPainter extends Painter {
     }
 
     _getLightUniformValues() {
-        const lightConfig = this.sceneConfig.light;
+        const lightManager = this.getMap().getLightManager();
+        const ambientLight = lightManager.getAmbientLight() || {};
+        const directionalLight = lightManager.getDirectionalLight() || {};
 
         const uniforms = {
-            'lightAmbient': lightConfig.ambient,
-            'lightDiffuse': lightConfig.diffuse,
-            'lightSpecular': lightConfig.specular,
-            'lightDirection': lightConfig.direction
+            'lightAmbient': ambientLight.color || [0.2, 0.2, 0.2],
+            'lightDiffuse': directionalLight.color || [0.1, 0.1, 0.1],
+            'lightSpecular': directionalLight.specular || [0.8, 0.8, 0.8],
+            'lightDirection': directionalLight.direction || [1, 1, -1]
         };
 
         return uniforms;

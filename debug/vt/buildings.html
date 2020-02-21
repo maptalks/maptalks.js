@@ -46,7 +46,7 @@
       // }),
       "center":[13.414627196474385,52.52909578112681],"zoom":16.309955844160633,"pitch":52.20000000000007,"bearing":0,
       "center":[13.418531244478004,52.533396361654326],"zoom":18.582413946875466,"pitch":52.20000000000007,"bearing":0,
-      "center":[13.412189760922047,52.52716426491233],"zoom":19.136793519083586,"pitch":13.600000000000058,"bearing":150,
+      "center":[13.412189760922047,52.52716426491233],"zoom":19.136793519083586,"pitch":44.80000000000011,"bearing":116,
 
       //纽约
       // "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
@@ -91,6 +91,37 @@
 
     console.log(data.features.length);
 
+    const lights = {
+      ambient: {
+        resource: {
+          url: './resources/industrial_room.hdr',
+          // sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
+          ////echarts-gl上的例子
+          // url: './resources/pisa.hdr',
+          // sh: [
+          //   [0.8216, 0.6652, 0.5816],
+          //   [0.0265, -0.0286, -0.0697],
+          //   [-0.0170, -0.0221, 0.0129],
+          //   [-0.0024, 0.0028, 0.0057],
+          //   [-0.0017, 0.0098, 0.0140],
+          //   [-0.0026, -0.0008, 0.0014],
+          //   [0.0197, -0.0080, -0.0268],
+          //   [0.0269, 0.0155, 0.0024],
+          //   [0.0294, 0.0102, -0.0056]
+          // ]
+          // exposure: 1.5
+        },
+        // color: [0.05, 0.05, 0.05],
+        exposure: 1.5
+      },
+      directional: {
+        color : [0.1, 0.1, 0.1],
+        direction : [1, 0, -1],
+        // intensity: 80000
+      }
+    };
+    map.setLightConfig(lights);
+
     const renderPlugin = {
         type : 'lit',
         dataConfig : {
@@ -117,35 +148,6 @@
           //   blurOffset : 1,
           //   // debug : ['shadow', 'shadow2']
           // },
-          lights : {
-            ambient: {
-              resource: {
-                url: './resources/industrial_room.hdr',
-                sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
-                ////echarts-gl上的例子
-                // url: './resources/pisa.hdr',
-                // sh: [
-                //   [0.8216, 0.6652, 0.5816],
-                //   [0.0265, -0.0286, -0.0697],
-                //   [-0.0170, -0.0221, 0.0129],
-                //   [-0.0024, 0.0028, 0.0057],
-                //   [-0.0017, 0.0098, 0.0140],
-                //   [-0.0026, -0.0008, 0.0014],
-                //   [0.0197, -0.0080, -0.0268],
-                //   [0.0269, 0.0155, 0.0024],
-                //   [0.0294, 0.0102, -0.0056]
-                // ]
-                // exposure: 1.5
-              },
-              // color: [0.1, 0.1, 0.1],
-              exposure: 2
-            },
-            directional: {
-              color : [0.1, 0.1, 0.1],
-              direction : [1, 0, -1],
-              // intensity: 80000
-            }
-          }
         }
       };
       // #E9E7EC
@@ -167,7 +169,7 @@
       // 'uvScaleFactor': 1,
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       'uBaseColorFactor': [1, 1, 1, 1],
-      'uRoughnessFactor': 0.0,
+      'uRoughnessFactor': 0.1,
       'uMetalnessFactor': 1,
       'uOutputLinear': 1
     };
@@ -204,12 +206,12 @@
               default: '#fff',
               type: 'categorical',
               stops : [
-                // [5, '#313695'],
-                // [3, '#4575b4'],
-                // [1, '#74add1']
-                [5, '#6358F1'],
-                [3, '#00f'],
-                [1, '#0f0']
+                [5, '#313695'],
+                [3, '#4575b4'],
+                [1, '#74add1']
+                // [5, '#6358F1'],
+                // [3, '#00f'],
+                // [1, '#0f0']
               ]
             }
           }
@@ -304,7 +306,7 @@
         opacity : 0.8,
         color : [0, 0, 0],
         blurOffset : 1,
-        lightDirection : renderPlugin.sceneConfig.lights.directional.direction
+        lightDirection : lights.directional.direction
         // debug : ['shadow', 'shadow2']
       },
       postProcess: {
@@ -322,13 +324,22 @@
           intensity: 0.5
         },
         taa: {
-          enable: true
+          enable: false
+        },
+        sharpen: {
+          enable: false,
+          factor: 0.2
         }
       }
     };
     // layer1.addTo(map);
     // map.addLayer(layer);
     var groupLayer = new maptalks.GroupGLLayer('group', [layer, layer1], { antialias: false, sceneConfig }).addTo(map);
+
+    function turnOnTaa() {
+      sceneConfig.postProcess.taa.enable = true;
+      groupLayer.setSceneConfig(sceneConfig);
+    }
 
     function addLayer() {
       groupLayer.addTo(map);
@@ -358,7 +369,7 @@
 
     function initGUI() {
       const gui = new dat.GUI( { width: 250 } );
-      const dirConfig = renderPlugin.sceneConfig.lights.directional.direction;
+      const dirConfig = lights.directional.direction;
       const direction = {
         x: dirConfig[0],
         y: dirConfig[1],
@@ -371,17 +382,17 @@
       const zCtrl = folder.add(direction, 'z', -1, 1, 0.1);
       xCtrl.onChange(function () {
         dirConfig[0] = direction.x;
-        layer.updateSceneConfig(0, renderPlugin.sceneConfig);
+        map.setLightConfig(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
       yCtrl.onChange(function () {
         dirConfig[1] = direction.y;
-        layer.updateSceneConfig(0, renderPlugin.sceneConfig);
+        map.setLightConfig(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
       zCtrl.onChange(function () {
         dirConfig[2] = direction.z;
-        layer.updateSceneConfig(0, renderPlugin.sceneConfig);
+        map.setLightConfig(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
 
@@ -397,6 +408,12 @@
       biasCtrl.onChange(onChange);
       radiusCtrl.onChange(onChange);
       intensityCtrl.onChange(onChange);
+
+      const sharpConfig = sceneConfig.postProcess.sharpen;
+      const sharp = gui.addFolder('sharpen');
+      sharp.open();
+      const sharpCtrl = sharp.add(sharpConfig, 'factor', 0, 1, 0.1);
+      sharpCtrl.onChange(onChange);
     }
 
     function updateMaterial(key, value) {
