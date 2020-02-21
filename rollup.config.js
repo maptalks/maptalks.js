@@ -5,22 +5,19 @@ const commonjs = require('rollup-plugin-commonjs');
 
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.com\n */`;
 
-export default {
-    input: './src/index.js',
-    external : ['fast-deep-equal'],
-    output: {
-        sourcemap : false,
-        banner,
-        format:'es',
-        file: pkg.module
-    },
-    plugins: [
-        resolve({
-            module : true,
-            jsnext : true,
-            main : true
-        }),
-        commonjs(),
+const production = process.env.BUILD === 'production';
+
+const plugins = [
+    resolve({
+        module : true,
+        jsnext : true,
+        main : true
+    }),
+    commonjs()
+];
+
+if (production) {
+    plugins.push(
         terser({
             mangle: {
                 properties: {
@@ -32,5 +29,17 @@ export default {
                 comments : '/^!/'
             }
         })
-    ]
+    );
+}
+
+export default {
+    input: './src/index.js',
+    external : ['fast-deep-equal'],
+    output: {
+        sourcemap : false,
+        banner,
+        format:'es',
+        file: pkg.module
+    },
+    plugins
 };
