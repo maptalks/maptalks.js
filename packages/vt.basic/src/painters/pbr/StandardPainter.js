@@ -106,7 +106,7 @@ class StandardPainter extends Painter {
         if (isSsr) {
             this._renderSsrDepth(context);
             context.renderTarget.fbo = context.ssr.fbo;
-            this.shader = this._ssrShader;
+            this.shader = this.hasIBL() ? this._ssrShader : this._noIblSsrShader;
         }
         super.paint(context);
         if (isSsr) {
@@ -175,6 +175,7 @@ class StandardPainter extends Painter {
         if (this._depthShader) {
             this._depthShader.dispose();
             this._ssrShader.dispose();
+            this._noIblSsrShader.dispose();
         }
         if (this._iblShader) {
             this._iblShader.dispose();
@@ -310,9 +311,16 @@ class StandardPainter extends Painter {
         this._noIblShader = new reshader.pbr.StandardShader(config);
         if (reshader.SsrPass && !this._ssrShader) {
             uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
+            const defines = this._getDefines(reshader.SsrPass.getDefines());
             this._ssrShader = new reshader.pbr.StandardShader({
                 uniforms: uniformDeclares,
-                defines: this._getDefines(reshader.SsrPass.getDefines()),
+                defines,
+                extraCommandProps
+            });
+            delete defines['HAS_IBL_LIGHTING'];
+            this._noIblSsrShader = new reshader.pbr.StandardShader({
+                uniforms: uniformDeclares,
+                defines,
                 extraCommandProps
             });
 
