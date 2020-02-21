@@ -34,6 +34,14 @@ include(GLContext.prototype, {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteTexture
      */
     deleteTexture(texture) {
+        const units = this.states.textures.units;
+        for (let i = 0; i < units.length; i++) {
+            for (const p in units[i]) {
+                if (units[i][p] === texture) {
+                    units[i][p] = null;
+                }
+            }
+        }
         return this._gl.deleteTexture(texture);
     },
     /**
