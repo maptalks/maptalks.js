@@ -9,5 +9,5 @@ export {
 export { createREGL, reshader };
 export { default as GroupGLLayer } from './layer/GroupGLLayer';
 export { GLContext } from '@maptalks/fusiongl';
-import './light/MapLight.js';
+import './light/MapLights.js';
 import './map/MapPostProcess.js';
