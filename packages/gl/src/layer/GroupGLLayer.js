@@ -553,6 +553,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 parent._contextFrameTime = timestamp;
                 parent._frameEvent = event;
             }
+            if (context) {
+                context.getFramebuffer = getFramebuffer;
+                context.getDepthTexture = getDepthTexture;
+            }
             if (event) {
                 return drawMethod.call(this, event, timestamp, context || parent._drawContext);
             } else {
@@ -573,7 +577,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const context = {};
-        let framebuffer;
+        let renderTarget;
         if (!config || !config.enable) {
             if (this._targetFBO) {
                 this._targetFBO.destroy();
@@ -608,13 +612,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             } else if (enableSsr) {
                 context['sceneFilter'] = noSsrFilter;
             }
-            framebuffer = this._getFramebufferTarget();
-            if (framebuffer) {
-                context.renderTarget = framebuffer;
+            renderTarget = this._getFramebufferTarget();
+            if (renderTarget) {
+                context.renderTarget = renderTarget;
             }
         }
 
-        const shadowContext = this._getShadowContext(framebuffer && framebuffer.fbo);
+        const shadowContext = this._getShadowContext(renderTarget && renderTarget.fbo);
         if (shadowContext) {
             context.shadow = shadowContext;
         }
@@ -917,7 +921,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const context = this._drawContext;
         context['sceneFilter'] = bloomFilter;
         context.renderTarget = {
-            fbo: this._bloomFBO
+            fbo: this._bloomFBO,
+            getFramebuffer,
+            getDepthTexture
         };
         if (event) {
             this.forEachRenderer(renderer => {
@@ -963,4 +969,13 @@ function isNil(obj) {
 
 function isNumber(val) {
     return (typeof val === 'number') && !isNaN(val);
+}
+
+function getFramebuffer(fbo) {
+    return fbo['_framebuffer'].framebuffer;
+}
+
+function getDepthTexture(fbo) {
+    //TODO 也可能是renderbuffer
+    return fbo.depthStencil._texture.texture;
 }
