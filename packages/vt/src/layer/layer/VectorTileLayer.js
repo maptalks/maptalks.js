@@ -4,8 +4,6 @@ import { extend, compileStyle, isNil, isString, isObject } from '../../common/Ut
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import { isFunctionDefinition } from '@maptalks/function-type';
-import Promise from '../../common/Promise';
-import { loadAmbientTexture } from './Loaders';
 
 const URL_PATTERN = /(\{\$root\}|\{\$iconset\})/g;
 

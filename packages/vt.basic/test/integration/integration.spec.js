@@ -14,7 +14,16 @@ const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
     pitch: 0,
-    bearing: 0
+    bearing: 0,
+    lights: {
+        ambient: {
+            color: [0.1, 0.1, 0.1]
+        },
+        directional: {
+            color: [0.1, 0.1, 0.1],
+            direction: [1, 0, -1],
+        }
+    }
 };
 
 describe('vector tile integration specs', () => {
@@ -34,6 +43,9 @@ describe('vector tile integration specs', () => {
         return done => {
             const options = style.view || DEFAULT_VIEW;
             options.centerCross = true;
+            if (!options.lights) {
+                options.lights = DEFAULT_VIEW.lights;
+            }
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
@@ -79,6 +91,9 @@ describe('vector tile integration specs', () => {
         return done => {
             const options = style.view || DEFAULT_VIEW;
             options.centerCross = true;
+            if (!options.lights) {
+                options.lights = DEFAULT_VIEW.lights;
+            }
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);

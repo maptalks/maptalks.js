@@ -9,7 +9,16 @@ const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
     pitch: 0,
-    bearing: 0
+    bearing: 0,
+    lights: {
+        ambient: {
+            color: [0.1, 0.1, 0.1]
+        },
+        directional: {
+            color: [0.1, 0.1, 0.1],
+            direction: [1, 0, -1],
+        }
+    }
 };
 
 const line = {
@@ -389,17 +398,7 @@ describe('update style specs', () => {
                 altitudeScale: 5,
                 defaultAltitude: 0
             },
-            sceneConfig: {
-                lights: {
-                    ambient: {
-                        color: [0.1, 0.1, 0.1]
-                    },
-                    directional: {
-                        color: [0.1, 0.1, 0.1],
-                        direction: [1, 0, -1],
-                    }
-                }
-            },
+            sceneConfig: {},
         };
         const material = {
             'baseColorTexture': 'file://' + path.resolve(__dirname, './resources/609-normal.jpg'),

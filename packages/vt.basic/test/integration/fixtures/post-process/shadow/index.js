@@ -38,15 +38,6 @@ const plugin = {
         defaultAltitude: 0
     },
     sceneConfig: {
-        lights: {
-            ambient: {
-                color: [0.1, 0.1, 0.1]
-            },
-            directional: {
-                color: [0.1, 0.1, 0.1],
-                direction: [1, 0, -1],
-            }
-        }
     },
 };
 const material = {

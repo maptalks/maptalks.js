@@ -76,8 +76,16 @@ class FillPainter extends BasicPainter {
     }
 
     getRenderFBO(context) {
-        //采用BasicPainter的getRenderFBO，即允许aa
-        return super.super.getRenderFBO(context);
+        const renderTarget = context && context.renderTarget;
+        if (!renderTarget) {
+            return null;
+        }
+        if (this.sceneConfig.antialias === undefined || this.sceneConfig.antialias) {
+            //turn on antialias by default
+            return renderTarget.fbo;
+        } else {
+            return renderTarget.noAaFbo;
+        }
     }
 
     _getFnTypeConfig() {

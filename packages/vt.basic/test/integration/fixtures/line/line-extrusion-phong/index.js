@@ -21,12 +21,6 @@ const style = [
                 type: 'line-extrusion'
             },
             sceneConfig: {
-                light: {
-                    'ambient': [0.4, 0.4, 0.4],
-                    'diffuse': [1.0, 1.0, 1.0],
-                    'specular': [1, 1, 1],
-                    'direction': [1, 1, -1]
-                }
             },
         },
         symbol: {

@@ -10,7 +10,19 @@ const DEFAULT_VIEW = {
     center: [0, 0],
     zoom: 6,
     pitch: 0,
-    bearing: 0
+    bearing: 0,
+    lights: {
+        ambient: {
+            // url: path.resolve(__dirname, 'resources', 'hall.hdr'),
+            // luminance: 12000
+            color: [0.1, 0.1, 0.1]
+        },
+        directional: {
+            color: [1, 1, 1],
+            direction: [0, 1, 1],
+            intensity: 30000
+        }
+    }
 };
 
 const DATA = {
@@ -137,19 +149,7 @@ function getRenderPlugin(type) {
             tangent: true
         },
         sceneConfig: {
-            animation: false,
-            lights: {
-                ambient: {
-                    // url: path.resolve(__dirname, 'resources', 'hall.hdr'),
-                    // luminance: 12000
-                    color: [0.1, 0.1, 0.1]
-                },
-                directional: {
-                    color: [1, 1, 1],
-                    direction: [0, 1, 1],
-                    intensity: 30000
-                }
-            }
+            animation: false
         }
     };
 }

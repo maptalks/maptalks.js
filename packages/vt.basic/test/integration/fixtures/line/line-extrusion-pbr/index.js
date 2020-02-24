@@ -31,16 +31,6 @@ const style = [
 
             },
             sceneConfig: {
-                lights: {
-                    ambient: {
-
-                    },
-                    directional: {
-                        color: [1, 1, 1],
-                        direction: [0, 1, 1],
-                        intensity: 30000
-                    }
-                }
             }
         },
         symbol: {

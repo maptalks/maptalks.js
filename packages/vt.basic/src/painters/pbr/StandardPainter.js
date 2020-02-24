@@ -18,6 +18,7 @@ class StandardPainter extends Painter {
         } else {
             this.colorSymbol = this.getSymbol()['polygonFill'];
         }
+        this._loader = new reshader.ResourceLoader();
     }
 
     createGeometry(glData) {
