@@ -130,6 +130,10 @@ export default class LineExtrusionPack extends LinePack {
         const { aPosition, aPosition0, aLinesofar, aUp, aExtrude } = data;
         const arrays = {};
         const normals = buildNormals(aPosition, indices);
+        //因为line的三角形旋转方向是反的，所以normal的结果需要取反
+        for (let i = 0; i < normals.length; i++) {
+            normals[i] = -normals[i];
+        }
         let uvs;
         let tangents;
         if (this.symbol['material'] && hasTexture(this.symbol['material'])) {
