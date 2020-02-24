@@ -438,7 +438,7 @@ describe('update style specs', () => {
             }
         });
         layer.addTo(map);
-    });
+    }).timeout(10000);
 
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle) {
         const style = [
