@@ -68,6 +68,7 @@ varying vec3 vFragPos;
 #endif
 
 #include <viewshed_frag>
+#include <flood_frag>
 
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
@@ -170,6 +171,10 @@ void main() {
 
     #ifdef HAS_VIEWSHED
         viewshed_draw();
+    #endif
+
+    #ifdef HAS_FLOODANALYSE
+        draw_floodAnalyse();
     #endif
     // gl_FragColor.a = 0.7;
 }

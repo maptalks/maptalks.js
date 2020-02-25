@@ -52,7 +52,10 @@ class PhongShader extends MeshShader {
                 'specularGlossinessTexture',
                 //viewshed
                 'viewshed_depthMapFromViewpoint',
-                'viewshed_projViewMatrixFromViewpoint'
+                'viewshed_projViewMatrixFromViewpoint',
+                //floodAnalyse
+                'flood_waterHeight',
+                'flood_waterColor',
             ],
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}

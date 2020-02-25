@@ -12,6 +12,8 @@ import skin_vert from './glsl/skin.vert';
 
 import viewshed_frag from './glsl/viewshed.frag';
 import viewshed_vert from './glsl/viewshed.vert';
+import flood_frag from './glsl/flood.frag';
+import flood_vert from './glsl/flood.vert';
 
 
 //webgl 2.0中的函数实现
@@ -95,7 +97,9 @@ const ShaderChunk = {
     instance_vert,
     skin_vert,
     viewshed_frag,
-    viewshed_vert
+    viewshed_vert,
+    flood_frag,
+    flood_vert
 };
 /* eslint-enable camelcase */
 

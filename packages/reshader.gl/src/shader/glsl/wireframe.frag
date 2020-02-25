@@ -32,6 +32,7 @@ uniform float opacity;
 #extension GL_OES_standard_derivatives : enable
 
 #include <viewshed_frag>
+#include <flood_frag>
 const float PI = 3.14159265;
 
 // This is like
@@ -112,5 +113,9 @@ void main () {
   gl_FragColor = getStyledWireframe(vBarycentric) * opacity;
   #ifdef HAS_VIEWSHED
       viewshed_draw();
+  #endif
+
+  #ifdef HAS_FLOODANALYSE
+      draw_floodAnalyse();
   #endif
 }

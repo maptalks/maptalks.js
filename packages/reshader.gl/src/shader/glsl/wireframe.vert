@@ -9,6 +9,7 @@ uniform mat4 positionMatrix;
 
 #include <get_output>
 #include <viewshed_vert>
+#include <flood_vert>
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
@@ -16,5 +17,9 @@ void main () {
     vBarycentric = aBarycentric;
     #ifdef HAS_VIEWSHED
         viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localPosition);
+    #endif
+
+    #ifdef HAS_FLOODANALYSE
+        flood_getHeight(modelMatrix * localPositionMatrix * localPosition);
     #endif
 }

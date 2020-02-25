@@ -64,6 +64,7 @@ varying vec3 vModelVertex;
 
 #include <get_output>
 #include <viewshed_vert>
+#include <flood_vert>
 #ifdef HAS_SHADOWING
     #include <vsm_shadow_vert>
 #endif
@@ -150,5 +151,9 @@ void main() {
 
     #ifdef HAS_VIEWSHED
         viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localVertex);
+    #endif
+
+    #ifdef HAS_FLOODANALYSE
+        flood_getHeight(modelMatrix * localPositionMatrix * localVertex);
     #endif
 }

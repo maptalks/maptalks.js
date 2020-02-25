@@ -38,6 +38,11 @@ uniform mat4 projViewMatrix;
 
 #include <get_output>
 #include <viewshed_vert>
+#include <flood_vert>
+
+#ifdef HAS_FLOODANALYSE
+    varying float vHeight;
+#endif
 
 #ifdef HAS_EXTRUSION_OPACITY
     attribute float aExtrusionOpacity;
@@ -110,5 +115,9 @@ void main()
 
     #ifdef HAS_VIEWSHED
         viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localPosition);
+    #endif
+
+    #ifdef HAS_FLOODANALYSE
+        flood_getHeight(modelMatrix * localPositionMatrix * localPosition);
     #endif
 }
