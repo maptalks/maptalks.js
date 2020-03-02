@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>shadow test</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:800px;height:800px}
+    .btn{width:80px;height:30px;margin-left: 10px;cursor: pointer;}
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+  <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+  <script src="js/gltf-loader.js" type="text/javascript"></script>
+  <script src="js/earcut.min.js" type="text/javascript"></script>
+  <script src="js/dat.gui.min.js" type="text/javascript"></script>
+  <body>
+    <canvas id="canvas" width=800 height=800 class="container" style="border : 1px solid;float: left;"></canvas>
+    <div style = "width:400px;height: 800px;position: absolute;left: 800px;">
+        <input type="button" class="btn" value="测距" id = "distance"/>
+        <input type="button" class="btn" value="测面" id = "area"/>
+        <input type="button" class="btn" value="测高" id = "height"/><br>
+        <label id="result" style="margin-left: 10px;">当前多边形面积: 0</label>    
+    </div>                                                                                            
+    <script type="module">
+        import planeData from './common/plane.js';
+        const { createREGL, mat4, reshader } = maptalksgl;
+        const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
+        let camPos = [0, 7, 11];
+        const cameraNearFar = [0.1, 1000];
+        let mouseDown = false;
+        let roll = 0;
+        let pitch = Math.PI / 4;
+        let translate = 11;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        let viewpoint = [];
+        let currentAngle = 0;
+        let waterHeight = 0.2;
+        let drawing = false;
+        let drawingState = '';
+        let scanning = true;
+        let tempPositions = [];
+        let drawingPositons = [];
+        let linePositions = [];
+        let prepareMoving = false;
+        const TEXTURE_SAMPLER = {
+            '9728' : 'nearest',
+            '9729' : 'linear',
+            '9984' : 'nearest mipmap nearest',
+            '9985' : 'linear mipmap nearest',
+            '9986' : 'nearest mipmap linear',
+            '9987' : 'linear mipmap linear',
+            '33071' : 'clamp ro edge',
+            '33684' : 'mirrored repeat',
+            '10497' : 'repeat'
+        };
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_texture_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod'
+            ]
+        });
+
+        const pickingVert = `
+            attribute vec3 aPosition;
+            uniform mat4 projViewMatrix;
+            uniform mat4 modelMatrix;
+            uniform mat4 positionMatrix;
+            //引入fbo picking的vert相关函数
+            #include <fbo_picking_vert>
+            #include <get_output>
+            void main()
+            {
+                mat4 localPositionMatrix = getPositionMatrix();
+                gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * getPosition(aPosition);
+                //传入gl_Position的depth值
+                fbo_picking_setData(gl_Position.w, true);
+            }`;
+        
+        const polygonVert = `
+            attribute vec3 aPosition;
+            uniform mat4 projViewMatrix;
+            uniform mat4 modelMatrix;
+            uniform mat4 positionMatrix;
+            #include <get_output>
+            void main()
+            {
+                mat4 localPositionMatrix = getPositionMatrix();
+                gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * getPosition(aPosition);
+            }
+        `;
+
+        const polygonFrag = `
+            precision mediump float;
+            uniform vec4 fill;
+            void main() {
+                gl_FragColor = fill;
+            }
+        `;
+        // let iblMaps;
+        let scene = new reshader.Scene([]);
+        let geometryScene = new reshader.Scene([]);
+        let lineScene = new reshader.Scene([]);
+        let currentGeometry = createGeometry(drawingPositons);
+        let lineGeometry = createGeometry(drawingPositons, 'lines');
+        const renderer = new reshader.Renderer(regl);
+        const viewport = {
+            x: 0,
+            y: 0,
+            width: () => {
+                return canvas.width;
+            },
+            height: () => {
+                return canvas.height;
+            }
+        };
+        var pickingFBO = regl.framebuffer(canvas.width, canvas.height);
+        var picking = new reshader.FBORayPicking(
+            renderer,
+            {
+                vert : pickingVert,
+                uniforms : [
+                    {
+                        name : 'projViewModelMatrix',
+                        type : 'function',
+                        fn : function (context, props) {
+                            return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        }
+                    },
+                    'projViewMatrix',
+                    'uPickingId',
+                    'positionMatrix'
+                ]
+            },
+            pickingFBO
+        );
+        const uniforms = {
+            halton: [0.2107, -0.0202],
+            globalTexSize: [canvas.width, canvas.height],
+            lightAmbient: [0.3, 0.7, 0.4],
+            lightDiffuse: [1.0, 1.0, 1.0],
+            lightSpecular: [1.0, 1.0, 1.0],
+            lightDirection: [-1, -1, 1]
+        };
+        const shader = new reshader.PhongShader({
+            positionAttribute: 'POSITION',
+            normalAttribute: 'NORMAL',
+            extraCommandProps: {
+                viewport
+            }
+        });
+
+        const geometryShader = new reshader.MeshShader({
+            vert: polygonVert,
+            frag: polygonFrag,
+            uniforms : [
+                'projViewMatrix',
+                'modelMatrix',
+                'positionMatrix',
+                'fill'
+            ],
+            positionAttribute : 'POSITION',
+            extraCommandProps : {
+            }
+        })
+        function drawScene() { 
+            const matrix = getViewProjection();
+            uniforms['projViewMatrix'] = matrix.projViewMatrix;
+            uniforms['projMatrix'] = matrix.projMatrix;
+            uniforms['viewMatrix'] = matrix.viewMatrix;
+            uniforms['cameraPosition'] = camPos;
+            renderer.render(
+                shader,
+                uniforms,
+                scene,
+                null
+            );
+        }
+        
+        const geometryUniforms = {
+            'fill': [1.0, 0.1, 0.1, 0.8]
+        };
+        function drawGeometryScene() {
+            const matrix = getViewProjection();
+            geometryUniforms['projViewMatrix'] = matrix.projViewMatrix;
+            renderer.render(
+                geometryShader,
+                geometryUniforms,
+                geometryScene,
+                null
+            );
+        }
+        
+        const lineUniforms = {
+            'fill': [0.1, 0.1, 0.8, 1.0]
+        }
+        function drawLineScene() {
+            const matrix = getViewProjection();
+            lineUniforms['projViewMatrix'] = matrix.projViewMatrix;
+            renderer.render(
+                geometryShader,
+                lineUniforms,
+                lineScene,
+                null
+            );
+        }
+      
+        function drawAll() {
+            regl.clear({
+                color: [0, 0, 0, 1]
+            });
+            drawScene();
+            drawGeometryScene();
+            if (drawingState === 'area') {
+                //测面时绘制outline
+                drawLineScene();
+            }
+            //右侧打印结果
+            logResult();
+            requestAnimationFrame(drawAll);
+        }
+
+        //主绘制方法
+        function render() {
+            const scenePromise = getScene();
+            scenePromise.then(meshes => {
+                scene.addMesh(meshes);
+            });
+            drawAll();
+        }
+
+        render();
+        function getScene() {
+            var url = 'gltf/city_model/scene.gltf';
+            return gltf.Ajax.getJSON(url, {}).then((json) => {
+                const loader = new gltf.GLTFLoader('gltf/city_model', json);
+                return loader.load().then(gltfData => {
+                    const gltfPack = reshader.GLTFHelper.exportGLTFPack(gltfData, regl);
+                    const geometries = gltfPack.getMeshesInfo();
+                    let meshes = [];
+                    geometries.forEach((geometry, i) => {
+                        const material = new reshader.PhongMaterial(geometry.materialInfo);
+                        const modelMesh = new reshader.Mesh(geometry.geometry, material);
+                        modelMesh.setUniform('uPickingId', i);
+                        const transformat = mat4.identity([]);
+                        mat4.rotate(transformat, transformat, -Math.PI / 2, [1, 0, 0]);
+                        mat4.scale(transformat, transformat, [0.005, 0.005, 0.005]);
+                        modelMesh.setLocalTransform(transformat);
+                        const defines = modelMesh.getDefines();
+                        defines.HAS_PICKING_ID = 2;
+                        modelMesh.setDefines(defines);
+                        meshes.push(modelMesh);
+                    });
+                    const planeMesh = createPlane();
+                    meshes.push(planeMesh);
+                    return meshes;
+                });
+            });
+        }
+
+        //画地面
+        function createPlane() {
+            const plane = new reshader.Geometry(
+                {
+                    aPosition : planeData.vertices,
+                    aNormal: planeData.normals
+                },
+                planeData.indices,
+                0,
+                {
+                    primitive : 'triangles',
+                    //顶点的属性名称，默认为aPosition
+                    positionAttribute: 'aPosition',
+                    normalAttribute: 'aNormal',
+                    //顶点个数，默认为3
+                    positionSize : 3
+                }
+            );
+            const material = new reshader.PhongMaterial();
+            const modelMesh = new reshader.Mesh(plane, material);
+            modelMesh.setUniform('uPickingId', 4);
+            const transformat = mat4.identity([]);
+            mat4.scale(transformat, transformat, [50, 50, 50]);
+            modelMesh.setLocalTransform(transformat);
+            const defines = modelMesh.getDefines();
+            defines.HAS_PICKING_ID = 2;
+            modelMesh.setDefines(defines);
+            return modelMesh;
+        }
+
+        function createGeometry(points, prim) {
+            const primitive = !prim ? getPrimitiveType(points) : prim;
+            const triangles = earcut(points, null, 3);
+            return new reshader.Geometry({
+                POSITION : points
+            },
+            triangles,
+            0,
+            {
+                primitive,
+                //顶点的属性名称，默认为aPosition
+                positionAttribute: 'POSITION',
+                //顶点个数，默认为3
+                positionSize : 3
+            });
+        }
+
+        function getViewProjection() {
+            const aspect = canvas.width / canvas.height;
+            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, cameraNearFar[0], cameraNearFar[1]);
+            var xRotation = mat4.identity([]);
+            mat4.rotateY(xRotation, xRotation, roll);
+            var yRotation = mat4.identity([]);
+            mat4.rotateX(yRotation, yRotation, pitch);
+            var viewMatrix = mat4.identity([]);
+            mat4.multiply(viewMatrix, yRotation, xRotation);
+            viewMatrix[14] = -translate;
+            const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            return  { projViewMatrix, projMatrix, viewMatrix };
+        }
+
+        function getPrimitiveType(points) {
+            let primitive = null;
+            if (points.length / 3 === 1) {
+                primitive = 'points';
+            } else if (points.length / 3 === 2) {
+                primitive = 'line';
+            } else {
+                primitive = 'triangles';
+            }
+            return primitive;
+        }
+
+        //鼠标事件相关
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mousemove', drawHandleMouseMove);
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+        canvas.ondblclick = function() {
+            drawing = false;
+            scanning = true;
+            tempPositions = [];
+            drawingPositons = [];
+            linePositions = [];
+        };
+        
+        function getPickingPoint(x, y) {
+            const matrix = getViewProjection();
+            const meshes = scene.getMeshes();
+            picking.render(meshes, uniforms, true);
+            const picked = picking.pick(
+                x,   // 屏幕坐标 x轴的值
+                y,  // 屏幕坐标 y轴的值
+                3,
+                {
+                    'projViewMatrix' : matrix.projViewMatrix
+                },           // pickingVert中所需的uniforms值
+                {
+                    viewMatrix : matrix.viewMatrix,  //viewMatrix和projMatrix用于计算点的世界坐标值
+                    projMatrix : matrix.projMatrix,
+                    returnPoint : true
+                }
+            );
+            const { meshId, pickingId, point } = picked;
+            return point;
+        }
+
+        function handleMouseDown(ev) {
+            if (scanning) {
+                mouseDown = true;
+                lastMouseX = ev.clientX;
+                lastMouseY = ev.clientY;
+            } else if (drawing) {
+                const drawPoint = getPickingPoint(ev.clientX, ev.clientY);
+                if (tempPositions.length > 0) {
+                    const lastPointIndex = tempPositions.length / 3 - 1;
+                    tempPositions[lastPointIndex * 3] = drawPoint[0];
+                    tempPositions[lastPointIndex * 3 + 1] = drawPoint[1];
+                    tempPositions[lastPointIndex * 3 + 2] = drawPoint[2];
+                } else {
+                    tempPositions = tempPositions.concat(drawPoint);
+                    const mesh = new reshader.Mesh(currentGeometry);
+                    geometryScene.addMesh(mesh);
+                    if (drawingState === 'area') {
+                        const lineMesh = new reshader.Mesh(lineGeometry);
+                        lineScene.addMesh(lineMesh);
+                    }
+                }
+                prepareMoving = true;
+            }
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+            updateCamera();
+        }
+
+        function drawHandleMouseMove(ev) {
+            if(drawing && tempPositions.length > 0) {
+                const drawPoint = getPickingPoint(ev.clientX, ev.clientY);
+                if (!drawPoint) {
+                    return;
+                }
+                const lastPointIndex = prepareMoving ? tempPositions.length / 3 : tempPositions.length / 3 - 1;//如果是准备moving鼠标，则增加一个点，否则替换最后一个点
+                tempPositions[lastPointIndex * 3] = drawPoint[0];
+                tempPositions[lastPointIndex * 3 + 1] = drawPoint[1];
+                tempPositions[lastPointIndex * 3 + 2] = drawPoint[2];
+                if (drawingState === 'distance') {
+                    currentGeometry.desc.primitive = 'lines';
+                    for (let i = 0; i < tempPositions.length; i++) {
+                        drawingPositons[i] = tempPositions[i];
+                    }
+                    let elements = [];
+                    for (let i = 0; i < drawingPositons.length / 3 - 1; i++) {
+                        elements.push(i);
+                        elements.push(i + 1);
+                    }
+                    currentGeometry.setElements(elements);
+                } else if (drawingState === 'area') {
+                    currentGeometry.desc.primitive = getPrimitiveType(tempPositions);
+                    for (let i = 0; i < tempPositions.length; i++) {
+                        drawingPositons[i] = tempPositions[i];
+                    }
+                    let elements = earcut(drawingPositons, null, 3);
+                    if (elements.length === 0) {
+                        elements = [0, 1];
+                    }
+                    let lineElements = [];
+                    for (let i = 0; i < drawingPositons.length / 3 - 1; i++) {
+                        lineElements.push(i)
+                        lineElements.push(i + 1);
+                    }
+                    lineElements.push(drawingPositons.length / 3 - 1, 0);
+                    currentGeometry.setElements(elements);
+                    lineGeometry.updateData('POSITION', drawingPositons);
+                    lineGeometry.setElements(lineElements);
+                } else if (drawingState === 'height') {
+                    if (tempPositions.length >= 6) {
+                        tempPositions = tempPositions.slice(0, 6);
+                        const aPointY = tempPositions[1];
+                        const bPointY = tempPositions[4];
+                        for (let i = 0; i < 6; i++) {
+                            drawingPositons[i] = tempPositions[i];
+                        }
+                        if (aPointY < bPointY) {
+                            drawingPositons[6] = tempPositions[0];
+                            drawingPositons[7] = tempPositions[4];
+                            drawingPositons[8] = tempPositions[2];
+                        } else {
+                            drawingPositons[6] = tempPositions[3];
+                            drawingPositons[7] = tempPositions[1];
+                            drawingPositons[8] = tempPositions[5];
+                        }
+                    }
+                    currentGeometry.desc.primitive = 'lines';
+                    let elements = [0, 1, 1, 2, 2, 0];
+                    currentGeometry.setElements(elements);
+                }
+                currentGeometry.updateData('POSITION', drawingPositons);
+                prepareMoving = false;
+            }
+        }
+
+        function drawPlolygon() {
+
+        }
+
+        function drawLine() {
+
+        }
+
+        function drawHeight() {
+
+        }
+
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+
+        function updateCamera() {
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+        }
+
+        const btns = document.getElementsByClassName('btn');
+        for (let i = 0; i < btns.length; i++) {
+            btns[i].onclick = function(e) {
+                const state = e.target.id;
+                drawing = true;
+                scanning = false;
+                drawingState = state;
+            }
+        }
+
+        function logResult() {
+            if (drawingState === 'distance') {
+                result.innerText = '当前距离为：' + calDistance(currentGeometry);
+            } else if (drawingState === 'area') {
+                result.innerText = '当前多边形面积: ' + calArea(currentGeometry);
+            } else if (drawingState === 'height') {
+                result.innerHTML = "垂直高度为：" + calHeight(currentGeometry);
+            }
+        }
+
+        function calHeight(geometry) {
+            if (!geometry) {
+                return 0;
+            }
+            const positions = geometry.data['POSITION'];
+            return Math.abs(positions[1] - positions[4]);
+        }
+
+        function calDistance(geometry) {
+            if (!geometry) {
+                return 0;
+            }
+            const positions = geometry.data['POSITION'];
+            let dis = 0;
+            for (let i = 0; i < positions.length / 3 - 1; i++) {
+                const a = Math.pow( positions[i * 3] - positions[(i+1) * 3], 2);
+                const b = Math.pow( positions[i * 3 + 1] - positions[(i+1) * 3 + 1], 2);
+                const c =  Math.pow( positions[i * 3 + 2] - positions[(i+1) * 3 + 2], 2);
+                dis += Math.sqrt(a + b + c);
+            }
+            return dis;
+        }
+
+        function calArea(geometry) {
+            if (!geometry) {
+                return 0;
+            }
+            const count = geometry.elements.length / 3;
+            if (count < 1) {
+                return 0;
+            }
+            const positions = geometry.data['POSITION'];
+            let totalArea = 0;
+            for (let i = 0; i < count; i++) {
+                const triangleIndex = [geometry.elements[i * 3], geometry.elements[i * 3 + 1], geometry.elements[i * 3 + 2]];
+                const triangle = [
+                    [positions[triangleIndex[0] * 3], positions[triangleIndex[0] * 3 + 1], positions[triangleIndex[0] * 3 + 2]],
+                    [positions[triangleIndex[1] * 3], positions[triangleIndex[1] * 3 + 1], positions[triangleIndex[1] * 3 + 2]],
+                    [positions[triangleIndex[2] * 3], positions[triangleIndex[2] * 3 + 1], positions[triangleIndex[2] * 3 + 2]]
+                ];
+                const area = countTriangleArea(triangle[0], triangle[1], triangle[2]);
+                totalArea += area;
+            }
+            return totalArea;
+        }
+
+
+        function countTriangleArea(a, b, c) {
+            let area = 0;
+            
+            const side = [];//存储三条边的长度;
+        
+            side[0] = Math.sqrt(Math.pow(a[0] - b[0],2)+Math.pow(a[1] - b[1],2) + Math.pow(a[2] - b[2],2)); 
+            side[1] = Math.sqrt(Math.pow(a[0] - c[0],2)+Math.pow(a[1] - c[1],2) + Math.pow(a[2] - c[2],2));
+            side[2] = Math.sqrt(Math.pow(c[0] - b[0],2)+Math.pow(c[1] - b[1],2) + Math.pow(c[2] - b[2],2)); 
+        
+            //不能构成三角形;
+            if(side[0]+side[1]<=side[2] || side[0]+side[2]<=side[1] || side[1]+side[2]<=side[0]) return area; 
+        
+            //利用海伦公式。s=sqr(p*(p-a)(p-b)(p-c)); 
+            const p = (side[0]+side[1]+side[2])/2; //半周长;
+            area = Math.sqrt(p*(p-side[0])*(p-side[1])*(p-side[2])); 
+            
+            return area;
+        }
+    </script>
+  </body>
+</html>
