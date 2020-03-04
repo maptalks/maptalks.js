@@ -17,14 +17,14 @@ export default class OutlinePass {
         this._init();
     }
 
-    render(meshes, targetFBO, { projViewMatrix, lineColor }) {
+    render(meshes, targetFBO, { projViewMatrix, lineColor, lineWidth }) {
         this._clear();
         this._resize();
         const renderScene = new Scene(meshes);
         //绘制有outline的Meshes的范围
         this._drawExtentFBO(renderScene, projViewMatrix);
         //绘制有outline的Meshes的边线，同时和targetFBO做混合，画到targetFBO
-        this._drawOutlineFBO(lineColor, targetFBO);
+        this._drawOutlineFBO(lineColor, lineWidth, targetFBO);
     }
 
     _init() {
@@ -51,7 +51,8 @@ export default class OutlinePass {
             uniforms : [
                 'texSize',
                 'visibleEdgeColor',
-                'maskTexture'
+                'maskTexture',
+                'lineWidth'
             ],
             positionAttribute : 'POSITION',
             extraCommandProps: { viewport: this._viewport,
@@ -78,11 +79,12 @@ export default class OutlinePass {
         }, scene, this.fboExtent);
     }
 
-    _drawOutlineFBO(lineColor, targetFBO) {
+    _drawOutlineFBO(lineColor, lineWidth, targetFBO) {
         this._renderer.render(this.outlineShader, {
-            'texSize' : [this._width / 2, this._height / 2],
-            'visibleEdgeColor' : lineColor,
-            'maskTexture' : this.fboExtent
+            'texSize' : [this._width / 2, this._height * 2 / 2],
+            'visibleEdgeColor' : lineColor || [1, 0, 0],
+            'maskTexture' : this.fboExtent,
+            'lineWidth': lineWidth || 1
         }, null, targetFBO);
     }
 

@@ -5,8 +5,9 @@ varying vec2 vTexCoord;
 uniform sampler2D maskTexture;
 uniform vec2 texSize;
 uniform vec3 visibleEdgeColor;
+uniform float lineWidth;
 void main() {
-    vec2 invSize = 1.0 / texSize;
+    vec2 invSize = (1.0 / texSize) * lineWidth;
     vec4 uvOffset = vec4(1.0, 0.0, 0.0, 1.0) * vec4(invSize, invSize);
     vec4 c1 = texture2D(maskTexture, vTexCoord + uvOffset.xy);
     vec4 c2 = texture2D(maskTexture, vTexCoord - uvOffset.xy);

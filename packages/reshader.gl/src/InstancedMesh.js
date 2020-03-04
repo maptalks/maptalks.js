@@ -46,7 +46,7 @@ export default class InstancedMesh extends Mesh {
         // let buffer;
         this.instancedData[name] = data;
         if (buf.buffer && buf.buffer.destroy) {
-            buf.destroy();
+            buf.buffer.destroy();
         }
         // if (buffer) {
         //     const bytesPerElement = this._getBytesPerElement(buffer.buffer._buffer.dtype);
