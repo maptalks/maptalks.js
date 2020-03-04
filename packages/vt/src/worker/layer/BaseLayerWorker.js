@@ -1,6 +1,6 @@
 import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 import { createFilter } from '@maptalks/feature-filter';
@@ -220,7 +220,6 @@ export default class BaseLayerWorker {
                     }
                 }
             }
-
             if (styleCount !== this._styleCounter) {
                 return { canceled: true };
             }
@@ -372,6 +371,13 @@ export default class BaseLayerWorker {
                 zoom
             });
             const pack = new LineExtrusionPack(features, symbol, options);
+            return pack.load();
+        } else if (type === 'circle') {
+            const options = extend({}, dataConfig, {
+                EXTENT: extent,
+                zoom
+            });
+            const pack = new CirclePack(features, symbol, options);
             return pack.load();
         }
         return Promise.resolve({

@@ -1,16 +1,13 @@
 import VectorPack from './VectorPack';
 import StyledPoint from './StyledPoint';
-import clipLine from './util/clip_line';
-import { getAnchors } from './util/get_anchors';
-import classifyRings from './util/classify_rings';
-import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
+import { getPointAnchors } from './util/get_point_anchors.js';
 import { getGlyphQuads, getIconQuads } from './util/quads';
 import { allowsVerticalWritingMode } from './util/script_detection';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
 import Color from 'color';
 
-const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
+
 const DEFAULT_SPACING = 250;
 
 function getPackSDFFormat(symbol) {
@@ -429,7 +426,7 @@ export default class PointPack extends VectorPack {
                 this.addElements(currentIdx + 1, currentIdx + 2, currentIdx + 3);
                 currentIdx += 4;
 
-                const max = Math.max(Math.abs(anchor.x), Math.abs(anchor.y));
+                const max = Math.max(Math.abs(anchor.x), Math.abs(anchor.y), Math.abs(altitude));
                 if (max > this.maxPos) {
                     this.maxPos = max;
                 }
@@ -516,85 +513,16 @@ export default class PointPack extends VectorPack {
     }
 
     _getAnchors(point, shape, scale) {
-        const feature = point.feature,
-            type = point.feature.type,
-            size = point.size,
-            symbol = point.symbol,
-            placement = this._getPlacement(symbol, point);
+        const { feature, symbol } = point;
+        const placement = this._getPlacement(symbol, point);
         const properties = feature.properties;
-
-        let anchors = [];
-        const glyphSize = 24;
-        const fontScale = size[0] / glyphSize;
-        const textBoxScale = scale * fontScale;
-
         const spacing = (
             (this._markerSpacingFn ? this._markerSpacingFn(null, properties) : symbol['markerSpacing']) ||
             (this._textSpacingFn ? this._textSpacingFn(null, properties) : symbol['textSpacing']) ||
             DEFAULT_SPACING
         ) * scale;
         const EXTENT = this.options.EXTENT;
-        if (placement === 'line') {
-            let lines = feature.geometry;
-            if (EXTENT) {
-                lines = clipLine(feature.geometry, 0, 0, EXTENT, EXTENT);
-            }
-
-            for (let i = 0; i < lines.length; i++) {
-                const lineAnchors = getAnchors(lines[i],
-                    spacing,
-                    TEXT_MAX_ANGLE,
-                    symbol['isIconText'] ? null : shape.vertical || shape.horizontal || shape,
-                    null, //shapedIcon,
-                    glyphSize,
-                    symbol['isIconText'] ? 1 : textBoxScale,
-                    1, //bucket.overscaling,
-                    EXTENT || Infinity
-                );
-                for (let ii = 0; ii < lineAnchors.length; ii++) {
-                    lineAnchors[ii].startIndex = this.lineVertex.length / 3;
-                }
-                anchors.push.apply(
-                    anchors,
-                    lineAnchors
-                );
-                if (symbol['textPlacement'] && !symbol['isIconText']) {
-                    for (let ii = 0; ii < lines[i].length; ii++) {
-                        //TODO 0是预留的高度值
-                        this.lineVertex.push(lines[i][ii].x, lines[i][ii].y, 0);
-                    }
-                }
-            }
-
-        } else if (type === 3) {
-            const rings = classifyRings(feature.geometry, 0);
-            for (let i = 0; i < rings.length; i++) {
-                const polygon = rings[i];
-                // 16 here represents 2 pixels
-                const poi = findPoleOfInaccessibility(polygon, 16);
-                if (!isOut(poi, EXTENT)) {
-                    anchors.push(poi);
-                }
-            }
-        } else if (feature.type === 2) {
-            // https://github.com/mapbox/mapbox-gl-js/issues/3808
-            for (let i = 0; i < feature.geometry.length; i++) {
-                const line = feature.geometry[i];
-                if (!isOut(line[0], EXTENT)) {
-                    anchors.push(line[0]);
-                }
-            }
-        } else if (feature.type === 1) {
-            for (let i = 0; i < feature.geometry.length; i++) {
-                const points = feature.geometry[i];
-                for (let ii = 0; ii < points.length; ii++) {
-                    const point = points[ii];
-                    if (!isOut(point, EXTENT)) {
-                        anchors.push(point);
-                    }
-                }
-            }
-        }
+        const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing);
         //TODO 还需要mergeLines
         return anchors;
     }
@@ -608,8 +536,4 @@ export default class PointPack extends VectorPack {
         }
         return symbol.markerPlacement || symbol.textPlacement;
     }
-}
-
-function isOut(point, extent) {
-    return point.x < 0 || point.x > extent || point.y < 0 || point.y > extent;
 }

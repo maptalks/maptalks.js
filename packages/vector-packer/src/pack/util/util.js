@@ -47,3 +47,7 @@ export function getHeightValue(properties, heightProp, defaultValue) {
     }
     return (height || 0) * 10;//乘以10是因为 tileTransform 中是以分米为单位，但这里是以米为单位
 }
+
+export function isOut(point, extent) {
+    return point.x < 0 || point.x > extent || point.y < 0 || point.y > extent;
+}
