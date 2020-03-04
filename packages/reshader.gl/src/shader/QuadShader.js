@@ -1,6 +1,7 @@
 import MeshShader from './MeshShader.js';
 import Mesh from '../Mesh.js';
 import Geometry from '../Geometry.js';
+import vert from './glsl/quad.vert';
 
 const quadVertices = new Float32Array([
     // positions
@@ -22,6 +23,7 @@ const quadTexcoords = new Float32Array([
 
 class QuadShader extends MeshShader {
     constructor(config) {
+        config.vert = config.vert || vert;
         config.extraCommandProps = config.extraCommandProps || {};
         if (!config.extraCommandProps.depth) {
             //disable depth

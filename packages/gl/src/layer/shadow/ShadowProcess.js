@@ -1,7 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
-// import { isNil } from '../../Util';
-
+import { getGroundTransform } from '../util/util';
 
 const COORD_THRESHOLD = 100;
 
@@ -194,16 +193,8 @@ class ShadowProcess {
     }
 
     _transformGround() {
-        //改为inifinite plane
-        const SCALE = this._SCALE || [];
-        const layer = this._layer;
-        const map = layer.getMap();
-        const extent = map['_get2DExtent'](map.getGLZoom());
-        const scaleX = extent.getWidth() * 32, scaleY = extent.getHeight() * 32;
-        const localTransform = this._ground.localTransform;
-        mat4.identity(localTransform);
-        mat4.translate(localTransform, localTransform, map.cameraLookAt);
-        mat4.scale(localTransform, localTransform, vec3.set(SCALE, scaleX, scaleY, 1));
+        const map = this._layer.getMap();
+        const localTransform = getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
     }
 }

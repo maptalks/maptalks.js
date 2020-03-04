@@ -8,6 +8,7 @@ export {
 } from 'gl-matrix';
 export { createREGL, reshader };
 export { default as GroupGLLayer } from './layer/GroupGLLayer';
+export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';
 import './light/MapLights.js';
 import './map/MapPostProcess.js';
