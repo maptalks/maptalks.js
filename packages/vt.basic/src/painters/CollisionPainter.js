@@ -706,7 +706,8 @@ export default class CollisionPainter extends BasicPainter {
         if (!this.isEnableUniquePlacement()) {
             return;
         }
-        let changed = !this._mergedMeshes;
+        const zoom = this.getMap().getZoom();
+        let changed = !this._mergedMeshes || this._mergedMehesZoom !== zoom;
         if (!changed) {
             for (let i = 0; i < meshes.length; i++) {
                 if (!this._mergedMeshes[meshes[i].properties.meshKey]) {
@@ -718,6 +719,7 @@ export default class CollisionPainter extends BasicPainter {
         if (!changed) {
             return;
         }
+        this._mergedMehesZoom = zoom;
         this._replacedPlacements = {};
         this._mergedMeshes = {};
         meshes = meshes.sort(sortByLevel);
