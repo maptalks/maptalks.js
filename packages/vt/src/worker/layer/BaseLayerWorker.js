@@ -77,6 +77,14 @@ export default class BaseLayerWorker {
                 return;
             }
             delete this.requests[url];
+            if (this.options.debug && features) {
+                for (let i = 0; i < features.length; i++) {
+                    features[i]['_debug_info'] = {
+                        index: i,
+                        tileId: context.tileInfo.id
+                    };
+                }
+            }
             if (err) {
                 if (!err.loading) {
                     this._cache.add(url, { features: [], layers: [] });

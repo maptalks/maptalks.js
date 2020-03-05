@@ -74,6 +74,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     getWorkerOptions() {
         const map = this.getMap();
         return {
+            debug: this.options['debug'],
             altitudeProperty: this.options['altitudeProperty'],
             tileSize: this.options['tileSize'],
             baseRes: map.getResolution(map.getGLZoom()),

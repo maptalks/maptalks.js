@@ -53,15 +53,15 @@ export default class LineExtrusionPack extends LinePack {
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
         super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
-        const end = this.data.length / this.formatWidth;
+        const end = this.data.length / this.formatWidth - this.offset;
         const isPolygon = feature.type === 3; //POLYGON)
         // debugger
-        if (!isPolygon) {
+        if (!isPolygon && end > 0) {
             //封闭两端
             //line开始时顶点顺序: down0, down0-底, up0, up0-底
             //开始端封闭的两个三角形: 1. down0, up0, up0-底, 2. down0, up0-底, down0-底
-            super.addElements(this.offset, this.offset + 2, this.offset + 3);
-            super.addElements(this.offset, this.offset + 3, this.offset + 1);
+            super.addElements(0, 2, 3);
+            super.addElements(0, 3, 1);
 
             //line结束的顶点顺序: down1, down1底, up1, up1底
             //结束段封闭的两个三角形: 1. up1, down1, down1底, 2. up1, down1底, up1底
@@ -77,12 +77,12 @@ export default class LineExtrusionPack extends LinePack {
 
         const aExtrudeX = EXTRUDE_SCALE * extrude.x;
         const aExtrudeY = EXTRUDE_SCALE * extrude.y;
-
+        //只用于计算uv和tangent
         const extrudedPoint = new Point(lineWidth * extrude.x, lineWidth * extrude.y)._add(point);
         const height = this.symbol['lineHeight'];
 
-        data.push(extrudedPoint.x, extrudedPoint.y, height, linesofar, up, point.x, point.y, height, aExtrudeX, aExtrudeY);
-        data.push(extrudedPoint.x, extrudedPoint.y, 0, linesofar, up, point.x, point.y, 0, aExtrudeX, aExtrudeY);
+        data.push(extrudedPoint.x, extrudedPoint.y, height, linesofar, +up, point.x, point.y, height, aExtrudeX, aExtrudeY);
+        data.push(extrudedPoint.x, extrudedPoint.y, 0, linesofar, +up, point.x, point.y, 0, aExtrudeX, aExtrudeY);
 
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
@@ -95,36 +95,39 @@ export default class LineExtrusionPack extends LinePack {
         // const { vertexLength } = this;
         const formatWidth = this.formatWidth; //x, y, height, linesofar, up
         //*2 是因为不同于 LinePack, LineExtrusionPack 在addLineVertex方法中会为每个端点插入两个vertex (0和height)
-        const up = this.data[e3 * 2 * formatWidth + 4];
+        const up = this.data[(offset + e3 * 2) * formatWidth + 4];
         if (up) {
             if (this.options['top'] !== false) {
                 //顶点的添加顺序：up0, down1, up1
-                super.addElements(offset + e1 * 2, offset + e2 * 2, offset + e3 * 2);
+                super.addElements(e1 * 2, e2 * 2, e3 * 2);
             }
             if (this.options['side'] !== false) {
                 //侧面按顺时针(因为在背面)
                 //up0, up1, up1-底
-                super.addElements(offset + e1 * 2, offset + e3 * 2, offset + e3 * 2 + 1);
+                super.addElements(e1 * 2, e3 * 2, e3 * 2 + 1);
                 //up0, up1-底, up0-底
-                super.addElements(offset + e1 * 2, offset + e3 * 2 + 1, offset + e1 * 2 + 1);
+                super.addElements(e1 * 2, e3 * 2 + 1, e1 * 2 + 1);
             }
         } else {
             //参数中的顺序down0, up0, down1
             if (this.options['top'] !== false) {
                 //添加的顺序(变成逆时针): down0, down1, up0
-                super.addElements(offset + e1 * 2, offset + e3 * 2, offset + e2 * 2);
+                super.addElements(e1 * 2, e3 * 2, e2 * 2);
             }
             if (this.options['side'] !== false) {
                 //down0, down0-底， down1
-                super.addElements(offset + e1 * 2, offset + e1 * 2 + 1, offset + e3 * 2);
+                super.addElements(e1 * 2, e1 * 2 + 1, e3 * 2);
                 //down0-底， down1-底， down1
-                super.addElements(offset + e1 * 2 + 1, offset + e3 * 2 + 1, offset + e3 * 2);
+                super.addElements(e1 * 2 + 1, e3 * 2 + 1, e3 * 2);
             }
         }
     }
 
     createDataPack(vectors, scale) {
         const pack = super.createDataPack(vectors, scale);
+        if (!pack) {
+            return pack;
+        }
         const { data, indices } = pack;
         buildUniqueVertex(data, indices, DESCRIPTION);
         const { aPosition, aPosition0, aLinesofar, aUp, aExtrude } = data;

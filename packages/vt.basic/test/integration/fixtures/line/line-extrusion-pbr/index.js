@@ -1,7 +1,7 @@
 const data = {
     type: 'FeatureCollection',
     features: [
-        { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-1, 0.0], [-0.4, 0.0], [0, -0.5]] }, properties: { height: 20000 } }
+        { type: 'Feature', geometry: { type: 'MultiLineString', coordinates: [[[-1, 0.0], [-0.4, 0.0], [0, -0.5]], [[-0.7, 0.5], [-0.1, 0.5], [0.3, 0]]] }, properties: { height: 20000 } }
     ]
 };
 const material = {
@@ -47,7 +47,7 @@ module.exports = {
     style,
     data: data,
     view: {
-        pitch: 80,
+        pitch: 0,
         center: [0, 0],
         zoom: 6
     }
