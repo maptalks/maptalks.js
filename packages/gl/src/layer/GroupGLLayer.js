@@ -306,13 +306,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.prepareRender();
         this.prepareCanvas();
         this.layer._updatePolygonOffset();
-        this.forEachRenderer((renderer, layer) => {
-            if (!layer.isVisible()) {
-                return;
-            }
-            this._clearStencil(renderer, this._targetFBO);
-            renderer.render.apply(renderer, args);
-        });
+        this._renderChildLayers('render', args);
         this['_toRedraw'] = false;
         this._postProcess();
     }
@@ -321,15 +315,44 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
+        this.layer._updatePolygonOffset();
+        this._renderChildLayers('drawOnInteracting', args);
+        this['_toRedraw'] = false;
+        this._postProcess();
+    }
+
+    _renderChildLayers(methodName, args) {
+        //noAA需要最后绘制，如果有noAa的图层，分为aa和noAa两个阶段分别绘制
+        this._renderMode = 'default';
+        const sceneConfig =  this.layer._getSceneConfig();
+        const hasRenderTarget = sceneConfig && sceneConfig.postProcess;
+        if (hasRenderTarget) {
+            this._renderMode = 'aa';
+        }
+        let hasNoAA = false;
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
                 return;
             }
+            if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
+                hasNoAA = true;
+            }
             this._clearStencil(renderer, this._targetFBO);
-            renderer.drawOnInteracting.apply(renderer, args);
+            renderer[methodName].apply(renderer, args);
         });
-        this['_toRedraw'] = false;
-        this._postProcess();
+        if (hasNoAA && hasRenderTarget) {
+            delete this._contextFrameTime;
+            this._renderMode = 'noAa';
+            this.forEachRenderer((renderer, layer) => {
+                if (!layer.isVisible()) {
+                    return;
+                }
+                if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
+                    this._clearStencil(renderer, this._targetFBO);
+                    renderer[methodName].apply(renderer, args);
+                }
+            });
+        }
     }
 
     testIfNeedRedraw() {
@@ -553,9 +576,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 parent._contextFrameTime = timestamp;
                 parent._frameEvent = event;
             }
-            if (context) {
-                context.getFramebuffer = getFramebuffer;
-                context.getDepthTexture = getDepthTexture;
+            const hasRenderTarget = context && context.renderTarget;
+            if (hasRenderTarget) {
+                context.renderTarget.getFramebuffer = getFramebuffer;
+                context.renderTarget.getDepthTexture = getDepthTexture;
             }
             if (event) {
                 return drawMethod.call(this, event, timestamp, context || parent._drawContext);
@@ -576,7 +600,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _prepareDrawContext() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        const context = {};
+        const context = {
+            renderMode: this._renderMode || 'default'
+        };
         let renderTarget;
         if (!config || !config.enable) {
             if (this._targetFBO) {
