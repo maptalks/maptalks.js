@@ -77,6 +77,7 @@ float shadow_computeShadow_coeff(sampler2D shadowMap, vec3 projCoords) {
         float vsm_coeff = vsm_shadow_chebyshevUpperBound(projCoords, shadowTexel);
         float coeff = vsm_coeff;
     #endif
+    coeff = sign(clamp(coeff - 0.85, 0.0, 1.0));
     return 1.0 - (1.0 - coeff) * shadow_opacity;
 }
 
