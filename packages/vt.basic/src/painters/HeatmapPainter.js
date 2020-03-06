@@ -84,6 +84,10 @@ export default class HeatmapPainter extends BasicPainter {
         };
     }
 
+    getHeatmapMeshes() {
+        return this.scene.getMeshes();
+    }
+
     delete() {
         super.delete(...arguments);
         this._process.dispose();
@@ -113,7 +117,7 @@ export default class HeatmapPainter extends BasicPainter {
             }
         };
         const polygonOfffset = {
-            factor: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); },
+            factor: () => -1,
             units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
         };
         const symbol = this.getSymbol();

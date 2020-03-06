@@ -292,14 +292,14 @@ class StandardPainter extends Painter {
                 enable: true,
                 range: this.sceneConfig.depthRange || [0, 1],
                 func: this.sceneConfig.depthFunc || '<='
-            }/*,
+            },
             polygonOffset: {
                 enable: false,
                 offset: {
-                    factor: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); },
+                    factor: -1,
                     units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
                 }
-            }*/
+            }
         };
         const config = {
             uniforms: uniformDeclares,

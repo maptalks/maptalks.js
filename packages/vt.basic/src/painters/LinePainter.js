@@ -336,7 +336,7 @@ class LinePainter extends BasicPainter {
                 polygonOffset: {
                     enable: true,
                     offset: {
-                        factor: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); },
+                        factor: () => -1,
                         units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
                     }
                 }
