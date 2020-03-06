@@ -325,6 +325,10 @@ class Painter {
         return false;
     }
 
+    needAA() {
+        return true;
+    }
+
     _stencil(quadStencil) {
         const meshes = this.scene.getMeshes();
         if (!meshes.length) {

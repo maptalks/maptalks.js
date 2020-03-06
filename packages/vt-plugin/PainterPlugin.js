@@ -22,6 +22,10 @@ function createPainterPlugin(type, Painter) {
             this._meshCache = {};
         },
 
+        needAA: function () {
+            return this.painter.needAA();
+        },
+
         startFrame: function (context) {
             var layer = context.layer,
                 regl = context.regl,
@@ -36,7 +40,11 @@ function createPainterPlugin(type, Painter) {
                 this._meshCache = {};
             }
             var excludes = sceneConfig.excludes;
-            if (excludes !== this._excludes) {
+            if (!this._excludes) {
+                if (excludes) {
+                    this._excludes = excludes;
+                }
+            } else if (excludes !== this._excludes) {
                 this._excludesFunc = excludes ? createFilter(excludes) : null;
                 this._excludes = excludes;
             }
@@ -359,7 +367,7 @@ function createPainterPlugin(type, Painter) {
                 });
             } else {
                 const { features } = geometry.properties;
-                this._filterGeoElements(geometry, glData, features);
+                this._filterGeoElements(geometry, Array.isArray(glData) ? glData[0] : glData, features);
             }
         },
 

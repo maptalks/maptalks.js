@@ -8,7 +8,9 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                collision: false
+                collision: false,
+                //2020-03-04 增加excludes设为false时的测试
+                excludes: false
             }
         },
         symbol: {

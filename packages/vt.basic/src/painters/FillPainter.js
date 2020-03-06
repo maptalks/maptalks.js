@@ -22,6 +22,15 @@ class FillPainter extends BasicPainter {
         this._fnTypeConfig = this._getFnTypeConfig();
     }
 
+    needAA() {
+        if (this.sceneConfig.antialias === undefined || this.sceneConfig.antialias) {
+            //turn on antialias by default
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     createMesh(geometry, transform, { tileCenter }) {
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();

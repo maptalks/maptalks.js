@@ -34,6 +34,10 @@ export default class BasicPainter extends Painter {
         return context && context.renderTarget && (context.renderTarget.noAaFbo || context.renderTarget.fbo);
     }
 
+    needAA() {
+        return false;
+    }
+
     createAtlasTexture(atlas) {
         const regl = this.regl;
         const image = atlas;

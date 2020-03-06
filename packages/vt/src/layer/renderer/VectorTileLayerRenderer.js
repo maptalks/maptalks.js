@@ -12,6 +12,10 @@ const EMPTY_ARRAY = [];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
+    hasNoAARendering() {
+        return true;
+    }
+
     setToRedraw() {
         super.setToRedraw();
     }
@@ -508,21 +512,26 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _endFrame(timestamp) {
         const parentContext = this._parentContext;
+        const mode = parentContext.renderMode;
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
-        const plugins = this._getFramePlugins();
+        let plugins = this._getFramePlugins();
+        if (mode === 'aa') {
+            plugins = plugins.filter(p => p.needAA());
+        } else if (mode === 'noAa') {
+            plugins = plugins.filter(p => !p.needAA());
+        }
         let dirty = false;
         plugins.forEach((plugin, idx) => {
             const visible = this._isVisible(idx);
             if (!plugin || !visible) {
                 return;
             }
-            if (plugin.painter && plugin.painter.needClearStencil()) {
-                this.regl.clear({
-                    stencil: 0xFF,
-                    fbo: targetFBO
-                });
-            } else {
+            this.regl.clear({
+                stencil: 0xFF,
+                fbo: targetFBO
+            });
+            if (plugin.painter && !plugin.painter.needClearStencil()) {
                 this._drawTileStencil(targetFBO);
             }
 
