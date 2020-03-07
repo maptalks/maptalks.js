@@ -14,6 +14,10 @@ import viewshed_frag from './glsl/viewshed.frag';
 import viewshed_vert from './glsl/viewshed.vert';
 import flood_frag from './glsl/flood.frag';
 import flood_vert from './glsl/flood.vert';
+import heatmap_render_frag from './glsl/heatmap_render.frag';
+import heatmap_render_vert from './glsl/heatmap_render.vert';
+
+
 
 
 //webgl 2.0中的函数实现
@@ -99,7 +103,9 @@ const ShaderChunk = {
     viewshed_frag,
     viewshed_vert,
     flood_frag,
-    flood_vert
+    flood_vert,
+    heatmap_render_vert,
+    heatmap_render_frag
 };
 /* eslint-enable camelcase */
 

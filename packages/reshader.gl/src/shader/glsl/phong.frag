@@ -69,6 +69,7 @@ varying vec3 vFragPos;
 
 #include <viewshed_frag>
 #include <flood_frag>
+#include <heatmap_render_frag>
 
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
@@ -167,6 +168,10 @@ void main() {
         float alpha = topAlpha + vExtrusionOpacity * (bottomAlpha - topAlpha);
         alpha = clamp(alpha, 0.0, 1.0);
         gl_FragColor *= alpha;
+    #endif
+
+    #ifdef HAS_HEATMAP
+        gl_FragColor = heatmap_getColor(gl_FragColor);
     #endif
 
     #ifdef HAS_VIEWSHED

@@ -68,7 +68,7 @@ varying vec3 vModelVertex;
 #ifdef HAS_SHADOWING
     #include <vsm_shadow_vert>
 #endif
-
+#include <heatmap_render_vert>
 /**
  * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
  */
@@ -155,5 +155,9 @@ void main() {
 
     #ifdef HAS_FLOODANALYSE
         flood_getHeight(modelMatrix * localPositionMatrix * localVertex);
+    #endif
+
+    #ifdef HAS_HEATMAP
+        heatmap_compute(uProjectionMatrix * uModelViewMatrix * localPositionMatrix,localVertex)
     #endif
 }
