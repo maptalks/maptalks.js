@@ -22,7 +22,7 @@ uniform vec3 cameraPosition;
 #endif
 
 #ifdef HAS_MAP
-    varying vec2 vTexCoords;
+    varying vec2 vTexCoord;
 #endif
 varying vec3 vNormal;
 varying vec3 vFragPos;
@@ -73,7 +73,7 @@ varying vec3 vFragPos;
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
         vec3 n = normalize(vNormal);
-        vec3 normal = texture2D(normalTexture, vTexCoords).xyz * 2.0 - 1.0;
+        vec3 normal = texture2D(normalTexture, vTexCoord).xyz * 2.0 - 1.0;
         #if defined(HAS_TANGENT)
             vec3 t = normalize(vTangent.xyz);
             vec3 b = normalize(cross(n, t) * sign(vTangent.w));
@@ -93,9 +93,9 @@ vec4 linearTosRGB(const in vec4 color) {
 
 vec4 getBaseColor() {
     #if defined(HAS_BASECOLOR_MAP)
-        return texture2D(baseColorTexture, vTexCoords);
+        return texture2D(baseColorTexture, vTexCoord);
     #elif defined(HAS_DIFFUSE_MAP)
-        return texture2D(diffuseTexture, vTexCoords);
+        return texture2D(diffuseTexture, vTexCoord);
     #elif defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
         return diffuseFactor;
     #else
@@ -105,7 +105,7 @@ vec4 getBaseColor() {
 
 vec3 getSpecularColor() {
     #if defined(HAS_SPECULARGLOSSINESS_MAP)
-        return texture2D(specularGlossinessTexture, vTexCoords).rgb;
+        return texture2D(specularGlossinessTexture, vTexCoord).rgb;
     #elif defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
         return specularFactor;
     #else
@@ -146,13 +146,13 @@ void main() {
     #endif
     vec3 specular = specularStrength * lightSpecular * spec * getSpecularColor();
     #ifdef HAS_OCCLUSION_MAP
-        float ao = texture2D(occlusionTexture, vTexCoords).r;
+        float ao = texture2D(occlusionTexture, vTexCoord).r;
         ambient *= ao;
     #endif
     vec3 result = ambient + diffuse + specular;
 
     #ifdef HAS_EMISSIVE_MAP
-        vec3 emit = texture2D(emissiveTexture, vTexCoords).rgb;
+        vec3 emit = texture2D(emissiveTexture, vTexCoord).rgb;
         result += emit;
     #endif
 

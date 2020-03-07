@@ -12,7 +12,10 @@ const DEFAULT_UNIFORMS = {
     'baseColorTexture': null,
     'normalTexture': null,
     'emissiveTexture': null,
-    'uOcclusionTexture': null
+    'uOcclusionTexture': null,
+
+    'uvScale': [1, 1],
+    'uvOffset': [0, 0]
 };
 
 class PhongMaterial extends Material {
