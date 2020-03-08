@@ -32,13 +32,13 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         {
             top, side,
             uv: uv || tangent, //tangent也需要计算uv
-            uvSize : uvScale ? [128 * uvScale[0], 128 * uvScale[1]] : [128, 128],
+            uvSize: uvScale ? [128 * uvScale[0], 128 * uvScale[1]] : [128, 128],
             //>> needed by uv computation
             glScale: glScale * (extent / tileSize),
             //用于白模侧面的uv坐标v的计算
             // zScale用于将meter转为gl point值
             // (extent / tileSize)用于将gl point转为瓦片内坐标
-            vScale : zScale * (extent / tileSize) * (extent / tileSize)
+            vScale: zScale * (extent / tileSize) * (extent / tileSize)
             //<<
         });
     const buffers = [];

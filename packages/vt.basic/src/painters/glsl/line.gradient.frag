@@ -60,7 +60,7 @@ void main() {
     gl_FragColor = color * lineOpacity;
 
     #if defined(HAS_SHADOWING)
-        float shadow = shadow_computeShadow();
-        gl_FragColor.rgb *= shadow;
+        float shadowCoeff = shadow_computeShadow();
+        gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
 }
