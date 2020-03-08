@@ -442,7 +442,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.gl.regl = this._regl;
 
         this._jitter = [0, 0];
-        this._jitGetter = new reshader.Jitter(0.5);
+        this._jitGetter = new reshader.Jitter(0.15);
     }
 
     _initGL() {
