@@ -16,6 +16,7 @@
 
 uniform sampler2D shadow_shadowMap;
 uniform float shadow_opacity;
+uniform vec3 shadow_color;
 #if defined(USE_ESM)
     uniform float esm_shadow_threshold;
 #endif
@@ -89,4 +90,9 @@ float shadow_computeShadow() {
     if(projCoords.z >= 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) return 1.0;
     return shadow_computeShadow_coeff(shadow_shadowMap, projCoords);
 
+}
+
+vec3 shadow_blend(vec3 color, float coeff) {
+    color = color * coeff + shadow_color * shadow_opacity * (1.0 - coeff);
+    return color;
 }

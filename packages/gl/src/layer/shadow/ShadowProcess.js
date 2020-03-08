@@ -46,7 +46,7 @@ class ShadowProcess {
                 return  mat4.multiply([], lightProjViews, model);
             }
         });
-        uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold');
+        uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold', 'shadow_color');
         return uniforms;
     }
 
@@ -110,6 +110,7 @@ class ShadowProcess {
             'shadow_lightProjViewMatrix': matrix,
             'shadow_shadowMap': smap,
             'shadow_opacity': opacity,
+            'shadow_color': color,
             'esm_shadow_threshold': this._esmShadowThreshold
         };
 

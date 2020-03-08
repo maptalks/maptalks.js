@@ -7,5 +7,5 @@ uniform vec3 color;
 void main() {
     float visibility = shadow_computeShadow();
     float alpha = 1.0 - visibility;
-    gl_FragColor = vec4(color, alpha);
+    gl_FragColor = vec4(color * alpha, alpha);
 }
