@@ -418,23 +418,22 @@ describe('update style specs', () => {
             data: polygon,
             style
         });
-        let count = 0;
-        let color;
+        let painted = false;
         layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 2) {
+            const canvas = layer.getRenderer().canvas;
+            const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+            if (pixel[0] > 0) {
+                if (!painted) {
+                    assert.deepEqual(pixel, [15, 13, 52, 255]);
+                } else {
+                    assert.deepEqual(pixel, [52, 52, 52, 255]);
+                    done();
+                }
+            }
+            if (!painted) {
                 material.baseColorTexture = undefined;
-                const canvas = layer.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
-                assert.deepEqual(pixel, [15, 13, 52, 255]);
-                color = pixel;
                 layer.updateSymbol(0, { material });
-            } else if (count === 3) {
-                const canvas = layer.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
-                assert.notDeepEqual(pixel, color);
-                assert.deepEqual(pixel, [52, 52, 52, 255]);
-                done();
+                painted = true;
             }
         });
         layer.addTo(map);
