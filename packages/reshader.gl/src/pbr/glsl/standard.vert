@@ -158,6 +158,6 @@ void main() {
     #endif
 
     #ifdef HAS_HEATMAP
-        heatmap_compute(uProjectionMatrix * uModelViewMatrix * localPositionMatrix,localVertex)
+        heatmap_compute(uProjectionMatrix * uModelViewMatrix * localPositionMatrix,localVertex);
     #endif
 }
