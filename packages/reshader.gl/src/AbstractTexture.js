@@ -44,6 +44,10 @@ class AbstractTexture {
                 config.data = resLoader.getDefaultTexture(config.url);
                 this.promise = promise;
                 promise.then(data => {
+                    if (!this.config) {
+                        //disposed
+                        return data;
+                    }
                     if ((data.data instanceof Image) && this._needPowerOf2()) {
                         data.data = resize(data.data);
                     }
