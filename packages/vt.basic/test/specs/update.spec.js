@@ -3,6 +3,7 @@ const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
+const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
@@ -425,19 +426,98 @@ describe('update style specs', () => {
             if (pixel[0] > 0) {
                 if (!painted) {
                     assert.deepEqual(pixel, [15, 13, 52, 255]);
+
+                    material.baseColorTexture = undefined;
+                    layer.updateSymbol(0, { material });
+                    painted = true;
                 } else {
                     assert.deepEqual(pixel, [52, 52, 52, 255]);
                     done();
                 }
             }
-            if (!painted) {
-                material.baseColorTexture = undefined;
-                layer.updateSymbol(0, { material });
-                painted = true;
-            }
         });
         layer.addTo(map);
     }).timeout(10000);
+
+    it('should can update symbol to lit with AA, maptalks-studio#374', done => {
+        //https://github.com/fuzhenn/maptalks-studio/issues/374
+        const linePlugin = {
+            filter: true,
+            renderPlugin: {
+                type: 'line',
+                dataConfig: { type: 'line' },
+            },
+            symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+        };
+        const plugin = {
+            filter: true,
+            type: 'lit',
+            dataConfig: {
+                type: '3d-extrusion',
+                altitudeProperty: 'levels',
+                altitudeScale: 5,
+                defaultAltitude: 0
+            },
+            sceneConfig: {},
+        };
+        const material = {
+            'baseColorFactor': [1, 1, 1, 1],
+            'roughnessFactor': 1,
+            'metalnessFactor': 0,
+            'outputLinear': 1
+        };
+        const style = [
+            linePlugin,
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: { material }
+            }
+        ];
+        map.setLightConfig({
+            ambient: {
+                color: [0.3, 0.3, 0.3]
+            },
+            directional: {
+                color: [0.5, 0.5, 0.5],
+                direction: [1, 1, 1]
+            }
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: true
+            }
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const groupLayer = new GroupGLLayer('group', [
+            layer
+        ], { sceneConfig });
+
+        let painted = false;
+        layer.once('canvasisdirty', () => {
+            groupLayer.on('layerload', () => {
+                const canvas = groupLayer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+                if (pixel[0] > 0) {
+                    if (!painted) {
+                        assert.deepEqual(pixel, [78, 78, 78, 255]);
+
+                        material.baseColorFactor = [1, 0, 0, 1];
+                        layer.updateSymbol(1, { material });
+                        painted = true;
+                    } else {
+                        assert.deepEqual(pixel, [78, 1, 1, 255]);
+                        done();
+                    }
+                }
+            });
+        });
+        groupLayer.addTo(map);
+    });
 
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle) {
         const style = [

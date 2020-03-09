@@ -517,12 +517,23 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const cameraPosition = this.getMap().cameraPosition;
         let plugins = this._getFramePlugins();
         if (mode === 'aa') {
-            plugins = plugins.filter(p => p.needAA());
+            plugins = plugins.filter((p, idx) => {
+                p.renderIndex = idx;
+                return p.needAA();
+            });
         } else if (mode === 'noAa') {
-            plugins = plugins.filter(p => !p.needAA());
+            plugins = plugins.filter((p, idx) => {
+                p.renderIndex = idx;
+                return !p.needAA();
+            });
+        } else {
+            plugins.forEach((p, idx) => {
+                p.renderIndex = idx;
+            });
         }
         let dirty = false;
-        plugins.forEach((plugin, idx) => {
+        plugins.forEach((plugin) => {
+            const idx = plugin.renderIndex;
             const visible = this._isVisible(idx);
             if (!plugin || !visible) {
                 return;
@@ -552,7 +563,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-            if (plugin.painter.scene.getMeshes().length) {
+            if (!dirty && plugin.painter.scene.getMeshes().length) {
                 dirty = true;
             }
         });
