@@ -1,11 +1,5 @@
 attribute vec3 aPosition;
-#ifdef IS_LINE_EXTRUSION
-    #define EXTRUDE_SCALE 63.0;
-    attribute vec2 aExtrude;
-    uniform float lineWidth;
-    uniform float lineHeight;
-    uniform float linePixelScale;
-#endif
+#include <line_extrusion_vert>
 
 #ifdef HAS_MAP
     uniform vec2 uvScale;
@@ -80,11 +74,7 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
 void main()
 {
     #ifdef IS_LINE_EXTRUSION
-        float halfwidth = lineWidth / 2.0;
-        float outset = halfwidth;
-        vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
-        //linePixelScale = tileRatio * resolution / tileResolution
-        vec4 localPosition = getPosition(aPosition + vec3(dist, 0.0) * linePixelScale);
+        vec4 localPosition = getPosition(getLineExtrudePosition(aPosition));
     #else
         vec4 localPosition = getPosition(aPosition);
     #endif

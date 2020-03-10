@@ -2,13 +2,7 @@
 precision highp float;
 
 attribute vec3 aPosition;
-#ifdef IS_LINE_EXTRUSION
-    #define EXTRUDE_SCALE 63.0;
-    attribute vec2 aExtrude;
-    uniform float lineWidth;
-    uniform float lineHeight;
-    uniform float linePixelScale;
-#endif
+#include <line_extrusion_vert>
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 positionMatrix;
@@ -21,11 +15,7 @@ uniform vec2 uHalton;
 void main() {
     mat4 localPositionMatrix = getPositionMatrix();
     #ifdef IS_LINE_EXTRUSION
-        float halfwidth = lineWidth / 2.0;
-        float outset = halfwidth;
-        vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
-        //linePixelScale = tileRatio * resolution / tileResolution
-        vec4 localVertex = getPosition(aPosition + vec3(dist, 0.0) * linePixelScale);
+        vec4 localVertex = getPosition(getLineExtrudePosition(aPosition));
     #else
         vec4 localVertex = getPosition(aPosition);
     #endif

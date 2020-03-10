@@ -1,13 +1,7 @@
 #define SHADER_NAME standard_vertex
 
     attribute vec3 aPosition;
-#ifdef IS_LINE_EXTRUSION
-    #define EXTRUDE_SCALE 63.0;
-    attribute vec2 aExtrude;
-    uniform float lineWidth;
-    uniform float lineHeight;
-    uniform float linePixelScale;
-#endif
+#include <line_extrusion_vert>
 #ifdef HAS_ATTRIBUTE_TANGENTS
     #ifndef HAS_ATTRIBUTE_NORMALS
     attribute vec4 aTangent;
@@ -55,11 +49,7 @@
 
     void initMeshPosition() {
         #ifdef IS_LINE_EXTRUSION
-            float halfwidth = lineWidth / 2.0;
-            float outset = halfwidth;
-            vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
-            //linePixelScale = tileRatio * resolution / tileResolution
-            mesh_position = vec4(aPosition + vec3(dist, 0.0) * linePixelScale, 1.0);
+            mesh_position = vec4(getLineExtrudePosition(aPosition), 1.0);
         #else
             mesh_position = vec4(aPosition, 1.0);
         #endif

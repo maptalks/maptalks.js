@@ -17,7 +17,7 @@ import flood_vert from './glsl/flood.vert';
 import heatmap_render_frag from './glsl/heatmap_render.frag';
 import heatmap_render_vert from './glsl/heatmap_render.vert';
 
-
+import line_extrusion_vert from './glsl/line_extrusion.vert';
 
 
 //webgl 2.0中的函数实现
@@ -105,7 +105,9 @@ const ShaderChunk = {
     flood_frag,
     flood_vert,
     heatmap_render_vert,
-    heatmap_render_frag
+    heatmap_render_frag,
+
+    line_extrusion_vert
 };
 /* eslint-enable camelcase */
 
