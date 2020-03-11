@@ -124,10 +124,16 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _updatePolygonOffset() {
+        let total = 0;
+        for (let i = 0; i < this.layers.length; i++) {
+            if (this.layers[i].setPolygonOffset && this.layers[i].getPolygonOffsetCount) {
+                total += this.layers[i].getPolygonOffsetCount();
+            }
+        }
         let offset = 0;
         for (let i = 0; i < this.layers.length; i++) {
             if (this.layers[i].setPolygonOffset && this.layers[i].getPolygonOffsetCount) {
-                this.layers[i].setPolygonOffset(offset);
+                this.layers[i].setPolygonOffset(offset, total);
                 offset += this.layers[i].getPolygonOffsetCount();
             }
         }
@@ -442,7 +448,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.gl.regl = this._regl;
 
         this._jitter = [0, 0];
-        this._jitGetter = new reshader.Jitter(0.15);
+        this._jitGetter = new reshader.Jitter(0.25);
     }
 
     _initGL() {

@@ -41,6 +41,10 @@ class ShadowDisplayShader extends MeshShader {
                 'USE_ESM': 1
             },
             extraCommandProps: {
+                depth: {
+                    enable: true,
+                    mask: false
+                },
                 viewport: {
                     x: 0,
                     y: 0,
