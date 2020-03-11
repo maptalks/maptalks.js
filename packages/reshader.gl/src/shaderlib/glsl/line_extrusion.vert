@@ -15,7 +15,7 @@
 
     vec3 getLineExtrudePosition(vec3 position) {
         #ifdef HAS_LINE_WIDTH
-            float lineWidth = aLineWidth;
+            float lineWidth = aLineWidth / 2.0;
         #endif
         #ifdef HAS_LINE_HEIGHT
             float lineHeight = aLineHeight;
