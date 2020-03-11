@@ -7,6 +7,7 @@ import pickingVert from './glsl/line.picking.vert';
 import { setUniformFromSymbol, extend } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
+import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const defaultUniforms = {
     'lineOpacity': 1,
@@ -238,6 +239,7 @@ class LineGradientPainter extends BasicPainter {
             }
         };
         const depthRange = this.sceneConfig.depthRange;
+        const layer = this.layer;
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms,
@@ -284,8 +286,8 @@ class LineGradientPainter extends BasicPainter {
                 polygonOffset: {
                     enable: true,
                     offset: {
-                        factor: () => -1,
-                        units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
+                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
+                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
                     }
                 }
             }

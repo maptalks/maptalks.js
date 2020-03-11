@@ -1,5 +1,6 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
+import { OFFSET_FACTOR_SCALE } from './Constant';
 import { extend } from '../Util';
 import Painter from './Painter';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
@@ -167,6 +168,7 @@ class PhongPainter extends Painter {
                 return canvas ? canvas.height : 1;
             }
         };
+        const layer = this.layer;
         return {
             extraCommandProps: {
                 //enable cullFace
@@ -220,8 +222,8 @@ class PhongPainter extends Painter {
                 polygonOffset: {
                     enable: true,
                     offset: {
-                        factor: -1,
-                        units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
+                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
+                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
                     }
                 }
             }

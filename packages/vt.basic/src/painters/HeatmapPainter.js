@@ -3,6 +3,7 @@ import BasicPainter from './BasicPainter';
 import { interpolated } from '@maptalks/function-type';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { setUniformFromSymbol } from '../Util';
+import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const DEFAULT_UNIFORMS = {
     // heatmapOpacity: 1,
@@ -116,9 +117,10 @@ export default class HeatmapPainter extends BasicPainter {
                 zpass: 'replace'
             }
         };
+        const layer = this.layer;
         const polygonOfffset = {
-            factor: () => -1,
-            units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
+            factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
+            units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
         };
         const symbol = this.getSymbol();
         this._process = new HeatmapProcess(this.regl, this.sceneConfig, this.layer, symbol.heatmapColor, stencil, polygonOfffset);

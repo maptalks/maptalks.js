@@ -5,6 +5,7 @@ import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
 import pickingVert from './glsl/native-line.picking.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
+import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const defaultUniforms = {
     lineColor: [0, 0, 0, 1],
@@ -83,6 +84,7 @@ class NativeLinePainter extends Painter {
             }
         ];
         const depthRange = this.sceneConfig.depthRange;
+        const layer = this.layer;
         const config = {
             vert,
             frag,
@@ -124,8 +126,8 @@ class NativeLinePainter extends Painter {
                 polygonOffset: {
                     enable: true,
                     offset: {
-                        factor: () => -1,
-                        units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
+                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
+                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
                     }
                 }
             }

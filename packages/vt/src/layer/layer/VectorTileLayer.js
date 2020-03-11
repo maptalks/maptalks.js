@@ -171,9 +171,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._polygonOffset || 0;
     }
 
-    setPolygonOffset(offset) {
+    setPolygonOffset(offset, total) {
         this._polygonOffset = offset;
+        this._totalPolygonOffset = total;
         return this;
+    }
+
+    getTotalPolygonOffset() {
+        return this._totalPolygonOffset;
     }
 
     _parseStylePath() {

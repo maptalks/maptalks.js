@@ -8,6 +8,7 @@ import { setUniformFromSymbol, createColorSetter, extend } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
+import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const DEFAULT_UNIFORMS = {
     'polygonFill': [1, 1, 1, 1],
@@ -233,6 +234,7 @@ class FillPainter extends BasicPainter {
         };
         const stencil = this.layer.getRenderer().isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
+        const layer = this.layer;
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms,
@@ -273,8 +275,8 @@ class FillPainter extends BasicPainter {
                 polygonOffset: {
                     enable: true,
                     offset: {
-                        factor: -1,
-                        units: () => { return -(this.layer.getPolygonOffset() + this.pluginIndex + 1); }
+                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
+                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
                     }
                 }
             }
