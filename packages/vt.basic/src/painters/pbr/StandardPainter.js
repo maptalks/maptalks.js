@@ -2,22 +2,17 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, isNumber } from '../../Util';
 import Painter from '../Painter';
-import { setUniformFromSymbol } from '../../Util';
-import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
+import { setUniformFromSymbol, createColorSetter } from '../../Util';
+import { prepareFnTypeData, updateGeometryFnTypeAttrib } from '../util/fn_type_util';
+import { piecewiseConstant, interpolated } from '@maptalks/function-type';
+import Color from 'color';
 
 const SCALE = [1, 1, 1];
 
 class StandardPainter extends Painter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
-        // this.colorSymbol = 'polygonFill';
-        if (isFunctionDefinition(this.symbolDef['polygonFill'])) {
-            const map = layer.getMap();
-            const fn = piecewiseConstant(this.symbolDef['polygonFill']);
-            this.colorSymbol = properties => fn(map.getZoom(), properties);
-        } else {
-            this.colorSymbol = this.getSymbol()['polygonFill'];
-        }
+        this._fnTypeConfig = this._getFnTypeConfig();
         this._loader = new reshader.ResourceLoader();
     }
 
@@ -45,6 +40,7 @@ class StandardPainter extends Painter {
             mat4.multiply(mat, transform, mat);
             transform = mat;
         }
+        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
         const defines = this.shader.getGeometryDefines(geometry);
         if (geometry.data.aExtrude) {
             defines['IS_LINE_EXTRUSION'] = 1;
@@ -57,10 +53,20 @@ class StandardPainter extends Painter {
                     return tileRatio * map.getResolution() / tileResolution;
                 }
             });
+            this._colorCache = this._colorCache || {};
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
+            setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity');
+            setUniformFromSymbol(mesh.uniforms, 'lineHeight', symbol, 'lineHeight');
+            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
         }
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
+        }
+        if (geometry.data.aLineWidth) {
+            defines['HAS_LINE_WIDTH'] = 1;
+        }
+        if (geometry.data.aLineHeight) {
+            defines['HAS_LINE_HEIGHT'] = 1;
         }
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
@@ -88,6 +94,15 @@ class StandardPainter extends Painter {
             mesh.setMaterial(this.material);
         }
         super.addMesh(mesh, progress);
+    }
+
+    preparePaint(...args) {
+        super.preparePaint(...args);
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
     paint(context) {
@@ -188,6 +203,9 @@ class StandardPainter extends Painter {
 
     updateSymbol() {
         super.updateSymbol();
+        this._fillFn = piecewiseConstant(this.symbolDef['polygonFill'] || this.symbolDef['lineColor']);
+        this._opacityFn = interpolated(this.symbolDef['polygonOpacity']);
+        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
         this._updateMaterial();
     }
 
@@ -265,7 +283,7 @@ class StandardPainter extends Painter {
                 enable: () => {
                     return this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace;
                 },
-                face: 'back'
+                face: this.sceneConfig.cullFace || 'back'
             },
             stencil: {
                 enable: true,
@@ -510,6 +528,65 @@ class StandardPainter extends Painter {
 
     shouldDeleteMeshOnUpdateSymbol() {
         return false;
+    }
+
+    _getFnTypeConfig() {
+        this._fillFn = piecewiseConstant(this.symbolDef['polygonFill'] || this.symbolDef['lineColor']);
+        this._opacityFn = interpolated(this.symbolDef['polygonOpacity']);
+        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
+        this._aLineHeightFn = interpolated(this.symbolDef['lineHeight']);
+        const map = this.getMap();
+        const u8 = new Uint8Array(1);
+        const u16 = new Uint16Array(1);
+        const fillName = this.symbolDef['polygonFill'] ? 'polygonFill' : this.symbolDef['lineColor'] ? 'lineColor' : 'polygonFill';
+        const opacityName = this.symbolDef['polygonOpacity'] ? 'polygonOpacity' : this.symbolDef['lineOpacity'] ? 'lineOpacity' : 'polygonOpacity';
+        return [
+            {
+                //geometry.data 中的属性数据
+                attrName: 'aColor',
+                //symbol中的function-type属性
+                symbolName: fillName,
+                //
+                evaluate: properties => {
+                    let color = this._fillFn(map.getZoom(), properties);
+                    if (!Array.isArray(color)) {
+                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
+                    }
+                    if (color.length === 3) {
+                        color.push(255);
+                    }
+                    return color;
+                }
+            },
+            {
+                attrName: 'aOpacity',
+                symbolName: opacityName,
+                evaluate: properties => {
+                    const polygonOpacity = this._opacityFn(map.getZoom(), properties);
+                    u8[0] = polygonOpacity * 255;
+                    return u8[0];
+                }
+            },
+            {
+                attrName: 'aLineWidth',
+                symbolName: 'lineWidth',
+                evaluate: properties => {
+                    const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
+                    //乘以2是为了解决 #190
+                    u16[0] = Math.round(lineWidth * 2.0);
+                    return u16[0];
+                }
+            },
+            {
+                attrName: 'aLineHeight',
+                symbolName: 'lineHeight',
+                evaluate: properties => {
+                    const lineHeight = this._aLineHeightFn(map.getZoom(), properties);
+                    u16[0] = lineHeight;
+                    return u16[0];
+                }
+            }
+        ];
     }
 }
 

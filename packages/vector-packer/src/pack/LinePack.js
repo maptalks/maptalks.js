@@ -53,10 +53,10 @@ export default class LinePack extends VectorPack {
     constructor(features, symbol, options) {
         super(features, symbol, options);
         if (isFnTypeSymbol('lineWidth', this.symbolDef)) {
-            this._lineWidthFn = interpolated(this.symbolDef['lineWidth']);
+            this.lineWidthFn = interpolated(this.symbolDef['lineWidth']);
         }
         if (isFnTypeSymbol('lineColor', this.symbolDef)) {
-            this._colorFn = piecewiseConstant(this.symbolDef['lineColor']);
+            this.colorFn = piecewiseConstant(this.symbolDef['lineColor']);
         }
     }
 
@@ -87,7 +87,7 @@ export default class LinePack extends VectorPack {
                 name: 'aLinesofar'
             }
         ];
-        if (this._lineWidthFn) {
+        if (this.lineWidthFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -96,7 +96,7 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
-        if (this._colorFn) {
+        if (this.colorFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -132,24 +132,24 @@ export default class LinePack extends VectorPack {
             //所以this.elements只会存放当前line的elements，方便filter处理
             this.elements = [];
         }
-        if (this._lineWidthFn) {
+        if (this.lineWidthFn) {
             // {
             //     lineWidth: {
             //         property: 'type',
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            this._feaLineWidth = this._lineWidthFn(this.options['zoom'], feature.properties) || 0;
+            this.feaLineWidth = this.lineWidthFn(this.options['zoom'], feature.properties) || 0;
         } else {
-            this._feaLineWidth = this.symbol['lineWidth'];
+            this.feaLineWidth = this.symbol['lineWidth'];
         }
-        if (this._colorFn) {
-            this._feaColor = this._colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 0];
-            if (!Array.isArray(this._feaColor)) {
-                this._feaColor = Color(this._feaColor).array();
+        if (this.colorFn) {
+            this.feaColor = this.colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 0];
+            if (!Array.isArray(this.feaColor)) {
+                this.feaColor = Color(this.feaColor).array();
             }
-            if (this._feaColor.length === 3) {
-                this._feaColor.push(255);
+            if (this.feaColor.length === 3) {
+                this.feaColor.push(255);
             }
         }
         for (let i = 0; i < lines.length; i++) {
@@ -341,7 +341,7 @@ export default class LinePack extends VectorPack {
                 if (needExtraVertex || prevVertex && outOfExtent(prevVertex, EXTENT)) {
                     //back不能超过normal的x或者y，否则会出现绘制错误
                     const back = Math.min(prevNormal.mag() * tanHalfAngle, Math.abs(prevNormal.x), Math.abs(prevNormal.y));
-                    const backDist = back * this._feaLineWidth / 2 * tileRatio;
+                    const backDist = back * this.feaLineWidth / 2 * tileRatio;
                     if (backDist < this.distance) {
                         this.distance -= backDist;
                         distanceChanged = true;
@@ -354,7 +354,7 @@ export default class LinePack extends VectorPack {
             if (currentJoin === 'miter') {
 
                 joinNormal._mult(miterLength);
-                // this.distance += this._feaLineWidth * tileRatio * sinHalfAngle;
+                // this.distance += this.feaLineWidth * tileRatio * sinHalfAngle;
                 this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false, lineDistances);
 
             } else if (currentJoin === 'flipbevel') {
@@ -475,7 +475,7 @@ export default class LinePack extends VectorPack {
                 this.addCurrentVertex(currentVertex, this.distance, nextNormal, forward, forward, false, lineDistances);
                 if (distanceChanged) {
                     //抵消前一个extra端点时对distance的修改
-                    this.distance -= prevNormal.mag() * tanHalfAngle * this._feaLineWidth / 2 * tileRatio;
+                    this.distance -= prevNormal.mag() * tanHalfAngle * this.feaLineWidth / 2 * tileRatio;
                 }
             }
 
@@ -598,12 +598,12 @@ export default class LinePack extends VectorPack {
             EXTRUDE_SCALE * extrude.y,
             linesofar
         );
-        if (this._lineWidthFn) {
+        if (this.lineWidthFn) {
             //乘以2是为了解决 #190
-            data.push(Math.round(this._feaLineWidth * 2));
+            data.push(Math.round(this.feaLineWidth * 2));
         }
-        if (this._colorFn) {
-            data.push(...this._feaColor);
+        if (this.colorFn) {
+            data.push(...this.feaColor);
         }
         if (this.symbol['lineOffset']) {
             //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向

@@ -2,27 +2,21 @@ import { default as LinePack, EXTRUDE_SCALE }  from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
-
-// aPosition: glData.vertices,
-// aTexCoord0: glData.uvs,
-// aNormal: glData.normals,
-// aColor: glData.colors,
-// aPickingId: glData.featureIndexes,
-// aTangent: glData.tangents
-
-const DESCRIPTION = {
-    aPosition: { size: 3 },
-    aPosition0: { size: 3 },
-    aLinesofar: { size: 1 },
-    aUp: { size: 1 },
-    aPickingId: { size: 1 },
-    aExtrude: { size: 2 }
-};
+import { interpolated } from '@maptalks/function-type';
+import { isFnTypeSymbol } from '../style/Util';
+import { getPosArrayType } from './util/array';
 
 export default class LineExtrusionPack extends LinePack {
 
+    constructor(features, symbol, options) {
+        super(features, symbol, options);
+        if (isFnTypeSymbol('lineHeight', this.symbolDef)) {
+            this.heightFn = interpolated(this.symbolDef['lineHeight']);
+        }
+    }
+
     getFormat() {
-        return [
+        const format = [
             {
                 type: Int16Array,
                 width: 3,
@@ -49,9 +43,49 @@ export default class LineExtrusionPack extends LinePack {
                 name: 'aExtrude'
             },
         ];
+        if (this.colorFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 4,
+                    name: 'aColor'
+                }
+            );
+        }
+        if (this.lineWidthFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aLineWidth'
+                }
+            );
+        }
+        if (this.heightFn) {
+            format.push(
+                {
+                    type: Array,
+                    width: 1,
+                    name: 'aLineHeight'
+                }
+            );
+        }
+        return format;
+    }
+
+    placeVector(line) {
+        const feature = line.feature;
+        if (this.heightFn) {
+            this.feaHeight = feature ? this.heightFn(this.options['zoom'], feature.properties) || 0 : 0;
+            if (this.feaHeight > this.maxHeight) {
+                this.maxHeight = this.feaHeight;
+            }
+        }
+        return super.placeVector(line);
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
+
         super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
         const end = this.data.length / this.formatWidth - this.offset;
         const isPolygon = feature.type === 3; //POLYGON)
@@ -73,16 +107,36 @@ export default class LineExtrusionPack extends LinePack {
     addLineVertex(data, point, normal, extrude, round, up, linesofar) {
         // debugger
         const tileScale = this.options['EXTENT'] / this.options['tileSize'];
-        const lineWidth = this.symbol['lineWidth'] / 2 * tileScale;
+        const lineWidth = this.feaLineWidth || this.symbol['lineWidth'] / 2 * tileScale;
 
         const aExtrudeX = EXTRUDE_SCALE * extrude.x;
         const aExtrudeY = EXTRUDE_SCALE * extrude.y;
         //只用于计算uv和tangent
         const extrudedPoint = new Point(lineWidth * extrude.x, lineWidth * extrude.y)._add(point);
-        const height = this.symbol['lineHeight'];
+        // const height = this.symbol['lineHeight'];
 
-        data.push(extrudedPoint.x, extrudedPoint.y, height, linesofar, +up, point.x, point.y, height, aExtrudeX, aExtrudeY);
+        data.push(extrudedPoint.x, extrudedPoint.y, 1, linesofar, +up, point.x, point.y, 1, aExtrudeX, aExtrudeY);
+        if (this.colorFn) {
+            data.push(...this.feaColor);
+        }
+        if (this.lineWidthFn) {
+            //乘以2是为了解决 #190
+            data.push(Math.round(this.feaLineWidth * 2));
+        }
+        if (this.heightFn) {
+            data.push(this.feaHeight);
+        }
         data.push(extrudedPoint.x, extrudedPoint.y, 0, linesofar, +up, point.x, point.y, 0, aExtrudeX, aExtrudeY);
+        if (this.colorFn) {
+            data.push(...this.feaColor);
+        }
+        if (this.lineWidthFn) {
+            //乘以2是为了解决 #190
+            data.push(Math.round(this.feaLineWidth * 2));
+        }
+        if (this.heightFn) {
+            data.push(this.feaHeight);
+        }
 
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
@@ -124,13 +178,24 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     createDataPack(vectors, scale) {
+        this.maxHeight = 0;
+        // debugger
         const pack = super.createDataPack(vectors, scale);
         if (!pack) {
             return pack;
         }
         const { data, indices } = pack;
-        buildUniqueVertex(data, indices, DESCRIPTION);
-        const { aPosition, aPosition0, aLinesofar, aUp, aExtrude } = data;
+        const format = this.getFormat();
+        const description = format.reduce((accumulator, currentValue) => {
+            accumulator[currentValue.name] = {
+                size: currentValue.width
+            };
+            return accumulator;
+        }, {});
+        description.aPickingId = { size: 1 };
+        buildUniqueVertex(data, indices, description);
+        const { aPosition, aPosition0, aLinesofar, aUp, aExtrude,
+            aColor, aLineHeight, aLineWidth } = data;
         const arrays = {};
         const normals = buildNormals(aPosition, indices);
         //因为line的三角形旋转方向是反的，所以normal的结果需要取反
@@ -154,6 +219,16 @@ export default class LineExtrusionPack extends LinePack {
         }
         arrays['aPickingId'] = data.aPickingId;
         arrays['aExtrude'] = aExtrude;
+        if (aColor) {
+            arrays['aColor'] = aColor;
+        }
+        if (aLineWidth) {
+            arrays['aLineWidth'] = aLineWidth;
+        }
+        if (aLineHeight) {
+            const ArrType = getPosArrayType(this.maxHeight);
+            arrays['aLineHeight'] = new ArrType(aLineHeight);
+        }
         const buffers = [];
         for (const p in arrays) {
             buffers.push(arrays[p].buffer);

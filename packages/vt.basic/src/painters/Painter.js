@@ -224,7 +224,13 @@ class Painter {
     updateSymbol() {
         const styles = this.layer.getCompiledStyle();
         this.symbolDef = styles[this.pluginIndex].symbol;
-        delete this._symbol;
+        for (const p in this._symbol) {
+            delete this._symbol[p];
+        }
+        extend(this._symbol, this.symbolDef);
+        loadFunctionTypes(this._symbol, () => {
+            return [this.getMap().getZoom()];
+        });
     }
 
     getSymbol() {

@@ -54,17 +54,23 @@ export function setUniformFromSymbol(uniforms, name, symbol, key, fn) {
     if (isNil(symbol[key])) {
         return;
     }
-    if (symbol['_' + key]) {
-        // a function type
-        Object.defineProperty(uniforms, name, {
-            enumerable: true,
-            get: function () {
-                return fn ? fn(symbol[key]) : symbol[key];
-            }
-        });
-    } else {
-        uniforms[name] = fn ? fn(symbol[key]) : symbol[key];
-    }
+    // if (symbol['_' + key]) {
+    //     // a function type
+    //     Object.defineProperty(uniforms, name, {
+    //         enumerable: true,
+    //         get: function () {
+    //             return fn ? fn(symbol[key]) : symbol[key];
+    //         }
+    //     });
+    // } else {
+    //     uniforms[name] = fn ? fn(symbol[key]) : symbol[key];
+    // }
+    Object.defineProperty(uniforms, name, {
+        enumerable: true,
+        get: function () {
+            return fn ? fn(symbol[key]) : symbol[key];
+        }
+    });
 }
 
 export function createColorSetter(cache) {
