@@ -296,22 +296,22 @@ class StandardPainter extends Painter {
                     },
                     // mask: 0xff
                 },
-                opFront: {
+                op: {
                     fail: 'keep',
                     zfail: 'keep',
                     zpass: 'replace'
                 },
-                opBack: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                }
+                // opBack: {
+                //     fail: 'keep',
+                //     zfail: 'keep',
+                //     zpass: 'replace'
+                // }
             },
             viewport,
             depth: {
                 enable: true,
                 range: this.sceneConfig.depthRange || [0, 1],
-                func: this.sceneConfig.depthFunc || '<='
+                func: this.sceneConfig.depthFunc || '<'
             },
             polygonOffset: {
                 enable: false,

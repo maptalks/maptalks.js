@@ -292,16 +292,16 @@ export function createTextShader(layer, sceneConfig) {
                 },
                 mask: 0xFF
             },
-            opFront: {
+            op: {
                 fail: 'keep',
                 zfail: 'keep',
                 zpass: 'replace'
             },
-            opBack: {
-                fail: 'keep',
-                zfail: 'keep',
-                zpass: 'replace'
-            }
+            // opBack: {
+            //     fail: 'keep',
+            //     zfail: 'keep',
+            //     zpass: 'replace'
+            // }
         },
         blend: {
             enable: true,

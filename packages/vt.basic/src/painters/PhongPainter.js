@@ -193,16 +193,16 @@ class PhongPainter extends Painter {
                         },
                         // mask: 0xff
                     },
-                    opFront: {
+                    op: {
                         fail: 'keep',
                         zfail: 'keep',
                         zpass: 'replace'
                     },
-                    opBack: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
+                    // opBack: {
+                    //     fail: 'keep',
+                    //     zfail: 'keep',
+                    //     zpass: 'replace'
+                    // }
                 },
                 sample: {
                     alpha: true
