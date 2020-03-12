@@ -45,7 +45,7 @@ export function buildSideUV(uvs, vertices, indices, texWidth, texHeight) {
                 len = lensofar - seg;
             }
         }
-        const u = len / texWidth;
+        const u = 1.0 - len / texWidth;
         const v = (z === maxz ? 0 : h / texHeight);
         uvs[ix / 3 * 2] = u;
         uvs[ix / 3 * 2 + 1] = v;
