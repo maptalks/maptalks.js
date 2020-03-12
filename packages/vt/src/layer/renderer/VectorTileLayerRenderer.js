@@ -113,7 +113,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.canvas.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         }
         this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
-        this._debugPainter = new DebugPainter(this.regl, this.canvas);
+        this._debugPainter = new DebugPainter(this.regl, this.getMap());
         this._prepareWorker();
     }
 
@@ -220,9 +220,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const mat = [];
             const projViewMatrix = this.getMap().projViewMatrix;
             for (const p in this.tilesInView) {
-                const transform = this.tilesInView[p].info.transform;
+                const info = this.tilesInView[p].info;
+                const transform = info.transform;
                 const extent = this.tilesInView[p].image.extent;
-                if (transform && extent) this._debugPainter.draw(mat4.multiply(mat, projViewMatrix, transform), extent, parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo);
+                const renderTarget = parentContext && parentContext.renderTarget;
+                if (transform && extent) this._debugPainter.draw(
+                    this.getDebugInfo(info.id), mat4.multiply(mat, projViewMatrix, transform),
+                    this.layer.options['tileSize'][0], extent,
+                    renderTarget && (renderTarget.noAaFbo || renderTarget.fbo)
+                );
             }
         }
         this.completeRender();

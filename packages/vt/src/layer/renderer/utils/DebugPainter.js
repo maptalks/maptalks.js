@@ -1,14 +1,13 @@
-//TODO draw tile's xyz
 class DebugPainter {
-    constructor(regl, canvas, color) {
+    constructor(regl, map, color) {
         this._regl = regl;
-        this._canvas = canvas;
+        this._map = map;
         this._color = color || [0, 1, 0];
-        //LINE_LOOP
         this._init();
     }
 
-    draw(transform, extent, fbo) {
+    draw(debugInfo, transform, tileSize, extent, fbo) {
+        const textWidth = 512, textHeight = 64;
         if (!this._data) {
             this._data = this._regl.buffer(new Uint16Array([
                 0, 0,
@@ -20,71 +19,148 @@ class DebugPainter {
                 extent, 0,
                 0, 0
             ]));
+            const scale = extent / tileSize;
+            this._textData = this._regl.buffer(new Uint16Array([
+                0, extent - textHeight * scale,
+                0, extent,
+                textWidth * scale, extent - textHeight * scale,
+                textWidth * scale, extent
+            ]));
         }
-        const config = {
+        let image = this._debugInfoCanvas;
+        if (!image) {
+            const dpr = this._map.getDevicePixelRatio() > 1 ? 2 : 1;
+            image = this._debugInfoCanvas = document.createElement('canvas');
+            image.width = textWidth * dpr;
+            image.height = textHeight * dpr;
+            const ctx = image.getContext('2d');
+            ctx.font = '36px monospace';
+            ctx.scale(dpr, dpr);
+            this._texture = this._regl.texture({
+                width: image.width,
+                height: image.height,
+                data: image
+            });
+        }
+        const ctx = image.getContext('2d');
+        ctx.clearRect(0, 0, image.width, image.height);
+        ctx.fillStyle = `rgba(${this._color.map(c => c * 255).join()})`;
+        ctx.fillText(debugInfo, 20, 36);
+        this._texture({
+            width: image.width,
+            height: image.height,
+            data: image
+        });
+        this._command({
             transform,
-            data: this._data
-        };
-        if (fbo) {
-            config.framebuffer = fbo;
-        }
-        this._command(config);
+            data: this._data,
+            debugLine: 1,
+            primitive: 'lines',
+            framebuffer: fbo || null,
+            image: this._texture,
+            count: 8
+        });
+
+        this._command({
+            transform,
+            data: this._textData,
+            debugLine: 0,
+            primitive: 'triangle strip',
+            framebuffer: fbo || null,
+            image: this._texture,
+            count: 4
+        });
+
     }
 
     remove() {
+        if (this._texture) {
+            this._texture.destroy();
+        }
+        this._texCoordData.destroy();
         if (this._data) {
             this._data.destroy();
+            this._textData.destroy();
         }
         //this._command.destroy();
     }
 
     _init() {
-        const canvas = this._canvas;
-        const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return canvas ? canvas.width : 1;
-            },
-            height: () => {
-                return canvas ? canvas.height : 1;
-            }
-        };
-
+        this._texCoordData = this._regl.buffer(new Uint8Array([
+            0.0, 0.0,
+            0.0, 1.0,
+            1.0, 0.0,
+            1.0, 1.0
+        ]));
         this._command = this._regl({
             vert: `
                 attribute vec2 aPosition;
+                attribute vec2 aTexCoord;
                 uniform mat4 transform;
+
+                varying vec2 vTexCoord;
                 void main()
                 {
                     gl_Position = transform * vec4(aPosition, 0.0, 1.0);
+                    vTexCoord = aTexCoord;
                 }
             `,
             frag: `
                 precision mediump float;
-                uniform vec3 color;
+                uniform sampler2D uImage;
+                uniform vec3 uColor;
+                uniform float uOpacity;
+                uniform float uDebugLine;
+
+                varying vec2 vTexCoord;
+
                 void main()
                 {
-                    gl_FragColor = vec4(color, 1.0);
+                    if (uDebugLine == 1.) {
+                        gl_FragColor = vec4(uColor, 1.0) * uOpacity;
+                    } else {
+                        gl_FragColor = texture2D(uImage, vTexCoord) * uOpacity;
+                    }
                 }
             `,
             attributes: {
-                aPosition: this._regl.prop('data')
+                aPosition: this._regl.prop('data'),
+                aTexCoord: this._texCoordData
             },
             uniforms: {
                 transform: this._regl.prop('transform'),
-                color: this._color
+                uColor: this._color,
+                uOpacity: 1,
+                uDebugLine: this._regl.prop('debugLine'),
+                uImage: this._regl.prop('image'),
             },
-            count: 8,
-            primitive: 'lines',
+            count: this._regl.prop('count'),
+            primitive: this._regl.prop('primitive'),
             depth: {
                 enable: false,
                 mask: false
             },
+            blend: {
+                enable: true,
+                func: {
+                    src: 'src alpha',
+                    dst: 'one minus src alpha'
+                },
+                equation: 'add'
+            },
             stencil: {
                 enable: false
             },
-            viewport,
+            viewport: {
+                x: 0,
+                y: 0,
+                width: (context) => {
+                    return context.drawingBufferWidth;
+                },
+                height: (context) => {
+                    return context.drawingBufferHeight;
+                }
+            },
             framebuffer: this._regl.prop('framebuffer')
         });
     }
