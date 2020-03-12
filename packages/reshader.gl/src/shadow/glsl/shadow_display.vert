@@ -1,3 +1,5 @@
+#define SHADER_NAME SHADER_DISPLAY
+
 attribute vec3 aPosition;
 
 uniform mat4 projMatrix;

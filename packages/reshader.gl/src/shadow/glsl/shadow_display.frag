@@ -1,3 +1,5 @@
+#define SHADER_NAME SHADER_DISPLAY
+
 precision mediump float;
 
 uniform vec3 color;

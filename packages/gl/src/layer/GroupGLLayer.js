@@ -330,8 +330,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _renderChildLayers(methodName, args) {
         //noAA需要最后绘制，如果有noAa的图层，分为aa和noAa两个阶段分别绘制
         this._renderMode = 'default';
-        const sceneConfig =  this.layer._getSceneConfig();
-        const hasRenderTarget = sceneConfig && sceneConfig.postProcess;
+        const hasRenderTarget = !!this._targetFBO;
         if (hasRenderTarget) {
             this._renderMode = 'aa';
         }
@@ -649,10 +648,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 context.renderTarget = renderTarget;
             }
         }
-
-        const shadowContext = this._getShadowContext(renderTarget && renderTarget.fbo);
-        if (shadowContext) {
-            context.shadow = shadowContext;
+        if (this._renderMode !== 'noAa') {
+            const shadowContext = this._getShadowContext(renderTarget && renderTarget.fbo);
+            if (shadowContext) {
+                context.shadow = shadowContext;
+            }
         }
         return context;
     }
