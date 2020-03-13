@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>雾化效果实现</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:800px;height:800px}
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+  <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+  <script src="js/gltf-loader.js" type="text/javascript"></script>
+  <script src="js/dat.gui.min.js" type="text/javascript"></script>
+  <body>
+    <canvas id="canvas" width=800 height=800 class="container" style="border : 1px solid"></canvas>                                                                                                
+    <script type="module">
+        import planeData from './common/plane.js';
+        const { createREGL, mat4, reshader } = maptalksgl;
+        const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
+        let camPos = [0, 7, 11];
+        const cameraNearFar = [0.1, 100];
+        let mouseDown = false;
+        let roll = 0;
+        let pitch = Math.PI / 4;
+        let translate = 11;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        let viewpoint = [];
+        let currentAngle = 0;
+        var eyePos = [0, 0, 6];
+        let start = 0.12, end = 3.0;
+        initGUI();
+        const TEXTURE_SAMPLER = {
+            '9728' : 'nearest',
+            '9729' : 'linear',
+            '9984' : 'nearest mipmap nearest',
+            '9985' : 'linear mipmap nearest',
+            '9986' : 'nearest mipmap linear',
+            '9987' : 'linear mipmap linear',
+            '33071' : 'clamp ro edge',
+            '33684' : 'mirrored repeat',
+            '10497' : 'repeat'
+        };
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_texture_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod'
+            ]
+        });
+
+        // let iblMaps;
+        let scene = new reshader.Scene([]);
+        let pyramidScene = new reshader.Scene([]);
+        const frustumScene = new reshader.Scene([]);
+        const renderer = new reshader.Renderer(regl);
+
+        const viewport = {
+            x: 0,
+            y: 0,
+            width: () => {
+                return canvas.width;
+            },
+            height: () => {
+                return canvas.height;
+            }
+        };
+        const shader = new reshader.PhongShader({
+            positionAttribute: 'POSITION',
+            normalAttribute: 'NORMAL',
+            extraCommandProps: {
+                viewport
+            },
+            defines: {
+                HAS_FOG: 1
+            }
+        });
+        const uniforms = {
+            halton: [0.2107, -0.0202],
+            globalTexSize: [canvas.width, canvas.height],
+            lightDirection: [-1, -1, -1],
+            fog_Color: [0.9, 0.9, 0.9]
+        };
+
+        function drawScene() { 
+            const matrix = getViewProjection();
+            uniforms['fog_Dist'] = [start, end];
+            uniforms['projViewMatrix'] = matrix.projViewMatrix;
+            uniforms['projMatrix'] = matrix.projMatrix;
+            uniforms['viewMatrix'] = matrix.viewMatrix;
+            uniforms['cameraPosition'] = camPos;
+            renderer.render(
+                shader,
+                uniforms,
+                scene,
+                null
+            );
+        }
+        function drawAll() {
+            regl.clear({
+                color: [0, 0, 0, 1]
+            });
+            drawScene();
+            requestAnimationFrame(drawAll);
+        }
+
+        //主绘制方法
+        function render() {
+            const scenePromise = getScene();
+            scenePromise.then(meshes => {
+                scene.addMesh(meshes);
+            });
+            drawAll();
+        }
+
+        render();
+        function getScene() {
+            var url = 'gltf/city_model/scene.gltf';
+            return gltf.Ajax.getJSON(url, {}).then((json) => {
+                const loader = new gltf.GLTFLoader('gltf/city_model', json);
+                return loader.load().then(gltfData => {
+                    const gltfPack = reshader.GLTFHelper.exportGLTFPack(gltfData, regl);
+                    const geometries = gltfPack.getMeshesInfo();
+                    let meshes = [];
+                    geometries.forEach(geometry => {
+                        const material = new reshader.PhongMaterial({
+                            lightAmbient: [0.2, 0.8, 0.3],
+                            lightDiffuse: [0.7, 2.0, 3.0],
+                            lightSpecular: [1.0, 1.0, 1.0],
+                        });
+                        const modelMesh = new reshader.Mesh(geometry.geometry, material);
+                        const transformat = mat4.identity([]);
+                        mat4.rotate(transformat, transformat, -Math.PI / 2, [1, 0, 0]);
+                        mat4.scale(transformat, transformat, [0.005, 0.005, 0.005]);
+                        modelMesh.setLocalTransform(transformat);
+                        const defines = modelMesh.getDefines();
+                        defines.HAS_PICKING_ID = 2;
+                        modelMesh.setDefines(defines);
+                        meshes.push(modelMesh);
+                    });
+                    const planeMesh = createPlane();
+                    meshes.push(planeMesh);
+                    return meshes;
+                });
+            });
+        }
+
+        //画地面
+        function createPlane() {
+            const plane = new reshader.Geometry(
+                {
+                    aPosition : planeData.vertices,
+                    aNormal: planeData.normals
+                },
+                planeData.indices,
+                0,
+                {
+                    primitive : 'triangles',
+                    //顶点的属性名称，默认为aPosition
+                    positionAttribute: 'aPosition',
+                    normalAttribute: 'aNormal',
+                    //顶点个数，默认为3
+                    positionSize : 3
+                }
+            );
+            const material = new reshader.PhongMaterial({
+                lightAmbient: [0.2, 0.3, 0.8],
+                lightDiffuse: [0.7, 2.0, 3.0],
+                lightSpecular: [1.0, 1.0, 1.0],
+            });
+            const modelMesh = new reshader.Mesh(plane, material);
+            modelMesh.setUniform('uPickingId', 4);
+            const transformat = mat4.identity([]);
+            mat4.scale(transformat, transformat, [50, 50, 50]);
+            modelMesh.setLocalTransform(transformat);
+            const defines = modelMesh.getDefines();
+            defines.HAS_PICKING_ID = 2;
+            modelMesh.setDefines(defines);
+            return modelMesh;
+        }
+//
+        function getViewProjection() {
+            const aspect = canvas.width / canvas.height;
+            const projMatrix = mat4.perspective([], 30 * Math.PI / 180, aspect, cameraNearFar[0], cameraNearFar[1]);
+            var xRotation = mat4.create();
+            mat4.rotateY(xRotation, xRotation, roll);
+            var yRotation = mat4.create();
+            mat4.rotateX(yRotation, yRotation, pitch);
+            var viewMatrix = mat4.create();
+            mat4.multiply(viewMatrix, yRotation, xRotation);
+            viewMatrix[14] = -translate;
+            const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            return  { projViewMatrix, projMatrix, viewMatrix };
+        }
+
+        function fromViewpoint() {
+            const aspect = horizontalAngle / verticalAngle;
+            distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
+            const projMatrix = mat4.perspective([], verticalAngle * Math.PI / 180, aspect, cameraNearFar[0], distance);
+            lookPoint = [Math.sin(currentAngle * Math.PI/ 180) * 6, 0, 6 - Math.cos(currentAngle * Math.PI/ 180) * 6];
+            const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
+            const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            return projViewMatrix;
+        }
+
+        function animate(angle) {
+            var now = Date.now();   // Calculate the elapsed time
+            var elapsed = now - last;
+            last = now;
+            // Update the current rotation angle (adjusted by the elapsed time)
+            var newAngle = angle + (ANGLE_STEP * elapsed) / 1000.0;
+            return newAngle % 360;
+        }
+
+        //鼠标事件相关
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.onmousemove = function(ev) { handleMouseMove(ev); };
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+
+        function handleMouseDown(ev) {
+            mouseDown = true;
+            lastMouseX = ev.clientX;
+            lastMouseY = ev.clientY;
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+            updateCamera();
+        }
+
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+
+        function updateCamera() {
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+        }
+
+        function initGUI() {
+            var gui = new dat.GUI( { width: 300 } );
+            const config = {
+                start: 0.12,
+                end: 3.0
+            };
+
+            var startController = gui.add(config, "start", 0, 2.0);
+            startController.onChange(function (value) {
+                start = value;
+            });
+
+            var endController = gui.add(config, "end", 2.0, 8.0);
+            endController.onChange(function (value) {
+                end = value;
+            });
+        }
+    </script>
+  </body>
+</html>

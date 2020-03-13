@@ -56,6 +56,9 @@ class PhongShader extends MeshShader {
                 //floodAnalyse
                 'flood_waterHeight',
                 'flood_waterColor',
+                //fog
+                'fog_Dist',
+                'fog_Color'
             ],
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}

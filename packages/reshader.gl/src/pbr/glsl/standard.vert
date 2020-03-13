@@ -69,6 +69,8 @@ varying vec3 vModelVertex;
     #include <vsm_shadow_vert>
 #endif
 #include <heatmap_render_vert>
+#include <fog_render_vert>
+
 /**
  * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
  */
@@ -159,5 +161,9 @@ void main() {
 
     #ifdef HAS_HEATMAP
         heatmap_compute(uProjectionMatrix * uModelViewMatrix * localPositionMatrix,localVertex);
+    #endif
+
+    #ifdef HAS_FOG
+        fog_getDist( modelMatrix * localPositionMatrix * localVertex);
     #endif
 }

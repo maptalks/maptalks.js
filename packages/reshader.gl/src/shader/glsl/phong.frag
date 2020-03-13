@@ -70,6 +70,7 @@ varying vec3 vFragPos;
 #include <viewshed_frag>
 #include <flood_frag>
 #include <heatmap_render_frag>
+#include <fog_render_frag>
 
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
@@ -180,6 +181,10 @@ void main() {
 
     #ifdef HAS_FLOODANALYSE
         draw_floodAnalyse();
+    #endif
+
+    #ifdef HAS_FOG
+        draw_fog();
     #endif
     // gl_FragColor.a = 0.7;
 }

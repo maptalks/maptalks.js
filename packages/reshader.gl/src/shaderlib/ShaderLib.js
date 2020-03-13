@@ -16,6 +16,8 @@ import flood_frag from './glsl/flood.frag';
 import flood_vert from './glsl/flood.vert';
 import heatmap_render_frag from './glsl/heatmap_render.frag';
 import heatmap_render_vert from './glsl/heatmap_render.vert';
+import fog_render_vert from './glsl/fog.vert';
+import fog_render_frag from './glsl/fog.frag';
 
 
 
@@ -105,7 +107,9 @@ const ShaderChunk = {
     flood_frag,
     flood_vert,
     heatmap_render_vert,
-    heatmap_render_frag
+    heatmap_render_frag,
+    fog_render_vert,
+    fog_render_frag
 };
 /* eslint-enable camelcase */
 
