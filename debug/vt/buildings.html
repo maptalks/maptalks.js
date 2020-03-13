@@ -163,11 +163,12 @@
       // 'clearCoatIorChange': false,
       // 'normalTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       // 'metallicRoughnessTexture': ROUGHNESS_METALLIC_TEXTURE,
-      // 'uAlbedoTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/not-power-of-2.jpg',
+      'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/not-power-of-2.jpg',
       // 'anisotropy': 0,
       // 'uvScale': [1, 1],  //纹理坐标的缩放比例
       // 'uvScaleFactor': 1,
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
+      // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       'uBaseColorFactor': [1, 1, 1, 1],
       'uRoughnessFactor': 0.1,
       'uMetalnessFactor': 1,
@@ -247,7 +248,7 @@
     //'#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'
     // test tile clipping mask
     var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
-      debug : false,
+      debug : true,
       // canvas: debugCanvas,
       data: data,
       debugCollision: true,
@@ -321,7 +322,7 @@
           enable: false,
           bias: 0.1,
           radius: 0.05,
-          intensity: 0.5
+          intensity: 1
         },
         taa: {
           enable: false

@@ -4,7 +4,7 @@ import { OFFSET_FACTOR_SCALE } from './Constant';
 import { extend } from '../Util';
 import Painter from './Painter';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { setUniformFromSymbol } from '../Util';
+import { setUniformFromSymbol, createColorSetter } from '../Util';
 
 const SCALE = [1, 1, 1];
 
@@ -70,6 +70,8 @@ class PhongPainter extends Painter {
                 }
             });
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
+            setUniformFromSymbol(mesh.uniforms, 'lineHeight', symbol, 'lineHeight');
+            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
         }
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;

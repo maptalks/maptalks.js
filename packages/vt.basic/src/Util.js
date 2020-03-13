@@ -50,8 +50,8 @@ export const TYPE_BYTES = {
 };
 
 
-export function setUniformFromSymbol(uniforms, name, symbol, key, fn) {
-    if (isNil(symbol[key])) {
+export function setUniformFromSymbol(uniforms, name, symbol, key, fn, defaultValue) {
+    if (isNil(symbol[key]) && isNil(defaultValue)) {
         return;
     }
     // if (symbol['_' + key]) {
@@ -68,7 +68,8 @@ export function setUniformFromSymbol(uniforms, name, symbol, key, fn) {
     Object.defineProperty(uniforms, name, {
         enumerable: true,
         get: function () {
-            return fn ? fn(symbol[key]) : symbol[key];
+            const v = isNil(symbol[key]) ? defaultValue : symbol[key];
+            return fn ? fn(v) : v;
         }
     });
 }

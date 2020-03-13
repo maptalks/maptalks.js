@@ -9,6 +9,7 @@ import Color from 'color';
 import { OFFSET_FACTOR_SCALE } from '../Constant';
 
 const SCALE = [1, 1, 1];
+const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 
 class StandardPainter extends Painter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
@@ -43,9 +44,10 @@ class StandardPainter extends Painter {
         }
         prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
         const defines = this.shader.getGeometryDefines(geometry);
+        const symbol = this.getSymbol();
+        this._colorCache = this._colorCache || {};
         if (geometry.data.aExtrude) {
             defines['IS_LINE_EXTRUSION'] = 1;
-            const symbol = this.getSymbol();
             const { tileResolution, tileRatio } = geometry.properties;
             const map = this.getMap();
             Object.defineProperty(mesh.uniforms, 'linePixelScale', {
@@ -54,11 +56,13 @@ class StandardPainter extends Painter {
                     return tileRatio * map.getResolution() / tileResolution;
                 }
             });
-            this._colorCache = this._colorCache || {};
-            setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
-            setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity');
-            setUniformFromSymbol(mesh.uniforms, 'lineHeight', symbol, 'lineHeight');
+            setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth', null, 4);
+            setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity', null, 1);
+            setUniformFromSymbol(mesh.uniforms, 'lineHeight', symbol, 'lineHeight', null, 0);
             setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
+        } else {
+            setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', createColorSetter(this._colorCache), DEFAULT_POLYGON_FILL);
+            setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', null, 1);
         }
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;

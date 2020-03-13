@@ -227,10 +227,23 @@ class Painter {
         for (const p in this._symbol) {
             delete this._symbol[p];
         }
-        extend(this._symbol, this.symbolDef);
-        loadFunctionTypes(this._symbol, () => {
+        // extend(this._symbol, this.symbolDef);
+        const loadedSymbol = loadFunctionTypes(this.symbolDef, () => {
             return [this.getMap().getZoom()];
         });
+        for (const p in loadedSymbol) {
+            const d = Object.getOwnPropertyDescriptor(loadedSymbol, p);
+            if (d.get) {
+                Object.defineProperty(this._symbol, p, {
+                    get: d.get,
+                    set: d.set,
+                    configurable: true,
+                    enumerable: true
+                });
+            } else {
+                this._symbol[p] = loadedSymbol[p];
+            }
+        }
     }
 
     getSymbol() {
