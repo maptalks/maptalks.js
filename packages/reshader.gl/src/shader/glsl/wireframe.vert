@@ -10,6 +10,8 @@ uniform mat4 positionMatrix;
 #include <get_output>
 #include <viewshed_vert>
 #include <flood_vert>
+#include <fog_render_vert>
+
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
@@ -21,5 +23,9 @@ void main () {
 
     #ifdef HAS_FLOODANALYSE
         flood_getHeight(modelMatrix * localPositionMatrix * localPosition);
+    #endif
+
+    #ifdef HAS_FOG
+        fog_getDist(modelMatrix * localPositionMatrix * localPosition);
     #endif
 }

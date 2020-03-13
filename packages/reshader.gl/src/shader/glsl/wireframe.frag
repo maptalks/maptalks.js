@@ -33,6 +33,7 @@ uniform float opacity;
 
 #include <viewshed_frag>
 #include <flood_frag>
+#include <fog_render_frag>
 const float PI = 3.14159265;
 
 // This is like
@@ -117,5 +118,9 @@ void main () {
 
   #ifdef HAS_FLOODANALYSE
       draw_floodAnalyse();
+  #endif
+
+  #ifdef HAS_FOG
+      draw_fog();
   #endif
 }

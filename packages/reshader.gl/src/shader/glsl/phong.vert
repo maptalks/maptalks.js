@@ -36,6 +36,7 @@ uniform mat4 projViewMatrix;
 #include <viewshed_vert>
 #include <flood_vert>
 #include <heatmap_render_vert>
+#include <fog_render_vert>
 
 #ifdef HAS_FLOODANALYSE
     varying float vHeight;
@@ -115,6 +116,10 @@ void main()
     #endif
 
     #ifdef HAS_HEATMAP
-        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition);
+        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition)
+    #endif
+
+    #ifdef HAS_FOG
+        fog_getDist(modelMatrix * localPositionMatrix * localPosition);
     #endif
 }
