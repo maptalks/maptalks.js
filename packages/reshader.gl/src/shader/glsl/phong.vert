@@ -116,7 +116,7 @@ void main()
     #endif
 
     #ifdef HAS_HEATMAP
-        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition)
+        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition);
     #endif
 
     #ifdef HAS_FOG
