@@ -339,6 +339,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (!layer.isVisible()) {
                 return;
             }
+            if (renderer.needRetireFrames && renderer.needRetireFrames()) {
+                this._aaOutdated = true;
+            }
             if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
                 hasNoAA = true;
             }
