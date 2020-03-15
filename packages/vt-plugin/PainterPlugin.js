@@ -238,7 +238,7 @@ function createPainterPlugin(type, Painter) {
             }
         },
 
-        updateSymbol: function () {
+        updateSymbol: function (symbol) {
             var painter = this.painter;
             if (!painter) {
                 return;
@@ -251,7 +251,7 @@ function createPainterPlugin(type, Painter) {
                 }
                 delete this._meshCache;
             }
-            painter.updateSymbol();
+            painter.updateSymbol(symbol);
         },
 
         pick: function (x, y, tolerance) {

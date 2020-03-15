@@ -206,12 +206,14 @@ class StandardPainter extends Painter {
         }
     }
 
-    updateSymbol() {
+    updateSymbol(symbol) {
         super.updateSymbol();
         this._fillFn = piecewiseConstant(this.symbolDef['polygonFill'] || this.symbolDef['lineColor']);
         this._opacityFn = interpolated(this.symbolDef['polygonOpacity']);
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
-        this._updateMaterial();
+        if (symbol.material) {
+            this._updateMaterial();
+        }
     }
 
     init(context) {
@@ -226,6 +228,7 @@ class StandardPainter extends Painter {
 
         this._bindedOnTextureLoad = this._onTextureLoad.bind(this);
         this._bindDisposeCachedTexture = this.disposeCachedTexture.bind(this);
+        this._bindOnMaterialComplete = this._onMaterialComplete.bind(this);
 
         this._updateMaterial();
 
@@ -364,7 +367,15 @@ class StandardPainter extends Painter {
         for (let i = 0; i < resources.length; i++) {
             this.addCachedTexture(resources[i].url, resources[i].data);
         }
-        this.setToRedraw();
+    }
+
+    _onMaterialComplete() {
+        if (this._loadingMaterial) {
+            this.material.dispose();
+            this.material = this._loadingMaterial;
+            delete this._loadingMaterial;
+        }
+        this.setToRedraw(true);
     }
 
     _createIBLTextures() {
@@ -387,9 +398,6 @@ class StandardPainter extends Painter {
     }
 
     _updateMaterial() {
-        if (this.material) {
-            this.material.dispose();
-        }
         const materialConfig = this.getSymbol().material;
         const material = {};
         for (const p in materialConfig) {
@@ -444,7 +452,14 @@ class StandardPainter extends Painter {
                 }
             }
         }
-        this.material = new reshader.pbr.StandardMaterial(material);
+        if (!this.material) {
+            this.material = new reshader.pbr.StandardMaterial(material);
+            this.material.once('complete', this._bindOnMaterialComplete);
+        } else {
+            this._loadingMaterial = new reshader.pbr.StandardMaterial(material);
+            this._loadingMaterial.once('complete', this._bindOnMaterialComplete);
+        }
+
     }
 
     getUniformValues(map, context) {

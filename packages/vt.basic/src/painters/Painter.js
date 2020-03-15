@@ -40,6 +40,10 @@ class Painter {
         return this._redraw;
     }
 
+    needToRetireFrames() {
+        return this._needRetire;
+    }
+
     createGeometry(/* glData, features */) {
         throw new Error('not implemented');
     }
@@ -91,7 +95,10 @@ class Painter {
         };
     }
 
-    setToRedraw() {
+    setToRedraw(needRetireFrames) {
+        if (needRetireFrames) {
+            this._needRetire = needRetireFrames;
+        }
         this._redraw = true;
     }
 
@@ -207,6 +214,7 @@ class Painter {
             this._inited = true;
         }
         this._redraw = false;
+        this._needRetire = false;
         this.scene.clear();
     }
 

@@ -325,7 +325,7 @@
           intensity: 1
         },
         taa: {
-          enable: false
+          enable: true
         },
         sharpen: {
           enable: false,
@@ -348,6 +348,11 @@
 
     function update() {
       litMaterial.uAlbedoPBR = [1, 0, 0, 1];
+      layer.updateSymbol(0, style.style[0].symbol);
+    }
+
+    function updateTexture() {
+      litMaterial.uBaseColorTexture = 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg';
       layer.updateSymbol(0, style.style[0].symbol);
     }
 
