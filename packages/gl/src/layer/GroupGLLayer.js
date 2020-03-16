@@ -315,6 +315,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._renderChildLayers('render', args);
         this['_toRedraw'] = false;
         this._postProcess();
+        this._renderHighlights();
     }
 
     drawOnInteracting(...args) {
@@ -325,6 +326,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._renderChildLayers('drawOnInteracting', args);
         this['_toRedraw'] = false;
         this._postProcess();
+        this._renderHighlights();
     }
 
     _renderChildLayers(methodName, args) {
@@ -361,6 +363,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 }
             });
         }
+    }
+
+    _renderHighlights() {
+        this.forEachRenderer((renderer, layer) => {
+            if (!layer.isVisible()) {
+                return;
+            }
+            if (renderer.drawHighlight) {
+                renderer.drawHighlight();
+            }
+        });
     }
 
     hasRenderTarget() {

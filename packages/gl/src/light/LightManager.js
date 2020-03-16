@@ -75,8 +75,12 @@ class LightManager {
     }
 
     _onHDRLoaded() {
-        this._iblMaps = this._createIBLMaps(this._hdr);
-        this._map.fire('updatelights', { 'ambientUpdate': true });
+        if (this._hdr) {
+            this._iblMaps = this._createIBLMaps(this._hdr);
+            this._hdr.dispose();
+            delete this._hdr;
+            this._map.fire('updatelights', { 'ambientUpdate': true });
+        }
     }
 
     _createIBLMaps(hdr) {
@@ -99,6 +103,10 @@ class LightManager {
     }
 
     _disposeCubeLight() {
+        if (this._hdr) {
+            this._hdr.dispose();
+            delete this._hdr;
+        }
         delete this._iblMaps;
     }
 }
