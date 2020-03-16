@@ -517,6 +517,14 @@ export default class FBORayPicking {
 
         return { px, py, width, height };
     }
+
+    getPickingVert() {
+        return this._vert;
+    }
+
+    getUniformDeclares() {
+        return this._uniforms;
+    }
 }
 
 function applyMatrix(out, v, e) {
