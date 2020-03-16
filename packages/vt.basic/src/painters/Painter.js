@@ -2,6 +2,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes } from '@maptalks/function-type';
 import { extend } from '../Util';
+import hightlightFrag from './glsl/highlight.frag';
 
 const TEX_CACHE_KEY = '__gl_textures';
 
@@ -81,7 +82,7 @@ class Painter {
                 redraw: false
             };
         }
-
+        this._renderContext = context;
         const uniforms = this.getUniformValues(map, context);
 
         this.callShader(uniforms, context);
@@ -166,7 +167,10 @@ class Painter {
         }
         return {
             data: props && props.features && props.features[pickingId],
-            point
+            point,
+            plugin: this.pluginIndex,
+            meshId,
+            pickingId
         };
     }
 
@@ -225,6 +229,9 @@ class Painter {
         this.shader.dispose();
         if (this.picking) {
             this.picking.dispose();
+        }
+        if (this._highlightShader) {
+            this._highlightShader.dispose();
         }
         this.logoutTextureCache();
     }
@@ -390,6 +397,84 @@ class Painter {
 
     _compareStencil(a, b) {
         return b.level - a.level;
+    }
+
+    highlight(picked, color) {
+        if (!this._highlightShader) {
+            this._highlightScene = new reshader.Scene();
+            this._initHighlightShader();
+            if (!this._highlightShader) {
+                console.warn(`Plugin at ${this.pluginIndex} doesn't support highlight.`);
+                return;
+            }
+        }
+        const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
+        uniforms.highlightPickingId = picked.pickingId;
+        uniforms.highlightColor = color;
+        this._highlightScene.setMeshes(this.picking.getMeshAt(picked.meshId));
+        this.renderer.render(this._highlightShader, uniforms, this._highlightScene);
+    }
+
+    highlightAll(color) {
+        if (!this._highlightShader) {
+            this._initHighlightShader();
+            if (!this._highlightShader) {
+                console.warn(`Plugin at ${this.pluginIndex} doesn't support highlight.`);
+                return;
+            }
+        }
+        const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
+        uniforms.highlightPickingId = -1;
+        uniforms.highlightColor = color;
+        this.renderer.render(this._highlightShader, uniforms, this.scene);
+    }
+
+    _initHighlightShader() {
+
+        if (!this.picking) {
+            return;
+        }
+        const pickingVert = this.picking.getPickingVert();
+        const defines = {
+            'ENABLE_PICKING': 1,
+            'HAS_PICKING_ID': 1
+        };
+        const uniforms = this.picking.getUniformDeclares().slice(0);
+        if (uniforms['uPickingId'] !== undefined) {
+            defines['HAS_PICKING_ID'] = 2;
+        }
+        uniforms.push('highlightPickingId', 'highlightColor');
+        this._highlightShader = new reshader.MeshShader({
+            vert: pickingVert,
+            frag: hightlightFrag,
+            uniforms,
+            defines,
+            extraCommandProps: {
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: context => {
+                        return context.drawingBufferWidth;
+                    },
+                    height: context => {
+                        return context.drawingBufferHeight;
+                    }
+                },
+                depth: {
+                    enable: true,
+                    mask: false,
+                    func: 'always'
+                },
+                blend: {
+                    enable: true,
+                    func: {
+                        src: 'src alpha',
+                        dst: 'one minus src alpha'
+                    },
+                    equation: 'add'
+                }
+            }
+        });
     }
 }
 

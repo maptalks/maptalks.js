@@ -413,6 +413,20 @@ function createPainterPlugin(type, Painter) {
             }
             keys.push(key);
             return keys.length > limit;
+        },
+
+        highlight(picked, color) {
+            var painter = this.painter;
+            if (painter) {
+                painter.highlight(picked, color);
+            }
+        },
+
+        highlightAll(color) {
+            var painter = this.painter;
+            if (painter) {
+                painter.highlightAll(color);
+            }
         }
     });
 

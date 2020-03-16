@@ -102,6 +102,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     needRetireFrames() {
+        if (this._needRetire) {
+            return true;
+        }
         const plugins = this._getFramePlugins();
         for (let i = 0; i < plugins.length; i++) {
             if (plugins[i] && plugins[i].needToRedraw()) {
@@ -203,6 +206,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     draw(timestamp, parentContext) {
+        this._needRetire = false;
         const layer = this.layer;
         this.prepareCanvas();
         if (!this.ready || !layer.ready) {
@@ -241,6 +245,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 );
             }
         }
+        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
+        if (!inGroup) {
+            this.drawHighlight();
+        }
         this.completeRender();
     }
 
@@ -249,7 +257,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     drawOnInteracting(event, timestamp, parentContext) {
+        this._needRetire = false;
         this.draw(timestamp, parentContext);
+    }
+
+    drawHighlight() {
+        if (this._highlight) {
+            this[this._highlight[0]](...this._highlight[1]);
+        }
     }
 
     getShadowMeshes() {
@@ -1007,6 +1022,41 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     getZScale() {
         return this._zScale;
+    }
+
+    highlight(picked, color) {
+        this._highlight = ['paintHighlight', [picked, color]];
+        this._needRetire = true;
+        this.setToRedraw();
+    }
+
+    highlightBatch(idx, color) {
+        this._highlight = ['paintBatchHighlight', [idx, color]];
+        this._needRetire = true;
+        this.setToRedraw();
+    }
+
+    paintHighlight(picked, color) {
+        const pluginIdx = picked.plugin;
+        const plugins = this._getFramePlugins();
+        if (!plugins[pluginIdx]) {
+            return;
+        }
+        plugins[pluginIdx].highlight(picked, color);
+    }
+
+    paintBatchHighlight(idx, color) {
+        const plugins = this._getFramePlugins();
+        if (!plugins[idx]) {
+            return;
+        }
+        plugins[idx].highlightAll(color);
+    }
+
+    cancelHighlight() {
+        delete this._highlight;
+        this._needRetire = true;
+        this.setToRedraw();
     }
 }
 

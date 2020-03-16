@@ -181,6 +181,33 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._totalPolygonOffset;
     }
 
+    highlight(picked, color) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.highlight(picked, color);
+        return this;
+    }
+
+    highlightBatch(idx, color) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.highlightBatch(idx, color);
+        return this;
+    }
+
+    cancelHighlight() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.cancelHighlight();
+        return this;
+    }
+
     _parseStylePath() {
         const styles = this._vtStyle;
         for (let i = 0; i < styles.length; i++) {
