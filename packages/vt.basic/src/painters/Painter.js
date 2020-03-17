@@ -410,7 +410,7 @@ class Painter {
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = picked.pickingId;
-        uniforms.highlightColor = color;
+        uniforms.highlightColor = color || [0, 1, 0, 0.1];
         this._highlightScene.setMeshes(this.picking.getMeshAt(picked.meshId));
         this.renderer.render(this._highlightShader, uniforms, this._highlightScene);
     }
@@ -425,7 +425,7 @@ class Painter {
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = -1;
-        uniforms.highlightColor = color;
+        uniforms.highlightColor = color || [0, 1, 0, 0.1];
         this.renderer.render(this._highlightShader, uniforms, this.scene);
     }
 
