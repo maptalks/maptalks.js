@@ -3,8 +3,10 @@ import { buildExtrudeFaces } from './Extrusion';
 // import { buildUniqueVertex, buildShadowVolume } from './Build';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
+import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
+import Color from 'color';
 
-export default function (features, dataConfig, extent, glScale, zScale, tileSize) {
+export default function (features, dataConfig, extent, glScale, zScale, tileSize, symbol, zoom) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -19,7 +21,8 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         defaultHeight,
         tangent,
         uv, uvScale,
-        top, side
+        top, side,
+        topThickness,
     } = dataConfig;
     const faces = buildExtrudeFaces(
         features, extent,
@@ -31,6 +34,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         },
         {
             top, side,
+            topThickness: topThickness || 0,
             uv: uv || tangent, //tangent也需要计算uv
             uvSize: uvScale ? [128 * uvScale[0], 128 * uvScale[1]] : [128, 128],
             //>> needed by uv computation
@@ -79,7 +83,8 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
     if (faces.uvs) {
         buffers.push(faces.uvs.buffer);
     }
-    return {
+    const fnTypes = buildFnTypes(features, symbol, zoom, faces.featureIndexes);
+    const data =  {
         data : {
             data: {
                 aPosition: faces.vertices,
@@ -92,6 +97,15 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         },
         buffers
     };
+    if (fnTypes.aColor) {
+        data.data.data.aColor = fnTypes.aColor;
+        data.buffers.push(fnTypes.aColor.buffer);
+    }
+    if (fnTypes.aOpacity) {
+        data.data.data.aOpacity = fnTypes.aOpacity;
+        data.buffers.push(fnTypes.aOpacity.buffer);
+    }
+    return data;
 }
 
 function createQuaternion(normals, tangents) {
@@ -105,4 +119,43 @@ function createQuaternion(normals, tangents) {
         vec4.copy(aTangent.subarray(i, i + 4), q);
     }
     return aTangent;
+}
+
+function buildFnTypes(features, symbol, zoom, pickingIds) {
+    const fnTypes = {};
+    if (isFnTypeSymbol('polygonFill', symbol)) {
+        const colorCache = {};
+        const colorFn = piecewiseConstant(symbol.polygonFill);
+        const aColor = new Uint8Array(pickingIds.length * 4);
+        for (let i = 0; i < pickingIds.length; i++) {
+            const feature = features[pickingIds[i]];
+            let color = colorFn(zoom, feature.properties);
+            if (!Array.isArray(color)) {
+                color = colorCache[color] = colorCache[color] || Color(color).array();
+            }
+            if (color.length === 3) {
+                color.push(255);
+            }
+            aColor[i * 4] = color[0];
+            aColor[i * 4 + 1] = color[1];
+            aColor[i * 4 + 2] = color[2];
+            aColor[i * 4 + 3] = color[3];
+        }
+        fnTypes.aColor = aColor;
+    }
+    if (isFnTypeSymbol('polygonOpacity', symbol)) {
+        const opacityFn = interpolated(symbol.polygonOpacity);
+        const aOpacity = new Uint8Array(pickingIds.length);
+        for (let i = 0; i < pickingIds.length; i++) {
+            const feature = features[pickingIds[i]];
+            const opacity = opacityFn(zoom, feature.properties);
+            aOpacity[i] = opacity * 255;
+        }
+        fnTypes.aOpacity = aOpacity;
+    }
+    return fnTypes;
+}
+
+function isFnTypeSymbol(name, symbolDef) {
+    return isFunctionDefinition(symbolDef[name]) && symbolDef[name].property;
 }

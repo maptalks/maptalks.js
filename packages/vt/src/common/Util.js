@@ -169,6 +169,12 @@ export function getIndexArrayType(max) {
     return Uint32Array;
 }
 
+export function getUnsignedArrayType(max) {
+    if (max < 256) return Uint8Array;
+    if (max < 65536) return Uint16Array;
+    return Uint32Array;
+}
+
 export function getPosArrayType(max) {
     max = Math.abs(max);
     if (max < 128) return Int8Array;

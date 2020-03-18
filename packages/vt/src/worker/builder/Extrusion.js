@@ -1,6 +1,6 @@
 import { calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
-import { pushIn, getIndexArrayType, getPosArrayType } from '../../common/Util';
+import { pushIn, getUnsignedArrayType, getPosArrayType } from '../../common/Util';
 import { clipPolygon } from './clip';
 import earcut from 'earcut';
 import { KEY_IDX } from './Constant';
@@ -13,6 +13,7 @@ export function buildExtrudeFaces(
     {
         side,
         top,
+        topThickness,
         uv,
         uvSize,
         glScale,
@@ -60,71 +61,14 @@ export function buildExtrudeFaces(
                 // debugger
                 buildFaceUV(start, offset, uvs, vertices, uvSize[0] / glScale, uvSize[1] / glScale);
             }
+
+            if (topThickness > 0) {
+                offset = buildSide(vertices, top, holes, indices, start, offset, 0, topThickness, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
+            }
         }
         // debugger
-        if (generateSide && height > 0) {
-            const count = offset - start;
-            //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
-            //top vertexes
-            for (let i = 2, l = count; i < l; i += 3) {
-                vertices[offset + i - 2] = top[i - 2];
-                vertices[offset + i - 1] = top[i - 1];
-                vertices[offset + i - 0] = top[i];
-            }
-            offset += count;
-            //bottom vertexes
-            for (let i = 2, l = count; i < l; i += 3) {
-                vertices[offset + i - 2] = top[i - 2];
-                vertices[offset + i - 1] = top[i - 1];
-                vertices[offset + i - 0] = top[i] - height;
-            }
-            offset += count;
-            //top vertexes
-            for (let i = 2, l = count; i < l; i += 3) {
-                vertices[offset + i - 2] = top[i - 2];
-                vertices[offset + i - 1] = top[i - 1];
-                vertices[offset + i - 0] = top[i];
-            }
-            offset += count;
-            //bottom vertexes
-            for (let i = 2, l = count; i < l; i += 3) {
-                vertices[offset + i - 2] = top[i - 2];
-                vertices[offset + i - 1] = top[i - 1];
-                vertices[offset + i - 0] = top[i] - height;
-            }
-            offset += count;
-
-            //side face indices
-            const s = indices.length;
-            const startIdx = (start + count) / 3;
-            const vertexCount = count / 3;
-            let ringStartIdx = startIdx, current, next;
-            for (let i = startIdx, l = vertexCount + startIdx; i < l - 1; i++) {
-                current = i;
-                if (holes.indexOf(i - startIdx + 1) >= 0) {
-                    next = ringStartIdx;
-                    ringStartIdx = i + 1;
-                } else {
-
-
-                    next = i + 1;
-                }
-                if (isClippedEdge(vertices, current, next, EXTENT)) {
-                    continue;
-                }
-                if ((i - startIdx) % 2 === 1) {
-                    //加上 2 * vertexCount，使用与 i % 2 === 0 时，不同的另一组端点，以避免共端点
-                    current += 2 * vertexCount;
-                    next += 2 * vertexCount;
-                }
-                //top[i], bottom[i], top[i + 1]
-                indices.push(current + vertexCount, current, next);
-                //bottom[i + 1], top[i + 1], bottom[i]
-                indices.push(next, next + vertexCount, current + vertexCount);
-            }
-            if (generateUV) {
-                buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize[0] / glScale, uvSize[1] / vScale); //convert uvSize[1] to meter
-            }
+        if (generateSide && height > 0 && topThickness < height) {
+            offset = buildSide(vertices, top, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
         }
         return offset;
     }
@@ -183,7 +127,7 @@ export function buildExtrudeFaces(
             featIndexes.push(feature[KEY_IDX] || r);
         }
     }
-    const feaCtor = getIndexArrayType(features.length);
+    const feaCtor = getUnsignedArrayType(features.length);
     const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
@@ -195,4 +139,70 @@ export function buildExtrudeFaces(
         data.uvs = new Float32Array(uvs);
     }
     return data;
+}
+
+function buildSide(vertices, topVertices, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale) {
+    const count = offset - start;
+    //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
+    //top vertexes
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - topThickness;
+    }
+    offset += count;
+    //bottom vertexes
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - height;
+    }
+    offset += count;
+    //top vertexes
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - topThickness;
+    }
+    offset += count;
+    //bottom vertexes
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - height;
+    }
+    offset += count;
+
+    //side face indices
+    const s = indices.length;
+    const startIdx = (start + count) / 3;
+    const vertexCount = count / 3;
+    let ringStartIdx = startIdx, current, next;
+    for (let i = startIdx, l = vertexCount + startIdx; i < l - 1; i++) {
+        current = i;
+        if (holes.indexOf(i - startIdx + 1) >= 0) {
+            next = ringStartIdx;
+            ringStartIdx = i + 1;
+        } else {
+
+
+            next = i + 1;
+        }
+        if (isClippedEdge(vertices, current, next, EXTENT)) {
+            continue;
+        }
+        if ((i - startIdx) % 2 === 1) {
+            //加上 2 * vertexCount，使用与 i % 2 === 0 时，不同的另一组端点，以避免共端点
+            current += 2 * vertexCount;
+            next += 2 * vertexCount;
+        }
+        //top[i], bottom[i], top[i + 1]
+        indices.push(current + vertexCount, current, next);
+        //bottom[i + 1], top[i + 1], bottom[i]
+        indices.push(next, next + vertexCount, current + vertexCount);
+    }
+    if (generateUV) {
+        buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize[0] / glScale, uvSize[1] / vScale); //convert uvSize[1] to meter
+    }
+    return offset;
 }

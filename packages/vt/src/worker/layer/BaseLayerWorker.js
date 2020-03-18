@@ -314,7 +314,7 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1]));
+            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1], symbol, zoom));
         } else if (type === '3d-wireframe') {
             return Promise.resolve(buildWireframe(features, dataConfig, extent));
         } else if (type === 'point') {

@@ -4,7 +4,7 @@ import { extend, isNumber } from '../../Util';
 import Painter from '../Painter';
 import { setUniformFromSymbol, createColorSetter } from '../../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from '../util/fn_type_util';
-import { piecewiseConstant, interpolated } from '@maptalks/function-type';
+import { piecewiseConstant, interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import Color from 'color';
 import { OFFSET_FACTOR_SCALE } from '../Constant';
 
@@ -552,10 +552,11 @@ class StandardPainter extends Painter {
     }
 
     _getFnTypeConfig() {
-        this._fillFn = piecewiseConstant(this.symbolDef['polygonFill'] || this.symbolDef['lineColor']);
-        this._opacityFn = interpolated(this.symbolDef['polygonOpacity']);
-        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
-        this._aLineHeightFn = interpolated(this.symbolDef['lineHeight']);
+        const symbolDef = this.symbolDef;
+        this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
+        this._opacityFn = interpolated(symbolDef['polygonOpacity']);
+        this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
+        this._aLineHeightFn = interpolated(symbolDef['lineHeight']);
         const map = this.getMap();
         const u8 = new Uint8Array(1);
         const u16 = new Uint16Array(1);

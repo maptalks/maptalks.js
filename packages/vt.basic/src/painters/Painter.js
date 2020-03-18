@@ -454,10 +454,10 @@ class Painter {
                     x: 0,
                     y: 0,
                     width: context => {
-                        return context.drawingBufferWidth;
+                        return context.framebufferWidth;
                     },
                     height: context => {
-                        return context.drawingBufferHeight;
+                        return context.framebufferHeight;
                     }
                 },
                 depth: {

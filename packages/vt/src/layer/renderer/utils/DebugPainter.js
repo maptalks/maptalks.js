@@ -154,11 +154,11 @@ class DebugPainter {
             viewport: {
                 x: 0,
                 y: 0,
-                width: (context) => {
-                    return context.drawingBufferWidth;
+                width: context => {
+                    return context.framebufferWidth;
                 },
-                height: (context) => {
-                    return context.drawingBufferHeight;
+                height: context => {
+                    return context.framebufferHeight;
                 }
             },
             framebuffer: this._regl.prop('framebuffer')
