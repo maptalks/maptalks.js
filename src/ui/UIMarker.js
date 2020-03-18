@@ -327,6 +327,7 @@ class UIMarker extends Handlerable(UIComponent) {
         } else {
             dom = this.options['content'];
         }
+        dom.className = this._generateClassName('maptalks-uimarker');
         this._registerDOMEvents(dom);
         return dom;
     }

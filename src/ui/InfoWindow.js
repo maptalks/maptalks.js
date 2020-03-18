@@ -145,7 +145,7 @@ class InfoWindow extends UIComponent {
             }
         }
         const dom = createEl('div');
-        dom.className = 'maptalks-msgBox';
+        dom.className = this._generateClassName('maptalks-msgBox');
         dom.style.width = this._getWindowWidth() + 'px';
         dom.style.bottom = '0px'; // fix #657
         let content = '<em class="maptalks-ico"></em>';

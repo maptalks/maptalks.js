@@ -29,6 +29,7 @@ import Geometry from '../geometry/Geometry';
  * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
  * @property {Boolean}  [options.pitchWithMap=false]    - whether tilt with map
  * @property {Boolean}  [options.rotateWithMap=false]  - whether rotate with map
+ * @property {String}  [options.className=null]  - custom css className
  * @memberOf ui.UIComponent
  * @instance
  */
@@ -45,6 +46,7 @@ const options = {
     'animationDuration': 500,
     'pitchWithMap': false,
     'rotateWithMap': false,
+    'className': null
 };
 
 /**
@@ -599,6 +601,15 @@ class UIComponent extends Eventable(Class) {
         } else {
             return 'translate(' + p.x + 'px,' + p.y + 'px)';
         }
+    }
+
+    _generateClassName(defaultClassName = '') {
+        const { className, cssName } = this.options || {};
+        const clazz = className || cssName;
+        if (clazz) {
+            return `${clazz} ${defaultClassName}`;
+        }
+        return defaultClassName;
     }
 
     /*

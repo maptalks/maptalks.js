@@ -102,7 +102,7 @@ class Menu extends UIComponent {
             }
         } else {
             const dom = createEl('div');
-            addClass(dom, 'maptalks-menu');
+            addClass(dom, this._generateClassName('maptalks-menu'));
             dom.style.width = this._getMenuWidth() + 'px';
             /*const arrow = createEl('em');
             addClass(arrow, 'maptalks-ico');*/
@@ -144,7 +144,7 @@ class Menu extends UIComponent {
 
     getEvents() {
         return {
-            '_zoomstart _zoomend _movestart _dblclick _click': this. _removePrevDOM
+            '_zoomstart _zoomend _movestart _dblclick _click': this._removePrevDOM
         };
     }
 

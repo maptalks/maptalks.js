@@ -95,7 +95,7 @@ class ToolTip extends UIComponent {
         if (!cssName && options.height) {
             dom.style.lineHeight = options.height + 'px';
         }
-        dom.innerHTML = `<div class="${cssName}">${this._content}</div>`;
+        dom.innerHTML = `<div class="${this._generateClassName('maptalks-tooltip')}">${this._content}</div>`;
         return dom;
     }
 
