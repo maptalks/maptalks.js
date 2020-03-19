@@ -154,7 +154,7 @@ vec4 taa(const in vec2 ssVel, const in vec2 texelSize) {
     vec2 uv = gTexCoord;
     vec4 m = (texture2D(TextureInput, (min(uv, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 previousColor = (texture2D(TexturePrevious, (min(uv - ssVel, 1.0 - 1e+0 / uTexturePreviousSize.xy)) * uTexturePreviousRatio));
-    previousColor = clip_aabb(texelSize, previousColor, m, true);
+    previousColor = clip_aabb(texelSize, previousColor, m, false);
     float lum0 = getLuminance(m.rgb);
     float lum1 = getLuminance(previousColor.rgb);
     float diff = abs(lum0 - lum1) / max(lum0, max(lum1, 0.2));
