@@ -1,12 +1,10 @@
 import { Map, renderer } from 'maptalks';
 import createREGL from '@maptalks/regl';
-import PostProcess from '../layer/postprocess/PostProcess.js';
 
 let postCanvas;
 let regl;
 let texture;
 let emptyLutTexture;
-let postProcess;
 const CLEAR_COLOR = {
     color: [0, 0, 0, 0]
 };
@@ -151,5 +149,4 @@ function createContext(width, height) {
         height
     });
     emptyLutTexture = regl.texture();
-    postProcess = new PostProcess(regl, viewport);
 }

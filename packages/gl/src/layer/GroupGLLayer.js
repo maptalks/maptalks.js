@@ -21,7 +21,8 @@ const options = {
     ],
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
-    forceRenderOnRotating : true
+    forceRenderOnRotating : true,
+    jitterRatio: 0.05
 };
 
 const bloomFilter = m => m.getUniform('bloom');
@@ -472,7 +473,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.gl.regl = this._regl;
 
         this._jitter = [0, 0];
-        this._jitGetter = new reshader.Jitter(0.25);
+        this._jitGetter = new reshader.Jitter(this.layer.options['jitterRatio']);
     }
 
     _initGL() {
@@ -848,6 +849,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (enableTAA) {
             // const redrawFrame = this.testIfNeedRedraw();
             const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
+                projMatrix: map.projMatrix,
                 projViewMatrix: map.projViewMatrix,
                 // prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
                 cameraWorldMatrix: map.cameraWorldMatrix,

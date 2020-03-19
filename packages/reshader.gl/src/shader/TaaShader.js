@@ -11,6 +11,7 @@ class TaaShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
+                'uProjectionMatrix',
                 'uTaaCurrentFramePVLeft',
                 'uTaaInvViewMatrixLeft',
                 'uTaaLastFramePVLeft',

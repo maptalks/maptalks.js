@@ -45,6 +45,10 @@ class Jitter {
             this._frameNum = 0;
         }
     }
+
+    getSampleCount() {
+        return SAMPLE_COUNT;
+    }
 }
 
 export default Jitter;
