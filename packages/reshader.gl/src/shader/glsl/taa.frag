@@ -101,7 +101,6 @@ vec3 reconstructWSPosition(const in vec2 uv, const in vec4 corners0, const in ve
     return (invView * vec4(vsPos, 1.0)).xyz;
 }
 vec3 closestFragment(in vec2 uv, const in vec2 texelSize) {
-    // uv -= 0.5 * uHalton.xy * texelSize;
     // float d;
     // vec2 size = 2.0 * texelSize;
     // vec3 dmin = vec3(0.0, 0.0, 0.0);
@@ -116,7 +115,7 @@ vec3 closestFragment(in vec2 uv, const in vec2 texelSize) {
     // if(d < dmin.z) dmin = vec3(  size.x, -size.y, d);;
     // return vec3(uv + dmin.xy, dmin.z);
 
-    float depth = decodeDepth(texture2D(TextureDepth, (min(uv - 0.5 * uHalton.xy * texelSize, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
+    float depth = decodeDepth(texture2D(TextureDepth, (min(uv, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     return vec3(uv, depth);
 }
 vec4 clip_aabb_opti(const in vec4 minimum, const in vec4 maximum, const in vec4 color) {
