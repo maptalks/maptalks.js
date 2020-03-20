@@ -154,6 +154,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             ],
             optionalExtensions: layer.options['glExtensions'] ||
                 [
+                    'OES_vertex_array_object',
                     'OES_texture_half_float', 'OES_texture_half_float_linear',
                     'OES_texture_float', 'OES_texture_float_linear',
                     'WEBGL_draw_buffers', 'EXT_shader_texture_lod'
