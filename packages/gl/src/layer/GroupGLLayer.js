@@ -15,6 +15,7 @@ const options = {
         'OES_standard_derivatives'
     ],
     optionalExtensions : [
+        'OES_vertex_array_object',
         'OES_texture_half_float', 'OES_texture_half_float_linear',
         'OES_texture_float', 'OES_texture_float_linear',
         'WEBGL_depth_texture', /*'WEBGL_draw_buffers', */'EXT_shader_texture_lod'
@@ -22,7 +23,7 @@ const options = {
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true,
-    jitterRatio: 0.05
+    jitterRatio: 0.02
 };
 
 const bloomFilter = m => m.getUniform('bloom');
@@ -651,7 +652,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 delete this._ssrFBO;
             }
         } else {
-            const hasJitter = config.taa && config.taa.enable || config.ssaa && config.ssaa.enable;
+            const hasJitter = config.antialias && config.antialias.enable;
             if (hasJitter) {
                 context['jitter'] = this._jitGetter.getJitter(this._jitter);
                 this._jitGetter.frame();
@@ -845,7 +846,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             tex = this._postProcessor.bloom(tex, this._bloomFBO.color[0], threshold, factor, radius);
         }
 
-        const enableTAA = config.taa && config.taa.enable;
+        const enableTAA = config.antialias && config.antialias.enable;
         if (enableTAA) {
             // const redrawFrame = this.testIfNeedRedraw();
             const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
@@ -857,7 +858,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 jitter: this._jitter,
                 near: map.cameraNear,
                 far: map.cameraFar,
-                needClear: this._aaOutdated || this._shadowUpdated || map.getRenderer().isViewChanged()
+                needClear: this._aaOutdated || this._shadowUpdated || map.getRenderer().isViewChanged(),
+                taa: !!config.antialias.taa
             });
             tex = outputTex;
             // if (!this._prevProjViewMatrix) {
@@ -880,7 +882,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             sharpFactor = 0.2;// 0 - 5
         }
         this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
-            +!!(config.antialias && config.antialias.enable),
+            // +!!(config.antialias && config.antialias.enable),
+            1,
             +!!(config.toneMapping && config.toneMapping.enable),
             +!!(config.sharpen && config.sharpen.enable),
             map.getDevicePixelRatio(),

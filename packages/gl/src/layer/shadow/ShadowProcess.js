@@ -3,6 +3,9 @@ import * as reshader from '@maptalks/reshader.gl';
 import { getGroundTransform } from '../util/util';
 
 const COORD_THRESHOLD = 100;
+//阴影覆盖的pitch范围
+const SHADOW_MAX_PITCH = 62;
+let VISUAL_EXTENT;
 
 class ShadowProcess {
     constructor(regl, sceneConfig, layer) {
@@ -46,7 +49,7 @@ class ShadowProcess {
                 return  mat4.multiply([], lightProjViews, model);
             }
         });
-        uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold', 'shadow_color');
+        uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold', 'shadow_color', 'shadow_nearFar');
         return uniforms;
     }
 
@@ -73,12 +76,23 @@ class ShadowProcess {
         if (changed) {
             const cameraProjViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
             const lightDir = vec3.normalize([], lightDirection);
-            const extent = map['_get2DExtent'](map.getGLZoom());
+
+            if (!VISUAL_EXTENT) {
+                VISUAL_EXTENT = map.getContainerExtent();
+            }
+            let visualHeight = map.height;
+            if (map.getPitch() > SHADOW_MAX_PITCH) {
+                visualHeight = map._getVisualHeight(SHADOW_MAX_PITCH);
+            }
+            const containerExtent = VISUAL_EXTENT.set(0, map.height - visualHeight, map.width, map.height);
+            const extent = containerExtent.convertTo(c => map['_containerPointToPoint'](c, map.getGLZoom()));
+
             const arr = extent.toArray();
             scene.addMesh(this._ground);
             const { lightProjViewMatrix, shadowMap, /* depthFBO, */ blurFBO } = this._shadowPass.render(
                 scene,
-                { cameraProjViewMatrix, lightDir, farPlane: arr.map(c => [c.x, c.y, 0, 1]) }
+                { cameraProjViewMatrix, lightDir, farPlane: arr.map(c => [c.x, c.y, 0, 1]),
+                    cameraLookAt: map.cameraLookAt }
             );
             matrix = this._lightProjViewMatrix = lightProjViewMatrix;
             smap = this._shadowMap = shadowMap;

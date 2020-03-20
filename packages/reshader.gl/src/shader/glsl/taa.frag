@@ -14,7 +14,6 @@ uniform mat4 uTaaLastFramePVLeft;
 uniform sampler2D TextureDepth;
 uniform sampler2D TextureInput;
 uniform sampler2D TexturePrevious;
-uniform vec2 uNearFar;
 uniform vec2 uTextureDepthRatio;
 uniform vec2 uTextureDepthSize;
 uniform vec2 uTextureInputRatio;
@@ -101,20 +100,24 @@ vec3 reconstructWSPosition(const in vec2 uv, const in vec4 corners0, const in ve
     vec3 vsPos = vec3(mix(AB.xy, AB.zw, vec2(finalUv.y)), 1.0) * depth;
     return (invView * vec4(vsPos, 1.0)).xyz;
 }
-vec3 closestFragment(const in vec2 uv, const in vec2 texelSize) {
-    float d;
-    vec2 size = 2.0 * texelSize;
-    vec3 dmin = vec3(0.0, 0.0, 0.0);
-    dmin.z = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2( 0.0, 0.0), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
-    d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  -size.x, size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
-    if(d < dmin.z) dmin = vec3(  -size.x, size.y, d);;
-    d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  size.x, size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
-    if(d < dmin.z) dmin = vec3(  size.x, size.y, d);;
-    d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  -size.x, -size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
-    if(d < dmin.z) dmin = vec3(  -size.x, -size.y, d);;
-    d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  size.x, -size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
-    if(d < dmin.z) dmin = vec3(  size.x, -size.y, d);;
-    return vec3(uv + dmin.xy, dmin.z);
+vec3 closestFragment(in vec2 uv, const in vec2 texelSize) {
+    // uv -= 0.5 * uHalton.xy * texelSize;
+    // float d;
+    // vec2 size = 2.0 * texelSize;
+    // vec3 dmin = vec3(0.0, 0.0, 0.0);
+    // dmin.z = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2( 0.0, 0.0), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
+    // d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  -size.x, size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
+    // if(d < dmin.z) dmin = vec3(  -size.x, size.y, d);;
+    // d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  size.x, size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
+    // if(d < dmin.z) dmin = vec3(  size.x, size.y, d);;
+    // d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  -size.x, -size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
+    // if(d < dmin.z) dmin = vec3(  -size.x, -size.y, d);;
+    // d = decodeDepth( (texture2D(TextureDepth, (min(uv + vec2(  size.x, -size.y), 1.0 - 1e+0 / uTextureDepthSize.xy)) * uTextureDepthRatio)));;
+    // if(d < dmin.z) dmin = vec3(  size.x, -size.y, d);;
+    // return vec3(uv + dmin.xy, dmin.z);
+
+    float depth = decodeDepth(texture2D(TextureDepth, (min(uv - 0.5 * uHalton.xy * texelSize, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
+    return vec3(uv, depth);
 }
 vec4 clip_aabb_opti(const in vec4 minimum, const in vec4 maximum, const in vec4 color) {
     const float eps = 0.00000001;
@@ -154,42 +157,13 @@ vec4 taa(const in vec2 ssVel, const in vec2 texelSize) {
     vec2 uv = gTexCoord;
     vec4 m = (texture2D(TextureInput, (min(uv, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
     vec4 previousColor = (texture2D(TexturePrevious, (min(uv - ssVel, 1.0 - 1e+0 / uTexturePreviousSize.xy)) * uTexturePreviousRatio));
-    previousColor = clip_aabb(texelSize, previousColor, m, false);
+    previousColor = clip_aabb(texelSize, previousColor, m, true);
     float lum0 = getLuminance(m.rgb);
     float lum1 = getLuminance(previousColor.rgb);
     float diff = abs(lum0 - lum1) / max(lum0, max(lum1, 0.2));
     float unbiased_weight = 1.0 - diff;
     float feedback = mix(0.88, 0.97, unbiased_weight * unbiased_weight);
     return mix(m, previousColor, feedback);
-
-    //2020-03-19的sketchfab上的taa版本
-    // vec2 uv = gTexCoord;
-    // vec4 tl = (texture2D(TextureInput, (min(uv + vec2(-texelSize.x, texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 t = (texture2D(TextureInput, (min(uv + vec2(0.0, texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 tr = (texture2D(TextureInput, (min(uv + vec2(texelSize.x, texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 ml = (texture2D(TextureInput, (min(uv + vec2(-texelSize.x, 0.0), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 m = (texture2D(TextureInput, (min(uv, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 mr = (texture2D(TextureInput, (min(uv + vec2(texelSize.x, 0.0), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 bl = (texture2D(TextureInput, (min(uv + vec2(-texelSize.x, -texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 b = (texture2D(TextureInput, (min(uv + vec2(0.0, -texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 br = (texture2D(TextureInput, (min(uv + vec2(texelSize.x, -texelSize.y), 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
-    // vec4 corners = 2.0 * (tr + bl + br + tl) - 2.0 * m;
-    // m += (m - (corners * 0.166667)) * 2.718282 * 0.3;
-    // m = max(vec4(0.0), m);
-    // vec4 cmin5 = min(mr, min(m, min(ml, min(t, b))));
-    // vec4 cmin = min(cmin5, min(tl, min(tr, min(bl, br))));
-    // vec4 cmax5 = max(mr, max(m, max(ml, max(t, b))));
-    // vec4 cmax = max(cmax5, max(tl, max(tr, max(bl, br))));
-    // cmin = 0.5 * (cmin + cmin5);
-    // cmax = 0.5 * (cmax + cmax5);
-    // vec4 previousColor = (texture2D(TexturePrevious, (min(uv - ssVel, 1.0 - 1e+0 / uTexturePreviousSize.xy)) * uTexturePreviousRatio));
-    // previousColor = clip_aabb_opti(cmin, cmax, previousColor);
-    // float lum0 = getLuminance(m.rgb);
-    // float lum1 = getLuminance(previousColor.rgb);
-    // float diff = abs(lum0 - lum1) / max(lum0, max(lum1, 0.2));
-    // float unbiased_weight = 1.0 - diff;
-    // float feedback = mix(0.88, 0.97, unbiased_weight * unbiased_weight);
-    // return mix(m, previousColor, feedback);
 }
 vec2 computeSSVelocity(const in vec3 wsPos, const in mat4 currentFrameProjView, const in mat4 lastFrameProjView, const in bool rightEye) {
     vec4 ssCurrentPos = currentFrameProjView * vec4(wsPos, 1.0);

@@ -8,7 +8,6 @@ class TaaPass {
         this._jitter = jitter;
         this._renderer = renderer;
         this._halton = [];
-        this._nearfar = [];
         this._counter = 0;
     }
 
@@ -16,7 +15,7 @@ class TaaPass {
         return this._counter < this._jitter.getSampleCount();
     }
 
-    render(sourceTex, depthTex, projMatrix, pvMatrix, invViewMatrix, fov, near, far, needClear) {
+    render(sourceTex, depthTex, projMatrix, pvMatrix, invViewMatrix, fov, near, far, needClear, enableTaa) {
         const jitter = this._jitter;
         const currentJitter = jitter.getJitter(JITTER);
         this._initShaders();
@@ -26,7 +25,7 @@ class TaaPass {
         }
         this._counter++;
         const sampleCount = jitter.getSampleCount();
-        if (this._counter >= sampleCount && !needClear) {
+        if (this._counter >= sampleCount) {
             return this._prevTex;
         }
         if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
@@ -44,9 +43,9 @@ class TaaPass {
             'uTexturePreviousRatio': [1, 1],
             'uTexturePreviousSize': [prevTex.width, prevTex.height],
             'uSSAARestart': 0,
-            'uTaaEnabled': 1,
+            'uClipAABBEnabled': 0
         };
-        uniforms['uClipAABBEnabled'] = 0;
+        uniforms['uTaaEnabled'] = +!!enableTaa;
         uniforms['fov'] = fov;
         uniforms['uProjectionMatrix'] = projMatrix;
         uniforms['uTaaCurrentFramePVLeft'] = pvMatrix;
@@ -56,7 +55,6 @@ class TaaPass {
         uniforms['TextureInput'] = sourceTex;
         uniforms['TexturePrevious'] = prevTex;
         uniforms['uHalton'] = vec4.set(this._halton, currentJitter[0], currentJitter[1], needClear ? 1.0 : 2.0, this._counter);
-        uniforms['uNearFar'] = vec2.set(this._nearfar, near, far);
         vec2.set(uniforms['uTextureDepthSize'], depthTex.width, depthTex.height);
         vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
         vec2.set(uniforms['uTextureOutputSize'], output.width, output.height);

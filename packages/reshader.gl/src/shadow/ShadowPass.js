@@ -14,8 +14,8 @@ class ShadowPass {
         this._init(defines);
     }
 
-    render(scene, { cameraProjViewMatrix, lightDir, farPlane }) {
-        const lightProjViewMatrix = this._renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane);
+    render(scene, { cameraProjViewMatrix, lightDir, farPlane, cameraLookAt }) {
+        const lightProjViewMatrix = this._renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane, cameraLookAt);
         return {
             lightProjViewMatrix,
             shadowMap : this.blurTex || this.depthTex,
@@ -36,7 +36,7 @@ class ShadowPass {
         return this;
     }
 
-    _renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane) {
+    _renderShadow(scene, cameraProjViewMatrix, lightDir, farPlane, cameraLookAt) {
         const renderer = this.renderer;
         const frustum = getFrustumWorldSpace(cameraProjViewMatrix);
         if (farPlane) {
@@ -46,7 +46,7 @@ class ShadowPass {
         }
         //TODO 计算Frustum和scene的相交部分，作为光源的frustum
         //TODO 遍历scene中的图形，如果aabb不和frustum相交，就不绘制
-        const lightProjViewMatrix = getDirLightCameraProjView(frustum, lightDir);
+        const lightProjViewMatrix = getDirLightCameraProjView(cameraLookAt, frustum, lightDir);
         renderer.clear({
             color : [1, 0, 0, 1],
             depth : 1,
@@ -185,13 +185,14 @@ getDirLightCameraProjView = function () {
     let cropMatrix = new Array(16);
     const scaleV = [1, 1, 1];
     const offsetV = [0, 0, 0];
-    return function (frustum, lightDir) {
+    return function (cameraLookAt, frustum, lightDir) {
 
-        vec4.scale(frustumCenter, frustumCenter, 0);
-        for (let i = 4; i < frustum.length; i++) {
-            vec4.add(frustumCenter, frustumCenter, frustum[i]);
-        }
-        vec4.scale(frustumCenter, frustumCenter, 1 / 4);
+        // vec4.scale(frustumCenter, frustumCenter, 0);
+        // for (let i = 4; i < frustum.length; i++) {
+        //     vec4.add(frustumCenter, frustumCenter, frustum[i]);
+        // }
+        // vec4.scale(frustumCenter, frustumCenter, 1 / 4);
+        vec4.set(frustumCenter, ...cameraLookAt, 1);
         vec3.scale(lightDirection, lightDir, -1);
         lvMatrix = mat4.lookAt(lvMatrix, vec3.add(v3, frustumCenter, vec3.normalize(v3, lightDirection)), frustumCenter, cameraUp);
         vec4.transformMat4(transf, frustum[0], lvMatrix);
@@ -210,7 +211,6 @@ getDirLightCameraProjView = function () {
         }
 
         // 可能因为地图空间中y轴是反向的，所以与原贴不同，需要交换minZ和maxZ，即以-maxZ作为近裁面，-minZ作为远裁面
-        // lpMatrix = mat4.ortho(lpMatrix, -1, 1, -1, 1, -maxZ, -minZ);
         lpMatrix = mat4.ortho(lpMatrix, -1, 1, -1, 1, -maxZ, -minZ);
 
         const scaleX = scaleV[0] = 2 / (maxX - minX);

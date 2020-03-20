@@ -27,7 +27,6 @@ class TaaShader extends QuadShader {
                 'uTexturePreviousRatio',
                 'uTexturePreviousSize',
                 'uHalton',
-                'uNearFar',
                 'uSSAARestart',
                 'uTaaEnabled',
                 'uClipAABBEnabled',
