@@ -15,7 +15,13 @@ const DEFAULT_UNIFORMS = {
     'uOcclusionTexture': null,
 
     'uvScale': [1, 1],
-    'uvOffset': [0, 0]
+    'uvOffset': [0, 0],
+
+    'lineColor': [1, 1, 1, 1],
+    'lineOpacity': 1,
+
+    'polygonFill': [1, 1, 1, 1],
+    'polygonOpacity': 1,
 };
 
 class PhongMaterial extends Material {

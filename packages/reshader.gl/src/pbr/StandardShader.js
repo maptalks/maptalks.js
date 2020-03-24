@@ -160,6 +160,12 @@ class StandardShader extends MeshShader {
             'uGlossinessFactor',
             'uDiffuseTexture',
             'uSpecularGlossinessTexture',
+
+            'lineColor',
+            'lineOpacity',
+            'polygonFill',
+            'polygonOpacity',
+
             //viewshed
             'viewshed_depthMapFromViewpoint',
             'viewshed_projViewMatrixFromViewpoint',

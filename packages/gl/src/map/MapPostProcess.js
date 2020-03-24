@@ -5,6 +5,7 @@ let postCanvas;
 let regl;
 let texture;
 let emptyLutTexture;
+let postProcess;
 const CLEAR_COLOR = {
     color: [0, 0, 0, 0]
 };
@@ -120,16 +121,16 @@ function doPostProcess(renderer, canvas) {
 
 function createContext(width, height) {
     postCanvas = document.createElement('canvas', width, height);
-    const viewport = {
-        x: 0,
-        y: 0,
-        width: () => {
-            return postCanvas.width;
-        },
-        height: () => {
-            return postCanvas.height;
-        }
-    };
+    // const viewport = {
+    //     x: 0,
+    //     y: 0,
+    //     width: () => {
+    //         return postCanvas.width;
+    //     },
+    //     height: () => {
+    //         return postCanvas.height;
+    //     }
+    // };
     regl = createREGL({
         canvas: postCanvas,
         attributes: {

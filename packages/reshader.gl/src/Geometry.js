@@ -81,7 +81,7 @@ export default class Geometry {
                 continue;
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
-            if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
+            if (data[key].buffer && !(data[key].buffer instanceof ArrayBuffer)) {
                 if (data[key].buffer.destroy) {
                     buffers[key] = data[key];
                 } else if (allocatedBuffers[data[key].buffer]) {

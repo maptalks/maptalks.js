@@ -344,7 +344,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 return;
             }
             if (renderer.needRetireFrames && renderer.needRetireFrames()) {
-                this._aaOutdated = true;
+                this.setTaaOutdated();
             }
             if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
                 hasNoAA = true;
@@ -676,10 +676,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
         }
         if (this._renderMode !== 'noAa') {
-            const shadowContext = this._getShadowContext(renderTarget && renderTarget.fbo);
-            if (shadowContext) {
-                context.shadow = shadowContext;
-            }
+            this._shadowContext = this._getShadowContext(renderTarget && renderTarget.fbo);
+        }
+        if (this._shadowContext) {
+            context.shadow = this._shadowContext;
         }
         return context;
     }

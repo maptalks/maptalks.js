@@ -40,8 +40,18 @@ varying vec3 vFragPos;
     varying float vExtrusionOpacity;
 #endif
 
-#ifdef HAS_COLOR
+#if defined(HAS_COLOR)
     varying vec4 vColor;
+#elif defined(IS_LINE_EXTRUSION)
+    uniform vec4 lineColor;
+#else
+    uniform vec4 polygonFill;
+#endif
+
+#ifdef IS_LINE_EXTRUSION
+    uniform float lineOpacity;
+#else
+    uniform float polygonOpacity;
 #endif
 
 #ifdef HAS_OCCLUSION_MAP
@@ -133,10 +143,15 @@ void main() {
         diff = toon / toons;
     #endif
     vec3 diffuse = lightDiffuse * diff * baseColor.rgb;
-    #ifdef HAS_COLOR
-        ambient *= vColor.rgb;
-        diffuse *= vColor.rgb;
+    #if defined(HAS_COLOR)
+        vec3 color = vColor.rgb;
+    #elif defined(IS_LINE_EXTRUSION)
+        vec3 color = lineColor.rgb;
+    #else
+        vec3 color = polygonFill.rgb;
     #endif
+    ambient *= color.rgb;
+    diffuse *= color.rgb;
     //镜面反色光
     vec3 viewDir = normalize(cameraPosition - vFragPos);
     // vec3 reflectDir = reflect(-lightDir, norm);
@@ -160,9 +175,14 @@ void main() {
 
     gl_FragColor = vec4(result, opacity);
     // gl_FragColor = linearTosRGB(gl_FragColor);
-    #ifdef HAS_COLOR
-        gl_FragColor *= vColor.a;
+    #if defined(HAS_COLOR)
+        float colorAlpha = vColor.a;
+    #elif defined(IS_LINE_EXTRUSION)
+        float colorAlpha = lineColor.a;
+    #else
+        float colorAlpha = polygonFill.a;
     #endif
+        gl_FragColor *= colorAlpha;
     #ifdef HAS_EXTRUSION_OPACITY
         float topAlpha = extrusionOpacityRange.x;
         float bottomAlpha = extrusionOpacityRange.y;
