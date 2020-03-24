@@ -4,7 +4,6 @@ import clipLine from './util/clip_line';
 import { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
-import {getHeightValue } from './util/util';
 
 const MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;

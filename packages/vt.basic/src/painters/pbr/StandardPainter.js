@@ -2,7 +2,6 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, isNumber } from '../../Util';
 import MeshPainter from '../MeshPainter';
-import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import { OFFSET_FACTOR_SCALE } from '../Constant';
 
 
