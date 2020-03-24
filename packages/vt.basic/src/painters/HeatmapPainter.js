@@ -5,12 +5,6 @@ import { prepareFnTypeData } from './util/fn_type_util';
 import { setUniformFromSymbol } from '../Util';
 import { OFFSET_FACTOR_SCALE } from './Constant';
 
-const DEFAULT_UNIFORMS = {
-    // heatmapOpacity: 1,
-    heatmapIntensity: 1,
-    heatmapRadius: 6
-};
-
 export default class HeatmapPainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
@@ -27,6 +21,8 @@ export default class HeatmapPainter extends BasicPainter {
             {
                 attrName: 'aWeight',
                 symbolName: 'heatWeight',
+                type: Uint8Array,
+                size: 1,
                 evaluate: properties => {
                     const x = heatWeightFn(map.getZoom(), properties);
                     u8[0] = x;
@@ -38,7 +34,7 @@ export default class HeatmapPainter extends BasicPainter {
 
     createGeometry(glData, features) {
         const geometry = super.createGeometry(glData, features);
-        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
+        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
         return geometry;
     }
 
@@ -48,13 +44,12 @@ export default class HeatmapPainter extends BasicPainter {
             tileRatio: geometry.properties.tileRatio,
             dataResolution: geometry.properties.tileResolution
         };
-        setUniformFromSymbol(uniforms, 'heatmapIntensity', symbol, 'heatmapIntensity');
-        setUniformFromSymbol(uniforms, 'heatmapRadius', symbol, 'heatmapRadius');
-        if (!geometry.data.aWeight) {
-            setUniformFromSymbol(uniforms, 'heatmapWeight', symbol, 'heatmapWeight');
-        }
+        setUniformFromSymbol(uniforms, 'heatmapIntensity', symbol, 'heatmapIntensity', 1);
+        setUniformFromSymbol(uniforms, 'heatmapRadius', symbol, 'heatmapRadius', 6);
+        setUniformFromSymbol(uniforms, 'heatmapWeight', symbol, 'heatmapWeight', 1);
+        setUniformFromSymbol(uniforms, 'heatmapOpacity', symbol, 'heatmapOpacity', 1);
         geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
+        const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             transparent: true,
             castShadow: false,
@@ -75,13 +70,10 @@ export default class HeatmapPainter extends BasicPainter {
 
     getUniformValues(map) {
         const { projViewMatrix } = map;
-        const symbol = this.getSymbol();
         return {
             glScale: 1 / map.getGLScale(),
             resolution: map.getResolution(),
-            projViewMatrix,
-            heatmapWeight: symbol.heatmapWeight || 1,
-            heatmapOpacity: symbol.heatmapOpacity === undefined ? 1 : symbol.heatmapOpacity
+            projViewMatrix
         };
     }
 

@@ -138,7 +138,7 @@ export default class TextPainter extends CollisionPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
+        updateGeometryFnTypeAttrib(this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
 
         this._projectedLinesCache = {};
         this._updateLabels(context.timestamp);

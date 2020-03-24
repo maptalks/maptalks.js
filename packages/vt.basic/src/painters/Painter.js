@@ -352,7 +352,7 @@ class Painter {
     }
 
     shouldDeleteMeshOnUpdateSymbol() {
-        return true;
+        return false;
     }
 
     needClearStencil() {

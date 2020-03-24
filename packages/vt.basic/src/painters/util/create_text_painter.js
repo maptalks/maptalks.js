@@ -12,13 +12,12 @@ const GAMMA_SCALE = 0.79;
 const DEFAULT_UNIFORMS = {
     'textFill': [0, 0, 0, 1],
     'textOpacity': 1,
-    'pitchWithMap': 0,
-    'rotateWithMap': 0,
+    'textPitchAlignment': 0,
+    'textRotationAlignment': 0,
     'textHaloRadius': 0,
     'textHaloFill': [1, 1, 1, 1],
     'textHaloBlur': 0,
     'textHaloOpacity': 1,
-    'isHalo': 0,
     'textPerspectiveRatio': 0,
     'textSize': 14,
     'textDx': 0,
@@ -42,7 +41,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     if (symbol['textSize'] === 0 || symbol['textOpacity'] === 0) {
         return meshes;
     }
-    prepareFnTypeData(geometry, geometry.properties.features, symbol.def || symbol, fnTypeConfig);
+    prepareFnTypeData(geometry, symbol.def || symbol, fnTypeConfig);
     geometry.properties.symbol = symbol;
 
 
@@ -64,9 +63,12 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         }
     }
 
+    const glyphTexture = this.createAtlasTexture(glyphAtlas);
     const uniforms = {
         tileResolution: geometry.properties.tileResolution,
-        tileRatio: geometry.properties.tileRatio
+        tileRatio: geometry.properties.tileRatio,
+        texture: glyphTexture,
+        texSize: [glyphAtlas.width, glyphAtlas.height]
     };
     setMeshUniforms(geometry, uniforms, symbol);
 
@@ -74,9 +76,6 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     if (symbol['textOpacity'] < 1) {
         transparent = true;
     }
-
-    uniforms['texture'] = this.createAtlasTexture(glyphAtlas);
-    uniforms['texSize'] = [glyphAtlas.width, glyphAtlas.height];
 
     geometry.properties.memorySize = geometry.getMemorySize();
     geometry.generateBuffers(regl);
@@ -100,7 +99,14 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     meshes.push(mesh);
 
     if (uniforms['isHalo']) {
-        uniforms.isHalo = 0;
+        const uniforms = {
+            tileResolution: geometry.properties.tileResolution,
+            tileRatio: geometry.properties.tileRatio,
+            texture: glyphTexture,
+            texSize: [glyphAtlas.width, glyphAtlas.height],
+            isHalo: 0
+        };
+        setMeshUniforms(geometry, uniforms, symbol);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
             transparent,
@@ -196,32 +202,26 @@ function prepareGeometry(geometry, enableCollision) {
 }
 
 function setMeshUniforms(geometry, uniforms, symbol) {
-    setUniformFromSymbol(uniforms, 'textOpacity', symbol, 'textOpacity');
-    setUniformFromSymbol(uniforms, 'textFill', symbol, 'textFill', createColorSetter());
-    setUniformFromSymbol(uniforms, 'textHaloFill', symbol, 'textHaloFill', createColorSetter());
-    setUniformFromSymbol(uniforms, 'textHaloBlur', symbol, 'textHaloBlur');
-    if (symbol['textHaloRadius'] && !geometry.data['aTextHaloRadius']) {
-        setUniformFromSymbol(uniforms, 'textHaloRadius', symbol, 'textHaloRadius');
-        uniforms.isHalo = 1;
-    } else if (geometry.data['aTextHaloRadius'] && geometry.properties.hasHalo) {
-        uniforms.isHalo = 1;
+    if (uniforms['isHalo'] === undefined) {
+        setUniformFromSymbol(uniforms, 'isHalo', symbol, 'textHaloRadius', 0, v => {
+            return +(v > 0 && !geometry.data['aTextHaloRadius'] || geometry.data['aTextHaloRadius'] && geometry.properties.hasHalo);
+        });
     }
-    setUniformFromSymbol(uniforms, 'textHaloOpacity', symbol, 'textHaloOpacity');
-    if (symbol['textPerspectiveRatio']) {
-        uniforms.textPerspectiveRatio = symbol['textPerspectiveRatio'];
-    } else if (symbol['textPlacement'] === 'line') {
-        uniforms.textPerspectiveRatio = 1;
-    }
-    if (symbol['textRotationAlignment'] === 'map') {
-        uniforms.rotateWithMap = 1;
-    }
-    if (symbol['textPitchAlignment'] === 'map') {
-        uniforms.pitchWithMap = 1;
-    }
-    setUniformFromSymbol(uniforms, 'textSize', symbol, 'textSize');
-    setUniformFromSymbol(uniforms, 'textDx', symbol, 'textDx');
-    setUniformFromSymbol(uniforms, 'textDy', symbol, 'textDy');
-    setUniformFromSymbol(uniforms, 'textRotation', symbol, 'textRotation', v => v * Math.PI / 180);
+    setUniformFromSymbol(uniforms, 'textOpacity', symbol, 'textOpacity', DEFAULT_UNIFORMS['textOpacity']);
+    setUniformFromSymbol(uniforms, 'textFill', symbol, 'textFill', DEFAULT_UNIFORMS['textFill'], createColorSetter());
+    setUniformFromSymbol(uniforms, 'textHaloFill', symbol, 'textHaloFill', DEFAULT_UNIFORMS['textHaloFill'], createColorSetter());
+    setUniformFromSymbol(uniforms, 'textHaloBlur', symbol, 'textHaloBlur', DEFAULT_UNIFORMS['textHaloBlur']);
+    setUniformFromSymbol(uniforms, 'textHaloRadius', symbol, 'textHaloRadius', DEFAULT_UNIFORMS['textHaloRadius']);
+    setUniformFromSymbol(uniforms, 'textHaloOpacity', symbol, 'textHaloOpacity', DEFAULT_UNIFORMS['textHaloOpacity']);
+    setUniformFromSymbol(uniforms, 'textPerspectiveRatio', symbol, 'textPerspectiveRatio', DEFAULT_UNIFORMS['textPerspectiveRatio'], v => {
+        return symbol['textPlacement'] === 'line' ? 1 : v;
+    });
+    setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'textRotationAlignment', DEFAULT_UNIFORMS['textRotationAlignment'], v => +(v === 'map'));
+    setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'textPitchAlignment', DEFAULT_UNIFORMS['textPitchAlignment'], v => +(v === 'map'));
+    setUniformFromSymbol(uniforms, 'textSize', symbol, 'textSize', DEFAULT_UNIFORMS['textSize']);
+    setUniformFromSymbol(uniforms, 'textDx', symbol, 'textDx', DEFAULT_UNIFORMS['textDx']);
+    setUniformFromSymbol(uniforms, 'textDy', symbol, 'textDy', DEFAULT_UNIFORMS['textDy']);
+    setUniformFromSymbol(uniforms, 'textRotation', symbol, 'textRotation', DEFAULT_UNIFORMS['textRotation'], v => v * Math.PI / 180);
 }
 
 export function createTextShader(layer, sceneConfig) {

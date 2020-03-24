@@ -7,11 +7,6 @@ import pickingVert from './glsl/native-line.picking.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { OFFSET_FACTOR_SCALE } from './Constant';
 
-const defaultUniforms = {
-    lineColor: [0, 0, 0, 1],
-    lineOpacity: 1
-};
-
 class NativeLinePainter extends Painter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
@@ -33,7 +28,7 @@ class NativeLinePainter extends Painter {
         const symbol = this.getSymbol();
         const uniforms = this.getMeshUniforms(geometry, symbol);
         geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms, defaultUniforms);
+        const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true
@@ -50,8 +45,8 @@ class NativeLinePainter extends Painter {
     getMeshUniforms(geometry, symbol) {
         this._colorCache = this._colorCache || {};
         const uniforms = {};
-        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
+        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         return uniforms;
     }
 

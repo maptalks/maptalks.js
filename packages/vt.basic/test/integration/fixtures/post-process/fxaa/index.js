@@ -68,7 +68,8 @@ module.exports = {
         postProcess: {
             enable: true,
             antialias: {
-                enable: true
+                //FXAA默认是打开的
+                enable: false
             }
         }
     }

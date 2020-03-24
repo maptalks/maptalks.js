@@ -50,10 +50,7 @@ export const TYPE_BYTES = {
 };
 
 
-export function setUniformFromSymbol(uniforms, name, symbol, key, fn, defaultValue) {
-    if (isNil(symbol[key]) && isNil(defaultValue)) {
-        return;
-    }
+export function setUniformFromSymbol(uniforms, name, symbol, key, defaultValue, fn) {
     // if (symbol['_' + key]) {
     //     // a function type
     //     Object.defineProperty(uniforms, name, {

@@ -9,15 +9,6 @@ import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_ut
 import { interpolated } from '@maptalks/function-type';
 import { OFFSET_FACTOR_SCALE } from './Constant';
 
-const defaultUniforms = {
-    'lineOpacity': 1,
-    'lineWidth': 2,
-    'lineDx': 0,
-    'lineDy': 0,
-    'lineBlur': 0.5,
-    'lineGapWidth': 0
-};
-
 const MAX_LINE_COUNT = 128;
 
 class LineGradientPainter extends BasicPainter {
@@ -63,14 +54,14 @@ class LineGradientPainter extends BasicPainter {
             tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
-        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
-        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
-        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
-        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur');
-        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset');
-        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx');
-        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy');
+        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
+        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
+        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
+        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
+        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.5);
+        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
+        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
+        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
 
         const gradients = geometry.properties.gradients;
         let height = gradients.length * 2;
@@ -92,7 +83,7 @@ class LineGradientPainter extends BasicPainter {
 
         geometry.generateBuffers(this.regl);
 
-        const material = new reshader.Material(uniforms, defaultUniforms);
+        const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true
@@ -117,7 +108,7 @@ class LineGradientPainter extends BasicPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
+        updateGeometryFnTypeAttrib(this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
     paint(context) {
@@ -141,9 +132,12 @@ class LineGradientPainter extends BasicPainter {
             {
                 attrName: 'aLineWidth',
                 symbolName: 'lineWidth',
+                type: Uint8Array,
+                size: 1,
+                define: 'HAS_LINE_WIDTH',
                 evaluate: properties => {
                     const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
-                    u16[0] = lineWidth;
+                    u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
                 }
             }

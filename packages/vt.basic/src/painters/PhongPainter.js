@@ -2,24 +2,9 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { OFFSET_FACTOR_SCALE } from './Constant';
 import { extend } from '../Util';
-import Painter from './Painter';
-import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import MeshPainter from './MeshPainter';
 
-const SCALE = [1, 1, 1];
-
-class PhongPainter extends Painter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex);
-        if (isFunctionDefinition(this.symbolDef['polygonFill'])) {
-            const map = layer.getMap();
-            const fn = piecewiseConstant(this.symbolDef['polygonFill']);
-            this.colorSymbol = properties => fn(map.getZoom(), properties);
-        } else {
-            this.colorSymbol = this.getSymbol()['polygonFill'];
-        }
-        this.opacitySymbol = 'polygonOpacity';
-    }
+class PhongPainter extends MeshPainter {
 
     createGeometry(glData) {
         const data = glData.data;
@@ -36,70 +21,8 @@ class PhongPainter extends Painter {
             }
             data.aExtrusionOpacity = aExtrusionOpacity;
         }
-
         const geometry = new reshader.Geometry(data, glData.indices);
-        geometry.generateBuffers(this.regl);
-
         return geometry;
-    }
-
-    createMesh(geometry, transform) {
-        const mesh = new reshader.Mesh(geometry, this._material, {
-            transparent: true,
-            castShadow: false,
-            picking: true
-        });
-        mesh.setUniform('tileExtent', geometry.properties.tileExtent);
-        if (this.sceneConfig.animation) {
-            SCALE[2] = 0.01;
-            const mat = [];
-            mat4.fromScaling(mat, SCALE);
-            mat4.multiply(mat, transform, mat);
-            transform = mat;
-        }
-        const defines = {};
-        if (geometry.data.aExtrude) {
-            defines['IS_LINE_EXTRUSION'] = 1;
-            const symbol = this.getSymbol();
-            const { tileResolution, tileRatio } = geometry.properties;
-            const map = this.getMap();
-            Object.defineProperty(mesh.uniforms, 'linePixelScale', {
-                enumerable: true,
-                get: function () {
-                    return tileRatio * map.getResolution() / tileResolution;
-                }
-            });
-            setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth');
-            setUniformFromSymbol(mesh.uniforms, 'lineHeight', symbol, 'lineHeight');
-            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
-        }
-        if (geometry.data.aColor) {
-            defines['HAS_COLOR'] = 1;
-        }
-        if (geometry.data.aNormal && !geometry.data.aTangent) {
-            defines['HAS_NORMAL'] = 1;
-        }
-        mesh.setDefines(defines);
-        mesh.setLocalTransform(transform);
-        return mesh;
-    }
-
-    addMesh(mesh, progress) {
-        if (progress !== null) {
-            const mat = mesh.localTransform;
-            if (progress === 0) {
-                progress = 0.01;
-            }
-            SCALE[2] = progress;
-            mat4.fromScaling(mat, SCALE);
-            mat4.multiply(mat, mesh.properties.tileTransform, mat);
-            mesh.setLocalTransform(mat);
-        } else {
-            mesh.setLocalTransform(mesh.properties.tileTransform);
-        }
-
-        this.scene.addMesh(mesh);
-        return this;
     }
 
     updateSceneConfig(config) {
@@ -119,7 +42,7 @@ class PhongPainter extends Painter {
     delete(context) {
         this.getMap().off('updatelights', this._updateLights, this);
         super.delete(context);
-        this._material.dispose();
+        this.material.dispose();
     }
 
     init() {
@@ -152,6 +75,13 @@ class PhongPainter extends Painter {
         };
         this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
 
+    }
+
+    updateSymbol(symbol) {
+        super.updateSymbol(symbol);
+        if (symbol.material) {
+            this._updateMaterial();
+        }
     }
 
     _updateLights() {
@@ -232,29 +162,9 @@ class PhongPainter extends Painter {
         };
     }
 
-    deleteMesh(meshes, keepGeometry) {
-        if (!meshes) {
-            return;
-        }
-        this.scene.removeMesh(meshes);
-        if (Array.isArray(meshes)) {
-            for (let i = 0; i < meshes.length; i++) {
-                if (!keepGeometry) {
-                    meshes[i].geometry.dispose();
-                }
-                meshes[i].dispose();
-            }
-        } else {
-            if (!keepGeometry) {
-                meshes.geometry.dispose();
-            }
-            meshes.dispose();
-        }
-    }
-
     _updateMaterial() {
-        if (this._material) {
-            this._material.dispose();
+        if (this.material) {
+            this.material.dispose();
         }
         const materialConfig = this.getSymbol().material;
         const material = {};
@@ -263,7 +173,7 @@ class PhongPainter extends Painter {
                 material[p] = materialConfig[p];
             }
         }
-        this._material = new reshader.PhongMaterial(material);
+        this.material = new reshader.PhongMaterial(material);
     }
 
 

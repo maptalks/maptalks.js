@@ -38,18 +38,6 @@ const TEXT_FILTER_N = function (mesh) {
     return !renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.glyphAtlas;
 };
 
-const defaultUniforms = {
-    'markerOpacity': 1,
-    'pitchWithMap': 0,
-    'markerPerspectiveRatio': 0,
-    'rotateWithMap': 0,
-    'markerWidth': DEFAULT_MARKER_WIDTH,
-    'markerHeight': DEFAULT_MARKER_HEIGHT,
-    'markerDx': 0,
-    'markerDy': 0,
-    'markerRotation': 0
-};
-
 //temparary variables
 const PROJ_MATRIX = [];
 const U8 = new Uint16Array(1);
@@ -141,7 +129,7 @@ class IconPainter extends CollisionPainter {
         // if (!iconGeometry || !iconGeometry.getElements().length) {
         //     return [];
         // }
-        prepareFnTypeData(iconGeometry, iconGeometry.properties.features, this.symbolDef, this._iconFnTypeConfig);
+        prepareFnTypeData(iconGeometry, this.symbolDef, this._iconFnTypeConfig);
         this._prepareIconGeometry(iconGeometry);
         const textGeometry = geometries[1];
         const markerTextFit = this.symbolDef['markerTextFit'];
@@ -245,26 +233,20 @@ class IconPainter extends CollisionPainter {
             geometry.properties.elemCtor = geometry.elements.constructor;
         }
 
-        if (symbol['markerPitchAlignment'] === 'map') {
-            uniforms['pitchWithMap'] = 1;
-        }
-
-        if (symbol['markerRotationAlignment'] === 'map') {
-            uniforms['rotateWithMap'] = 1;
-        }
-
-        setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity');
-        setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio');
-        setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth');
-        setUniformFromSymbol(uniforms, 'markerHeight', symbol, 'markerHeight');
-        setUniformFromSymbol(uniforms, 'markerDx', symbol, 'markerDx');
-        setUniformFromSymbol(uniforms, 'markerDy', symbol, 'markerDy');
-        setUniformFromSymbol(uniforms, 'markerRotation', symbol, 'markerRotation', v => v * Math.PI / 180);
+        setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
+        setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio', 1);
+        setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth', DEFAULT_MARKER_WIDTH);
+        setUniformFromSymbol(uniforms, 'markerHeight', symbol, 'markerHeight', DEFAULT_MARKER_HEIGHT);
+        setUniformFromSymbol(uniforms, 'markerDx', symbol, 'markerDx', 0);
+        setUniformFromSymbol(uniforms, 'markerDy', symbol, 'markerDy', 0);
+        setUniformFromSymbol(uniforms, 'markerRotation', symbol, 'markerRotation', 0, v => v * Math.PI / 180);
+        setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'markerPitchAlignment', 0, v => v === 'map' ? 1 : 0);
+        setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'markerRotationAlignment', 0, v => v === 'map' ? 1 : 0);
 
         uniforms['texture'] = this.createAtlasTexture(iconAtlas);
         uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
         geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms, defaultUniforms);
+        const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             transparent: true,
             castShadow: false,

@@ -10,20 +10,6 @@ import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_ut
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import { OFFSET_FACTOR_SCALE } from './Constant';
 
-const defaultUniforms = {
-    'lineColor': [0, 0, 0, 1],
-    'lineOpacity': 1,
-    'lineWidth': 1,
-    'lineGapWidth': 0,
-    'lineDx': 0,
-    'lineDy': 0,
-    'lineBlur': 0.4,
-    'lineDasharray': [0, 0, 0, 0],
-    'lineDashColor': [0, 0, 0, 0],
-    'lineOffset': 0
-};
-
-
 class LinePainter extends BasicPainter {
     constructor(...args) {
         super(...args);
@@ -37,7 +23,7 @@ class LinePainter extends BasicPainter {
     }
 
     createMesh(geometry, transform) {
-        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
+        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
 
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
@@ -47,33 +33,31 @@ class LinePainter extends BasicPainter {
             tileExtent: geometry.properties.tileExtent
         };
 
-        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth');
-        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity');
-        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth');
-        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur');
-        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset');
-        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx');
-        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy');
-
-        if (symbol.lineDasharray && symbol.lineDasharray.length) {
+        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
+        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
+        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
+        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.4);
+        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
+        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
+        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
+        setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray', [0, 0, 0, 0], dasharray => {
             let lineDasharray;
-            const old = symbol.lineDasharray;
-            if (symbol.lineDasharray.length === 1) {
-                lineDasharray = [old[0], old[0], old[0], old[0]];
-            } else if (symbol.lineDasharray.length === 2) {
-                lineDasharray = [old[0], old[1], old[0], old[1]];
-            } else if (symbol.lineDasharray.length === 3) {
-                lineDasharray = [old[0], old[1], old[2], old[2]];
-            } else if (symbol.lineDasharray.length === 4) {
-                lineDasharray = symbol.lineDasharray;
+            if (dasharray && dasharray.length) {
+                const old = dasharray;
+                if (dasharray.length === 1) {
+                    lineDasharray = [old[0], old[0], old[0], old[0]];
+                } else if (dasharray.length === 2) {
+                    lineDasharray = [old[0], old[1], old[0], old[1]];
+                } else if (dasharray.length === 3) {
+                    lineDasharray = [old[0], old[1], old[2], old[2]];
+                } else if (dasharray.length === 4) {
+                    lineDasharray = dasharray;
+                }
             }
-            if (lineDasharray) {
-                uniforms['lineDasharray'] = lineDasharray;
-            }
-        }
-
-        setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', createColorSetter(this._colorCache));
+            return lineDasharray || [0, 0, 0, 0];
+        }, [0, 0, 0, 0]);
+        setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', [0, 0, 0, 0], createColorSetter(this._colorCache));
 
         if (symbol.linePatternFile) {
             const iconAtlas = geometry.properties.iconAtlas;
@@ -100,7 +84,7 @@ class LinePainter extends BasicPainter {
 
         geometry.generateBuffers(this.regl);
 
-        const material = new reshader.Material(uniforms, defaultUniforms);
+        const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true
@@ -139,7 +123,8 @@ class LinePainter extends BasicPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
+        const zoom = this.getMap().getZoom();
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._fnTypeConfig, meshes, zoom);
     }
 
     paint(context) {
@@ -166,7 +151,9 @@ class LinePainter extends BasicPainter {
                 attrName: 'aColor',
                 //symbol中的function-type属性
                 symbolName: 'lineColor',
-                //
+                type: Uint8Array,
+                width: 4,
+                define: 'HAS_COLOR',
                 evaluate: properties => {
                     let color = this._aColorFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
@@ -181,6 +168,9 @@ class LinePainter extends BasicPainter {
             {
                 attrName: 'aLineWidth',
                 symbolName: 'lineWidth',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_LINE_WIDTH',
                 evaluate: properties => {
                     const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
                     //乘以2是为了解决 #190

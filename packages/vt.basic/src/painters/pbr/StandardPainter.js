@@ -1,20 +1,14 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import { extend, isNumber } from '../../Util';
-import Painter from '../Painter';
-import { setUniformFromSymbol, createColorSetter } from '../../Util';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib } from '../util/fn_type_util';
-import { piecewiseConstant, interpolated, isFunctionDefinition } from '@maptalks/function-type';
-import Color from 'color';
+import MeshPainter from '../MeshPainter';
+import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import { OFFSET_FACTOR_SCALE } from '../Constant';
 
-const SCALE = [1, 1, 1];
-const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 
-class StandardPainter extends Painter {
+class StandardPainter extends MeshPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
-        this._fnTypeConfig = this._getFnTypeConfig();
         this._loader = new reshader.ResourceLoader();
     }
 
@@ -23,91 +17,6 @@ class StandardPainter extends Painter {
             uv0Attribute: 'aTexCoord0'
         });
         return geometry;
-    }
-
-    createMesh(geometry, transform) {
-        if (!this.material) {
-            //还没有初始化
-            this.setToRedraw();
-            return null;
-        }
-        const mesh = new reshader.Mesh(geometry, this.material);
-        if (this.material['uNormalTexture']) {
-            geometry.createTangent();
-        }
-        if (this.sceneConfig.animation) {
-            SCALE[2] = 0.01;
-            const mat = [];
-            mat4.fromScaling(mat, SCALE);
-            mat4.multiply(mat, transform, mat);
-            transform = mat;
-        }
-        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
-        const defines = this.shader.getGeometryDefines(geometry);
-        const symbol = this.getSymbol();
-        this._colorCache = this._colorCache || {};
-        if (geometry.data.aExtrude) {
-            defines['IS_LINE_EXTRUSION'] = 1;
-            const { tileResolution, tileRatio } = geometry.properties;
-            const map = this.getMap();
-            Object.defineProperty(mesh.uniforms, 'linePixelScale', {
-                enumerable: true,
-                get: function () {
-                    return tileRatio * map.getResolution() / tileResolution;
-                }
-            });
-            setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth', null, 4);
-            setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity', null, 1);
-            setUniformFromSymbol(mesh.uniforms, 'lineHeight', symbol, 'lineHeight', null, 0);
-            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', createColorSetter(this._colorCache));
-        } else {
-            setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', createColorSetter(this._colorCache), DEFAULT_POLYGON_FILL);
-            setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', null, 1);
-        }
-        if (geometry.data.aColor) {
-            defines['HAS_COLOR'] = 1;
-        }
-        if (geometry.data.aLineWidth) {
-            defines['HAS_LINE_WIDTH'] = 1;
-        }
-        if (geometry.data.aLineHeight) {
-            defines['HAS_LINE_HEIGHT'] = 1;
-        }
-        geometry.generateBuffers(this.regl);
-        mesh.setDefines(defines);
-        mesh.setLocalTransform(transform);
-        if (this.getSymbol().ssr) {
-            mesh.setUniform('ssr', 1);
-        }
-        return mesh;
-    }
-
-    addMesh(mesh, progress) {
-        if (progress !== null) {
-            const mat = mesh.localTransform;
-            if (progress === 0) {
-                progress = 0.01;
-            }
-            SCALE[2] = progress;
-            mat4.fromScaling(mat, SCALE);
-            mat4.multiply(mat, mesh.properties.tileTransform, mat);
-            mesh.setLocalTransform(mat);
-        } else {
-            mesh.setLocalTransform(mesh.properties.tileTransform);
-        }
-        if (mesh.material !== this.material) {
-            mesh.setMaterial(this.material);
-        }
-        super.addMesh(mesh, progress);
-    }
-
-    preparePaint(...args) {
-        super.preparePaint(...args);
-        const meshes = this.scene.getMeshes();
-        if (!meshes || !meshes.length) {
-            return;
-        }
-        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
     paint(context) {
@@ -164,25 +73,6 @@ class StandardPainter extends Painter {
         this.setToRedraw();
     }
 
-    deleteMesh(meshes, keepGeometry) {
-        if (!meshes) {
-            return;
-        }
-        this.scene.removeMesh(meshes);
-        if (Array.isArray(meshes)) {
-            for (let i = 0; i < meshes.length; i++) {
-                if (!keepGeometry) {
-                    meshes[i].geometry.dispose();
-                }
-                meshes[i].dispose();
-            }
-        } else {
-            if (!keepGeometry) {
-                meshes.geometry.dispose();
-            }
-            meshes.dispose();
-        }
-    }
 
     delete() {
         this.getMap().off('updatelights', this._updateLights, this);
@@ -207,10 +97,7 @@ class StandardPainter extends Painter {
     }
 
     updateSymbol(symbol) {
-        super.updateSymbol();
-        this._fillFn = piecewiseConstant(this.symbolDef['polygonFill'] || this.symbolDef['lineColor']);
-        this._opacityFn = interpolated(this.symbolDef['polygonOpacity']);
-        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
+        super.updateSymbol(symbol);
         if (symbol.material) {
             this._updateMaterial();
         }
@@ -320,6 +207,14 @@ class StandardPainter extends Painter {
                 range: this.sceneConfig.depthRange || [0, 1],
                 func: this.sceneConfig.depthFunc || '<'
             },
+            blend: {
+                enable: true,
+                func: {
+                    src: 'src alpha',
+                    dst: 'one minus src alpha'
+                },
+                equation: 'add'
+            },
             polygonOffset: {
                 enable: false,
                 offset: {
@@ -400,6 +295,7 @@ class StandardPainter extends Painter {
     _updateMaterial() {
         const materialConfig = this.getSymbol().material;
         const material = {};
+        let hasTexture = false;
         for (const p in materialConfig) {
             if (materialConfig.hasOwnProperty(p)) {
                 if (p.indexOf('Texture') > 0) {
@@ -447,6 +343,7 @@ class StandardPainter extends Painter {
                         //把promise加入缓存，方便图片被多个纹理对象同时引用时，避免重复请求
                         this.addCachedTexture(url, material[p].promise);
                     }
+                    hasTexture = true;
                 } else {
                     material[p] = materialConfig[p];
                 }
@@ -460,6 +357,9 @@ class StandardPainter extends Painter {
             this._loadingMaterial.once('complete', this._bindOnMaterialComplete);
         }
 
+        if (!hasTexture) {
+            this._onMaterialComplete();
+        }
     }
 
     getUniformValues(map, context) {
@@ -549,66 +449,6 @@ class StandardPainter extends Painter {
 
     shouldDeleteMeshOnUpdateSymbol() {
         return false;
-    }
-
-    _getFnTypeConfig() {
-        const symbolDef = this.symbolDef;
-        this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
-        this._opacityFn = interpolated(symbolDef['polygonOpacity']);
-        this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        this._aLineHeightFn = interpolated(symbolDef['lineHeight']);
-        const map = this.getMap();
-        const u8 = new Uint8Array(1);
-        const u16 = new Uint16Array(1);
-        const fillName = this.symbolDef['polygonFill'] ? 'polygonFill' : this.symbolDef['lineColor'] ? 'lineColor' : 'polygonFill';
-        const opacityName = this.symbolDef['polygonOpacity'] ? 'polygonOpacity' : this.symbolDef['lineOpacity'] ? 'lineOpacity' : 'polygonOpacity';
-        return [
-            {
-                //geometry.data 中的属性数据
-                attrName: 'aColor',
-                //symbol中的function-type属性
-                symbolName: fillName,
-                //
-                evaluate: properties => {
-                    let color = this._fillFn(map.getZoom(), properties);
-                    if (!Array.isArray(color)) {
-                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
-                    }
-                    if (color.length === 3) {
-                        color.push(255);
-                    }
-                    return color;
-                }
-            },
-            {
-                attrName: 'aOpacity',
-                symbolName: opacityName,
-                evaluate: properties => {
-                    const polygonOpacity = this._opacityFn(map.getZoom(), properties);
-                    u8[0] = polygonOpacity * 255;
-                    return u8[0];
-                }
-            },
-            {
-                attrName: 'aLineWidth',
-                symbolName: 'lineWidth',
-                evaluate: properties => {
-                    const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
-                    //乘以2是为了解决 #190
-                    u16[0] = Math.round(lineWidth * 2.0);
-                    return u16[0];
-                }
-            },
-            {
-                attrName: 'aLineHeight',
-                symbolName: 'lineHeight',
-                evaluate: properties => {
-                    const lineHeight = this._aLineHeightFn(map.getZoom(), properties);
-                    u16[0] = lineHeight;
-                    return u16[0];
-                }
-            }
-        ];
     }
 }
 

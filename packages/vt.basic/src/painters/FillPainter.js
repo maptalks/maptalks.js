@@ -41,9 +41,9 @@ class FillPainter extends BasicPainter {
             tileExtent: geometry.properties.tileExtent
         };
 
-        prepareFnTypeData(geometry, geometry.properties.features, this.symbolDef, this._fnTypeConfig);
-        setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', createColorSetter(this._colorCache));
-        setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity');
+        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
+        setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
 
         const iconAtlas = geometry.properties.iconAtlas;
         if (symbol.polygonPatternFile && iconAtlas) {
@@ -82,7 +82,7 @@ class FillPainter extends BasicPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this._fnTypeConfig, meshes, this.getMap().getZoom());
+        updateGeometryFnTypeAttrib(this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
     getRenderFBO(context) {
@@ -109,6 +109,8 @@ class FillPainter extends BasicPainter {
                 attrName: 'aColor',
                 //symbol中的function-type属性
                 symbolName: 'polygonFill',
+                type: Uint8Array,
+                width: 4,
                 //
                 evaluate: properties => {
                     let color = this._polygonFillFn(map.getZoom(), properties);
@@ -124,6 +126,8 @@ class FillPainter extends BasicPainter {
             {
                 attrName: 'aOpacity',
                 symbolName: 'polygonOpacity',
+                type: Uint8Array,
+                width: 1,
                 evaluate: properties => {
                     const polygonOpacity = this._polygonOpacityFn(map.getZoom(), properties);
                     u8[0] = polygonOpacity * 255;

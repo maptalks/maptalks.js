@@ -46,15 +46,32 @@ const material = {
     'metalnessFactor': 1,
     'outputLinear': 1
 };
-const style = [{
-    renderPlugin: plugin,
-    symbol: {
-        polygonOpacity: 1,
-        polygonFill: '#f00',
-        material
+const style = [
+    {
+        renderPlugin: plugin,
+        symbol: {
+            polygonOpacity: 1,
+            polygonFill: '#f00',
+            material
+        },
+        filter: true,
     },
-    filter: true,
-}];
+    {
+        renderPlugin: {
+            type: 'line',
+            dataConfig: {
+                type: 'line'
+            },
+            sceneConfig: {}
+        },
+        symbol: {
+            lineColor: [0.73, 0.73, 0.73, 1],
+            lineOpacity: 0.5,
+            lineWidth: 2,
+        },
+        filter: true,
+    },
+];
 module.exports = {
     style,
     data: data,

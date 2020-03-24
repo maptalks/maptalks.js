@@ -107,7 +107,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const plugins = this._getFramePlugins();
         for (let i = 0; i < plugins.length; i++) {
-            if (plugins[i] && plugins[i].needToRedraw()) {
+            if (plugins[i] && plugins[i].needToRetireFrames()) {
                 return true;
             }
         }

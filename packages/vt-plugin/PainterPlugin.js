@@ -303,6 +303,13 @@ function createPainterPlugin(type, Painter) {
             return this.painter.needToRedraw();
         },
 
+        needToRetireFrames: function () {
+            if (!this.painter) {
+                return false;
+            }
+            return this.painter.needToRetireFrames();
+        },
+
         _generateColorArray: function (features, featureIndexes, indices, vertices, positionSize = 3) {
             if (!vertices || !features || !features.length) {
                 return null;

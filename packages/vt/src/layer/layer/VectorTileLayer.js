@@ -280,7 +280,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         function update() {
             for (const p in symbol) {
                 if (symbol.hasOwnProperty(p)) {
-                    if (maptalks.Util.isObject(symbol[p]) && !symbol[p].stops) {
+                    if (maptalks.Util.isObject(symbol[p]) && !Array.isArray(symbol[p]) && !symbol[p].stops) {
                         //对象类型的属性则extend
                         if (!target[p]) {
                             target[p] = {};
