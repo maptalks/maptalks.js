@@ -34,7 +34,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         },
         {
             top, side,
-            topThickness: topThickness || 0,
+            topThickness: topThickness * 10 || 0,
             uv: uv || tangent, //tangent也需要计算uv
             uvSize: uvScale ? [128 * uvScale[0], 128 * uvScale[1]] : [128, 128],
             //>> needed by uv computation
