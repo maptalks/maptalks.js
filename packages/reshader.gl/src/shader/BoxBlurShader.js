@@ -15,8 +15,8 @@ class BoxBlurShader extends QuadShader {
     }
 
     getMeshCommand(regl, mesh) {
-        if (!this.commands['shadow']) {
-            this.commands['shadow'] = this.createREGLCommand(
+        if (!this.commands['box_blur']) {
+            this.commands['box_blur'] = this.createREGLCommand(
                 regl,
                 null,
                 ['aPosition', 'aTexCoord'],
@@ -24,7 +24,7 @@ class BoxBlurShader extends QuadShader {
                 mesh.getElements()
             );
         }
-        return this.commands['shadow'];
+        return this.commands['box_blur'];
     }
 }
 

@@ -163,3 +163,10 @@ export function set(out, input) {
     }
     return out;
 }
+
+export function getPosArrayType(max) {
+    max = Math.abs(max);
+    if (max < 128) return Int8Array;
+    if (max < 65536 / 2) return Int16Array;
+    return Float32Array;
+}

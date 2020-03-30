@@ -3,13 +3,14 @@ import Renderer from '../Renderer.js';
 import SsrMipmapShader from './SsrMipmapShader.js';
 import SsrCombineShader from './SsrCombineShader.js';
 import BlurPass from './BlurPass.js';
+import BoxColorBlurShader from './BoxColorBlurShader.js';
 import { vec2 } from 'gl-matrix';
 
 class SsrPass {
 
     static getUniformDeclares() {
-        const corners = [[], []];
-        const invProjMatrix = [];
+        const corners = [[0, 0, 0, 0], [0, 0, 0, 0]];
+        const invProjMatrix = new Array(16);
         return [
             'TextureDepth',
             'TextureSource',
@@ -30,6 +31,9 @@ class SsrPass {
                 type: 'array',
                 length: 2,
                 fn: function (context, props) {
+                    if (!props['TextureDepth']) {
+                        return corners;
+                    }
                     const cornerY = Math.tan(0.5 * props['fov']);
                     const width = props['TextureDepth'].width;
                     const height = props['TextureDepth'].height;
@@ -59,6 +63,20 @@ class SsrPass {
     constructor(regl) {
         this._regl = regl;
         this._renderer = new Renderer(regl);
+    }
+
+    blur(tex) {
+        this._initShaders();
+        this._createTextures(tex);
+        if (this._blurFBO.width !== tex.width ||
+            this._blurFBO.height !== tex.height) {
+            this._blurFBO.resize(tex.width, tex.height);
+        }
+        this._renderer.render(this._blurShader, {
+            resolution: [tex.width, tex.height],
+            textureSource:tex
+        }, null, this._blurFBO);
+        return this._blurFBO.color[0];
     }
 
     combine(sourceTex, ssrTex) {
@@ -156,8 +174,10 @@ class SsrPass {
             this._blurPass.dispose();
             delete this._blurPass;
             this._mipmapShader.dispose();
+            this._blurShader.dispose();
             this._targetFBO.destroy();
             this._combineFBO.destroy();
+            this._blurFBO.destroy();
         }
     }
 
@@ -166,6 +186,7 @@ class SsrPass {
             this._blurPass = new BlurPass(this._regl, 7);
             this._mipmapShader = new SsrMipmapShader();
             this._combineShader = new SsrCombineShader();
+            this._blurShader = new BoxColorBlurShader({ blurOffset: 2 });
         }
     }
 
@@ -197,12 +218,25 @@ class SsrPass {
                 width: sourceTex.width,
                 height: sourceTex.height
             });
-            this._combineTex.resize(sourceTex.width, sourceTex.height);
-
             this._combineFBO = regl.framebuffer({
                 width: sourceTex.width,
                 height: sourceTex.height,
                 colors: [this._combineTex],
+                depth: false,
+                stencil: false
+            });
+
+            this._blurTex = regl.texture({
+                min: 'linear',
+                mag: 'linear',
+                type: 'uint8',
+                width: sourceTex.width,
+                height: sourceTex.height
+            });
+            this._blurFBO = regl.framebuffer({
+                width: sourceTex.width,
+                height: sourceTex.height,
+                colors: [this._blurTex],
                 depth: false,
                 stencil: false
             });

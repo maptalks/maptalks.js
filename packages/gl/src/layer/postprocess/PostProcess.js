@@ -72,7 +72,7 @@ export default class PostProcess {
         return this._target;
     }
 
-    delete() {
+    dispose() {
         if (this._taaPass) {
             this._taaPass.dispose();
             delete this._taaPass;

@@ -4,6 +4,7 @@ import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
 import createREGL from '@maptalks/regl';
+import GroundPainter from './GroundPainter';
 import PostProcess from './postprocess/PostProcess.js';
 
 const bloomFilter = m => m.getUniform('bloom');
@@ -16,7 +17,7 @@ const noSsrFilter = m => !m.getUniform('ssr');
 class Renderer extends maptalks.renderer.CanvasRenderer {
 
     setToRedraw() {
-        this.setTaaOutdated();
+        this.setRetireFrames();
         super.setToRedraw();
     }
 
@@ -33,14 +34,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
         }
-        if (!this._replaceChildDraw) {
-            this.forEachRenderer((renderer) => {
-                renderer.draw = this._buildDrawFn(renderer.draw);
-                renderer.drawOnInteracting = this._buildDrawFn(renderer.drawOnInteracting);
-                renderer.setToRedraw = this._buildSetToRedrawFn(renderer.setToRedraw);
-            });
-            this._replaceChildDraw = true;
-        }
+        this.forEachRenderer((renderer) => {
+            if (renderer._replacedDrawFn) {
+                return;
+            }
+            renderer.draw = this._buildDrawFn(renderer.draw);
+            renderer.drawOnInteracting = this._buildDrawFn(renderer.drawOnInteracting);
+            renderer.setToRedraw = this._buildSetToRedrawFn(renderer.setToRedraw);
+            renderer._replacedDrawFn = true;
+        });
         this.prepareRender();
         this.prepareCanvas();
         this.layer._updatePolygonOffset();
@@ -74,7 +76,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 return;
             }
             if (renderer.needRetireFrames && renderer.needRetireFrames()) {
-                this.setTaaOutdated();
+                this.setRetireFrames();
             }
             if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
                 hasNoAA = true;
@@ -126,7 +128,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && renderer.testIfNeedRedraw()) {
-                this.setTaaOutdated();
+                this.setRetireFrames();
                 return true;
             }
         }
@@ -317,11 +319,41 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
             this.canvas.pickingFBO.destroy();
         }
+        this._clearFramebuffers();
+        if (this._groundPainter) {
+            this._groundPainter.dispose();
+            delete this._groundPainter();
+        }
+        if (this._shadowPass) {
+            this._shadowPass.dispose();
+            delete this._shadowPass;
+        }
+        if (this._postProcessor) {
+            this._postProcessor.dispose();
+            delete this._postProcessor;
+        }
         super.onRemove();
     }
 
-    setTaaOutdated() {
-        this._aaOutdated = true;
+    _clearFramebuffers() {
+        if (this._targetFBO) {
+            this._targetFBO.destroy();
+            this._noAaFBO.destroy();
+            delete this._targetFBO;
+            delete this._noAaFBO;
+        }
+        if (this._bloomFBO) {
+            this._bloomFBO.destroy();
+            delete this._bloomFBO;
+        }
+        if (this._ssrFBO) {
+            this._ssrFBO.destroy();
+            delete this._ssrFBO;
+        }
+    }
+
+    setRetireFrames() {
+        this._needRetireFrames = true;
     }
 
     _buildDrawFn(drawMethod) {
@@ -354,7 +386,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _buildSetToRedrawFn(fn) {
         const parent = this;
         return function (...args) {
-            parent.setTaaOutdated();
+            parent.setRetireFrames();
             return fn.apply(this, args);
         };
     }
@@ -367,20 +399,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
         let renderTarget;
         if (!config || !config.enable) {
-            if (this._targetFBO) {
-                this._targetFBO.destroy();
-                this._noAaFBO.destroy();
-                delete this._targetFBO;
-                delete this._noAaFBO;
-            }
-            if (this._bloomFBO) {
-                this._bloomFBO.destroy();
-                delete this._bloomFBO;
-            }
-            if (this._ssrFBO) {
-                this._ssrFBO.destroy();
-                delete this._ssrFBO;
-            }
+            this._clearFramebuffers();
         } else {
             const hasJitter = config.antialias && config.antialias.enable;
             if (hasJitter) {
@@ -429,7 +448,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const context = {
             config: sceneConfig.shadow,
             defines: this._shadowPass.getDefines(),
-            uniformDeclares: this._shadowPass.getUniformDeclares()
+            uniformDeclares: ShadowPass.getUniformDeclares()
         };
         context.renderUniforms = this._renderShadow(fbo);
         return context;
@@ -463,9 +482,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._shadowScene.setMeshes(meshes);
         const map = this.getMap();
         const shadowConfig = sceneConfig.shadow;
-        const lightDirection = shadowConfig.lightDirection || [1, 1, -1];
-        const uniforms = this._shadowPass.render(map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
-        this._shadowUpdated = this._shadowPass.isUpdated();
+        const lightDirection = map.getLightManager().getDirectionalLight().direction;
+        const displayShadow = !sceneConfig.ground || !sceneConfig.ground.enable;
+        const uniforms = this._shadowPass.render(displayShadow, map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
+        if (this._shadowPass.isUpdated()) {
+            this.setRetireFrames();
+        }
         return uniforms;
     }
 
@@ -530,8 +552,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _postProcess() {
+        if (!this._groundPainter) {
+            this._groundPainter = new GroundPainter(this._regl, this.layer);
+        }
         if (!this._targetFBO) {
-            this._aaOutdated = false;
+            this._needRetireFrames = false;
+            this._groundPainter.paint(this._drawContext);
             return;
         }
         const sceneConfig =  this.layer._getSceneConfig();
@@ -552,6 +578,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         } else if (this._ssrPass) {
             this._ssrPass.dispose();
             delete this._ssrPass;
+        } else {
+            this._groundPainter.paint(this._drawContext);
         }
 
         const enableSSAO = config.ssao && config.ssao.enable;
@@ -588,7 +616,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 jitter: this._jitter,
                 near: map.cameraNear,
                 far: map.cameraFar,
-                needClear: this._aaOutdated || this._shadowUpdated || map.getRenderer().isViewChanged(),
+                needClear: this._needRetireFrames || map.getRenderer().isViewChanged(),
                 taa: !!config.antialias.taa
             });
             tex = outputTex;
@@ -605,7 +633,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (redraw) {
                 this.setToRedraw();
             }
-            this._aaOutdated = false;
+            this._needRetireFrames = false;
         }
         let sharpFactor = config.sharpen && config.sharpen.factor;
         if (!sharpFactor && sharpFactor !== 0) {
@@ -627,8 +655,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             mat4.copy(this._ssrFBO._projViewMatrix, this.getMap().projViewMatrix);
         }
-
-        delete this._shadowUpdated;
     }
 
 
@@ -636,6 +662,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const regl = this._regl;
         if (!this._ssrPass) {
             this._ssrPass = new reshader.SsrPass(regl);
+            this._ssrBlurShader = new reshader.BoxColorBlurShader({ blurOffset: 2 });
         }
         const ssrFBO = this._ssrFBO;
         const sceneConfig =  this.layer._getSceneConfig();
@@ -657,6 +684,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const timestamp = this._contextFrameTime;
         const event = this._frameEvent;
         const context = this._drawContext;
+        context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
         const texture = this._ssrPass.getMipmapTexture();
         context.ssr = {
@@ -675,6 +703,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             },
             fbo: this._ssrFBO
         };
+        if (this._shadowContext) {
+            context.shadow = this._shadowContext;
+        }
         if (event) {
             this.forEachRenderer(renderer => {
                 this._clearStencil(renderer, ssrFBO);
@@ -686,9 +717,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 renderer.draw(timestamp, context);
             });
         }
+        this._groundPainter.paint(context);
+        const blurTex = this._ssrPass.blur(this._ssrFBO.color[0]);
         //以免和bloom冲突
         delete context.ssr;
-        return this._ssrFBO.color[0];
+        return blurTex;
     }
 
     _drawBloom() {

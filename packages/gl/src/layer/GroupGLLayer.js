@@ -62,7 +62,7 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     getSceneConfig() {
-        return JSON.parse(JSON.stringify(this.options.sceneConfig));
+        return JSON.parse(JSON.stringify(this.options.sceneConfig || {}));
     }
 
     _getSceneConfig() {

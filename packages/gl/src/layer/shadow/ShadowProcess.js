@@ -8,6 +8,21 @@ const SHADOW_MAX_PITCH = 62;
 let VISUAL_EXTENT;
 
 class ShadowProcess {
+    static getUniformDeclares() {
+        const uniforms = [];
+        uniforms.push({
+            name: 'shadow_lightProjViewModelMatrix',
+            type: 'function',
+            fn: function (context, props) {
+                const lightProjViews = props['shadow_lightProjViewMatrix'];
+                const model = props['modelMatrix'];
+                return  mat4.multiply([], lightProjViews, model);
+            }
+        });
+        uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold', 'shadow_color', 'shadow_nearFar');
+        return uniforms;
+    }
+
     constructor(regl, sceneConfig, layer) {
         this.renderer = new reshader.Renderer(regl);
         this.sceneConfig = sceneConfig;
@@ -38,37 +53,16 @@ class ShadowProcess {
         this._createGround();
     }
 
-    getUniformDeclares() {
-        const uniforms = [];
-        uniforms.push({
-            name: 'shadow_lightProjViewModelMatrix',
-            type: 'function',
-            fn: function (context, props) {
-                const lightProjViews = props['shadow_lightProjViewMatrix'];
-                const model = props['modelMatrix'];
-                return  mat4.multiply([], lightProjViews, model);
-            }
-        });
-        uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold', 'shadow_color', 'shadow_nearFar');
-        return uniforms;
-    }
-
     getDefines() {
         const defines = {
             'HAS_SHADOWING': 1,
-            'PACK_FLOAT': 1
+            'PACK_FLOAT': 1,
+            'USE_ESM': 1
         };
-        const type = this.sceneConfig.shadow.type;
-        if (type === undefined || type === 'esm') {
-            //默认的阴影类型
-            defines['USE_ESM'] = 1;
-        } else if (type === 'vsm') {
-            defines['USE_VSM'] = 1;
-        }
         return defines;
     }
 
-    render(projMatrix, viewMatrix, color, opacity, lightDirection, scene, halton, framebuffer, forceRefresh) {
+    render(displayShadow, projMatrix, viewMatrix, color, opacity, lightDirection, scene, halton, framebuffer, forceRefresh) {
         this._transformGround();
         const map = this._layer.getMap();
         const changed = forceRefresh || this._shadowChanged(map, scene, lightDirection);
@@ -88,7 +82,9 @@ class ShadowProcess {
             const extent = containerExtent.convertTo(c => map['_containerPointToPoint'](c, map.getGLZoom()));
 
             const arr = extent.toArray();
-            scene.addMesh(this._ground);
+            if (displayShadow) {
+                scene.addMesh(this._ground);
+            }
             const { lightProjViewMatrix, shadowMap, /* depthFBO, */ blurFBO } = this._shadowPass.render(
                 scene,
                 { cameraProjViewMatrix, lightDir, farPlane: arr.map(c => [c.x, c.y, 0, 1]),
@@ -106,7 +102,7 @@ class ShadowProcess {
                 bearing: map.getBearing(),
                 pitch: map.getPitch(),
                 lightDirection: vec3.copy([], lightDirection),
-                count: scene.getMeshes().length - 1
+                count: scene.getMeshes().length - (displayShadow ? 1 : 0)
             };
             this._updated = true;
         } else {
@@ -117,7 +113,7 @@ class ShadowProcess {
         }
         this._projMatrix = projMatrix;
         this._viewMatrix = viewMatrix;
-        if (scene.getMeshes().length) {
+        if (displayShadow && scene.getMeshes().length) {
             this.displayShadow(color, opacity, halton, framebuffer);
         }
         const uniforms = {
@@ -162,6 +158,7 @@ class ShadowProcess {
         //     this._blurFBO.destroy();
         // }
         if (this._ground) {
+            this._ground.geometry.dispose();
             this._ground.dispose();
         }
         delete this.renderer;

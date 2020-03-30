@@ -4,7 +4,7 @@ const SCALE = [];
 
 export function getGroundTransform(out, map) {
     const extent = map['_get2DExtent'](map.getGLZoom());
-    const scaleX = extent.getWidth() * 32, scaleY = extent.getHeight() * 32;
+    const scaleX = extent.getWidth(), scaleY = extent.getHeight();
     const localTransform = out;
     mat4.identity(localTransform);
     mat4.translate(localTransform, localTransform, map.cameraLookAt);
@@ -34,3 +34,6 @@ export function extend(dest) {
     return dest;
 }
 
+export function isNumber(val) {
+    return (typeof val === 'number') && !isNaN(val);
+}
