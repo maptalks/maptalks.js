@@ -29,7 +29,7 @@ class StandardPainter extends MeshPainter {
         }
         this._hasShadow = hasShadow;
         const isSsr = !!context.ssr;
-        this.shader = this.hasIBL() ? this._iblShader : this._noIblShader;
+        this.shader = this.getShader();
         const shader = this.shader;
         const fbo = this.getRenderFBO(context);
         if (isSsr) {
@@ -49,6 +49,10 @@ class StandardPainter extends MeshPainter {
             }
         }
         delete this._shadowCount;
+    }
+
+    getShader() {
+        return this.hasIBL() ? this._iblShader : this._noIblShader;
     }
 
     hasIBL() {

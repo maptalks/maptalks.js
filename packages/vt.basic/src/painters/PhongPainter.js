@@ -39,6 +39,10 @@ class PhongPainter extends MeshPainter {
         this.setToRedraw();
     }
 
+    getShader() {
+        return this.shader();
+    }
+
     delete(context) {
         this.getMap().off('updatelights', this._updateLights, this);
         super.delete(context);

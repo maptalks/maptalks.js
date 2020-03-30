@@ -28,7 +28,8 @@ class MeshPainter extends Painter {
             transform = mat;
         }
         prepareFnTypeData(geometry, this.symbolDef, this.getFnTypeConfig());
-        const defines = this.shader.getGeometryDefines ? this.shader.getGeometryDefines(geometry) : {};
+        const shader = this.getShader();
+        const defines = shader.getGeometryDefines ? shader.getGeometryDefines(geometry) : {};
         const symbol = this.getSymbol();
         this._colorCache = this._colorCache || {};
         if (geometry.data.aExtrude) {

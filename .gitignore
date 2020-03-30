@@ -5,3 +5,5 @@ yarn.lock
 dist
 web.config
 debug
+actual.png
+diff.png

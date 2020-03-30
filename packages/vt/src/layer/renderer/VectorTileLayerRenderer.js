@@ -567,7 +567,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         plugins.forEach((plugin) => {
             const idx = plugin.renderIndex;
             const visible = this._isVisible(idx);
-            if (!plugin || !visible) {
+            if (!plugin || !visible || !this._hasMesh(plugin.painter.scene.getMeshes())) {
                 return;
             }
             this.regl.clear({
@@ -595,13 +595,22 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-            if (!dirty && plugin.painter.scene.getMeshes().length) {
-                dirty = true;
-            }
+            dirty = true;
         });
         if (dirty) {
             this.layer.fire('canvasisdirty');
         }
+    }
+
+    _hasMesh(meshes) {
+        if (!meshes) {
+            return false;
+        }
+        const filter = this._parentContext && this._parentContext.sceneFilter;
+        if (!filter) {
+            return meshes.length > 0;
+        }
+        return meshes.filter(filter).length > 0;
     }
 
     _drawTileStencil(fbo) {

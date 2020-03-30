@@ -13,7 +13,7 @@ import NativeLinePainter from './painters/NativelinePainter';
 import PhongPainter from './painters/PhongPainter';
 import WireframePainter from './painters/WireframePainter';
 
-import LitPainter from './painters/pbr/LitPainter';
+import StandardPainter from './painters/pbr/StandardPainter';
 import ClothPainter from './painters/pbr/ClothPainter';
 import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
 
@@ -56,7 +56,7 @@ PhongPlugin.registerAt(VectorTileLayer);
 const WireframePlugin = createPainterPlugin('wireframe', WireframePainter);
 WireframePlugin.registerAt(VectorTileLayer);
 
-const LitPlugin = createPainterPlugin('lit', LitPainter);
+const LitPlugin = createPainterPlugin('lit', StandardPainter);
 LitPlugin.registerAt(VectorTileLayer);
 
 const ClothPlugin = createPainterPlugin('cloth', ClothPainter);
