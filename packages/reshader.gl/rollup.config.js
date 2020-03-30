@@ -34,9 +34,9 @@ const plugins = [
         ]
     }) : glsl(),
     resolve({
-        module : true,
-        jsnext : true,
-        main : true
+        // module : true,
+        // jsnext : true,
+        // main : true
     }),
     commonjs(),
 ];
