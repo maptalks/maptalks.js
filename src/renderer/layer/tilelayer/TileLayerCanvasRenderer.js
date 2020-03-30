@@ -97,7 +97,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 } else {
                     const cached = this._getCachedTile(tileId);
                     if (cached) {
-                        if (this.getTileOpacity(cached.image) < 1) {
+                        if (cached.image && this.getTileOpacity(cached.image) < 1) {
                             tileLoading = loading = true;
                         }
                         tiles.push(cached);
@@ -232,6 +232,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     onDrawTileEnd() {}
 
     _drawTileOffset(info, image) {
+        if (!image) {
+            return;
+        }
         const offset = this._tileOffset;
         if (!offset[0] && !offset[1]) {
             this.drawTile(info, image);

@@ -282,6 +282,7 @@ Map.include(/** @lends Map.prototype */{
         if (!player) {
             return;
         }
+        delete this._animRotating;
         if (player.playState !== 'finished') {
             player._interupted = true;
             player.cancel();
