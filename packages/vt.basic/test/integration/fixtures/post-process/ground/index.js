@@ -64,7 +64,7 @@ module.exports = {
         ground: {
             enable: true,
             renderPlugin: {
-              type: 'fill'
+                type: 'fill'
             },
             symbol: {
                 polygonFill: [0, 1, 0, 1],

@@ -1,5 +1,5 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { extend, isNumber } from '../../Util';
+import { extend } from '../../Util';
 import MeshPainter from '../MeshPainter';
 import { OFFSET_FACTOR_SCALE } from '../Constant';
 

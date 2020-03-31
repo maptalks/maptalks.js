@@ -63,7 +63,7 @@ module.exports = {
         ground: {
             enable: true,
             renderPlugin: {
-              type: 'lit'
+                type: 'lit'
             },
             symbol: {
                 ssr: true,
