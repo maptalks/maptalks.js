@@ -1,5 +1,7 @@
 #ifdef HAS_VIEWSHED
     uniform sampler2D viewshed_depthMapFromViewpoint;
+    uniform vec4 viewshed_visibleColor;
+    uniform vec4 viewshed_invisibleColor;
     varying vec4 viewshed_positionFromViewpoint;
 
 float viewshed_unpack(const in vec4 rgbaDepth) {
@@ -14,9 +16,9 @@ void viewshed_draw() {
     float depth = viewshed_unpack(rgbaDepth); // Retrieve the z-value from R
     if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 && shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 && shadowCoord.z <= 1.0) {
         if (shadowCoord.z <= depth + 0.002) {
-            gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            gl_FragColor = viewshed_visibleColor;
         } else {
-            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            gl_FragColor = viewshed_invisibleColor;
         }
     }
 }

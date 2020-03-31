@@ -53,6 +53,8 @@ class WireframeShader extends MeshShader {
                 //viewshed
                 'viewshed_depthMapFromViewpoint',
                 'viewshed_projViewMatrixFromViewpoint',
+                'viewshed_visibleColor',
+                'viewshed_invisibleColor',
                 //fog
                 'fog_Dist',
                 'fog_Color'

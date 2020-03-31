@@ -53,6 +53,8 @@ class PhongShader extends MeshShader {
                 //viewshed
                 'viewshed_depthMapFromViewpoint',
                 'viewshed_projViewMatrixFromViewpoint',
+                'viewshed_visibleColor',
+                'viewshed_invisibleColor',
                 //floodAnalyse
                 'flood_waterHeight',
                 'flood_waterColor',

@@ -35,15 +35,14 @@ export default class ViewshedPass {
         });
     }
 
-    render(scene, { eyePos, lookPoint, verticalAngle, horizonAngle }) {
+    render(scene, { projViewMatrixFromViewpoint, visibleColor, invisibleColor }) {
         this._resize();
         this.renderer.clear({
             color : [1, 0, 0, 1],
             depth : 1,
             framebuffer : this._depthFBO
         });
-        const projViewMatrixFromViewpoint = this._createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizonAngle);
-        this._renderDepth(scene, projViewMatrixFromViewpoint);
+        this._renderDepth(scene, projViewMatrixFromViewpoint, visibleColor, invisibleColor);
         return {
             depthMap: this._depthFBO,
             projViewMatrixFromViewpoint
@@ -51,9 +50,11 @@ export default class ViewshedPass {
     }
 
     //渲染深度贴图
-    _renderDepth(scene, projViewMatrix) {
+    _renderDepth(scene, projViewMatrix, visibleColor, invisibleColor) {
         const uniforms = {
-            projViewMatrix
+            projViewMatrix,
+            visibleColor,
+            invisibleColor
         };
         this.renderer.render(
             this._depthShader,

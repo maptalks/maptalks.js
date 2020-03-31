@@ -139,13 +139,13 @@ export default class InstancedMesh extends Mesh {
             vec4.set(MAX4, max[0], max[1], max[2], 1);
             vec4.transformMat4(MIN4, MIN4, matrix);
             vec4.transformMat4(MAX4, MAX4, matrix);
-            this._box[0][0] = Math.min(this._box[0][0], MIN4[0]);
-            this._box[0][1] = Math.min(this._box[0][1], MIN4[1]);
-            this._box[0][2] = Math.min(this._box[0][2], MIN4[2]);
+            this._bbox[0][0] = Math.min(this._bbox[0][0], MIN4[0]);
+            this._bbox[0][1] = Math.min(this._bbox[0][1], MIN4[1]);
+            this._bbox[0][2] = Math.min(this._bbox[0][2], MIN4[2]);
 
-            this._box[1][0] = Math.max(this._box[1][0], MIN4[0]);
-            this._box[1][1] = Math.max(this._box[1][1], MIN4[1]);
-            this._box[1][2] = Math.max(this._box[1][2], MIN4[2]);
+            this._bbox[1][0] = Math.max(this._bbox[1][0], MIN4[0]);
+            this._bbox[1][1] = Math.max(this._bbox[1][1], MIN4[1]);
+            this._bbox[1][2] = Math.max(this._bbox[1][2], MIN4[2]);
         }
         return this._bbox;
     }
