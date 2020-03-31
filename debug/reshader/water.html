@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>水面效果</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:800px;height:800px}
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+  <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+  <script src="js/gltf-loader.js" type="text/javascript"></script>
+  <script src="js/dat.gui.min.js" type="text/javascript"></script>
+  <body>
+    <canvas id="canvas" width=800 height=800 class="container" style="border : 1px solid"></canvas>                                                                                                
+    <script type="module">
+        import planeData from './common/plane.js';
+        const { createREGL, mat4, reshader } = maptalksgl;
+        const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
+        let camPos = [0, 7, 11];
+        const cameraNearFar = [0.1, 1000];
+        let mouseDown = false;
+        let roll = 0;
+        let pitch = Math.PI / 4;
+        let translate = 10;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        let viewpoint = [];
+        let currentAngle = 0;
+        var eyePos = [0, 0, 6];
+        let imageLoadIndex = 0;
+        let time = 0;
+        initGUI();
+        const TEXTURE_SAMPLER = {
+            '9728' : 'nearest',
+            '9729' : 'linear',
+            '9984' : 'nearest mipmap nearest',
+            '9985' : 'linear mipmap nearest',
+            '9986' : 'nearest mipmap linear',
+            '9987' : 'linear mipmap linear',
+            '33071' : 'clamp ro edge',
+            '33684' : 'mirrored repeat',
+            '10497' : 'repeat'
+        };
+        const regl = createREGL({
+            canvas : canvas,
+            extensions : [
+                'OES_texture_float',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod'
+            ]
+        });
+
+        // let iblMaps;
+        let scene = null;
+        const renderer = new reshader.Renderer(regl);
+
+        const viewport = {
+            x: 0,
+            y: 0,
+            width: () => {
+                return canvas.width;
+            },
+            height: () => {
+                return canvas.height;
+            }
+        };
+        
+        const shader = new reshader.WaterShader({
+            extraCommandProps: {
+                viewport
+            }
+        });
+        const uniforms = {
+            waveParams: [0.0900, 4, 0.0300, -0.5000],
+            waveDirection: [-0.1182, -0.0208],
+            waterColor: [0.1451, 0.2588, 0.4863, 1],
+            lightingDirection: [-0.9617, -0.2717, 0.0347],
+            lightingIntensity: [2.0303, 2.0280, 2.0280],
+        };
+
+        const waveNormalTexImage = new Image();
+        waveNormalTexImage.src = 'resource/texWaveNormal.png';
+        waveNormalTexImage.onload = () => {
+            uniforms['texWaveNormal'] = regl.texture({
+                mag: 'linear',
+                min: 'linear mipmap linear',
+                wrapS: 'repeat',
+                wrapT: 'repeat',
+                data: waveNormalTexImage
+            });
+            imageLoadIndex++;
+        };
+
+        const wavePerturbationTexImage = new Image();
+        wavePerturbationTexImage.src = 'resource/texWavePerturbation.png';
+        wavePerturbationTexImage.onload = () => {
+            uniforms['texWavePerturbation'] = regl.texture({
+                mag: 'linear',
+                min: 'linear mipmap linear',
+                wrapS: 'repeat',
+                wrapT: 'repeat',
+                data: wavePerturbationTexImage
+            });
+            imageLoadIndex++;
+        };
+
+        function drawScene() { 
+            const matrix = getViewProjection();
+            uniforms['projMatrix'] = matrix.projMatrix;
+            uniforms['viewMatrix'] = matrix.viewMatrix;
+            uniforms['camPos'] = camPos;
+            uniforms['timeElapsed'] = time;
+            regl.clear({
+                color: [0, 0, 0, 1],
+                depth: 1,
+            });
+            renderer.render(
+                shader,
+                uniforms,
+                scene
+            );
+            time+=0.005;
+        }
+        function drawAll() {
+            if (imageLoadIndex >= 2) {
+                drawScene();
+            }
+            requestAnimationFrame(drawAll);
+        }
+
+        //主绘制方法
+        function render() {
+            scene = getScene();
+            drawAll();
+        }
+
+        render();
+        function getScene() {
+            const mesh = createPlane();
+            return new reshader.Scene(mesh);
+        }
+
+        //画地面
+        function createPlane() {
+            const plane = new reshader.Geometry(
+                {
+                    aPosition : planeData.vertices,
+                    aNormal: planeData.normals,
+                    aUv: planeData.uv
+                },
+                planeData.indices,
+                0,
+                {
+                    primitive : 'triangles',
+                    //顶点的属性名称，默认为aPosition
+                    positionAttribute: 'aPosition',
+                    normalAttribute: 'aNormal',
+                    uv0Attribute: 'aUv',
+                    //顶点个数，默认为3
+                    positionSize : 3
+                }
+            );
+            const modelMesh = new reshader.Mesh(plane);
+            const transformat = mat4.identity([]);
+            mat4.scale(transformat, transformat, [10, 10, 10]);
+            modelMesh.setLocalTransform(transformat);
+            return modelMesh;
+        }
+//
+        function getViewProjection() {
+            const aspect = canvas.width / canvas.height;
+            const projMatrix = mat4.perspective([], 30 * Math.PI / 180, aspect, cameraNearFar[0], cameraNearFar[1]);
+            var xRotation = mat4.create();
+            mat4.rotateY(xRotation, xRotation, roll);
+            var yRotation = mat4.create();
+            mat4.rotateX(yRotation, yRotation, pitch);
+            var viewMatrix = mat4.create();
+            mat4.multiply(viewMatrix, yRotation, xRotation);
+            viewMatrix[14] = -translate;
+            const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
+            return  { projViewMatrix, projMatrix, viewMatrix };
+        }
+
+        //鼠标事件相关
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.onmousemove = function(ev) { handleMouseMove(ev); };
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+
+        function handleMouseDown(ev) {
+            mouseDown = true;
+            lastMouseX = ev.clientX;
+            lastMouseY = ev.clientY;
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+            updateCamera();
+        }
+
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+
+        function updateCamera() {
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+        }
+
+        function initGUI() {
+            var gui = new dat.GUI( { width: 300 } );
+            const config = {
+                waveParams0: 0.09,
+                waveParams1: 4,
+                waveParams2: 0.03,
+                waveParams3: -0.5,
+                waveDirectionX: -0.1182,
+                waveDirectionY: -0.0208,
+                waterColor: [0.1451 * 255, 0.2588 * 255, 0.4863 * 255]
+            };
+
+            var waveParams0Controller = gui.add(config, "waveParams0", 0, 0.2);
+            waveParams0Controller.onChange(function (value) {
+                uniforms['waveParams'][0] = value;
+            });
+
+            var waveParams1Controller = gui.add(config, "waveParams1", 1, 8);
+            waveParams1Controller.onChange(function (value) {
+                uniforms['waveParams'][1] = value;
+            });
+
+            var waveParams2Controller = gui.add(config, "waveParams2", 0, 0.1);
+            waveParams2Controller.onChange(function (value) {
+                uniforms['waveParams'][2] = value;
+            });
+
+            var waveParams3Controller = gui.add(config, "waveParams3", -1, 1);
+            waveParams3Controller.onChange(function (value) {
+                uniforms['waveParams'][3] = value;
+            });
+
+            var waveDirectionXController = gui.add(config, "waveDirectionX", -1, 1);
+            waveDirectionXController.onChange(function (value) {
+                uniforms['waveDirection'][0] = value;
+            });
+
+            var waveDirectionYController = gui.add(config, "waveDirectionY", -1, 1);
+            waveDirectionYController.onChange(function (value) {
+                uniforms['waveDirection'][1] = value;
+            });
+
+            var watercolorController = gui.addColor(config, 'waterColor');
+            watercolorController.onChange(function (value) {
+                uniforms['waterColor'] = [value[0] / 255, value[1] /255, value[2] / 255, 1];
+            });
+        }
+    </script>
+  </body>
+</html>

@@ -22,6 +22,13 @@ export default {
     // Indices of the vertices
     indices : [
         3, 1, 0, 0, 2, 3
+    ],
+
+    uv : [
+        0.0, 0.0,
+        1.0, 0.0,
+        0.0, 1.0,
+        1.0, 1.0
     ]
   };
   

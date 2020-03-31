@@ -40,6 +40,7 @@ export { default as ViewshedPass } from './viewshed/ViewshedPass.js';
 export { default as QuadShader } from './shader/QuadShader.js';
 export { default as HeatmapShader } from './shader/HeatmapShader';
 export { default as HeatmapDisplayShader } from './shader/HeatmapDisplayShader';
+export { default as WaterShader } from './water/WaterShader.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };
