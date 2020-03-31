@@ -190,28 +190,6 @@ export default class GroupGLLayer extends maptalks.Layer {
             layer._doRemove();
             layer.off('show hide', this._onLayerShowHide, this);
         });
-        if (this._targetFBO) {
-            this._targetFBO.destroy();
-            this._noAaFBO.destroy();
-            delete this._targetFBO;
-            delete this._noAaFBO;
-        }
-        if (this._bloomFBO) {
-            this._bloomFBO.destroy();
-            delete this._bloomFBO;
-        }
-        if (this._ssrFBO) {
-            this._ssrFBO.destroy();
-            delete this._ssrFBO;
-        }
-        if (this._postProcessor) {
-            this._postProcessor.delete();
-            delete this._postProcessor;
-        }
-        if (this._shadowPass) {
-            this._shadowPass.delete();
-            delete this._shadowPass;
-        }
         delete this._layerMap;
         super.onRemove();
     }

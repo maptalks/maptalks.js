@@ -40,7 +40,7 @@ class LightManager {
 
     setConfig(config) {
         const oldConfig = this._config;
-        this._config = config;
+        this._config = JSON.parse(JSON.stringify(config));
         if (!config || !config.ambient || !config.ambient.resource) {
             this._disposeCubeLight();
         } else if (!oldConfig || !oldConfig.ambient || !ambientEqual(oldConfig.ambient, config.ambient)) {

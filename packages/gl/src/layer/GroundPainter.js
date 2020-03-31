@@ -5,6 +5,8 @@ import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
 
+const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
+
 class GroundPainter {
     constructor(regl, layer) {
         this._regl = regl;
@@ -147,102 +149,22 @@ class GroundPainter {
     }
 
     _getCommonUniforms(context) {
-        const map = this.getMap();
-        const viewMatrix = map.viewMatrix;
-        const projMatrix = map.projMatrix;
-        const cameraPosition = map.cameraPosition;
-        const canvas = this._layer.getRenderer().canvas;
-        const lightUniforms = this._getLightUniforms();
-        const uniforms = extend({
-            viewMatrix,
-            projMatrix,
-            projectionMatrix: projMatrix,
-            projViewMatrix: map.projViewMatrix,
-            uCameraPosition: cameraPosition,
-            uGlobalTexSize: [canvas.width, canvas.height],
-            uNearFar: [map.cameraNear, map.cameraFar]
-        }, lightUniforms);
-        if (context && context.shadow && context.shadow.renderUniforms) {
-            extend(uniforms, context.shadow.renderUniforms);
+        if (!this._iblTexes) {
+            this._iblTexes = createIBLTextures(this._regl, this.getMap());
         }
-        if (context && context.ssr && context.ssr.renderUniforms) {
-            extend(uniforms, context.ssr.renderUniforms);
-        }
-        if (context && context.jitter) {
-            uniforms['uHalton'] = context.jitter;
-        } else {
-            uniforms['uHalton'] = [0, 0];
-        }
-        return uniforms;
-    }
-
-    _getLightUniforms() {
-        const lightManager = this.getMap().getLightManager();
-        const iblMaps = lightManager.getAmbientResource();
-        const ambientLight = lightManager.getAmbientLight();
-        const directionalLight = lightManager.getDirectionalLight();
-        let uniforms;
-        if (iblMaps) {
-            if (!this._iblTexes) {
-                this._createIBLTextures();
-            }
-            const iblTexes = this._iblTexes;
-            const cubeSize = iblTexes.prefilterMap.width;
-            const mipLevel = Math.log(cubeSize) / Math.log(2);
-            uniforms = {
-                'sSpecularPBR': iblTexes.prefilterMap,
-                'uDiffuseSPH': iblTexes.sh,
-                'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
-                'uTextureEnvironmentSpecularPBRTextureSize': [cubeSize, cubeSize],
-            };
-        } else {
-            uniforms = {
-                'uAmbientColor': ambientLight.color || [0.2, 0.2, 0.2]
-            };
-        }
-        uniforms['uEnvironmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
-        uniforms['sIntegrateBRDF'] = this._dfgLUT;
-
-        if (directionalLight) {
-            uniforms['uSketchfabLight0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];
-            uniforms['uSketchfabLight0_viewDirection'] = directionalLight.direction || [1, 1, -1];
-        }
-        return uniforms;
+        return getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context);
     }
 
     _disposeIblTextures() {
         if (!this._iblTexes) {
             return;
         }
-        for (const p in this._iblTexes) {
-            if (this._iblTexes[p].destroy) {
-                this._iblTexes[p].destroy();
-            }
-        }
+        disposeIBLTextures(this._iblTexes);
         delete this._iblTexes;
     }
 
-
-    _createIBLTextures() {
-        const resource = this.getMap().getLightManager().getAmbientResource();
-        if (this._iblTexes) {
-            this._disposeIblTextures();
-        }
-        const regl = this._regl;
-        this._iblTexes = {
-            'prefilterMap': regl.cube({
-                width: resource.prefilterMap.width,
-                height: resource.prefilterMap.height,
-                faces: resource.prefilterMap.faces,
-                min: 'linear',
-                mag: 'linear',
-                format: 'rgba',
-            }),
-            'sh': resource.sh
-        };
-    }
-
     _init() {
+        this.getMap().on('updatelights', this._updateLights, this);
         //fill shader
         const extraCommandProps = this._getExtraCommandProps();
         this._fillShader = new reshader.MeshShader({
@@ -360,7 +282,7 @@ class GroundPainter {
             }
         }
         update(this._hasIBL(), 'HAS_IBL_LIGHTING');
-        const hasSSR = context.ssr && sceneConfig.ground && sceneConfig.ground.ssr;
+        const hasSSR = context.ssr && sceneConfig.ground && sceneConfig.ground.symbol && sceneConfig.ground.symbol.ssr;
         update(hasSSR, 'HAS_SSR');
         const hasShadow = sceneConfig.shadow && sceneConfig.shadow.enable;
         update(hasShadow, 'HAS_SHADOWING');
@@ -430,6 +352,14 @@ class GroundPainter {
             wrap: 'repeat'
         };
         return regl.texture(config);
+    }
+
+    _updateLights(param) {
+        if (param.ambientUpdate) {
+            this._disposeIblTextures();
+            this._iblTexes = createIBLTextures(this._regl, this.getMap());
+        }
+        this.setToRedraw();
     }
 
     _parseColor(c) {

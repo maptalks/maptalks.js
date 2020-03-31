@@ -59,13 +59,15 @@ import StandardMaterial from './pbr/StandardMaterial.js';
 import PBRSpecularGlossinessMaterial from './pbr/PBRSpecularGlossinessMaterial.js';
 import StandardShader from './pbr/StandardShader';
 import StandardDepthShader from './pbr/StandardDepthShader';
+import * as PBRUtils from './pbr/PBRUtils';
 
 const pbr = {
     PBRHelper,
     StandardMaterial,
     PBRSpecularGlossinessMaterial,
     StandardShader,
-    StandardDepthShader
+    StandardDepthShader,
+    PBRUtils
     // LitShader,
     // LitMaterial,
     // ClothShader,
