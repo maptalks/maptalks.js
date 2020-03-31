@@ -40,7 +40,7 @@ class PhongPainter extends MeshPainter {
     }
 
     getShader() {
-        return this.shader();
+        return this.shader;
     }
 
     delete(context) {

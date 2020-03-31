@@ -1,9 +1,9 @@
-import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { reshader, mat4 } from '@maptalks/gl';
 import { extend, isNumber } from '../../Util';
 import MeshPainter from '../MeshPainter';
 import { OFFSET_FACTOR_SCALE } from '../Constant';
 
+const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 
 class StandardPainter extends MeshPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
@@ -149,7 +149,8 @@ class StandardPainter extends MeshPainter {
 
     _updateLights(param) {
         if (param.ambientUpdate) {
-            this._createIBLTextures();
+            this._disposeIblTextures();
+            this._iblTexes = createIBLTextures(this.regl, this.getMap());
         }
         this.setToRedraw();
     }
@@ -276,25 +277,6 @@ class StandardPainter extends MeshPainter {
         this.setToRedraw(true);
     }
 
-    _createIBLTextures() {
-        const resource = this.getMap().getLightManager().getAmbientResource();
-        if (this._iblTexes) {
-            this._disposeIblTextures();
-        }
-        const regl = this.regl;
-        this._iblTexes = {
-            'prefilterMap': regl.cube({
-                width: resource.prefilterMap.width,
-                height: resource.prefilterMap.height,
-                faces: resource.prefilterMap.faces,
-                min: 'linear',
-                mag: 'linear',
-                format: 'rgba',
-            }),
-            'sh': resource.sh
-        };
-    }
-
     _updateMaterial() {
         const materialConfig = this.getSymbol().material;
         const material = {};
@@ -366,66 +348,10 @@ class StandardPainter extends MeshPainter {
     }
 
     getUniformValues(map, context) {
-        const viewMatrix = map.viewMatrix;
-        const projMatrix = map.projMatrix;
-        const cameraPosition = map.cameraPosition;
-        const canvas = this.layer.getRenderer().canvas;
-        const lightUniforms = this._getLightUniforms();
-        const uniforms = extend({
-            viewMatrix,
-            projMatrix,
-            projectionMatrix: projMatrix,
-            projViewMatrix: map.projViewMatrix,
-            uCameraPosition: cameraPosition,
-            uGlobalTexSize: [canvas.width, canvas.height],
-            uNearFar: [map.cameraNear, map.cameraFar]
-        }, lightUniforms);
-        if (context && context.shadow && context.shadow.renderUniforms) {
-            extend(uniforms, context.shadow.renderUniforms);
+        if (!this._iblTexes) {
+            this._iblTexes = createIBLTextures(this.regl, map);
         }
-        if (context && context.ssr && context.ssr.renderUniforms) {
-            extend(uniforms, context.ssr.renderUniforms);
-        }
-        if (context && context.jitter) {
-            uniforms['uHalton'] = context.jitter;
-        } else {
-            uniforms['uHalton'] = [0, 0];
-        }
-        return uniforms;
-    }
-
-    _getLightUniforms() {
-        const lightManager = this.getMap().getLightManager();
-        const iblMaps = lightManager.getAmbientResource();
-        const ambientLight = lightManager.getAmbientLight();
-        const directionalLight = lightManager.getDirectionalLight();
-        let uniforms;
-        if (iblMaps) {
-            if (!this._iblTexes) {
-                this._createIBLTextures();
-            }
-            const iblTexes = this._iblTexes;
-            const cubeSize = iblTexes.prefilterMap.width;
-            const mipLevel = Math.log(cubeSize) / Math.log(2);
-            uniforms = {
-                'sSpecularPBR': iblTexes.prefilterMap,
-                'uDiffuseSPH': iblTexes.sh,
-                'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
-                'uTextureEnvironmentSpecularPBRTextureSize': [cubeSize, cubeSize],
-            };
-        } else {
-            uniforms = {
-                'uAmbientColor': ambientLight.color || [0.2, 0.2, 0.2]
-            };
-        }
-        uniforms['uEnvironmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
-        uniforms['sIntegrateBRDF'] = this._dfgLUT;
-
-        if (directionalLight) {
-            uniforms['uSketchfabLight0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];
-            uniforms['uSketchfabLight0_viewDirection'] = directionalLight.direction || [1, 1, -1];
-        }
-        return uniforms;
+        return getPBRUniforms(map, this._iblTexes, this._dfgLUT, context);
     }
 
     _getDefines(shadowDefines) {
@@ -442,11 +368,7 @@ class StandardPainter extends MeshPainter {
         if (!this._iblTexes) {
             return;
         }
-        for (const p in this._iblTexes) {
-            if (this._iblTexes[p].destroy) {
-                this._iblTexes[p].destroy();
-            }
-        }
+        disposeIBLTextures(this._iblTexes);
         delete this._iblTexes;
     }
 
