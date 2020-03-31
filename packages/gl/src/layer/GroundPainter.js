@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
-import { getGroundTransform, extend, isNumber } from './util/util';
+import { getGroundTransform } from './util/util';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';

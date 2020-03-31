@@ -31,7 +31,7 @@ export function getPBRUniforms(map, iblTexes, dfgLUT, context) {
 }
 
 function getLightUniforms(map, iblTexes) {
-	const lightManager = map.getLightManager();
+    const lightManager = map.getLightManager();
     const iblMaps = lightManager.getAmbientResource();
     const ambientLight = lightManager.getAmbientLight();
     const directionalLight = lightManager.getDirectionalLight();
@@ -60,10 +60,10 @@ function getLightUniforms(map, iblTexes) {
 }
 
 export function createIBLTextures(regl, map) {
-	const resource = map.getLightManager().getAmbientResource();
-	if (!resource) {
-		return null;
-	}
+    const resource = map.getLightManager().getAmbientResource();
+    if (!resource) {
+        return null;
+    }
     return {
         'prefilterMap': regl.cube({
             width: resource.prefilterMap.width,
@@ -78,7 +78,7 @@ export function createIBLTextures(regl, map) {
 }
 
 export function disposeIBLTextures(iblTexes) {
-	for (const p in iblTexes) {
+    for (const p in iblTexes) {
         if (iblTexes[p].destroy) {
             iblTexes[p].destroy();
         }
