@@ -89,6 +89,10 @@ export default class TextPainter extends CollisionPainter {
         }
     }
 
+    updateSymbol() {
+        super.updateSymbol();
+        this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
+    }
 
     createGeometry(glData) {
         if (!glData || !glData.length) {

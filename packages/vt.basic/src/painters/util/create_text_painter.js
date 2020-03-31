@@ -341,6 +341,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             attrName: 'aTextFill',
             //symbol中的function-type属性
             symbolName: 'textFill',
+            define: 'HAS_TEXT_FILL',
+            type: Uint8Array,
+            width: 4,
             //
             evaluate: properties => {
                 let color = textFillFn(map.getZoom(), properties);
@@ -356,6 +359,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
         {
             attrName: 'aTextSize',
             symbolName: 'textSize',
+            define: 'HAS_TEXT_SIZE',
+            type: Uint8Array,
+            width: 1,
             evaluate: properties => {
                 const size = textSizeFn(map.getZoom(), properties);
                 u8[0] = size;
@@ -367,6 +373,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             attrName: 'aTextHaloFill',
             //symbol中的function-type属性
             symbolName: 'textHaloFill',
+            define: 'HAS_TEXT_HALO_FILL',
+            type: Uint8Array,
+            width: 4,
             //
             evaluate: properties => {
                 let color = textHaloFillFn(map.getZoom(), properties);
@@ -382,6 +391,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
         {
             attrName: 'aTextHaloRadius',
             symbolName: 'textHaloRadius',
+            define: 'HAS_TEXT_HALO_RADIUS',
+            type: Uint8Array,
+            width: 1,
             evaluate: properties => {
                 const radius = textHaloRadiusFn(map.getZoom(), properties);
                 u8[0] = radius;
@@ -391,6 +403,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
         {
             attrName: 'aTextDx',
             symbolName: 'textDx',
+            define: 'HAS_TEXT_DX',
+            type: Uint8Array,
+            width: 1,
             evaluate: properties => {
                 const x = textDxFn(map.getZoom(), properties);
                 u8[0] = x;
@@ -400,6 +415,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
         {
             attrName: 'aTextDy',
             symbolName: 'textDy',
+            define: 'HAS_TEXT_DY',
+            type: Uint8Array,
+            width: 1,
             evaluate: properties => {
                 const y = textDyFn(map.getZoom(), properties);
                 u8[0] = y;

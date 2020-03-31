@@ -111,6 +111,7 @@ class FillPainter extends BasicPainter {
                 symbolName: 'polygonFill',
                 type: Uint8Array,
                 width: 4,
+                define: 'HAS_COLOR',
                 //
                 evaluate: properties => {
                     let color = this._polygonFillFn(map.getZoom(), properties);
@@ -128,6 +129,7 @@ class FillPainter extends BasicPainter {
                 symbolName: 'polygonOpacity',
                 type: Uint8Array,
                 width: 1,
+                define: 'HAS_OPACITY',
                 evaluate: properties => {
                     const polygonOpacity = this._polygonOpacityFn(map.getZoom(), properties);
                     u8[0] = polygonOpacity * 255;

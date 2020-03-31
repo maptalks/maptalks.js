@@ -119,7 +119,7 @@ class MeshPainter extends Painter {
     updateSymbol(symbol) {
         const symbolDef = this.symbolDef;
         this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
-        this._opacityFn = interpolated(symbolDef['polygonOpacity']);
+        this._opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
         this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
         this._aLineHeightFn = interpolated(symbolDef['lineHeight']);
         super.updateSymbol(symbol);
@@ -131,7 +131,7 @@ class MeshPainter extends Painter {
         }
         const symbolDef = this.symbolDef;
         this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
-        this._opacityFn = interpolated(symbolDef['polygonOpacity']);
+        this._opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
         this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
         this._aLineHeightFn = interpolated(symbolDef['lineHeight']);
         const map = this.getMap();

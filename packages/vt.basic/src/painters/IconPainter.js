@@ -58,30 +58,38 @@ class IconPainter extends CollisionPainter {
         this._textFilter1 = TEXT_FILTER_N.bind(this);
     }
 
+    updateSymbol() {
+        super.updateSymbol();
+        this._markerWidthFn = interpolated(symbolDef['markerWidth']);
+        this._markerHeightFn = interpolated(symbolDef['markerHeight']);
+        this._markerDxFn = interpolated(symbolDef['markerDx']);
+        this._markerDyFn = interpolated(symbolDef['markerDy']);
+        this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
+    }
+
     _getIconFnTypeConfig() {
         const map = this.getMap();
         const symbolDef = this.symbolDef;
-        const markerWidthFn = interpolated(symbolDef['markerWidth']);
-        const markerHeightFn = interpolated(symbolDef['markerHeight']);
-        const markerDxFn = interpolated(symbolDef['markerDx']);
-        const markerDyFn = interpolated(symbolDef['markerDy']);
-        let markerTextFitFn;
-        const markerTextFit = symbolDef['markerTextFit'];
-        if (isFunctionDefinition(markerTextFit)) {
-            markerTextFitFn = interpolated(markerTextFit);
-        }
+        this._markerWidthFn = interpolated(symbolDef['markerWidth']);
+        this._markerHeightFn = interpolated(symbolDef['markerHeight']);
+        this._markerDxFn = interpolated(symbolDef['markerDx']);
+        this._markerDyFn = interpolated(symbolDef['markerDy']);
+        this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
         const u8 = new Int16Array(1);
         return [
             {
                 attrName: 'aMarkerWidth',
                 symbolName: 'markerWidth',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_MARKER_WIDTH',
                 evaluate: (properties, value) => {
                     //如果是markerTextFit，aMarkerWidth已经更新过了，直接返回原值
-                    const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
+                    const textFit = this._markerTextFitFn ? this._markerTextFitFn(map.getZoom(), properties) : markerTextFit;
                     if (textFit === 'both' || textFit === 'width') {
                         return value;
                     }
-                    const x = markerWidthFn(map.getZoom(), properties);
+                    const x = this._markerWidthFn(map.getZoom(), properties);
                     u8[0] = x;
                     return u8[0];
                 }
@@ -89,12 +97,15 @@ class IconPainter extends CollisionPainter {
             {
                 attrName: 'aMarkerHeight',
                 symbolName: 'markerHeight',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_MARKER_HEIGHT',
                 evaluate: (properties, value) => {
-                    const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
+                    const textFit = this._markerTextFitFn ? this._markerTextFitFn(map.getZoom(), properties) : markerTextFit;
                     if (textFit === 'both' || textFit === 'height') {
                         return value;
                     }
-                    const x = markerHeightFn(map.getZoom(), properties);
+                    const x = this._markerHeightFn(map.getZoom(), properties);
                     u8[0] = x;
                     return u8[0];
                 }
@@ -102,8 +113,11 @@ class IconPainter extends CollisionPainter {
             {
                 attrName: 'aMarkerDx',
                 symbolName: 'markerDx',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_MARKER_DX',
                 evaluate: properties => {
-                    const x = markerDxFn(map.getZoom(), properties);
+                    const x = this._markerDxFn(map.getZoom(), properties);
                     u8[0] = x;
                     return u8[0];
                 }
@@ -111,8 +125,11 @@ class IconPainter extends CollisionPainter {
             {
                 attrName: 'aMarkerDy',
                 symbolName: 'markerDy',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_MARKER_DY',
                 evaluate: properties => {
-                    const y = markerDyFn(map.getZoom(), properties);
+                    const y = this._markerDyFn(map.getZoom(), properties);
                     u8[0] = y;
                     return u8[0];
                 }
