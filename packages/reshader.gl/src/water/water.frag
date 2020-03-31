@@ -49,18 +49,18 @@ const float TIME_NOISE_TEXTURE_REPEAT = 0.3737;
 const float TIME_NOISE_STRENGTH = 7.77;
 vec3 getWaveLayer(sampler2D texNormal, sampler2D dudv, vec2 uv, vec2 _waveDir, float time) {
     float waveStrength = waveParams[0];
-    
+
     // 用于计算uv方向的整体偏移量
     //为确保波速的单位长度方向不至于过快，需要对波速做了一个硬编码的操作
     vec2 waveMovement = time * -_waveDir;
     float timeNoise = sampleNoiseTexture(uv * TIME_NOISE_TEXTURE_REPEAT) * TIME_NOISE_STRENGTH;
-    
+
     //通过采样发现贴图和扰动贴图，实时计算当前帧点的位置
     vec3 uv_A = computeUVPerturbedWeigth(dudv, uv + waveMovement, time + timeNoise, 0.0);
     vec3 uv_B = computeUVPerturbedWeigth(dudv, uv + waveMovement, time + timeNoise, 0.5);
     vec3 normal_A = textureDenormalized3D(texNormal, uv_A.xy) * uv_A.z;
     vec3 normal_B = textureDenormalized3D(texNormal, uv_B.xy) * uv_B.z;
-    
+
     //展平波形，缩放法线的xy分量，然后调整z（向上）分量
     vec3 mixNormal = normalize(normal_A + normal_B);
     mixNormal.xy *= waveStrength;
@@ -78,16 +78,16 @@ const float LIGHT_NORMALIZATION = 1.0 / PI;
 const float INV_PI = 0.3183098861837907;
 const float HALF_PI = 1.570796326794897;
 struct PBRShadingWater {
-    float NdotL;   //法线与光线夹角的余弦 
-    
+    float NdotL;   //法线与光线夹角的余弦
+
     float NdotV;   //法线与视线夹角的余弦
-    
+
     float NdotH;   //法线的半角余弦
-    
+
     float VdotH;   //视线的半角余弦
-    
+
     float LdotH;   //光线的半角余弦
-    
+
     float VdotN;   //视线与法线夹角的余弦
 };
 float dtrExponent = 2.2;
@@ -140,7 +140,7 @@ vec3 getSkyGradientColor(in float cosTheta, in vec3 horizon, in vec3 zenit) {
 
 vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightIntensity, in vec3 localUp, in float shadow) {
     vec3 seaWaterColor = linearizeGamma(color);
-    
+
     vec3 h = normalize(l + v);
     shadingInfo.NdotL = clamp(dot(n, l), 0.0, 1.0);
     shadingInfo.NdotV = clamp(dot(n, v), 0.001, 1.0);
@@ -148,7 +148,7 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
     shadingInfo.NdotH = clamp(dot(n, h), 0.0, 1.0);
     shadingInfo.VdotH = clamp(dot(v, h), 0.0, 1.0);
     shadingInfo.LdotH = clamp(dot(l, h), 0.0, 1.0);
-    
+
     float upDotV = max(dot(localUp, v), 0.0);
 
     //反射的天空颜色：反射的天空颜色由两种主要颜色组成，即地平线上的反射颜色和zenit的反射颜色。
@@ -159,12 +159,12 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
 
     //对水的反射光进行平滑
     float upDotL = max(dot(localUp, l), 0.0);
-    
+
     skyColor *= 0.1 + upDotL * 0.9;
-    
+
     //如果水面处于阴影中，需要稍微调暗，然后用clamp方法简单计算水波的偏移量
     float shadowModifier = clamp(shadow, 0.8, 1.0);
-    
+
     //反射的天空颜色由菲涅耳反射乘以近似的天空颜色组成
     vec3 reflSky = fresnelReflection(shadingInfo.VdotN, vec3(fresnelSky[0]), fresnelSky[1]) * skyColor * shadowModifier;
     //计算水的颜色.
@@ -173,7 +173,7 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
     if(upDotV > 0.0 && upDotL > 0.0) {
         // 计算 BRDF 并简化环境光遮罩
         vec3 specularSun = brdfWater(shadingInfo, roughness, vec3(fresnelMaterial[0]), fresnelMaterial[1]);
-        
+
         vec3 incidentLight = lightIntensity * LIGHT_NORMALIZATION * shadow;
         specular = shadingInfo.NdotL * incidentLight * specularSun;
     }
@@ -184,7 +184,7 @@ void main() {
     vec3 localUp = vnormal;
     //切线空间
     vec3 tangentNormal = getSurfaceNormal(vuv, timeElapsed);
-    
+
     //在切线空间中旋转法线
     vec3 n = normalize(vtbnMatrix * tangentNormal);
     vec3 v = -normalize(vpos - camPos);

@@ -10,12 +10,12 @@ function glsl() {
     return {
         transform(code, id) {
             if (/\.vert$/.test(id) === false && /\.frag$/.test(id) === false && /\.glsl$/.test(id) === false) return null;
-            let transformedCode = code.replace(/[ \t]*\/\/.*\n/g, '') // remove //
+            let transformedCode = JSON.stringify(code.trim()
+                .replace(/\r/g, '')
+                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
                 .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
-                .replace(/\n{1,}/g, '\\n') // # \n+ to \n
-                .replace(/\r{1,}/g, '\\n') // # \r+ to \n
-                .replace(/"/g, '\\"');
-            transformedCode = `export default "${transformedCode}";`;
+                .replace(/\n{2,}/g, '\n')); // # \n+ to \n;;
+            transformedCode = `export default ${transformedCode};`;
             return {
                 code: transformedCode,
                 map: { mappings: '' }
