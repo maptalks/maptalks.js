@@ -27,6 +27,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     updateSceneConfig() {
+        if (this._groundPainter) {
+            this._groundPainter.update();
+        }
         this.setToRedraw();
     }
 
@@ -322,7 +325,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._clearFramebuffers();
         if (this._groundPainter) {
             this._groundPainter.dispose();
-            delete this._groundPainter();
+            delete this._groundPainter;
         }
         if (this._shadowPass) {
             this._shadowPass.dispose();

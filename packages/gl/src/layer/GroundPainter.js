@@ -53,7 +53,7 @@ class GroundPainter {
         if (!this._sceneConfig) {
             this._sceneConfig = this._layer.getSceneConfig();
         }
-        const { symbol } = this._sceneConfig.ground;
+        const symbol = this._sceneConfig.ground && this._sceneConfig.ground.symbol;
         if (!symbol) {
             this._polygonFill = [1, 1, 1, 1];
             this._polygonOpacity = 1;
@@ -167,21 +167,23 @@ class GroundPainter {
         this.getMap().on('updatelights', this._updateLights, this);
         //fill shader
         const extraCommandProps = this._getExtraCommandProps();
+        const fillUniforms = ShadowProcess.getUniformDeclares();
+        fillUniforms.push(
+            'polygonFill',
+            'polygonOpacity',
+            'polygonPatternFile',
+            {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
+                    return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                }
+            }
+        );
         this._fillShader = new reshader.MeshShader({
             vert: fillVert,
             frag: fillFrag,
-            uniforms: [
-                'polygonFill',
-                'polygonOpacity',
-                'polygonPatternFile',
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
-            ],
+            uniforms: fillUniforms,
             extraCommandProps
         });
         //standard shader
@@ -293,7 +295,7 @@ class GroundPainter {
     }
 
     _updateMaterial() {
-        const materialConfig = this.getSymbol().material;
+        const materialConfig = this.getSymbol() && this.getSymbol().material;
         if (!materialConfig) {
             return;
         }
