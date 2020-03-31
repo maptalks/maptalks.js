@@ -408,12 +408,14 @@ describe('update style specs', () => {
                 const canvas = layer.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
                 assert.deepEqual(pixel, [143, 54, 84, 255]);
-                layer.updateSymbol(0, { textFill: 'rgba(25,95,230,1)' });
+                layer.updateSymbol(0, { textFill: 'rgba(25, 95, 230, 1)' });
             } else if (count === 2) {
                 const canvas = layer.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                assert.deepEqual(pixel, [121, 56, 134, 255]);
-
+                assert.ok(pixel[0] === 121 &&
+                    (pixel[1] === 56 || pixel[1] === 55) &&
+                    pixel[2] === 134 &&
+                    pixel[3] === 255);
                 //确保glyphAtlas是有效的（否则会绘制一个矩形）
                 const pixel2 = readPixel(canvas, canvas.width / 2 + 6, canvas.height / 2);
                 assert.deepEqual(pixel2, [0, 0, 0, 0]);

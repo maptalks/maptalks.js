@@ -743,6 +743,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             const picked = plugin.pick(x, y, options.tolerance);
             if (picked) {
+                if (picked.point) {
+                    picked.point = picked.point.map(v => Math.round(v * 1E5) / 1E5)
+                }
                 picked.type = plugin.getType();
                 hits.push(picked);
             }

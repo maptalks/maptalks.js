@@ -1,10 +1,10 @@
-import Color from 'color';
 import { reshader, mat4 } from '@maptalks/gl';
 import { extend } from '../Util';
 import Painter from './Painter';
 import vert from './glsl/native-point.vert';
 import frag from './glsl/native-point.frag';
 import pickingVert from './glsl/native-point.picking.vert';
+import { setUniformFromSymbol, createColorSetter } from '../Util';
 
 const DEFAULT_UNIFORMS = {
     markerFill: [0, 0, 0],
@@ -22,9 +22,12 @@ class NativePointPainter extends Painter {
 
     createMesh(geometry, transform) {
         const symbol = this.getSymbol();
-        const uniforms = this.getMeshUniforms(geometry, symbol);
         geometry.generateBuffers(this.regl);
-
+        this._colorCache = this._colorCache || {};
+        const uniforms = {};
+        setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
+        setUniformFromSymbol(uniforms, 'markerSize', symbol, 'markerSize', 10);
+        setUniformFromSymbol(uniforms, 'markerFill', symbol, 'markerFill', '#000', createColorSetter(this._colorCache, 3));
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         material.createDefines = () => {
             if (symbol.markerType !== 'square') {
@@ -46,20 +49,6 @@ class NativePointPainter extends Painter {
         }
         mesh.setLocalTransform(transform);
         return mesh;
-    }
-
-    getMeshUniforms(geometry, symbol) {
-        const uniforms = {};
-        if (symbol['markerOpacity'] || symbol['markerOpacity'] === 0) {
-            uniforms.markerOpacity = symbol['markerOpacity'];
-        }
-        if (symbol['markerFill']) {
-            uniforms.markerFill = Color(symbol['markerFill']).array();
-        }
-        if (symbol['markerSize']) {
-            uniforms.markerSize = symbol['markerSize'];
-        }
-        return uniforms;
     }
 
     init() {

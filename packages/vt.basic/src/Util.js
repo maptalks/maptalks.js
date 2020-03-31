@@ -71,13 +71,13 @@ export function setUniformFromSymbol(uniforms, name, symbol, key, defaultValue, 
     });
 }
 
-export function createColorSetter(cache) {
-    return _colorSetter.bind(this, cache);
+export function createColorSetter(cache, size = 4) {
+    return _colorSetter.bind(this, cache, size);
 }
 
-function _colorSetter(cache, c) {
+function _colorSetter(cache, size, c) {
     if (Array.isArray(c)) {
-        if (c.length === 3) {
+        if (c.length === 3 && size === 4) {
             c.push(1);
         }
         return c;
@@ -86,7 +86,7 @@ function _colorSetter(cache, c) {
         return cache[c];
     }
     const color = Color(c).unitArray();
-    if (color.length === 3) {
+    if (color.length === 3 && size === 4) {
         color.push(1);
     }
     if (cache) cache[c] = color;
