@@ -60,6 +60,7 @@ class IconPainter extends CollisionPainter {
 
     updateSymbol() {
         super.updateSymbol();
+        const symbolDef = this.symbolDef;
         this._markerWidthFn = interpolated(symbolDef['markerWidth']);
         this._markerHeightFn = interpolated(symbolDef['markerHeight']);
         this._markerDxFn = interpolated(symbolDef['markerDx']);
@@ -84,6 +85,7 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_MARKER_WIDTH',
                 evaluate: (properties, value) => {
+                    const markerTextFit = this.symbolDef['markerTextFit'];
                     //如果是markerTextFit，aMarkerWidth已经更新过了，直接返回原值
                     const textFit = this._markerTextFitFn ? this._markerTextFitFn(map.getZoom(), properties) : markerTextFit;
                     if (textFit === 'both' || textFit === 'width') {
@@ -101,6 +103,7 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_MARKER_HEIGHT',
                 evaluate: (properties, value) => {
+                    const markerTextFit = this.symbolDef['markerTextFit'];
                     const textFit = this._markerTextFitFn ? this._markerTextFitFn(map.getZoom(), properties) : markerTextFit;
                     if (textFit === 'both' || textFit === 'height') {
                         return value;
