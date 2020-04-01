@@ -602,8 +602,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._drawBloom();
             const bloomConfig = config.bloom;
             const threshold = +bloomConfig.threshold || 0;
-            const factor = isNil(bloomConfig.factor) ? 0.5 : +bloomConfig.factor;
-            const radius = isNil(bloomConfig.radius) ? 0.1 : +bloomConfig.radius;
+            const factor = isNil(bloomConfig.factor) ? 1 : +bloomConfig.factor;
+            const radius = isNil(bloomConfig.radius) ? 1 : +bloomConfig.radius;
             tex = this._postProcessor.bloom(tex, this._bloomFBO.color[0], threshold, factor, radius);
         }
 
@@ -747,6 +747,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const timestamp = this._contextFrameTime;
         const event = this._frameEvent;
         const context = this._drawContext;
+        context.renderMode = 'default';
         context['sceneFilter'] = bloomFilter;
         context.renderTarget = {
             fbo: this._bloomFBO,

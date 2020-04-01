@@ -3,16 +3,16 @@ import Mesh from '../Mesh.js';
 import Geometry from '../Geometry.js';
 import vert from './glsl/quad.vert';
 
-const quadVertices = new Float32Array([
+const quadVertices = new Int8Array([
     // positions
-    -1.0,  1.0, 0.0,
-    -1.0, -1.0, 0.0,
-    1.0,  1.0, 0.0,
-    1.0,  1.0, 0.0,
-    -1.0, -1.0, 0.0,
-    1.0, -1.0, 0.0,
+    -1.0,  1.0,
+    -1.0, -1.0,
+    1.0,  1.0,
+    1.0,  1.0,
+    -1.0, -1.0,
+    1.0, -1.0,
 ]);
-const quadTexcoords = new Float32Array([
+const quadTexcoords = new Uint8Array([
     0.0, 1.0,
     0.0, 0.0,
     1.0, 1.0,
@@ -68,7 +68,7 @@ class QuadShader extends MeshShader {
                 aTexCoord : quadTexcoords
             },
             null,
-            quadVertices.length / 3,
+            quadVertices.length / 2,
             {
                 primitive : 'triangles'
             }
