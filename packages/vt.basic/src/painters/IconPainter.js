@@ -276,9 +276,6 @@ class IconPainter extends CollisionPainter {
         if (enableCollision) {
             defines['ENABLE_COLLISION'] = 1;
         }
-        if (geometry.desc.positionSize === 2) {
-            defines['IS_2D_POSITION'] = 1;
-        }
         if (geometry.data.aMarkerWidth) {
             defines['HAS_MARKER_WIDTH'] = 1;
         }

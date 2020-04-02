@@ -1,8 +1,4 @@
-#ifdef IS_2D_POSITION
-    attribute vec2 aPosition;
-#else
-    attribute vec3 aPosition;
-#endif
+attribute vec3 aPosition;
 
 uniform mat4 projViewModelMatrix;
 uniform float markerSize;
@@ -11,12 +7,7 @@ uniform float markerSize;
 
 void main()
 {
-    #ifdef IS_2D_POSITION
-        vec3 position = vec3(aPosition, 0.0);
-    #else
-        vec3 position = aPosition;
-    #endif
-    gl_Position = projViewModelMatrix * vec4(position, 1.0);
+    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
     gl_PointSize = markerSize;
 
     fbo_picking_setData(gl_Position.w, true);

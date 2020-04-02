@@ -91,9 +91,6 @@ class LineGradientPainter extends BasicPainter {
         const defines = {
             'HAS_GRADIENT': 1
         };
-        if (geometry.desc.positionSize === 2) {
-            defines['IS_2D_POSITION'] = 1;
-        }
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }

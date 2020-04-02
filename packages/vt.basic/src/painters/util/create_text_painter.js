@@ -124,9 +124,6 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
 
     meshes.forEach(mesh => {
         const defines = mesh.defines || {};
-        if (geometry.desc.positionSize === 2) {
-            defines['IS_2D_POSITION'] = 1;
-        }
         if (geometry.data.aTextFill) {
             defines['HAS_TEXT_FILL'] = 1;
         }

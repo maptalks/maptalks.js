@@ -14,11 +14,7 @@
 #define EXTRUDE_SCALE 63.0;
 #define MAX_LINE_DISTANCE 65535.0
 
-#ifdef IS_2D_POSITION
-    attribute vec2 aPosition;
-#else
-    attribute vec3 aPosition;
-#endif
+attribute vec3 aPosition;
 attribute vec2 aExtrude;
 #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
     attribute float aLinesofar;
@@ -55,11 +51,8 @@ varying vec2 vNormal;
 #include <fbo_picking_vert>
 
 void main() {
-    #ifdef IS_2D_POSITION
-        vec3 position = vec3(aPosition, 0.0);
-    #else
-        vec3 position = vec3(aPosition);
-    #endif
+    vec3 position = vec3(aPosition);
+
     position.xy = floor(position.xy * 0.5);
 
     vNormal = aPosition.xy - 2.0 * position.xy;

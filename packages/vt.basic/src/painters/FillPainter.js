@@ -62,9 +62,6 @@ class FillPainter extends BasicPainter {
         if (symbol.polygonPatternFile) {
             defines['HAS_PATTERN'] = 1;
         }
-        if (geometry.desc.positionSize === 2) {
-            defines['IS_2D_POSITION'] = 1;
-        }
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }

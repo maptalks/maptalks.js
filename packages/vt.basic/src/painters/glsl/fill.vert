@@ -1,8 +1,4 @@
-#ifdef IS_2D_POSITION
-    attribute vec2 aPosition;
-#else
-    attribute vec3 aPosition;
-#endif
+attribute vec3 aPosition;
 
 #ifdef HAS_COLOR
     attribute vec4 aColor;
@@ -37,12 +33,8 @@ uniform mat4 projViewModelMatrix;
 
 
 void main() {
-    #ifdef IS_2D_POSITION
-        vec3 position = vec3(aPosition, 0.0);
-    #else
-        vec3 position = aPosition;
-    #endif
-    gl_Position = projViewModelMatrix * vec4(position, 1.0);
+    vec3 position = vec4(aPosition, 1.);
+    gl_Position = projViewModelMatrix * position;
     #ifndef ENABLE_TILE_STENCIL
         vPosition = aPosition.xy;
     #endif
@@ -61,6 +53,6 @@ void main() {
     #endif
 
     #if defined(HAS_SHADOWING)
-        shadow_computeShadowPars(vec4(position, 1.0));
+        shadow_computeShadowPars(position);
     #endif
 }

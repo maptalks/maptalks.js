@@ -1,10 +1,7 @@
 #define RAD 0.0174532925
 
-#ifdef IS_2D_POSITION
-    attribute vec2 aPosition;
-#else
-    attribute vec3 aPosition;
-#endif
+attribute vec3 aPosition;
+
 attribute vec2 aShape;
 attribute vec2 aTexCoord;
 //uint8
@@ -52,11 +49,7 @@ uniform float tileRatio; //EXTENT / tileSize
 #include <fbo_picking_vert>
 
 void main() {
-    #ifdef IS_2D_POSITION
-        vec3 position = vec3(aPosition, 0.0);
-    #else
-        vec3 position = aPosition;
-    #endif
+    vec3 position = aPosition;
     #ifdef HAS_MARKER_WIDTH
         float markerWidth = aMarkerWidth;
     #endif

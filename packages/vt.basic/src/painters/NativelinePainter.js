@@ -33,11 +33,6 @@ class NativeLinePainter extends Painter {
             castShadow: false,
             picking: true
         });
-        if (geometry.desc.positionSize === 2) {
-            mesh.setDefines({
-                'IS_2D_POSITION': 1
-            });
-        }
         mesh.setLocalTransform(transform);
         return mesh;
     }
