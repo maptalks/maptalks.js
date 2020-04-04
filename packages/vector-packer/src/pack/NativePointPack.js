@@ -4,6 +4,7 @@ import clipLine from './util/clip_line';
 import { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
 import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
+import { isOut } from './util/util';
 
 const MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
@@ -109,8 +110,4 @@ export default class NativePointPack extends VectorPack {
     hasElements() {
         return false;
     }
-}
-
-function isOut(point, extent) {
-    return point.x < 0 || point.x > extent || point.y < 0 || point.y > extent;
 }

@@ -222,7 +222,7 @@ class Painter {
         this.scene.clear();
     }
 
-    resize() {}
+    resize(/*width, height*/) {}
 
     delete(/* context */) {
         this.scene.clear();

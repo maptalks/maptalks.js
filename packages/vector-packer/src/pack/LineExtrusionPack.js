@@ -186,6 +186,9 @@ export default class LineExtrusionPack extends LinePack {
         }
         const { data, indices } = pack;
         const format = this.getFormat();
+        if (this.options.positionType) {
+            format[0].type = this.options.positionType;
+        }
         const description = format.reduce((accumulator, currentValue) => {
             accumulator[currentValue.name] = {
                 size: currentValue.width

@@ -289,10 +289,10 @@ function createPainterPlugin(type, Painter) {
             delete this._frameCache;
         },
 
-        resize: function (size) {
+        resize: function (width, height) {
             var painter = this.painter;
             if (painter) {
-                painter.resize(size);
+                painter.resize(width, height);
             }
         },
 

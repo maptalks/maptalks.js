@@ -159,6 +159,10 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
+    /**
+     * 获取图层的polygonOffsetCount
+     * 用于GroupGLLayer全局管理polygonOffset
+     */
     getPolygonOffsetCount() {
         const renderer = this.getRenderer();
         if (!renderer) {
@@ -167,6 +171,10 @@ class VectorTileLayer extends maptalks.TileLayer {
         return renderer.plugins && renderer.plugins.length || 0;
     }
 
+    /**
+     * 获取图层的polygonOffset
+     * 用于GroupGLLayer全局管理polygonOffset
+     */
     getPolygonOffset() {
         return this._polygonOffset || 0;
     }

@@ -4,6 +4,7 @@ import VectorPack from './VectorPack';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { isFnTypeSymbol } from '../style/Util';
+import { isOut } from './util/util';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -61,7 +62,7 @@ export default class LinePack extends VectorPack {
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
-        if (symbol['linePatternFile']) {
+        if (!this.options['atlas'] && symbol['linePatternFile']) {
             iconReqs[symbol['linePatternFile']] = 'resize';
         }
         return new StyledVector(feature, symbol, options);
@@ -338,7 +339,7 @@ export default class LinePack extends VectorPack {
             let distanceChanged = false;
             if (i > first && i < len - 1) {
                 //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
-                if (needExtraVertex || prevVertex && outOfExtent(prevVertex, EXTENT)) {
+                if (needExtraVertex || prevVertex && isOut(prevVertex, EXTENT)) {
                     //back不能超过normal的x或者y，否则会出现绘制错误
                     const back = Math.min(prevNormal.mag() * tanHalfAngle, Math.abs(prevNormal.x), Math.abs(prevNormal.y));
                     const backDist = back * this.feaLineWidth / 2 * tileRatio;
@@ -466,7 +467,7 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            if ((needExtraVertex || nextVertex && outOfExtent(nextVertex, EXTENT)) &&
+            if ((needExtraVertex || nextVertex && isOut(nextVertex, EXTENT)) &&
                 i > first && i < len - 1) {
                 //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
                 //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
@@ -665,11 +666,17 @@ export default class LinePack extends VectorPack {
 }
 
 function isOutSegment(p0, p1, EXTENT) {
+    if (EXTENT === Infinity) {
+        return false;
+    }
     return p0.x < 0 && p1.x < 0 || p0.x > EXTENT && p1.x > EXTENT ||
         p0.y < 0 && p1.y < 0 || p0.y > EXTENT && p1.y > EXTENT;
 }
 
 export function isClippedLineEdge(vertices, i0, i1, width, EXTENT) {
+    if (EXTENT === Infinity) {
+        return false;
+    }
     const x0 = Math.floor(vertices[i0 * width] * 0.5), y0 = Math.floor(vertices[i0 * width + 1] * 0.5),
         x1 = Math.floor(vertices[i1 * width] * 0.5), y1 = Math.floor(vertices[i1 * width + 1] * 0.5);
     return x0 === x1 && (x0 < 0 || x0 > EXTENT) && y0 !== y1 ||
@@ -713,10 +720,6 @@ export function calculateFullDistance(vertices, first, len) {
  */
 function scaleDistance(tileDistance/* : number */, stats/* : Object */) {
     return ((tileDistance / stats.tileTotal) * (stats.end - stats.start) + stats.start) * (MAX_LINE_DISTANCE - 1);
-}
-
-function outOfExtent(vertex, EXTENT) {
-    return vertex.x < 0 || vertex.x > EXTENT || vertex.y < 0 || vertex.y > EXTENT;
 }
 
 function hasDasharray(dash) {

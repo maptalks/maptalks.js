@@ -15,7 +15,7 @@ export default class BasicPainter extends Painter {
             glData.glyphAtlas.image.type = 'glyph';
         }
         const data = extend({}, glData.data);
-        const geometry = new reshader.Geometry(data, glData.indices, 0, { positionSize: glData.positionSize || 3 });
+        const geometry = new reshader.Geometry(data, glData.indices);
         geometry.properties = {
             features
         };

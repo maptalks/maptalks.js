@@ -325,7 +325,7 @@ export default class BaseLayerWorker {
             });
             const symbols = splitPointSymbol(symbol);
 
-            return Promise.all(symbols.map(s => new PointPack(features, s, options).load(tileRatio)));
+            return Promise.all(symbols.map(symbol => new PointPack(features, symbol, options).load(tileRatio)));
             // const pack = new PointPack(features, symbol, options);
             // return pack.load(extent / tileSize);
         } else if (type === 'native-point') {

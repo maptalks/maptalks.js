@@ -27,11 +27,14 @@ export default class VectorPack {
         this.symbol = loadFunctionTypes(symbol, () => {
             return [options.zoom];
         });
-        //TODO 数据只包含二维数据时，也认为是only2D
         this.styledVectors = [];
         this.properties = {};
         if (isFnTypeSymbol('visible', this.symbolDef)) {
             this._visibleFn = interpolated(this.symbolDef['visible']);
+        }
+        if (options.atlas) {
+            this.iconAtlas = options.atlas.iconAtlas;
+            this.glyphAtlas = options.atlas.glyphAtlas;
         }
     }
 
@@ -120,6 +123,10 @@ export default class VectorPack {
             this.count++;
             styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
             vectors.push(styledVector);
+        }
+
+        if (this.options['atlas']) {
+            return Promise.resolve(this.pack(scale));
         }
 
         return new Promise((resolve, reject) => {
@@ -213,6 +220,9 @@ export default class VectorPack {
         //uniforms: opacity, u_size_t
 
         const format = this.getFormat(vectors[0].symbol);
+        if (this.options.positionType) {
+            format[0].type = this.options.positionType;
+        }
         const formatWidth = this.formatWidth = getFormatWidth(format);
         //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
@@ -301,6 +311,7 @@ function serializeAtlas(atlas) {
     let positions = atlas.positions;
     let format = 'alpha';
     if (atlas instanceof IconAtlas) {
+        //iconAtlas中原属性用get方法实现，无法transfer，故遍历复制为普通对象
         positions = {};
         for (const p in atlas.positions) {
             const pos = atlas.positions[p];

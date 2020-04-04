@@ -49,5 +49,5 @@ export function getHeightValue(properties, heightProp, defaultValue) {
 }
 
 export function isOut(point, extent) {
-    return point.x < 0 || point.x > extent || point.y < 0 || point.y > extent;
+    return extent < Infinity && (point.x < 0 || point.x > extent || point.y < 0 || point.y > extent);
 }

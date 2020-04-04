@@ -159,7 +159,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
                 if (data.buffers) {
                     dataBuffers.push(...data.buffers);
                 }
-                cb(null, { icons : data.icons, glyphs : glyphData.glyphs }, dataBuffers);
+                cb(null, { icons: data.icons, glyphs: glyphData.glyphs }, dataBuffers);
             });
         });
 

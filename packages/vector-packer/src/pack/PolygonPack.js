@@ -24,7 +24,7 @@ export default class PolygonPack extends VectorPack {
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
-        if (symbol['polygonPatternFile']) {
+        if (!this.options['atlas'] && symbol['polygonPatternFile']) {
             iconReqs[symbol['polygonPatternFile']] = 'resize';
         }
         return new StyledVector(feature, symbol, options);
