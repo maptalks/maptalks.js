@@ -116,20 +116,31 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _buildMesh(atlas) {
-        const features = Object.values ? Object.values(this._features) : [];
-        if (!features.length) {
-            for (const p in this._features) {
-                if (this._features.hasOwnProperty(p)) {
-                    features.push(this._features[p]);
-                }
+        const features = [];
+        const center = [0, 0, 0, 0];
+        for (const p in this._features) {
+            if (this._features.hasOwnProperty(p)) {
+                const feature = this._features[p];
+                appendCoords(feature.geometry, center);
+                features.push(feature);
             }
         }
+        if (!features.length) {
+            if (this._meshes) {
+                this._painter.deleteMesh(this._meshes);
+                delete this._meshes;
+            }
+            return;
+        }
+        center[0] /= center[3];
+        center[1] /= center[3];
         this._prepareRequestors();
         const options = {
             zoom: this.getMap().getZoom(),
             EXTENT: Infinity,
             requestor: this._fetchIconGlyphs.bind(this),
             atlas,
+            center,
             positionType: Float32Array
         };
         const pointPack = new PointPack(features, SYMBOL, options);
@@ -144,7 +155,9 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 iconAltas: packData.data.iconAtlas,
                 glyphAtlas: packData.data.glyphAtlas
             };
-            const transform = mat4.identity([]);
+            // const transform = mat4.identity([]);
+            const transform = mat4.translate([], mat4.identity([]), center);
+            // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
             const meshes = this._painter.createMesh(geometries, transform);
             if (this._meshes) {
                 this._painter.deleteMesh(this._meshes);
@@ -402,6 +415,14 @@ function isWinIntelGPU(gl) {
         }
     }
     return false;
+}
+
+function appendCoords(geometry, center) {
+    for (let i = 0; i < geometry.length; i++) {
+        center[0] += geometry[i][0];
+        center[1] += geometry[i][1];
+        center[3] += 1;
+    }
 }
 
 export default PointLayerRenderer;

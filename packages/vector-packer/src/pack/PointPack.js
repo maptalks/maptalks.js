@@ -372,8 +372,11 @@ export default class PointPack extends VectorPack {
         }
         const textCount = quads.length;
         const altitude = this.getAltitude(point.feature.properties);
+        const center = this.options.center || [0, 0];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
+            const x = anchor.x - center[0];
+            const y = anchor.y - center[1];
             const l = quads.length;
             for (let ii = 0; ii < l; ii++) {
                 const quad = quads[ii];
@@ -381,7 +384,7 @@ export default class PointPack extends VectorPack {
                 //把line的端点存到line vertex array里
                 const { tl, tr, bl, br, tex } = quad;
                 //char's quad if flipped
-                data.push(anchor.x, anchor.y, altitude);
+                data.push(x, y, altitude);
                 data.push(
                     tl.x * 10, tl.y * 10,
                     tex.x, tex.y + tex.h
@@ -391,7 +394,7 @@ export default class PointPack extends VectorPack {
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
-                data.push(anchor.x, anchor.y, altitude);
+                data.push(x, y, altitude);
                 data.push(
                     tr.x * 10, tr.y * 10,
                     tex.x + tex.w, tex.y + tex.h
@@ -401,7 +404,7 @@ export default class PointPack extends VectorPack {
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
-                data.push(anchor.x, anchor.y, altitude);
+                data.push(x, y, altitude);
                 data.push(
                     bl.x * 10, bl.y * 10,
                     tex.x, tex.y
@@ -411,7 +414,7 @@ export default class PointPack extends VectorPack {
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
 
-                data.push(anchor.x, anchor.y, altitude);
+                data.push(x, y, altitude);
                 data.push(
                     br.x * 10, br.y * 10,
                     tex.x + tex.w, tex.y
@@ -426,7 +429,7 @@ export default class PointPack extends VectorPack {
                 this.addElements(currentIdx + 1, currentIdx + 2, currentIdx + 3);
                 currentIdx += 4;
 
-                const max = Math.max(Math.abs(anchor.x), Math.abs(anchor.y), Math.abs(altitude));
+                const max = Math.max(Math.abs(x), Math.abs(y), Math.abs(altitude));
                 if (max > this.maxPos) {
                     this.maxPos = max;
                 }

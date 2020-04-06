@@ -250,8 +250,12 @@ export default class VectorPack {
         const ArrType = getIndexArrayType(maxFeaIndex);
         featureIndexes = new ArrType(featureIndexes);
 
-        //update aPosition's type
-        format[0].type = getPosArrayType(Math.max(this.maxPos, this.maxAltitude));
+        if (this.maxPos > 0 && this.options.positionType) {
+            format[0].type = this.options.positionType;
+        } else {
+            //update aPosition's type
+            format[0].type = getPosArrayType(Math.max(this.maxPos, this.maxAltitude));
+        }
 
         const arrays = fillTypedArray(format, data);
         arrays.aPickingId = featureIndexes;
