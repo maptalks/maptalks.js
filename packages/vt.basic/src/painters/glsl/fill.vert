@@ -33,7 +33,7 @@ uniform mat4 projViewModelMatrix;
 
 
 void main() {
-    vec3 position = vec4(aPosition, 1.);
+    vec4 position = vec4(aPosition, 1.);
     gl_Position = projViewModelMatrix * position;
     #ifndef ENABLE_TILE_STENCIL
         vPosition = aPosition.xy;

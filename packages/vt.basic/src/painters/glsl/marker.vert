@@ -5,7 +5,7 @@ attribute vec2 aShape;
 attribute vec2 aTexCoord;
 //uint8
 #ifdef ENABLE_COLLISION
-attribute float aOpacity;
+    attribute float aOpacity;
 #endif
 
 #ifdef HAS_MARKER_WIDTH
@@ -98,8 +98,8 @@ void main() {
     vTexCoord = aTexCoord / texSize;
 
     #ifdef ENABLE_COLLISION
-    vOpacity = aOpacity / 255.0;
+        vOpacity = aOpacity / 255.0;
     #else
-    vOpacity = 1.0;
+        vOpacity = 1.0;
     #endif
 }

@@ -72,6 +72,11 @@ export default class IconAtlas {
         }
 
         pack.pack(bins, { inPlace: true });
+        if (!isPowerOfTwo(pack.w) || !isPowerOfTwo(pack.h)) {
+            const w = ceilPowerOfTwo(pack.w);
+            const h = ceilPowerOfTwo(pack.h);
+            pack.resize(w, h);
+        }
 
         const image = new RGBAImage({ width: pack.w, height: pack.h });
 
@@ -85,3 +90,13 @@ export default class IconAtlas {
         this.positions = positions;
     }
 }
+
+function isPowerOfTwo(value) {
+    return (value & (value - 1)) === 0 && value !== 0;
+}
+
+
+function ceilPowerOfTwo(value) {
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+}
+

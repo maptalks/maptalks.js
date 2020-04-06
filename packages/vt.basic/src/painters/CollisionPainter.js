@@ -105,14 +105,15 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     updateBoxCollisionFading(boxVisible, mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
-        const { meshKey, tile } = mesh.properties;
+        const { meshKey } = mesh.properties;
         const layer = this.layer;
         const renderer = layer.getRenderer();
-        if (this.shouldIgnoreBgTiles() && !renderer.isCurrentTile(tile.id)) {
+        const isForeground = renderer.isForeground(mesh);
+        if (this.shouldIgnoreBackground() && !isForeground) {
             return false;
         }
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
-        if (this.shouldLimitBox(tile.id) && boxIndex > layer.options['boxLimitOnZoomout']) {
+        if (this.shouldLimitBox(isForeground) && boxIndex > layer.options['boxLimitOnZoomout']) {
             return false;
         }
         if (this.isEnableUniquePlacement() && this._isReplacedPlacement(meshKey, boxIndex)) {
@@ -121,16 +122,15 @@ export default class CollisionPainter extends BasicPainter {
         const { symbol } = mesh.geometry.properties;
         //为了解决缩小地图时，大量文字会突然挤在一起
 
-        const canProceed = (this._zoomingOut && !renderer.isCurrentTile(tile.id) || this._canProceed);
+        const canProceed = this._zoomingOut && !isForeground || this._canProceed;
 
         let visible = false;
         let collision = this._getCachedCollision(meshKey, boxIndex);
         //如果不允许proceed，则沿用缓存的 collision
         if (boxVisible && canProceed) {
-            if (!this._isCachedCollisionStale(meshKey)) {
+            if (this._isCachedCollisionStale(meshKey)) {
                 collision = null;
             }
-
             if (!collision) {
                 const map = this.getMap();
                 const now = performance.now();
@@ -145,7 +145,7 @@ export default class CollisionPainter extends BasicPainter {
                 let offscreenCount = 0;
                 for (let i = 0; i < boxes.length; i++) {
                     if (!collides) {
-                        const boxCollides = this.isCollides(boxes[i], tile);
+                        const boxCollides = this.isCollides(boxes[i]);
                         if (boxCollides === -1) {
                             offscreenCount++;
                         } else if (boxCollides === 1) {
@@ -164,7 +164,7 @@ export default class CollisionPainter extends BasicPainter {
         const stamps = this._getBoxTimestamps(meshKey);
         // const current = stamps[boxIndex];
         // if (getLabelContent(mesh, allElements[start]) === '汉阳大道') {
-        //     // console.log('湖北', renderer.isCurrentTile(tile.id), collision && collision.collides, stamps[boxIndex]);
+        //     // console.log('湖北', isForeground, collision && collision.collides, stamps[boxIndex]);
         //     console.log('汉阳大道', tile.z, collision && collision.collides, stamps[boxIndex]);
         // }
         visible = boxVisible && collision && collision.collides === 0;
@@ -172,13 +172,13 @@ export default class CollisionPainter extends BasicPainter {
         let fadingOpacity = 1;
         let isFading = false;
         if (this.sceneConfig.fading) {
-            if (renderer.isCurrentTile(tile.id)) {
+            if (isForeground) {
                 delete mesh._fadeOutStartTime;
             }
             // const stamps = this._getBoxTimestamps(meshKey);
-            fadingOpacity = this._getBoxFading(tile.id, visible, stamps, boxIndex);
+            fadingOpacity = this._getBoxFading(isForeground, visible, stamps, boxIndex);
             //如果是当前tile，执行fading逻辑
-            if (renderer.isCurrentTile(tile.id)) {
+            if (isForeground) {
                 if (fadingOpacity > 0) {
                     visible = true;
                 }
@@ -212,7 +212,7 @@ export default class CollisionPainter extends BasicPainter {
         } else {
             stamps[boxIndex] = visible ? 1 : -1;
         }
-        if (/*renderer.isCurrentTile(tile.id) && */collision && layer.options['debugCollision']) {
+        if (/*isForeground && */collision && layer.options['debugCollision']) {
             this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
         }
 
@@ -290,7 +290,7 @@ export default class CollisionPainter extends BasicPainter {
         }
     }
 
-    _getBoxFading(tileId, visible, stamps, index) {
+    _getBoxFading(isForeground, visible, stamps, index) {
         //level大于0，不fading
         const { fadingDuration, fadeInDelay, fadeOutDelay } = this.sceneConfig;
         const renderer = this.layer.getRenderer();
@@ -300,7 +300,7 @@ export default class CollisionPainter extends BasicPainter {
         if (!boxTimestamp) {
             // const zooming = this.getMap().isZooming();
             // if (visible && level === 0 && this._zoomFading === undefined) {
-            if (visible && renderer.isCurrentTile(tileId)/* && !zooming*/) {
+            if (visible && isForeground/* && !zooming*/) {
                 //第一次显示
                 stamps[index] = timestamp + fadeInDelay;
             }
@@ -476,14 +476,16 @@ export default class CollisionPainter extends BasicPainter {
 
     preparePaint(context) {
         this._prepareZoomEndMeshes();
-        if (this._zoomEndMeshes) {
+        if (this._zoomEndMeshes && this._zoomEndMeshes.length) {
             this._updateZoomMeshesLevel();
             if (this._zoomEndMeshes) {
                 this.scene.addMesh(this._zoomEndMeshes);
             }
         }
+        //text/icon在同一个位置如果内容相同，只显示一个
         this._updateUniquePlacements();
         this._mergeUniquePlacements(this.scene.getMeshes());
+
         super.preparePaint(context);
         this._startCollision();
     }
@@ -501,7 +503,7 @@ export default class CollisionPainter extends BasicPainter {
     callShader(uniforms, context) {
         this.callCurrentTileShader(uniforms, context);
 
-        if (this.shouldIgnoreBgTiles()) {
+        if (this.shouldIgnoreBackground()) {
             //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
             //但有zoomFading时
             return;
@@ -509,19 +511,18 @@ export default class CollisionPainter extends BasicPainter {
         this.callBackgroundTileShader(uniforms, context);
     }
 
-    shouldIgnoreBgTiles() {
+    shouldIgnoreBackground() {
         // return false;
         const map = this.getMap();
         return !map.isZooming() && !this._zoomEndMeshes;
     }
 
-    shouldLimitBox(tileKey, ignoreZoomOut) {
+    shouldLimitBox(isForeground, ignoreZoomOut) {
         const map = this.getMap();
-        const renderer = this.layer.getRenderer();
         return !map.options['seamlessZoom'] &&
             this.layer.options['boxLimitOnZoomout'] &&
             (ignoreZoomOut || this._zoomingOut) &&
-            (map.isZooming() || this._zoomEndTimestamp !== undefined && !renderer.isCurrentTile(tileKey));
+            (map.isZooming() || this._zoomEndTimestamp !== undefined && !isForeground);
     }
 
     _prepareZoomEndMeshes() {
@@ -531,7 +532,7 @@ export default class CollisionPainter extends BasicPainter {
         if (!zooming && this._zooming) {
             //记录zoom结束的时间戳
             const renderer = this.layer.getRenderer();
-            this._zoomEndMeshes = this.scene.getMeshes().filter(m => !renderer.isCurrentTile(m.properties.tile.id));
+            this._zoomEndMeshes = this.scene.getMeshes().filter(m => !renderer.isForeground(m));
         } else if (zooming && !this._zooming) {
             this._preRes = map.getResolution();
         }
@@ -638,7 +639,7 @@ export default class CollisionPainter extends BasicPainter {
             const level = (tileInfo.z - tileZoom) > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
             mesh.properties.level = level;
             mesh.setUniform('level', level);
-            if (renderer.isCurrentTile(tileInfo.id) ||
+            if (renderer.isForeground(mesh) ||
                 mesh._fadeOutStartTime && (timestamp - mesh._fadeOutStartTime > fadeOutDelay + fadingDuration)) {
                 delete mesh._fadeOutStartTime;
                 // console.log(timestamp, 'removed');

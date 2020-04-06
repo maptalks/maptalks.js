@@ -271,6 +271,12 @@ function getAnchor(h, v) {
     if (!h || h === 'middle') {
         h = 'center';
     }
+    //因为maptalks的y轴方向和mapbox相反，所以需要对调top 和 bottom
+    if (v === 'top') {
+        v = 'bottom';
+    } else if (v === 'bottom') {
+        v = 'top';
+    }
     let vv = v !== 'center' ? v : '';
     vv += h !== 'center' ? (vv.length ? '-' : '') + h : '';
     return vv;

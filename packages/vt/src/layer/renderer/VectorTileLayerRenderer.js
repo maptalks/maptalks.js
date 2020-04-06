@@ -281,8 +281,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return meshes;
     }
 
-    isCurrentTile(id) {
-        return !!(this._currentTiles && this._currentTiles[id]);
+    isForeground(mesh) {
+        return !!(this._currentTiles && this._currentTiles[mesh.properties.tile.id]);
     }
 
     isBackTile(id) {
@@ -534,7 +534,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             plugin.startFrame(context);
         });
-        this.getMap().collisionFrameTime = 0;
     }
 
     _endFrame(timestamp) {

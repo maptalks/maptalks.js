@@ -1,4 +1,4 @@
-import { VectorTileLayer } from '@maptalks/vt';
+import { VectorTileLayer, Vector3DLayer } from '@maptalks/vt';
 import { createPainterPlugin } from '@maptalks/vt-plugin';
 import FillPainter from './painters/FillPainter';
 import LinePainter from './painters/LinePainter';
@@ -35,9 +35,8 @@ IconPlugin.registerAt(VectorTileLayer);
 const TextPlugin = createPainterPlugin('text', TextPainter);
 TextPlugin.registerAt(VectorTileLayer);
 
-const LineGlowPlugin = createPainterPlugin('line-glow', LineGlowPainter);
-LineGlowPlugin.registerAt(VectorTileLayer);
-
+/*const LineGlowPlugin = createPainterPlugin('line-glow', LineGlowPainter);
+LineGlowPlugin.registerAt(VectorTileLayer);*/
 const NativeLinePlugin = createPainterPlugin('native-line', NativeLinePainter);
 NativeLinePlugin.registerAt(VectorTileLayer);
 
@@ -71,13 +70,19 @@ GLTFPhongPlugin.registerAt(VectorTileLayer);
 const HeatmapPlugin = createPainterPlugin('heatmap', HeatmapPainter);
 HeatmapPlugin.registerAt(VectorTileLayer);
 
+Vector3DLayer.registerPainter('lit', StandardPainter);
+Vector3DLayer.registerPainter('icon', IconPainter);
+Vector3DLayer.registerPainter('fill', FillPainter);
+Vector3DLayer.registerPainter('line', LinePainter);
+Vector3DLayer.registerPainter('line-gradient', LineGradientPainter);
+
 export {
     LinePlugin,
     LineGradientPlugin,
     FillPlugin,
     IconPlugin,
     TextPlugin,
-    LineGlowPlugin,
+    // LineGlowPlugin,
     NativeLinePlugin,
     // TrailLinePlugin,
     // PBRPlugin,

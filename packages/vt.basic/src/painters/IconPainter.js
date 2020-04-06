@@ -20,22 +20,22 @@ const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 
 const ICON_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.iconAtlas;
+    return renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas;
 };
 
 const ICON_FILTER_N = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.iconAtlas;
+    return !renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas;
 };
 
 const TEXT_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.glyphAtlas;
+    return renderer.isForeground(mesh) && !!mesh.geometry.properties.glyphAtlas;
 };
 
 const TEXT_FILTER_N = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isCurrentTile(mesh.properties.tile.id) && !!mesh.geometry.properties.glyphAtlas;
+    return !renderer.isForeground(mesh) && !!mesh.geometry.properties.glyphAtlas;
 };
 
 //temparary variables
@@ -345,9 +345,8 @@ class IconPainter extends CollisionPainter {
     }
 
     isMeshIterable(mesh) {
-        const { id } = mesh.properties.tile;
         //halo和正文共享的同一个geometry，无需更新
-        return !!mesh.geometry.properties.iconAtlas && !(this.shouldIgnoreBgTiles() && !this.layer.getRenderer().isCurrentTile(id));
+        return !!mesh.geometry.properties.iconAtlas && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
     }
 
 

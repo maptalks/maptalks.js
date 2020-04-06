@@ -18,22 +18,22 @@ import { GLYPH_SIZE } from './Constant';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
+    return renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
 };
 
 const shaderFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
+    return !renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
 };
 
 const shaderLineFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
+    return renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
 };
 
 const shaderLineFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isCurrentTile(mesh.properties.tile.id) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
+    return !renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
 };
 
 //label box 或 icon box 对应的element数量
@@ -260,9 +260,8 @@ export default class TextPainter extends CollisionPainter {
     }
 
     isMeshIterable(mesh) {
-        const { id } = mesh.properties.tile;
         //halo和正文共享的同一个geometry，无需更新
-        return !mesh.properties.isHalo && mesh.isValid() && !(this.shouldIgnoreBgTiles() && !this.layer.getRenderer().isCurrentTile(id));
+        return !mesh.properties.isHalo && mesh.isValid() && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
     }
 
     isMeshUniquePlaced(mesh) {
@@ -285,8 +284,10 @@ export default class TextPainter extends CollisionPainter {
         //pitch不跟随map时，需要根据屏幕位置实时计算各文字的位置和旋转角度并更新aOffset和aRotation
         //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
         //aNormal在两种情况都要实时计算更新
-
-        if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(mesh.properties.tile.id)) {
+        const layer = this.layer;
+        const renderer = layer.getRenderer();
+        const isForeground = renderer.isForeground(mesh);
+        if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(isForeground)) {
             geometry.setElements([]);
             return;
         }
@@ -397,10 +398,12 @@ export default class TextPainter extends CollisionPainter {
 
         const { aShape, aOffset, aAnchor } = geometry.properties;
         const aTextSize = geometry.properties['aTextSize'];
-        const { tile } = mesh.properties;
 
+        const layer = this.layer;
+        const renderer = layer.getRenderer();
+        const isForeground = renderer.isForeground(mesh);
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
-        if (this.shouldLimitBox(tile.id, true) && labelIndex > this.layer.options['boxLimitOnZoomout']) {
+        if (this.shouldLimitBox(isForeground, true) && labelIndex > this.layer.options['boxLimitOnZoomout']) {
             if (!enableCollision) {
                 resetOffset(aOffset, meshElements, start, end);
             }

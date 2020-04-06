@@ -220,9 +220,6 @@ export default class VectorPack {
         //uniforms: opacity, u_size_t
 
         const format = this.getFormat(vectors[0].symbol);
-        if (this.options.positionType) {
-            format[0].type = this.options.positionType;
-        }
         const formatWidth = this.formatWidth = getFormatWidth(format);
         //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
