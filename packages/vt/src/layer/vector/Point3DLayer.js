@@ -20,6 +20,7 @@ class Point3DLayer extends Vector3DLayer {
         }
         //disable unique placement
         this.options.sceneConfig['uniquePlacement'] = false;
+        this.options.sceneConfig.collision = true;
     }
 }
 

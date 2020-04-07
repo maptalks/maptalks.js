@@ -29,6 +29,7 @@ export function convertToFeature(marker) {
         type: 1,
         id: marker[ID_PROP],
         properties,
+        visible: marker.isVisible(),
         geometry,
         extent: Infinity
     };

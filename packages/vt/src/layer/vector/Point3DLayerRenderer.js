@@ -9,13 +9,8 @@ import Vector3DLayer from './Vector3DLayer';
 const SYMBOL = {
     markerFile: {
         type: 'identity',
-        default: null,
+        default: undefined,
         property: '_symbol_markerFile'
-    },
-    markerType: {
-        type: 'identity',
-        default: null,
-        property: '_symbol_markerType'
     },
     markerWidth: {
         type: 'identity',
@@ -26,6 +21,62 @@ const SYMBOL = {
         type: 'identity',
         default: 20,
         property: '_symbol_markerHeight'
+    },
+    markerDx: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerDx'
+    },
+    markerDy: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerDy'
+    },
+    //marker type properties
+    markerType: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerType'
+    },
+    markerFill: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerFill'
+    },
+    markerFillPatternFile: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerFillPatternFile'
+    },
+    markerFillOpacity: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerFillOpacity'
+    },
+    markerLineColor: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerLineColor'
+    },
+    markerLineWidth: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerLineWidth'
+    },
+    markerLineOpacity: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerLineOpacity'
+    },
+    markerLineDasharray: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerLineDasharray'
+    },
+    markerLinePatternFile: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerLinePatternFile'
     },
     markerVerticalAlignment: {
         type: 'identity',
@@ -71,6 +122,7 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._dirtyGeo = false;
         }
         if (!this._meshes) {
+            this.completeRender();
             return;
         }
         if (layer.options['collision']) {
@@ -84,6 +136,7 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._painter.addMesh(this._meshes);
         this._painter.render(context);
         this.completeRender();
+        this.layer.fire('canvasisdirty');
     }
 
     isForeground() {
@@ -121,8 +174,10 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
         for (const p in this._features) {
             if (this._features.hasOwnProperty(p)) {
                 const feature = this._features[p];
-                appendCoords(feature.geometry, center);
-                features.push(feature);
+                if (feature.visible) {
+                    appendCoords(feature.geometry, center);
+                    features.push(feature);
+                }
             }
         }
         if (!features.length) {
@@ -149,7 +204,6 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
             for (let i = 0; i < geometries.length; i++) {
                 this._fillCommonProps(geometries[i]);
             }
-
 
             this._atlas = {
                 iconAltas: packData.data.iconAtlas,

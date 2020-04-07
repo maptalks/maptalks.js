@@ -180,37 +180,67 @@ export default class StyledPoint {
         if (hasMarker) {
             let icon;
             if (markerType) {
-                const url = extend({}, this.symbolDef);
+                const url = {};
                 url['markerType'] = markerType;
                 if (this._markerWidthFn) {
-                    url['markerWidth'] = this._markerWidthFn(null, properties);
+                    const width =  this._markerWidthFn(null, properties);
+                    if (!isNil(width)) {
+                        url['markerWidth'] = width;
+                    }
                 }
                 if (this._markerHeightFn) {
-                    url['markerHeight'] = this._markerHeightFn(null, properties);
+                    const height = this._markerHeightFn(null, properties);
+                    if (!isNil(height)) {
+                        url['markerHeight'] = height;
+                    }
                 }
                 if (this._markerFillFn) {
-                    url['markerFill'] = this._markerFillFn(null, properties);
+                    const fill = this._markerFillFn(null, properties);
+                    if (!isNil(fill)) {
+                        url['markerFill'] = fill;
+                    }
                 }
                 if (this._markerFillPatternFileFn) {
-                    url['markerFillPatternFile'] = this._markerFillPatternFileFn(null, properties);
+                    const fillPattern = this._markerFillPatternFileFn(null, properties);
+                    if (!isNil(fillPattern)) {
+                        url['markerFillPatternFile'] = fillPattern;
+                    }
                 }
                 if (this._markerFillOpacityFn) {
-                    url['markerFillOpacity'] = this._markerFillOpacityFn(null, properties);
+                    const fillOpacity = this._markerFillOpacityFn(null, properties);
+                    if (!isNil(fillOpacity)) {
+                        url['markerFillOpacity'] = fillOpacity;
+                    }
                 }
                 if (this._markerLineColorFn) {
-                    url['markerLineColor'] = this._markerLineColorFn(null, properties);
+                    const lineColor = this._markerLineColorFn(null, properties);
+                    if (!isNil(lineColor)) {
+                        url['markerLineColor'] = lineColor;
+                    }
                 }
                 if (this._markerLineWidthFn) {
-                    url['markerLineWidth'] = this._markerLineWidthFn(null, properties);
+                    const lineWidth = this._markerLineWidthFn(null, properties);
+                    if (!isNil(lineWidth)) {
+                        url['markerLineWidth'] = lineWidth;
+                    }
                 }
                 if (this._markerLineOpacityFn) {
-                    url['markerLineOpacity'] = this._markerLineOpacityFn(null, properties);
+                    const lineOpacity = this._markerLineOpacityFn(null, properties);
+                    if (!isNil(lineOpacity)) {
+                        url['markerLineOpacity'] = lineOpacity;
+                    }
                 }
                 if (this._markerLineDasharrayFn) {
-                    url['markerLineDasharray'] = this._markerLineDasharrayFn(null, properties);
+                    const dasharray = this._markerLineDasharrayFn(null, properties);
+                    if (!isNil(dasharray)) {
+                        url['markerLineDasharray'] = dasharray;
+                    }
                 }
                 if (this._markerLinePatternFileFn) {
-                    url['markerLinePatternFile'] = this._markerLinePatternFileFn(null, properties);
+                    const linePattern = this._markerLinePatternFileFn(null, properties);
+                    if (!isNil(linePattern)) {
+                        url['markerLinePatternFile'] = linePattern;
+                    }
                 }
                 icon = 'vector://' + JSON.stringify(url);
             } else {

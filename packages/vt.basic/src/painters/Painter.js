@@ -226,7 +226,9 @@ class Painter {
 
     delete(/* context */) {
         this.scene.clear();
-        this.shader.dispose();
+        if (this.shader) {
+            this.shader.dispose();
+        }
         if (this.picking) {
             this.picking.dispose();
         }
