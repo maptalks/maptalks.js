@@ -2,9 +2,10 @@ import * as maptalks from 'maptalks';
 import { PointPack } from '@maptalks/vector-packer';
 import { mat4, createREGL, reshader } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
-import { extend } from '../../common/Util';
+import { extend, isNil } from '../../common/Util';
 import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 import Vector3DLayer from './Vector3DLayer';
+import Promise from '../../common/Promise';
 
 const SYMBOL = {
     markerFile: {
@@ -87,7 +88,13 @@ const SYMBOL = {
         type: 'identity',
         default: 'middle',
         property: '_symbol_markerHorizontalAlignment'
-    }
+    },
+
+    textName: {
+        type: 'identity',
+        default: 'middle',
+        property: '_symbol_textName'
+    },
 };
 
 class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
@@ -95,6 +102,7 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
         super(...args);
         this._features = {};
         this._counter = 1;
+        this._SYMBOLS = PointPack.splitPointSymbol(SYMBOL);
     }
 
     hasNoAARendering() {
@@ -169,11 +177,15 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _buildMesh(atlas) {
+        let hasText = false;
         const features = [];
         const center = [0, 0, 0, 0];
         for (const p in this._features) {
             if (this._features.hasOwnProperty(p)) {
                 const feature = this._features[p];
+                if (!isNil(feature.properties['_symbol_textName'])) {
+                    hasText = true;
+                }
                 if (feature.visible) {
                     appendCoords(feature.geometry, center);
                     features.push(feature);
@@ -198,16 +210,22 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
             center,
             positionType: Float32Array
         };
-        const pointPack = new PointPack(features, SYMBOL, options);
-        pointPack.load().then(packData => {
-            const geometries = this._painter.createGeometry([packData.data], features);
+
+        let symbols = this._SYMBOLS;
+        if (!hasText) {
+            symbols = [symbols[0]];
+        }
+        const pointPacks = symbols.map(symbol => new PointPack(features, symbol, options).load());
+
+        Promise.all(pointPacks).then(packData => {
+            const geometries = this._painter.createGeometry(packData.map(d => d.data), features);
             for (let i = 0; i < geometries.length; i++) {
                 this._fillCommonProps(geometries[i]);
             }
 
             this._atlas = {
-                iconAltas: packData.data.iconAtlas,
-                glyphAtlas: packData.data.glyphAtlas
+                iconAltas: packData[0] && packData[0].data.iconAtlas,
+                glyphAtlas: packData[1] && packData[1].data.glyphAtlas
             };
             // const transform = mat4.identity([]);
             const transform = mat4.translate([], mat4.identity([]), center);

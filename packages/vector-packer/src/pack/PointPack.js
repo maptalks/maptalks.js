@@ -109,6 +109,44 @@ function getPackMarkerFormat() {
  *   4.1 symbol 变化时，则重新生成3中的绘制数据，并重新生成 arraybuffer
  */
 export default class PointPack extends VectorPack {
+
+    static splitPointSymbol(symbol) {
+        let iconSymbol = null;
+        let textSymbol = null;
+        for (const name in symbol) {
+            if (name.indexOf('marker') === 0) {
+                iconSymbol = iconSymbol || {};
+                iconSymbol[name] = symbol[name];
+            } else if (name.indexOf('text') === 0) {
+                textSymbol = textSymbol || {};
+                textSymbol[name] = symbol[name];
+            }
+        }
+        const results = [];
+        if (iconSymbol) {
+            iconSymbol['isIconText'] = true;
+            results.push(iconSymbol);
+        }
+        if (textSymbol) {
+            if (iconSymbol) {
+                //用marker的placement和spacing 覆盖文字的
+                textSymbol['textPlacement'] = iconSymbol['markerPlacement'];
+                textSymbol['textSpacing'] = iconSymbol['markerSpacing'];
+                textSymbol['isIconText'] = true;
+            }
+            results.push(textSymbol);
+        }
+        if (symbol['visible'] !== undefined) {
+            if (iconSymbol) {
+                iconSymbol['visible'] = symbol['visible'];
+            }
+            if (textSymbol) {
+                textSymbol['visible'] = symbol['visible'];
+            }
+        }
+        return results;
+    }
+
     constructor(features, symbol, options) {
         super(features, symbol, options);
         this._initFnTypes();

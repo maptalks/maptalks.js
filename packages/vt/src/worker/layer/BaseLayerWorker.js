@@ -323,7 +323,7 @@ export default class BaseLayerWorker {
                 requestor: this.fetchIconGlyphs.bind(this),
                 zoom
             });
-            const symbols = splitPointSymbol(symbol);
+            const symbols = PointPack.splitPointSymbol(symbol);
 
             return Promise.all(symbols.map(symbol => new PointPack(features, symbol, options).load(tileRatio)));
             // const pack = new PointPack(features, symbol, options);
@@ -570,43 +570,6 @@ function getPropTypes(properties) {
         }
     }
     return types;
-}
-
-function splitPointSymbol(symbol) {
-    let iconSymbol = null;
-    let textSymbol = null;
-    for (const name in symbol) {
-        if (name.indexOf('marker') === 0) {
-            iconSymbol = iconSymbol || {};
-            iconSymbol[name] = symbol[name];
-        } else if (name.indexOf('text') === 0) {
-            textSymbol = textSymbol || {};
-            textSymbol[name] = symbol[name];
-        }
-    }
-    const results = [];
-    if (iconSymbol) {
-        iconSymbol['isIconText'] = true;
-        results.push(iconSymbol);
-    }
-    if (textSymbol) {
-        if (iconSymbol) {
-            //用marker的placement和spacing 覆盖文字的
-            textSymbol['textPlacement'] = iconSymbol['markerPlacement'];
-            textSymbol['textSpacing'] = iconSymbol['markerSpacing'];
-            textSymbol['isIconText'] = true;
-        }
-        results.push(textSymbol);
-    }
-    if (symbol['visible'] !== undefined) {
-        if (iconSymbol) {
-            iconSymbol['visible'] = symbol['visible'];
-        }
-        if (textSymbol) {
-            textSymbol['visible'] = symbol['visible'];
-        }
-    }
-    return results;
 }
 
 function hasTexture(symbol) {

@@ -110,7 +110,7 @@ export default class VectorPack {
         const vectors = this.styledVectors;
         this.count = 0;
         const features = this.features;
-        if (!features || !features.length) return Promise.resolve();
+        if (!features || !features.length) return Promise.resolve(null);
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom: this.options.zoom };
         const symbol = this.symbolDef;
