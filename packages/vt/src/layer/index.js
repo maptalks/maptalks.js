@@ -4,11 +4,11 @@ import MapboxVectorTileLayer from './layer/MapboxVectorTileLayer';
 import GeoJSONVectorTileLayer from './layer/GeojsonVectorTileLayer';
 import VectorTileLayerRenderer from './renderer/VectorTileLayerRenderer';
 import Vector3DLayer from './vector/Vector3DLayer';
-import PointLayer from './vector/PointLayer';
+import Point3DLayer from './vector/Point3DLayer';
 import initialize from './initialize';
 
 VectorTileLayer.VERSION = version;
-PointLayer.VERSION = version;
+Vector3DLayer.VERSION = version;
 
 initialize();
 
@@ -18,5 +18,5 @@ export {
     GeoJSONVectorTileLayer,
     VectorTileLayerRenderer,
     Vector3DLayer,
-    PointLayer
+    Point3DLayer
 };
