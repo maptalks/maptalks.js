@@ -1,5 +1,5 @@
 import Vector3DLayer from './Vector3DLayer';
-import Point3DLayerRenderer from './Point3DLayerRenderer';
+import PointLayerRenderer from './PointLayerRenderer';
 
 const defaultOptions = {
     glyphSdfLimitPerFrame: 15,
@@ -12,7 +12,7 @@ const defaultOptions = {
     collisionFrameLimit: 1,
 };
 
-class Point3DLayer extends Vector3DLayer {
+class PointLayer extends Vector3DLayer {
     constructor(...args) {
         super(...args);
         if (!this.options.sceneConfig) {
@@ -26,11 +26,11 @@ class Point3DLayer extends Vector3DLayer {
     }
 }
 
-Point3DLayer.mergeOptions(defaultOptions);
+PointLayer.mergeOptions(defaultOptions);
 
-Point3DLayer.registerJSONType('Point3DLayer');
+PointLayer.registerJSONType('PointLayer');
 
-Point3DLayer.registerRenderer('gl', Point3DLayerRenderer);
-Point3DLayer.registerRenderer('canvas', null);
+PointLayer.registerRenderer('gl', PointLayerRenderer);
+PointLayer.registerRenderer('canvas', null);
 
-export default Point3DLayer;
+export default PointLayer;
