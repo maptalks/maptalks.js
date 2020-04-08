@@ -168,7 +168,7 @@ export default class StyledPoint {
         const markerFile = this._markerFileFn ? this._markerFileFn(null, properties) : symbol.markerFile;
         const markerType = this._markerTypeFn ? this._markerTypeFn(null, properties) : symbol.markerType;
         const hasMarker = markerFile || markerType || symbol.markerPath;
-        const hasText = !isNil(symbol.textName);
+        const hasText = !isNil(this.symbolDef.textName);
         let size;
         if (hasMarker) {
             size = evaluateIconSize(symbol, properties, zoom);
@@ -252,17 +252,19 @@ export default class StyledPoint {
 
         if (hasText) {
             const textName = this._textNameFn ? this._textNameFn(null, properties) : symbol['textName'];
-            const textFaceName = this._textFaceNameFn ? this._textFaceNameFn(null, properties) : symbol['textFaceName'];
-            const textStyle = this._textStyleFn ? this._textStyleFn(null, properties) : symbol['textStyle'];
-            const textWeight = this._textWeightFn ? this._textWeightFn(null, properties) : symbol['textWeight'];
-            const font = getSDFFont(textFaceName, textStyle, textWeight);
-            const text = resolveText(textName, properties);
-            //(改为在前端计算)在TextPainter中能通过feature.properties['$label']直接取得标签内容
-            // this.feature.properties['$label'] = text;
-            if (text && text.length) {
-                result.glyph = {
-                    font, text
-                };
+            if (textName || textName === 0) {
+                const textFaceName = this._textFaceNameFn ? this._textFaceNameFn(null, properties) : symbol['textFaceName'];
+                const textStyle = this._textStyleFn ? this._textStyleFn(null, properties) : symbol['textStyle'];
+                const textWeight = this._textWeightFn ? this._textWeightFn(null, properties) : symbol['textWeight'];
+                const font = getSDFFont(textFaceName, textStyle, textWeight);
+                const text = resolveText(textName, properties);
+                //(改为在前端计算)在TextPainter中能通过feature.properties['$label']直接取得标签内容
+                // this.feature.properties['$label'] = text;
+                if (text && text.length) {
+                    result.glyph = {
+                        font, text
+                    };
+                }
             }
         }
         this.iconGlyph = result;
@@ -300,12 +302,6 @@ function getAnchor(h, v) {
     }
     if (!h || h === 'middle') {
         h = 'center';
-    }
-    //因为maptalks的y轴方向和mapbox相反，所以需要对调top 和 bottom
-    if (v === 'top') {
-        v = 'bottom';
-    } else if (v === 'bottom') {
-        v = 'top';
     }
     let vv = v !== 'center' ? v : '';
     vv += h !== 'center' ? (vv.length ? '-' : '') + h : '';

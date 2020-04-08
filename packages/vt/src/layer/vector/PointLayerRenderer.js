@@ -81,7 +81,7 @@ const SYMBOL = {
     },
     markerVerticalAlignment: {
         type: 'identity',
-        default: 'bottom',
+        default: 'top',
         property: '_symbol_markerVerticalAlignment'
     },
     markerHorizontalAlignment: {
@@ -90,11 +90,72 @@ const SYMBOL = {
         property: '_symbol_markerHorizontalAlignment'
     },
 
+    //text properties
     textName: {
         type: 'identity',
-        default: 'middle',
+        default: undefined,
         property: '_symbol_textName'
     },
+    textFaceName: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textFaceName'
+    },
+    textWeight: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textWeight'
+    },
+    textStyle: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textStyle'
+    },
+    textWrapWidth: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textWrapWidth'
+    },
+    textHorizontalAlignment: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textHorizontalAlignment'
+    },
+    textVerticalAlignment: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textVerticalAlignment'
+    },
+    textFill: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textFill'
+    },
+    textSize: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textSize'
+    },
+    textHaloRadius: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textHaloRadius'
+    },
+    textHaloFill: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textHaloFill'
+    },
+    textDx: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textDx'
+    },
+    textDy: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_textDy'
+    }
 };
 
 class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
@@ -218,7 +279,7 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const pointPacks = symbols.map(symbol => new PointPack(features, symbol, options).load());
 
         Promise.all(pointPacks).then(packData => {
-            const geometries = this._painter.createGeometry(packData.map(d => d.data), features);
+            const geometries = this._painter.createGeometry(packData.map(d => d && d.data), features);
             for (let i = 0; i < geometries.length; i++) {
                 this._fillCommonProps(geometries[i]);
             }
