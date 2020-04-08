@@ -238,6 +238,10 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _buildMesh(atlas) {
+        //TODO 更新symbol的优化
+        //1. 如果只影响texture，则只重新生成texture
+        //2. 如果不影响Geometry，则直接调用painter.updateSymbol
+        //3. Geometry和Texture全都受影响时，则全部重新生成
         let hasText = false;
         const features = [];
         const center = [0, 0, 0, 0];
@@ -296,7 +300,7 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this._painter.deleteMesh(this._meshes);
             }
             for (let i = 0; i < meshes.length; i++) {
-                meshes[i].properties.meshKey = this.layer.getId() + '_icon';
+                meshes[i].properties.meshKey = this.layer.getId() + (i === 0 ? '_icon' : '_text');
                 // meshes[i].setLocalTransform(mat4.fromScaling([], [2, 2, 1]));
             }
 
@@ -394,7 +398,24 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
         redraw(this);
     }
 
-    onGeometrySymbolChange() {
+    onGeometrySymbolChange(e) {
+        //const properties = e;
+        //TODO 判断properties中哪些只需要调用painter.updateSymbol
+        // 如果有，则更新 this._painterSymbol 上的相应属性，以触发painter中的属性更新
+        const marker = e.target;
+        const id = marker[ID_PROP];
+        if (this._features[id]) {
+            const symbol = marker.getSymbol();
+            const properties = this._features[id].properties;
+            for (const p in properties) {
+                if (p.indexOf('_symbol_') === 0) {
+                    delete properties[p];
+                }
+            }
+            for (const p in symbol) {
+                properties['_symbol_' + p] = symbol[p];
+            }
+        }
         this._markTexture();
         redraw(this);
     }
@@ -424,6 +445,7 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     onGeometryPropertiesChange() {
+        //TODO 可能会更新textName
         this._markGeometry();
         redraw(this);
     }
@@ -441,7 +463,8 @@ class PointLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         const IconPainter = Vector3DLayer.getPainterClass('icon');
-        this._painter = new IconPainter(this.regl, this.layer, SYMBOL, this.layer.options.sceneConfig, 0);
+        this._painterSymbol = extend({}, SYMBOL);
+        this._painter = new IconPainter(this.regl, this.layer, this._painterSymbol, this.layer.options.sceneConfig, 0);
         if (this.layer.getGeometries()) {
             this.onGeometryAdd(this.layer.getGeometries());
         }
