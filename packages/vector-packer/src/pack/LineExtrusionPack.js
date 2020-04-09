@@ -35,7 +35,7 @@ export default class LineExtrusionPack extends LinePack {
             {
                 type: Int16Array,
                 width: 3,
-                name: 'aPosition0'
+                name: 'aExtrudedPosition'
             },
             {
                 type: Int8Array,
@@ -115,7 +115,7 @@ export default class LineExtrusionPack extends LinePack {
         const extrudedPoint = new Point(lineWidth * extrude.x, lineWidth * extrude.y)._add(point);
         // const height = this.symbol['lineHeight'];
 
-        data.push(extrudedPoint.x, extrudedPoint.y, 1, linesofar, +up, point.x, point.y, 1, aExtrudeX, aExtrudeY);
+        data.push(point.x, point.y, 1, linesofar, +up, extrudedPoint.x, extrudedPoint.y, 1, aExtrudeX, aExtrudeY);
         if (this.colorFn) {
             data.push(...this.feaColor);
         }
@@ -126,7 +126,7 @@ export default class LineExtrusionPack extends LinePack {
         if (this.heightFn) {
             data.push(this.feaHeight);
         }
-        data.push(extrudedPoint.x, extrudedPoint.y, 0, linesofar, +up, point.x, point.y, 0, aExtrudeX, aExtrudeY);
+        data.push(point.x, point.y, 0, linesofar, +up, extrudedPoint.x, extrudedPoint.y, 0, aExtrudeX, aExtrudeY);
         if (this.colorFn) {
             data.push(...this.feaColor);
         }
@@ -194,10 +194,10 @@ export default class LineExtrusionPack extends LinePack {
         }, {});
         description.aPickingId = { size: 1 };
         buildUniqueVertex(data, indices, description);
-        const { aPosition, aPosition0, aLinesofar, aUp, aExtrude,
+        const { aExtrudedPosition, aPosition, aLinesofar, aUp, aExtrude,
             aColor, aLineHeight, aLineWidth } = data;
         const arrays = {};
-        const normals = buildNormals(aPosition, indices);
+        const normals = buildNormals(aExtrudedPosition, indices);
         //因为line的三角形旋转方向是反的，所以normal的结果需要取反
         for (let i = 0; i < normals.length; i++) {
             normals[i] = -normals[i];
@@ -205,11 +205,11 @@ export default class LineExtrusionPack extends LinePack {
         let uvs;
         let tangents;
         if (this.symbol['material'] && hasTexture(this.symbol['material'])) {
-            uvs = buildUVS(aPosition, aLinesofar, aUp, indices, this.options);
-            tangents = buildTangents(aPosition, normals, uvs, indices);
+            uvs = buildUVS(aExtrudedPosition, aLinesofar, aUp, indices, this.options);
+            tangents = buildTangents(aExtrudedPosition, normals, uvs, indices);
             tangents = createQuaternion(normals, tangents);
         }
-        arrays['aPosition'] = aPosition0;
+        arrays['aPosition'] = aPosition;
         if (tangents) {
             arrays['aTexCoord0'] = new Float32Array(uvs);
             arrays['aTangent'] = tangents;

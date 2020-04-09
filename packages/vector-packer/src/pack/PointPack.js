@@ -410,11 +410,10 @@ export default class PointPack extends VectorPack {
         }
         const textCount = quads.length;
         const altitude = this.getAltitude(point.feature.properties);
-        const center = this.options.center || [0, 0];
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
-            const x = anchor.x - center[0];
-            const y = anchor.y - center[1];
+            const x = anchor.x;
+            const y = anchor.y;
             const l = quads.length;
             for (let ii = 0; ii < l; ii++) {
                 const quad = quads[ii];

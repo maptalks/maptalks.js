@@ -53,17 +53,36 @@ export default class LinePack extends VectorPack {
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
+        //因为LinePack的aPosition是 position << 1 + up，所以不能通用VectorPack中的center逻辑，需单独处理
+        this._vertexCenter = this.options.center;
+        this.options.center = [0, 0];
+        if (isFnTypeSymbol('lineJoin', this.symbolDef)) {
+            this.lineJoinFn = piecewiseConstant(this.symbolDef['lineJoin']);
+        }
+        if (isFnTypeSymbol('lineCap', this.symbolDef)) {
+            this.lineCapFn = piecewiseConstant(this.symbolDef['lineCap']);
+        }
         if (isFnTypeSymbol('lineWidth', this.symbolDef)) {
             this.lineWidthFn = interpolated(this.symbolDef['lineWidth']);
         }
         if (isFnTypeSymbol('lineColor', this.symbolDef)) {
             this.colorFn = piecewiseConstant(this.symbolDef['lineColor']);
         }
+        if (isFnTypeSymbol('linePatternFile', this.symbolDef)) {
+            this.patternFn = piecewiseConstant(this.symbolDef['linePatternFile']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
         if (!this.options['atlas'] && symbol['linePatternFile']) {
-            iconReqs[symbol['linePatternFile']] = 'resize';
+            let pattern = symbol['linePatternFile'];
+            if (this.patternFn) {
+                pattern = this.patternFn(feature.properties, options['zoom']);
+            }
+            if (pattern) {
+                iconReqs[pattern] = 'resize';
+            }
+
         }
         return new StyledVector(feature, symbol, options);
     }
@@ -119,9 +138,7 @@ export default class LinePack extends VectorPack {
     }
 
     placeVector(line) {
-        const symbol = line.symbol,
-            join = symbol['lineJoin'] || 'miter', //bevel, miter, round
-            cap = symbol['lineCap'] || 'butt', //butt, round, square
+        const symbol = this.symbol,
             miterLimit = 2,
             roundLimit = 1.05;
         const feature = line.feature,
@@ -133,6 +150,13 @@ export default class LinePack extends VectorPack {
             //所以this.elements只会存放当前line的elements，方便filter处理
             this.elements = [];
         }
+        let join = symbol['lineCap'] || 'miter', cap = symbol['lineCap'] || 'butt';
+        if (this.lineJoinFn) {
+            join = this.lineJoinFn(this.options['zoom'], feature.properties) || 'miter'; //bevel, miter, round
+        }
+        if (this.lineCapFn) {
+            join = this.lineCapFn(this.options['zoom'], feature.properties) || 'butt'; //bevel, miter, round
+        }
         if (this.lineWidthFn) {
             // {
             //     lineWidth: {
@@ -142,7 +166,7 @@ export default class LinePack extends VectorPack {
             // }
             this.feaLineWidth = this.lineWidthFn(this.options['zoom'], feature.properties) || 0;
         } else {
-            this.feaLineWidth = this.symbol['lineWidth'];
+            this.feaLineWidth = symbol['lineWidth'];
         }
         if (this.colorFn) {
             this.feaColor = this.colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 0];
@@ -588,8 +612,10 @@ export default class LinePack extends VectorPack {
     //参数会影响LineExtrusionPack中的addLineVertex方法
     addLineVertex(data, point, normal, extrude, round, up, linesofar) {
         linesofar *= LINE_DISTANCE_SCALE;
-        const x = (point.x << 1) + (round ? 1 : 0);
-        const y = (point.y << 1) + (up ? 1 : 0);
+        let x = point.x - this._vertexCenter[0];
+        let y = point.y - this._vertexCenter[1];
+        x = (x << 1) + (round ? 1 : 0);
+        y = (y << 1) + (up ? 1 : 0);
         data.push(x, y);
         data.push(0);
 

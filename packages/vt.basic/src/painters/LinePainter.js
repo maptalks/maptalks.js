@@ -269,7 +269,7 @@ class LinePainter extends BasicPainter {
             'currentTime'
         );
 
-        const stencil = this.layer.getRenderer().isEnableTileStencil();
+        const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
         const canvas = this.canvas;
         const viewport = {
             x: 0,
@@ -334,15 +334,13 @@ class LinePainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const viewMatrix = map.viewMatrix,
-            projViewMatrix = map.projViewMatrix,
-            uMatrix = mat4.translate([], viewMatrix, map.cameraPosition),
+        const projViewMatrix = map.projViewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
-            uMatrix, projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
+            projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
             trailSpeed: animation.speed || 1,
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,

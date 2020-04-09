@@ -20,6 +20,13 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         return Vector3DLayer.painters[name];
     }
 
+    constructor(...args) {
+        super(...args);
+        if (!this.options.sceneConfig) {
+            this.options.sceneConfig = {};
+        }
+    }
+
     /**
      * 获取图层的polygonOffsetCount
      * 用于GroupGLLayer全局管理polygonOffset

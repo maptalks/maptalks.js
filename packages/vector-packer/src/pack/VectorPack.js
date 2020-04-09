@@ -22,6 +22,9 @@ export default class VectorPack {
     constructor(features, symbol, options) {
         //TODO 预先把altitude传到pack里来？
         this.options = options;
+        if (!this.options['center']) {
+            this.options['center'] = [0, 0];
+        }
         this.features = this._check(features);
         this.symbolDef = symbol;
         this.symbol = loadFunctionTypes(symbol, () => {
@@ -255,6 +258,15 @@ export default class VectorPack {
         } else {
             //update aPosition's type
             format[0].type = getPosArrayType(Math.max(this.maxPos, this.maxAltitude));
+        }
+
+        const center = this.options.center;
+        if (center[0] || center[1]) {
+            const aPosition = data;
+            for (let i = 0; i < aPosition.length; i += formatWidth) {
+                aPosition[i] -= center[0];
+                aPosition[i + 1] -= center[1];
+            }
         }
 
         const arrays = fillTypedArray(format, data);
