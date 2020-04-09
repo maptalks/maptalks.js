@@ -127,6 +127,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this['_toRedraw'] = false;
             return true;
         }
+        const map = this.getMap();
+        if (map.isInteracting() && this._groundPainter && this._groundPainter.isEnable()) {
+            return true;
+        }
         const layers = this.layer.getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();
@@ -161,6 +165,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     isCanvasUpdated() {
+        if (super.isCanvasUpdated()) {
+            return true;
+        }
         const layers = this.layer.getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();
@@ -172,6 +179,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     isBlank() {
+        if (this._groundPainter && this._groundPainter.isEnable()) {
+            return false;
+        }
         const layers = this.layer.getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();

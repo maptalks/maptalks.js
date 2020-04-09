@@ -221,18 +221,18 @@ export default class GroupGLLayer extends maptalks.Layer {
     //     }
     // }
 
-    isVisible() {
-        if (!super.isVisible()) {
-            return false;
-        }
-        const children = this.layers;
-        for (let i = 0, l = children.length; i < l; i++) {
-            if (children[i].isVisible()) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // isVisible() {
+    //     if (!super.isVisible()) {
+    //         return false;
+    //     }
+    //     const children = this.layers;
+    //     for (let i = 0, l = children.length; i < l; i++) {
+    //         if (children[i].isVisible()) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 
     _checkChildren() {
         const ids = {};

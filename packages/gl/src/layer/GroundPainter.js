@@ -23,9 +23,13 @@ class GroundPainter {
         return this._sceneConfig.ground && this._sceneConfig.ground.symbol;
     }
 
+    isEnable() {
+        return this._sceneConfig.ground && this._sceneConfig.ground.enable;
+    }
+
     paint(context) {
         this._sceneConfig = this._layer.getSceneConfig();
-        if (!this._sceneConfig.ground || !this._sceneConfig.ground.enable) {
+        if (!this.isEnable()) {
             return;
         }
         const defines = this._getGroundDefines(context);
@@ -35,18 +39,20 @@ class GroundPainter {
         if (this._ground.material !== this.material) {
             this._ground.setMaterial(this.material);
         }
+        const shader = this._getShader();
         this._transformGround();
         const uniforms = this._getUniformValues(context);
-        const fbo = context.renderTarget && context.renderTarget.fbo;
+        const fbo = context && context.renderTarget && context.renderTarget.fbo;
         const groundDefines = this._ground.getDefines();
-        if (groundDefines && groundDefines['HAS_SSR']) {
-            const ssrFbo = context.ssr.fbo;
+        if (shader !== this._fillShader && groundDefines && groundDefines['HAS_SSR']) {
+            const ssrFbo = context && context.ssr.fbo;
             this.renderer.render(this._depthShader, uniforms, this._groundScene, fbo);
-            this.renderer.render(this._getShader(), uniforms, this._groundScene, ssrFbo);
+            this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
 
         } else {
-            this.renderer.render(this._getShader(), uniforms, this._groundScene, fbo);
+            this.renderer.render(shader, uniforms, this._groundScene, fbo);
         }
+        this._layer.getRenderer().setCanvasUpdated();
     }
 
     update() {
@@ -284,9 +290,9 @@ class GroundPainter {
             }
         }
         update(this._hasIBL(), 'HAS_IBL_LIGHTING');
-        const hasSSR = context.ssr && sceneConfig.ground && sceneConfig.ground.symbol && sceneConfig.ground.symbol.ssr;
+        const hasSSR = context && context.ssr && sceneConfig.ground && sceneConfig.ground.symbol && sceneConfig.ground.symbol.ssr;
         update(hasSSR, 'HAS_SSR');
-        const hasShadow = sceneConfig.shadow && sceneConfig.shadow.enable;
+        const hasShadow = context && sceneConfig.shadow && sceneConfig.shadow.enable;
         update(hasShadow, 'HAS_SHADOWING');
         update(hasShadow, 'USE_ESM');
         const hasPattern = !!this._polygonPatternFile;
