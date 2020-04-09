@@ -1,27 +1,3 @@
-const data = {
-    type: 'FeatureCollection',
-    features: [
-        // { type : 'Feature', geometry : { type : 'Polygon', coordinates : [[[-1, 0.0], [-0.4, 0.0], [0, -0.5], [-1, 0]]] }, properties : { type : 3 }}
-        {
-            type: 'Feature',
-            geometry: {
-                type: 'Polygon',
-                coordinates: [
-                    [
-                        [-0.0005, 0.0005],
-                        [0.0005, 0.0005],
-                        [0.0005, -0.0005],
-                        [-0.0005, -0.0005],
-                        [-0.0005, 0.0005]
-                    ]
-                ]
-            },
-            properties: {
-                levels: 3
-            }
-        }
-    ]
-};
 const plugin = {
     type: 'lit',
     dataConfig: {
