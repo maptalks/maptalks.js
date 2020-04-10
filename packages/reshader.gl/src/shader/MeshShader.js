@@ -5,6 +5,9 @@ import InstancedMesh from '../InstancedMesh.js';
 class MeshShader extends Shader {
 
     draw(regl, meshes) {
+        if (!meshes || !meshes.length) {
+            return this;
+        }
         const props = [];
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
