@@ -128,12 +128,15 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._atlas = {
                 iconAltas: packData.data.iconAtlas
             };
-            // const transform = mat4.identity([]);
+
             const transform = mat4.translate([], mat4.identity([]), center);
             // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
-            const mesh = this.painter.createMesh(geometry, transform);
+            const mesh = this.painter.createMesh(geometry, transform, { tileCenter: [0, 0] });
             mesh.setUniform('level', 0);
-
+            const defines = mesh.getDefines();
+            //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出
+            defines['ENABLE_TILE_STENCIL'] = 1;
+            mesh.setDefines(defines);
             mesh.properties.meshKey = this.layer.getId();
 
             this.meshes = mesh;
@@ -162,7 +165,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     }
                 }
             }
-
         }
     }
 

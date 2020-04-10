@@ -1,6 +1,5 @@
 import BasicPainter from './BasicPainter';
-import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
@@ -175,8 +174,7 @@ class FillPainter extends BasicPainter {
                             type: 'function',
                             fn: function (context, props) {
                                 const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                                mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                                 return projViewModelMatrix;
                             }
                         }
@@ -201,8 +199,7 @@ class FillPainter extends BasicPainter {
                 type: 'function',
                 fn: function (context, props) {
                     const projViewModelMatrix = [];
-                    mat4.multiply(projViewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                    mat4.multiply(projViewModelMatrix, props['projMatrix'], projViewModelMatrix);
+                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }
             },
@@ -235,7 +232,8 @@ class FillPainter extends BasicPainter {
                 return canvas ? canvas.height : 1;
             }
         };
-        const stencil = this.layer.getRenderer().isEnableTileStencil();
+        const renderer = this.layer.getRenderer();
+        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
         const layer = this.layer;
         this.shader = new reshader.MeshShader({
@@ -287,11 +285,10 @@ class FillPainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const viewMatrix = map.viewMatrix,
-            projMatrix = map.projMatrix;
+        const projViewMatrix = map.projViewMatrix;
         const resolution = map.getResolution();
         const uniforms = {
-            viewMatrix, projMatrix,
+            projViewMatrix,
             resolution
         };
         if (context && context.shadow && context.shadow.renderUniforms) {

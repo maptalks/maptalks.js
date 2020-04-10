@@ -35,14 +35,15 @@ export function convertToFeature(geo) {
         if (geo instanceof maptalks.Polygon) {
             coordinates = [coordinates];
         }
+        let ringCount = 0;
         for (let i = 0; i < coordinates.length; i++) {
-            geometry[i] = [];
             for (let ii = 0; ii < coordinates[i].length; ii++) {
-                geometry[i][ii] = [];
+                geometry[ringCount] = [];
                 for (let iii = 0; iii < coordinates[i][ii].length; iii++) {
                     map.coordToPoint(coordinates[i][ii][iii], glZoom, POINT);
-                    geometry[i][ii].push([POINT.x, POINT.y]);
+                    geometry[ringCount].push([POINT.x, POINT.y]);
                 }
+                ringCount++;
             }
         }
     }

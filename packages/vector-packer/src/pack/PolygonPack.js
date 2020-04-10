@@ -3,8 +3,9 @@ import StyledVector from './StyledVector';
 import classifyRings from './util/classify_rings';
 import earcut from 'earcut';
 import { getIndexArrayType } from './util/array';
-import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
+import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
+import { isFnTypeSymbol } from '../style/Util';
 
 const EARCUT_MAX_RINGS = 500;
 
@@ -13,33 +14,39 @@ export default class PolygonPack extends VectorPack {
     constructor(...args) {
         super(...args);
         this.lineElements = [];
-        if (isFunctionDefinition(this.symbolDef['polygonFill']) &&
-            this.symbolDef['polygonFill'].property) {
+        if (isFnTypeSymbol('polygonFill', this.symbolDef)) {
             this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
         }
-        if (isFunctionDefinition(this.symbolDef['polygonOpacity']) &&
-            this.symbolDef['polygonOpacity'].property) {
+        if (isFnTypeSymbol('polygonOpacity', this.symbolDef)) {
             this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
+        }
+        if (isFnTypeSymbol('polygonPatternFile', this.symbolDef)) {
+            this._patternFn = piecewiseConstant(this.symbolDef['polygonPatternFile']);
         }
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
         if (!this.options['atlas'] && symbol['polygonPatternFile']) {
-            iconReqs[symbol['polygonPatternFile']] = 'resize';
+            let pattern = symbol['polygonPatternFile'];
+            if (this._patternFn) {
+                pattern = this._patternFn(options['zoom'], feature.properties);
+            }
+            if (pattern) {
+                iconReqs[pattern] = 'resize';
+            }
         }
         return new StyledVector(feature, symbol, options);
     }
 
-    getFormat(symbol) {
+    getFormat() {
         const format = [
             {
                 type: Int16Array,
                 width: 3,
                 name: 'aPosition'
             }
-            //TODO 动态color
         ];
-        if (symbol['polygonPatternFile']) {
+        if (this.iconAtlas) {
             format.push({
                 type: Int16Array,
                 width: 2,
@@ -165,7 +172,6 @@ export default class PolygonPack extends VectorPack {
                     flattened.push(ring[i].y);
                 }
             }
-
             const indices = earcut(flattened, holeIndices);
 
             for (let i = 0; i < indices.length; i += 3) {
