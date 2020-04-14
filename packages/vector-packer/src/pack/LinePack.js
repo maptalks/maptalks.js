@@ -53,9 +53,6 @@ export default class LinePack extends VectorPack {
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
-        //因为LinePack的aPosition是 position << 1 + up，所以不能通用VectorPack中的center逻辑，需单独处理
-        this._vertexCenter = this.options.center;
-        this.options.center = [0, 0];
         if (isFnTypeSymbol('lineJoin', this.symbolDef)) {
             this.lineJoinFn = piecewiseConstant(this.symbolDef['lineJoin']);
         }
@@ -71,13 +68,16 @@ export default class LinePack extends VectorPack {
         if (isFnTypeSymbol('linePatternFile', this.symbolDef)) {
             this.patternFn = piecewiseConstant(this.symbolDef['linePatternFile']);
         }
+        if (isFnTypeSymbol('lineOpacity', this.symbolDef)) {
+            this.opacityFn = piecewiseConstant(this.symbolDef['lineOpacity']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
         if (!this.options['atlas'] && symbol['linePatternFile']) {
             let pattern = symbol['linePatternFile'];
             if (this.patternFn) {
-                pattern = this.patternFn(feature.properties, options['zoom']);
+                pattern = this.patternFn(options['zoom'], feature.properties);
             }
             if (pattern) {
                 iconReqs[pattern] = 'resize';
@@ -93,7 +93,16 @@ export default class LinePack extends VectorPack {
                 type: Int16Array,
                 width: 3,
                 name: 'aPosition'
-            },
+            }
+        ];
+        if (this.options.center) {
+            format.push({
+                type: Uint8Array,
+                width: 1,
+                name: 'aUp'
+            });
+        }
+        format.push(
             //当前点距离aPos的凸起方向
             {
                 type: Int8Array,
@@ -106,7 +115,7 @@ export default class LinePack extends VectorPack {
                 width: 1,
                 name: 'aLinesofar'
             }
-        ];
+        );
         if (this.lineWidthFn) {
             format.push(
                 {
@@ -122,6 +131,15 @@ export default class LinePack extends VectorPack {
                     type: Uint8Array,
                     width: 4,
                     name: 'aColor'
+                }
+            );
+        }
+        if (this.opacityFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aOpacity'
                 }
             );
         }
@@ -176,6 +194,9 @@ export default class LinePack extends VectorPack {
             if (this.feaColor.length === 3) {
                 this.feaColor.push(255);
             }
+        }
+        if (this.opacityFn) {
+            this.feaOpacity = 255 * this.opacityFn(this.options['zoom'], feature.properties) || 0;
         }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
@@ -612,12 +633,16 @@ export default class LinePack extends VectorPack {
     //参数会影响LineExtrusionPack中的addLineVertex方法
     addLineVertex(data, point, normal, extrude, round, up, linesofar) {
         linesofar *= LINE_DISTANCE_SCALE;
-        let x = point.x - this._vertexCenter[0];
-        let y = point.y - this._vertexCenter[1];
-        x = (x << 1) + (round ? 1 : 0);
-        y = (y << 1) + (up ? 1 : 0);
-        data.push(x, y);
-        data.push(0);
+        let x = point.x;
+        let y = point.y;
+        if (this.options.center) {
+            data.push(x, y, 0);
+            data.push(round * 2 + up); //aUp
+        } else {
+            x = (x << 1) + (round ? 1 : 0);
+            y = (y << 1) + (up ? 1 : 0);
+            data.push(x, y, 0);
+        }
 
         data.push(
             // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
@@ -631,6 +656,9 @@ export default class LinePack extends VectorPack {
         }
         if (this.colorFn) {
             data.push(...this.feaColor);
+        }
+        if (this.opacityFn) {
+            data.push(this.feaOpacity);
         }
         if (this.symbol['lineOffset']) {
             //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向

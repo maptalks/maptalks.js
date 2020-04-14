@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { PolygonPack } from '@maptalks/vector-packer';
 import { extend } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
@@ -31,6 +32,7 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
         this.PackClass = PolygonPack;
+        this.GeometryTypes = [maptalks.Polygon, maptalks.MultiPolygon];
     }
 
     createPainter() {

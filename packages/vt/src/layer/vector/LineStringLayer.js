@@ -1,13 +1,14 @@
+import * as maptalks from 'maptalks';
 import { LinePack } from '@maptalks/vector-packer';
 import { extend } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 
-class LineLayer extends Vector3DLayer {
+class LineStringLayer extends Vector3DLayer {
 
 }
 
-LineLayer.registerJSONType('LineLayer');
+LineStringLayer.registerJSONType('LineStringLayer');
 
 const SYMBOL = {
     lineWidth: {
@@ -57,10 +58,11 @@ const SYMBOL = {
     }
 };
 
-class LineLayerRenderer extends Vector3DLayerRenderer {
+class LineStringLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
         this.PackClass = LinePack;
+        this.GeometryTypes = [maptalks.LineString, maptalks.MultiLineString];
     }
 
     createPainter() {
@@ -74,7 +76,7 @@ class LineLayerRenderer extends Vector3DLayerRenderer {
     }
 }
 
-LineLayer.registerRenderer('gl', LineLayerRenderer);
-LineLayer.registerRenderer('canvas', null);
+LineStringLayer.registerRenderer('gl', LineStringLayerRenderer);
+LineStringLayer.registerRenderer('canvas', null);
 
-export default LineLayer;
+export default LineStringLayer;

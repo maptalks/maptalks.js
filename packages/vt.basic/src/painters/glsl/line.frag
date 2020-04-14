@@ -7,12 +7,17 @@ precision highp float;
 #endif
 
 uniform lowp float lineBlur;
-uniform lowp float lineOpacity;
 
 #ifdef HAS_COLOR
     varying vec4 vColor;
 #else
     uniform lowp vec4 lineColor;
+#endif
+
+#ifdef HAS_OPACITY
+    varying float vOpacity;
+#else
+    uniform lowp float lineOpacity;
 #endif
 
 #ifdef HAS_PATTERN
@@ -107,7 +112,12 @@ void main() {
         }
     #endif
 
-    gl_FragColor = color * lineOpacity;
+    #ifdef HAS_OPACITY
+        float opacity = vOpacity;
+    #else
+        float opacity = lineOpacity;
+    #endif
+    gl_FragColor = color * opacity;
 
     #if defined(HAS_SHADOWING)
         float shadowCoeff = shadow_computeShadow();

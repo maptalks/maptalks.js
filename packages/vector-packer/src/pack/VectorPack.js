@@ -261,7 +261,7 @@ export default class VectorPack {
         }
 
         const center = this.options.center;
-        if (center[0] || center[1]) {
+        if (center && (center[0] || center[1])) {
             const aPosition = data;
             for (let i = 0; i < aPosition.length; i += formatWidth) {
                 aPosition[i] -= center[0];

@@ -45,7 +45,7 @@ class FillPainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
 
         const iconAtlas = geometry.properties.iconAtlas;
-        if (symbol.polygonPatternFile && iconAtlas) {
+        if (iconAtlas && geometry.data.aTexCoord) {
             uniforms.tileCenter = tileCenter.toArray();
             uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas);
             uniforms.patternSize = [iconAtlas.width, iconAtlas.height];
@@ -58,7 +58,7 @@ class FillPainter extends BasicPainter {
             picking: true
         });
         const defines = {};
-        if (symbol.polygonPatternFile) {
+        if (iconAtlas && geometry.data.aTexCoord) {
             defines['HAS_PATTERN'] = 1;
         }
         if (geometry.data.aColor) {

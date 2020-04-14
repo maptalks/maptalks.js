@@ -59,8 +59,8 @@ class LinePainter extends BasicPainter {
         }, [0, 0, 0, 0]);
         setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', [0, 0, 0, 0], createColorSetter(this._colorCache));
 
-        if (symbol.linePatternFile) {
-            const iconAtlas = geometry.properties.iconAtlas;
+        const iconAtlas = geometry.properties.iconAtlas;
+        if (iconAtlas) {
             uniforms.linePatternFile = this.createAtlasTexture(iconAtlas);
             uniforms.linePatternSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
         }
@@ -92,7 +92,7 @@ class LinePainter extends BasicPainter {
         mesh.setLocalTransform(transform);
 
         const defines = {};
-        if (symbol.linePatternFile) {
+        if (iconAtlas) {
             defines['HAS_PATTERN'] = 1;
         }
         if (Array.isArray(symbol.lineDasharray) &&
@@ -104,11 +104,17 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
+        if (geometry.data.aOpacity) {
+            defines['HAS_OPACITY'] = 1;
+        }
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }
         if (symbol['lineOffset']) {
             defines['USE_LINE_OFFSET'] = 1;
+        }
+        if (geometry.data.aUp) {
+            defines['HAS_UP'] = 1;
         }
         mesh.setDefines(defines);
         return mesh;

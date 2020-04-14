@@ -3,7 +3,7 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { match, readSpecs } = require('./util');
-const { PointLayer } = require('@maptalks/vt');
+const { PointLayer, LineStringLayer, PolygonLayer } = require('@maptalks/vt');
 require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
@@ -74,7 +74,16 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'icon'));
         for (const p in specs) {
             if (specs.hasOwnProperty(p)) {
-                it('point3d-' + p, runner(p, PointLayer, specs[p]));
+                it('point-' + p, runner(p, PointLayer, specs[p]));
+            }
+        }
+    });
+
+    context('line specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'line'));
+        for (const p in specs) {
+            if (specs.hasOwnProperty(p)) {
+                it('vector-' + p, runner(p, LineStringLayer, specs[p]));
             }
         }
     });

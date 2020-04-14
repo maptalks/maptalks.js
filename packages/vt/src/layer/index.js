@@ -5,7 +5,7 @@ import GeoJSONVectorTileLayer from './layer/GeojsonVectorTileLayer';
 import VectorTileLayerRenderer from './renderer/VectorTileLayerRenderer';
 import Vector3DLayer from './vector/Vector3DLayer';
 import PointLayer from './vector/PointLayer';
-import LineLayer from './vector/LineLayer';
+import LineStringLayer from './vector/LineStringLayer';
 import PolygonLayer from './vector/PolygonLayer';
 import initialize from './initialize';
 
@@ -21,6 +21,6 @@ export {
     VectorTileLayerRenderer,
     Vector3DLayer,
     PointLayer,
-    LineLayer,
+    LineStringLayer,
     PolygonLayer
 };

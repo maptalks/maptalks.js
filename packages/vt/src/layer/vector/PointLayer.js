@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { PointPack } from '@maptalks/vector-packer';
 import { mat4, vec4 } from '@maptalks/gl';
 import { extend, isNil } from '../../common/Util';
@@ -196,6 +197,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
         this._SYMBOLS = PointPack.splitPointSymbol(SYMBOL);
+        this.GeometryTypes = [maptalks.Marker, maptalks.MultiPoint];
     }
 
     createPainter() {
@@ -255,14 +257,6 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
 
         Promise.all(pointPacks).then(packData => {
             const geometries = this.painter.createGeometry(packData.map(d => d && d.data), features);
-            console.log(geometries[0]);
-
-            const aPosition = geometries[0].data.aPosition;
-            const projViewMatrix = this.getMap().projViewMatrix;
-            for (let i = 0; i < aPosition.length; i += 3) {
-                console.log(vec4.transformMat4([], [aPosition[i], aPosition[i + 1], aPosition[i + 2], 1], projViewMatrix));
-            }
-
             for (let i = 0; i < geometries.length; i++) {
                 this.fillCommonProps(geometries[i]);
             }

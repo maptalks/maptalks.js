@@ -216,8 +216,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (!geometries || !geometries.length) {
             return;
         }
+        const layerId = this.layer.getId();
         for (let i = 0; i < geometries.length; i++) {
             const geo = geometries[i];
+            let hit = false;
+            for (let ii = 0; ii < this.GeometryTypes.length; ii++) {
+                if (geo instanceof this.GeometryTypes[ii]) {
+                    hit = true;
+                }
+            }
+            if (!hit) {
+                throw new Error(`${geo.getJSONType()} can't be added to ${this.layer.getJSONType()}(id:${layerId}).`);
+            }
             if (!geo[ID_PROP]) {
                 geo[ID_PROP] = this._counter++;
             }

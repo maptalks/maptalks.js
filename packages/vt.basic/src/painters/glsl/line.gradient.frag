@@ -7,8 +7,13 @@ precision mediump float;
     #include <vsm_shadow_frag>
 #endif
 
+#ifdef HAS_OPACITY
+    varying float vOpacity;
+#else
+    uniform lowp float lineOpacity;
+#endif
+
 uniform lowp float lineBlur;
-uniform lowp float lineOpacity;
 uniform float lineGradientTextureHeight;
 uniform float tileExtent;
 
@@ -57,7 +62,12 @@ void main() {
         }
     #endif
 
-    gl_FragColor = color * lineOpacity;
+     #ifdef HAS_OPACITY
+        float opacity = vOpacity;
+    #else
+        float opacity = lineOpacity;
+    #endif
+    gl_FragColor = color * opacity;
 
     #if defined(HAS_SHADOWING)
         float shadowCoeff = shadow_computeShadow();
