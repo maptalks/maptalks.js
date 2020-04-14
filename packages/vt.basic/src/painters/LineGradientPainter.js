@@ -105,7 +105,7 @@ class LineGradientPainter extends BasicPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
     }
 
     paint(context) {
@@ -141,8 +141,8 @@ class LineGradientPainter extends BasicPainter {
         ];
     }
 
-    updateSymbol() {
-        super.updateSymbol();
+    updateSymbol(symbol) {
+        super.updateSymbol(symbol);
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
     }
 

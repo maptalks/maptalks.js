@@ -113,7 +113,7 @@ class MeshPainter extends Painter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this.symbolDef, this.getFnTypeConfig(), meshes, this.getMap().getZoom());
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this.getFnTypeConfig(), meshes, this.getMap().getZoom());
     }
 
     updateSymbol(symbol) {

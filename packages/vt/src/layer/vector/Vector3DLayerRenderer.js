@@ -4,6 +4,37 @@ import { convertToFeature, ID_PROP } from './util/build_geometry';
 import { IconRequestor } from '@maptalks/vector-packer';
 import { extend, isNumber } from '../../common/Util';
 
+const SYMBOL_SIMPLE_PROPS = {
+    textFill: 1,
+    textSize: 1, //TODO
+    textOpacity: 1, //TODO (目前aOpacity是被collision占用的)
+    textHaloRadius: 1,
+    textHaloFill: 1,
+    textHaloOpacity: 1,
+    textPitchAlignment: 1, //TODO
+    textRotationAlignment: 1, //TODO
+    textDx: 1,
+    textDy: 1,
+
+    // markerWidth: 1,
+    // markerHeight: 1,
+    markerOpacity: 1,
+    markerPitchAlignment: 1, //TODO
+    markerRotationAlignment: 1, //TODO
+    markerDx: 1,
+    markerDy: 1,
+
+    lineColor: 1,
+    lineWidth: 1,
+    lineOpacity: 1,
+    lineDx: 1, //TODO
+    lineDy: 1, //TODO
+    lineGapWidth: 1, //TODO
+
+    polygonFill: 1,
+    polygonOpacity: 1
+};
+
 class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     constructor(...args) {
         super(...args);
@@ -27,13 +58,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     draw(timestamp, parentContext) {
         const layer = this.layer;
         this.prepareCanvas();
-        if (this._dirtyTex) {
+        if (this._dirtyAll) {
             this.buildMesh();
-            this._dirtyTex = false;
+            this._dirtyAll = false;
             this._dirtyGeo = false;
+            this._dirtySymbol = false;
         } else if (this._dirtyGeo) {
             this.buildMesh(this.atlas);
             this._dirtyGeo = false;
+            this._dirtySymbol = false;
+        } else if (this._dirtySymbol) {
+            this.updateSymbol();
+            this._dirtySymbol = false;
         }
         if (!this.meshes) {
             this.completeRender();
@@ -82,6 +118,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return this._frameTime;
     }
 
+    updateSymbol() {
+        this.painter.updateSymbol(this.painterSymbol);
+    }
+
     buildMesh(atlas) {
         const features = [];
         const center = [0, 0, 0, 0];
@@ -122,7 +162,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this.setToRedraw();
                 return;
             }
-            const geometry = this.painter.createGeometry(packData.data, features);
+            const geometry = this.painter.createGeometry(packData.data, features.map(feature => { return { feature }; }));
             this.fillCommonProps(geometry);
 
             this._atlas = {
@@ -204,12 +244,16 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         });
     }
 
-    _markGeometry() {
+    _markRebuildGeometry() {
         this._dirtyGeo = true;
     }
 
-    _markTexture() {
-        this._dirtyTex = true;
+    _markRebuild() {
+        this._dirtyAll = true;
+    }
+
+    _markUpdateSymbol() {
+        this._dirtySymbol = true;
     }
 
     onGeometryAdd(geometries) {
@@ -235,7 +279,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this.features[geo[ID_PROP]] = convertToFeature(geo);
             }
         }
-        this._markTexture();
+        this._markRebuild();
         redraw(this);
     }
 
@@ -249,39 +293,69 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 delete this.features[geo[ID_PROP]];
             }
         }
-        this._markTexture();
+        this._markRebuild();
         redraw(this);
     }
 
     onGeometrySymbolChange(e) {
-        //const properties = e;
+        const { properties } = e;
         //TODO 判断properties中哪些只需要调用painter.updateSymbol
         // 如果有，则更新 this.painterSymbol 上的相应属性，以触发painter中的属性更新
         const marker = e.target;
         const id = marker[ID_PROP];
         if (this.features[id]) {
             const symbol = marker.getSymbol();
-            const properties = this.features[id].properties;
-            for (const p in properties) {
+            const feaProps = this.features[id].properties;
+            for (const p in feaProps) {
                 if (p.indexOf('_symbol_') === 0) {
-                    delete properties[p];
+                    delete feaProps[p];
                 }
             }
             for (const p in symbol) {
-                properties['_symbol_' + p] = symbol[p];
+                feaProps['_symbol_' + p] = symbol[p];
             }
         }
-        this._markTexture();
+
+        if (this._dirtyAll) {
+            redraw(this);
+            return;
+        }
+
+
+        let rebuild = false;
+        for (const p in properties) {
+            if (!SYMBOL_SIMPLE_PROPS[p]) {
+                rebuild = true;
+                break;
+            }
+        }
+        if (!rebuild) {
+            if (!this._dirtyGeo || !this._dirtySymbol) {
+                for (const p in properties) {
+                    const old = this.painterSymbol[p];
+                    //new symbol property to force painter refresh geometry's attribute
+                    this.painterSymbol[p] = {
+                        type: old.type,
+                        default: old.default,
+                        property: old.property
+                    };
+
+                }
+                this._markUpdateSymbol();
+            }
+        } else {
+            this._markRebuild();
+        }
         redraw(this);
     }
 
     onGeometryShapeChange() {
-        this._markGeometry();
+        this._markRebuildGeometry();
         redraw(this);
     }
 
     onGeometryPositionChange() {
-        this._markGeometry();
+        this._markRebuildGeometry();
         redraw(this);
     }
 
@@ -290,18 +364,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     onGeometryShow() {
-        this._markGeometry();
+        this._markRebuildGeometry();
         redraw(this);
     }
 
     onGeometryHide() {
-        this._markGeometry();
+        this._markRebuildGeometry();
         redraw(this);
     }
 
     onGeometryPropertiesChange() {
         //TODO 可能会更新textName
-        this._markGeometry();
+        this._markRebuildGeometry();
         redraw(this);
     }
 
@@ -405,9 +479,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 }
 
 function redraw(renderer) {
-    if (renderer.layer.options['drawImmediate']) {
-        renderer.render();
-    }
     renderer.setToRedraw();
 }
 

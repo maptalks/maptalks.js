@@ -58,13 +58,15 @@ class IconPainter extends CollisionPainter {
         this._textFilter1 = TEXT_FILTER_N.bind(this);
     }
 
-    updateSymbol() {
-        super.updateSymbol();
+    updateSymbol(symbol) {
+        super.updateSymbol(symbol);
         const symbolDef = this.symbolDef;
+        this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
         this._markerWidthFn = interpolated(symbolDef['markerWidth']);
         this._markerHeightFn = interpolated(symbolDef['markerHeight']);
         this._markerDxFn = interpolated(symbolDef['markerDx']);
         this._markerDyFn = interpolated(symbolDef['markerDy']);
+        this._markerOpacityFn = interpolated(symbolDef['markerOpacity']);
         this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
     }
 
@@ -75,6 +77,7 @@ class IconPainter extends CollisionPainter {
         this._markerHeightFn = interpolated(symbolDef['markerHeight']);
         this._markerDxFn = interpolated(symbolDef['markerDx']);
         this._markerDyFn = interpolated(symbolDef['markerDy']);
+        this._markerOpacityFn = interpolated(symbolDef['markerOpacity']);
         this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
         const u8 = new Int16Array(1);
         return [
@@ -134,6 +137,18 @@ class IconPainter extends CollisionPainter {
                 evaluate: properties => {
                     const y = this._markerDyFn(map.getZoom(), properties);
                     u8[0] = y;
+                    return u8[0];
+                }
+            },
+            {
+                attrName: 'aColorOpacity',
+                symbolName: 'markerOpacity',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_OPACITY',
+                evaluate: properties => {
+                    const y = this._markerOpacityFn(map.getZoom(), properties);
+                    u8[0] = y * 255;
                     return u8[0];
                 }
             },
@@ -282,6 +297,9 @@ class IconPainter extends CollisionPainter {
         if (geometry.data.aMarkerHeight) {
             defines['HAS_MARKER_HEIGHT'] = 1;
         }
+        if (geometry.data.aColorOpacity) {
+            defines['HAS_OPACITY'] = 1;
+        }
         if (geometry.properties.hasMarkerDx) {
             defines['HAS_MARKER_DX'] = 1;
         }
@@ -308,8 +326,8 @@ class IconPainter extends CollisionPainter {
             }
         }
         const z = this.getMap().getZoom();
-        updateGeometryFnTypeAttrib(this._textFnTypeConfig, meshes, z);
-        updateGeometryFnTypeAttrib(this._iconFnTypeConfig, meshes, z);
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._textFnTypeConfig, meshes, z);
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._iconFnTypeConfig, meshes, z);
 
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;

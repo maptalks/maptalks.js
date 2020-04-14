@@ -238,9 +238,10 @@ class Painter {
         this.logoutTextureCache();
     }
 
-    updateSymbol() {
-        const styles = this.layer.getCompiledStyle();
-        this.symbolDef = styles[this.pluginIndex].symbol;
+    updateSymbol(symbolDef) {
+        // const styles = this.layer.getCompiledStyle();
+        // this.symbolDef = styles[this.pluginIndex].symbol;
+        this.symbolDef = symbolDef;
         for (const p in this._symbol) {
             delete this._symbol[p];
         }

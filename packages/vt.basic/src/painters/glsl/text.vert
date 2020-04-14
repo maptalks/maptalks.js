@@ -7,6 +7,9 @@ attribute vec2 aTexCoord;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
+#ifdef HAS_OPACITY
+attribute float aColorOpacity;
+#endif
 
 #ifdef HAS_TEXT_SIZE
     attribute float aTextSize;
@@ -124,6 +127,10 @@ void main() {
         vOpacity = aOpacity / 255.0;
     #else
         vOpacity = 1.0;
+    #endif
+
+    #ifdef HAS_OPACITY
+        vOpacity *= aColorOpacity / 255.0;
     #endif
 
     #ifdef HAS_TEXT_FILL

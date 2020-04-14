@@ -124,6 +124,11 @@ const SYMBOL = {
         default: 'middle',
         property: '_symbol_markerHorizontalAlignment'
     },
+    markerOpacity: {
+        type: 'identity',
+        default: 1,
+        property: '_symbol_markerOpacity'
+    },
 
     //text properties
     textName: {
@@ -190,7 +195,13 @@ const SYMBOL = {
         type: 'identity',
         default: undefined,
         property: '_symbol_textDy'
-    }
+    },
+    textOpacity: {
+        type: 'identity',
+        default: 1,
+        property: '_symbol_textOpacity'
+    },
+
 };
 
 class PointLayerRenderer extends Vector3DLayerRenderer {
@@ -256,7 +267,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
         const pointPacks = symbols.map(symbol => new PointPack(features, symbol, options).load());
 
         Promise.all(pointPacks).then(packData => {
-            const geometries = this.painter.createGeometry(packData.map(d => d && d.data), features);
+            const geometries = this.painter.createGeometry(packData.map(d => d && d.data), features.map(feature => { return { feature }; }));
             for (let i = 0; i < geometries.length; i++) {
                 this.fillCommonProps(geometries[i]);
             }

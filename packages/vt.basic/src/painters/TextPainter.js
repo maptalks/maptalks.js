@@ -89,8 +89,8 @@ export default class TextPainter extends CollisionPainter {
         }
     }
 
-    updateSymbol() {
-        super.updateSymbol();
+    updateSymbol(symbol) {
+        super.updateSymbol(symbol);
         this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
     }
 
@@ -142,7 +142,7 @@ export default class TextPainter extends CollisionPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
 
         this._projectedLinesCache = {};
         this._updateLabels(context.timestamp);

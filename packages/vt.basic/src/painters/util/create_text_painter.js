@@ -130,6 +130,9 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         if (geometry.data.aTextSize) {
             defines['HAS_TEXT_SIZE'] = 1;
         }
+        if (geometry.data.aColorOpacity) {
+            defines['HAS_OPACITY'] = 1;
+        }
         if (geometry.data.aTextHaloFill && mesh.material.uniforms.isHalo) {
             defines['HAS_TEXT_HALO_FILL'] = 1;
         }
@@ -330,6 +333,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
     const textHaloRadiusFn = interpolated(symbolDef['textHaloRadius']);
     const textDxFn = interpolated(symbolDef['textDx']);
     const textDyFn = interpolated(symbolDef['textDy']);
+    const textOpacityFn = interpolated(symbolDef['textOpacity']);
     const colorCache = {};
     const u8 = new Int16Array(1);
     return [
@@ -418,6 +422,18 @@ export function getTextFnTypeConfig(map, symbolDef) {
             evaluate: properties => {
                 const y = textDyFn(map.getZoom(), properties);
                 u8[0] = y;
+                return u8[0];
+            }
+        },
+        {
+            attrName: 'aColorOpacity',
+            symbolName: 'TextOpacity',
+            define: 'HAS_OPACITY',
+            type: Uint8Array,
+            width: 1,
+            evaluate: properties => {
+                const y = textOpacityFn(map.getZoom(), properties);
+                u8[0] = y * 255;
                 return u8[0];
             }
         }

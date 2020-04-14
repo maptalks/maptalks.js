@@ -72,11 +72,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setToRedraw();
     }
 
-    updateSymbol(idx, symbol) {
+    updateSymbol(idx/*, symbol*/) {
         const plugins = this.plugins;
         if (!plugins) {
             return;
         }
+        const styles = this.layer.getCompiledStyle();
+        const symbol = styles[idx].symbol;
         const plugin = plugins[idx];
         plugin.updateSymbol(symbol);
         this.setToRedraw();

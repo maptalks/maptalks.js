@@ -184,8 +184,8 @@ class LinePainter extends BasicPainter {
         ];
     }
 
-    updateSymbol() {
-        super.updateSymbol();
+    updateSymbol(symbol) {
+        super.updateSymbol(symbol);
         this._aColorFn = piecewiseConstant(this.symbolDef['lineColor']);
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
     }

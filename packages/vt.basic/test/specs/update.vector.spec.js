@@ -21,7 +21,7 @@ const DEFAULT_VIEW = {
 };
 
 
-describe('update style specs', () => {
+describe('vector layers update style specs', () => {
     let container, map;
     before(() => {
         container = document.createElement('div');
@@ -45,7 +45,27 @@ describe('update style specs', () => {
         map.remove();
     });
 
-    it('should can updateSymbol', done => {
+    it('should can update markerFill and markerOpacity', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        assertChangeStyle(done, PointLayer, marker, [0, 255, 0, 63], () => {
+            marker.updateSymbol({
+                markerFill: '#0f0',
+                markerOpacity: 0.5
+            });
+        });
+    });
+
+    it('should can update markerDx', done => {
         const marker = new maptalks.Marker([0, 0], {
             symbol: {
                 markerType: 'ellipse',
@@ -56,9 +76,29 @@ describe('update style specs', () => {
             }
         });
 
-        assertChangeStyle(done, PointLayer, marker, [0, 255, 0, 255], () => {
+        assertChangeStyle(done, PointLayer, marker, [0, 0, 0, 0], () => {
             marker.updateSymbol({
-                markerFill: '#0f0',
+                markerDx: 50,
+            });
+            return 2;
+        });
+    });
+
+    it('should can update markerWidth', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle'
+            }
+        });
+
+        assertChangeStyle(done, PointLayer, marker, [255, 0, 0, 255], () => {
+            marker.updateSymbol({
+                markerWidth: 120,
+                markerDx: 50
             });
         });
     });
@@ -72,6 +112,7 @@ describe('update style specs', () => {
         layer.once('canvasisdirty', () => {
             dirty = true;
         });
+        let endCount = 3;
         //因为是setStyle时，数据会被清空重绘，所以需要监听两次canvasisdirty
         layer.on(isSetStyle ? 'canvasisdirty' : 'layerload', () => {
             if (!dirty) {
@@ -82,8 +123,8 @@ describe('update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                changeFun(layer);
-            } else if (count === 3) {
+                endCount = changeFun(layer) || 3;
+            } else if (count === endCount) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);

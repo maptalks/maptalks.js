@@ -198,6 +198,10 @@ export default class PointPack extends VectorPack {
         if (isFnTypeSymbol('markerPlacement', this.symbolDef)) {
             this._markerPlacementFn = piecewiseConstant(this.symbolDef['markerPlacement']);
         }
+
+        if (isFnTypeSymbol('markerOpacity', this.symbolDef) || isFnTypeSymbol('textOpacity', this.symbolDef)) {
+            this._opacityFn = piecewiseConstant(this.symbolDef['markerOpacity'] || this.symbolDef['textOpacity']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs, glyphReqs) {
@@ -235,6 +239,13 @@ export default class PointPack extends VectorPack {
             format.push(...this._getTextFnTypeFormats());
         } else {
             format.push(...this._getMarkerFnTypeFormats());
+        }
+        if (this._opacityFn) {
+            format.push({
+                type: Uint8Array,
+                width: 1,
+                name: 'aColorOpacity'
+            });
         }
         return format;
     }
@@ -408,6 +419,10 @@ export default class PointPack extends VectorPack {
                 markerDy = this._markerDyFn(null, properties);
             }
         }
+        let opacity;
+        if (this._opacityFn) {
+            opacity = this._opacityFn(this.options['zoom'], properties) * 255;
+        }
         const textCount = quads.length;
         const altitude = this.getAltitude(point.feature.properties);
         for (let i = 0; i < anchors.length; i++) {
@@ -429,7 +444,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
 
                 data.push(x, y, altitude);
                 data.push(
@@ -439,7 +454,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
 
                 data.push(x, y, altitude);
                 data.push(
@@ -449,7 +464,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
 
                 data.push(x, y, altitude);
                 data.push(
@@ -459,7 +474,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
 
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
@@ -496,7 +511,7 @@ export default class PointPack extends VectorPack {
 
     _fillFnTypeData(data,
         textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy,
-        markerWidth, markerHeight, markerDx, markerDy) {
+        markerWidth, markerHeight, markerDx, markerDy, opacity) {
         if (this._textFillFn) {
             data.push(...textFill);
         }
@@ -526,6 +541,9 @@ export default class PointPack extends VectorPack {
         }
         if (this._markerDyFn) {
             data.push(markerDy);
+        }
+        if (this._opacityFn) {
+            data.push(opacity);
         }
         //update pack properties
         if (textHaloRadius > 0) {

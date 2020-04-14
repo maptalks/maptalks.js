@@ -247,7 +247,7 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
             }
             let feature = features[aPickingId[start]];
             if (feature && feature.feature) {
-                evaluateAndUpdate(arr, feature, evaluate, start, i, len);
+                evaluateAndUpdate(arr, feature, evaluate, start, i === l - 1 ? l : i, len);
                 start = i;
             }
         }
