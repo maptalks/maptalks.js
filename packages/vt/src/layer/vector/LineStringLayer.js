@@ -38,7 +38,7 @@ const SYMBOL = {
     },
     lineOpacity: {
         type: 'identity',
-        default: undefined,
+        default: 1,
         property: '_symbol_lineOpacity'
     },
     lineJoin: {

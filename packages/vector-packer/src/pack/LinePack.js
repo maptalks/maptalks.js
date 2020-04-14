@@ -196,7 +196,7 @@ export default class LinePack extends VectorPack {
             }
         }
         if (this.opacityFn) {
-            this.feaOpacity = 255 * this.opacityFn(this.options['zoom'], feature.properties) || 0;
+            this.feaOpacity = 255 * this.opacityFn(this.options['zoom'], feature.properties);
         }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
