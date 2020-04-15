@@ -10,7 +10,8 @@ const marker = new maptalks.Marker([0, 0], {
         textName: '{name}',
         textSize: 30,
         textHaloRadius: 1,
-        textHaloFill: '#f00'
+        textHaloFill: '#f00',
+        textOpacity: 0.3
     },
     properties: {
         name: 'test'

@@ -427,7 +427,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
         },
         {
             attrName: 'aColorOpacity',
-            symbolName: 'TextOpacity',
+            symbolName: 'textOpacity',
             define: 'HAS_OPACITY',
             type: Uint8Array,
             width: 1,
