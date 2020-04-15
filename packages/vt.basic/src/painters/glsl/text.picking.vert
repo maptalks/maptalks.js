@@ -24,6 +24,18 @@ attribute float aOpacity;
 #else
     uniform float textDy;
 #endif
+#if defined(HAS_PITCH_ALIGN)
+    attribute float aPitchAlign;
+#else
+    uniform float pitchWithMap;
+#endif
+
+#if defined(HAS_ROTATION_ALIGN)
+    attribute float aRotationAlign;
+#else
+    uniform float rotateWithMap;
+#endif
+
 uniform float textRotation;
 
 uniform float cameraToCenterDistance;
@@ -54,6 +66,12 @@ void main() {
     #ifdef HAS_TEXT_DY
         float textDy = aTextDy;
     #endif
+    #if defined(HAS_PITCH_ALIGN)
+        float pitchWithMap = aPitchAlign;
+    #endif
+    #if defined(HAS_ROTATION_ALIGN)
+        float rotateWithMap = aRotationAlign;
+    #endif
     vec2 shape = aShape / 10.0;
     vec2 texCoord = aTexCoord;
 
@@ -78,7 +96,7 @@ void main() {
     float angleCos = cos(rotation);
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    shape = shapeMatrix * shape / glyphSize * textSize;
+    shape = shapeMatrix * (shape / glyphSize * textSize);
 
     if (pitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;

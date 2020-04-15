@@ -27,6 +27,18 @@ attribute float aColorOpacity;
 #else
     uniform float textDy;
 #endif
+#if defined(HAS_PITCH_ALIGN)
+    attribute float aPitchAlign;
+#else
+    uniform float pitchWithMap;
+#endif
+
+#if defined(HAS_ROTATION_ALIGN)
+    attribute float aRotationAlign;
+#else
+    uniform float rotateWithMap;
+#endif
+
 uniform float textRotation;
 
 uniform float cameraToCenterDistance;
@@ -36,9 +48,7 @@ uniform float textPerspectiveRatio;
 uniform vec2 texSize;
 uniform vec2 canvasSize;
 uniform float glyphSize;
-uniform float pitchWithMap;
 uniform float mapPitch;
-uniform float rotateWithMap;
 uniform float mapRotation;
 
 uniform float zoomScale;
@@ -76,6 +86,13 @@ void main() {
     #ifdef HAS_TEXT_DY
         float textDy = aTextDy;
     #endif
+    #if defined(HAS_PITCH_ALIGN)
+        float pitchWithMap = aPitchAlign;
+    #endif
+    #if defined(HAS_ROTATION_ALIGN)
+        float rotateWithMap = aRotationAlign;
+    #endif
+
     vec2 shape = aShape / 10.0;
     vec2 texCoord = aTexCoord;
 
@@ -100,7 +117,7 @@ void main() {
     float angleCos = cos(rotation);
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    shape = shapeMatrix * shape / glyphSize * textSize;
+    shape = shapeMatrix * (shape / glyphSize * textSize);
 
     float cameraScale = distance / cameraToCenterDistance;
     if (pitchWithMap == 0.0) {
@@ -111,7 +128,7 @@ void main() {
         //值为0.0时: vGammaScale固定为1.2
         vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio);
     } else {
-        vec2 offset = shape * vec2(1.0, -1.0);
+        vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
         vGammaScale = cameraScale + mapPitch / 4.0;

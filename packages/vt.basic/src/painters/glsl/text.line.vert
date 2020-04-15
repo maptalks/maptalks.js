@@ -5,21 +5,36 @@ attribute vec2 aOffset;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
+#ifdef HAS_OPACITY
+attribute float aColorOpacity;
+#endif
 
 #ifdef HAS_TEXT_SIZE
     attribute float aTextSize;
 #else
     uniform float textSize;
 #endif
-uniform float textDx;
-uniform float textDy;
+#ifdef HAS_TEXT_DX
+    attribute float aTextDx;
+#else
+    uniform float textDx;
+#endif
+#ifdef HAS_TEXT_DY
+    attribute float aTextDy;
+#else
+    uniform float textDy;
+#endif
+#if defined(HAS_PITCH_ALIGN)
+    attribute float aPitchAlign;
+#else
+    uniform float pitchWithMap;
+#endif
 
 uniform float zoomScale;
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
 uniform float mapPitch;
-uniform float pitchWithMap;
 
 uniform vec2 texSize;
 uniform vec2 canvasSize;
@@ -49,8 +64,17 @@ varying float vOpacity;
 
 void main() {
     vec3 position = aPosition;
+    #ifdef HAS_TEXT_DX
+        float textDx = aTextDx;
+    #endif
+    #ifdef HAS_TEXT_DY
+        float textDy = aTextDy;
+    #endif
     #ifdef HAS_TEXT_SIZE
         float textSize = aTextSize;
+    #endif
+    #if defined(HAS_PITCH_ALIGN)
+        float pitchWithMap = aPitchAlign;
     #endif
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
     float distance = gl_Position.w;
@@ -88,6 +112,9 @@ void main() {
         vOpacity = aOpacity / 255.0;
     #else
         vOpacity = 1.0;
+    #endif
+    #ifdef HAS_OPACITY
+        vOpacity *= aColorOpacity / 255.0;
     #endif
 
     #ifdef HAS_TEXT_FILL

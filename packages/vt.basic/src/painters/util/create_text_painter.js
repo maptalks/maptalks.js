@@ -1,7 +1,7 @@
 import { mat4, vec4, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter } from '../../Util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
-import { interpolated } from '@maptalks/function-type';
+import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { getAnchor, getLabelBox } from './get_label_box';
 import { projectPoint } from './projection';
@@ -144,6 +144,12 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         }
         if (geometry.properties.hasTextDy) {
             defines['HAS_TEXT_DY'] = 1;
+        }
+        if (geometry.data.aPitchAlign) {
+            defines['HAS_PITCH_ALIGN'] = 1;
+        }
+        if (geometry.data.aRotationAlign) {
+            defines['HAS_ROTATION_ALIGN'] = 1;
         }
         mesh.setDefines(defines);
     });
@@ -334,6 +340,8 @@ export function getTextFnTypeConfig(map, symbolDef) {
     const textDxFn = interpolated(symbolDef['textDx']);
     const textDyFn = interpolated(symbolDef['textDy']);
     const textOpacityFn = interpolated(symbolDef['textOpacity']);
+    const textPitchAlignmentFn = piecewiseConstant(symbolDef['textPitchAlignment']);
+    const textRotationAlignmentFn = piecewiseConstant(symbolDef['textRotationAlignment']);
     const colorCache = {};
     const u8 = new Int16Array(1);
     return [
@@ -436,7 +444,29 @@ export function getTextFnTypeConfig(map, symbolDef) {
                 u8[0] = y * 255;
                 return u8[0];
             }
-        }
+        },
+        {
+            attrName: 'aPitchAlign',
+            symbolName: 'textPitchAlignment',
+            type: Uint8Array,
+            width: 1,
+            define: 'HAS_PITCH_ALIGN',
+            evaluate: properties => {
+                const y = +(textPitchAlignmentFn(map.getZoom(), properties) === 'map');
+                return y;
+            }
+        },
+        {
+            attrName: 'aRotationAlign',
+            symbolName: 'textRotationAlignment',
+            type: Uint8Array,
+            width: 1,
+            define: 'HAS_ROTATION_ALIGN',
+            evaluate: properties => {
+                const y = +(textRotationAlignmentFn(map.getZoom(), properties) === 'map');
+                return y;
+            }
+        },
     ];
 }
 

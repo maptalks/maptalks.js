@@ -32,6 +32,18 @@ attribute vec2 aTexCoord;
 #else
     uniform float markerDy;
 #endif
+#if defined(HAS_PITCH_ALIGN)
+    attribute float aPitchAlign;
+#else
+    uniform float pitchWithMap;
+#endif
+
+#if defined(HAS_ROTATION_ALIGN)
+    attribute float aRotationAlign;
+#else
+    uniform float rotateWithMap;
+#endif
+
 uniform float markerRotation;
 
 uniform float cameraToCenterDistance;
@@ -41,9 +53,7 @@ uniform float markerPerspectiveRatio;
 uniform vec2 iconSize;
 uniform vec2 texSize;
 uniform vec2 canvasSize;
-uniform float pitchWithMap;
 uniform float mapPitch;
-uniform float rotateWithMap;
 uniform float mapRotation;
 
 uniform float zoomScale;
@@ -66,6 +76,12 @@ void main() {
     #ifdef HAS_MARKER_DY
         float markerDy = aMarkerDy;
     #endif
+    #if defined(HAS_PITCH_ALIGN)
+        float pitchWithMap = aPitchAlign;
+    #endif
+    #if defined(HAS_ROTATION_ALIGN)
+        float rotateWithMap = aRotationAlign;
+    #endif
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
     float distance = gl_Position.w;
 
@@ -75,7 +91,6 @@ void main() {
         0.5 + 0.5 * (1.0 - distanceRatio),
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
-
     float rotation = markerRotation - mapRotation * rotateWithMap;
     if (pitchWithMap == 1.0) {
         rotation += mapRotation;
@@ -84,15 +99,15 @@ void main() {
     float angleCos = cos(rotation);
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    vec2 shape = shapeMatrix * (aShape / 10.0);
-    shape = shape / iconSize * vec2(markerWidth, markerHeight);
+    vec2 shape = (aShape / 10.0) / iconSize * vec2(markerWidth, markerHeight);
+    shape = shapeMatrix * shape;
 
     if (pitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;
         gl_Position.xy += offset * perspectiveRatio * distance;
     } else {
         float cameraScale = distance / cameraToCenterDistance;
-        vec2 offset = shape * vec2(1.0, -1.0);
+        vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }

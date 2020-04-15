@@ -7,8 +7,17 @@ attribute vec2 aOffset;
 attribute float aOpacity;
 #endif
 
-uniform float textDx;
-uniform float textDy;
+#ifdef HAS_TEXT_DX
+    attribute float aTextDx;
+#else
+    uniform float textDx;
+#endif
+#ifdef HAS_TEXT_DY
+    attribute float aTextDy;
+#else
+    uniform float textDy;
+#endif
+
 uniform float textRotation;
 
 uniform float zoomScale;
@@ -26,6 +35,15 @@ uniform float tileRatio; //EXTENT / tileSize
 #include <fbo_picking_vert>
 
 void main() {
+    #ifdef HAS_TEXT_DX
+        float textDx = aTextDx;
+    #endif
+    #ifdef HAS_TEXT_DY
+        float textDy = aTextDy;
+    #endif
+    #if defined(HAS_PITCH_ALIGN)
+        float pitchWithMap = aPitchAlign;
+    #endif
     vec3 position = aPosition;
 
     gl_Position = projViewModelMatrix * vec4(position, 1.0);

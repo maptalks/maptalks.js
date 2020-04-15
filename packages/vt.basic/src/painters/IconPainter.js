@@ -12,7 +12,7 @@ import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
 import textPickingVert from './glsl/text.picking.vert';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib, PREFIX } from './util/fn_type_util';
-import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
+import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from './Constant';
 
 const BOX_ELEMENT_COUNT = 6;
@@ -62,12 +62,7 @@ class IconPainter extends CollisionPainter {
         super.updateSymbol(symbol);
         const symbolDef = this.symbolDef;
         this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
-        this._markerWidthFn = interpolated(symbolDef['markerWidth']);
-        this._markerHeightFn = interpolated(symbolDef['markerHeight']);
-        this._markerDxFn = interpolated(symbolDef['markerDx']);
-        this._markerDyFn = interpolated(symbolDef['markerDy']);
-        this._markerOpacityFn = interpolated(symbolDef['markerOpacity']);
-        this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
+        this._iconFnTypeConfig = this._getIconFnTypeConfig();
     }
 
     _getIconFnTypeConfig() {
@@ -79,6 +74,8 @@ class IconPainter extends CollisionPainter {
         this._markerDyFn = interpolated(symbolDef['markerDy']);
         this._markerOpacityFn = interpolated(symbolDef['markerOpacity']);
         this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
+        this._markerPitchAlignmentFn = piecewiseConstant(symbolDef['markerPitchAlignment']);
+        this._markerRotationAlignmentFn = piecewiseConstant(symbolDef['markerRotationAlignment']);
         const u8 = new Int16Array(1);
         return [
             {
@@ -150,6 +147,28 @@ class IconPainter extends CollisionPainter {
                     const y = this._markerOpacityFn(map.getZoom(), properties);
                     u8[0] = y * 255;
                     return u8[0];
+                }
+            },
+            {
+                attrName: 'aPitchAlign',
+                symbolName: 'markerPitchAlignment',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_PITCH_ALIGN',
+                evaluate: properties => {
+                    const y = +(this._markerPitchAlignmentFn(map.getZoom(), properties) === 'map');
+                    return y;
+                }
+            },
+            {
+                attrName: 'aRotationAlign',
+                symbolName: 'markerRotationAlignment',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_ROTATION_ALIGN',
+                evaluate: properties => {
+                    const y = +(this._markerRotationAlignmentFn(map.getZoom(), properties) === 'map');
+                    return y;
                 }
             },
         ];
@@ -305,6 +324,12 @@ class IconPainter extends CollisionPainter {
         }
         if (geometry.properties.hasMarkerDy) {
             defines['HAS_MARKER_DY'] = 1;
+        }
+        if (geometry.data.aPitchAlign) {
+            defines['HAS_PITCH_ALIGN'] = 1;
+        }
+        if (geometry.data.aRotationAlign) {
+            defines['HAS_ROTATION_ALIGN'] = 1;
         }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);

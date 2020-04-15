@@ -129,6 +129,16 @@ const SYMBOL = {
         default: 1,
         property: '_symbol_markerOpacity'
     },
+    markerPitchAlignment: {
+        type: 'identity',
+        default: 'viewport',
+        property: '_symbol_markerPitchAlignment'
+    },
+    markerRotationAlignment: {
+        type: 'identity',
+        default: 'viewport',
+        property: '_symbol_markerRotationAlignment'
+    },
 
     //text properties
     textName: {
@@ -200,6 +210,16 @@ const SYMBOL = {
         type: 'identity',
         default: 1,
         property: '_symbol_textOpacity'
+    },
+    textPitchAlignment: {
+        type: 'identity',
+        default: 'viewport',
+        property: '_symbol_textPitchAlignment'
+    },
+    textRotationAlignment: {
+        type: 'identity',
+        default: 'viewport',
+        property: '_symbol_textRotationAlignment'
     },
 
 };

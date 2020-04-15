@@ -178,6 +178,12 @@ export default class PointPack extends VectorPack {
         if (isFnTypeSymbol('textPlacement', this.symbolDef)) {
             this._textPlacementFn = interpolated(this.symbolDef['textPlacement']);
         }
+        if (isFnTypeSymbol('textPitchAlignment', this.symbolDef)) {
+            this._textPitchAlignFn = piecewiseConstant(this.symbolDef['textPitchAlignment']);
+        }
+        if (isFnTypeSymbol('textRotationAlignment', this.symbolDef)) {
+            this._textRotateAlignFn = piecewiseConstant(this.symbolDef['textRotationAlignment']);
+        }
 
         if (isFnTypeSymbol('markerWidth', this.symbolDef)) {
             this._markerWidthFn = interpolated(this.symbolDef['markerWidth']);
@@ -198,9 +204,14 @@ export default class PointPack extends VectorPack {
         if (isFnTypeSymbol('markerPlacement', this.symbolDef)) {
             this._markerPlacementFn = piecewiseConstant(this.symbolDef['markerPlacement']);
         }
-
         if (isFnTypeSymbol('markerOpacity', this.symbolDef) || isFnTypeSymbol('textOpacity', this.symbolDef)) {
-            this._opacityFn = piecewiseConstant(this.symbolDef['markerOpacity'] || this.symbolDef['textOpacity']);
+            this._opacityFn = interpolated(this.symbolDef['markerOpacity'] || this.symbolDef['textOpacity']);
+        }
+        if (isFnTypeSymbol('markerPitchAlignment', this.symbolDef)) {
+            this._markerPitchAlignFn = piecewiseConstant(this.symbolDef['markerPitchAlignment']);
+        }
+        if (isFnTypeSymbol('markerRotationAlignment', this.symbolDef)) {
+            this._markerRotateAlignFn = piecewiseConstant(this.symbolDef['markerRotationAlignment']);
         }
     }
 
@@ -245,6 +256,20 @@ export default class PointPack extends VectorPack {
                 type: Uint8Array,
                 width: 1,
                 name: 'aColorOpacity'
+            });
+        }
+        if (this._markerPitchAlignFn || this._textPitchAlignFn) {
+            format.push({
+                type: Uint8Array,
+                width: 1,
+                name: 'aPitchAlign'
+            });
+        }
+        if (this._markerRotateAlignFn || this._textRotateAlignFn) {
+            format.push({
+                type: Uint8Array,
+                width: 1,
+                name: 'aRotationAlign'
             });
         }
         return format;
@@ -327,6 +352,7 @@ export default class PointPack extends VectorPack {
                 name: 'aMarkerDy'
             });
         }
+
         return formats;
     }
 
@@ -368,6 +394,7 @@ export default class PointPack extends VectorPack {
         let quads;
         let textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy;
         let markerWidth, markerHeight, markerDx, markerDy;
+        let pitchAlign, rotateAlign;
 
         if (isText) {
             const font = point.getIconAndGlyph().glyph.font;
@@ -403,6 +430,12 @@ export default class PointPack extends VectorPack {
             if (this._textDyFn) {
                 textDy = this._textDyFn(null, properties);
             }
+            if (this._textPitchAlignFn) {
+                pitchAlign = +(this._textPitchAlignFn(null, properties) === 'map');
+            }
+            if (this._textRotateAlignFn) {
+                rotateAlign = +(this._textRotateAlignFn(null, properties) === 'map');
+            }
         } else {
             quads = getIconQuads(shape);
 
@@ -417,6 +450,12 @@ export default class PointPack extends VectorPack {
             }
             if (this._markerDyFn) {
                 markerDy = this._markerDyFn(null, properties);
+            }
+            if (this._markerPitchAlignFn) {
+                pitchAlign = +(this._markerPitchAlignFn(null, properties) === 'map');
+            }
+            if (this._markerRotateAlignFn) {
+                rotateAlign = +(this._markerRotateAlignFn(null, properties) === 'map');
             }
         }
         let opacity;
@@ -444,7 +483,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign);
 
                 data.push(x, y, altitude);
                 data.push(
@@ -454,7 +493,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign);
 
                 data.push(x, y, altitude);
                 data.push(
@@ -464,7 +503,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign);
 
                 data.push(x, y, altitude);
                 data.push(
@@ -474,7 +513,7 @@ export default class PointPack extends VectorPack {
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
-                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity);
+                this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy, markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign);
 
 
                 this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
@@ -511,7 +550,7 @@ export default class PointPack extends VectorPack {
 
     _fillFnTypeData(data,
         textFill, textSize, textHaloFill, textHaloRadius, textDx, textDy,
-        markerWidth, markerHeight, markerDx, markerDy, opacity) {
+        markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign) {
         if (this._textFillFn) {
             data.push(...textFill);
         }
@@ -544,6 +583,12 @@ export default class PointPack extends VectorPack {
         }
         if (this._opacityFn) {
             data.push(opacity);
+        }
+        if (this._textPitchAlignFn || this._markerPitchAlignFn) {
+            data.push(pitchAlign);
+        }
+        if (this._markerRotateAlignFn ||  this._textRotateAlignFn) {
+            data.push(rotateAlign);
         }
         //update pack properties
         if (textHaloRadius > 0) {
