@@ -8,7 +8,7 @@ uniform vec3 visibleEdgeColor;
 uniform float lineWidth;
 void main() {
     vec2 invSize = (1.0 / texSize) * lineWidth;
-    vec4 uvOffset = vec4(1.0, 0.0, 0.0, 1.0) * vec4(invSize, invSize);
+    vec4 uvOffset = vec4(1.0, 0.0, 0.0, 1.0) * vec4(invSize.x, invSize.y, invSize.x, invSize.y);
     vec4 c1 = texture2D(maskTexture, vTexCoord + uvOffset.xy);
     vec4 c2 = texture2D(maskTexture, vTexCoord - uvOffset.xy);
     vec4 c3 = texture2D(maskTexture, vTexCoord + uvOffset.yw);
