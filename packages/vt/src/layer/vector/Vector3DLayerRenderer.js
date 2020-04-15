@@ -6,8 +6,8 @@ import { extend, isNumber } from '../../common/Util';
 
 const SYMBOL_SIMPLE_PROPS = {
     textFill: 1,
-    textSize: 1, //TODO
-    textOpacity: 1, //TODO (目前aOpacity是被collision占用的)
+    textSize: 1,
+    textOpacity: 1,
     textHaloRadius: 1,
     textHaloFill: 1,
     textHaloOpacity: 1,

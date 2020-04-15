@@ -911,7 +911,7 @@ class IconPainter extends CollisionPainter {
 }
 
 function sorting(a) {
-    if (a.iconAtlas) {
+    if (a && a.iconAtlas) {
         return -1;
     }
     return 1;
