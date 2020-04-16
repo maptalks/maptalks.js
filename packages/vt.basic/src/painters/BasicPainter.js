@@ -48,7 +48,7 @@ export default class BasicPainter extends Painter {
             format: image.format,
             mag: 'linear', //very important
             min: 'linear', //very important
-            flipY: false,
+            flipY: true,
         };
         if (atlas.type === 'icon') {
             const wrapMode = (atlas.dataType !== 'point') ? 'repeat' : 'clamp';

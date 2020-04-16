@@ -46,7 +46,7 @@ class FillPainter extends BasicPainter {
 
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas && geometry.data.aTexCoord) {
-            uniforms.tileCenter = tileCenter.toArray();
+            uniforms.tileCenter = tileCenter && tileCenter.toArray();
             uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas);
             uniforms.patternSize = [iconAtlas.width, iconAtlas.height];
             uniforms.uvScale = iconAtlas ? [256 / iconAtlas.width, 256 / iconAtlas.height] : [1, 1];

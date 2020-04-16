@@ -74,7 +74,7 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'icon'));
         for (const p in specs) {
             if (specs.hasOwnProperty(p)) {
-                it('point-' + p, runner(p, PointLayer, specs[p]));
+                it('icon-' + p, runner(p, PointLayer, specs[p]));
             }
         }
     });
@@ -83,37 +83,19 @@ describe('vector 3d integration specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'line'));
         for (const p in specs) {
             if (specs.hasOwnProperty(p)) {
-                it('vector-' + p, runner(p, LineStringLayer, specs[p]));
+                it('line-' + p, runner(p, LineStringLayer, specs[p]));
             }
         }
     });
 
-    // context('text specs', () => {
-    //     const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'text'));
-    //     for (const p in specs) {
-    //         if (specs.hasOwnProperty(p)) {
-    //             it(p, runner(p, specs[p]));
-    //         }
-    //     }
-    // });
-
-    // context('line specs', () => {
-    //     const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'line'));
-    //     for (const p in specs) {
-    //         if (specs.hasOwnProperty(p)) {
-    //             it(p, runner(p, specs[p]));
-    //         }
-    //     }
-    // });
-
-    // context('polygon specs', () => {
-    //     const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'polygon'));
-    //     for (const p in specs) {
-    //         if (specs.hasOwnProperty(p)) {
-    //             it(p, runner(p, specs[p]));
-    //         }
-    //     }
-    // });
+    context('polygon specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'polygon'));
+        for (const p in specs) {
+            if (specs.hasOwnProperty(p)) {
+                it('polygon-' + p, runner(p, PolygonLayer, specs[p]));
+            }
+        }
+    });
 });
 
 const canvas = document.createElement('canvas');

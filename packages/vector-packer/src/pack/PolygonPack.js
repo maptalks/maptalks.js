@@ -111,10 +111,21 @@ export default class PolygonPack extends VectorPack {
         }
 
         const uvSize = 256;
-        const hasUV = !!this.symbol['polygonPatternFile'];
+        const hasUV = !!this.iconAtlas;
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
 
         const altitude = this.getAltitude(feature.properties);
+        let uvWidth = 0;
+        let uvHeight = 0;
+        if (hasUV) {
+            const patternFile = this._patternFn ? this._patternFn(null, feature.properties) : this.symbol['polygonPatternFile'];
+            const image = this.iconAtlas.glyphMap[patternFile];
+            if (image) {
+                uvWidth = image.data.width;
+                uvHeight = image.data.height;
+            }
+        }
+
 
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
@@ -139,7 +150,7 @@ export default class PolygonPack extends VectorPack {
                     ring[0].x, ring[0].y, altitude
                 );
                 if (hasUV) {
-                    this.data.push(ring[0].x * 32 / uvSize, ring[0].y * 32 / uvSize);
+                    this.data.push(ring[0].x * uvWidth / uvSize, ring[0].y * uvHeight / uvSize);
                 }
                 if (dynFill !== undefined) {
                     this.data.push(...dynFill);
@@ -158,7 +169,7 @@ export default class PolygonPack extends VectorPack {
                         ring[i].x, ring[i].y, altitude
                     );
                     if (hasUV) {
-                        this.data.push(ring[i].x * 32 / uvSize, ring[i].y * 32 / uvSize);
+                        this.data.push(ring[i].x * uvWidth / uvSize, ring[i].y * uvHeight / uvSize);
                     }
                     if (dynFill !== undefined) {
                         this.data.push(...dynFill);

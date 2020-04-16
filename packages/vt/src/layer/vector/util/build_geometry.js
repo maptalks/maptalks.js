@@ -10,7 +10,7 @@ export function convertToFeature(geo) {
     let coordinates = geo.getCoordinates();
     const geometry = [];
     let type = 1;
-    if (geo instanceof maptalks.Marker || geo instanceof maptalks.MultiPolygon) {
+    if (geo instanceof maptalks.Marker || geo instanceof maptalks.MultiPoint) {
         if (geo instanceof maptalks.Marker) {
             coordinates = [coordinates];
         }
