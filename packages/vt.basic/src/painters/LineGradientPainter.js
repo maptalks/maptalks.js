@@ -48,6 +48,8 @@ class LineGradientPainter extends BasicPainter {
     }
 
     createMesh(geometry, transform) {
+        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
+
         const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
@@ -55,10 +57,10 @@ class LineGradientPainter extends BasicPainter {
             tileExtent: geometry.properties.tileExtent
         };
         prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
+        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
-        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.5);
+        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.4);
         setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
@@ -91,8 +93,17 @@ class LineGradientPainter extends BasicPainter {
         const defines = {
             'HAS_GRADIENT': 1
         };
+        if (geometry.data.aOpacity) {
+            defines['HAS_OPACITY'] = 1;
+        }
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
+        }
+        if (symbol['lineOffset']) {
+            defines['USE_LINE_OFFSET'] = 1;
+        }
+        if (geometry.data.aUp) {
+            defines['HAS_UP'] = 1;
         }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);

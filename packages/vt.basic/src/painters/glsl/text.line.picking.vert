@@ -17,6 +17,11 @@ attribute float aOpacity;
 #else
     uniform float textDy;
 #endif
+#if defined(HAS_PITCH_ALIGN)
+    attribute float aPitchAlign;
+#else
+    uniform float pitchWithMap;
+#endif
 
 uniform float textRotation;
 
@@ -25,7 +30,6 @@ uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
 uniform float mapPitch;
-uniform float pitchWithMap;
 
 uniform vec2 texSize;
 uniform vec2 canvasSize;

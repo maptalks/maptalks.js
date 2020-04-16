@@ -50,9 +50,7 @@ uniform float markerPerspectiveRatio;
 uniform vec2 iconSize;
 uniform vec2 texSize;
 uniform vec2 canvasSize;
-uniform float pitchWithMap;
 uniform float mapPitch;
-uniform float rotateWithMap;
 uniform float mapRotation;
 
 uniform float zoomScale;

@@ -45,9 +45,7 @@ uniform float textPerspectiveRatio;
 uniform vec2 texSize;
 uniform vec2 canvasSize;
 uniform float glyphSize;
-uniform float pitchWithMap;
 uniform float mapPitch;
-uniform float rotateWithMap;
 uniform float mapRotation;
 
 uniform float zoomScale;
