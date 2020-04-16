@@ -8,7 +8,7 @@ const SYMBOL_SIMPLE_PROPS = {
     textFill: 1,
     textSize: 1,
     textOpacity: 1,
-    textHaloRadius: 1,
+    // textHaloRadius: 1,
     textHaloFill: 1,
     textHaloOpacity: 1,
     textPitchAlignment: 1,

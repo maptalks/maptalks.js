@@ -1,5 +1,13 @@
 import Point from '@mapbox/point-geometry';
 
+export function getEmptyIconQuads() {
+    const tl = new Point(0, 0);
+    const tr = new Point(0, 0);
+    const br = new Point(0, 0);
+    const bl = new Point(0, 0);
+    return [{ tl, tr, bl, br, tex: { x: 0, y: 0, w: 0, h: 0 }, writingMode: undefined, glyphOffset: [0, 0] }];
+}
+
 /**
  * Create the quads used for rendering an icon.
  * @private

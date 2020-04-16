@@ -34,9 +34,11 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
             4.0);
     }
 
-    const { aTextDx, aTextDy } = mesh.geometry.properties;
+    const { aTextDx, aTextDy, aPitchAlign, aRotationAlign } = mesh.geometry.properties;
     const textDx = aTextDx ? aTextDx[i] : symbol['textDx'];
     const textDy = aTextDy ? aTextDy[i] : symbol['textDy'];
+    const pitchWidthMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
+    const rotateWidthMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
     const dxdy = vec2.set(DXDY, textDx || 0, textDy || 0);
 
     if (!isAlongLine) {
@@ -55,7 +57,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
         let textRotation = symbol['textRotation'] || 0;
         const mapRotation = !isAlongLine ? map.getBearing() * Math.PI / 180 : 0;
         if (textRotation || mapRotation) {
-            const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+            const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, rotateWidthMap, pitchWidthMap);
             tl = vec2.transformMat2(tl, tl, shapeMatrix);
             tr = vec2.transformMat2(tr, tr, shapeMatrix);
             bl = vec2.transformMat2(bl, bl, shapeMatrix);
@@ -74,7 +76,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
         vec2.multiply(bl, bl, AXIS_FACTOR);
         vec2.multiply(br, br, AXIS_FACTOR);
 
-        if (uniforms['pitchWithMap'] === 1) {
+        if (pitchWidthMap === 1) {
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
         } else {
             getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);
@@ -94,7 +96,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
             tr = vec2.set(V2_1, aOffset[i * 2 + 2] / 10, aOffset[i * 2 + 3] / 10),
             bl = vec2.set(V2_2, aOffset[i * 2 + 4] / 10, aOffset[i * 2 + 5] / 10),
             br = vec2.set(V2_3, aOffset[i * 2 + 6] / 10, aOffset[i * 2 + 7] / 10);
-        if (uniforms['pitchWithMap'] === 1) {
+        if (pitchWidthMap === 1) {
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
         } else {
             vec2.multiply(tl, tl, AXIS_FACTOR);

@@ -20,12 +20,12 @@ const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 
 const ICON_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas;
+    return renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas && !mesh.geometry.properties.isEmpty;
 };
 
 const ICON_FILTER_N = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas;
+    return !renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas && !mesh.geometry.properties.isEmpty;
 };
 
 const TEXT_FILTER = function (mesh) {
@@ -60,7 +60,6 @@ class IconPainter extends CollisionPainter {
 
     updateSymbol(symbol) {
         super.updateSymbol(symbol);
-        const symbolDef = this.symbolDef;
         this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
         this._iconFnTypeConfig = this._getIconFnTypeConfig();
     }
@@ -178,8 +177,20 @@ class IconPainter extends CollisionPainter {
         if (!glData || !glData.length) {
             return [];
         }
-        const geometries = glData.sort(sorting).map(data => super.createGeometry(data, features));
+        const geometries = glData.sort(sorting).map(data => {
+            if (data.empty) {
+                //空icon，删除不需要的attribute数据
+                data.data = {
+                    aPosition: new Uint8Array(data.data.aPosition),
+                    aPickingId: data.data.aPickingId
+                };
+            }
+            return super.createGeometry(data, features);
+        });
         const iconGeometry = geometries[0];
+        if (glData[0].empty) {
+            iconGeometry.properties.isEmpty = true;
+        }
         // if (!iconGeometry || !iconGeometry.getElements().length) {
         //     return [];
         // }
@@ -208,7 +219,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _prepareIconGeometry(iconGeometry) {
-        const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy } = iconGeometry.data;
+        const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign } = iconGeometry.data;
         if (aMarkerWidth) {
             //for collision
             iconGeometry.properties.aMarkerWidth = iconGeometry.properties[PREFIX + 'aMarkerWidth'] || new aMarkerWidth.constructor(aMarkerWidth);
@@ -225,6 +236,15 @@ class IconPainter extends CollisionPainter {
             //for collision
             iconGeometry.properties.aMarkerDy = iconGeometry.properties[PREFIX + 'aMarkerDy'] || new aMarkerDy.constructor(aMarkerDy);
         }
+        if (aPitchAlign) {
+            //for collision
+            iconGeometry.properties.aPitchAlign = iconGeometry.properties[PREFIX + 'aPitchAlign'] || new aPitchAlign.constructor(aPitchAlign);
+        }
+        if (aRotationAlign) {
+            //for collision
+            iconGeometry.properties.aRotationAlign = iconGeometry.properties[PREFIX + 'aRotationAlign'] || new aRotationAlign.constructor(aRotationAlign);
+        }
+
     }
 
     createMesh(geometries, transform) {
@@ -232,7 +252,7 @@ class IconPainter extends CollisionPainter {
         let iconMesh, textMesh;
         for (let i = 0; i < geometries.length; i++) {
             const geometry = geometries[i];
-            if (geometry.properties.iconAtlas) {
+            if (geometry.properties.iconAtlas || geometry.properties.isEmpty) {
                 const mesh = iconMesh = this._createIconMesh(geometries[i], transform);
                 if (mesh) meshes.push(mesh);
             } else if (geometry.properties.glyphAtlas) {
@@ -254,7 +274,7 @@ class IconPainter extends CollisionPainter {
             return null;
         }
         const iconAtlas = geometry.properties.iconAtlas;
-        if (!iconAtlas) {
+        if (!iconAtlas && !geometry.properties.isEmpty) {
             return null;
         }
         const symbol = this.getSymbol();
@@ -297,8 +317,8 @@ class IconPainter extends CollisionPainter {
         setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'markerPitchAlignment', 0, v => v === 'map' ? 1 : 0);
         setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'markerRotationAlignment', 0, v => v === 'map' ? 1 : 0);
 
-        uniforms['texture'] = this.createAtlasTexture(iconAtlas);
-        uniforms['texSize'] = [iconAtlas.width, iconAtlas.height];
+        uniforms['texture'] = iconAtlas ? this.createAtlasTexture(iconAtlas, false) : null;
+        uniforms['texSize'] = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
@@ -319,10 +339,10 @@ class IconPainter extends CollisionPainter {
         if (geometry.data.aColorOpacity) {
             defines['HAS_OPACITY'] = 1;
         }
-        if (geometry.properties.hasMarkerDx) {
+        if (geometry.data.aMarkerDx) {
             defines['HAS_MARKER_DX'] = 1;
         }
-        if (geometry.properties.hasMarkerDy) {
+        if (geometry.data.aMarkerDy) {
             defines['HAS_MARKER_DY'] = 1;
         }
         if (geometry.data.aPitchAlign) {
@@ -441,7 +461,7 @@ class IconPainter extends CollisionPainter {
         meshes = meshes.sort(sortByLevel);
         for (let m = 0; m < meshes.length; m++) {
             const iconMesh = meshes[m];
-            if (!iconMesh || !this.isMeshIterable(iconMesh)) {
+            if (!iconMesh || !iconMesh.geometry.properties.isEmpty && !this.isMeshIterable(iconMesh)) {
                 continue;
             }
             const textMesh = iconMesh._textMesh;
@@ -512,21 +532,23 @@ class IconPainter extends CollisionPainter {
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
         const map = this.getMap();
         const textMesh = mesh._textMesh;
-
-        const { tile } = mesh.properties;
+        let iconBox;
+        const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
         // debugger
         //icon and text
-        const firstBoxIdx = elements[start];
-        const iconBox = getIconBox([], mesh, firstBoxIdx, matrix, map);
-        const collides = this.isCollides(iconBox, tile);
-        const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
-
-        if (!textMesh || !labelIndex || labelIndex && labelIndex[0] === -1) {
-            return {
-                collides,
-                boxes: [iconBox]
-            };
+        let collides = 0;
+        if (!mesh.geometry.properties.isEmpty) {
+            const firstBoxIdx = elements[start];
+            iconBox = getIconBox([], mesh, firstBoxIdx, matrix, map);
+            collides = this.isCollides(iconBox);
+            if (!textMesh || !labelIndex || labelIndex && labelIndex[0] === -1) {
+                return {
+                    collides,
+                    boxes: [iconBox]
+                };
+            }
         }
+
         const [textStart, textEnd] = labelIndex;
         let hasCollides = collides === 1 ? 1 : 0;
         const textElements = textMesh.geometry.properties.elements;
@@ -540,7 +562,10 @@ class IconPainter extends CollisionPainter {
                 hasCollides = 1;
             }
         }
-        textCollision.boxes.push(iconBox);
+
+        if (iconBox) {
+            textCollision.boxes.push(iconBox);
+        }
 
         return {
             collides: hasCollides,
@@ -936,7 +961,8 @@ class IconPainter extends CollisionPainter {
 }
 
 function sorting(a) {
-    if (a && a.iconAtlas) {
+    //empty只会当symbol只有text没有icon时出现
+    if (a && (a.iconAtlas || a.empty)) {
         return -1;
     }
     return 1;

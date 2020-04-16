@@ -405,7 +405,7 @@ export default class CollisionPainter extends BasicPainter {
      * 判断tile是否存在碰撞
      * @param {Number[]} box - box
      * @param {Number} meshTileZoom - mesh's tile zoom
-     * @returns {Number} 1: 存在; 0: 不存在; 0: 在屏幕之外
+     * @returns {Number} 1: 存在; 0: 不存在; -1: 在屏幕之外
      */
     isCollides(box/*, tileInfo*/) {
         const layer = this.layer,

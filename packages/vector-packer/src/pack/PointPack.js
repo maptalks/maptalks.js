@@ -1,7 +1,7 @@
 import VectorPack from './VectorPack';
 import StyledPoint from './StyledPoint';
 import { getPointAnchors } from './util/get_point_anchors.js';
-import { getGlyphQuads, getIconQuads } from './util/quads';
+import { getGlyphQuads, getIconQuads, getEmptyIconQuads } from './util/quads';
 import { allowsVerticalWritingMode } from './util/script_detection';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
@@ -237,7 +237,7 @@ export default class PointPack extends VectorPack {
                 glyphReqs.options = { isCharsCompact: false };
             }
         }
-        if (!iconGlyph.icon && !iconGlyph.glyph) {
+        if (!this.options['allowEmptyPack'] && !iconGlyph.icon && !iconGlyph.glyph) {
             return null;
         }
         return point;
@@ -358,7 +358,11 @@ export default class PointPack extends VectorPack {
 
     createDataPack() {
         if (!this.iconAtlas && !this.glyphAtlas) {
-            return null;
+            if (!this.options['allowEmptyPack']) {
+                return null;
+            } else {
+                this.empty = true;
+            }
         }
         this.lineVertex = [];
         const pack = super.createDataPack.apply(this, arguments);
@@ -372,7 +376,7 @@ export default class PointPack extends VectorPack {
 
     placeVector(point, scale, formatWidth) {
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
-        if (!shape) {
+        if (!this.options['allowEmptyPack'] && !shape) {
             return;
         }
         const anchors = this._getAnchors(point, shape, scale);
@@ -437,7 +441,7 @@ export default class PointPack extends VectorPack {
                 rotateAlign = +(this._textRotateAlignFn(null, properties) === 'map');
             }
         } else {
-            quads = getIconQuads(shape);
+            quads = shape ? getIconQuads(shape) : getEmptyIconQuads();
 
             if (this._markerWidthFn) {
                 markerWidth = this._markerWidthFn(null, properties);
@@ -593,25 +597,6 @@ export default class PointPack extends VectorPack {
         //update pack properties
         if (textHaloRadius > 0) {
             this.properties['hasHalo'] = 1;
-        }
-        if (Math.abs(textDx) > 0) {
-            this.properties['hasTextDx'] = 1;
-        }
-        if (Math.abs(textDy) > 0) {
-            this.properties['hasTextDy'] = 1;
-        }
-
-        if (Math.abs(markerWidth) > 0) {
-            this.properties['hasMarkerWidth'] = 1;
-        }
-        if (Math.abs(markerHeight) > 0) {
-            this.properties['hasMarkerHeight'] = 1;
-        }
-        if (Math.abs(markerDx) > 0) {
-            this.properties['hasMarkerDx'] = 1;
-        }
-        if (Math.abs(markerDy) > 0) {
-            this.properties['hasMarkerDy'] = 1;
         }
     }
 

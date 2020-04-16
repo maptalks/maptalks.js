@@ -61,7 +61,7 @@ class LinePainter extends BasicPainter {
 
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas) {
-            uniforms.linePatternFile = this.createAtlasTexture(iconAtlas);
+            uniforms.linePatternFile = this.createAtlasTexture(iconAtlas, true);
             uniforms.linePatternSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
         }
         //TODO lineDx, lineDy

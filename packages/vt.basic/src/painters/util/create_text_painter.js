@@ -48,7 +48,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
         prepareGeometry(geometry, enableCollision || enableUniquePlacement);
-        const { aTextSize, aTextDx, aTextDy } = geometry.data;
+        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign } = geometry.data;
         if (aTextSize) {
             //for collision
             geometry.properties.aTextSize = geometry.properties[PREFIX + 'aTextSize'] || new aTextSize.constructor(aTextSize);
@@ -61,9 +61,17 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
             //for collision
             geometry.properties.aTextDy = geometry.properties[PREFIX + 'aTextDy'] || new aTextDy.constructor(aTextDy);
         }
+        if (aPitchAlign) {
+            //for collision
+            geometry.properties.aPitchAlign = geometry.properties[PREFIX + 'aPitchAlign'] || new aPitchAlign.constructor(aPitchAlign);
+        }
+        if (aRotationAlign) {
+            //for collision
+            geometry.properties.aRotationAlign = geometry.properties[PREFIX + 'aRotationAlign'] || new aRotationAlign.constructor(aRotationAlign);
+        }
     }
 
-    const glyphTexture = this.createAtlasTexture(glyphAtlas);
+    const glyphTexture = this.createAtlasTexture(glyphAtlas, false);
     const uniforms = {
         tileResolution: geometry.properties.tileResolution,
         tileRatio: geometry.properties.tileRatio,
@@ -139,10 +147,10 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         if (geometry.data.aTextHaloRadius && mesh.material.uniforms.isHalo) {
             defines['HAS_TEXT_HALO_RADIUS'] = 1;
         }
-        if (geometry.properties.hasTextDx) {
+        if (geometry.data.aTextDx) {
             defines['HAS_TEXT_DX'] = 1;
         }
-        if (geometry.properties.hasTextDy) {
+        if (geometry.data.aTextDy) {
             defines['HAS_TEXT_DY'] = 1;
         }
         if (geometry.data.aPitchAlign) {
@@ -511,7 +519,7 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
                 boxes.push(box);
                 firstChrIdx = elements[i];
                 currentShapeY = shapeY;
-                if (!hasCollides && this.isCollides(box, mesh.properties.tile)) {
+                if (!hasCollides && this.isCollides(box)) {
                     hasCollides = 1;
                 }
             }
@@ -524,7 +532,7 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
             const box = getLabelBox([], anchor, projAnchor, mesh, textSize, haloRadius, elements[j], matrix, map);
             boxes.push(box);
             if (!hasCollides) {
-                const collides = this.isCollides(box, mesh.properties.tile);
+                const collides = this.isCollides(box);
                 if (collides === 1) {
                     hasCollides = 1;
                 } else if (collides === -1) {

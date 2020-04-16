@@ -271,20 +271,24 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
         center[0] /= center[3];
         center[1] /= center[3];
 
-        const options = {
-            zoom: this.getMap().getZoom(),
-            EXTENT: Infinity,
-            requestor: this.requestor,
-            atlas,
-            center,
-            positionType: Float32Array
-        };
+        const options = [
+            {
+                zoom: this.getMap().getZoom(),
+                EXTENT: Infinity,
+                requestor: this.requestor,
+                atlas,
+                center,
+                positionType: Float32Array
+            }
+        ];
+        options.push(extend({}, options[0]));
+        options[0].allowEmptyPack = 1;
 
         let symbols = this._SYMBOLS;
         if (!hasText) {
             symbols = [symbols[0]];
         }
-        const pointPacks = symbols.map(symbol => new PointPack(features, symbol, options).load());
+        const pointPacks = symbols.map((symbol, idx) => new PointPack(features, symbol, options[idx]).load());
 
         Promise.all(pointPacks).then(packData => {
             const geometries = this.painter.createGeometry(packData.map(d => d && d.data), features.map(feature => { return { feature }; }));
@@ -305,7 +309,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             }
             for (let i = 0; i < meshes.length; i++) {
                 meshes[i].setUniform('level', 0);
-                meshes[i].properties.meshKey = this.layer.getId() + (i === 0 ? '_icon' : '_text');
+                meshes[i].properties.meshKey = this.layer.getId() + (meshes[i].geometry.properties.iconAltas ? '_icon' : '_text');
                 // meshes[i].setLocalTransform(mat4.fromScaling([], [2, 2, 1]));
             }
 

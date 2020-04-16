@@ -38,7 +38,7 @@ export default class BasicPainter extends Painter {
         return false;
     }
 
-    createAtlasTexture(atlas) {
+    createAtlasTexture(atlas, flipY) {
         const regl = this.regl;
         const image = atlas;
         const config = {
@@ -48,7 +48,7 @@ export default class BasicPainter extends Painter {
             format: image.format,
             mag: 'linear', //very important
             min: 'linear', //very important
-            flipY: true,
+            flipY,
         };
         if (atlas.type === 'icon') {
             const wrapMode = (atlas.dataType !== 'point') ? 'repeat' : 'clamp';

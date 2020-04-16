@@ -38,9 +38,11 @@ export function getIconBox(out, mesh, i, matrix, map) {
     // const { aShape, aRotation, aDxDy } = geoProps;
     // const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
 
-    const { aShape, symbol, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight } = geoProps;
+    const { aShape, symbol, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight, aPitchAlign, aRotationAlign } = geoProps;
     const markerDx = aMarkerDx ? aMarkerDx[i] : symbol['markerDx'];
     const markerDy = aMarkerDy ? aMarkerDy[i] : symbol['markerDy'];
+    const pitchWidthMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
+    const rotateWidthMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
     const dxdy = vec2.set(DXDY, markerDx || 0, markerDy || 0);
 
     let tl = vec2.set(V2_0, aShape[i * 2] / 10, aShape[i * 2 + 1] / 10),
@@ -71,8 +73,8 @@ export function getIconBox(out, mesh, i, matrix, map) {
     //   3.2 如果pitchWidthMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
     //4. 将最终计算结果与dxdy相加
     const mapRotation = map.getBearing() * Math.PI / 180;
-    if (mapRotation * uniforms['rotateWithMap'] || rotation) {
-        const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+    if (mapRotation * rotateWidthMap || rotation) {
+        const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, rotateWidthMap, pitchWidthMap);
 
         tl = vec2.transformMat2(tl, tl, shapeMatrix);
         tr = vec2.transformMat2(tr, tr, shapeMatrix);
@@ -80,14 +82,13 @@ export function getIconBox(out, mesh, i, matrix, map) {
         br = vec2.transformMat2(br, br, shapeMatrix);
     }
 
-    vec2.multiply(tl, tl, AXIS_FACTOR);
-    vec2.multiply(tr, tr, AXIS_FACTOR);
-    vec2.multiply(bl, bl, AXIS_FACTOR);
-    vec2.multiply(br, br, AXIS_FACTOR);
-
-    if (uniforms['pitchWithMap'] === 1) {
+    if (pitchWidthMap === 1) {
         getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
     } else {
+        vec2.multiply(tl, tl, AXIS_FACTOR);
+        vec2.multiply(tr, tr, AXIS_FACTOR);
+        vec2.multiply(bl, bl, AXIS_FACTOR);
+        vec2.multiply(br, br, AXIS_FACTOR);
         getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);
     }
 

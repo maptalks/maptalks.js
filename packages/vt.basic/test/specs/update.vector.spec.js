@@ -103,7 +103,30 @@ describe('vector layers update style specs', () => {
         });
     });
 
-    function assertChangeStyle(done, LayerClass, data, expectedColor, changeFun, isSetStyle) {
+    it('should can update textHaloRadius', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                textName: '■■■',
+                textFill: '#f00',
+                textSize: 30
+            }
+        });
+
+        assertChangeStyle(done, PointLayer, marker, [0, 255, 0, 255], [27, 0], () => {
+            marker.updateSymbol({
+                textHaloRadius: 2,
+                textHaloFill: '#0f0'
+            });
+        });
+    });
+
+
+    function assertChangeStyle(done, LayerClass, data, expectedColor, offset, changeFun, isSetStyle) {
+        if (typeof offset === 'function') {
+            changeFun = offset;
+            offset = [0, 0];
+            isSetStyle = changeFun;
+        }
         const layer = new LayerClass('vector', data);
         let dirty = false;
         let count = 0;
@@ -125,7 +148,7 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 endCount = changeFun(layer) || 3;
             } else if (count === endCount) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + offset[0], y / 2 + offset[1]);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);
                 done();

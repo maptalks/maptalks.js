@@ -190,6 +190,9 @@ export default class VectorPack {
             return null;
         }
         pack.properties = this.properties;
+        if (this.empty) {
+            pack.empty = true;
+        }
         const buffers = pack.buffers;
         delete pack.buffers;
         const vectorPack = {
@@ -207,7 +210,6 @@ export default class VectorPack {
             vectorPack.data.glyphAtlas = serializeAtlas(this.glyphAtlas);
             buffers.push(vectorPack.data.glyphAtlas.image.data.buffer);
         }
-
         return vectorPack;
     }
 
