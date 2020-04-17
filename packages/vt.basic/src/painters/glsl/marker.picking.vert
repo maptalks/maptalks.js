@@ -114,7 +114,7 @@ void main() {
         gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }
 
-    gl_Position.xy += vec2(markerDx, markerDy) * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(markerDx, -markerDy) * 2.0 / canvasSize * distance;
 
     #ifdef ENABLE_COLLISION
         bool visible = aOpacity == 255.0;

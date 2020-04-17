@@ -1,3 +1,4 @@
+import { extend } from '../../../common/Util';
 import * as maptalks from 'maptalks';
 
 const POINT = new maptalks.Point(0, 0);
@@ -47,13 +48,27 @@ export function convertToFeature(geo) {
             }
         }
     }
-    const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
+    let properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     const symbol = geo.getSymbol();
-    for (const p in symbol) {
-        if (symbol.hasOwnProperty(p)) {
-            properties['_symbol_' + p] = symbol[p];
+    if (Array.isArray(symbol) && symbol.length) {
+        const props = [];
+        for (let i = 0; i < symbol.length; i++) {
+            props.push(extend({}, properties));
+            for (const p in symbol[i]) {
+                if (symbol[i].hasOwnProperty(p)) {
+                    props[i]['_symbol_' + p] = symbol[i][p];
+                }
+            }
+        }
+        properties = props;
+    } else {
+        for (const p in symbol) {
+            if (symbol.hasOwnProperty(p)) {
+                properties['_symbol_' + p] = symbol[p];
+            }
         }
     }
+
     return {
         type,
         id: geo[ID_PROP],

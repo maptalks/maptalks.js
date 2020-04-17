@@ -9,7 +9,8 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                collision: false
+                collision: true,
+                fading: false
             }
         },
         symbol: {
@@ -18,7 +19,7 @@ const style = [
             markerHeight: 30,
             markerOpacity: 1,
             markerDx: 20,
-            markerDy: -50
+            markerDy: -20
         }
     },
     {

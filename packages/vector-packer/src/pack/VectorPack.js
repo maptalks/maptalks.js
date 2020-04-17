@@ -119,13 +119,32 @@ export default class VectorPack {
         const symbol = this.symbolDef;
         for (let i = 0, l = features.length; i < l; i++) {
             const feature = features[i];
-            const styledVector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
-            if (!styledVector) {
-                continue;
+            let vector;
+            if (Array.isArray(feature.properties)) {
+                vector = [];
+                for (let j = 0; j < feature.properties.length; j++) {
+                    const fea = extend({}, feature);
+                    fea.properties = feature.properties[j];
+                    const v = this.createStyledVector(fea, symbol, options, iconReqs, glyphReqs);
+                    if (v) {
+
+                        vector.push(v);
+                    }
+                }
+                vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+                if (!vector.length) {
+                    continue;
+                }
+            } else {
+                vector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
+                if (!vector) {
+                    continue;
+                }
+                vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+
             }
             this.count++;
-            styledVector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
-            vectors.push(styledVector);
+            vectors.push(vector);
         }
 
         if (this.options['atlas']) {
@@ -224,24 +243,20 @@ export default class VectorPack {
         let elements = this.elements = [];
         //uniforms: opacity, u_size_t
 
-        const format = this.getFormat(vectors[0].symbol);
+        const format = this.getFormat(Array.isArray(vectors[0]) ? vectors[0][0].symbol : vectors[0].symbol);
         const formatWidth = this.formatWidth = getFormatWidth(format);
         //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
         let maxFeaIndex = 0;
         for (let i = 0, l = vectors.length; i < l; i++) {
             const eleCount = data.length;
-            const properties = vectors[i].feature && vectors[i].feature.properties;
-            properties['$layer'] = vectors[i].feature.layer;
-            properties['$type'] = vectors[i].feature.type;
-            if (this._visibleFn && this._visibleFn.isZoomConstant && !this._visibleFn(null, properties)) {
-                delete properties['$layer'];
-                delete properties['$type'];
-                continue;
+            if (!Array.isArray(vectors[i])) {
+                this._placeVector(vectors[i], scale);
+            } else {
+                for (let j = 0; j < vectors[i].length; j++) {
+                    this._placeVector(vectors[i][j], scale);
+                }
             }
-            this.placeVector(vectors[i], scale, formatWidth);
-            delete properties['$layer'];
-            delete properties['$type'];
             const count = (data.length - eleCount) / formatWidth;
             //fill feature index of every data
             for (let ii = 0; ii < count; ii++) {
@@ -300,6 +315,20 @@ export default class VectorPack {
             positionSize: 3, //!this.maxAltitude ? 2 : 3,
             buffers
         };
+    }
+
+    _placeVector(vector, scale) {
+        const properties = vector.feature && vector.feature.properties || {};
+        properties['$layer'] = vector.feature.layer;
+        properties['$type'] = vector.feature.type;
+        if (this._visibleFn && this._visibleFn.isZoomConstant && !this._visibleFn(null, properties)) {
+            delete properties['$layer'];
+            delete properties['$type'];
+            return;
+        }
+        this.placeVector(vector, scale, this.formatWidth);
+        delete properties['$layer'];
+        delete properties['$type'];
     }
 
     addElements(...e) {

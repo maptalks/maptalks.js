@@ -80,7 +80,7 @@ const style = [
                 type: 'categorical',
                 default: 0,
                 stops: [
-                    [2, -50]
+                    [2, 50]
                 ]
             },
         }

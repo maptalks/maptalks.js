@@ -6,15 +6,16 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                collision: false
+                collision: true,
+                fading: false
             }
         },
         filter: ['==', 'type', 1],
         symbol: {
-            textName: '貔貅',
+            textName: '貔貅2',
             textSize: 30,
             textDx: 10,
-            textDy: 5
+            textDy: 20
         }
     },
     {

@@ -39,7 +39,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
     const textDy = aTextDy ? aTextDy[i] : symbol['textDy'];
     const pitchWithMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
     const rotateWidthMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
-    const dxdy = vec2.set(DXDY, textDx || 0, textDy || 0);
+    const dxdy = vec2.set(DXDY, textDx || 0, -(textDy || 0));
 
     if (!isAlongLine) {
         const { aShape } = geoProps;

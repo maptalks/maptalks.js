@@ -71,7 +71,7 @@ void main() {
         gl_Position.xy += offset * 2.0 / canvasSize * perspectiveRatio * distance;
     }
 
-    gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(textDx, -textDy) * 2.0 / canvasSize * distance;
 
     #ifdef ENABLE_COLLISION
         bool visible = aOpacity == 255.0;

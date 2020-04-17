@@ -103,7 +103,7 @@ void main() {
         vGammaScale = mix(1.0, cameraScale, textPerspectiveRatio);
     }
 
-    gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(textDx, -textDy) * 2.0 / canvasSize * distance;
 
     vGammaScale = clamp(vGammaScale, 0.0, 1.0);
     vTexCoord = texCoord / texSize;

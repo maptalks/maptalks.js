@@ -137,7 +137,7 @@ void main() {
         gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
         vGammaScale = cameraScale + mapPitch / 4.0;
     }
-    gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(textDx, -textDy) * 2.0 / canvasSize * distance;
     // gl_Position.xy += vec2(1.0, 10.0);
 
     vTexCoord = texCoord / texSize;

@@ -43,7 +43,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
     const markerDy = aMarkerDy ? aMarkerDy[i] : symbol['markerDy'];
     const pitchWithMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
     const rotateWithMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
-    const dxdy = vec2.set(DXDY, markerDx || 0, markerDy || 0);
+    const dxdy = vec2.set(DXDY, markerDx || 0, -(markerDy || 0));
 
     let tl = vec2.set(V2_0, aShape[i * 2] / 10, aShape[i * 2 + 1] / 10),
         tr = vec2.set(V2_1, aShape[i * 2 + 2] / 10, aShape[i * 2 + 3] / 10),
