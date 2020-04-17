@@ -37,7 +37,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
     const { aTextDx, aTextDy, aPitchAlign, aRotationAlign } = mesh.geometry.properties;
     const textDx = aTextDx ? aTextDx[i] : symbol['textDx'];
     const textDy = aTextDy ? aTextDy[i] : symbol['textDy'];
-    const pitchWidthMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
+    const pitchWithMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
     const rotateWidthMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
     const dxdy = vec2.set(DXDY, textDx || 0, textDy || 0);
 
@@ -48,21 +48,28 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
             bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, aShape[i * 2 + 5] / 10),
             br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, aShape[i * 2 + 7] / 10);
 
-        const textScale = textSize / glyphSize;
-        vec2.scale(tl, tl, textScale);
-        vec2.scale(tr, tr, textScale);
-        vec2.scale(bl, bl, textScale);
-        vec2.scale(br, br, textScale);
+        if (uniforms['flipY'] === 0.0 && pitchWithMap === 1.0) {
+            vec2.multiply(tl, tl, AXIS_FACTOR);
+            vec2.multiply(tr, tr, AXIS_FACTOR);
+            vec2.multiply(bl, bl, AXIS_FACTOR);
+            vec2.multiply(br, br, AXIS_FACTOR);
+        }
 
-        let textRotation = symbol['textRotation'] || 0;
+        let textRotation = -(symbol['textRotation'] || 0) * Math.PI / 180;
         const mapRotation = !isAlongLine ? map.getBearing() * Math.PI / 180 : 0;
         if (textRotation || mapRotation) {
-            const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, rotateWidthMap, pitchWidthMap);
+            const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, rotateWidthMap, pitchWithMap);
             tl = vec2.transformMat2(tl, tl, shapeMatrix);
             tr = vec2.transformMat2(tr, tr, shapeMatrix);
             bl = vec2.transformMat2(bl, bl, shapeMatrix);
             br = vec2.transformMat2(br, br, shapeMatrix);
         }
+
+        const textScale = textSize / glyphSize;
+        vec2.scale(tl, tl, textScale);
+        vec2.scale(tr, tr, textScale);
+        vec2.scale(bl, bl, textScale);
+        vec2.scale(br, br, textScale);
 
         //1. 获得shape的tl, tr, bl, 和br
         //2. 计算旋转矩阵: shapeMatrix
@@ -71,12 +78,8 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
         //   3.2 如果pitchWidthMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
         //4. 将最终计算结果与dxdy相加
 
-        vec2.multiply(tl, tl, AXIS_FACTOR);
-        vec2.multiply(tr, tr, AXIS_FACTOR);
-        vec2.multiply(bl, bl, AXIS_FACTOR);
-        vec2.multiply(br, br, AXIS_FACTOR);
 
-        if (pitchWidthMap === 1) {
+        if (pitchWithMap === 1) {
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
         } else {
             getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);
@@ -96,7 +99,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
             tr = vec2.set(V2_1, aOffset[i * 2 + 2] / 10, aOffset[i * 2 + 3] / 10),
             bl = vec2.set(V2_2, aOffset[i * 2 + 4] / 10, aOffset[i * 2 + 5] / 10),
             br = vec2.set(V2_3, aOffset[i * 2 + 6] / 10, aOffset[i * 2 + 7] / 10);
-        if (pitchWidthMap === 1) {
+        if (pitchWithMap === 1) {
             getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
         } else {
             vec2.multiply(tl, tl, AXIS_FACTOR);

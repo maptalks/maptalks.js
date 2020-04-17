@@ -41,14 +41,20 @@ export function getIconBox(out, mesh, i, matrix, map) {
     const { aShape, symbol, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight, aPitchAlign, aRotationAlign } = geoProps;
     const markerDx = aMarkerDx ? aMarkerDx[i] : symbol['markerDx'];
     const markerDy = aMarkerDy ? aMarkerDy[i] : symbol['markerDy'];
-    const pitchWidthMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
-    const rotateWidthMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
+    const pitchWithMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
+    const rotateWithMap = aRotationAlign ? aRotationAlign[i] : uniforms['rotateWithMap'];
     const dxdy = vec2.set(DXDY, markerDx || 0, markerDy || 0);
 
     let tl = vec2.set(V2_0, aShape[i * 2] / 10, aShape[i * 2 + 1] / 10),
         tr = vec2.set(V2_1, aShape[i * 2 + 2] / 10, aShape[i * 2 + 3] / 10),
         bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, aShape[i * 2 + 5] / 10),
         br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, aShape[i * 2 + 7] / 10);
+    if (uniforms['flipY'] === 0.0 && pitchWithMap === 1.0) {
+        vec2.multiply(tl, tl, AXIS_FACTOR);
+        vec2.multiply(tr, tr, AXIS_FACTOR);
+        vec2.multiply(bl, bl, AXIS_FACTOR);
+        vec2.multiply(br, br, AXIS_FACTOR);
+    }
 
     let markerWidth = (aMarkerWidth ? aMarkerWidth[i] : symbol['markerWidth']);
     if (isNil(markerWidth)) {
@@ -64,17 +70,17 @@ export function getIconBox(out, mesh, i, matrix, map) {
     vec2.mul(bl, bl, sizeScale);
     vec2.mul(br, br, sizeScale);
 
-    let rotation = symbol['markerRotation'] || 0;
+    let rotation = -(symbol['markerRotation'] || 0) * Math.PI / 180;
 
     //1. 获得shape的tl, tr, bl, 和br
     //2. 计算旋转矩阵: shapeMatrix
     //3. 计算最终的shape
     //   3.1 如果没有pitchWithMap，值是 shapeMatrix * shape
-    //   3.2 如果pitchWidthMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
+    //   3.2 如果pitchWithMap， 值是aAnchor和shape相加后，projectPoint后的计算结果
     //4. 将最终计算结果与dxdy相加
     const mapRotation = map.getBearing() * Math.PI / 180;
-    if (mapRotation * rotateWidthMap || rotation) {
-        const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, rotateWidthMap, pitchWidthMap);
+    if (mapRotation * rotateWithMap || rotation) {
+        const shapeMatrix = getShapeMatrix(MAT2, rotation, mapRotation, rotateWithMap, pitchWithMap);
 
         tl = vec2.transformMat2(tl, tl, shapeMatrix);
         tr = vec2.transformMat2(tr, tr, shapeMatrix);
@@ -82,7 +88,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
         br = vec2.transformMat2(br, br, shapeMatrix);
     }
 
-    if (pitchWidthMap === 1) {
+    if (pitchWithMap === 1) {
         getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
     } else {
         vec2.multiply(tl, tl, AXIS_FACTOR);

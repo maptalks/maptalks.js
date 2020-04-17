@@ -41,6 +41,7 @@ attribute float aOpacity;
     uniform float rotateWithMap;
 #endif
 
+uniform float flipY;
 uniform float markerRotation;
 
 uniform float cameraToCenterDistance;
@@ -96,7 +97,11 @@ void main() {
     float angleCos = cos(rotation);
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    vec2 shape = (aShape / 10.0) / iconSize * vec2(markerWidth, markerHeight);
+    vec2 shape = (aShape / 10.0);
+    if (pitchWithMap == 1.0 && flipY == 0.0) {
+        shape *= vec2(1.0, -1.0);
+    }
+    shape = shape / iconSize * vec2(markerWidth, markerHeight);
     shape = shapeMatrix * shape;
 
     if (pitchWithMap == 0.0) {

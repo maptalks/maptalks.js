@@ -39,6 +39,7 @@ attribute float aColorOpacity;
     uniform float rotateWithMap;
 #endif
 
+uniform float flipY;
 uniform float textRotation;
 
 uniform float cameraToCenterDistance;
@@ -94,6 +95,9 @@ void main() {
     #endif
 
     vec2 shape = aShape / 10.0;
+    if (pitchWithMap == 1.0 && flipY == 0.0) {
+        shape = shape * vec2(1.0, -1.0);
+    }
     vec2 texCoord = aTexCoord;
 
     gl_Position = projViewModelMatrix * vec4(position, 1.0);

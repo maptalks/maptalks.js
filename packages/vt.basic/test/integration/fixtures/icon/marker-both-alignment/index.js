@@ -1,11 +1,5 @@
 const path = require('path');
-
-const data = {
-    type: 'FeatureCollection',
-    features: [
-        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } }
-    ]
-};
+const data = require('../../data');
 
 const style = [
     {
@@ -24,16 +18,19 @@ const style = [
             markerWidth: 30,
             markerHeight: 30,
             markerOpacity: 1,
-            markerRotation: 60
+            markerRotationAlignment: 'map',
+            markerPitchAlignment: 'map'
         }
     }
 ];
 
 module.exports = {
     style,
-    data,
+    data: data.point,
     view: {
         center: [0, 0],
-        zoom: 6
+        zoom: 6,
+        bearing: 60,
+        pitch: 40
     }
 };

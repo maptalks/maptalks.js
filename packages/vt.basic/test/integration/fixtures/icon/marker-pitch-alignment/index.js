@@ -9,13 +9,14 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                collision: false
+                collision: true,
+                fading: false
             }
         },
         symbol: {
-            markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
-            markerWidth: 30,
-            markerHeight: 30,
+            markerFile: 'file://' + path.resolve(__dirname, '../../../resources/1.png'),
+            markerWidth: 29,
+            markerHeight: 41,
             markerOpacity: 1,
             markerPitchAlignment: 'map'
         }

@@ -8,12 +8,13 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                collision: false
+                collision: true,
+                fading: false
             }
         },
         symbol: {
             textName: '无为',
-            textRotation: 90
+            textRotation: 60
         }
     }
 ];

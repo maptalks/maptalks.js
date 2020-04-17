@@ -280,6 +280,7 @@ class IconPainter extends CollisionPainter {
         const symbol = this.getSymbol();
         geometry.properties.symbol = symbol;
         const uniforms = {
+            flipY: 0,
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio
         };
@@ -612,6 +613,7 @@ class IconPainter extends CollisionPainter {
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
+                'flipY',
                 'markerWidth',
                 'markerHeight',
                 'markerDx',
@@ -681,6 +683,7 @@ class IconPainter extends CollisionPainter {
                 {
                     vert: pickingVert,
                     uniforms: [
+                        'flipY',
                         'markerWidth',
                         'markerHeight',
                         'markerDx',

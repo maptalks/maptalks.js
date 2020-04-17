@@ -47,15 +47,17 @@ export function getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, unif
 }
 
 export function getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio) {
-    /**
-     *  vec2 offset = shape * 2.0 / canvasSize;
-     *  //乘以distance，用来抵消透视齐次坐标
-        gl_Position.xy += offset * perspectiveRatio * distance;
-        */
-    vec2.scale(tl, tl, perspectiveRatio);
-    vec2.scale(tr, tr, perspectiveRatio);
-    vec2.scale(bl, bl, perspectiveRatio);
-    vec2.scale(br, br, perspectiveRatio);
+    if (perspectiveRatio !== 1) {
+        /**
+         *  vec2 offset = shape * 2.0 / canvasSize;
+         *  //乘以distance，用来抵消透视齐次坐标
+            gl_Position.xy += offset * perspectiveRatio * distance;
+            */
+        vec2.scale(tl, tl, perspectiveRatio);
+        vec2.scale(tr, tr, perspectiveRatio);
+        vec2.scale(bl, bl, perspectiveRatio);
+        vec2.scale(br, br, perspectiveRatio);
+    }
 
     //min
     vec2.set(MIN, Math.min(tl[0], tr[0], bl[0], br[0]), Math.min(tl[1], tr[1], bl[1], br[1]));
@@ -79,6 +81,6 @@ export function getShapeMatrix(out, rotation, mapRotation, rotateWithMap, pitchW
     // the order: c0r0, c0r1, c1r0, c1r1
     // const shapeMatrix = mat2.set(MAT2,
     //     angleCos, angleSin, -angleSin, angleCos);
-    const shapeMatrix = mat2.set(out, angleCos, -1.0 * angleSin, angleSin, angleCos);
+    const shapeMatrix = mat2.set(out, angleCos, -angleSin, angleSin, angleCos);
     return shapeMatrix;
 }

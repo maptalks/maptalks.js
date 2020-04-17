@@ -309,6 +309,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             }
             for (let i = 0; i < meshes.length; i++) {
                 meshes[i].setUniform('level', 0);
+                meshes[i].material.set('flipY', 1);
                 meshes[i].properties.meshKey = this.layer.getId() + (meshes[i].geometry.properties.iconAltas ? '_icon' : '_text');
                 // meshes[i].setLocalTransform(mat4.fromScaling([], [2, 2, 1]));
             }

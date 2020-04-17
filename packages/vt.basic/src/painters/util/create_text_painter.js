@@ -73,6 +73,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
 
     const glyphTexture = this.createAtlasTexture(glyphAtlas, false);
     const uniforms = {
+        flipY: 0,
         tileResolution: geometry.properties.tileResolution,
         tileRatio: geometry.properties.tileRatio,
         texture: glyphTexture,
@@ -108,6 +109,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
 
     if (uniforms['isHalo']) {
         const uniforms = {
+            flipY: 0,
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
             texture: glyphTexture,
@@ -253,6 +255,7 @@ export function createTextShader(layer, sceneConfig) {
     };
 
     const uniforms = [
+        'flipY',
         'textSize',
         'textDx',
         'textDy',

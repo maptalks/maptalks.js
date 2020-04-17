@@ -14,6 +14,7 @@ const style = [
             markerType: 'square',
             markerWidth: 128,
             markerHeight: 128,
+            markerLineWidth: 0,
             textName: '',
             textFill: '#fff',
             textSize: {

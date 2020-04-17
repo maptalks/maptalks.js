@@ -6,7 +6,9 @@ const marker1 = new maptalks.Marker([0, 0], {
         markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
         markerWidth: 30,
         markerHeight: 30,
-        markerOpacity: 1
+        markerOpacity: 1,
+        markerPitchAlignment: 'map',
+        markerRotationAlignment: 'map'
     }
 });
 
@@ -30,6 +32,8 @@ module.exports = {
     },
     view: {
         center: [0, 0],
-        zoom: 6
+        zoom: 6,
+        pitch: 30,
+        bearing: 60
     }
 };

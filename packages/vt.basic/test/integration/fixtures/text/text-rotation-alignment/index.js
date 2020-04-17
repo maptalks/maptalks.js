@@ -8,7 +8,8 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                collision: false
+                collision: true,
+                fading: false
             }
         },
         symbol: {
