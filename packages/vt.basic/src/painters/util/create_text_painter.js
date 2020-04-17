@@ -485,6 +485,7 @@ const BOX0 = [], BOX1 = [];
 const ANCHOR = [], PROJ_ANCHOR = [];
 
 export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, end, matrix/*, boxIndex*/) {
+    hasCollides = hasCollides === 1 ? 1 : 0;
     const map = this.getMap();
     const geoProps = mesh.geometry.properties;
     const symbol = geoProps.symbol;

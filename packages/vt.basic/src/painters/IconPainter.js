@@ -442,7 +442,7 @@ class IconPainter extends CollisionPainter {
             //     }
             // }
             //icon的element值，是text的element值处于text的char count
-            const visible = this.updateBoxCollisionFading(true, iconMesh, iconElements, 1, start, end, mvpMatrix, iconIndex);
+            const visible = this.updateBoxCollisionFading(true, iconMesh, iconElements, (end - start) / BOX_ELEMENT_COUNT, start, end, mvpMatrix, iconIndex);
 
             if (visible) {
                 if (textMesh) {
@@ -522,30 +522,57 @@ class IconPainter extends CollisionPainter {
     }
 
     forEachBox(mesh, elements, fn) {
+        const { aPickingId } = mesh.geometry.properties;
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         let index = 0;
-        for (let i = 0; i < elements.length; i += BOX_ELEMENT_COUNT) {
-            fn.call(this, mesh, i, i + BOX_ELEMENT_COUNT, matrix, index++);
+
+        let idx = elements[0];
+        let start = 0, current = aPickingId[idx];
+        for (let i = 0; i <= elements.length; i += BOX_ELEMENT_COUNT) {
+            idx = elements[i];
+            //pickingId发生变化，新的feature出现
+            if (aPickingId[idx] !== current || i === elements.length) {
+                fn.call(this, mesh, start, i, matrix, index++);
+                current = aPickingId[idx];
+                start = i;
+            }
         }
     }
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
         const map = this.getMap();
         const textMesh = mesh._textMesh;
-        let iconBox;
+        const iconBoxes = [];
         const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
         // debugger
         //icon and text
         let collides = 0;
         if (!mesh.geometry.properties.isEmpty) {
-            const firstBoxIdx = elements[start];
-            iconBox = getIconBox([], mesh, firstBoxIdx, matrix, map);
-            collides = this.isCollides(iconBox);
+            let offscreenCount = 0;
+            //insert every character's box into collision index
+            for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
+                //use int16array to save some memory
+                const box = getIconBox([], mesh, elements[j], matrix, map);
+                iconBoxes.push(box);
+                if (!collides) {
+                    const boxCollides = this.isCollides(box);
+                    if (boxCollides === 1) {
+                        collides = 1;
+                    } else if (boxCollides === -1) {
+                        //offscreen
+                        offscreenCount++;
+                    }
+                }
+            }
+            if (offscreenCount === boxCount) {
+                //所有box都offscreen时，可认为存在碰撞
+                collides = -1;
+            }
             if (!textMesh || !labelIndex || labelIndex && labelIndex[0] === -1) {
                 return {
                     collides,
-                    boxes: [iconBox]
+                    boxes: iconBoxes
                 };
             }
         }
@@ -564,8 +591,8 @@ class IconPainter extends CollisionPainter {
             }
         }
 
-        if (iconBox) {
-            textCollision.boxes.push(iconBox);
+        if (iconBoxes.length) {
+            textCollision.boxes.push(...iconBoxes);
         }
 
         return {

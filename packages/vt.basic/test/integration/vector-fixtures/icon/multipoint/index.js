@@ -13,7 +13,10 @@ const multiPoint = new maptalks.MultiPoint([[0, 0], [0, 0.2]], {
 module.exports = {
     data: [multiPoint],
     options: {
+        collision: true,
+        debugCollision: true,
         sceneConfig: {
+            collision: true,
             fading: false
         }
     },

@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { PointPack } from '@maptalks/vector-packer';
-import { mat4, vec4 } from '@maptalks/gl';
+import { mat4 } from '@maptalks/gl';
 import { extend, isNil } from '../../common/Util';
 import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 import Vector3DLayer from './Vector3DLayer';

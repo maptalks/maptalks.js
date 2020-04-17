@@ -1,4 +1,4 @@
-import { isNil, isFnTypeSymbol, extend } from '../style/Util';
+import { isNil, isFnTypeSymbol } from '../style/Util';
 import { getMarkerPathBase64, evaluateIconSize, evaluateTextSize } from '../style/Marker';
 import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
