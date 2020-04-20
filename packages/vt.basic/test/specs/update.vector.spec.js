@@ -120,6 +120,140 @@ describe('vector layers update style specs', () => {
         });
     });
 
+    it('should can set style to pointlayer', done => {
+        const marker = new maptalks.Marker([0, 0]);
+        const layer = new PointLayer('vector', marker, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        markerType: 'ellipse',
+                        markerFill: '#f00',
+                        markerWidth: 30,
+                        markerHeight: 30,
+                        markerVerticalAlignment: 'middle'
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.once('canvasisdirty', () => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            done();
+        });
+        layer.addTo(map);
+    });
+
+    //添加Geometry
+    it('should can add marker to pointlayer', done => {
+        const marker = new maptalks.Marker([0, 0]);
+        const layer = new PointLayer('vector', {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        markerType: 'ellipse',
+                        markerFill: '#f00',
+                        markerWidth: 30,
+                        markerHeight: 30,
+                        markerVerticalAlignment: 'middle'
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.once('canvasisdirty', () => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            done();
+        });
+        layer.addTo(map);
+        layer.addGeometry(marker);
+    });
+
+    //更新坐标
+    it('should can update marker coordinates', done => {
+        const marker = new maptalks.Marker([0, 0]);
+        const layer = new PointLayer('vector', marker, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        markerType: 'ellipse',
+                        markerFill: '#f00',
+                        markerWidth: 30,
+                        markerHeight: 30,
+                        markerVerticalAlignment: 'middle'
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                marker.setCoordinates([1, 0]);
+            } else if (count === 3) {
+                let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 50, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    //删除Geometry
+    it('should can remove marker from pointlayer', done => {
+        const markers = [
+            new maptalks.Marker([0, 0]),
+            new maptalks.Marker([0, 1]),
+        ];
+        const layer = new PointLayer('vector', markers, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        markerType: 'ellipse',
+                        markerFill: '#f00',
+                        markerWidth: 30,
+                        markerHeight: 30,
+                        markerVerticalAlignment: 'middle'
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                markers[0].remove();
+            } else if (count === 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                //marker with [0, 1]
+                const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
+                assert.deepEqual(pixel2, [255, 0, 0, 255]);
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                //marker with [0, 1]
+                const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
+                assert.deepEqual(pixel2, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
 
     function assertChangeStyle(done, LayerClass, data, expectedColor, offset, changeFun, isSetStyle) {
         if (typeof offset === 'function') {

@@ -353,13 +353,15 @@ export default class VectorPack {
 
 function serializeAtlas(atlas) {
     let positions = atlas.positions;
-    let format = 'alpha';
+    let format = atlas.image && atlas.image.format || 'alpha';
     if (atlas instanceof IconAtlas) {
         //iconAtlas中原属性用get方法实现，无法transfer，故遍历复制为普通对象
         positions = {};
         for (const p in atlas.positions) {
             const pos = atlas.positions[p];
             positions[p] = {
+                paddedRect: pos.paddedRect,
+                pixelRatio: pos.pixelRatio,
                 tl: pos.tl,
                 br: pos.br,
                 displaySize: pos.displaySize

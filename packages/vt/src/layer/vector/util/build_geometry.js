@@ -49,7 +49,7 @@ export function convertToFeature(geo) {
         }
     }
     let properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
-    const symbol = geo.getSymbol();
+    const symbol = geo._getInternalSymbol();
     if (Array.isArray(symbol) && symbol.length) {
         const props = [];
         for (let i = 0; i < symbol.length; i++) {

@@ -165,8 +165,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const geometry = this.painter.createGeometry(packData.data, features.map(feature => { return { feature }; }));
             this.fillCommonProps(geometry);
 
-            this._atlas = {
-                iconAltas: packData.data.iconAtlas
+            this.atlas = {
+                iconAtlas: packData.data.iconAtlas
             };
 
             const transform = mat4.translate([], mat4.identity([]), center);
@@ -256,10 +256,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._dirtySymbol = true;
     }
 
-    onGeometryAdd(geometries) {
-        if (!geometries || !geometries.length) {
-            return;
-        }
+    _convertGeometries(geometries) {
         const layerId = this.layer.getId();
         for (let i = 0; i < geometries.length; i++) {
             const geo = geometries[i];
@@ -267,6 +264,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             for (let ii = 0; ii < this.GeometryTypes.length; ii++) {
                 if (geo instanceof this.GeometryTypes[ii]) {
                     hit = true;
+                    break;
                 }
             }
             if (!hit) {
@@ -275,10 +273,15 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!geo[ID_PROP]) {
                 geo[ID_PROP] = this._counter++;
             }
-            if (!this.features[geo[ID_PROP]]) {
-                this.features[geo[ID_PROP]] = convertToFeature(geo);
-            }
+            this.features[geo[ID_PROP]] = convertToFeature(geo);
         }
+    }
+
+    onGeometryAdd(geometries) {
+        if (!geometries || !geometries.length) {
+            return;
+        }
+        this._convertGeometries(geometries);
         this._markRebuild();
         redraw(this);
     }
@@ -289,7 +292,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         for (let i = 0; i < geometries.length; i++) {
             const geo = geometries[i];
-            if (geo[ID_PROP]) {
+            if (geo[ID_PROP] !== undefined) {
                 delete this.features[geo[ID_PROP]];
             }
         }
@@ -349,12 +352,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         redraw(this);
     }
 
-    onGeometryShapeChange() {
+    onGeometryShapeChange(e) {
+        this._convertGeometries([e.target]);
         this._markRebuildGeometry();
         redraw(this);
     }
 
-    onGeometryPositionChange() {
+    onGeometryPositionChange(e) {
+        this._convertGeometries([e.target]);
         this._markRebuildGeometry();
         redraw(this);
     }

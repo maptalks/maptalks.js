@@ -291,13 +291,21 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
         const pointPacks = symbols.map((symbol, idx) => new PointPack(features, symbol, options[idx]).load());
 
         Promise.all(pointPacks).then(packData => {
+            if (this.meshes) {
+                this.painter.deleteMesh(this.meshes);
+                delete this.meshes;
+            }
+            if (!packData || !packData.length) {
+                this.setToRedraw();
+                return;
+            }
             const geometries = this.painter.createGeometry(packData.map(d => d && d.data), features.map(feature => { return { feature }; }));
             for (let i = 0; i < geometries.length; i++) {
                 this.fillCommonProps(geometries[i]);
             }
 
-            this._atlas = {
-                iconAltas: packData[0] && packData[0].data.iconAtlas,
+            this.atlas = {
+                iconAtlas: packData[0] && packData[0].data.iconAtlas,
                 glyphAtlas: packData[1] && packData[1].data.glyphAtlas
             };
             // const transform = mat4.identity([]);
@@ -310,7 +318,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             for (let i = 0; i < meshes.length; i++) {
                 meshes[i].setUniform('level', 0);
                 meshes[i].material.set('flipY', 1);
-                meshes[i].properties.meshKey = this.layer.getId() + (meshes[i].geometry.properties.iconAltas ? '_icon' : '_text');
+                meshes[i].properties.meshKey = this.layer.getId() + (meshes[i].geometry.properties.iconAtlas ? '_icon' : '_text');
                 // meshes[i].setLocalTransform(mat4.fromScaling([], [2, 2, 1]));
             }
 
