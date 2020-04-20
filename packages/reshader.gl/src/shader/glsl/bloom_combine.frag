@@ -1,3 +1,4 @@
+//DEPRECATED
 #version 100
 precision highp float;
 uniform float uBloomFactor;

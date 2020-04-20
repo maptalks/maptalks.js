@@ -1,3 +1,4 @@
+//DEPRECATED
 import QuadShader from './QuadShader.js';
 import vert from './glsl/quad.vert';
 import frag from './glsl/bloom_extract.frag';

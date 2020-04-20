@@ -20,15 +20,16 @@ class GroundPainter {
     }
 
     getSymbol() {
-        return this._sceneConfig.ground && this._sceneConfig.ground.symbol;
+        const sceneConfig = this._layer._getSceneConfig();
+        return sceneConfig.ground && sceneConfig.ground.symbol;
     }
 
     isEnable() {
-        return this._sceneConfig.ground && this._sceneConfig.ground.enable;
+        const sceneConfig = this._layer._getSceneConfig();
+        return sceneConfig.ground && sceneConfig.ground.enable;
     }
 
     paint(context) {
-        this._sceneConfig = this._layer.getSceneConfig();
         if (!this.isEnable()) {
             return;
         }
@@ -56,10 +57,8 @@ class GroundPainter {
     }
 
     update() {
-        if (!this._sceneConfig) {
-            this._sceneConfig = this._layer.getSceneConfig();
-        }
-        const symbol = this._sceneConfig.ground && this._sceneConfig.ground.symbol;
+        const sceneConfig = this._layer._getSceneConfig();
+        const symbol = sceneConfig.ground && sceneConfig.ground.symbol;
         if (!symbol) {
             this._polygonFill = [1, 1, 1, 1];
             this._polygonOpacity = 1;
@@ -129,8 +128,9 @@ class GroundPainter {
     }
 
     _getShader() {
-        const groundConfig = this._sceneConfig.ground;
-        if (!groundConfig.renderPlugin) {
+        const sceneConfig = this._layer._getSceneConfig();
+        const groundConfig = sceneConfig.ground;
+        if (!groundConfig || !groundConfig.renderPlugin) {
             return this._fillShader;
         }
         const type = groundConfig.renderPlugin.type;
@@ -227,7 +227,7 @@ class GroundPainter {
                 enable: true,
                 // mask: true,
                 // range: () => {
-                //     const ground = this._sceneConfig.ground;
+                //     const ground = sceneConfig.ground;
                 //     return !!ground && !!ground.depth ? [0, 1] : [1, 1];
                 // },
 
@@ -275,7 +275,7 @@ class GroundPainter {
             this._defines = {};
         }
         const defines = this._defines;
-        const sceneConfig = this._sceneConfig;
+        const sceneConfig = this._layer._getSceneConfig();
         let dirty = false;
 
         function update(has, name) {

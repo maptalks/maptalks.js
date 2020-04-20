@@ -1,3 +1,4 @@
+//DEPRECATED
 #version 100
 precision mediump float;
 uniform float uRGBMRange;
