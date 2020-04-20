@@ -3,7 +3,7 @@ import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
-import { isFnTypeSymbol } from '../style/Util';
+import { isNil, isFnTypeSymbol } from '../style/Util';
 import { isOut } from './util/util';
 
 // NOTE ON EXTRUDE SCALE:
@@ -182,12 +182,16 @@ export default class LinePack extends VectorPack {
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            this.feaLineWidth = this.lineWidthFn(this.options['zoom'], feature.properties) || 0;
+            let lineWidth = this.lineWidthFn(this.options['zoom'], feature.properties);
+            if (isNil(lineWidth)) {
+                lineWidth = 4;
+            }
+            this.feaLineWidth = lineWidth;
         } else {
             this.feaLineWidth = symbol['lineWidth'];
         }
         if (this.colorFn) {
-            this.feaColor = this.colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 0];
+            this.feaColor = this.colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
             if (!Array.isArray(this.feaColor)) {
                 this.feaColor = Color(this.feaColor).array();
             }
@@ -196,7 +200,11 @@ export default class LinePack extends VectorPack {
             }
         }
         if (this.opacityFn) {
-            this.feaOpacity = 255 * this.opacityFn(this.options['zoom'], feature.properties);
+            let opacity = this.opacityFn(this.options['zoom'], feature.properties);
+            if (isNil(opacity)) {
+                opacity = 1;
+            }
+            this.feaOpacity = 255 * opacity;
         }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine

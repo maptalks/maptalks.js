@@ -5,7 +5,7 @@ import earcut from 'earcut';
 import { getIndexArrayType } from './util/array';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
-import { isFnTypeSymbol } from '../style/Util';
+import { isFnTypeSymbol, isNil } from '../style/Util';
 
 const EARCUT_MAX_RINGS = 500;
 
@@ -98,7 +98,7 @@ export default class PolygonPack extends VectorPack {
     _addPolygon(geometry, feature) {
         let dynFill, dynOpacity;
         if (this._polygonFillFn) {
-            dynFill = this._polygonFillFn(null, feature.properties) || [0, 0, 0, 0];
+            dynFill = this._polygonFillFn(this.options['zoom'], feature.properties) || [255, 255, 255, 255];
             if (!Array.isArray(dynFill)) {
                 dynFill = Color(dynFill).array();
             }
@@ -107,7 +107,11 @@ export default class PolygonPack extends VectorPack {
             }
         }
         if (this._polygonOpacityFn) {
-            dynOpacity = (this._polygonOpacityFn(null, feature.properties) || 0) * 255;
+            dynOpacity = this._polygonOpacityFn(this.options['zoom'], feature.properties);
+            if (isNil(dynOpacity)) {
+                dynOpacity = 1;
+            }
+            dynOpacity *= 255;
         }
 
         const uvSize = 256;

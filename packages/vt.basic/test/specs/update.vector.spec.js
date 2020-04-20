@@ -1,7 +1,7 @@
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PointLayer } = require('@maptalks/vt');
+const { PointLayer, LineStringLayer } = require('@maptalks/vt');
 require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
@@ -246,6 +246,127 @@ describe('vector layers update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
                 //marker with [0, 1]
+                const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
+                assert.deepEqual(pixel2, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+
+    it('should can set style to LineStringLayer', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]]);
+        const layer = new LineStringLayer('vector', line, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.once('canvasisdirty', () => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            done();
+        });
+        layer.addTo(map);
+    });
+
+    //添加Geometry
+    it('should can add lineString to LineStringLayer', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]]);
+        const layer = new LineStringLayer('vector', {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.once('canvasisdirty', () => {
+            const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            done();
+        });
+        layer.addTo(map);
+        layer.addGeometry(line);
+    });
+
+    //更新坐标
+    it('should can update LineString coordinates', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]]);
+        const layer = new LineStringLayer('vector', line, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                line.setCoordinates([[-1, 1], [1, 1]]);
+            } else if (count === 3) {
+                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    //删除Geometry
+    it('should can remove lineString from LineStringLayer', done => {
+        const lines = [
+            new maptalks.LineString([[-1, 0], [1, 0]]),
+            new maptalks.LineString([[-1, 1], [1, 1]]),
+        ];
+        const layer = new LineStringLayer('vector', lines, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }
+            ]
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                lines[0].remove();
+            } else if (count === 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
+                assert.deepEqual(pixel2, [255, 0, 0, 255]);
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
                 const pixel2 = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel2, [255, 0, 0, 255]);
                 done();
