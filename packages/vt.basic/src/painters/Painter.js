@@ -437,6 +437,7 @@ class Painter {
         if (!this.picking) {
             return;
         }
+        const canvas = this.layer.getRenderer().canvas;
         const pickingVert = this.picking.getPickingVert();
         const defines = {
             'ENABLE_PICKING': 1,
@@ -456,11 +457,11 @@ class Painter {
                 viewport: {
                     x: 0,
                     y: 0,
-                    width: context => {
-                        return context.framebufferWidth;
+                    width: () => {
+                        return canvas.width;
                     },
-                    height: context => {
-                        return context.framebufferHeight;
+                    height: () => {
+                        return canvas.height;
                     }
                 },
                 depth: {
