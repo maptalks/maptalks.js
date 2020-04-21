@@ -3,7 +3,7 @@ import { buildFaceUV, buildSideUV } from './UV';
 import { pushIn, getUnsignedArrayType, getPosArrayType } from '../../common/Util';
 import { clipPolygon } from './clip';
 import earcut from 'earcut';
-import { KEY_IDX } from './Constant';
+import { KEY_IDX } from '../../common/Constant';
 
 export function buildExtrudeFaces(
     features, EXTENT,

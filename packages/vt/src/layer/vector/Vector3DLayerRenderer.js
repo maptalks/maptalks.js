@@ -3,6 +3,7 @@ import { createREGL, reshader, mat4 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
 import { IconRequestor } from '@maptalks/vector-packer';
 import { extend, isNumber } from '../../common/Util';
+import { KEY_IDX } from '../../common/Constant';
 
 const SYMBOL_SIMPLE_PROPS = {
     textFill: 1,
@@ -39,6 +40,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     constructor(...args) {
         super(...args);
         this.features = {};
+        this._geometries = {};
         this._counter = 1;
     }
 
@@ -122,27 +124,53 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.painter.updateSymbol(this.painterSymbol);
     }
 
-    buildMesh(atlas) {
+    _getFeaturesToRender(fn) {
         const features = [];
         const center = [0, 0, 0, 0];
+        //为了解决UglifyJS对 feature[KEY_IDX] 不正确的mangle
+        const keyName = (KEY_IDX + '').trim();
+        let count = 0;
         for (const p in this.features) {
             if (this.features.hasOwnProperty(p)) {
                 const feature = this.features[p];
                 if (feature.visible) {
                     this.addCoordsToCenter(feature.geometry, center);
+                    feature[keyName] = count++;
                     features.push(feature);
+                }
+                if (fn) {
+                    fn(feature);
                 }
             }
         }
+        this._currentFeatures = features;
+
         if (!features.length) {
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
                 delete this.meshes;
             }
+        }
+        if (center[3]) {
+            center[0] /= center[3];
+            center[1] /= center[3];
+        }
+        return {
+            features,
+            center
+        };
+    }
+
+    buildMesh(atlas) {
+        //TODO 更新symbol的优化
+        //1. 如果只影响texture，则只重新生成texture
+        //2. 如果不影响Geometry，则直接调用painter.updateSymbol
+        //3. Geometry和Texture全都受影响时，则全部重新生成
+        const { features, center } = this._getFeaturesToRender();
+        if (!features.length) {
             return;
         }
-        center[0] /= center[3];
-        center[1] /= center[3];
+
         const options = {
             zoom: this.getMap().getZoom(),
             EXTENT: Infinity,
@@ -273,8 +301,21 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!geo[ID_PROP]) {
                 geo[ID_PROP] = this._counter++;
             }
-            this.features[geo[ID_PROP]] = convertToFeature(geo);
+            const uid = geo[ID_PROP];
+            this.features[uid] = convertToFeature(geo);
+            this.features[uid][ID_PROP] = uid;
+            this._geometries[uid] = geo;
         }
+    }
+
+    pick(x, y, options) {
+        const hits = [];
+        if (this.painter) {
+            const picked = this.painter.pick(x, y, options.tolerance);
+            const feature = this._currentFeatures[picked.pickingId];
+            hits.push(this._geometries[feature[ID_PROP]]);
+        }
+        return hits;
     }
 
     onGeometryAdd(geometries) {
@@ -294,6 +335,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const geo = geometries[i];
             if (geo[ID_PROP] !== undefined) {
                 delete this.features[geo[ID_PROP]];
+                delete this._geometries[geo[ID_PROP]];
             }
         }
         this._markRebuild();

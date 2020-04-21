@@ -4,7 +4,7 @@ import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, Line
 // import { GlyphRequestor } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 import { createFilter } from '@maptalks/feature-filter';
-import { KEY_IDX } from '../builder/Constant';
+import { KEY_IDX } from '../../common/Constant';
 // import Browser from '../util/Browser';
 
 // let FONT_CANVAS;

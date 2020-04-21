@@ -1,6 +1,6 @@
 import { countVertexes, isClippedEdge, fillPosArray, getHeightValue } from './Common';
 import { getIndexArrayType, getPosArrayType } from '../../common/Util';
-import { KEY_IDX } from './Constant';
+import { KEY_IDX } from '../../common/Constant';
 
 export function buildWireframe(
     features, EXTENT,

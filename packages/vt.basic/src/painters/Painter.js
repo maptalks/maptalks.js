@@ -134,7 +134,7 @@ class Painter {
     }
 
     pick(x, y, tolerance = 3) {
-        if (!this.layer.options['picking'] || !this.sceneConfig.picking === false) {
+        if (!this.layer.options['picking'] || this.sceneConfig.picking === false) {
             return null;
         }
         if (!this.pickingFBO || !this.picking) {
@@ -164,6 +164,11 @@ class Painter {
         if (!props.features) {
             //GLTFPhongPainter中，因为geometry是gltf数据，由全部的tile共享，features是存储在mesh上的
             props = mesh.properties;
+        }
+        if (point && point.length) {
+            point[0] = Math.round(point[0] * 1E5) / 1E5;
+            point[1] = Math.round(point[1] * 1E5) / 1E5;
+            point[2] = Math.round(point[2] * 1E5) / 1E5;
         }
         return {
             data: props && props.features && props.features[pickingId],

@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
 
 const defaultOptions = {
+    picking: true,
     renderer: 'gl',
     forceRenderOnZooming: true,
     forceRenderOnMoving: true,
@@ -51,6 +52,27 @@ class Vector3DLayer extends maptalks.OverlayLayer {
 
     getTotalPolygonOffset() {
         return this._totalPolygonOffset;
+    }
+
+    /**
+     * Identify the geometries on the given coordinate
+     * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
+     * @return {Geometry[]} geometries identified
+     */
+    identify(coordinate, options = {}) {
+        const map = this.getMap();
+        const renderer = this.getRenderer();
+        if (!map || !renderer) {
+            return [];
+        }
+        const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
+        const dpr = this.getMap().getDevicePixelRatio();
+        const x = cp.x * dpr;
+        const y = cp.y * dpr;
+        return renderer.pick(x, y, options);
     }
 }
 

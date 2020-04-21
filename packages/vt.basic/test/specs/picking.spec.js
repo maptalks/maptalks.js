@@ -28,7 +28,7 @@ describe('picking specs', () => {
         document.body.appendChild(container);
     });
     afterEach(() => {
-        // map.remove();
+        map.remove();
     });
     const runner = (options, coord, expected, ignoreSymbol, done) => {
         map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
@@ -631,6 +631,184 @@ describe('picking specs', () => {
             layer.addTo(map);
         });
     });
+
+    context('vector layer\'s picking', () => {
+        it('should pick point in PointLayer', done => {
+            const options = {
+                view: {
+                    center: [0, 0],
+                    zoom: 6
+                }
+            };
+            const data = {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    properties: {
+                        idx: 10
+                    }
+                }, {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [0.6, 0.6]
+                    },
+                    properties: {
+                        idx: 11
+                    }
+                }]
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new PointLayer('gvt', data, {
+                style: [
+                    {
+                        filter: true,
+                        symbol: {
+                            markerType: 'ellipse',
+                            markerFill: '#f00',
+                            markerWidth: 10,
+                            markerHeight: 10,
+                            markerLineWidth: 0
+                        }
+                    }
+                ]
+            });
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([0.6, 0.6]);
+                assert(redPoint[0] instanceof maptalks.Marker);
+                assert(redPoint[0].getProperties().idx === 11);
+                done();
+            });
+            layer.addTo(map);
+
+        });
+
+        it('should pick lines in LineStringLayer', done => {
+            const options = {
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            const data = {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: [
+                            [13.417135053741617, 52.52946625878565],
+                            [13.417226248848124, 52.52946625878565],
+                        ]
+                    },
+                    properties: {
+                        idx: 10
+                    }
+                }, {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: [
+                            [13.417135053741617, 52.52956625878565],
+                            [13.417226248848124, 52.52956625878565],
+                        ]
+                    },
+                    properties: {
+                        idx: 11
+                    }
+                }]
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new LineStringLayer('gvt', data, {
+                style: [
+                    {
+                        filter: true,
+                        symbol: {
+                            lineColor: '#f00',
+                            lineWidth: 10
+                        }
+                    }
+                ]
+            });
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52956625878565]);
+                assert(redPoint[0] instanceof maptalks.LineString);
+                assert(redPoint[0].getProperties().idx === 11);
+                done();
+            });
+            layer.addTo(map);
+        });
+
+        it('should pick polygon in polygonLayer', done => {
+            const options = {
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            const data = {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [13.417135053741617, 52.52976625878565],
+                                [13.417226248848124, 52.52976625878565],
+                                [13.417226248848124, 52.52966625878565],
+                                [13.417135053741617, 52.52966625878565],
+                                [13.417135053741617, 52.52976625878565]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        idx: 10
+                    }
+                }, {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [13.417135053741617, 52.52956625878565],
+                                [13.417226248848124, 52.52956625878565],
+                                [13.417226248848124, 52.52946625878565],
+                                [13.417135053741617, 52.52946625878565],
+                                [13.417135053741617, 52.52956625878565]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        idx: 11
+                    }
+                }]
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new PolygonLayer('gvt', data, {
+                style: [
+                    {
+                        filter: true,
+                        symbol: {
+                            polygonFill: '#f00'
+                        }
+                    }
+                ]
+            });
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52949625878565]);
+                assert(redPoint[0] instanceof maptalks.Polygon);
+                assert(redPoint[0].getProperties().idx === 11);
+                done();
+            });
+            layer.addTo(map);
+        });
+    });
+
     const COMMON_OPTIONS = {
         data: {
             type: 'FeatureCollection',
@@ -665,6 +843,7 @@ describe('picking specs', () => {
             zoom: 8
         }
     };
+
     it('should let options.features control picking result', done => {
         map = new maptalks.Map(container, COMMON_OPTIONS.view || DEFAULT_VIEW);
         const options = JSON.parse(JSON.stringify(COMMON_OPTIONS));
@@ -679,6 +858,7 @@ describe('picking specs', () => {
         });
         layer.addTo(map);
     }).timeout(5000);
+
     it('should pick in a GroupGLLayer', done => {
         map = new maptalks.Map(container, COMMON_OPTIONS.view || DEFAULT_VIEW);
         const layer1 = new GeoJSONVectorTileLayer('gvt1', COMMON_OPTIONS);

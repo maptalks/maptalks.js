@@ -7,7 +7,6 @@ import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 import Promise from '../../common/Promise';
 
-
 const defaultOptions = {
     glyphSdfLimitPerFrame: 15,
     iconErrorUrl: null,
@@ -242,35 +241,15 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
     }
 
     buildMesh(atlas) {
-        //TODO 更新symbol的优化
-        //1. 如果只影响texture，则只重新生成texture
-        //2. 如果不影响Geometry，则直接调用painter.updateSymbol
-        //3. Geometry和Texture全都受影响时，则全部重新生成
         let hasText = false;
-        const features = [];
-        const center = [0, 0, 0, 0];
-        for (const p in this.features) {
-            if (this.features.hasOwnProperty(p)) {
-                const feature = this.features[p];
-                if (!isNil(feature.properties['_symbol_textName'])) {
-                    hasText = true;
-                }
-                if (feature.visible) {
-                    this.addCoordsToCenter(feature.geometry, center);
-                    features.push(feature);
-                }
+        const { features, center } = this._getFeaturesToRender(feature => {
+            if (!isNil(feature.properties['_symbol_textName'])) {
+                hasText = true;
             }
-        }
+        });
         if (!features.length) {
-            if (this.meshes) {
-                this.painter.deleteMesh(this.meshes);
-                delete this.meshes;
-            }
             return;
         }
-        center[0] /= center[3];
-        center[1] /= center[3];
-
         const options = [
             {
                 zoom: this.getMap().getZoom(),
