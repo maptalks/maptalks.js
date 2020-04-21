@@ -3,7 +3,10 @@ const assert = require('assert');
 const data = require('../integration/fixtures/data');
 const maptalks = require('maptalks');
 const {
-    GeoJSONVectorTileLayer
+    GeoJSONVectorTileLayer,
+    PointLayer,
+    LineStringLayer,
+    PolygonLayer
 } = require('@maptalks/vt');
 const {
     GroupGLLayer
@@ -25,7 +28,7 @@ describe('picking specs', () => {
         document.body.appendChild(container);
     });
     afterEach(() => {
-        map.remove();
+        // map.remove();
     });
     const runner = (options, coord, expected, ignoreSymbol, done) => {
         map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
@@ -496,6 +499,138 @@ describe('picking specs', () => {
             layer.addTo(map);
         });
     });
+    context('line and polygon', () => {
+        it('should pick lines', done => {
+            const options = {
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: [
+                                [13.417135053741617, 52.52956625878565],
+                                [13.417226248848124, 52.52956625878565],
+                            ]
+                        }
+                    }]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: {
+                            type: 'line'
+                        }
+                    },
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52956625878565]);
+                const expected = {
+                    'feature': {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'LineString',
+                            'coordinates': [
+                                [13.417135053741617, 52.52956625878565],
+                                [13.417226248848124, 52.52956625878565]
+                            ]
+                        },
+                        'id': 0,
+                        'layer': 0
+                    },
+                    'symbol': {
+                        'lineColor': '#f00',
+                        'lineWidth': 20
+                    }
+                };
+                assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
+                done();
+            });
+            layer.addTo(map);
+        });
+        it('should pick polygon', done => {
+            const options = {
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: [
+                                [
+                                    [13.417135053741617, 52.52956625878565],
+                                    [13.417226248848124, 52.52956625878565],
+                                    [13.417226248848124, 52.52946625878565],
+                                    [13.417135053741617, 52.52946625878565],
+                                    [13.417135053741617, 52.52956625878565]
+                                ]
+                            ]
+                        }
+                    }]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin: {
+                        type: 'fill',
+                        dataConfig: {
+                            type: 'fill'
+                        }
+                    },
+                    symbol: {
+                        polygonFill: '#f00',
+                        polygonOpacity: 1
+                    }
+                }],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52956625878565]);
+                const expected = {
+                    'feature': {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Polygon',
+                            'coordinates': [
+                                [
+                                    [13.417135053741617, 52.52956625878565],
+                                    [13.417226248848124, 52.52956625878565],
+                                    [13.417226248848124, 52.52946625878565],
+                                    [13.417135053741617, 52.52946625878565],
+                                    [13.417135053741617, 52.52956625878565]
+                                ]
+                            ]
+                        },
+                        'id': 0,
+                        'layer': 0
+                    },
+                    'symbol': {
+                        'polygonFill': '#f00',
+                        'polygonOpacity': 1
+                    }
+                };
+                assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
+                done();
+            });
+            layer.addTo(map);
+        });
+    });
     const COMMON_OPTIONS = {
         data: {
             type: 'FeatureCollection',
@@ -571,5 +706,4 @@ describe('picking specs', () => {
         });
         group.addTo(map);
     });
-    //TODO line 和 Polygon 的picking 测试
 });

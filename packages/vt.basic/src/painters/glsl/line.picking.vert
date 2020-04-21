@@ -16,7 +16,10 @@
 
 attribute vec3 aPosition;
 attribute vec2 aExtrude;
-#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+#if defined(HAS_UP)
+    attribute float aUp;
+#endif
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
     attribute float aLinesofar;
     varying highp float vLinesofar;
 #endif
@@ -53,10 +56,18 @@ varying vec2 vNormal;
 void main() {
     vec3 position = vec3(aPosition);
 
-    position.xy = floor(position.xy * 0.5);
+    #ifdef HAS_UP
+        // aUp = round * 2 + up;
+        float round = floor(aUp * 0.5);
+        float up = aUp - round * 2.0;
+        //transfer up from (0 to 1) to (-1 to 1)
+        vNormal = vec2(round, up * 2.0 - 1.0);
+    #else
+        position.xy = floor(position.xy * 0.5);
 
-    vNormal = aPosition.xy - 2.0 * position.xy;
-    vNormal.y = vNormal.y * 2.0 - 1.0;
+        vNormal = aPosition.xy - 2.0 * position.xy;
+        vNormal.y = vNormal.y * 2.0 - 1.0;
+    #endif
 
     float gapwidth = lineGapWidth / 2.0;
     #ifdef HAS_LINE_WIDTH
