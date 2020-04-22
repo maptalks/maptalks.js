@@ -184,12 +184,11 @@ function createPainterPlugin(type, Painter) {
                         redraw = true;
                     }
                 }
-                if (bloom && painter.getSymbol()['bloom']) {
-                    if (Array.isArray(mesh)) {
-                        mesh.forEach(m => m.setUniform('bloom', 1));
-                    } else {
-                        mesh.setUniform('bloom', 1);
-                    }
+                const bloomValue = +(bloom && painter.getSymbol()['bloom']);
+                if (Array.isArray(mesh)) {
+                    mesh.forEach(m => m.setUniform('bloom', bloomValue));
+                } else {
+                    mesh.setUniform('bloom', bloomValue);
                 }
 
                 painter.addMesh(mesh, progress);

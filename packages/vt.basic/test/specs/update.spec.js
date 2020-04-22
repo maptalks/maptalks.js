@@ -11,6 +11,7 @@ const DEFAULT_VIEW = {
     zoom: 6,
     pitch: 0,
     bearing: 0,
+    attribution: false,
     lights: {
         ambient: {
             color: [0.1, 0.1, 0.1]
@@ -548,6 +549,71 @@ describe('update style specs', () => {
                         assert.deepEqual(pixel, [78, 1, 1, 255]);
                         done();
                     }
+                }
+            });
+        });
+        groupLayer.addTo(map);
+    });
+
+    it('should can update symbol to turn off bloom, maptalks-studio#418', done => {
+        //https://github.com/fuzhenn/maptalks-studio/issues/418
+        const linePlugin = {
+            filter: true,
+            renderPlugin: {
+                type: 'line',
+                dataConfig: { type: 'line' },
+            },
+            symbol: { bloom: true, lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+        };
+        const style = [
+            linePlugin
+        ];
+        map.setLightConfig({
+            ambient: {
+                color: [0.3, 0.3, 0.3]
+            },
+            directional: {
+                color: [0.5, 0.5, 0.5],
+                direction: [1, 1, 1]
+            }
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: {
+                    enable: true
+                }
+            }
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const groupLayer = new GroupGLLayer('group', [
+            layer
+        ], { sceneConfig });
+
+        let painted = false;
+        let count = 0;
+        layer.once('canvasisdirty', () => {
+            groupLayer.on('layerload', () => {
+                const canvas = groupLayer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+                if (pixel[3] > 0) {
+                    if (!painted) {
+                        assert.deepEqual(pixel, [0, 207, 0, 87]);
+
+                        layer.updateSymbol(0, { bloom: false });
+                        painted = true;
+                    }
+                }
+                if (painted) {
+                    count++;
+                    if (count === 2) {
+                        assert.deepEqual(pixel, [0, 0, 0, 0]);
+                        done();
+                    }
+
                 }
             });
         });
