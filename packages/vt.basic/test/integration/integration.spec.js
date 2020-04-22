@@ -46,11 +46,15 @@ describe('vector tile integration specs', () => {
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
+            const eventName = style.eventName || 'canvasisdirty';
+            const limit = style.renderingCount || 1;
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             let generated = false;
-            layer.once('canvasisdirty', () => {
+            let count = 0;
+            layer.once(eventName, () => {
+                count++;
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 if (GENERATE_MODE) {
@@ -63,7 +67,7 @@ describe('vector tile integration specs', () => {
                         generated = true;
                         done();
                     }
-                } else {
+                } else if (count >= limit) {
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
