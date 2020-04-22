@@ -383,6 +383,42 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update symbol when markerFile is null, fuzhenn/maptalks-studio#405', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'icon',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: {
+                    markerFile: null,
+                    markerWidth: 30,
+                    markerHeight: 30,
+                    markerOpacity: 1
+                }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                layer.updateSymbol(0, { markerWidth: 20 });
+            } else if (count === 3) {
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
     it('should can update symbol textFill', done => {
         const style = [
             {

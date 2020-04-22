@@ -247,6 +247,9 @@ class Painter {
         // const styles = this.layer.getCompiledStyle();
         // this.symbolDef = styles[this.pluginIndex].symbol;
         this.symbolDef = symbolDef;
+        if (!this._symbol) {
+            return;
+        }
         for (const p in this._symbol) {
             delete this._symbol[p];
         }
