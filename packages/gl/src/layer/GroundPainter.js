@@ -21,12 +21,12 @@ class GroundPainter {
 
     getSymbol() {
         const sceneConfig = this._layer._getSceneConfig();
-        return sceneConfig.ground && sceneConfig.ground.symbol;
+        return sceneConfig && sceneConfig.ground && sceneConfig.ground.symbol;
     }
 
     isEnable() {
         const sceneConfig = this._layer._getSceneConfig();
-        return sceneConfig.ground && sceneConfig.ground.enable;
+        return sceneConfig && sceneConfig.ground && sceneConfig.ground.enable;
     }
 
     paint(context) {
@@ -58,6 +58,9 @@ class GroundPainter {
 
     update() {
         const sceneConfig = this._layer._getSceneConfig();
+        if (!sceneConfig) {
+            return;
+        }
         const symbol = sceneConfig.ground && sceneConfig.ground.symbol;
         if (!symbol) {
             this._polygonFill = [1, 1, 1, 1];
