@@ -90,6 +90,11 @@ class DebugPainter {
             0.0, 0.0,
             0.0, 1.0,
             1.0, 0.0,
+            1.0, 1.0,
+            //添加额外的一组数据，防止drawArrays out of index错误
+            0.0, 0.0,
+            0.0, 1.0,
+            1.0, 0.0,
             1.0, 1.0
         ]));
         this._command = this._regl({
