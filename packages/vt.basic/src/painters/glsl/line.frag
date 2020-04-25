@@ -95,13 +95,13 @@ void main() {
 
         float isInDash = firstInDash + secondInDash;
 
-        color = mix(color, lineDashColor * alpha, isInDash);
-
         //dash两边的反锯齿
         float firstDashAlpha = dashAntialias(dashMod, lineDasharray[0]);
-        float secondDashAlpha = dashAntialias(secondDashMod, lineDasharray[2]);;
+        float secondDashAlpha = dashAntialias(secondDashMod, lineDasharray[2]);
 
-        color *= mix(1.0, firstDashAlpha * firstInDash + secondDashAlpha * secondDashAlpha, isInDash);
+        float dashAlpha = firstDashAlpha * firstInDash + secondDashAlpha * secondInDash;
+
+        color = alpha * (color * (1.0 - dashAlpha) + lineDashColor * dashAlpha);
     #endif
 
     #ifdef HAS_TRAIL

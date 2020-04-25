@@ -25,10 +25,11 @@ export const EXTRUDE_SCALE = 63;
  *
  * The newly created vertices are placed SHARP_CORNER_OFFSET pixels from the corner.
  */
-// const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
-// const SHARP_CORNER_OFFSET = 15;
+const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
+const SHARP_CORNER_OFFSET = 15;
 
-
+// Angle per triangle for approximating round line joins.
+const DEG_PER_TRIANGLE = 20;
 
 // The number of bits that is used to store the line distance in the buffer.
 const LINE_DISTANCE_BUFFER_BITS = 16;
@@ -168,12 +169,12 @@ export default class LinePack extends VectorPack {
             //所以this.elements只会存放当前line的elements，方便filter处理
             this.elements = [];
         }
-        let join = symbol['lineCap'] || 'miter', cap = symbol['lineCap'] || 'butt';
+        let join = symbol['lineJoin'] || 'miter', cap = symbol['lineCap'] || 'butt';
         if (this.lineJoinFn) {
             join = this.lineJoinFn(this.options['zoom'], feature.properties) || 'miter'; //bevel, miter, round
         }
         if (this.lineCapFn) {
-            join = this.lineCapFn(this.options['zoom'], feature.properties) || 'butt'; //bevel, miter, round
+            cap = this.lineCapFn(this.options['zoom'], feature.properties) || 'butt'; //bevel, miter, round
         }
         if (this.lineWidthFn) {
             // {
@@ -226,24 +227,29 @@ export default class LinePack extends VectorPack {
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
         const needExtraVertex = this.symbol['linePatternFile'] || hasDasharray(this.symbol['lineDasharray']);
-        const tileRatio = this.options.tileRatio;
+        this.overscaling = 1;
+        // const tileRatio = this.options.tileRatio;
         //TODO overscaling的含义？
         const EXTENT = this.options.EXTENT;
-        //     overscaling = 1;
-        let lineDistances = null;
-        //只有有gradient才会scaleDistance，把 linesofar 从实际距离转化到 0-2^15
-        if (!!this.symbol['lineGradientProperty'] &&
-            !!feature.properties &&
+
+
+        this.distance = 0;
+        this.scaledDistance = 0;
+        this.totalDistance = 0;
+
+        if (!!this.symbol['lineGradientProperty'] && !!feature.properties &&
             feature.properties.hasOwnProperty('mapbox_clip_start') &&
             feature.properties.hasOwnProperty('mapbox_clip_end')) {
-            lineDistances = {
-                start: feature.properties.mapbox_clip_start,
-                end: feature.properties.mapbox_clip_end,
-                tileTotal: undefined
-            };
+
+            this.clipStart = +feature.properties['mapbox_clip_start'];
+            this.clipEnd = +feature.properties['mapbox_clip_end'];
+
+            // Calculate the total distance, in tile units, of this tiled line feature
+            for (let i = 0; i < vertices.length - 1; i++) {
+                this.totalDistance += vertices[i].dist(vertices[i + 1]);
+            }
+            this.updateScaledDistance();
         }
-
-
 
         const isPolygon = feature.type === 3; //POLYGON
 
@@ -260,46 +266,37 @@ export default class LinePack extends VectorPack {
         // Ignore invalid geometry.
         if (len < (isPolygon ? 3 : 2)) return;
 
-        if (lineDistances) {
-            lineDistances.tileTotal = calculateFullDistance(vertices, first, len);
-        }
-
         if (join === 'bevel') miterLimit = 1.05;
 
-        // const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * overscaling));
-
-        const firstVertex = vertices[first];
+        const sharpCornerOffset = this.overscaling <= 16 ?
+            SHARP_CORNER_OFFSET * EXTENT / (512 * this.overscaling) :
+            0;
 
         // we could be more precise, but it would only save a negligible amount of space
         // const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
+        const segment = {
+            vertexLength: 0,
+            primitiveLength: 0
+        };
 
-        this.distance = 0;
-        this.vertexLength = 0;
-        this.primitiveLength = 0;
-
-        const beginCap = cap,
-            endCap = isPolygon ? 'butt' : cap;
-        let startOfLine = true;
         let currentVertex;
         let prevVertex;
         let nextVertex;
         let prevNormal;
         let nextNormal;
-        let offsetA;
-        let offsetB;
 
-        // the last three vertices added
-        this.e1 = this.e2 = this.e3 = -1;
+        // the last two vertices added
+        this.e1 = this.e2 = -1;
 
         if (isPolygon) {
             currentVertex = vertices[len - 2];
-            nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
+            nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
         }
 
         for (let i = first; i < len; i++) {
 
-            nextVertex = isPolygon && i === len - 1 ?
-                vertices[first + 1] : // if the line is closed, we treat the last vertex like the first
+            nextVertex = i === len - 1 ?
+                (isPolygon ? vertices[first + 1] : undefined) : // if it's a polygon, treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one
@@ -339,31 +336,33 @@ export default class LinePack extends VectorPack {
              *
              */
 
-            // Calculate the length of the miter (the ratio of the miter to the width).
-            // Find the cosine of the angle between the next and join normals
-            // using dot product. The inverse of that is the miter length.
+            // calculate cosines of the angle (and its half) using dot product
+            const cosAngle = prevNormal.x * nextNormal.x + prevNormal.y * nextNormal.y;
             const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
-            const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
-            const tanHalfAngle = sinHalfAngle / cosHalfAngle;
+
+            // Calculate the length of the miter (the ratio of the miter to the width)
+            // as the inverse of cosine of the angle between next and join normals
             const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
-            // const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
-            // if (needExtraVertex) {
+            // approximate angle from cosine
+            const approxAngle = 2 * Math.sqrt(2 - 2 * cosHalfAngle);
 
-            // if (isSharpCorner && i > first) {
-            //     const prevSegmentLength = currentVertex.dist(prevVertex);
-            //     if (prevSegmentLength > 2 * sharpCornerOffset) {
-            //         const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
-            //         this.distance += newPrevVertex.dist(prevVertex);
-            //         this.addCurrentVertex(newPrevVertex, this.distance, prevNormal.mult(1), 0, 0, false, lineDistances);
-            //         prevVertex = newPrevVertex;
-            //     }
-            // }
-            // }
+            const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
+            const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
+
+            if (!needExtraVertex && isSharpCorner && i > first) {
+                const prevSegmentLength = currentVertex.dist(prevVertex);
+                if (prevSegmentLength > 2 * sharpCornerOffset) {
+                    const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
+                    this.updateDistance(prevVertex, newPrevVertex);
+                    this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment);
+                    prevVertex = newPrevVertex;
+                }
+            }
 
             // The join if a middle vertex, otherwise the cap.
             const middleVertex = prevVertex && nextVertex;
-            let currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
+            let currentJoin = middleVertex ? join : isPolygon ? 'butt' : cap;
 
             if (middleVertex && currentJoin === 'round') {
                 if (miterLength < roundLimit) {
@@ -388,58 +387,53 @@ export default class LinePack extends VectorPack {
             }
 
             // Calculate how far along the line the currentVertex is
-            if (prevVertex) this.distance += currentVertex.dist(prevVertex);
-            let distanceChanged = false;
-            if (i > first && i < len - 1) {
+            if (prevVertex) this.updateDistance(prevVertex, currentVertex);
+
+            // let distanceChanged = false;
+            const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
+            const tanHalfAngle = sinHalfAngle / cosHalfAngle;
+            if (isPolygon || i > first && i < len - 1) {
                 //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 if (needExtraVertex || prevVertex && isOut(prevVertex, EXTENT)) {
                     //back不能超过normal的x或者y，否则会出现绘制错误
                     const back = Math.min(prevNormal.mag() * tanHalfAngle, Math.abs(prevNormal.x), Math.abs(prevNormal.y));
-                    const backDist = back * this.feaLineWidth / 2 * tileRatio;
-                    if (backDist < this.distance) {
-                        this.distance -= backDist;
-                        distanceChanged = true;
-                    }
+                    // const backDist = back * this.feaLineWidth / 2 * tileRatio;
+                    // if (backDist < this.distance) {
+                    //     this.distance -= backDist;
+                    //     distanceChanged = true;
+                    // }
                     //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, -back, -back, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, prevNormal, -back, -back, segment);
                 }
             }
 
             if (currentJoin === 'miter') {
 
                 joinNormal._mult(miterLength);
-                // this.distance += this.feaLineWidth * tileRatio * sinHalfAngle;
-                this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false, lineDistances);
+                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
 
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
 
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = nextNormal.clone().mult(-1);
+                    joinNormal = nextNormal.mult(-1);
 
                 } else {
-                    const direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;
                     const bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
-                    joinNormal._perp()._mult(bevelLength * direction);
+                    joinNormal._perp()._mult(bevelLength * (lineTurnsLeft ? -1 : 1));
                 }
-                this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false, lineDistances);
-                this.addCurrentVertex(currentVertex, this.distance, joinNormal.mult(-1), 0, 0, false, lineDistances);
+                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+                this.addCurrentVertex(currentVertex, joinNormal.mult(-1), 0, 0, segment);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
-                const lineTurnsLeft = (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
                 const offset = -Math.sqrt(miterLength * miterLength - 1);
-                if (lineTurnsLeft) {
-                    offsetB = 0;
-                    offsetA = offset;
-                } else {
-                    offsetA = 0;
-                    offsetB = offset;
-                }
+                const offsetA = lineTurnsLeft ? offset : 0;
+                const offsetB = lineTurnsLeft ? 0 : offset;
 
                 // Close previous segment with a bevel
-                if (!startOfLine) {
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, offsetA, offsetB, false, lineDistances);
+                if (prevVertex) {
+                    this.addCurrentVertex(currentVertex, prevNormal, offsetA, offsetB, segment);
                 }
 
                 if (currentJoin === 'fakeround') {
@@ -448,201 +442,131 @@ export default class LinePack extends VectorPack {
                     // Create a round join by adding multiple pie slices. The join isn't actually round, but
                     // it looks like it is at the sizes we render lines at.
 
-                    // Add more triangles for sharper angles.
-                    // This math is just a good enough approximation. It isn't "correct".
-                    const n = Math.floor((0.5 - (cosHalfAngle - 0.5)) * 8);
-                    let approxFractionalJoinNormal;
+                    // pick the number of triangles for approximating round join by based on the angle between normals
+                    const n = Math.round((approxAngle * 180 / Math.PI) / DEG_PER_TRIANGLE);
 
-                    for (let m = 0; m < n; m++) {
-                        approxFractionalJoinNormal = nextNormal.mult((m + 1) / (n + 1))._add(prevNormal)._unit();
-                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, lineDistances);
-                    }
-
-                    this.addPieSliceVertex(currentVertex, this.distance, joinNormal, lineTurnsLeft, lineDistances);
-
-                    for (let k = n - 1; k >= 0; k--) {
-                        approxFractionalJoinNormal = prevNormal.mult((k + 1) / (n + 1))._add(nextNormal)._unit();
-                        this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft, lineDistances);
+                    for (let m = 1; m < n; m++) {
+                        let t = m / n;
+                        if (t !== 0.5) {
+                            // approximate spherical interpolation https://observablehq.com/@mourner/approximating-geometric-slerp
+                            const t2 = t - 0.5;
+                            const A = 1.0904 + cosAngle * (-3.2452 + cosAngle * (3.55645 - cosAngle * 1.43519));
+                            const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
+                            t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
+                        }
+                        const extrude = nextNormal.sub(prevNormal)._mult(t)._add(prevNormal)._unit()._mult(lineTurnsLeft ? -1 : 1);
+                        this.addHalfVertex(currentVertex, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment);
                     }
                 }
 
-                // Start next segment
                 if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, -offsetA, -offsetB, false, lineDistances);
+                    // Start next segment
+                    this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, segment);
                 }
 
             } else if (currentJoin === 'butt') {
-                if (!startOfLine) {
-                    // Close previous segment with a butt
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 0, 0, false, lineDistances);
-                }
-
-                // Start next segment with a butt
-                if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, 0, 0, false, lineDistances);
-                }
+                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment); // butt cap
 
             } else if (currentJoin === 'square') {
-
-                if (!startOfLine) {
-                    // Close previous segment with a square cap
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 1, 1, false, lineDistances);
-
-                    // The segment is done. Unset vertices to disconnect segments.
-                    this.e1 = this.e2 = -1;
-                }
-
-                // Start next segment
-                if (nextVertex) {
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, -1, -1, false, lineDistances);
-                }
+                const offset = prevVertex ? 1 : -1; // closing or starting square cap
+                this.addCurrentVertex(currentVertex, joinNormal, offset, offset, segment);
 
             } else if (currentJoin === 'round') {
 
-                if (!startOfLine) {
+                if (prevVertex) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 0, 0, false, lineDistances);
+                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment);
 
                     // Add round cap or linejoin at end of segment
-                    this.addCurrentVertex(currentVertex, this.distance, prevNormal, 1, 1, true, lineDistances);
-
-                    // The segment is done. Unset vertices to disconnect segments.
-                    this.e1 = this.e2 = -1;
+                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment, true);
                 }
-
-
-                // Start next segment with a butt
                 if (nextVertex) {
                     // Add round cap before first segment
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, -1, -1, true, lineDistances);
+                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, segment, true);
 
-                    this.addCurrentVertex(currentVertex, this.distance, nextNormal, 0, 0, false, lineDistances);
+                    // Start next segment with a butt
+                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, segment);
+                }
+            }
+
+            if (!needExtraVertex && isSharpCorner && i < len - 1) {
+                const nextSegmentLength = currentVertex.dist(nextVertex);
+                if (nextSegmentLength > 2 * sharpCornerOffset) {
+                    const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
+                    this.updateDistance(currentVertex, newCurrentVertex);
+                    this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment);
+                    currentVertex = newCurrentVertex;
                 }
             }
 
             if ((needExtraVertex || nextVertex && isOut(nextVertex, EXTENT)) &&
-                i > first && i < len - 1) {
+                (isPolygon || i > first && i < len - 1)) {
                 //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
                 //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 //端点往前移动forward距离，以免新端点和lineJoin产生重叠
                 const forward = Math.min(nextNormal.mag() * tanHalfAngle, Math.abs(nextNormal.x), Math.abs(nextNormal.y));
-                this.addCurrentVertex(currentVertex, this.distance, nextNormal, forward, forward, false, lineDistances);
-                if (distanceChanged) {
-                    //抵消前一个extra端点时对distance的修改
-                    this.distance -= prevNormal.mag() * tanHalfAngle * this.feaLineWidth / 2 * tileRatio;
-                }
+                this.addCurrentVertex(currentVertex, nextNormal, forward, forward, segment);
+                // if (distanceChanged) {
+                //     //抵消前一个extra端点时对distance的修改
+                //     this.distance -= prevNormal.mag() * tanHalfAngle * this.feaLineWidth / 2 * 1;
+                // }
             }
-
-            // if (!needExtraVertex && isSharpCorner && i < len - 1) {
-            //     const nextSegmentLength = currentVertex.dist(nextVertex);
-            //     if (nextSegmentLength > 2 * sharpCornerOffset) {
-            //         const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
-            //         this.distance += newCurrentVertex.dist(currentVertex);
-            //         this.addCurrentVertex(newCurrentVertex, this.distance, nextNormal.mult(1), 0, 0, false, lineDistances);
-            //         currentVertex = newCurrentVertex;
-            //     }
-            // }
-
-            startOfLine = false;
         }
     }
 
     /**
      * Add two vertices to the buffers.
      *
-     * @param {Object} currentVertex the line vertex to add buffer vertices for
-     * @param {number} distance the distance from the beginning of the line to the vertex
-     * @param {number} endLeft extrude to shift the left vertex along the line
-     * @param {number} endRight extrude to shift the left vertex along the line
-     * @param {boolean} round whether this is a round cap
+     * @param p the line vertex to add buffer vertices for
+     * @param normal vertex normal
+     * @param endLeft extrude to shift the left vertex along the line
+     * @param endRight extrude to shift the left vertex along the line
+     * @param segment the segment object to add the vertex to
+     * @param round whether this is a round cap
      * @private
      */
-    addCurrentVertex(currentVertex, //: Point,
-        distance, //: number,
-        normal, //: Point,
-        endLeft, //: number,
-        endRight, //: number,
-        round, //: boolean,
-        distancesForScaling) {
-        let extrude;
-        // const layoutVertexArray = this.layoutVertexArray;
-        // const indexArray = this.indexArray;
-        const layoutVertexArray = this.data;
-        if (distancesForScaling) {
-            // For gradient lines, scale distance from tile units to [0, 2^15)
-            distance = scaleDistance(distance, distancesForScaling);
-        }
+    addCurrentVertex(p, normal, endLeft, endRight, segment, round = false) {
+        // left and right extrude vectors, perpendicularly shifted by endLeft/endRight
+        const leftX = normal.x + normal.y * endLeft;
+        const leftY = normal.y - normal.x * endLeft;
+        const rightX = -normal.x + normal.y * endRight;
+        const rightY = -normal.y - normal.x * endRight;
 
-        extrude = normal.clone();
-        if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        this.addLineVertex(layoutVertexArray, currentVertex, normal, extrude, round, false, distance);
-        this.e3 = this.vertexLength++;
-        if (this.e1 >= 0 && this.e2 >= 0) {
-            this.addElements(this.e1, this.e2, this.e3);
-        }
-        this.e1 = this.e2;
-        this.e2 = this.e3;
-
-        extrude = normal.mult(-1);
-        if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        this.addLineVertex(layoutVertexArray, currentVertex, normal.mult(-1), extrude, round, true, distance);
-        this.e3 = this.vertexLength++;
-        if (this.e1 >= 0 && this.e2 >= 0) {
-            this.addElements(this.e1, this.e2, this.e3);
-        }
-        this.e1 = this.e2;
-        this.e2 = this.e3;
+        this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment);
+        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment);
 
         // There is a maximum "distance along the line" that we can store in the buffers.
         // When we get close to the distance, reset it to zero and add the vertex again with
         // a distance of zero. The max distance is determined by the number of bits we allocate
         // to `linesofar`.
-        if (distance > MAX_LINE_DISTANCE && !distancesForScaling) {
+        if (this.distance > MAX_LINE_DISTANCE / 2 && this.totalDistance === 0) {
             this.distance = 0;
-            this.addCurrentVertex(currentVertex, this.distance, normal, endLeft, endRight, round, distancesForScaling);
+            this.updateScaledDistance();
+            this.addCurrentVertex(p, normal, endLeft, endRight, segment, round);
         }
     }
 
-    /**
-     * Add a single new vertex and a triangle using two previous vertices.
-     * This adds a pie slice triangle near a join to simulate round joins
-     *
-     * @param currentVertex the line vertex to add buffer vertices for
-     * @param distance the distance from the beginning of the line to the vertex
-     * @param extrude the offset of the new vertex from the currentVertex
-     * @param lineTurnsLeft whether the line is turning left or right at this angle
-     * @private
-     */
-    addPieSliceVertex(currentVertex, //: Point,
-        distance, //: number,
-        extrude, //: Point,
-        lineTurnsLeft, //: boolean,
-        distancesForScaling /* : ?Object */
-    ) {
-        extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
-        // const layoutVertexArray = this.layoutVertexArray;
-        // const indexArray = this.indexArray;
+    addHalfVertex({ x, y }, extrudeX, extrudeY, round, up, dir, segment) {
+        // scale down so that we can store longer distances while sacrificing precision.
+        const linesofar = this.scaledDistance * LINE_DISTANCE_SCALE;
 
-        if (distancesForScaling) distance = scaleDistance(distance, distancesForScaling);
+        this.fillData(this.data, x, y, extrudeX, extrudeY, round, up, linesofar);
 
-        this.addLineVertex(this.data, currentVertex, extrude, extrude, false, lineTurnsLeft, distance);
-        this.e3 = this.vertexLength++;
+        const e = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
-            this.addElements(this.e1, this.e2, this.e3);
+            // this.indexArray.emplaceBack(this.e1, this.e2, e);
+            this.addElements(this.e1, this.e2, e);
+            segment.primitiveLength++;
         }
-
-        if (lineTurnsLeft) {
-            this.e2 = this.e3;
+        if (up) {
+            this.e2 = e;
         } else {
-            this.e1 = this.e3;
+            this.e1 = e;
         }
     }
 
     //参数会影响LineExtrusionPack中的addLineVertex方法
-    addLineVertex(data, point, normal, extrude, round, up, linesofar) {
-        linesofar *= LINE_DISTANCE_SCALE;
-        let x = point.x;
-        let y = point.y;
+    fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
         if (this.options.center) {
             data.push(x, y, 0);
             data.push(round * 2 + up); //aUp
@@ -654,8 +578,8 @@ export default class LinePack extends VectorPack {
 
         data.push(
             // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
-            EXTRUDE_SCALE * extrude.x,
-            EXTRUDE_SCALE * extrude.y,
+            EXTRUDE_SCALE * extrudeX,
+            EXTRUDE_SCALE * extrudeY,
             linesofar
         );
         if (this.lineWidthFn) {
@@ -668,23 +592,23 @@ export default class LinePack extends VectorPack {
         if (this.opacityFn) {
             data.push(this.feaOpacity);
         }
-        if (this.symbol['lineOffset']) {
-            //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向
-            //vNormal.y在up时为1， 在down时为-1，vert中的计算逻辑如下：
-            //offsetExtrude = (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset)
-            if (up) {
-                //up时，offsetExtrude = aExtrude
-                data.push(0, 0);
-            } else {
-                //normal是该方法传入的normal参数
-                //down时，offsetExtrude = aExtrude - normal - normal)，
-                // 因为aExtrude和normal垂直，根据矢量减法，extrude - normal - normal = -extrude
-                data.push(
-                    EXTRUDE_SCALE * (extrude.x - normal.x),
-                    EXTRUDE_SCALE * (extrude.y - normal.y),
-                );
-            }
-        }
+        // if (this.symbol['lineOffset']) {
+        //     //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向
+        //     //vNormal.y在up时为1， 在down时为-1，vert中的计算逻辑如下：
+        //     //offsetExtrude = (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset)
+        //     if (up) {
+        //         //up时，offsetExtrude = aExtrude
+        //         data.push(0, 0);
+        //     } else {
+        //         //normal是该方法传入的normal参数
+        //         //down时，offsetExtrude = aExtrude - normal - normal)，
+        //         // 因为aExtrude和normal垂直，根据矢量减法，extrude - normal - normal = -extrude
+        //         data.push(
+        //             EXTRUDE_SCALE * (extrudeX - normal.x),
+        //             EXTRUDE_SCALE * (extrudeY - normal.y),
+        //         );
+        //     }
+        // }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
 
@@ -725,6 +649,21 @@ export default class LinePack extends VectorPack {
         }
         return filtered;
     }
+
+    updateDistance(prev, next) {
+        this.distance += prev.dist(next);
+        this.updateScaledDistance();
+    }
+
+    updateScaledDistance() {
+        // Knowing the ratio of the full linestring covered by this tiled feature, as well
+        // as the total distance (in tile units) of this tiled feature, and the distance
+        // (in tile units) of the current vertex, we can determine the relative distance
+        // of this vertex along the full linestring feature and scale it to [0, 2^15)
+        this.scaledDistance = this.totalDistance > 0 ?
+            (this.clipStart + (this.clipEnd - this.clipStart) * this.distance / this.totalDistance)  * (MAX_LINE_DISTANCE - 1) :
+            this.distance;
+    }
 }
 
 function isOutSegment(p0, p1, EXTENT) {
@@ -735,7 +674,7 @@ function isOutSegment(p0, p1, EXTENT) {
         p0.y < 0 && p1.y < 0 || p0.y > EXTENT && p1.y > EXTENT;
 }
 
-export function isClippedLineEdge(vertices, i0, i1, width, EXTENT) {
+function isClippedLineEdge(vertices, i0, i1, width, EXTENT) {
     if (EXTENT === Infinity) {
         return false;
     }
@@ -743,45 +682,6 @@ export function isClippedLineEdge(vertices, i0, i1, width, EXTENT) {
         x1 = Math.floor(vertices[i1 * width] * 0.5), y1 = Math.floor(vertices[i1 * width + 1] * 0.5);
     return x0 === x1 && (x0 < 0 || x0 > EXTENT) && y0 !== y1 ||
         y0 === y1 && (y0 < 0 || y0 > EXTENT) && x0 !== x1;
-}
-
-
-/**
- * Calculate the total distance, in tile units, of this tiled line feature
- *
- * @param {Array<Point>} vertices the full geometry of this tiled line feature
- * @param {number} first the index in the vertices array representing the first vertex we should consider
- * @param {number} len the count of vertices we should consider from `first`
- *
- * @private
- */
-export function calculateFullDistance(vertices, first, len) {
-    let currentVertex, nextVertex;
-    let total = 0;
-    for (let i = first; i < len - 1; i++) {
-        currentVertex = vertices[i];
-        nextVertex = vertices[i + 1];
-        total += currentVertex.dist(nextVertex);
-    }
-    return total;
-}
-
-/**
- * Knowing the ratio of the full linestring covered by this tiled feature, as well
- * as the total distance (in tile units) of this tiled feature, and the distance
- * (in tile units) of the current vertex, we can determine the relative distance
- * of this vertex along the full linestring feature and scale it to [0, 2^15)
- *
- * @param {number} tileDistance the distance from the beginning of the tiled line to this vertex
- * @param {Object} stats
- * @param {number} stats.start the ratio (0-1) along a full original linestring feature of the start of this tiled line feature
- * @param {number} stats.end the ratio (0-1) along a full original linestring feature of the end of this tiled line feature
- * @param {number} stats.tileTotal the total distance, in tile units, of this tiled line feature
- *
- * @private
- */
-function scaleDistance(tileDistance/* : number */, stats/* : Object */) {
-    return ((tileDistance / stats.tileTotal) * (stats.end - stats.start) + stats.start) * (MAX_LINE_DISTANCE - 1);
 }
 
 function hasDasharray(dash) {

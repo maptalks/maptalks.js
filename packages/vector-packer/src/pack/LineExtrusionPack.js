@@ -1,6 +1,5 @@
 import { default as LinePack, EXTRUDE_SCALE }  from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
-import Point from '@mapbox/point-geometry';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 import { interpolated } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
@@ -104,18 +103,17 @@ export default class LineExtrusionPack extends LinePack {
         }
     }
 
-    addLineVertex(data, point, normal, extrude, round, up, linesofar) {
-        // debugger
+    fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
         const tileScale = this.options['EXTENT'] / this.options['tileSize'];
         const lineWidth = this.feaLineWidth || this.symbol['lineWidth'] / 2 * tileScale;
 
-        const aExtrudeX = EXTRUDE_SCALE * extrude.x;
-        const aExtrudeY = EXTRUDE_SCALE * extrude.y;
+        const aExtrudeX = EXTRUDE_SCALE * extrudeX;
+        const aExtrudeY = EXTRUDE_SCALE * extrudeY;
         //只用于计算uv和tangent
-        const extrudedPoint = new Point(lineWidth * extrude.x, lineWidth * extrude.y)._add(point);
+        const extrudedPointX = lineWidth * extrudeX + x;
+        const extrudedPointY = lineWidth * extrudeY + y;
         // const height = this.symbol['lineHeight'];
-
-        data.push(point.x, point.y, 1, linesofar, +up, extrudedPoint.x, extrudedPoint.y, 1, aExtrudeX, aExtrudeY);
+        data.push(x, y, 1, linesofar, +up, extrudedPointX, extrudedPointY, 1, aExtrudeX, aExtrudeY);
         if (this.colorFn) {
             data.push(...this.feaColor);
         }
@@ -126,7 +124,7 @@ export default class LineExtrusionPack extends LinePack {
         if (this.heightFn) {
             data.push(this.feaHeight);
         }
-        data.push(point.x, point.y, 0, linesofar, +up, extrudedPoint.x, extrudedPoint.y, 0, aExtrudeX, aExtrudeY);
+        data.push(x, y, 0, linesofar, +up, extrudedPointX, extrudedPointY, 0, aExtrudeX, aExtrudeY);
         if (this.colorFn) {
             data.push(...this.feaColor);
         }
@@ -138,8 +136,46 @@ export default class LineExtrusionPack extends LinePack {
             data.push(this.feaHeight);
         }
 
-        this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
+        this.maxPos = Math.max(this.maxPos, Math.abs(x), Math.abs(y));
     }
+
+    //2020-40-25之前版本用到的方法
+    // addLineVertex(data, point, normal, extrude, round, up, linesofar) {
+    //     // debugger
+    //     const tileScale = this.options['EXTENT'] / this.options['tileSize'];
+    //     const lineWidth = this.feaLineWidth || this.symbol['lineWidth'] / 2 * tileScale;
+
+    //     const aExtrudeX = EXTRUDE_SCALE * extrude.x;
+    //     const aExtrudeY = EXTRUDE_SCALE * extrude.y;
+    //     //只用于计算uv和tangent
+    //     const extrudedPoint = new Point(lineWidth * extrude.x, lineWidth * extrude.y)._add(point);
+    //     // const height = this.symbol['lineHeight'];
+
+    //     data.push(point.x, point.y, 1, linesofar, +up, extrudedPoint.x, extrudedPoint.y, 1, aExtrudeX, aExtrudeY);
+    //     if (this.colorFn) {
+    //         data.push(...this.feaColor);
+    //     }
+    //     if (this.lineWidthFn) {
+    //         //乘以2是为了解决 #190
+    //         data.push(Math.round(this.feaLineWidth * 2));
+    //     }
+    //     if (this.heightFn) {
+    //         data.push(this.feaHeight);
+    //     }
+    //     data.push(point.x, point.y, 0, linesofar, +up, extrudedPoint.x, extrudedPoint.y, 0, aExtrudeX, aExtrudeY);
+    //     if (this.colorFn) {
+    //         data.push(...this.feaColor);
+    //     }
+    //     if (this.lineWidthFn) {
+    //         //乘以2是为了解决 #190
+    //         data.push(Math.round(this.feaLineWidth * 2));
+    //     }
+    //     if (this.heightFn) {
+    //         data.push(this.feaHeight);
+    //     }
+
+    //     this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
+    // }
 
     addElements(e1, e2, e3) {
         const offset = this.offset;
@@ -151,16 +187,17 @@ export default class LineExtrusionPack extends LinePack {
         //*2 是因为不同于 LinePack, LineExtrusionPack 在addLineVertex方法中会为每个端点插入两个vertex (0和height)
         const up = this.data[(offset + e3 * 2) * formatWidth + 4];
         if (up) {
+            //2020-04-23 mapbox-gl-js新的lineBucket修改了e1,e2,e3的顺序，所以这里e1和e2交换了位置
             if (this.options['top'] !== false) {
                 //顶点的添加顺序：up0, down1, up1
-                super.addElements(e1 * 2, e2 * 2, e3 * 2);
+                super.addElements(e2 * 2, e1 * 2, e3 * 2);
             }
             if (this.options['side'] !== false) {
                 //侧面按顺时针(因为在背面)
                 //up0, up1, up1-底
-                super.addElements(e1 * 2, e3 * 2, e3 * 2 + 1);
+                super.addElements(e2 * 2, e3 * 2, e3 * 2 + 1);
                 //up0, up1-底, up0-底
-                super.addElements(e1 * 2, e3 * 2 + 1, e1 * 2 + 1);
+                super.addElements(e2 * 2, e3 * 2 + 1, e2 * 2 + 1);
             }
         } else {
             //参数中的顺序down0, up0, down1
@@ -179,7 +216,6 @@ export default class LineExtrusionPack extends LinePack {
 
     createDataPack(vectors, scale) {
         this.maxHeight = 0;
-        // debugger
         const pack = super.createDataPack(vectors, scale);
         if (!pack) {
             return pack;
@@ -214,8 +250,9 @@ export default class LineExtrusionPack extends LinePack {
             arrays['aTexCoord0'] = new Float32Array(uvs);
             arrays['aTangent'] = tangents;
         } else {
+            //normal的值只会是0或者1，所以可以用Int8Array封装
             //normal被封装在了tangents中，不用再次定义
-            arrays['aNormal'] = new Float32Array(normals);
+            arrays['aNormal'] = new Int8Array(normals);
         }
         arrays['aPickingId'] = data.aPickingId;
         arrays['aExtrude'] = aExtrude;
