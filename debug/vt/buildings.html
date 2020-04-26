@@ -75,7 +75,7 @@
       // baseLayer: osm
     });
 
-    const mapPostProcessConfig = {
+    var mapPostProcessConfig = {
       enable: false,
       filmicGrain: {
         enable: true,
@@ -94,7 +94,7 @@
 
     var id = 0;
     var data = buildings.reduce(function (v, b) {
-      for (let i = 0, l = b.features.length; i < l; i++) {
+      for (var i = 0, l = b.features.length; i < l; i++) {
         b.features[i].id = id++;
         v.features.push(b.features[i]);
       }
@@ -104,9 +104,9 @@
       "features" : []
     })
 
-    console.log(data.features.length);
+    // console.log(data.features.length);
 
-    const lights = {
+    var lights = {
       ambient: {
         resource: {
           url: './resources/industrial_room.hdr',
@@ -166,7 +166,7 @@
       });
     }
 
-    const renderPlugin = {
+    var renderPlugin = {
         type : 'lit',
         dataConfig : {
           type : '3d-extrusion',
@@ -187,7 +187,7 @@
           // animation : 'easeOutBounce',
         }
       };
-      const renderPlugin2 = {
+      var renderPlugin2 = {
         type : 'lit',
         dataConfig : {
           type : '3d-extrusion',
@@ -207,7 +207,7 @@
         }
       };
       // #E9E7EC
-    const litMaterial = {
+    var litMaterial = {
       // 'baseColor': [233, 231, 236],
       // 'baseColorFactor': [233 / 255, 231 / 255, 236 / 255, 1],
       // 'metallicFactor' : 0,
@@ -226,12 +226,12 @@
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       'uBaseColorFactor': [1, 1, 1, 1],
-      'uRoughnessFactor': 0.1,
+      'uRoughnessFactor': 0.2,
       'uMetalnessFactor': 0,
       'uOutputLinear': 1
     };
 
-    const style =  {
+    var style =  {
       style: [
         {
           filter : true,
@@ -347,7 +347,7 @@
     // map.on('click', function (e) {
     //   alert(JSON.stringify(layer.identify(e.coordinate)));
     // });
-    const sceneConfig = {
+    var sceneConfig = {
       shadow : {
         type : 'esm',
         // type : 'stencil',
@@ -394,7 +394,7 @@
     };
     // layer1.addTo(map);
     // map.addLayer(layer);
-    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.02, antialias: false, sceneConfig }).addTo(map);
+    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.02, antialias: false, /*sceneConfig*/ }).addTo(map);
 
     function updateCubeLight() {
       lights.ambient.resource.url = './resources/venice_sunset_2k.hdr';
@@ -406,7 +406,7 @@
     }
 
     map.on('click', e => {
-      const result = layer.identify(e.coordinate);
+      var result = layer.identify(e.coordinate);
       if (result.length) {
         layer.highlight(result[0], [1, 1, 0, 0.1]);
       }
@@ -461,18 +461,18 @@
     initGUI();
 
     function initGUI() {
-      const gui = new dat.GUI( { width: 250 } );
-      const dirConfig = lights.directional.direction;
-      const direction = {
+      var gui = new dat.GUI( { width: 250 } );
+      var dirConfig = lights.directional.direction;
+      var direction = {
         x: dirConfig[0],
         y: dirConfig[1],
         z: dirConfig[2],
       };
-      const folder = gui.addFolder('direction');
+      var folder = gui.addFolder('direction');
       folder.open();
-      const xCtrl = folder.add(direction, 'x', -1, 1, 0.1);
-      const yCtrl = folder.add(direction, 'y', -1, 1, 0.1);
-      const zCtrl = folder.add(direction, 'z', -1, 1, 0.1);
+      var xCtrl = folder.add(direction, 'x', -1, 1, 0.1);
+      var yCtrl = folder.add(direction, 'y', -1, 1, 0.1);
+      var zCtrl = folder.add(direction, 'z', -1, 1, 0.1);
       xCtrl.onChange(function () {
         dirConfig[0] = direction.x;
         map.setLightConfig(lights);
@@ -489,12 +489,12 @@
         groupLayer.setSceneConfig(sceneConfig);
       });
 
-      const ssaoConfig = sceneConfig.postProcess.ssao;
-      const ssao = gui.addFolder('ssao');
+      var ssaoConfig = sceneConfig.postProcess.ssao;
+      var ssao = gui.addFolder('ssao');
       ssao.open();
-      const biasCtrl = ssao.add(ssaoConfig, 'bias', 0.01, 1, 0.1);
-      const radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.1, 1, 0.1);
-      const intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.1, 5, 0.1);
+      var biasCtrl = ssao.add(ssaoConfig, 'bias', 0.01, 1, 0.1);
+      var radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.1, 1, 0.1);
+      var intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.1, 5, 0.1);
       function onChange() {
         groupLayer.setSceneConfig(sceneConfig);
       }
@@ -502,15 +502,15 @@
       radiusCtrl.onChange(onChange);
       intensityCtrl.onChange(onChange);
 
-      const sharpConfig = sceneConfig.postProcess.sharpen;
-      const sharp = gui.addFolder('sharpen');
+      var sharpConfig = sceneConfig.postProcess.sharpen;
+      var sharp = gui.addFolder('sharpen');
       sharp.open();
-      const sharpCtrl = sharp.add(sharpConfig, 'factor', 0, 1, 0.1);
+      var sharpCtrl = sharp.add(sharpConfig, 'factor', 0, 1, 0.1);
       sharpCtrl.onChange(onChange);
     }
 
     function updateMaterial(key, value) {
-      const material = {};
+      var material = {};
       material[key] = value;
       if (key === 'baseColor') {
         material['baseColorFactor'] = [material.baseColor[0] / 255, material.baseColor[1] / 255, material.baseColor[2] / 255, 1];
