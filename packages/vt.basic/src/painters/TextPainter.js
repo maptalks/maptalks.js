@@ -597,7 +597,6 @@ export default class TextPainter extends CollisionPainter {
         super.delete();
         this._shaderAlongLine.dispose();
         delete this._projectedLinesCache;
-        this._fadingRecords = {};
         if (this._linePicking) {
             this._linePicking.dispose();
         }
