@@ -54,7 +54,7 @@ class SsaoPass {
         }, null, fbo);
     }
 
-    delete() {
+    dispose() {
         if (this._ssaoShader) {
             this._ssaoShader.dispose();
             this._blurShader.dispose();

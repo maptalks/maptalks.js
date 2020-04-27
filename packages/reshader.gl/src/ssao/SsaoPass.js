@@ -113,16 +113,16 @@ class SsaoPass {
         });
     }
 
-    delete() {
+    dispose() {
         if (this._extractFBO) {
             this._extractFBO.destroy();
             delete this._extractFBO;
             this._blurVFBO.destroy();
             this._blurHFBO.destroy();
-            delete this._ssaoExtractShader;
             this._ssaoExtractShader.dispose();
-            this._ssaoBlurHShader.dispose();
+            this._ssaoBlurShader.dispose();
             this._ssaoCombineShader.dispose();
+            delete this._ssaoExtractShader;
         }
     }
 
