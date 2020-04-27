@@ -50,6 +50,7 @@ function getLightUniforms(map, iblTexes) {
             'uAmbientColor': ambientLight.color || [0.2, 0.2, 0.2]
         };
     }
+    uniforms['uRGBMRange'] = iblMaps ? iblTexes.rgbmRange : 7;
     uniforms['uEnvironmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
 
     if (directionalLight) {
@@ -73,7 +74,8 @@ export function createIBLTextures(regl, map) {
             mag: 'linear',
             format: 'rgba',
         }),
-        'sh': resource.sh
+        'sh': resource.sh,
+        'rgbmRange': resource.rgbmRange
     };
 }
 

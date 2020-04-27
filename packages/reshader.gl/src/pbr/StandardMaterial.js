@@ -21,7 +21,6 @@ const DEFAULT_UNIFORMS = {
     'uRoughnessFactor': 0.4,
     'uMetallicFactor': 0, //0
     'uNormalMapFactor': 1, //1
-    'uRGBMRange': 7, //7
     // 'uScatteringFactorPacker', //unused
     // 'uShadowReceive3_bias',
     'uSpecularF0Factor': 0.5, //0.5862

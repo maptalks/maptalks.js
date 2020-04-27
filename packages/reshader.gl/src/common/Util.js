@@ -170,3 +170,7 @@ export function getPosArrayType(max) {
     if (max < 65536 / 2) return Int16Array;
     return Float32Array;
 }
+
+export function clamp(n, min, max) {
+    return Math.min(max, Math.max(min, n));
+}

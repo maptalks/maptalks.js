@@ -10,6 +10,7 @@ class Texture2D extends Texture {
         const config = this.config;
         if (config.hdr) {
             data = parseRGBE(data.data);
+            this.rgbmRange = data.rgbmRange;
             config.data = data.pixels;
         } else {
             config.data = data;

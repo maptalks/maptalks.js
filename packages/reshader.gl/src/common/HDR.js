@@ -1,3 +1,6 @@
+import { vec3 } from 'gl-matrix';
+import { clamp } from './Util.js';
+
 var toChar = String.fromCharCode;
 
 var MINELEN = 8;
@@ -15,6 +18,19 @@ function rgbe2float(rgbe, buffer, offset, exposure) {
     }
     buffer[offset + 3] = 1.0;
     return buffer;
+}
+
+function encodeRGBM(buffer, offset, range) {
+    let r = buffer[offset] / range;
+    let g = buffer[offset + 1] / range;
+    let b = buffer[offset + 2] / range;
+    let a = clamp(Math.max(Math.max(r, g), Math.max(b, 1E-6)), 0, 1);
+    a = Math.ceil(a * 255) / 255;
+
+    buffer[offset] = r / a * 255;
+    buffer[offset + 1] = g / a * 255;
+    buffer[offset + 2] = b / a * 255;
+    buffer[offset + 3] = a * 255;
 }
 
 function uint82string(array, offset, size) {
@@ -141,6 +157,7 @@ function parseRGBE(arrayBuffer, exposure) {
             scanline[x][j] = 0;
         }
     }
+    var range = 0;
     var pixels = new Array(width * height * 4);
     var offset2 = 0;
     for (let y = 0; y < height; y++) {
@@ -150,14 +167,24 @@ function parseRGBE(arrayBuffer, exposure) {
         }
         for (let x = 0; x < width; x++) {
             rgbe2float(scanline[x], pixels, offset2, exposure);
+            range = Math.max(range, pixels[offset2], pixels[offset2 + 1], pixels[offset2 + 2], pixels[offset2 + 3]);
             offset2 += 4;
         }
     }
+    // range = Math.ceil(range);
 
+    offset2 = 0;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            encodeRGBM(pixels, offset2, range);
+            offset2 += 4;
+        }
+    }
     return {
         width : width,
         height : height,
-        pixels : pixels
+        pixels : pixels,
+        rgbmRange: range
     };
 }
 

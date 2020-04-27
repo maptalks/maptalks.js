@@ -51,7 +51,7 @@ export function createIBLMaps(regl, config = {}) {
         cube.destroy();
     }
 
-    const prefilterMap = createPrefilterCube(regl, envMap, prefilterCubeSize, sampleSize, roughnessLevels);
+    const prefilterMap = createPrefilterCube(regl, envMap, config.rgbmRange, prefilterCubeSize, sampleSize, roughnessLevels);
 
     // const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
@@ -75,6 +75,7 @@ export function createIBLMaps(regl, config = {}) {
     // const irradianceMap = createIrradianceCube(regl, envMap, irradianceCubeSize);
 
     const maps = {
+        rgbmRange: config.rgbmRange,
         envMap,
         prefilterMap,
         // dfgLUT
@@ -242,7 +243,7 @@ function createEquirectangularMapCube(regl, texture, size, rgbm) {
     return envMapFBO;
 }
 
-function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
+function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, roughnessLevels) {
     //1. 生成NormalDistribution采样的LUT
     sampleSize = sampleSize || 1024;
     roughnessLevels = roughnessLevels || 256;
@@ -271,7 +272,8 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
             'environmentMap' : fromCubeMap,
             'distributionMap' : distributionMap,
             'roughness' : regl.prop('roughness'),
-            'resolution': SIZE
+            'resolution': SIZE,
+            'rgbmRange': rgbmRange || 7
         },
         elements : cubeData.indices,
         viewport : {
@@ -330,7 +332,7 @@ function createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLev
 //参考代码：
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/ibl_specular_textured.cpp#L290
 //https://github.com/vorg/pragmatic-pbr/blob/master/local_modules/prefilter-cubemap/index.js
-function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels) {
+function createPrefilterCube(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, roughnessLevels) {
     //基于rgbm格式生成mipmap
     // const faces = getEnvmapPixels(regl, fromCubeMap, fromCubeMap.width);
     // const mipmapCube = regl.cube({
@@ -342,7 +344,7 @@ function createPrefilterCube(regl, fromCubeMap, SIZE, sampleSize, roughnessLevel
     //     mipmap: true
     // });
 
-    const mipmap = createPrefilterMipmap(regl, fromCubeMap, SIZE, sampleSize, roughnessLevels);
+    const mipmap = createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, roughnessLevels);
     // debugger
     const prefilterCube = regl.cube({
         radius : SIZE,

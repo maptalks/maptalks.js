@@ -58,8 +58,8 @@ class LightManager {
             url: resource.url,
             arrayBuffer: true,
             hdr: true,
-            type: 'float',
-            format: 'rgba',
+            // type: 'uint8',
+            // format: 'rgba',
             flipY: true
         };
         this._hdr = new reshader.Texture2D(
@@ -88,6 +88,7 @@ class LightManager {
         const cubeSize = this._config.ambient.textureSize || PREFILTER_CUBE_SIZE;
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: hdr.getREGLTexture(regl),
+            rgbmRange: hdr.rgbmRange,
             ignoreSH: !!config['sh'],
             envCubeSize: cubeSize,
             prefilterCubeSize: cubeSize,
