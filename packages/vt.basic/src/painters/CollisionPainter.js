@@ -4,7 +4,7 @@ import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
 import { clamp } from '../Util';
-import { getLabelContent } from './util/get_label_content';
+// import { getLabelContent } from './util/get_label_content';
 
 const DEFAULT_SCENE_CONFIG = {
     collision: true,
