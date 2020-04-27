@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gl",
-  "version": "0.14.2",
+  "version": "0.14.3",
   "description": "WebGL infrastrcture for maptalks",
   "main": "dist/maptalksgl.js",
   "browser": "dist/maptalksgl.js",
@@ -27,7 +27,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@maptalks/fusiongl": "^0.1.2",
-    "@maptalks/reshader.gl": "^0.14.1",
+    "@maptalks/reshader.gl": "^0.14.3",
     "gl-matrix": "^2.6.1",
     "regl": "^1.4.2"
   },
