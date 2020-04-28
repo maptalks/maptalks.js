@@ -113,11 +113,11 @@ class BloomPass {
             const viewport = {
                 x: 0,
                 y: 0,
-                width: context => {
-                    return context.framebufferWidth;
+                width: (context, props) => {
+                    return props.textureInput.width;
                 },
-                height: context => {
-                    return context.framebufferHeight;
+                height: (context, props) => {
+                    return props.textureInput.height;
                 }
             };
             this._blurPass = new BloomBlurPass(this._regl);

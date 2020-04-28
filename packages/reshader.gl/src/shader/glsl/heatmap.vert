@@ -6,7 +6,6 @@ float unpack_mix_vec2(const vec2 packedValue, const float t) {
 uniform mat4 projViewModelMatrix;
 uniform float extrudeScale;
 uniform float heatmapIntensity;
-uniform vec2 textureOutputSize;
 attribute vec3 aPosition;
 varying vec2 vExtrude;
 #ifdef HAS_HEAT_WEIGHT

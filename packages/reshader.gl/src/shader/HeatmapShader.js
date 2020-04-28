@@ -24,13 +24,6 @@ class HeatmapShader extends MeshShader {
                     fn: function (context, props) {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
-                },
-                {
-                    name: 'textureOutputSize',
-                    type: 'function',
-                    fn: function (context) {
-                        return [context.drawingBufferWidth, context.drawingBufferHeight];
-                    }
                 }
             ],
             extraCommandProps: extend({}, extraCommandProps, {

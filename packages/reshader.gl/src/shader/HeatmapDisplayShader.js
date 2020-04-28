@@ -18,8 +18,8 @@ export default class HeatmapDisplayShader extends MeshShader {
             viewport: {
                 x: 0,
                 y: 0,
-                width: context => context.drawingBufferWidth,
-                height: context => context.drawingBufferHeight
+                width: (context, props) => props.inputTexture.width,
+                height: (context, props) => props.inputTexture.height
             }
         };
         if (config && config.extraCommandProps) {

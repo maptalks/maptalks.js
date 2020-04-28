@@ -128,11 +128,11 @@ class BloomBlurPass {
                     viewport: {
                         x: 0,
                         y: 0,
-                        width : context => {
-                            return context.framebufferWidth;
+                        width : (context, props) => {
+                            return props.resolution[0];
                         },
-                        height : context => {
-                            return context.framebufferHeight;
+                        height : (context, props) => {
+                            return props.resolution[1];
                         }
                     }
                 }
