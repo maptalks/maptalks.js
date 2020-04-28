@@ -254,10 +254,8 @@ function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, r
         data: distro,
         width: roughnessLevels,
         height: sampleSize,
-        format: 'rgba',
         min: 'nearest',
-        mag: 'nearest',
-        type: 'float'
+        mag: 'nearest'
     });
 
     const drawCube = regl({
@@ -382,8 +380,6 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
         data : distro,
         width : roughnessLevels,
         height : sampleSize,
-        type: 'float',
-        format: 'rgba',
         min : 'nearest',
         mag : 'nearest'
     });
