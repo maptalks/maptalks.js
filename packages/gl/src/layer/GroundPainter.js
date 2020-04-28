@@ -228,13 +228,17 @@ class GroundPainter {
             },
             depth: {
                 enable: true,
-                // mask: true,
+                mask: () => {
+                    const sceneConfig = this._layer._getSceneConfig();
+                    const ground = sceneConfig.ground;
+                    return !!ground && !!ground.depth;
+                },
                 // range: () => {
                 //     const ground = sceneConfig.ground;
                 //     return !!ground && !!ground.depth ? [0, 1] : [1, 1];
                 // },
 
-                func: '<='
+                func: '<'
             },
             blend: {
                 enable: true,
@@ -247,8 +251,8 @@ class GroundPainter {
             polygonOffset: {
                 enable: true,
                 offset: {
-                    factor: () => { return -0.5; },
-                    units: () => { return -1; }
+                    factor: () => { return 1; },
+                    units: () => { return 1; }
                 }
             }
         };

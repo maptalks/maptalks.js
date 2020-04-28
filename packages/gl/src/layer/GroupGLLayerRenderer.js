@@ -345,6 +345,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor.dispose();
             delete this._postProcessor;
         }
+        if (this._ssrPass) {
+            this._ssrPass.dispose();
+            delete this._ssrPass;
+        }
+        if (this._ssrFBO) {
+            this._ssrFBO.destroy();
+            delete this._ssrFBO;
+        }
         super.onRemove();
     }
 
@@ -438,15 +446,21 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
         }
         if (this._renderMode !== 'noAa') {
-            this._shadowContext = this._getShadowContext(renderTarget && renderTarget.fbo);
+            this._shadowContext = this._prepareShadowContext(renderTarget && renderTarget.fbo);
         }
         if (this._shadowContext) {
             context.shadow = this._shadowContext;
         }
+        if (this._renderMode !== 'noAa') {
+            if (!this._groundPainter) {
+                this._groundPainter = new GroundPainter(this._regl, this.layer);
+            }
+            this._groundPainter.paint(context);
+        }
         return context;
     }
 
-    _getShadowContext(fbo) {
+    _prepareShadowContext(fbo) {
         const sceneConfig =  this.layer._getSceneConfig();
         if (!sceneConfig || !sceneConfig.shadow || !sceneConfig.shadow.enable) {
             if (this._shadowPass) {
@@ -524,7 +538,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _createFBOInfo(config, depthTex, colorType) {
         const width = this.canvas.width, height = this.canvas.height;
         const regl = this._regl;
-        const type = colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const color = regl.texture({
             min: 'nearest',
             mag: 'nearest',
@@ -565,12 +579,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _postProcess() {
-        if (!this._groundPainter) {
-            this._groundPainter = new GroundPainter(this._regl, this.layer);
-        }
         if (!this._targetFBO) {
             this._needRetireFrames = false;
-            this._groundPainter.paint(this._drawContext);
             return;
         }
         const sceneConfig =  this.layer._getSceneConfig();
@@ -586,13 +596,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const enableSSR = config.ssr && config.ssr.enable;
         if (enableSSR) {
+            //把开启了ssr的mesh重新绘制一遍，并只绘制ssr的部分
             const ssrTex = this._drawSsr();
             tex = this._ssrPass.combine(tex, ssrTex);
-        } else if (this._ssrPass) {
-            this._ssrPass.dispose();
-            delete this._ssrPass;
         } else {
-            this._groundPainter.paint(this._drawContext);
+            if (this._ssrFBO) {
+                this._ssrFBO.destroy();
+                delete this._ssrFBO;
+            }
+            if (this._ssrPass) {
+                this._ssrPass.dispose();
+                delete this._ssrPass;
+            }
         }
 
         const enableSSAO = config.ssao && config.ssao.enable;
@@ -670,16 +685,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
     }
 
-
-    _drawSsr() {
+    _prepareSSRContext() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
         const regl = this._regl;
         if (!this._ssrPass) {
             this._ssrPass = new reshader.SsrPass(regl);
-            this._ssrBlurShader = new reshader.BoxColorBlurShader({ blurOffset: 2 });
         }
         const ssrFBO = this._ssrFBO;
-        const sceneConfig =  this.layer._getSceneConfig();
-        const config = sceneConfig && sceneConfig.postProcess;
         if (!ssrFBO) {
             const info = this._createFBOInfo(config);
             this._ssrFBO = regl.framebuffer(info);
@@ -694,13 +707,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             });
         }
         const map = this.getMap();
-        const timestamp = this._contextFrameTime;
-        const event = this._frameEvent;
-        const context = this._drawContext;
-        context.renderMode = 'default';
-        context['sceneFilter'] = ssrFilter;
         const texture = this._ssrPass.getMipmapTexture();
-        context.ssr = {
+        return {
             renderUniforms: {
                 'TextureDepth': this._depthTex,
                 'TextureSource': this._targetFBO.color[0],
@@ -716,9 +724,19 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             },
             fbo: this._ssrFBO
         };
+    }
+
+    _drawSsr() {
+        const ssrFBO = this._ssrFBO;
+        const context = this._drawContext;
+        const timestamp = this._contextFrameTime;
+        const event = this._frameEvent;
         if (this._shadowContext) {
             context.shadow = this._shadowContext;
         }
+        context.ssr = this._prepareSSRContext(context);
+        context.renderMode = 'default';
+        context['sceneFilter'] = ssrFilter;
         if (event) {
             this.forEachRenderer(renderer => {
                 this._clearStencil(renderer, ssrFBO);
@@ -731,10 +749,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             });
         }
         this._groundPainter.paint(context);
-        const blurTex = this._ssrPass.blur(this._ssrFBO.color[0]);
         //以免和bloom冲突
         delete context.ssr;
-        return blurTex;
+        return this._ssrFBO.color[0];
     }
 
     _drawBloom() {

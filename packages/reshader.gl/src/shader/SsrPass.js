@@ -65,7 +65,7 @@ class SsrPass {
         this._renderer = new Renderer(regl);
     }
 
-    blur(tex) {
+    _blur(tex) {
         this._initShaders();
         this._createTextures(tex);
         if (this._blurFBO.width !== tex.width ||
@@ -86,6 +86,7 @@ class SsrPass {
             this._combineFBO.height !== sourceTex.height) {
             this._combineFBO.resize(sourceTex.width, sourceTex.height);
         }
+        ssrTex = this._blur(ssrTex);
         this._renderer.render(this._combineShader, {
             TextureInput: sourceTex,
             TextureSSR: ssrTex,
