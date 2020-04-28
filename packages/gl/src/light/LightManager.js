@@ -2,10 +2,6 @@ import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 
 const PREFILTER_CUBE_SIZE = 256;
-const GL_EXTENSIONS = [
-    'OES_texture_float'
-];
-
 const canvas = document.createElement('canvas');
 const regl = createREGL({
     canvas,
@@ -13,8 +9,7 @@ const regl = createREGL({
         depth: false,
         stencil: false,
         alpha: false
-    },
-    extensions: GL_EXTENSIONS
+    }
 });
 
 class LightManager {

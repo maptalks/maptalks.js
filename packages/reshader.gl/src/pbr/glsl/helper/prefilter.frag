@@ -29,7 +29,16 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 // ----------------------------------------------------------------------------
 vec3 ImportanceSampleGGX(float Xi, vec3 N, float roughness)
 {
-    vec3 H = texture2D(distributionMap, vec2(roughness, Xi)).xyz;
+    vec4 distro = texture2D(distributionMap, vec2(roughness, Xi));
+    vec3 H = distro.xyz;
+    //PBRHelper.generateNormalDistribution在第四位中保留了x和y的符号位，z永远都是正数
+    //算法如下：200 *（x > 0 ? 1 : 0) + 55 * (y > 0 ? 1 : 0)
+    //所以distro.w > 0.5时，x一定为正数
+    // (distro.w - 200 / 255 * (x > 0 ? 1 : 0)) > 0.15 时，y一定为正数，55/255 = 0.21，取值0.15是为了避免误差
+    float s0 = sign(distro.w - 0.5);
+    float s1 = sign(distro.w - 200.0 / 255.0 * clamp(s0, 0.0, 1.0) - 0.15);
+    H.x *= s0;
+    H.y *= s1;
 
     // from tangent-space H vector to world-space sample vector
     vec3 up        = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);

@@ -436,7 +436,7 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
 //因为glsl不支持位操作，所以预先生成采样LUT， 代替原代码中的采样逻辑
 //https://github.com/JoeyDeVries/LearnOpenGL/blob/master/src/6.pbr/2.2.2.ibl_specular_textured/2.2.2.prefilter.fs
 function generateNormalDistribution(sampleSize, roughnessLevels) {
-    const pixels = new Float32Array(sampleSize * roughnessLevels * 4);
+    const pixels = new Array(sampleSize * roughnessLevels * 4);
     for (let i = 0; i < sampleSize; i++) {
         const { x, y } = hammersley(i, sampleSize);
 
@@ -448,13 +448,19 @@ function generateNormalDistribution(sampleSize, roughnessLevels) {
             const cosTheta = Math.sqrt((1 - y) / (1 + (a * a - 1.0) * y));
             const sinTheta = Math.sqrt(1.0 - cosTheta * cosTheta);
             const offset = (i * roughnessLevels + j) * 4;
-            pixels[offset] = sinTheta * Math.cos(phi);
-            pixels[offset + 1] = sinTheta * Math.sin(phi);
-            pixels[offset + 2] = cosTheta;
-            pixels[offset + 3] = 1.0;
+
+            const v0 = sinTheta * Math.cos(phi);
+            const v1 = sinTheta * Math.sin(phi);
+            pixels[offset] = Math.abs(v0 * 255);
+            pixels[offset + 1] = Math.abs(v1 * 255);
+            pixels[offset + 2] = cosTheta * 255;
+            //在第四位中保留x和y的符号（z永远是正数），算法如下：
+            //200 *（x > 0 ? 1 : 0) + 55 * (y > 0 ? 1 : 0)
+            //所以片元着色器中 distro.w > 0.5时，x一定为正数
+            // (distro.w - 200 / 255 * (x > 0 ? 1 : 0)) > 0.15 时，y一定为正数，55/255 = 0.21，取值0.15是为了避免误差
+            pixels[offset + 3] = (v0 > 0 ? 200 : 0) + (v1 > 0 ? 55 : 0);
         }
     }
-
     return pixels;
 }
 

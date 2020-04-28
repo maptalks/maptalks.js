@@ -26,7 +26,12 @@ vec4 packFloat(float a, float b) {
 
 vec3 ImportanceSampleGGX(float Xi, vec3 N, float roughness)
 {
-    vec3 H = texture2D(distributionMap, vec2(roughness, Xi)).rgb;
+    vec4 distro = texture2D(distributionMap, vec2(roughness, Xi));
+    vec3 H = distro.xyz;
+    float s0 = sign(distro.w - 0.5);
+    float s1 = sign(distro.w - clamp(s0, 0.0, 1.0) * 200.0 / 255.0 - 0.15);
+    H.x *= s0;
+    H.y *= s1;
 
     // from tangent-space H vector to world-space sample vector
     vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
