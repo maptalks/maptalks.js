@@ -44,12 +44,19 @@ class GroundPainter {
         this._transformGround();
         const uniforms = this._getUniformValues(context);
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
-        const groundDefines = this._ground.getDefines();
-        if (shader !== this._fillShader && groundDefines && groundDefines['HAS_SSR']) {
-            const ssrFbo = context && context.ssr.fbo;
-            this.renderer.render(this._depthShader, uniforms, this._groundScene, fbo);
-            this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
-
+        if (shader === this._fillShader) {
+            this.renderer.render(shader, uniforms, this._groundScene, fbo);
+            this._layer.getRenderer().setCanvasUpdated();
+            return;
+        }
+        if (this._layer.getRenderer().isEnableSSR()) {
+            if (context && context.ssr) {
+                const ssrFbo = context && context.ssr.fbo;
+                this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
+            } else {
+                //如果图层开启ssr且context没有ssr时，说明不是后处理阶段，只需绘制深度纹理即可
+                this.renderer.render(this._depthShader, uniforms, this._groundScene, fbo);
+            }
         } else {
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
         }

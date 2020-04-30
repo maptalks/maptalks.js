@@ -412,6 +412,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
+    isEnableSSR() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        return config && config.ssr && config.ssr.enable;
+    }
+
     _prepareDrawContext() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -430,7 +436,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 vec2.set(this._jitter, 0, 0);
             }
             const enableBloom = config.bloom && config.bloom.enable;
-            const enableSsr = config.ssr && config.ssr.enable;
+            const enableSsr = this.isEnableSSR();
             if (enableBloom && enableSsr) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noPostFilter;
@@ -594,10 +600,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         let tex = this._targetFBO.color[0];
 
-        const enableSSR = config.ssr && config.ssr.enable;
+        const enableSSR = this.isEnableSSR();
         if (enableSSR) {
-            //把开启了ssr的mesh重新绘制一遍，并只绘制ssr的部分
+            //遍历开启了ssr的mesh重新绘制一遍，并只绘制有ssr的像素，discard掉其他像素
             const ssrTex = this._drawSsr();
+            //合并ssr和原fbo中的像素
             tex = this._ssrPass.combine(tex, ssrTex);
         } else {
             if (this._ssrFBO) {
@@ -676,7 +683,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             sharpFactor
         );
 
-        if (this._ssrPass) {
+        if (enableSSR && this._ssrPass) {
             this._ssrPass.genMipMap(tex);
             if (!this._ssrFBO._projViewMatrix) {
                 this._ssrFBO._projViewMatrix = [];

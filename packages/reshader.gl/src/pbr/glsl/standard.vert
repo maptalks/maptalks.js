@@ -120,7 +120,7 @@ void main() {
     #endif
 
     #ifdef HAS_SSR
-        vViewNormal = uModelViewNormalMatrix * localNormal;
+        vViewNormal = uModelViewNormalMatrix * Normal;
          #if defined(HAS_TANGENT)
             // Tangent = vec4(t, aTangent.w);
             vec4 localTangent = vec4(t, aTangent.w);;
