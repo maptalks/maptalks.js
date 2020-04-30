@@ -56,6 +56,7 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
 
     // debugger
     const normals = buildNormals(faces.vertices, indices);
+    //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
     for (let i = 0; i < normals.length; i++) {
         normals[i] = -normals[i];
     }
