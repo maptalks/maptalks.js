@@ -9,6 +9,7 @@ uniform vec2 uTextureBlurInputRatio;
 uniform vec2 uTextureBlurInputSize;
 uniform vec2 uTextureOutputRatio;
 uniform vec2 uTextureOutputSize;
+uniform float inputRGBM;
 #define SHADER_NAME TextureBlurTemp0
 
 vec2 gTexCoord;
@@ -45,7 +46,6 @@ vec3 LUVToRGB( const in vec4 vLogLuv ) {
     return max(vRGB, 0.0);
 }
 vec4 encodeRGBM(const in vec3 color, const in float range) {
-    if(range <= 0.0) return vec4(color, 1.0);
     vec4 rgbm;
     vec3 col = color / range;
     rgbm.a = clamp( max( max( col.r, col.g ), max( col.b, 1e-6 ) ), 0.0, 1.0 );
@@ -54,7 +54,7 @@ vec4 encodeRGBM(const in vec3 color, const in float range) {
     return rgbm;
 }
 vec3 decodeRGBM(const in vec4 color, const in float range) {
-    if(range <= 0.0) return color.rgb;
+    if(inputRGBM == 0.0) return color.rgb;
     return range * color.rgb * color.a;
 }
 vec4 gaussianBlur() {

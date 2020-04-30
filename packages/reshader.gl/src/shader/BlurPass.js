@@ -11,9 +11,10 @@ import blur6Frag from './glsl/blur6.frag';
 import { vec2 } from 'gl-matrix';
 
 class BlurPass {
-    constructor(regl, level = 5) {
+    constructor(regl, inputRGBM, level = 5) {
         this._regl = regl;
         this._renderer = new Renderer(regl);
+        this._inputRGBM = inputRGBM;
         this._level = level;
     }
 
@@ -77,12 +78,14 @@ class BlurPass {
 
         const uniforms = this._blurUniforms;
         uniforms['TextureBlurInput'] = inputTex;
+        //第一次输入是否需要decode rgbm
+        uniforms['inputRGBM'] = +this._inputRGBM;
         vec2.set(uniforms['uBlurDir'], 0, 1);
         vec2.set(uniforms['uTextureBlurInputSize'], inputTex.width, inputTex.height);
         vec2.set(uniforms['uTextureOutputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output0);
 
-
+        uniforms['inputRGBM'] = 1;
         vec2.set(uniforms['uBlurDir'], 1, 0);
         uniforms['TextureBlurInput'] = output0.color[0];
         vec2.set(uniforms['uTextureBlurInputSize'], output0.width, output0.height);
@@ -211,6 +214,7 @@ class BlurPass {
             const config = {
                 vert: quadVert,
                 uniforms: [
+                    'inputRGBM',
                     'uRGBMRange',
                     'TextureBlurInput',
                     'uBlurDir',

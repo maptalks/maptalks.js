@@ -1,5 +1,6 @@
 #version 100
 precision highp float;
+uniform float inputRGBM;
 uniform float uRGBMRange;
 uniform sampler2D TextureInput;
 uniform sampler2D TextureRefractionBlur0;
@@ -85,7 +86,13 @@ vec4 packMipmapRefraction() {
     gTexCoord.x = pLevel * gTexCoord.x * 0.5;
     gTexCoord.y = pLevel * (1.0 - gTexCoord.y) - 1.0;
     if (gTexCoord.x > 1.0 || gTexCoord.y > 1.0) return result;
-    if (level < 0.1) result.rgb = (vec4(decodeRGBM(texture2D(TextureRefractionBlur0, (min(gTexCoord, 1.0 - 1e+0 / uTextureRefractionBlur0Size.xy)) * uTextureRefractionBlur0Ratio), uRGBMRange), 1.0)).rgb;
+    if (level < 0.1) {
+        if (inputRGBM == 0.0) {
+            result.rgb = texture2D(TextureRefractionBlur0, (min(gTexCoord, 1.0 - 1e+0 / uTextureRefractionBlur0Size.xy)) * uTextureRefractionBlur0Ratio).rgb;
+        } else {
+            result.rgb = (vec4(decodeRGBM(texture2D(TextureRefractionBlur0, (min(gTexCoord, 1.0 - 1e+0 / uTextureRefractionBlur0Size.xy)) * uTextureRefractionBlur0Ratio), uRGBMRange), 1.0)).rgb;
+        }
+    }
     else if (level < 1.1) result.rgb = (vec4(decodeRGBM(texture2D(TextureRefractionBlur1, (min(gTexCoord, 1.0 - 1e+0 / uTextureRefractionBlur1Size.xy)) * uTextureRefractionBlur1Ratio), uRGBMRange), 1.0)).rgb;
     else if (level < 2.1) result.rgb = (vec4(decodeRGBM(texture2D(TextureRefractionBlur2, (min(gTexCoord, 1.0 - 1e+0 / uTextureRefractionBlur2Size.xy)) * uTextureRefractionBlur2Ratio), uRGBMRange), 1.0)).rgb;
     else if (level < 3.1) result.rgb = (vec4(decodeRGBM(texture2D(TextureRefractionBlur3, (min(gTexCoord, 1.0 - 1e+0 / uTextureRefractionBlur3Size.xy)) * uTextureRefractionBlur3Ratio), uRGBMRange), 1.0)).rgb;

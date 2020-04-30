@@ -7,6 +7,7 @@ class SsrMipmapShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
+                'inputRGBM',
                 'uRGBMRange',
                 'TextureRefractionBlur0',
                 'TextureRefractionBlur1',

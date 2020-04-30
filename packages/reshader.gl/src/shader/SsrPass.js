@@ -100,6 +100,7 @@ class SsrPass {
         const blurTexes = this._blurPass.render(sourceTex);
         const { blurTex0, blurTex1, blurTex2, blurTex3, blurTex4, blurTex5, blurTex6 } = blurTexes;
         const uniforms = this._uniforms || {
+            'inputRGBM': 0,
             'uRGBMRange': 7,
             'TextureRefractionBlur0': null,
             'TextureRefractionBlur1': null,
@@ -184,7 +185,7 @@ class SsrPass {
 
     _initShaders() {
         if (!this._blurPass) {
-            this._blurPass = new BlurPass(this._regl, 7);
+            this._blurPass = new BlurPass(this._regl, false, 7);
             this._mipmapShader = new SsrMipmapShader();
             this._combineShader = new SsrCombineShader();
             this._blurShader = new BoxColorBlurShader({ blurOffset: 2 });
