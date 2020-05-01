@@ -349,10 +349,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._ssrPass.dispose();
             delete this._ssrPass;
         }
-        if (this._ssrFBO) {
-            this._ssrFBO.destroy();
-            delete this._ssrFBO;
-        }
         super.onRemove();
     }
 
@@ -541,7 +537,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
-    _createFBOInfo(config, depthTex, colorType) {
+    _createFBOInfo(config, depthTex) {
         const width = this.canvas.width, height = this.canvas.height;
         const regl = this._regl;
         const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
@@ -767,7 +763,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!bloomFBO) {
             const sceneConfig =  this.layer._getSceneConfig();
             const config = sceneConfig && sceneConfig.postProcess;
-            const info = this._createFBOInfo(config, this._depthTex/*, 'uint8'*/);
+            const info = this._createFBOInfo(config, this._depthTex);
             this._bloomFBO = regl.framebuffer(info);
         } else {
             if (bloomFBO.width !== this._targetFBO.width || bloomFBO.height !== this._targetFBO.height) {

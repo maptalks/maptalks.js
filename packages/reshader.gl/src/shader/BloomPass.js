@@ -44,15 +44,15 @@ class BloomPass {
     }
 
     dispose() {
-        if (this._extractShader) {
-            this._extractShader.dispose();
-            delete this._extractShader;
-            this._combineShader.dispose();
-        }
         if (this._targetFBO) {
             this._targetFBO.destroy();
-            delete this._targetFBO;
             this._combineFBO.destroy();
+            delete this._targetFBO;
+            delete this._combineFBO;
+        }
+        if (this._combineShader) {
+            this._combineShader.dispose();
+            delete this._combineShader;
         }
         if (this._blurPass) {
             this._blurPass.dispose();
@@ -109,7 +109,7 @@ class BloomPass {
     }
 
     _initShaders() {
-        if (!this._extractShader) {
+        if (!this._blurPass) {
             const viewport = {
                 x: 0,
                 y: 0,
