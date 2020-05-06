@@ -739,7 +739,10 @@ class IconPainter extends CollisionPainter {
                                 return props['tileResolution'] / props['resolution'];
                             }
                         }
-                    ]
+                    ],
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );
@@ -751,7 +754,10 @@ class IconPainter extends CollisionPainter {
                 this.renderer,
                 {
                     vert: textPickingVert,
-                    uniforms
+                    uniforms,
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );

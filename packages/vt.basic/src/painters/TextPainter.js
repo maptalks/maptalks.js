@@ -639,7 +639,10 @@ export default class TextPainter extends CollisionPainter {
                 this.renderer,
                 {
                     vert: pickingVert,
-                    uniforms
+                    uniforms,
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );
@@ -651,7 +654,10 @@ export default class TextPainter extends CollisionPainter {
                 this.renderer,
                 {
                     vert: linePickingVert,
-                    uniforms
+                    uniforms,
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );

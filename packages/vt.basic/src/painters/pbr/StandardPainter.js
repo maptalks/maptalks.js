@@ -141,7 +141,10 @@ class StandardPainter extends MeshPainter {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
-            ]
+            ],
+            extraCommandProps: {
+                viewport: this.pickingViewport
+            }
         };
         this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
 

@@ -203,6 +203,9 @@ export default class BaseLayerWorker {
             let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, glScale, zScale, zoom });
             if (useDefault) {
                 promise = promise.then(tileData => {
+                    if (!tileData) {
+                        return null;
+                    }
                     if (tileData.data) {
                         tileData.data.layer = tileFeatures[0].layer;
                     } else if (Array.isArray(tileData)) {

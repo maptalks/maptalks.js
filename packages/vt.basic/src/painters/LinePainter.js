@@ -228,7 +228,10 @@ class LinePainter extends BasicPainter {
                         'lineDy',
                         'lineOffset',
                         'canvasSize'
-                    ]
+                    ],
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );

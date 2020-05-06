@@ -130,7 +130,10 @@ class NativeLinePainter extends Painter {
                 this.renderer,
                 {
                     vert: pickingVert,
-                    uniforms
+                    uniforms,
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );

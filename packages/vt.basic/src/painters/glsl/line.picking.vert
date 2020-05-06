@@ -54,7 +54,7 @@ varying vec2 vNormal;
 #include <fbo_picking_vert>
 
 void main() {
-    vec3 position = vec3(aPosition);
+    vec3 position = aPosition;
 
     #ifdef HAS_UP
         // aUp = round * 2 + up;
@@ -89,7 +89,8 @@ void main() {
     #endif
 
     float scale = tileResolution / resolution;
-    gl_Position = projViewModelMatrix * vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+    vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+    gl_Position = projViewModelMatrix * localVertex;
 
     float distance = gl_Position.w;
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;

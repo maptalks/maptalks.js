@@ -350,7 +350,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         //iterate plugins
         for (let i = 0; i < data.data.length; i++) {
             const pluginData = data.data[i]; // { data, featureIndex }
-            if (!pluginData || !pluginData.styledFeatures.length) {
+            if (!pluginData || !pluginData.data || !pluginData.styledFeatures.length) {
                 continue;
             }
             const { style, isUpdated } = this._updatePluginIfNecessary(i, pluginData);

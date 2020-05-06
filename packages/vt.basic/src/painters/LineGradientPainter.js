@@ -196,7 +196,10 @@ class LineGradientPainter extends BasicPainter {
                         'lineDx',
                         'lineDy',
                         'canvasSize'
-                    ]
+                    ],
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );

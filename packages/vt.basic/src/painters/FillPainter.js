@@ -178,7 +178,10 @@ class FillPainter extends BasicPainter {
                                 return projViewModelMatrix;
                             }
                         }
-                    ]
+                    ],
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );
@@ -263,6 +266,7 @@ class FillPainter extends BasicPainter {
                 depth: {
                     enable: true,
                     range: depthRange || [0, 1],
+                    mask: false,
                     func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {

@@ -126,7 +126,10 @@ class NativePointPainter extends Painter {
                                 return projViewModelMatrix;
                             }
                         }
-                    ]
+                    ],
+                    extraCommandProps: {
+                        viewport: this.pickingViewport
+                    }
                 },
                 this.pickingFBO
             );

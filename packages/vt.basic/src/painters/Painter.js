@@ -31,6 +31,16 @@ class Painter {
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
         this.symbolDef = symbol;
+        this.pickingViewport = {
+            x: 0,
+            y: 0,
+            width: () => {
+                return this.canvas ? this.canvas.width : 1;
+            },
+            height: () => {
+                return this.canvas ? this.canvas.height : 1;
+            }
+        };
     }
 
     getMap() {
