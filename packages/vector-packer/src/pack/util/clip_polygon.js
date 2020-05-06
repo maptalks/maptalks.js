@@ -1,9 +1,13 @@
+import Point from '@mapbox/point-geometry';
 /*eslint-disable no-var*/
 /*!
  * from @turf/bboxClip
  * https://github.com/Turfjs/turf
  * MIT LICENSE
  */
+
+const ARR0 = [];
+const ARR1 = [];
 
 // Sutherland-Hodgeman polygon clipping algorithm
 export function clipPolygon(points, bbox) {
@@ -21,7 +25,10 @@ export function clipPolygon(points, bbox) {
             inside = !(bitCode(p, bbox) & edge);
 
             // if segment goes through the clip window, add an intersection
-            if (inside !== prevInside) result.push(intersect(prev, p, edge, bbox));
+            if (inside !== prevInside) {
+                const inter = intersect(prev, p, edge, bbox);
+                result.push(new Point(inter[0], inter[1]));
+            }
 
             if (inside) result.push(p); // add a point if it's inside
 
@@ -39,6 +46,12 @@ export function clipPolygon(points, bbox) {
 // intersect a segment against one of the 4 lines that make up the bbox
 
 function intersect(a, b, edge, bbox) {
+    ARR0[0] = a.x;
+    ARR0[1] = a.y;
+    a = ARR0;
+    ARR1[0] = b.x;
+    ARR1[1] = b.y;
+    b = ARR1;
     return edge & 8 ? [a[0] + (b[0] - a[0]) * (bbox[3] - a[1]) / (b[1] - a[1]), bbox[3]] : // top
         edge & 4 ? [a[0] + (b[0] - a[0]) * (bbox[1] - a[1]) / (b[1] - a[1]), bbox[1]] : // bottom
             edge & 2 ? [bbox[2], a[1] + (b[1] - a[1]) * (bbox[2] - a[0]) / (b[0] - a[0])] : // right
@@ -54,6 +67,9 @@ function intersect(a, b, edge, bbox) {
 // bottom  0101  0100  0110
 
 function bitCode(p, bbox) {
+    ARR0[0] = p.x;
+    ARR0[1] = p.y;
+    p = ARR0;
     var code = 0;
 
     if (p[0] < bbox[0]) code |= 1; // left

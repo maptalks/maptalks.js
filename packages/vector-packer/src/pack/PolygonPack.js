@@ -6,6 +6,7 @@ import { getIndexArrayType } from './util/array';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { isFnTypeSymbol, isNil } from '../style/Util';
+import { clipPolygon } from './util/clip_polygon';
 
 const EARCUT_MAX_RINGS = 500;
 
@@ -129,8 +130,8 @@ export default class PolygonPack extends VectorPack {
                 uvHeight = image.data.height;
             }
         }
-
-
+        const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
+        // debugger
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
             const triangleIndex = this.data.length / this.formatWidth;
@@ -139,12 +140,13 @@ export default class PolygonPack extends VectorPack {
             const holeIndices = [];
 
             for (let ii = 0; ii < polygon.length; ii++) {
-                const ring = polygon[ii];
+                let ring = polygon[ii];
+                ring = clipPolygon(ring, BOUNDS);
                 if (ring.length === 0) {
                     continue;
                 }
-
-                if (ring !== polygon[0]) {
+                //TODO 这里应该用ring signed来判断是否是hole
+                if (i !== 0) {
                     holeIndices.push(flattened.length / 2);
                 }
 

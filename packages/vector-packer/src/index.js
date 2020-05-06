@@ -8,3 +8,5 @@ export { default as CirclePack } from './pack/CirclePack';
 export { default as GlyphRequestor } from './GlyphRequestor';
 export { default as IconRequestor } from './IconRequestor';
 export { default as LRUCache } from './LRUCache';
+import * as PackUtil from './pack/util/index.js';
+export { PackUtil };

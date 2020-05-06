@@ -1,7 +1,7 @@
 import { calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
 import { pushIn, getUnsignedArrayType, getPosArrayType } from '../../common/Util';
-import { clipPolygon } from './clip';
+import { PackUtil } from '@maptalks/vector-packer';
 import earcut from 'earcut';
 import { KEY_IDX } from '../../common/Constant';
 
@@ -90,6 +90,15 @@ export function buildExtrudeFaces(
         let start = offset;
         let holes = [];
         for (let i = 0, l = geometry.length; i < l; i++) {
+            const segStart = offset - start;
+            let ring = geometry[i];
+            ring = PackUtil.clipPolygon(ring, BOUNDS);
+            if (!ring.length) {
+                if (i === l - 1) {
+                    offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
+                }
+                continue;
+            }
             const isHole = calculateSignedArea(geometry[i]) < 0;
             //fill bottom vertexes
             if (!isHole && i > 0) {
@@ -97,15 +106,6 @@ export function buildExtrudeFaces(
                 offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
                 holes = [];
                 start = offset;
-            }
-            const segStart = offset - start;
-            let ring = geometry[i];
-            ring = clipPolygon(ring, BOUNDS, true);
-            if (!ring.length) {
-                if (i === l - 1) {
-                    offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
-                }
-                continue;
             }
             const ringLen = ring.length;
             if (ring[0][0] !== ring[ringLen - 1][0] || ring[0][1] !== ring[ringLen - 1][1]) {
