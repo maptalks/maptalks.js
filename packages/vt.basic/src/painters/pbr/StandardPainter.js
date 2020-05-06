@@ -242,6 +242,9 @@ class StandardPainter extends MeshPainter {
         if (reshader.SsrPass && !this._ssrShader) {
             uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
             const defines = this._getDefines(reshader.SsrPass.getDefines());
+            if (context.shadow && context.shadow.defines) {
+                extend(defines, context.shadow.defines);
+            }
             this._ssrShader = new reshader.pbr.StandardShader({
                 uniforms: uniformDeclares,
                 defines,

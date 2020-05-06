@@ -22,7 +22,7 @@ class VSMShadowPass {
             shadowRes = 1024;
         }
         this.shadowPass = new reshader.ShadowPass(this.renderer, { width: shadowRes, height: shadowRes, blurOffset: this.sceneConfig.shadow.blurOffset });
-        this.shadowShader = new reshader.ShadowDisplayShader(this._viewport, this.getDefines());
+        this.shadowShader = new reshader.ShadowDisplayShader(this.getDefines());
     }
 
     getUniforms() {
