@@ -345,7 +345,12 @@ class StandardPainter extends MeshPainter {
             this.material.once('complete', this._bindOnMaterialComplete);
         } else {
             this._loadingMaterial = new reshader.pbr.StandardMaterial(material);
-            this._loadingMaterial.once('complete', this._bindOnMaterialComplete);
+            if (this._loadingMaterial.isReady()) {
+                this._onMaterialComplete();
+            } else {
+                this._loadingMaterial.once('complete', this._bindOnMaterialComplete);
+            }
+
         }
 
         if (!hasTexture) {
