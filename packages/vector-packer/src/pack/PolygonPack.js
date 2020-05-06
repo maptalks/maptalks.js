@@ -146,7 +146,7 @@ export default class PolygonPack extends VectorPack {
                     continue;
                 }
                 //TODO 这里应该用ring signed来判断是否是hole
-                if (i !== 0) {
+                if (ii !== 0) {
                     holeIndices.push(flattened.length / 2);
                 }
 
