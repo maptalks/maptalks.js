@@ -75,10 +75,10 @@ export function buildExtrudeFaces(
     // debugger
     let maxAltitude = 0;
     let offset = 0;
+    const BOUNDS = [-1, -1, EXTENT + 1, EXTENT + 1];
     // debugger
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
-        const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
         const geometry = feature.geometry;
 
         const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
@@ -92,7 +92,9 @@ export function buildExtrudeFaces(
         for (let i = 0, l = geometry.length; i < l; i++) {
             const segStart = offset - start;
             let ring = geometry[i];
-            ring = PackUtil.clipPolygon(ring, BOUNDS);
+            if (EXTENT !== Infinity) {
+                ring = PackUtil.clipPolygon(ring, BOUNDS);
+            }
             if (!ring.length) {
                 if (i === l - 1) {
                     offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
