@@ -454,5 +454,6 @@ export function extend(dest) {
 //zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
 //level:    4       2     0     1       3
 export function getUniformLevel(z, currentTileZoom) {
-    return z - currentTileZoom > 0 ? 2 * (z - currentTileZoom) - 1 : 2 * (currentTileZoom - z);
+    // return z - currentTileZoom > 0 ? 2 * (z - currentTileZoom) - 1 : 2 * (currentTileZoom - z);
+    return currentTileZoom - (z - 64);
 }
