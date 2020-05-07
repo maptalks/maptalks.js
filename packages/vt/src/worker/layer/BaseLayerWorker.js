@@ -173,6 +173,7 @@ export default class BaseLayerWorker {
         }
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
+            tilePoint = { x: tileInfo.point.x * glScale, y: tileInfo.point.y * glScale },
             data = [],
             pluginIndexes = [],
             options = this.options,
@@ -200,7 +201,7 @@ export default class BaseLayerWorker {
             //index of plugin with data
             pluginIndexes.push(i);
             buffers.push(data[i].styledFeatures.buffer);
-            let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, glScale, zScale, zoom });
+            let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, tilePoint, glScale, zScale, zoom });
             if (useDefault) {
                 promise = promise.then(tileData => {
                     if (!tileData) {
@@ -306,7 +307,7 @@ export default class BaseLayerWorker {
         const symbol = pluginConfig.symbol;
 
         const tileSize = this.options.tileSize[0];
-        const { extent, glScale, zScale, zoom } = context;
+        const { extent, glScale, zScale, zoom, tilePoint } = context;
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
         if (type === '3d-extrusion') {
@@ -317,7 +318,7 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, glScale, zScale, this.options['tileSize'][1], symbol, zoom));
+            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom));
         } else if (type === '3d-wireframe') {
             return Promise.resolve(buildWireframe(features, dataConfig, extent));
         } else if (type === 'point') {

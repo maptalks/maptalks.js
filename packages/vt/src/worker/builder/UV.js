@@ -1,22 +1,16 @@
 //inspired by https://stackoverflow.com/questions/20774648/three-js-generate-uv-coordinate
-export function buildFaceUV(start, offset, uvs, vertices, texWidth, texHeight) {
-    // debugger
-    // for (let i = 0; i < indices.length; i++) {
-    //     const ix = indices[i] * 3, iy = indices[i] * 3 + 1;
-    //     const x = vertices[ix], y = vertices[iy];
-    //     uvs.push(x / uvSize[0], y / uvSize[1]);
-    // }
-
-    //TODO 改为和面的方向垂直
+export function buildFaceUV(start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight) {
+    //为了提升精度，计算uvOrigin的小数部分
+    const uvStart = [(uvOrigin.x / texWidth) % 1, (uvOrigin.y / texHeight) % 1];
     for (let i = start; i < start + offset; i += 3) {
         const idx = i / 3 * 2;
         const x = vertices[i], y = vertices[i + 1];
-        uvs[idx] = x / texWidth;
-        uvs[idx + 1] = y / texHeight;
+        uvs[idx] = uvStart[0] + (x * glScale) / texWidth;
+        uvs[idx + 1] = uvStart[1] + (y * glScale) / texHeight;
     }
 }
 
-export function buildSideUV(uvs, vertices, indices, texWidth, texHeight) {
+export function buildSideUV(uvs, vertices, indices, texWidth, texHeight, glScale, vScale) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let prex, prey, seg = 0;
@@ -45,8 +39,8 @@ export function buildSideUV(uvs, vertices, indices, texWidth, texHeight) {
                 len = lensofar - seg;
             }
         }
-        const u = 1.0 - len / texWidth;
-        const v = (z === maxz ? 0 : h / texHeight);
+        const u = 1.0 - len * glScale / texWidth;
+        const v = (z === maxz ? 0 : h * vScale / texHeight);
         uvs[ix / 3 * 2] = u;
         uvs[ix / 3 * 2 + 1] = v;
         prex = x;

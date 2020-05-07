@@ -6,7 +6,7 @@ import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-pac
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 
-export default function (features, dataConfig, extent, glScale, zScale, tileSize, symbol, zoom) {
+export default function (features, dataConfig, extent, uvOrigin, glScale, zScale, localScale, symbol, zoom) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -24,6 +24,8 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         top, side,
         topThickness,
     } = dataConfig;
+    //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
+    const textureSize = 128 / 256;
     const faces = buildExtrudeFaces(
         features, extent,
         {
@@ -36,13 +38,14 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
             top, side,
             topThickness: topThickness * 10 || 0,
             uv: uv || tangent, //tangent也需要计算uv
-            uvSize: uvScale ? [128 * uvScale[0], 128 * uvScale[1]] : [128, 128],
+            uvSize: uvScale ? [textureSize * uvScale[0], textureSize  * uvScale[1]] : [textureSize, textureSize],
+            uvOrigin,
             //>> needed by uv computation
-            glScale: glScale * (extent / tileSize),
+            glScale: glScale * localScale,
             //用于白模侧面的uv坐标v的计算
             // zScale用于将meter转为gl point值
-            // (extent / tileSize)用于将gl point转为瓦片内坐标
-            vScale: zScale * (extent / tileSize) * (extent / tileSize)
+            // localScale用于将gl point转为瓦片内坐标
+            vScale: zScale
             //<<
         });
     const buffers = [];
@@ -56,9 +59,13 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
 
     // debugger
     const normals = buildNormals(faces.vertices, indices);
+    let simpleNormal = true;
     //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
     for (let i = 0; i < normals.length; i++) {
         normals[i] = -normals[i];
+        if (normals[i] % 1 !== 0) {
+            simpleNormal = false;
+        }
     }
     faces.normals = normals;
 
@@ -78,7 +85,13 @@ export default function (features, dataConfig, extent, glScale, zScale, tileSize
         delete faces.normals;
     }
     if (faces.normals) {
-        faces.normals = new Float32Array(faces.normals);
+        //如果只有顶面，normal数据只有0, 1, -1时，则为simple normal，可以改用Int8Array
+        if (simpleNormal) {
+            faces.normals = new Int8Array(faces.normals);
+        } else {
+            faces.normals = new Float32Array(faces.normals);
+        }
+
         buffers.push(faces.normals.buffer);
     }
     if (faces.uvs) {

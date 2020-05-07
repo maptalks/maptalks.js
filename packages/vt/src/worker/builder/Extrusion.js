@@ -14,6 +14,7 @@ export function buildExtrudeFaces(
         side,
         top,
         topThickness,
+        uvOrigin,
         uv,
         uvSize,
         glScale,
@@ -59,7 +60,7 @@ export function buildExtrudeFaces(
             pushIn(indices, triangles);
             if (generateUV) {
                 // debugger
-                buildFaceUV(start, offset, uvs, vertices, uvSize[0] / glScale, uvSize[1] / glScale);
+                buildFaceUV(start, offset, uvs, vertices, uvOrigin, glScale, uvSize[0], uvSize[1]);
             }
 
             if (topThickness > 0) {
@@ -204,7 +205,7 @@ function buildSide(vertices, topVertices, holes, indices, start, offset, topThic
         indices.push(next, next + vertexCount, current + vertexCount);
     }
     if (generateUV) {
-        buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize[0] / glScale, uvSize[1] / vScale); //convert uvSize[1] to meter
+        buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize[0], uvSize[1], glScale, vScale); //convert uvSize[1] to meter
     }
     return offset;
 }
