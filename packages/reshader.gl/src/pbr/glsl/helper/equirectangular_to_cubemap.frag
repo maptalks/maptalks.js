@@ -44,7 +44,7 @@ void main()
     #ifdef ENC_RGBM
         gl_FragColor = color;
     #else
-        gl_FragColor = vec4(decodeRGBM(color, 7.0), 1.0));
+        gl_FragColor = vec4(decodeRGBM(color, 7.0), 1.0);
     #endif
     // gl_FragColor = vec4(uv, 0.0, 1.0);
 }
