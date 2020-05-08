@@ -6,12 +6,15 @@ import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
+const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
 
 class GroundPainter {
     constructor(regl, layer) {
         this._regl = regl;
         this.renderer = new reshader.Renderer(regl);
         this._layer = layer;
+        this._loader = new reshader.ResourceLoader();
+        this._bindOnMaterialComplete = this._onMaterialComplete.bind(this);
         this._init();
     }
 
@@ -49,8 +52,8 @@ class GroundPainter {
             this._layer.getRenderer().setCanvasUpdated();
             return;
         }
-        if (this._layer.getRenderer().isEnableSSR()) {
-            if (context && context.ssr) {
+        if (this._layer.getRenderer().isEnableSSR() && context) {
+            if (context.ssr) {
                 const ssrFbo = context && context.ssr.fbo;
                 this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
             } else {
@@ -274,6 +277,8 @@ class GroundPainter {
     _createGround() {
         const planeGeo = new reshader.Plane();
         planeGeo.generateBuffers(this.renderer.regl);
+        planeGeo.data.aTexCoord = new Float32Array(8);
+        //TODO 还需要构造 tangent
         this._ground = new reshader.Mesh(planeGeo);
         this._groundScene = new reshader.Scene([this._ground]);
     }
@@ -282,6 +287,28 @@ class GroundPainter {
         const map = this.getMap();
         const localTransform = getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
+
+        const extent = map['_get2DExtent'](map.getGLZoom());
+        const width = extent.getWidth();
+        const height = extent.getHeight();
+        const center = map.cameraLookAt;
+        const xmin = center[0] - width;
+        const ymax = center[1] + height;
+
+        const uvStartX = (xmin / TEX_SIZE) % 1;
+        const uvStartY = (ymax / TEX_SIZE) % 1;
+        const w = extent.getWidth() / TEX_SIZE * 2;
+        const h = extent.getHeight() / TEX_SIZE * 2;
+
+        const uv = this._ground.geometry.data.aTexCoord;
+        uv[0] = uvStartX;
+        uv[1] = uvStartY - h;
+        uv[2] = uvStartX + w;
+        uv[3] = uvStartY - h;
+        uv[4] = uvStartX;
+        uv[5] = uvStartY;
+        uv[6] = uvStartX + w;
+        uv[7] = uvStartY;
     }
 
     _getGroundDefines(context) {
@@ -331,8 +358,12 @@ class GroundPainter {
                     }
                     texConf = typeof texConf === 'string' ? {
                         url: texConf,
-                        wrap: 'repeat'
-                    } : texConf.url;
+                        wrap: 'repeat',
+                    } : texConf;
+                    texConf.flipY = true;
+                    texConf.min = 'linear';
+                    texConf.mag = 'linear';
+                    // texConf.aniso = 4;
                     material[p] = new reshader.Texture2D(texConf, this._loader);
                     hasTexture = true;
                 } else {
@@ -342,10 +373,14 @@ class GroundPainter {
         }
         if (!this.material) {
             this.material = new reshader.pbr.StandardMaterial(material);
-            this.material.once('complete', this._onMaterialComplete, this);
+            this.material.once('complete', this._bindOnMaterialComplete, this);
         } else {
             this._loadingMaterial = new reshader.pbr.StandardMaterial(material);
-            this._loadingMaterial.once('complete', this._onMaterialComplete, this);
+            if (this._loadingMaterial.isReady()) {
+                this._onMaterialComplete();
+            } else {
+                this._loadingMaterial.once('complete', this._bindOnMaterialComplete);
+            }
         }
 
         if (!hasTexture) {

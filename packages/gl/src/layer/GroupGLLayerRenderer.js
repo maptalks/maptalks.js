@@ -73,11 +73,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (hasRenderTarget) {
             this._renderMode = 'aa';
         }
+        let hasChild = false;
         let hasNoAA = false;
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
                 return;
             }
+            hasChild = true;
             if (renderer.needRetireFrames && renderer.needRetireFrames()) {
                 this.setRetireFrames();
             }
@@ -99,6 +101,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     renderer[methodName].apply(renderer, args);
                 }
             });
+        }
+        if (!hasChild) {
+            if (!this._groundPainter) {
+                this._groundPainter = new GroundPainter(this._regl, this.layer);
+            }
+            this._groundPainter.paint(this._drawContext);
         }
     }
 

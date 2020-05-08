@@ -8,5 +8,5 @@ export const WEBGL_OPTIONAL_EXTENSIONS = [
     'OES_vertex_array_object',
     'OES_texture_half_float', 'OES_texture_half_float_linear',
     'OES_texture_float', 'OES_texture_float_linear',
-    'WEBGL_depth_texture', /*'WEBGL_draw_buffers', */'EXT_shader_texture_lod'
+    'WEBGL_depth_texture', /*'WEBGL_draw_buffers', */'EXT_shader_texture_lod', 'EXT_texture_filter_anisotropic'
 ];
