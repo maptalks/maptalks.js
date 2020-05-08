@@ -61,7 +61,7 @@ class GroundPainter {
                 //如果图层开启ssr且context没有ssr时，说明不是后处理阶段，只需绘制深度纹理即可
                 this.renderer.render(this._depthShader, uniforms, this._groundScene, fbo);
             }
-        } else if (!context.ssr) {
+        } else if (!context || !context.ssr) {
             //context中有ssr时，说明是drawSSR阶段，此时什么都不用绘制
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
         }
