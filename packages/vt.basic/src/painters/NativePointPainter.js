@@ -61,7 +61,7 @@ class NativePointPainter extends Painter {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
-
+        const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
         const config = {
             vert,
             frag,
@@ -82,10 +82,13 @@ class NativePointPainter extends Painter {
                 stencil: {
                     enable: true,
                     func: {
-                        cmp: '<=',
+                        cmp: () => {
+                            return stencil ? '=' : '<=';
+                        },
                         ref: (context, props) => {
-                            return props.level;
-                        }
+                            return stencil ? props.stencilRef : props.level;
+                        },
+                        mask: 0xFF
                     },
                     op: {
                         fail: 'keep',
@@ -95,6 +98,7 @@ class NativePointPainter extends Painter {
                 },
                 depth: {
                     enable: true,
+                    mask: false,
                     range: this.sceneConfig.depthRange || [0, 1],
                     func: this.sceneConfig.depthFunc || 'always'
                 },

@@ -5,6 +5,7 @@ import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
+import { PACK_TEX_SIZE } from '@maptalks/vector-packer';
 
 export default function (features, dataConfig, extent, uvOrigin, glScale, zScale, localScale, symbol, zoom) {
     if (dataConfig.top === undefined) {
@@ -25,7 +26,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         topThickness,
     } = dataConfig;
     //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
-    const textureSize = 128 / 256;
+    const textureSize = PACK_TEX_SIZE;
     const faces = buildExtrudeFaces(
         features, extent,
         {

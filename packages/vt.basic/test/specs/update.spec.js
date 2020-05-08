@@ -497,7 +497,7 @@ describe('update style specs', () => {
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             if (pixel[0] > 0) {
                 if (!painted) {
-                    assert.deepEqual(pixel, [15, 13, 52, 255]);
+                    assert.deepEqual(pixel, [11, 11, 51, 255]);
 
                     material.baseColorTexture = undefined;
                     layer.updateSymbol(0, { material });

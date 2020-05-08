@@ -74,6 +74,9 @@ module.exports = {
         },
         postProcess: {
             enable: true,
+            antialias: {
+                enable: false
+            },
             ssr: {
                 enable: true
             }

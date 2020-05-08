@@ -53,7 +53,7 @@ describe('vector tile integration specs', () => {
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             let generated = false;
             let count = 0;
-            layer.once(eventName, () => {
+            layer.on(eventName, () => {
                 count++;
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
@@ -85,6 +85,8 @@ describe('vector tile integration specs', () => {
                         assert(result.diffCount === 0);
                         done();
                     });
+                } else {
+                    map.getRenderer().setToRedraw();
                 }
             });
             layer.addTo(map);
@@ -149,7 +151,14 @@ describe('vector tile integration specs', () => {
                     groupLayer.once('layerload', groupLayerListener);
                 });
             } else {
-                groupLayer.once('layerload', groupLayerListener);
+                groupLayer.on('layerload', () => {
+                    //因为某些后处理（如阴影）是在第二帧才会正常绘制的，所以要监听第二次
+                    count++;
+                    if (count < limit) {
+                        return;
+                    }
+                    groupLayerListener();
+                });
             }
             groupLayer.addTo(map);
             // layer.addTo(map);

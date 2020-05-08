@@ -10,3 +10,5 @@ export { default as IconRequestor } from './IconRequestor';
 export { default as LRUCache } from './LRUCache';
 import * as PackUtil from './pack/util/index.js';
 export { PackUtil };
+//256是2的8次方，在glZoom + 8级别时，texture为1:1比例
+export const PACK_TEX_SIZE = 128 / 256;
