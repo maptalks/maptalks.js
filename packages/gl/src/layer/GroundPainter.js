@@ -52,15 +52,17 @@ class GroundPainter {
             this._layer.getRenderer().setCanvasUpdated();
             return;
         }
-        if (this._layer.getRenderer().isEnableSSR() && context) {
-            if (context.ssr) {
+        const groundDefines = this._ground.getDefines();
+        if (this._layer.getRenderer().isEnableSSR() && groundDefines && groundDefines['HAS_SSR']) {
+            if (context && context.ssr) {
                 const ssrFbo = context && context.ssr.fbo;
                 this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
             } else {
                 //如果图层开启ssr且context没有ssr时，说明不是后处理阶段，只需绘制深度纹理即可
                 this.renderer.render(this._depthShader, uniforms, this._groundScene, fbo);
             }
-        } else {
+        } else if (!context.ssr) {
+            //context中有ssr时，说明是drawSSR阶段，此时什么都不用绘制
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
         }
         this._layer.getRenderer().setCanvasUpdated();
