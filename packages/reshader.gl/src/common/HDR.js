@@ -1,4 +1,3 @@
-import { vec3 } from 'gl-matrix';
 import { clamp } from './Util.js';
 
 var toChar = String.fromCharCode;
