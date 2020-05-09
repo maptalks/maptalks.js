@@ -5,7 +5,7 @@ import { KEY_IDX } from '../../common/Constant';
 export function buildWireframe(
     features, EXTENT,
     {
-        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight,
+        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight,
         bottom
     }
 ) {
@@ -69,7 +69,12 @@ export function buildWireframe(
 
         const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
-        const height = heightProperty ? getHeightValue(feature.properties, heightProperty, defaultHeight) * altitudeScale : altitude;
+        let height = altitude;
+        if (heightProperty) {
+            height = getHeightValue(feature.properties, heightProperty, defaultHeight);
+        } else if (minHeightProperty) {
+            height = altitude - getHeightValue(feature.properties, minHeightProperty, altitude - defaultHeight);
+        }
 
         let start = offset;
         for (let i = 0, l = geometry.length; i < l; i++) {

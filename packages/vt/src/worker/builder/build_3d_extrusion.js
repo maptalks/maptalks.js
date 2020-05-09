@@ -19,6 +19,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         altitudeProperty,
         defaultAltitude,
         heightProperty,
+        minHeightProperty,
         defaultHeight,
         tangent,
         uv, uvScale,
@@ -33,6 +34,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             altitudeScale, altitudeProperty,
             defaultAltitude : defaultAltitude || 0,
             heightProperty,
+            minHeightProperty,
             defaultHeight : defaultHeight || 0
         },
         {
