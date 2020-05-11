@@ -41,6 +41,10 @@ export default class BaseLayerWorker {
     loadTile(context, cb) {
         const loadings = this.loadings;
         const url = context.tileInfo.url;
+        // if (context.tileInfo.z !== 2 || context.tileInfo.x !== 0 || context.tileInfo.y !== 0) {
+        //     cb();
+        //     return;
+        // }
         if (this._cache.has(url)) {
             const { features, layers } = this._cache.get(url);
             const waitings = loadings[url];

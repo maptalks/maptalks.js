@@ -77,7 +77,7 @@ export function buildExtrudeFaces(
     let maxAltitude = 0;
     let offset = 0;
     const BOUNDS = [-1, -1, EXTENT + 1, EXTENT + 1];
-    // debugger
+
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
@@ -95,7 +95,16 @@ export function buildExtrudeFaces(
 
         let start = offset;
         let holes = [];
+        // debugger
         for (let i = 0, l = geometry.length; i < l; i++) {
+            const isHole = calculateSignedArea(geometry[i]) < 0;
+            //fill bottom vertexes
+            if (!isHole && i > 0) {
+                //an exterior ring (multi polygon)
+                offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
+                holes = [];
+                start = offset;
+            }
             const segStart = offset - start;
             let ring = geometry[i];
             if (EXTENT !== Infinity) {
@@ -106,14 +115,6 @@ export function buildExtrudeFaces(
                     offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
                 }
                 continue;
-            }
-            const isHole = calculateSignedArea(geometry[i]) < 0;
-            //fill bottom vertexes
-            if (!isHole && i > 0) {
-                //an exterior ring (multi polygon)
-                offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
-                holes = [];
-                start = offset;
             }
             const ringLen = ring.length;
             if (ring[0][0] !== ring[ringLen - 1][0] || ring[0][1] !== ring[ringLen - 1][1]) {
@@ -139,6 +140,7 @@ export function buildExtrudeFaces(
     const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
+        maxAltitude,
         vertices: new posArrayType(vertices),        // vertexes
         indices,                                    // indices for drawElements
         featureIndexes: new feaCtor(featIndexes)   // vertex index of each feature
