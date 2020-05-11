@@ -10,7 +10,7 @@ class StandardShader extends MeshShader {
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
         const extraUniforms = config.uniforms;
-        extraCommandProps = extend({}, extraCommandProps, {
+        extraCommandProps = extend({}, extraCommandProps/*, {
             blend : {
                 enable: true,
                 func: {
@@ -22,11 +22,8 @@ class StandardShader extends MeshShader {
                     // dstAlpha: 'one minus src alpha'
                 },
                 equation: 'add'
-            },
-            sample: {
-                alpha: true
             }
-        });
+        }*/);
 
         // const modelMatrix = [1, -0.0000, -0.0000, 0, 0, 0.0000, 1, 0, 0.0000, -1, 0.0000, 0, -155.4500, 0, 287.6630, 1];
         // const modelViewMatrix = [-0.2274, -0.5468, 0.8058, 0, 0, 0.8275, 0.5615, 0, -0.9738, 0.1277, -0.1882, 0, 71.0551, 174.0461, -2710.2300, 1];
