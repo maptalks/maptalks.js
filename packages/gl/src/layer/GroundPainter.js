@@ -219,6 +219,7 @@ class GroundPainter {
             extraCommandProps
         });
 
+        extraCommandProps.colorMask = [false, false, false, false];
         this._depthShader = new reshader.pbr.StandardDepthShader({
             extraCommandProps
         });
@@ -253,7 +254,7 @@ class GroundPainter {
                 //     return !!ground && !!ground.depth ? [0, 1] : [1, 1];
                 // },
 
-                func: '<'
+                func: '<='
             },
             blend: {
                 enable: true,
