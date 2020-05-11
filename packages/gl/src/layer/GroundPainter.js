@@ -47,13 +47,16 @@ class GroundPainter {
         this._transformGround();
         const uniforms = this._getUniformValues(context);
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
-        if (shader === this._fillShader) {
+        const groundDefines = this._ground.getDefines();
+        const isSSR = this._layer.getRenderer().isEnableSSR();
+        if (shader === this._fillShader && (!isSSR || !context || !context.ssr)) {
+            //如果是drawSSR阶段不绘制fill ground
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
             this._layer.getRenderer().setCanvasUpdated();
             return;
         }
-        const groundDefines = this._ground.getDefines();
-        if (this._layer.getRenderer().isEnableSSR() && groundDefines && groundDefines['HAS_SSR']) {
+
+        if (isSSR && groundDefines && groundDefines['HAS_SSR']) {
             if (context && context.ssr) {
                 const ssrFbo = context && context.ssr.fbo;
                 this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
@@ -264,7 +267,7 @@ class GroundPainter {
                 enable: true,
                 offset: {
                     factor: () => { return 1; },
-                    units: () => { return 1; }
+                    units: () => { return 4; }
                 }
             }
         };
