@@ -264,7 +264,7 @@ export default class BaseLayerWorker {
                 }
 
             }
-            const allFeas = [];
+            const allFeas = {};
             const schema = layers;
             if (options.features || options.schema) {
                 let feature;
@@ -278,18 +278,15 @@ export default class BaseLayerWorker {
                         //reset feature's marks
                         if (feature && feaTags[i]) {
                             if (options.features === 'id') {
-                                allFeas.push(feature.id);
+                                allFeas[i] = feature.id;
                             } else {
                                 const o = extend({}, feature);
                                 if (!options.pickingGeometry) {
                                     delete o.geometry;
                                 }
                                 delete o.extent;
-                                allFeas.push(o);
+                                allFeas[i] = o;
                             }
-                        } else {
-                            //use '' instead of null, to reduce feature string size
-                            allFeas.push('');
                         }
                     }
                 }

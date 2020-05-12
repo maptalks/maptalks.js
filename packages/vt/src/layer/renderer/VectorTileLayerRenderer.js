@@ -364,8 +364,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const feaIndexes = pluginData.styledFeatures;
             //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
             //这样featureIndexes中的序号能从pFeatures取得正确的数据
-            const pFeatures = new Array(features.length);
-            if (features.length) {
+            const pluginFeas = {};
+            if (hasFeature(features)) {
                 //[feature index, style index]
                 for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
                     let feature = features[feaIndexes[ii]];
@@ -373,14 +373,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                         feature = layer.getFeature(feature);
                         feature.layer = i;
                     }
-                    pFeatures[feaIndexes[ii]] = {
+                    pluginFeas[feaIndexes[ii]] = {
                         feature,
                         symbol
                     };
                 }
             }
             delete pluginData.styledFeatures;
-            pluginData.features = pFeatures;
+            pluginData.features = pluginFeas;
         }
         if (needCompile) {
             layer._compileStyle();
@@ -1159,4 +1159,17 @@ function copyTileData(data) {
 //z小的排在后面
 function sortByLevel(m0, m1) {
     return m1.info.z - m0.info.z;
+}
+
+function hasFeature(features) {
+    if (!features) {
+        return false;
+    }
+
+    for (const p in features) {
+        if (features[p]) {
+            return true;
+        }
+    }
+    return false;
 }
