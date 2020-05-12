@@ -15,7 +15,19 @@ class StandardPainter extends MeshPainter {
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'
         });
+        if (glData.properties) {
+            extend(geometry.properties, glData.properties);
+        }
         return geometry;
+    }
+
+    createMesh(...args) {
+        const mesh = super.createMesh(...args);
+        if (mesh.geometry.properties.maxAltitude <= 0) {
+            mesh.castShadow = false;
+        }
+        mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
+        return mesh;
     }
 
     paint(context) {
@@ -212,7 +224,7 @@ class StandardPainter extends MeshPainter {
             depth: {
                 enable: true,
                 range: this.sceneConfig.depthRange || [0, 1],
-                func: this.sceneConfig.depthFunc || '<'
+                func: this.sceneConfig.depthFunc || '<='
             },
             blend: {
                 enable: true,
@@ -223,7 +235,7 @@ class StandardPainter extends MeshPainter {
                 equation: 'add'
             },
             polygonOffset: {
-                enable: false,
+                enable: (context, props) => props.maxAltitude === 0,
                 offset: {
                     factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
                     units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
