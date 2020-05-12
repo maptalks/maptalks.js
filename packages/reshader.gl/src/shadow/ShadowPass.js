@@ -91,6 +91,7 @@ class ShadowPass {
         });
 
         this.vsmShader = new ShadowMapShader(defines);
+        this.vsmShader.filter = m => m.castShadow;
 
         this.depthFBO = regl.framebuffer({
             color : this.depthTex

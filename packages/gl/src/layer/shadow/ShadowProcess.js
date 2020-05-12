@@ -94,7 +94,9 @@ class ShadowProcess {
             smap = this._shadowMap = shadowMap;
             this._blurFBO = blurFBO;
             this._renderedShadows = scene.getMeshes().reduce((ids, m) => {
-                ids[m.properties.meshKey] = 1;
+                if (m.castShadow) {
+                    ids[m.properties.meshKey] = 1;
+                }
                 return ids;
             }, {});
             this._renderedView = {
