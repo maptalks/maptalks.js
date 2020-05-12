@@ -52,10 +52,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             //<<
         });
     const buffers = [];
-
-    //in buildUniqueVertex, indices will be updated
-    const l = faces.indices.length;
-    const ctor = getIndexArrayType(l);
+    const ctor = getIndexArrayType(faces.vertices.length / 3);
     const indices = new ctor(faces.indices);
     delete faces.indices;
     buffers.push(indices.buffer, faces.vertices.buffer, faces.featureIndexes.buffer);
@@ -110,7 +107,10 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
                 aTangent: faces.tangents,
                 aPickingId: faces.featureIndexes,
             },
-            indices
+            indices,
+            properties: {
+                maxAltitude: faces.maxAltitude
+            }
         },
         buffers
     };

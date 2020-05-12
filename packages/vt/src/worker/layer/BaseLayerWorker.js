@@ -41,7 +41,8 @@ export default class BaseLayerWorker {
     loadTile(context, cb) {
         const loadings = this.loadings;
         const url = context.tileInfo.url;
-        // if (context.tileInfo.z !== 2 || context.tileInfo.x !== 0 || context.tileInfo.y !== 0) {
+        // const { x, y, z } = context.tileInfo;
+        // if (z !== 13 || x !== 1206 || y !== 1538) {
         //     cb();
         //     return;
         // }

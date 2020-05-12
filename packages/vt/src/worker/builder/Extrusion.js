@@ -136,7 +136,7 @@ export function buildExtrudeFaces(
             featIndexes.push(feature[KEY_IDX] || r);
         }
     }
-    const feaCtor = getUnsignedArrayType(features.length);
+    const feaCtor = getUnsignedArrayType(featIndexes.length ? featIndexes[featIndexes.length - 1] : 0);
     const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
@@ -146,6 +146,7 @@ export function buildExtrudeFaces(
         featureIndexes: new feaCtor(featIndexes)   // vertex index of each feature
     };
     if (uvs) {
+        //可以改成int16
         data.uvs = new Float32Array(uvs);
     }
     return data;
