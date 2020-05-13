@@ -34,7 +34,7 @@ uniform float lineDx;
 uniform float lineDy;
 uniform float lineOffset;
 uniform vec2 canvasSize;
-uniform float mapRotation;
+uniform mat2 mapRotationMatrix;
 
 varying vec2 vNormal;
 
@@ -86,7 +86,8 @@ void main() {
         vec2 offset = lineOffset * (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset);
         vec2 dist = (outset * aExtrude + offset) / EXTRUDE_SCALE;
     #else
-        vec2 dist = outset * aExtrude / EXTRUDE_SCALE;
+        vec2 extrude = aExtrude / EXTRUDE_SCALE;
+        vec2 dist = outset * extrude;
     #endif
 
     float scale = tileResolution / resolution;
@@ -97,10 +98,7 @@ void main() {
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
 
     //沿线的方向加粗1个像素，消除地图倾斜造成的锯齿
-    float angleSin = sin(-mapRotation);
-    float angleCos = cos(-mapRotation);
-    mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    extrude = shapeMatrix * (EXTRUSION_DIRECTION * extrude);
+    extrude = mapRotationMatrix * (EXTRUSION_DIRECTION * extrude);
     gl_Position.xy += vec2(1.0) * extrude * 2.0 / canvasSize * distance;
 
     fbo_picking_setData(distance, true);

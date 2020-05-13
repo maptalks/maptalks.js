@@ -1,7 +1,7 @@
 import Color from 'color';
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { mat2, mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.picking.vert';
@@ -231,7 +231,7 @@ class LinePainter extends BasicPainter {
                         'lineDy',
                         'lineOffset',
                         'canvasSize',
-                        'mapRotation'
+                        'mapRotationMatrix'
                     ],
                     extraCommandProps: {
                         viewport: this.pickingViewport
@@ -274,7 +274,7 @@ class LinePainter extends BasicPainter {
             'lineDy',
             'lineOffset',
             'canvasSize',
-            'mapRotation',
+            'mapRotationMatrix',
 
             'enableTrail',
             'trailLength',
@@ -360,7 +360,7 @@ class LinePainter extends BasicPainter {
         // const unit = [resolution * 100 * glScale, 0, 0];
         // const v = vec3.transformMat4([], vec3.add([], map.cameraLookAt, unit), projViewMatrix);
         // console.log(vec2.normalize([], [v[0] - c[0], v[1] - c[1]]));
-
+        const rotation = map.getBearing() * Math.PI / 180;
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
             projViewMatrix, viewMatrix, cameraToCenterDistance, resolution, canvasSize,
@@ -368,7 +368,7 @@ class LinePainter extends BasicPainter {
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
-            mapRotation: map.getBearing() * Math.PI / 180,
+            mapRotationMatrix: mat2.fromRotation([], rotation),
         };
 
         if (context && context.shadow && context.shadow.renderUniforms) {
