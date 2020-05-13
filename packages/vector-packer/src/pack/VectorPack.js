@@ -22,9 +22,9 @@ export default class VectorPack {
     constructor(features, symbol, options) {
         //TODO 预先把altitude传到pack里来？
         this.options = options;
-        if (!this.options['center']) {
-            this.options['center'] = [0, 0];
-        }
+        // if (!this.options['center']) {
+        //     this.options['center'] = [0, 0];
+        // }
         this.features = this._check(features);
         this.symbolDef = symbol;
         this.symbol = loadFunctionTypes(symbol, () => {

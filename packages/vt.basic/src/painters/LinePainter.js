@@ -115,6 +115,9 @@ class LinePainter extends BasicPainter {
         }
         if (geometry.data.aUp) {
             defines['HAS_UP'] = 1;
+            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, 1.0)';
+        } else {
+            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, -1.0)';
         }
         mesh.setDefines(defines);
         return mesh;
@@ -227,7 +230,8 @@ class LinePainter extends BasicPainter {
                         'lineDx',
                         'lineDy',
                         'lineOffset',
-                        'canvasSize'
+                        'canvasSize',
+                        'mapRotation'
                     ],
                     extraCommandProps: {
                         viewport: this.pickingViewport
@@ -270,6 +274,7 @@ class LinePainter extends BasicPainter {
             'lineDy',
             'lineOffset',
             'canvasSize',
+            'mapRotation',
 
             'enableTrail',
             'trailLength',
@@ -345,16 +350,25 @@ class LinePainter extends BasicPainter {
 
     getUniformValues(map, context) {
         const projViewMatrix = map.projViewMatrix,
+            viewMatrix = map.viewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
+
+        // const glScale = map.getGLScale();
+        // const c = vec3.transformMat4([], map.cameraLookAt, projViewMatrix);
+        // const unit = [resolution * 100 * glScale, 0, 0];
+        // const v = vec3.transformMat4([], vec3.add([], map.cameraLookAt, unit), projViewMatrix);
+        // console.log(vec2.normalize([], [v[0] - c[0], v[1] - c[1]]));
+
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
-            projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
+            projViewMatrix, viewMatrix, cameraToCenterDistance, resolution, canvasSize,
             trailSpeed: animation.speed || 1,
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
-            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0
+            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
+            mapRotation: map.getBearing() * Math.PI / 180,
         };
 
         if (context && context.shadow && context.shadow.renderUniforms) {
