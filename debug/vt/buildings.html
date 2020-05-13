@@ -375,7 +375,7 @@
         enable: true,
         antialias: {
           enable: true,
-          taa: true
+          taa: false
         },
         ssr: {
           enable: true
@@ -394,7 +394,7 @@
     };
     // layer1.addTo(map);
     // map.addLayer(layer);
-    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.02, antialias: false, /*sceneConfig*/ }).addTo(map);
+    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.02, antialias: false, sceneConfig }).addTo(map);
 
     function updateCubeLight() {
       lights.ambient.resource.url = './resources/venice_sunset_2k.hdr';

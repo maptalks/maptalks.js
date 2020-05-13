@@ -30,6 +30,8 @@ void main()
 
 const V = [];
 
+//TODO 可以把ref值相同的tile合并在一起，一次性绘制
+
 export default class TileStencilRenderer {
     constructor(regl, canvas, map) {
         this._regl = regl;
