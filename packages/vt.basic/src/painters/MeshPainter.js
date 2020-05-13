@@ -62,9 +62,6 @@ class MeshPainter extends Painter {
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
-        if (this.getSymbol().ssr) {
-            mesh.setUniform('ssr', 1);
-        }
         return mesh;
     }
 
@@ -83,6 +80,11 @@ class MeshPainter extends Painter {
         }
         if (mesh.material !== this.material) {
             mesh.setMaterial(this.material);
+        }
+        if (this.getSymbol().ssr) {
+            mesh.setUniform('ssr', 1);
+        } else {
+            mesh.setUniform('ssr', 0);
         }
         super.addMesh(mesh, progress);
     }
