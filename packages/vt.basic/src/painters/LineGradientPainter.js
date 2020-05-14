@@ -1,27 +1,14 @@
-import BasicPainter from './BasicPainter';
+import LinePainter from './LinePainter';
 import { reshader } from '@maptalks/gl';
-import { mat2, mat4 } from '@maptalks/gl';
+import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
-import pickingVert from './glsl/line.picking.vert';
-import { setUniformFromSymbol, extend } from '../Util';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
-import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const MAX_LINE_COUNT = 128;
 
-class LineGradientPainter extends BasicPainter {
-    constructor(...args) {
-        super(...args);
-        this._fnTypeConfig = this._getFnTypeConfig();
-    }
-
-    needToRedraw() {
-        const animation = this.sceneConfig.trailAnimation;
-
-        return this._redraw || animation && animation.enable;
-    }
+class LineGradientPainter extends LinePainter {
 
     createGeometry(glData, features) {
         const geometry = super.createGeometry(glData, features);
@@ -48,22 +35,15 @@ class LineGradientPainter extends BasicPainter {
     }
 
     createMesh(geometry, transform) {
-        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
+        prepareFnTypeData(geometry, this.symbolDef, this.fnTypeConfig);
 
-        const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
-        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
-        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
-        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.4);
-        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
-        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
-        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
+
+        this.setLineUniforms(uniforms);
 
         const gradients = geometry.properties.gradients;
         let height = gradients.length * 2;
@@ -90,52 +70,17 @@ class LineGradientPainter extends BasicPainter {
             castShadow: false,
             picking: true
         });
+        mesh.setLocalTransform(transform);
+
         const defines = {
             'HAS_GRADIENT': 1
         };
-        if (geometry.data.aOpacity) {
-            defines['HAS_OPACITY'] = 1;
-        }
-        if (geometry.data.aLineWidth) {
-            defines['HAS_LINE_WIDTH'] = 1;
-        }
-        if (symbol['lineOffset']) {
-            defines['USE_LINE_OFFSET'] = 1;
-        }
-        if (geometry.data.aUp) {
-            defines['HAS_UP'] = 1;
-            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, 1.0)';
-        } else {
-            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, -1.0)';
-        }
+        this.setMeshDefines(defines, geometry);
         mesh.setDefines(defines);
-        mesh.setLocalTransform(transform);
         return mesh;
     }
 
-    preparePaint(...args) {
-        super.preparePaint(...args);
-        const meshes = this.scene.getMeshes();
-        if (!meshes || !meshes.length) {
-            return;
-        }
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
-    }
-
-    paint(context) {
-        const hasShadow = !!context.shadow;
-        if (this._hasShadow === undefined) {
-            this._hasShadow = hasShadow;
-        }
-        if (this._hasShadow !== hasShadow) {
-            this.shader.dispose();
-            this.createShader(context);
-        }
-        this._hasShadow = hasShadow;
-        super.paint(context);
-    }
-
-    _getFnTypeConfig() {
+    getFnTypeConfig() {
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
         const map = this.getMap();
         const u16 = new Uint16Array(1);
@@ -155,68 +100,17 @@ class LineGradientPainter extends BasicPainter {
         ];
     }
 
-    updateSymbol(symbol) {
-        super.updateSymbol(symbol);
-        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
-    }
-
-    updateSceneConfig(config) {
-        if (config.trailAnimation) {
-            this.createShader(this._context);
-        }
-    }
-
-    init(context) {
-
-        const regl = this.regl;
-
-        this.renderer = new reshader.Renderer(regl);
-
-        this.createShader(context);
-
-        if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
-                this.renderer,
-                {
-                    vert: pickingVert,
-                    uniforms: [
-                        'cameraToCenterDistance',
-                        'lineWidth',
-                        'lineGapWidth',
-                        {
-                            name: 'projViewModelMatrix',
-                            type: 'function',
-                            fn: function (context, props) {
-                                const projViewModelMatrix = [];
-                                mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                                return projViewModelMatrix;
-                            }
-                        },
-                        'tileRatio',
-                        'resolution',
-                        'tileResolution',
-                        'tileExtent',
-                        'lineDx',
-                        'lineDy',
-                        'canvasSize',
-                        'mapRotationMatrix'
-                    ],
-                    extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
-                },
-                this.pickingFBO
-            );
-        }
-    }
-
     createShader(context) {
         this._context = context;
         const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
         const defines = context.shadow && context.shadow.defines || {};
+        if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
+            defines['HAS_TRAIL'] = 1;
+        }
         uniforms.push(
             'cameraToCenterDistance',
             'lineWidth',
+            'lineGapWidth',
             'lineBlur',
             'lineOpacity',
             {
@@ -234,95 +128,20 @@ class LineGradientPainter extends BasicPainter {
             'lineDx',
             'lineDy',
             'canvasSize',
-            'mapRotationMatrix'
+            'mapRotationMatrix',
+
+            'trailLength',
+            'trailSpeed',
+            'trailCircle',
+            'currentTime'
         );
-        const stencil = this.layer.getRenderer().isEnableTileStencil();
-        const canvas = this.canvas;
-        const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return canvas ? canvas.width : 1;
-            },
-            height: () => {
-                return canvas ? canvas.height : 1;
-            }
-        };
-        const depthRange = this.sceneConfig.depthRange;
-        const layer = this.layer;
+
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms,
             defines,
-            extraCommandProps: {
-                viewport,
-                stencil: {
-                    enable: true,
-                    mask: 0xFF,
-                    func: {
-                        cmp: () => {
-                            return stencil ? '=' : '<=';
-                        },
-                        ref: (context, props) => {
-                            return stencil ? props.stencilRef : props.level;
-                        },
-                        mask: 0xFF
-                    },
-                    op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
-                },
-                depth: {
-                    enable: true,
-                    range: depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || (depthRange ? '<=' : 'always')
-                },
-                blend: {
-                    enable: true,
-                    func: {
-                        src: 'src alpha',
-                        dst: 'one minus src alpha'
-                    },
-                    // func : {
-                    //     srcRGB: 'src alpha',
-                    //     srcAlpha: 'src alpha',
-                    //     dstRGB: 'one minus src alpha',
-                    //     dstAlpha: 1
-                    // },
-                    equation: 'add'
-                },
-                polygonOffset: {
-                    enable: true,
-                    offset: {
-                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
-                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
-                    }
-                }
-            }
+            extraCommandProps: this.getExtraCommandProps()
         });
-    }
-
-    getUniformValues(map, context) {
-        const projViewMatrix = map.projViewMatrix,
-            cameraToCenterDistance = map.cameraToCenterDistance,
-            resolution = map.getResolution(),
-            canvasSize = [map.width, map.height];
-        const rotation = map.getBearing() * Math.PI / 180;
-        const animation = this.sceneConfig.trailAnimation || {};
-        const uniforms = {
-            projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
-            trailSpeed: animation.speed || 1,
-            trailLength: animation.trailLength || 500,
-            trailCircle: animation.trailCircle || 1000,
-            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
-            mapRotationMatrix: mat2.fromRotation([], rotation),
-        };
-        if (context && context.shadow && context.shadow.renderUniforms) {
-            extend(uniforms, context.shadow.renderUniforms);
-        }
-        return uniforms;
     }
 }
 

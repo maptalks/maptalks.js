@@ -105,11 +105,9 @@ void main() {
     #endif
 
     #ifdef HAS_TRAIL
-        if (enableTrail == 1.0) {
-            float d = mod(vLinesofar - currentTime * trailSpeed * 0.1, trailCircle);
-            float a = d < trailLength ? mix(0.0, 1.0, d / trailLength) : 0.0;
-            color *= a;
-        }
+        float d = mod(vLinesofar - currentTime * trailSpeed * 0.1, trailCircle);
+        float a = d < trailLength ? mix(0.0, 1.0, d / trailLength) : 0.0;
+        color *= a;
     #endif
 
     #ifdef HAS_OPACITY

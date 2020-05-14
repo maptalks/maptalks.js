@@ -13,34 +13,27 @@ import { OFFSET_FACTOR_SCALE } from './Constant';
 class LinePainter extends BasicPainter {
     constructor(...args) {
         super(...args);
-        this._fnTypeConfig = this._getFnTypeConfig();
+        this.fnTypeConfig = this.getFnTypeConfig();
     }
 
     needToRedraw() {
         const animation = this.sceneConfig.trailAnimation;
-
-        return this._redraw || animation && animation.enable;
+        return super.needToRedraw() || animation && animation.enable;
     }
 
     createMesh(geometry, transform) {
-        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
+        prepareFnTypeData(geometry, this.symbolDef, this.fnTypeConfig);
 
-        this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
+        this.setLineUniforms(uniforms);
 
-        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
+        this._colorCache = this._colorCache || {};
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
-        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
-        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.4);
-        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
-        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
-        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
         setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray', [0, 0, 0, 0], dasharray => {
             let lineDasharray;
             if (dasharray && dasharray.length) {
@@ -104,23 +97,39 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
+        this.setMeshDefines(defines, geometry);
+        mesh.setDefines(defines);
+        return mesh;
+    }
+
+    setLineUniforms(uniforms) {
+        const symbol = this.getSymbol();
+        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
+        setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
+        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
+        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.4);
+        setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
+        setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
+        setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
+        // setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
+    }
+
+    setMeshDefines(defines, geometry) {
         if (geometry.data.aOpacity) {
             defines['HAS_OPACITY'] = 1;
         }
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }
-        if (symbol['lineOffset']) {
-            defines['USE_LINE_OFFSET'] = 1;
-        }
+        // if (symbol['lineOffset']) {
+        //     defines['USE_LINE_OFFSET'] = 1;
+        // }
         if (geometry.data.aUp) {
             defines['HAS_UP'] = 1;
             defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, 1.0)';
         } else {
             defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, -1.0)';
         }
-        mesh.setDefines(defines);
-        return mesh;
     }
 
     preparePaint(...args) {
@@ -130,7 +139,7 @@ class LinePainter extends BasicPainter {
             return;
         }
         const zoom = this.getMap().getZoom();
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._fnTypeConfig, meshes, zoom);
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this.fnTypeConfig, meshes, zoom);
     }
 
     paint(context) {
@@ -146,7 +155,7 @@ class LinePainter extends BasicPainter {
         super.paint(context);
     }
 
-    _getFnTypeConfig() {
+    getFnTypeConfig() {
         this._aColorFn = piecewiseConstant(this.symbolDef['lineColor']);
         this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
         const map = this.getMap();
@@ -189,8 +198,7 @@ class LinePainter extends BasicPainter {
 
     updateSymbol(symbol) {
         super.updateSymbol(symbol);
-        this._aColorFn = piecewiseConstant(this.symbolDef['lineColor']);
-        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
+        this.fnTypeConfig = this.getFnTypeConfig();
     }
 
     updateSceneConfig(config) {
@@ -272,17 +280,27 @@ class LinePainter extends BasicPainter {
             'tileExtent',
             'lineDx',
             'lineDy',
-            'lineOffset',
+            // 'lineOffset',
             'canvasSize',
             'mapRotationMatrix',
 
-            'enableTrail',
             'trailLength',
             'trailSpeed',
             'trailCircle',
             'currentTime'
         );
 
+
+
+        this.shader = new reshader.MeshShader({
+            vert, frag,
+            uniforms,
+            defines,
+            extraCommandProps: this.getExtraCommandProps()
+        });
+    }
+
+    getExtraCommandProps() {
         const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
         const canvas = this.canvas;
         const viewport = {
@@ -297,55 +315,48 @@ class LinePainter extends BasicPainter {
         };
         const depthRange = this.sceneConfig.depthRange;
         const layer = this.layer;
-        this.shader = new reshader.MeshShader({
-            vert, frag,
-            uniforms,
-            defines,
-            extraCommandProps: {
-                viewport,
-                stencil: {
-                    enable: true,
-                    mask: 0xFF,
-                    func: {
-                        cmp: () => {
-                            return stencil ? '=' : '<=';
-                        },
-                        ref: (context, props) => {
-                            return stencil ? props.stencilRef : props.level;
-                        },
-                        mask: 0xFF
+        return {
+            viewport,
+            stencil: {
+                enable: true,
+                func: {
+                    cmp: () => {
+                        return stencil ? '=' : '<=';
                     },
-                    op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
+                    ref: (context, props) => {
+                        return stencil ? props.stencilRef : props.level;
                     }
                 },
-                depth: {
-                    enable: true,
-                    range: depthRange || [0, 1],
-                    mask: false,
-                    func: this.sceneConfig.depthFunc || '<='
-                },
-                blend: {
-                    enable: true,
-                    func: {
-                        src: (context, props) => {
-                            return props['linePatternFile'] ? 'src alpha' : this.sceneConfig.blendSrc || 'one';
-                        },
-                        dst: this.sceneConfig.blendDst || 'one minus src alpha'
+                op: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
+            depth: {
+                enable: true,
+                range: depthRange || [0, 1],
+                mask: false,
+                func: this.sceneConfig.depthFunc || '<='
+            },
+            blend: {
+                enable: true,
+                func: {
+                    src: (context, props) => {
+                        return props['linePatternFile'] ? 'src alpha' : this.sceneConfig.blendSrc || 'one';
                     },
-                    equation: 'add'
+                    dst: this.sceneConfig.blendDst || 'one minus src alpha'
                 },
-                polygonOffset: {
-                    enable: true,
-                    offset: {
-                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
-                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
-                    }
+                equation: 'add'
+            },
+            polygonOffset: {
+                enable: true,
+                offset: {
+                    factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
+                    units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
                 }
             }
-        });
+        };
     }
 
     getUniformValues(map, context) {

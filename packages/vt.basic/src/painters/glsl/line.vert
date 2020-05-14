@@ -32,7 +32,7 @@ uniform float resolution;
 uniform float tileRatio; //EXTENT / tileSize
 uniform float lineDx;
 uniform float lineDy;
-uniform float lineOffset;
+// uniform float lineOffset;
 uniform vec2 canvasSize;
 uniform mat2 mapRotationMatrix;
 
