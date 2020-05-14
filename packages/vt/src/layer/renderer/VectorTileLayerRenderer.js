@@ -1167,7 +1167,7 @@ function hasFeature(features) {
     }
 
     for (const p in features) {
-        if (features[p]) {
+        if (features[p] !== undefined && features[p] !== null) {
             return true;
         }
     }

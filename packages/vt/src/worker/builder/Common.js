@@ -62,38 +62,6 @@ export function fillPosArray(vertices, offset, segment, scale, altitude, isLine)
     return offset;
 }
 
-/**
- * from mapbox-gl-js
- * Returns the signed area for the polygon ring.  Postive areas are exterior rings and
- * have a clockwise winding.  Negative areas are interior rings and have a counter clockwise
- * ordering.
- *
- * @param ring Exterior or interior ring
- */
-export function calculateSignedArea(ring) {
-    let sum = 0;
-    for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
-        p1 = ring[i];
-        p2 = ring[j];
-        sum += (p2.x - p1.x) * (p1.y + p2.y);
-    }
-    return sum;
-}
-
-
-// get height value from properties
-export function getHeightValue(properties, heightProp, defaultValue) {
-    //prepare altitude property
-    let height = defaultValue;
-    if (heightProp && properties) {
-        height = properties[heightProp];
-    }
-    if (height === undefined) {
-        height = defaultValue;
-    }
-    return (height || 0) * 10;//乘以10是因为 tileTransform 中是以分米为单位，但这里是以米为单位
-}
-
 export function isClippedEdge(vertices, i0, i1, EXTENT) {
     const x0 = vertices[i0 * 3], y0 = vertices[i0 * 3 + 1],
         x1 = vertices[i1 * 3], y1 = vertices[i1 * 3 + 1];

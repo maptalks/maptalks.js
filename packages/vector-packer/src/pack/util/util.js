@@ -22,7 +22,12 @@ export function calculateSignedArea(ring) {
     for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
         p1 = ring[i];
         p2 = ring[j];
-        sum += (p2.x - p1.x) * (p1.y + p2.y);
+        if (p1.x !== undefined) {
+            sum += (p2.x - p1.x) * (p1.y + p2.y);
+        } else {
+            sum += (p2[0] - p1[0]) * (p1[1] + p2[1]);
+        }
+
     }
     return sum;
 }
@@ -34,8 +39,6 @@ export function isClippedEdge(vertices, i0, i1, width, EXTENT) {
         y0 === y1 && (y0 < 0 || y0 > EXTENT) && x0 !== x1;
 }
 
-
-// get height value from properties
 export function getHeightValue(properties, heightProp, defaultValue) {
     //prepare altitude property
     let height = defaultValue;

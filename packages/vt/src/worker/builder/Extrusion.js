@@ -1,4 +1,4 @@
-import { calculateSignedArea, fillPosArray, getHeightValue, isClippedEdge } from './Common';
+import { fillPosArray, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
 import { pushIn, getUnsignedArrayType, getPosArrayType } from '../../common/Util';
 import { PackUtil } from '@maptalks/vector-packer';
@@ -82,22 +82,22 @@ export function buildExtrudeFaces(
         const feature = features[r];
         const geometry = feature.geometry;
 
-        const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
+        const altitude = PackUtil.getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
         let height = altitude;
         if (heightProperty) {
-            height = getHeightValue(feature.properties, heightProperty, defaultHeight);
+            height = PackUtil.getHeightValue(feature.properties, heightProperty, defaultHeight);
         } else if (minHeightProperty) {
-            height = altitude - getHeightValue(feature.properties, minHeightProperty, altitude - defaultHeight);
+            height = altitude - PackUtil.getHeightValue(feature.properties, minHeightProperty, altitude - defaultHeight);
         }
 
         const verticeCount = vertices.length;
 
         let start = offset;
         let holes = [];
-        // debugger
+
         for (let i = 0, l = geometry.length; i < l; i++) {
-            const isHole = calculateSignedArea(geometry[i]) < 0;
+            const isHole = PackUtil.calculateSignedArea(geometry[i]) < 0;
             //fill bottom vertexes
             if (!isHole && i > 0) {
                 //an exterior ring (multi polygon)
@@ -117,10 +117,16 @@ export function buildExtrudeFaces(
                 continue;
             }
             const ringLen = ring.length;
-            if (ring[0][0] !== ring[ringLen - 1][0] || ring[0][1] !== ring[ringLen - 1][1]) {
+            if (Array.isArray(ring[0])) {
+                if (ring[0][0] !== ring[ringLen - 1][0] || ring[0][1] !== ring[ringLen - 1][1]) {
+                    //首尾不一样时，在末尾添加让首尾封闭
+                    ring.push([ring[0][0], ring[0][1]]);
+                }
+            } else if (ring[0].x !== ring[ringLen - 1].x || ring[0].y !== ring[ringLen - 1].y) {
                 //首尾不一样时，在末尾添加让首尾封闭
-                ring.push([ring[0][0], ring[0][1]]);
+                ring.push(ring[0]);
             }
+
             //a seg or a ring in line or polygon
             offset = fillPosArray(vertices, offset, ring, scale, altitude);
             if (isHole) {

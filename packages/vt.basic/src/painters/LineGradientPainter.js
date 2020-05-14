@@ -1,6 +1,6 @@
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { mat2, mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
 import pickingVert from './glsl/line.picking.vert';
@@ -104,6 +104,9 @@ class LineGradientPainter extends BasicPainter {
         }
         if (geometry.data.aUp) {
             defines['HAS_UP'] = 1;
+            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, 1.0)';
+        } else {
+            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, -1.0)';
         }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
@@ -195,7 +198,8 @@ class LineGradientPainter extends BasicPainter {
                         'tileExtent',
                         'lineDx',
                         'lineDy',
-                        'canvasSize'
+                        'canvasSize',
+                        'mapRotationMatrix'
                     ],
                     extraCommandProps: {
                         viewport: this.pickingViewport
@@ -229,7 +233,8 @@ class LineGradientPainter extends BasicPainter {
             'tileResolution',
             'lineDx',
             'lineDy',
-            'canvasSize'
+            'canvasSize',
+            'mapRotationMatrix'
         );
         const stencil = this.layer.getRenderer().isEnableTileStencil();
         const canvas = this.canvas;
@@ -304,13 +309,15 @@ class LineGradientPainter extends BasicPainter {
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
             canvasSize = [map.width, map.height];
+        const rotation = map.getBearing() * Math.PI / 180;
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
             projViewMatrix, cameraToCenterDistance, resolution, canvasSize,
             trailSpeed: animation.speed || 1,
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
-            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0
+            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
+            mapRotationMatrix: mat2.fromRotation([], rotation),
         };
         if (context && context.shadow && context.shadow.renderUniforms) {
             extend(uniforms, context.shadow.renderUniforms);

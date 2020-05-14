@@ -27,7 +27,11 @@ export function clipPolygon(points, bbox) {
             // if segment goes through the clip window, add an intersection
             if (inside !== prevInside) {
                 const inter = intersect(prev, p, edge, bbox);
-                result.push(new Point(inter[0], inter[1]));
+                if (p.x !== undefined) {
+                    result.push(new Point(inter[0], inter[1]));
+                } else {
+                    result.push(inter);
+                }
             }
 
             if (inside) result.push(p); // add a point if it's inside
@@ -46,11 +50,11 @@ export function clipPolygon(points, bbox) {
 // intersect a segment against one of the 4 lines that make up the bbox
 
 function intersect(a, b, edge, bbox) {
-    ARR0[0] = a.x;
-    ARR0[1] = a.y;
+    ARR0[0] = a.x === undefined ? a[0] : a.x;
+    ARR0[1] = a.y === undefined ? a[1] : a.y;
     a = ARR0;
-    ARR1[0] = b.x;
-    ARR1[1] = b.y;
+    ARR1[0] = b.x === undefined ? b[0] : b.x;
+    ARR1[1] = b.y === undefined ? b[1] : b.y;
     b = ARR1;
     return edge & 8 ? [a[0] + (b[0] - a[0]) * (bbox[3] - a[1]) / (b[1] - a[1]), bbox[3]] : // top
         edge & 4 ? [a[0] + (b[0] - a[0]) * (bbox[1] - a[1]) / (b[1] - a[1]), bbox[1]] : // bottom
@@ -67,8 +71,8 @@ function intersect(a, b, edge, bbox) {
 // bottom  0101  0100  0110
 
 function bitCode(p, bbox) {
-    ARR0[0] = p.x;
-    ARR0[1] = p.y;
+    ARR0[0] = p.x === undefined ? p[0] : p.x;
+    ARR0[1] = p.y === undefined ? p[1] : p.y;
     p = ARR0;
     var code = 0;
 

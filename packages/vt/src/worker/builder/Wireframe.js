@@ -1,6 +1,7 @@
-import { countVertexes, isClippedEdge, fillPosArray, getHeightValue } from './Common';
+import { countVertexes, isClippedEdge, fillPosArray } from './Common';
 import { getIndexArrayType, getPosArrayType } from '../../common/Util';
 import { KEY_IDX } from '../../common/Constant';
+import { PackUtil } from '@maptalks/vector-packer';
 
 export function buildWireframe(
     features, EXTENT,
@@ -67,13 +68,13 @@ export function buildWireframe(
         const feature = features[r];
         const geometry = feature.geometry;
 
-        const altitude = getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
+        const altitude = PackUtil.getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
         let height = altitude;
         if (heightProperty) {
-            height = getHeightValue(feature.properties, heightProperty, defaultHeight);
+            height = PackUtil.getHeightValue(feature.properties, heightProperty, defaultHeight);
         } else if (minHeightProperty) {
-            height = altitude - getHeightValue(feature.properties, minHeightProperty, altitude - defaultHeight);
+            height = altitude - PackUtil.getHeightValue(feature.properties, minHeightProperty, altitude - defaultHeight);
         }
 
         let start = offset;
