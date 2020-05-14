@@ -50,7 +50,7 @@ class GroundPainter {
         const groundDefines = this._ground.getDefines();
         const isSSR = this._layer.getRenderer().isEnableSSR();
         if (shader === this._fillShader && (!isSSR || !context || !context.ssr)) {
-            //如果是drawSSR阶段不绘制fill ground
+            //如果是drawSSR阶段不绘制fill ground，fuzhenn/maptalks-studio#461
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
             this._layer.getRenderer().setCanvasUpdated();
             return;
@@ -253,7 +253,7 @@ class GroundPainter {
                 //     const ground = sceneConfig.ground;
                 //     return !!ground && !!ground.depth ? [0, 1] : [1, 1];
                 // },
-
+                //如果设成'<'，会有低级别下地面消失的问题，fuzhenn/maptalks-studio#460
                 func: '<='
             },
             blend: {
