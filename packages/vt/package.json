@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vt",
-  "version": "0.15.5",
+  "version": "0.15.6",
   "description": "The vector-tile plugin for maptalks.js",
   "main": "dist/maptalks.vt.js",
   "browser": "dist/maptalks.vt.js",
@@ -25,8 +25,8 @@
     "@maptalks/function-type": "^1.2.3",
     "@maptalks/gl": "^0.15.4",
     "@maptalks/tbn-packer": "^1.2.4",
-    "@maptalks/vector-packer": "^0.15.3",
-    "@maptalks/vt-plugin": "^0.15.3",
+    "@maptalks/vector-packer": "^0.15.6",
+    "@maptalks/vt-plugin": "^0.15.6",
     "color": "^3.0.0",
     "earcut": "^2.2.1",
     "fast-deep-equal": "^2.0.1",
