@@ -82,14 +82,16 @@ export function buildExtrudeFaces(
         const feature = features[r];
         const geometry = feature.geometry;
 
-        const altitude = PackUtil.getHeightValue(feature.properties, altitudeProperty, defaultAltitude) * altitudeScale;
+        const altitudeValue = PackUtil.getHeightValue(feature.properties, altitudeProperty, defaultAltitude);
+        const altitude = altitudeValue * altitudeScale;
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
-        let height = altitude;
+        let height = altitudeValue;
         if (heightProperty) {
             height = PackUtil.getHeightValue(feature.properties, heightProperty, defaultHeight);
         } else if (minHeightProperty) {
-            height = altitude - PackUtil.getHeightValue(feature.properties, minHeightProperty, altitude - defaultHeight);
+            height = altitudeValue - PackUtil.getHeightValue(feature.properties, minHeightProperty, altitudeValue - defaultHeight);
         }
+        height *= altitudeScale;
 
         const verticeCount = vertices.length;
 
