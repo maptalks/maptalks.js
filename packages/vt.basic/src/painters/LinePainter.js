@@ -107,7 +107,7 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
-        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.4);
+        setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.6);
         setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
