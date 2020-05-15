@@ -23,7 +23,8 @@ class StandardPainter extends MeshPainter {
 
     createMesh(...args) {
         const mesh = super.createMesh(...args);
-        if (mesh.geometry.properties.maxAltitude <= 0) {
+        //没有高度或level >= 2的瓦片mesh不产生阴影
+        if (mesh.geometry.properties.maxAltitude <= 0 || mesh.getUniform('level') >= 3) {
             mesh.castShadow = false;
         }
         mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
@@ -207,18 +208,12 @@ class StandardPainter extends MeshPainter {
                     ref: (context, props) => {
                         return props.level;
                     },
-                    // mask: 0xff
                 },
                 op: {
                     fail: 'keep',
                     zfail: 'keep',
                     zpass: 'replace'
-                },
-                // opBack: {
-                //     fail: 'keep',
-                //     zfail: 'keep',
-                //     zpass: 'replace'
-                // }
+                }
             },
             viewport,
             depth: {

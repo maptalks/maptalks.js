@@ -9,11 +9,11 @@ const TEX_CACHE_KEY = '__gl_textures';
 const MAT = [];
 
 const level0Filter = mesh => {
-    return mesh.uniforms['level'] === 0;
+    return mesh.getUniform('level') === 0;
 };
 
 const levelNFilter = mesh => {
-    return mesh.uniforms['level'] > 0;
+    return mesh.getUniform('level') > 0;
 };
 
 class Painter {

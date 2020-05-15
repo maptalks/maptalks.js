@@ -457,5 +457,5 @@ export function getUniformLevel(z, currentTileZoom) {
     // return z - currentTileZoom > 0 ? 2 * (z - currentTileZoom) - 1 : 2 * (currentTileZoom - z);
     // return currentTileZoom - (z - 64);
     //为了解决瓦片模板冲突问题，相差1级的瓦片之间是没有重叠的
-    return z - currentTileZoom >= -1 ? 0 : (currentTileZoom - z);
+    return z - currentTileZoom >= -2 ? 0 : (currentTileZoom - z);
 }
