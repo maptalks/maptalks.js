@@ -89,7 +89,7 @@ export function buildExtrudeFaces(
         if (heightProperty) {
             height = PackUtil.getHeightValue(feature.properties, heightProperty, defaultHeight);
         } else if (minHeightProperty) {
-            height = altitudeValue - PackUtil.getHeightValue(feature.properties, minHeightProperty, altitudeValue - defaultHeight);
+            height = altitudeValue - PackUtil.getHeightValue(feature.properties, minHeightProperty, 0);
         }
         height *= altitudeScale;
 
