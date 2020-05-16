@@ -247,7 +247,7 @@ class GroundPainter {
                 mask: () => {
                     const sceneConfig = this._layer._getSceneConfig();
                     const ground = sceneConfig.ground;
-                    return !!ground && !!ground.depth;
+                    return ground.depth || ground.depth === undefined;
                 },
                 // range: () => {
                 //     const ground = sceneConfig.ground;
