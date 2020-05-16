@@ -26,40 +26,53 @@ class SsaoExtactShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
-                'uFrameModTaaSS',
-                'uQuality',
-                'uSsaoBias',
-                'uSsaoIntensity',
-                'uSsaoProjectionScale',
-                'uSsaoRadius',
-                'TextureMipmapDepth',
-                'uNearFar',
-                'uTextureMipmapDepthRatio',
-                'uTextureMipmapDepthSize',
-                'uTextureOutputRatio',
-                'uTextureOutputSize',
-                'uSsaoProjectionInfo',
-                'projMatrix',
-                'invProjMatrix',
-                'TextureDepth',
-                {
-                    name: 'kSphereSamples',
-                    type: 'array',
-                    length: 16,
-                    fn: function () {
-                        return KERNEL_SPHERE_SAMPLES;
-                    }
-                },
+                // 'uFrameModTaaSS',
+                // 'uQuality',
+                // 'uSsaoBias',
+                // 'uSsaoIntensity',
+                // 'uSsaoProjectionScale',
+                // 'uSsaoRadius',
+                // 'TextureMipmapDepth',
+                // 'uNearFar',
+                // 'uTextureMipmapDepthRatio',
+                // 'uTextureMipmapDepthSize',
+                // 'uTextureOutputRatio',
+                // 'uTextureOutputSize',
+                // 'uSsaoProjectionInfo',
+                // 'projMatrix',
+                // 'invProjMatrix',
+                // 'TextureDepth',
+                // {
+                //     name: 'kSphereSamples',
+                //     type: 'array',
+                //     length: 16,
+                //     fn: function () {
+                //         return KERNEL_SPHERE_SAMPLES;
+                //     }
+                // },
+                'materialParams_depth',
+                'materialParams.resolution',
+                'materialParams.depthParams',
+                'materialParams.positionParams',
+                'materialParams.invRadiusSquared',
+                'materialParams.peak2',
+                'materialParams.projectionScaleRadius',
+                'materialParams.bias',
+                'materialParams.power',
+                'materialParams.intensity',
+                'materialParams.sampleCount',
+                'materialParams.spiralTurns',
+                'materialParams.invFarPlane'
             ],
             extraCommandProps: {
                 viewport: {
                     x: 0,
                     y: 0,
                     width: (context, props) => {
-                        return props['uTextureOutputSize'][0];
+                        return props['materialParams']['resolution'][0];
                     },
                     height: (context, props) => {
-                        return props['uTextureOutputSize'][1];
+                        return props['materialParams']['resolution'][1];
                     }
                 }
             }

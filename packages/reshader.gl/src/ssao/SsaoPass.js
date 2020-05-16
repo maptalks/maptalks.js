@@ -62,17 +62,50 @@ class SsaoPass {
             this._extractFBO.resize(w, h);
         }
         const { projMatrix } = uniforms;
+        const depthParams = [
+            -0.5 * projMatrix[3 * 4 + 2], 0.5 * (projMatrix[2 * 4 + 2] - 1)
+            // -projMatrix[3 * 4 + 2], projMatrix[2 * 4 + 2]
+        ];
+        const invProjMatrix = mat4.invert([], projMatrix);
+        const positionParams = [
+            // 2 * invProjMatrix[0], 2 * invProjMatrix[1 * 4 + 1]
+            invProjMatrix[0], invProjMatrix[1 * 4 + 1]
+        ];
+        const peak = 0.1 * uniforms['radius'];
+        // We further scale the user intensity by 3, for a better default at intensity=1
+        const intensity = (2.0 * Math.PI * peak) * uniforms['intensity'] * 3.0;
+        // always square AO result, as it looks much better
+        const power = (uniforms['power'] || 1) * 2.0;
+        //根据质量设置设置不同的参数
+        const sampleCount = 11.0;
+        const spiralTurns = 9.0;
         this._renderer.render(this._ssaoExtractShader, {
-            'uQuality': uniforms['quality'],
-            'uSsaoBias': uniforms['bias'],
-            'uSsaoIntensity': uniforms['intensity'],
-            'uSsaoRadius': uniforms['radius'],
-            'uNearFar': [uniforms['cameraNear'], uniforms['cameraFar']],
-            'uTextureOutputRatio': SAME_RATIO,
-            'uTextureOutputSize': [w, h],
-            'projMatrix': projMatrix,
-            'invProjMatrix': mat4.invert([], projMatrix),
-            'TextureDepth': depthTexture
+            // 'uQuality': uniforms['quality'],
+            // 'uSsaoBias': uniforms['bias'],
+            // 'uSsaoIntensity': uniforms['intensity'],
+            // 'uSsaoRadius': uniforms['radius'],
+            // 'uNearFar': [uniforms['cameraNear'], uniforms['cameraFar']],
+            // 'uTextureOutputRatio': SAME_RATIO,
+            // 'uTextureOutputSize': [w, h],
+            // 'projMatrix': projMatrix,
+            // 'invProjMatrix': mat4.invert([], projMatrix),
+            // 'TextureDepth': depthTexture
+
+            'materialParams_depth': depthTexture,
+            'materialParams': {
+                'resolution': [w, h, 1 / w, 1 / h],
+                'invRadiusSquared': 1 / (uniforms['radius'] * uniforms['radius']),
+                'projectionScaleRadius': uniforms['radius'] * Math.min(0.5 * projMatrix[0] * w, 0.5 * projMatrix[4 + 1] * h),
+                'depthParams': depthParams,
+                'positionParams': positionParams,
+                'peak2': peak * peak,
+                'bias': uniforms['bias'],
+                'power': power,
+                'intensity': intensity,
+                'sampleCount': [sampleCount, 1 / (sampleCount - 0.5)],
+                'spiralTurns': spiralTurns,
+                'invFarPlane': 1 / -uniforms['cameraFar']
+            }
         }, null, this._extractFBO);
     }
 
