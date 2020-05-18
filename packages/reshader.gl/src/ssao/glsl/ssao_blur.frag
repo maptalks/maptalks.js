@@ -1,94 +1,93 @@
 precision mediump float;
+#define SHADER_NAME SSAO_BLUR
+
+struct MaterialParams {
+    //-cameraFar / 0.0625f
+    float farPlaneOverEdgeDistance;
+    vec2 axis;
+    vec2 resolution;
+};
+
+uniform sampler2D materialParams_ssao;
+uniform sampler2D TextureInput;
+uniform MaterialParams materialParams;
 
 varying vec2 vTexCoord;
 
-uniform vec2 axis;
-uniform vec2 uTextureOutputSize;
-uniform mat4 projMatrix;
 
-uniform sampler2D materialParams_ssao;
-uniform sampler2D materialParams_depth;
-uniform sampler2D TextureInput;
+const int kGaussianCount = 4;
+float kGaussianSamples[8];
 
-mat4 getClipFromViewMatrix() {
-    return projMatrix;
-}
-//Apache 2.0 License
-//https://github.com/google/filament/
-
-// z-distance (in m) that constitute an edge for bilateral filtering
-#define EDGE_DISTANCE   0.1
-
-const int kGaussianCount = 5;
-const int kRadius = kGaussianCount - 1;
-float kGaussianSamples[5];
-const float kGaussianWeightSum = 0.993872;
-
-vec2 clampToEdge(const sampler2D s, vec2 uv) {
-    vec2 size = uTextureOutputSize;
-    return clamp(uv, vec2(0), size - vec2(1));
+void initKernels() {
+    kGaussianSamples[0] = 0.199471;
+    kGaussianSamples[1] = 0.176033;
+    kGaussianSamples[2] = 0.120985;
+    kGaussianSamples[3] = 0.064759;
+    kGaussianSamples[4] = 0.026995;
+    kGaussianSamples[5] = 0.008764;
+    kGaussianSamples[6] = 0.002216;
+    kGaussianSamples[7] = 0.000436;
 }
 
-float linearizeDepthDifference(float d0, float d1) {
-    mat4 projection = getClipFromViewMatrix();
-    float A = -projection[3].z;
-    float B =  projection[2].z;
-    float K = (2.0 * A) / (d0 * 2.0 + (B - 1.0)); // actually a constant for this fragment
-    float d = K * (d0 - d1) / (d1 * 2.0 + (B - 1.0));
-    return d;
+float unpack(vec2 depth) {
+    // this is equivalent to (x8 * 256 + y8) / 65535, which gives a value between 0 and 1
+    return (depth.x * (256.0 / 257.0) + depth.y * (1.0 / 257.0));
 }
 
-float bilateralWeight(const vec2 p, in float depth) {
-    float sampleDepth = texture2D(materialParams_depth, p).r;
-    float ddepth = linearizeDepthDifference(depth, sampleDepth);
-    float diff = (1.0 / EDGE_DISTANCE) * ddepth;
+float bilateralWeight(in float depth, in float sampleDepth) {
+    float diff = (sampleDepth - depth) * materialParams.farPlaneOverEdgeDistance;
     return max(0.0, 1.0 - diff * diff);
 }
 
 void tap(inout float sum, inout float totalWeight, float weight, float depth, vec2 position) {
-    position = clampToEdge(materialParams_ssao, position);
-    vec2 uv = position / uTextureOutputSize;
     // ambient occlusion sample
-    float ao = texture2D(materialParams_ssao, uv).r;
-    // bilateral sample
-    float bilateral = bilateralWeight(uv, depth);
-    bilateral *= weight;
-    sum += ao * bilateral;
-    totalWeight += bilateral;
-}
+    vec3 data = texture2D(materialParams_ssao, position).rgb;
 
-void initKernels() {
-    kGaussianSamples[0] = 0.239365;
-    kGaussianSamples[1] = 0.199935;
-    kGaussianSamples[2] = 0.116512;
-    kGaussianSamples[3] = 0.0473701;
-    kGaussianSamples[4] = 0.0134367;
+    // bilateral sample
+    float bilateral = bilateralWeight(depth, unpack(data.gb));
+    bilateral *= weight;
+    sum += data.r * bilateral;
+    totalWeight += bilateral;
 }
 
 void main() {
     initKernels();
-    vec2 uv = vTexCoord.xy * uTextureOutputSize.xy;
+    highp vec2 uv = vTexCoord; // interpolated at pixel's center
 
-    float depth = texture2D(materialParams_depth, vTexCoord).r;
+    vec3 data = texture2D(materialParams_ssao, uv).rgb;
+    if (data.g * data.b == 1.0) {
+        // This is the skybox, skip
+        if (materialParams.axis.y > 0.0) {
+            vec4 color = texture2D(TextureInput, uv);
+            gl_FragColor = color;
+        } else {
+            gl_FragColor = vec4(data, 1.0);
+        }
+        return;
+    }
 
     // we handle the center pixel separately because it doesn't participate in
     // bilateral filtering
+    float depth = unpack(data.gb);
     float totalWeight = kGaussianSamples[0];
-    float sum = texture2D(materialParams_ssao, vTexCoord).r * totalWeight;
+    float sum = data.r * totalWeight;
 
-    for (int i = 1; i <= kRadius; i++) {
+    vec2 axis = materialParams.axis / materialParams.resolution;
+    vec2 offset = axis;
+    for (int i = 1; i < kGaussianCount; i++) {
         float weight = kGaussianSamples[i];
-        vec2 offset = float(i) * axis;
         tap(sum, totalWeight, weight, depth, uv + offset);
         tap(sum, totalWeight, weight, depth, uv - offset);
+        offset += axis;
     }
 
     float occlusion = sum * (1.0 / totalWeight);
+    vec2 gb = data.gb;
 
-    if (axis.y == 1.0) {
-        vec4 color = texture2D(TextureInput, vTexCoord);
-        gl_FragColor = vec4(color.rgb * occlusion, color.a);
+    if (materialParams.axis.y > 0.0) {
+        vec4 color = texture2D(TextureInput, uv);
+        gl_FragColor = vec4(color.rgb * occlusion, color.a);;
     } else {
-        gl_FragColor = vec4(occlusion);
+        gl_FragColor = vec4(occlusion, gb, 1.0);
     }
 }

@@ -7,11 +7,10 @@ class SsaoBlurShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
-                'uTextureOutputSize',
-                'projMatrix',
-                'materialParams_depth',
                 'materialParams_ssao',
-                'axis',
+                'materialParams.farPlaneOverEdgeDistance',
+                'materialParams.axis',
+                'materialParams.resolution',
                 'TextureInput'
             ],
             extraCommandProps: {
@@ -19,10 +18,10 @@ class SsaoBlurShader extends QuadShader {
                     x: 0,
                     y: 0,
                     width: (context, props) => {
-                        return props['uTextureOutputSize'][0];
+                        return props['materialParams']['resolution'][0];
                     },
                     height: (context, props) => {
-                        return props['uTextureOutputSize'][1];
+                        return props['materialParams']['resolution'][1];
                     }
                 }
             }

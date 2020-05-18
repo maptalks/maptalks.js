@@ -1,9 +1,8 @@
 import { mat4 } from 'gl-matrix';
 import SsaoBlurShader from './SsaoBlurShader.js';
 import SsaoExtractShader from './SsaoExtractShader.js';
-import SsaoCombineShader from './SsaoCombineShader.js';
 
-const SAME_RATIO = [1, 1];
+// const SAME_RATIO = [1, 1];
 
 class SsaoPass {
     constructor(renderer) {
@@ -27,31 +26,33 @@ class SsaoPass {
             this._createTextures(depthTexture);
         }
         this._extract(uniforms, width, height, depthTexture);
-        return this._blurAndCombine(sourceTexture, depthTexture, uniforms['projMatrix'], width, height);
+        return this._blurAndCombine(sourceTexture, uniforms['cameraFar'], width, height);
     }
 
-    _blurAndCombine(sourceTexture, depthTexture, projMatrix, w, h) {
+    _blurAndCombine(sourceTexture, cameraFar, w, h) {
         if (this._blurHTex.width !== w || this._blurHTex.h !== h) {
             this._blurHFBO.resize(w, h);
             this._blurVFBO.resize(w, h);
         }
-        const size = [w, h];
+        const resolution = [w, h];
         this._renderer.render(this._ssaoBlurShader, {
-            'uTextureOutputSize': size,
-            'projMatrix': projMatrix,
-            'materialParams_depth': depthTexture,
+            'TextureInput': sourceTexture,
             'materialParams_ssao': this._extractTex,
-            'axis': [1, 0],
-            'TextureInput': sourceTexture
+            'materialParams': {
+                'axis': [2, 0],
+                'farPlaneOverEdgeDistance': -cameraFar / 0.0625,
+                'resolution': resolution
+            }
         }, null, this._blurHFBO);
 
         this._renderer.render(this._ssaoBlurShader, {
-            'uTextureOutputSize': size,
-            'projMatrix': projMatrix,
-            'materialParams_depth': depthTexture,
+            'TextureInput': sourceTexture,
             'materialParams_ssao': this._blurHTex,
-            'axis': [0, 1],
-            'TextureInput': sourceTexture
+            'materialParams': {
+                'axis': [0, 2],
+                'farPlaneOverEdgeDistance': -cameraFar / 0.0625,
+                'resolution': resolution
+            }
         }, null, this._blurVFBO);
 
         return this._blurVTex;
@@ -110,14 +111,14 @@ class SsaoPass {
     }
 
     _createTextures(tex) {
+        const type = this._renderer.regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const w = tex.width, h = tex.height;
-        this._extractTex = this._createTex(w, h, 'uint8');
+        this._extractTex = this._createTex(w, h, type);
         this._extractFBO = this._createFBO(this._extractTex);
 
-        this._blurHTex = this._createTex(w, h, 'uint8');
+        this._blurHTex = this._createTex(w, h, type);
         this._blurHFBO = this._createFBO(this._blurHTex);
 
-        const type = this._renderer.regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         this._blurVTex = this._createTex(w, h, type);
         this._blurVFBO = this._createFBO(this._blurVTex);
     }
@@ -154,26 +155,14 @@ class SsaoPass {
             this._blurHFBO.destroy();
             this._ssaoExtractShader.dispose();
             this._ssaoBlurShader.dispose();
-            this._ssaoCombineShader.dispose();
             delete this._ssaoExtractShader;
         }
     }
 
     _initShaders() {
         if (!this._ssaoExtractShader) {
-            const viewport = {
-                x: 0,
-                y: 0,
-                width : (context, props) => {
-                    return props['uTextureOutputSize'][0];
-                },
-                height : (context, props) => {
-                    return props['uTextureOutputSize'][1];
-                }
-            };
-            this._ssaoExtractShader = new SsaoExtractShader(viewport);
-            this._ssaoBlurShader = new SsaoBlurShader(viewport);
-            this._ssaoCombineShader = new SsaoCombineShader(viewport);
+            this._ssaoExtractShader = new SsaoExtractShader();
+            this._ssaoBlurShader = new SsaoBlurShader();
         }
     }
 }

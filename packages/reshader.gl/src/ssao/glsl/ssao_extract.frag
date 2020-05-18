@@ -179,6 +179,6 @@ void main() {
     vec2 coords = floor(gl_FragCoord.xy);
     ao += (1.0 - step(kEdgeDistance, abs(dFdx(origin.z)))) * dFdx(ao) * (0.5 - mod(coords.x, 2.0));
     ao += (1.0 - step(kEdgeDistance, abs(dFdy(origin.z)))) * dFdy(ao) * (0.5 - mod(coords.y, 2.0));
-    // gl_FragColor = vec4(ao, pack(origin.z), 1.0);
-    gl_FragColor = vec4(vec3(ao), 1.0);
+    gl_FragColor = vec4(ao, pack(origin.z), 1.0);
+    // gl_FragColor = vec4(vec3(ao), 1.0);
 }
