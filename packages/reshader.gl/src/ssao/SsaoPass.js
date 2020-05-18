@@ -2,7 +2,7 @@ import { mat4 } from 'gl-matrix';
 import SsaoBlurShader from './SsaoBlurShader.js';
 import SsaoExtractShader from './SsaoExtractShader.js';
 
-// const SAME_RATIO = [1, 1];
+const MAT = [];
 
 class SsaoPass {
     constructor(renderer) {
@@ -35,21 +35,23 @@ class SsaoPass {
             this._blurVFBO.resize(w, h);
         }
         const resolution = [w, h];
+        const axis = [2, 0];
         this._renderer.render(this._ssaoBlurShader, {
             'TextureInput': sourceTexture,
             'materialParams_ssao': this._extractTex,
             'materialParams': {
-                'axis': [2, 0],
+                'axis': axis,
                 'farPlaneOverEdgeDistance': -cameraFar / 0.0625,
                 'resolution': resolution
             }
         }, null, this._blurHFBO);
-
+        axis[0] = 0;
+        axis[1] = 2;
         this._renderer.render(this._ssaoBlurShader, {
             'TextureInput': sourceTexture,
             'materialParams_ssao': this._blurHTex,
             'materialParams': {
-                'axis': [0, 2],
+                'axis': axis,
                 'farPlaneOverEdgeDistance': -cameraFar / 0.0625,
                 'resolution': resolution
             }
@@ -63,55 +65,25 @@ class SsaoPass {
             this._extractFBO.resize(w, h);
         }
         const { projMatrix } = uniforms;
-        const depthParams = [
-            -0.5 * projMatrix[3 * 4 + 2], 0.5 * (projMatrix[2 * 4 + 2] - 1)
-            // -projMatrix[3 * 4 + 2], projMatrix[2 * 4 + 2]
-        ];
-        const invProjMatrix = mat4.invert([], projMatrix);
-        const positionParams = [
-            // 2 * invProjMatrix[0], 2 * invProjMatrix[1 * 4 + 1]
-            invProjMatrix[0], invProjMatrix[1 * 4 + 1]
-        ];
-        const peak = 0.1 * uniforms['radius'];
-        // We further scale the user intensity by 3, for a better default at intensity=1
-        const intensity = (2.0 * Math.PI * peak) * uniforms['intensity'] * 3.0;
+        const invProjMatrix = mat4.invert(MAT, projMatrix);
         // always square AO result, as it looks much better
         const power = (uniforms['power'] || 1) * 2.0;
-        //根据质量设置设置不同的参数
-        const sampleCount = 11.0;
-        const spiralTurns = 9.0;
         this._renderer.render(this._ssaoExtractShader, {
-            // 'uQuality': uniforms['quality'],
-            // 'uSsaoBias': uniforms['bias'],
-            // 'uSsaoIntensity': uniforms['intensity'],
-            // 'uSsaoRadius': uniforms['radius'],
-            // 'uNearFar': [uniforms['cameraNear'], uniforms['cameraFar']],
-            // 'uTextureOutputRatio': SAME_RATIO,
-            // 'uTextureOutputSize': [w, h],
-            // 'projMatrix': projMatrix,
-            // 'invProjMatrix': mat4.invert([], projMatrix),
-            // 'TextureDepth': depthTexture
-
             'materialParams_depth': depthTexture,
             'materialParams': {
+                'projMatrix': projMatrix,
+                'invProjMatrix': invProjMatrix,
                 'resolution': [w, h, 1 / w, 1 / h],
-                'invRadiusSquared': 1 / (uniforms['radius'] * uniforms['radius']),
-                'projectionScaleRadius': uniforms['radius'] * Math.min(0.5 * projMatrix[0] * w, 0.5 * projMatrix[4 + 1] * h),
-                'depthParams': depthParams,
-                'positionParams': positionParams,
-                'peak2': peak * peak,
+                'radius': uniforms['radius'],
                 'bias': uniforms['bias'],
                 'power': power,
-                'intensity': intensity,
-                'sampleCount': [sampleCount, 1 / (sampleCount - 0.5)],
-                'spiralTurns': spiralTurns,
                 'invFarPlane': 1 / -uniforms['cameraFar']
             }
         }, null, this._extractFBO);
     }
 
     _createTextures(tex) {
-        const type = this._renderer.regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        const type = 'uint8';
         const w = tex.width, h = tex.height;
         this._extractTex = this._createTex(w, h, type);
         this._extractFBO = this._createFBO(this._extractTex);

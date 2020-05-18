@@ -3,22 +3,22 @@ import vert from '../shader/glsl/quad.vert';
 import frag from './glsl/ssao_extract.frag';
 
 const KERNEL_SPHERE_SAMPLES = [
-    [-1.60954e-06,  3.93118e-07,  1.51895e-06],
-    [-0.09508890,  0.00458908, -0.0312535],
-    [0.015179900, -0.025586400,  0.003764530],
-    [0.07342620,  0.02180220,  0.0027781],
-    [0.094587400,  0.043218400,  0.089147500],
-    [-0.00950861,  0.05136860,  0.0196730],
-    [0.139973000, -0.101685000,  0.108570000],
-    [-0.10380400,  0.21985300, -0.0430164],
-    [0.004840530, -0.033987800,  0.094186800],
-    [0.02801140,  0.05846620, -0.2571100],
-    [-0.051030600,  0.074993000,  0.259843000],
-    [0.11882200, -0.18653700, -0.1341920],
-    [0.063949400, -0.094893600, -0.072683000],
-    [0.10817600,  0.32710800, -0.2540580],
-    [-0.047179600,  0.219180000,  0.263895000],
-    [-0.40770900,  0.24083400, -0.200352]
+    [-0.000002,  0.000000,  0.000002],
+    [-0.095089,  0.004589, -0.031253],
+    [0.015180, -0.025586,  0.003765],
+    [0.073426,  0.021802,  0.002778],
+    [0.094587,  0.043218,  0.089148],
+    [-0.009509,  0.051369,  0.019673],
+    [0.139973, -0.101685,  0.108570],
+    [-0.103804,  0.219853, -0.043016],
+    [0.004841, -0.033988,  0.094187],
+    [0.028011,  0.058466, -0.257110],
+    [-0.051031,  0.074993,  0.259843],
+    [0.118822, -0.186537, -0.134192],
+    [0.063949, -0.094894, -0.072683],
+    [0.108176,  0.327108, -0.254058],
+    [-0.047180,  0.219180,  0.263895],
+    [-0.407709,  0.240834, -0.200352],
 ];
 
 class SsaoExtactShader extends QuadShader {
@@ -26,43 +26,23 @@ class SsaoExtactShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
-                // 'uFrameModTaaSS',
-                // 'uQuality',
-                // 'uSsaoBias',
-                // 'uSsaoIntensity',
-                // 'uSsaoProjectionScale',
-                // 'uSsaoRadius',
-                // 'TextureMipmapDepth',
-                // 'uNearFar',
-                // 'uTextureMipmapDepthRatio',
-                // 'uTextureMipmapDepthSize',
-                // 'uTextureOutputRatio',
-                // 'uTextureOutputSize',
-                // 'uSsaoProjectionInfo',
-                // 'projMatrix',
-                // 'invProjMatrix',
-                // 'TextureDepth',
-                // {
-                //     name: 'kSphereSamples',
-                //     type: 'array',
-                //     length: 16,
-                //     fn: function () {
-                //         return KERNEL_SPHERE_SAMPLES;
-                //     }
-                // },
+
                 'materialParams_depth',
+                'materialParams.projMatrix',
+                'materialParams.invProjMatrix',
                 'materialParams.resolution',
-                'materialParams.depthParams',
-                'materialParams.positionParams',
-                'materialParams.invRadiusSquared',
-                'materialParams.peak2',
-                'materialParams.projectionScaleRadius',
+                'materialParams.radius',
                 'materialParams.bias',
                 'materialParams.power',
-                'materialParams.intensity',
-                'materialParams.sampleCount',
-                'materialParams.spiralTurns',
-                'materialParams.invFarPlane'
+                'materialParams.invFarPlane',
+                {
+                    name: 'kSphereSamples',
+                    type: 'array',
+                    length: 16,
+                    fn: function () {
+                        return KERNEL_SPHERE_SAMPLES;
+                    }
+                }
             ],
             extraCommandProps: {
                 viewport: {

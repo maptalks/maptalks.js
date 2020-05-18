@@ -1,87 +1,33 @@
-#version 100
-#define SHADER_NAME SSAO_EXTRACT
-#define PI 3.14159265359
-#extension GL_OES_standard_derivatives : enable
-#define saturate(x)        clamp(x, 0.0, 1.0)
-
-precision highp float;
-
-const float kEdgeDistance = 0.0625; // this shouldn't be hardcoded
-
-struct MaterialParams {
-    //width, height, 1 / width, 1 / height
-    mat4 projMatrix;
-    mat4 invProjMatrix;
-    vec4 resolution;
-    float radius;
-    //options.bias
-    float bias;
-    //options.power
-    float power;
-    //1 / -cameraFar
-    float invFarPlane;
-};
-
-uniform MaterialParams materialParams;
-uniform sampler2D materialParams_depth;
-
+//当前采用的filament的ssao.mat中的代码
+//2019-11-19 “remove old 'SSAO' algorithm” commit 中的版本
 #define NOISE_NONE      0
 #define NOISE_PATTERN   1
 #define NOISE_RANDOM    2
-#define NOISE_TYPE      NOISE_RANDOM
+#define NOISE_TYPE      NOISE_PATTERN
 
-const int kSphereSampleCount = 16;
-uniform vec3 kSphereSamples[16];
+const uint kSphereSampleCount = 16u;
+const vec3 kSphereSamples[] = vec3[](
+    vec3(-0.000002,  0.000000,  0.000002), vec3(-0.095089,  0.004589, -0.031253),
+    vec3( 0.015180, -0.025586,  0.003765), vec3( 0.073426,  0.021802,  0.002778),
+    vec3( 0.094587,  0.043218,  0.089148), vec3(-0.009509,  0.051369,  0.019673),
+    vec3( 0.139973, -0.101685,  0.108570), vec3(-0.103804,  0.219853, -0.043016),
+    vec3( 0.004841, -0.033988,  0.094187), vec3( 0.028011,  0.058466, -0.257110),
+    vec3(-0.051031,  0.074993,  0.259843), vec3( 0.118822, -0.186537, -0.134192),
+    vec3( 0.063949, -0.094894, -0.072683), vec3( 0.108176,  0.327108, -0.254058),
+    vec3(-0.047180,  0.219180,  0.263895), vec3(-0.407709,  0.240834, -0.200352)
+);
 
-// const int kNoiseSampleCount = 16;
-// uniform vec3 kNoiseSamples[16];
-
-vec3 getNoiseSample(const int x) {
-    if (x == 0) {
-        return vec3(-0.078247, -0.749924, -0.656880);
-    } else if (x == 1) {
-        return vec3(-0.572319, -0.102379, -0.813615);
-    } else if (x == 2) {
-        return vec3( 0.048653, -0.380791,  0.923380);
-    } else if (x == 3) {
-        return vec3( 0.281202, -0.656664, -0.699799);
-    } else if (x == 4) {
-        return vec3( 0.711911, -0.235841, -0.661485);
-    } else if (x == 5) {
-        return vec3(-0.445893,  0.611063,  0.654050);
-    } else if (x == 6) {
-        return vec3(-0.703598,  0.674837,  0.222587);
-    } else if (x == 7) {
-        return vec3( 0.768236,  0.507457,  0.390257);
-    } else if (x == 8) {
-        return vec3(-0.670286, -0.470387,  0.573980);
-    } else if (x == 9) {
-        return vec3( 0.199235,  0.849336, -0.488808);
-    } else if (x == 10) {
-         return vec3(-0.768068, -0.583633, -0.263520);
-     } else if (x == 11) {
-         return vec3(-0.897330,  0.328853,  0.294372);
-     } else if (x == 12) {
-         return vec3(-0.570930, -0.531056, -0.626114);
-     } else if (x == 13) {
-         return vec3( 0.699014,  0.063283, -0.712303);
-     } else if (x == 14) {
-         return vec3( 0.207495,  0.976129, -0.064172);
-     } else if (x == 15) {
-         return vec3(-0.060901, -0.869738, -0.489742);
-     } else {
-        return vec3(0.0);
-     }
-}
-
-vec2 pack(highp float depth) {
-    // we need 16-bits of precision
-    highp float z = clamp(depth * materialParams.invFarPlane, 0.0, 1.0);
-    highp float t = floor(256.0 * z);
-    mediump float hi = t * (1.0 / 256.0);   // we only need 8-bits of precision
-    mediump float lo = (256.0 * z) - t;     // we only need 8-bits of precision
-    return vec2(hi, lo);
-}
+const uint kNoiseSampleCount = 16u;
+const vec3 kNoiseSamples[] = vec3[](
+    vec3(-0.078247, -0.749924, -0.656880), vec3(-0.572319, -0.102379, -0.813615),
+    vec3( 0.048653, -0.380791,  0.923380), vec3( 0.281202, -0.656664, -0.699799),
+    vec3( 0.711911, -0.235841, -0.661485), vec3(-0.445893,  0.611063,  0.654050),
+    vec3(-0.703598,  0.674837,  0.222587), vec3( 0.768236,  0.507457,  0.390257),
+    vec3(-0.670286, -0.470387,  0.573980), vec3( 0.199235,  0.849336, -0.488808),
+    vec3(-0.768068, -0.583633, -0.263520), vec3(-0.897330,  0.328853,  0.294372),
+    vec3(-0.570930, -0.531056, -0.626114), vec3( 0.699014,  0.063283, -0.712303),
+    vec3( 0.207495,  0.976129, -0.064172), vec3(-0.060901, -0.869738, -0.489742)
+);
 
 // random number between 0 and 1
 float random(highp vec2 n) {
@@ -97,25 +43,12 @@ vec3 getNoise(const vec2 uv) {
     #if NOISE_TYPE == NOISE_RANDOM
         return normalize(2.0 * vec3(random(uv), random(uv * 2.0), random(uv * 4.0)) - vec3(1.0));
     #elif NOISE_TYPE == NOISE_PATTERN
-        // uint ix = uint(gl_FragCoord.x) & 3u;
-        // uint iy = uint(gl_FragCoord.y) & 3u;
-        // return kNoiseSamples[ix + iy * 4u];
-        vec2 xy = floor(gl_FragCoord.xy);
-        float ix = mod(xy.x, 4.0);
-        float iy = mod(xy.y, 4.0);
-        return getNoiseSample(int(ix + iy * 4.0));
-        return getNoiseSample(15);
+        uint ix = uint(gl_FragCoord.x) & 3u;
+        uint iy = uint(gl_FragCoord.y) & 3u;
+        return kNoiseSamples[ix + iy * 4u];
     #else
         return vec3(0.0);
     #endif
-}
-
-highp mat4 getClipFromViewMatrix() {
-    return materialParams.projMatrix;
-}
-
-highp mat4 getViewFromClipMatrix() {
-    return materialParams.invProjMatrix;
 }
 
 highp float linearizeDepth(highp float depth) {
@@ -125,7 +58,7 @@ highp float linearizeDepth(highp float depth) {
 }
 
 highp float sampleDepthLinear(const vec2 uv) {
-    return linearizeDepth(texture2D(materialParams_depth, uv).r);
+    return linearizeDepth(texture(materialParams_depth, uv, 0.0).r);
 }
 
 highp vec3 computeViewSpacePositionFromDepth(in vec2 p, highp float linearDepth) {
@@ -134,8 +67,6 @@ highp vec3 computeViewSpacePositionFromDepth(in vec2 p, highp float linearDepth)
     p.x *= invProjection[0].x;
     p.y *= invProjection[1].y;
     return vec3(p * -linearDepth, linearDepth);
-
-    // return vec3((0.5 - uv) * materialParams.positionParams.xy * linearDepth, linearDepth);
 }
 
 // compute normals using derivatives, which essentially results in half-resolution normals
@@ -182,9 +113,10 @@ float computeAmbientOcclusionSSAO(const highp vec3 origin, const vec3 normal, co
     return (d >= -bias ? 0.0 : rangeCheck);
 }
 
-void main() {
+void material(inout MaterialInputs material) {
+    prepareMaterial(material);
 
-    highp vec2 uv = gl_FragCoord.xy / materialParams.resolution.xy; // interpolated to pixel center
+    vec2 uv = variable_vertex.xy; // interpolated to pixel center
 
     highp float depth = sampleDepthLinear(uv);
     highp vec3 origin = computeViewSpacePositionFromDepth(uv, depth);
@@ -194,7 +126,7 @@ void main() {
     vec3 noise = getNoise(uv);
 
     float occlusion = 0.0;
-    for (int i = 0; i < kSphereSampleCount; i++) {
+    for (uint i = 0u; i < kSphereSampleCount; i++) {
         occlusion += computeAmbientOcclusionSSAO(origin, normal, noise, kSphereSamples[i]);
     }
 
@@ -202,9 +134,5 @@ void main() {
     // simulate user-controled ao^n with n[1, 2]
     ao = mix(ao, ao * ao, materialParams.power);
 
-    vec2 coords = floor(gl_FragCoord.xy);
-    ao += (1.0 - step(kEdgeDistance, abs(dFdx(origin.z)))) * dFdx(ao) * (0.5 - mod(coords.x, 2.0));
-    ao += (1.0 - step(kEdgeDistance, abs(dFdy(origin.z)))) * dFdy(ao) * (0.5 - mod(coords.y, 2.0));
-    gl_FragColor = vec4(ao, pack(origin.z), 1.0);
-    // gl_FragColor = vec4(vec3(ao), 1.0);
+    material.baseColor.r = ao;
 }
