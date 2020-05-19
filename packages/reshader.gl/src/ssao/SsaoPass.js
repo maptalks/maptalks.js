@@ -67,7 +67,7 @@ class SsaoPass {
         const { projMatrix } = uniforms;
         const invProjMatrix = mat4.invert(MAT, projMatrix);
         // always square AO result, as it looks much better
-        const power = (uniforms['power'] || 1) * 2.0;
+        const power = uniforms['power'] || 1;
         this._renderer.render(this._ssaoExtractShader, {
             'materialParams_depth': depthTexture,
             'materialParams': {

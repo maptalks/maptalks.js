@@ -626,7 +626,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
             //generate ssao texture for the next frame
-            this._postProcessor.ssao(tex, this._depthTex, {
+            tex = this._postProcessor.ssao(tex, this._depthTex, {
                 projMatrix: map.projMatrix,
                 cameraNear: map.cameraNear,
                 cameraFar: map.cameraFar,

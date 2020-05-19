@@ -15,18 +15,18 @@ export default class PostProcess {
     }
 
     setContextIncludes(context) {
-        if (this._layer.getRenderer().isEnableSSAO() && this._ssaoPass && !context.ssao) {
-            const ssao = {
-                defines: reshader.SsrPass.getDefines(),
-                uniformDeclares: reshader.SsrPass.getUniformDeclares()
-            };
-            ssao.renderUniforms = {
-                prevProjViewMatrix: this._ssaoPass.getPrevProjViewMatrix(),
-                sSsaoTexture: this._ssaoPass.getSsaoTexture()
-            };
-            context.ssao = ssao;
-            context.includes.ssao = 1;
-        }
+        // if (this._layer.getRenderer().isEnableSSAO() && this._ssaoPass && !context.ssao) {
+        //     const ssao = {
+        //         defines: reshader.SsrPass.getDefines(),
+        //         uniformDeclares: reshader.SsrPass.getUniformDeclares()
+        //     };
+        //     ssao.renderUniforms = {
+        //         prevProjViewMatrix: this._ssaoPass.getPrevProjViewMatrix(),
+        //         sSsaoTexture: this._ssaoPass.getSsaoTexture()
+        //     };
+        //     context.ssao = ssao;
+        //     context.includes.ssao = 1;
+        // }
     }
 
     bloom(curTex, depthTex, threshold, bloomFactor, bloomRadius) {
