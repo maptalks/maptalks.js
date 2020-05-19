@@ -14,6 +14,7 @@ class SsrPass {
         return [
             'TextureDepth',
             'TextureSource',
+            'uGlobalTexSize',
             'uSsrFactor',
             'uSsrQuality',
             'uPreviousGlobalTexSize',
@@ -31,12 +32,9 @@ class SsrPass {
                 type: 'array',
                 length: 2,
                 fn: function (context, props) {
-                    if (!props['TextureDepth']) {
-                        return corners;
-                    }
                     const cornerY = Math.tan(0.5 * props['fov']);
-                    const width = props['TextureDepth'].width;
-                    const height = props['TextureDepth'].height;
+                    const width = props['uGlobalTexSize'][0];
+                    const height = props['uGlobalTexSize'][1];
                     const aspect = width / height;
                     const cornerX = aspect * cornerY;
                     vec4.set(corners[0], cornerX, cornerY, cornerX, -cornerY);

@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec2 } from 'gl-matrix';
+import { vec2 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
@@ -7,8 +7,7 @@ import createREGL from '@maptalks/regl';
 import GroundPainter from './GroundPainter';
 import PostProcess from './postprocess/PostProcess.js';
 
-const bloomFilter = m => m.getUniform('bloom');
-const ssrFilter = m => m.getUniform('ssr');
+
 const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
 const noSsrFilter = m => !m.getUniform('ssr');
@@ -86,7 +85,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
                 hasNoAA = true;
             }
-            this._clearStencil(renderer, this._targetFBO);
+            this.clearStencil(renderer, this._targetFBO);
             renderer[methodName].apply(renderer, args);
         });
         if (hasNoAA && hasRenderTarget) {
@@ -97,7 +96,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     return;
                 }
                 if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
-                    this._clearStencil(renderer, this._targetFBO);
+                    this.clearStencil(renderer, this._targetFBO);
                     renderer[methodName].apply(renderer, args);
                 }
             });
@@ -276,14 +275,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._targetFBO.resize(this.canvas.width, this.canvas.height);
             this._noAaFBO.resize(this.canvas.width, this.canvas.height);
         }
-        if (this._bloomFBO && (this._bloomFBO.width !== this.canvas.width ||
-            this._bloomFBO.height !== this.canvas.height)) {
-            this._bloomFBO.resize(this.canvas.width, this.canvas.height);
-        }
-        if (this._ssrFBO && (this._ssrFBO.width !== this.canvas.width ||
-            this._ssrFBO.height !== this.canvas.height)) {
-            this._ssrFBO.resize(this.canvas.width, this.canvas.height);
-        }
         this.forEachRenderer(renderer => {
             if (renderer.canvas) {
                 renderer.resizeCanvas();
@@ -324,7 +315,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         /* eslint-enable no-empty */
     }
 
-    _clearStencil(renderer, fbo) {
+    clearStencil(renderer, fbo) {
         const stencilValue = renderer.getStencilValue ? renderer.getStencilValue() : 0xFF;
         const config = {
             stencil: stencilValue
@@ -353,10 +344,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor.dispose();
             delete this._postProcessor;
         }
-        if (this._ssrPass) {
-            this._ssrPass.dispose();
-            delete this._ssrPass;
-        }
         super.onRemove();
     }
 
@@ -367,22 +354,32 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             delete this._targetFBO;
             delete this._noAaFBO;
         }
-        if (this._bloomFBO) {
-            this._bloomFBO.destroy();
-            delete this._bloomFBO;
-        }
-        if (this._ssrFBO) {
-            this._ssrFBO.destroy();
-            delete this._ssrFBO;
-        }
     }
 
     setRetireFrames() {
         this._needRetireFrames = true;
     }
 
+    getFrameTime() {
+        return this._contextFrameTime;
+    }
+
+    getFrameEvent() {
+        return this._frameEvent;
+    }
+
+    getFrameContext() {
+        return this._drawContext;
+    }
+
+    drawGround() {
+        if (this._groundPainter) {
+            this._groundPainter.paint(this.getFrameContext());
+        }
+    }
+
     _buildDrawFn(drawMethod) {
-        const parent = this;
+        const me = this;
         //drawBloom中会手动创建context
         return function (event, timestamp, context) {
             if (isNumber(event)) {
@@ -390,10 +387,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 timestamp = event;
                 event = null;
             }
-            if (timestamp !== parent._contextFrameTime) {
-                parent._drawContext = parent._prepareDrawContext();
-                parent._contextFrameTime = timestamp;
-                parent._frameEvent = event;
+            if (timestamp !== me._contextFrameTime) {
+                me._drawContext = me._prepareDrawContext();
+                me._contextFrameTime = timestamp;
+                me._frameEvent = event;
             }
             const hasRenderTarget = context && context.renderTarget;
             if (hasRenderTarget) {
@@ -401,17 +398,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 context.renderTarget.getDepthTexture = getDepthTexture;
             }
             if (event) {
-                return drawMethod.call(this, event, timestamp, context || parent._drawContext);
+                return drawMethod.call(this, event, timestamp, context || me._drawContext);
             } else {
-                return drawMethod.call(this, timestamp, context || parent._drawContext);
+                return drawMethod.call(this, timestamp, context || me._drawContext);
             }
         };
     }
 
     _buildSetToRedrawFn(fn) {
-        const parent = this;
+        const me = this;
         return function (...args) {
-            parent.setRetireFrames();
+            me.setRetireFrames();
             return fn.apply(this, args);
         };
     }
@@ -420,6 +417,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         return config && config.ssr && config.ssr.enable;
+    }
+
+    isEnableSSAO() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        return config && config.ssao && config.ssao.enable;
     }
 
     _prepareDrawContext() {
@@ -457,10 +460,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         if (this._renderMode !== 'noAa') {
             this._shadowContext = this._prepareShadowContext(renderTarget && renderTarget.fbo);
+            // this._ssaoContext = this._prepareSsaoContext();
         }
         if (this._shadowContext) {
             context.shadow = this._shadowContext;
         }
+        // if (this._ssaoContext) {
+        //     context.ssao = this._ssaoContext;
+        // }
         if (this._renderMode !== 'noAa') {
             if (!this._groundPainter) {
                 this._groundPainter = new GroundPainter(this._regl, this.layer);
@@ -600,28 +607,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         const map = this.layer.getMap();
         if (!this._postProcessor) {
-            this._postProcessor = new PostProcess(this._regl, this._jitGetter);
+            this._postProcessor = new PostProcess(this._regl, this.layer, this._jitGetter);
         }
         let tex = this._targetFBO.color[0];
 
         const enableSSR = this.isEnableSSR();
         if (enableSSR) {
-            //遍历开启了ssr的mesh重新绘制一遍，并只绘制有ssr的像素，discard掉其他像素
-            const ssrTex = this._drawSsr();
-            //合并ssr和原fbo中的像素
-            tex = this._ssrPass.combine(tex, ssrTex);
-        } else {
-            if (this._ssrFBO) {
-                this._ssrFBO.destroy();
-                delete this._ssrFBO;
-            }
-            if (this._ssrPass) {
-                this._ssrPass.dispose();
-                delete this._ssrPass;
-            }
+            tex = this._postProcessor.ssr(tex, this._depthTex);
         }
 
-        const enableSSAO = config.ssao && config.ssao.enable;
+        const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
             tex = this._postProcessor.ssao(tex, this._depthTex, {
                 projMatrix: map.projMatrix,
@@ -635,21 +630,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const enableBloom = config.bloom && config.bloom.enable;
         if (enableBloom) {
-            this._drawBloom();
             const bloomConfig = config.bloom;
             const threshold = +bloomConfig.threshold || 0;
             const factor = isNil(bloomConfig.factor) ? 1 : +bloomConfig.factor;
             const radius = isNil(bloomConfig.radius) ? 1 : +bloomConfig.radius;
-            tex = this._postProcessor.bloom(tex, this._bloomFBO.color[0], threshold, factor, radius);
+            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
         }
 
         const enableTAA = config.antialias && config.antialias.enable;
         if (enableTAA) {
-            // const redrawFrame = this.testIfNeedRedraw();
             const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
                 projMatrix: map.projMatrix,
                 projViewMatrix: map.projViewMatrix,
-                // prevProjViewMatrix: this._prevProjViewMatrix || map.projViewMatrix,
                 cameraWorldMatrix: map.cameraWorldMatrix,
                 fov: map.getFov() * Math.PI / 180,
                 jitter: this._jitter,
@@ -659,16 +651,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 taa: !!config.antialias.taa
             });
             tex = outputTex;
-            // if (!this._prevProjViewMatrix) {
-            //     this._prevProjViewMatrix = new Array(16);
-            // } else if (mat4.equals(map.projViewMatrix, this._prevProjViewMatrix)) {
-            //     if (map.getRenderer().isViewChanged()) {
-            //         console.log('hit');
-            //     }
-            // } else {
-            //     console.log('updated');
-            // }
-            // mat4.copy(this._prevProjViewMatrix, map.projViewMatrix);
             if (redraw) {
                 this.setToRedraw();
             }
@@ -686,122 +668,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             map.getDevicePixelRatio(),
             sharpFactor
         );
-
-        if (enableSSR && this._ssrPass) {
-            this._ssrPass.genMipMap(tex);
-            if (!this._ssrFBO._projViewMatrix) {
-                this._ssrFBO._projViewMatrix = [];
-            }
-            mat4.copy(this._ssrFBO._projViewMatrix, this.getMap().projViewMatrix);
-        }
-    }
-
-    _prepareSSRContext() {
-        const sceneConfig =  this.layer._getSceneConfig();
-        const config = sceneConfig && sceneConfig.postProcess;
-        const regl = this._regl;
-        if (!this._ssrPass) {
-            this._ssrPass = new reshader.SsrPass(regl);
-        }
-        const ssrFBO = this._ssrFBO;
-        if (!ssrFBO) {
-            const info = this._createFBOInfo(config);
-            this._ssrFBO = regl.framebuffer(info);
-        } else {
-            if (ssrFBO.width !== this._targetFBO.width || ssrFBO.height !== this._targetFBO.height) {
-                ssrFBO.resize(this._targetFBO.width, this._targetFBO.height);
-            }
-            regl.clear({
-                color: [0, 0, 0, 0],
-                depth: 1,
-                framebuffer: ssrFBO
-            });
-        }
-        const map = this.getMap();
-        const texture = this._ssrPass.getMipmapTexture();
-        return {
-            renderUniforms: {
-                'TextureDepth': this._depthTex,
-                'TextureSource': this._targetFBO.color[0],
-                'TextureToBeRefracted': texture,
-                'uSsrFactor': config.ssr.factor || 1,
-                'uSsrQuality': config.ssr.quality || 2,
-                'uPreviousGlobalTexSize': [texture.width, texture.height / 2],
-                'uGlobalTexSize': [this._depthTex.width, this._depthTex.height],
-                'uTextureToBeRefractedSize': [texture.width, texture.height],
-                'fov': this.layer.getMap().getFov() * Math.PI / 180,
-                'prevProjViewMatrix': this._ssrFBO._projViewMatrix || map.projViewMatrix,
-                'cameraWorldMatrix': map.cameraWorldMatrix
-            },
-            fbo: this._ssrFBO
-        };
-    }
-
-    _drawSsr() {
-        const ssrFBO = this._ssrFBO;
-        const context = this._drawContext;
-        const timestamp = this._contextFrameTime;
-        const event = this._frameEvent;
-        if (this._shadowContext) {
-            context.shadow = this._shadowContext;
-        }
-        context.ssr = this._prepareSSRContext(context);
-        context.renderMode = 'default';
-        context['sceneFilter'] = ssrFilter;
-        if (event) {
-            this.forEachRenderer(renderer => {
-                this._clearStencil(renderer, ssrFBO);
-                renderer.drawOnInteracting(event, timestamp, context);
-            });
-        } else {
-            this.forEachRenderer(renderer => {
-                this._clearStencil(renderer, ssrFBO);
-                renderer.draw(timestamp, context);
-            });
-        }
-        this._groundPainter.paint(context);
-        //以免和bloom冲突
-        delete context.ssr;
-        return this._ssrFBO.color[0];
-    }
-
-    _drawBloom() {
-        const regl = this._regl;
-        const bloomFBO = this._bloomFBO;
-        if (!bloomFBO) {
-            const sceneConfig =  this.layer._getSceneConfig();
-            const config = sceneConfig && sceneConfig.postProcess;
-            const info = this._createFBOInfo(config, this._depthTex);
-            this._bloomFBO = regl.framebuffer(info);
-        } else {
-            if (bloomFBO.width !== this._targetFBO.width || bloomFBO.height !== this._targetFBO.height) {
-                bloomFBO.resize(this._targetFBO.width, this._targetFBO.height);
-            }
-            regl.clear({
-                color: [0, 0, 0, 0],
-                framebuffer: bloomFBO
-            });
-        }
-        const timestamp = this._contextFrameTime;
-        const event = this._frameEvent;
-        const context = this._drawContext;
-        context.renderMode = 'default';
-        context['sceneFilter'] = bloomFilter;
-        context.renderTarget = {
-            fbo: this._bloomFBO,
-            getFramebuffer,
-            getDepthTexture
-        };
-        if (event) {
-            this.forEachRenderer(renderer => {
-                this._clearStencil(renderer, bloomFBO);
-                renderer.drawOnInteracting(event, timestamp, context);
-            });
-        } else {
-            this.forEachRenderer(renderer => {
-                this._clearStencil(renderer, bloomFBO);
-                renderer.draw(timestamp, context);
-            });
+        if (enableSSR) {
+            this._postProcessor.genSsrMipmap(tex);
         }
     }
 

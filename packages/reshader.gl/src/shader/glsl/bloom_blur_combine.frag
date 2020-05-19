@@ -1,4 +1,4 @@
-#define SHADER_NAME fragment:glowMapMerge
+#define SHADER_NAME BLOOM_COMBINE
 precision mediump float;
 varying vec2 vTexCoord;
 uniform sampler2D textureSource;
