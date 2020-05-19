@@ -28,7 +28,7 @@ uniform sampler2D materialParams_depth;
 #define NOISE_NONE      0
 #define NOISE_PATTERN   1
 #define NOISE_RANDOM    2
-#define NOISE_TYPE      NOISE_RANDOM
+#define NOISE_TYPE      NOISE_PATTERN
 
 const int kSphereSampleCount = 16;
 uniform vec3 kSphereSamples[16];
