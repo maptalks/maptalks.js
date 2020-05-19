@@ -14,9 +14,20 @@ export default class PostProcess {
         this._taaPass = new reshader.TaaPass(this._renderer, jitter);
     }
 
-    // prepareContext(context) {
-
-    // }
+    setContextIncludes(context) {
+        if (this._layer.getRenderer().isEnableSSAO() && this._ssaoPass && !context.ssao) {
+            const ssao = {
+                defines: reshader.SsrPass.getDefines(),
+                uniformDeclares: reshader.SsrPass.getUniformDeclares()
+            };
+            ssao.renderUniforms = {
+                prevProjViewMatrix: this._ssaoPass.getPrevProjViewMatrix(),
+                sSsaoTexture: this._ssaoPass.getSsaoTexture()
+            };
+            context.ssao = ssao;
+            context.includes.ssao = 1;
+        }
+    }
 
     bloom(curTex, depthTex, threshold, bloomFactor, bloomRadius) {
         if (!this._bloomPass) {
@@ -113,9 +124,6 @@ export default class PostProcess {
             });
         }
 
-        // if (this._shadowContext) {
-        //     context.shadow = this._shadowContext;
-        // }
         context.ssr = this._prepareSSRContext(currentTex, depthTex);
         const renderMode = context.renderMode;
         context.renderMode = 'default';
@@ -182,6 +190,7 @@ export default class PostProcess {
     ssao(sourceTex, depthTex, uniforms) {
         if (!this._ssaoPass) {
             this._ssaoPass = new reshader.SsaoPass(this._renderer);
+            this._layer.getRenderer().setToRedraw();
         }
         return this._ssaoPass.render({
             projMatrix: uniforms['projMatrix'],
@@ -192,13 +201,6 @@ export default class PostProcess {
             intensity: uniforms['ssaoIntensity'],
             quality: 0.6
         }, sourceTex, depthTex);
-    }
-
-    getSsaoTexture() {
-        if (!this._ssaoPass) {
-            return null;
-        }
-        return this._ssaoPass.getSsaoTexture();
     }
 
     fxaa(source, noAaSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor) {

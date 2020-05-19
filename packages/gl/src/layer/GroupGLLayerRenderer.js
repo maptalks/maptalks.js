@@ -429,7 +429,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const context = {
-            renderMode: this._renderMode || 'default'
+            renderMode: this._renderMode || 'default',
+            includes: {}
         };
         let renderTarget;
         if (!config || !config.enable) {
@@ -460,14 +461,20 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         if (this._renderMode !== 'noAa') {
             this._shadowContext = this._prepareShadowContext(renderTarget && renderTarget.fbo);
-            // this._ssaoContext = this._prepareSsaoContext();
         }
         if (this._shadowContext) {
             context.shadow = this._shadowContext;
+            context.includes.shadow = 1;
         }
-        // if (this._ssaoContext) {
-        //     context.ssao = this._ssaoContext;
-        // }
+        if (this._postProcessor) {
+            this._postProcessor.setContextIncludes(context);
+        }
+        const includeKeys = Object.keys(context.includes);
+        const keyString = includeKeys.sort().join();
+        if (keyString !== this._prevIncludeKeys) {
+            context.includesUpdated = true;
+        }
+        this._prevIncludeKeys = keyString;
         if (this._renderMode !== 'noAa') {
             if (!this._groundPainter) {
                 this._groundPainter = new GroundPainter(this._regl, this.layer);
@@ -489,13 +496,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!this._shadowPass) {
             this._shadowPass = new ShadowPass(this._regl, sceneConfig, this.layer);
         }
-        const context = {
+        const shadow = {
             config: sceneConfig.shadow,
             defines: this._shadowPass.getDefines(),
             uniformDeclares: ShadowPass.getUniformDeclares()
         };
-        context.renderUniforms = this._renderShadow(fbo);
-        return context;
+        shadow.renderUniforms = this._renderShadow(fbo);
+        return shadow;
     }
 
     _renderShadow(fbo) {
@@ -618,7 +625,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
-            tex = this._postProcessor.ssao(tex, this._depthTex, {
+            //generate ssao texture for the next frame
+            this._postProcessor.ssao(tex, this._depthTex, {
                 projMatrix: map.projMatrix,
                 cameraNear: map.cameraNear,
                 cameraFar: map.cameraFar,

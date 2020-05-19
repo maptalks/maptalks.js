@@ -4,6 +4,7 @@ import { getGroundTransform } from './util/util';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
+import { extend } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
@@ -37,9 +38,7 @@ class GroundPainter {
             return;
         }
         const defines = this._getGroundDefines(context);
-        if (defines) {
-            this._ground.setDefines(defines);
-        }
+        this._ground.setDefines(defines);
         if (this._ground.material !== this.material) {
             this._ground.setMaterial(this.material);
         }
@@ -47,7 +46,6 @@ class GroundPainter {
         this._transformGround();
         const uniforms = this._getUniformValues(context);
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
-        const groundDefines = this._ground.getDefines();
         const isSSR = this._layer.getRenderer().isEnableSSR();
         if (shader === this._fillShader && (!isSSR || !context || !context.ssr)) {
             //如果是drawSSR阶段不绘制fill ground，fuzhenn/maptalks-studio#461
@@ -56,7 +54,7 @@ class GroundPainter {
             return;
         }
 
-        if (isSSR && groundDefines && groundDefines['HAS_SSR']) {
+        if (isSSR && defines && defines['HAS_SSR']) {
             if (context && context.ssr) {
                 const ssrFbo = context && context.ssr.fbo;
                 this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
@@ -176,7 +174,22 @@ class GroundPainter {
         if (!this._iblTexes) {
             this._iblTexes = createIBLTextures(this._regl, this.getMap());
         }
-        return getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context);
+        const uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context);
+        this._setIncludeUniformValues(uniforms, context);
+        return uniforms;
+    }
+
+    _setIncludeUniformValues(uniforms, context) {
+        const includes = context && context.includes;
+        if (includes) {
+            for (const p in includes) {
+                if (includes[p]) {
+                    if (context[p].renderUniforms) {
+                        extend(uniforms, context[p].renderUniforms);
+                    }
+                }
+            }
+        }
     }
 
     _disposeIblTextures() {
@@ -323,17 +336,14 @@ class GroundPainter {
         }
         const defines = this._defines;
         const sceneConfig = this._layer._getSceneConfig();
-        let dirty = false;
 
         function update(has, name) {
             if (has) {
                 if (!defines[name]) {
                     defines[name] = 1;
-                    dirty = true;
                 }
             } else if (defines[name]) {
                 delete defines[name];
-                dirty = true;
             }
         }
         update(this._hasIBL(), 'HAS_IBL_LIGHTING');
@@ -344,7 +354,9 @@ class GroundPainter {
         update(hasShadow, 'USE_ESM');
         const hasPattern = !!this._polygonPatternFile;
         update(hasPattern, 'HAS_PATTERN');
-        return dirty ? defines : null;
+        const hasSSAO = context && context.ssao;
+        update(hasSSAO, 'HAS_SSAO');
+        return defines;
     }
 
     _updateMaterial() {

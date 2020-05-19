@@ -16,9 +16,6 @@ export function getPBRUniforms(map, iblTexes, dfgLUT, context) {
         uNearFar: [map.cameraNear, map.cameraFar]
     }, lightUniforms);
     uniforms['sIntegrateBRDF'] = dfgLUT;
-    if (context && context.shadow && context.shadow.renderUniforms) {
-        extend(uniforms, context.shadow.renderUniforms);
-    }
     if (context && context.ssr && context.ssr.renderUniforms) {
         extend(uniforms, context.ssr.renderUniforms);
     }
