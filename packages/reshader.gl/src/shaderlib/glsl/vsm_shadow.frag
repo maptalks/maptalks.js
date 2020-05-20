@@ -31,7 +31,7 @@ varying vec4 shadow_vLightSpacePos;
 float esm(vec3 projCoords, vec4 shadowTexel) {
     // vec2 uv = projCoords.xy;
     float compare = projCoords.z;
-    float c = 50.0;
+    float c = 120.0;
     #ifdef PACK_FLOAT
         float depth = common_decodeDepth(shadowTexel);
         if (depth >= 1.0 - 1E-6 || compare <= depth) {
