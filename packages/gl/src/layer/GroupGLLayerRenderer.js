@@ -503,20 +503,20 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         if (this._renderMode !== 'noAa') {
             this._shadowContext = this._prepareShadowContext(context);
+            if (this._shadowContext) {
+                context.includes.shadow = 1;
+            }
+            this._includesState = this._updateIncludesState(context);
         }
         if (this._shadowContext) {
             context.shadow = this._shadowContext;
             context.includes.shadow = 1;
         }
+        context.states.includesChanged = this._includesState;
         if (config && config.enable && this._postProcessor) {
             this._postProcessor.setContextIncludes(context);
         }
-        const includeKeys = Object.keys(context.includes);
-        const keyString = includeKeys.sort().join();
-        if (keyString !== this._prevIncludeKeys) {
-            context.states.includesUpdated = true;
-        }
-        this._prevIncludeKeys = keyString;
+
         if (this._renderMode !== 'noAa') {
             if (!this._groundPainter) {
                 this._groundPainter = new GroundPainter(this._regl, this.layer);
@@ -524,6 +524,25 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._groundPainter.paint(context);
         }
         return context;
+    }
+
+    _updateIncludesState(context) {
+        let state = false;
+        const includeKeys = Object.keys(context.includes);
+        const prevKeys = this._prevIncludeKeys;
+        if (prevKeys) {
+            const difference = includeKeys
+                .filter(x => prevKeys.indexOf(x) === -1)
+                .concat(prevKeys.filter(x => includeKeys.indexOf(x) === -1));
+            if (difference.length) {
+                state = difference.reduce((accumulator, currentValue) => {
+                    accumulator[currentValue] = 1;
+                    return accumulator;
+                }, {});
+            }
+        }
+        this._prevIncludeKeys = includeKeys;
+        return state;
     }
 
     _prepareShadowContext(context) {
@@ -548,7 +567,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _renderShadow(context) {
-        const fbo = context.renderTarget && context.renderTarget.fbo
+        const fbo = context.renderTarget && context.renderTarget.fbo;
         const sceneConfig =  this.layer._getSceneConfig();
         const meshes = [];
         let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged;
