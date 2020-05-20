@@ -2,7 +2,6 @@ import { mat4, vec3 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 import { getGroundTransform } from '../util/util';
 
-const COORD_THRESHOLD = 100;
 //阴影覆盖的pitch范围
 const SHADOW_MAX_PITCH = 62;
 let VISUAL_EXTENT;
@@ -100,10 +99,6 @@ class ShadowProcess {
                 return ids;
             }, {});
             this._renderedView = {
-                center: map.getCenter(),
-                bearing: map.getBearing(),
-                pitch: map.getPitch(),
-                lightDirection: vec3.copy([], lightDirection),
                 count: scene.getMeshes().length - (displayShadow ? 1 : 0)
             };
             this._updated = true;
@@ -170,7 +165,7 @@ class ShadowProcess {
         return this._updated !== false;
     }
 
-    _shadowChanged(map, scene, lightDirection) {
+    _shadowChanged(map, scene) {
         // if (this._rendered || !this._rendered && scene.getMeshes().length > 5) {
         //     this._rendered = true;
         //     return false;
@@ -182,9 +177,6 @@ class ShadowProcess {
         if (scene.getMeshes().length !== renderedView.count) {
             return true;
         }
-        if (!vec3.equals(lightDirection, renderedView.lightDirection)) {
-            return true;
-        }
         const meshes = scene.getMeshes();
         let changed = false;
         for (let i = 0; i < meshes.length; i++) {
@@ -192,10 +184,7 @@ class ShadowProcess {
                 return true;
             }
         }
-        const cp = map.coordToContainerPoint(this._renderedView.center);
-        changed = (cp._sub(map.width / 2, map.height / 2).mag() > COORD_THRESHOLD) ||
-            Math.abs(renderedView.bearing - map.getBearing()) > 30 ||
-            Math.abs(renderedView.pitch - map.getPitch()) > 15;
+
         return changed;
     }
 

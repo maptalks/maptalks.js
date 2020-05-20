@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { vec2 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
@@ -11,7 +11,6 @@ import PostProcess from './postprocess/PostProcess.js';
 const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
 const noSsrFilter = m => !m.getUniform('ssr');
-
 
 class Renderer extends maptalks.renderer.CanvasRenderer {
 
@@ -425,13 +424,56 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         return config && config.ssao && config.ssao.enable;
     }
 
+    _getViewStates() {
+        const map = this.layer.getMap();
+        const lightDirection = map.getLightManager().getDirectionalLight().direction;
+        const renderedView = this._renderedView;
+        if (!renderedView) {
+            this._renderedView = {
+                center: map.getCenter(),
+                bearing: map.getBearing(),
+                pitch: map.getPitch(),
+                lightDirection: vec3.copy([], lightDirection),
+                // count: scene.getMeshes().length - (displayShadow ? 1 : 0)
+            };
+            return {
+                viewChanged: true,
+                lightDirectionChanged: true
+            };
+        }
+        // const maxPitch = map.options['cascadePitches'][2];
+        // const pitch = map.getPitch();
+        const cp = map.coordToContainerPoint(this._renderedView.center);
+        const viewMoveThreshold = this.layer.options['viewMoveThreshold'];
+        // const viewPitchThreshold = this.layer.options['viewPitchThreshold'];
+        const viewChanged = (cp._sub(map.width / 2, map.height / 2).mag() > viewMoveThreshold);
+        // Math.abs(renderedView.bearing - map.getBearing()) > 30 ||
+        // (renderedView.pitch < maxPitch || pitch < maxPitch) && Math.abs(renderedView.pitch - pitch) > viewPitchThreshold;
+        const lightDirectionChanged = !vec3.equals(this._renderedView.lightDirection, lightDirection);
+        //update renderView
+        if (viewChanged) {
+            this._renderedView.center = map.getCenter();
+            this._renderedView.bearing = map.getBearing();
+            this._renderedView.pitch = map.getPitch();
+        }
+        if (lightDirectionChanged) {
+            this._renderedView.lightDirection = vec3.copy([], lightDirection);
+        }
+        return {
+            viewChanged,
+            lightDirectionChanged
+        };
+    }
+
     _prepareDrawContext() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const context = {
             renderMode: this._renderMode || 'default',
-            includes: {}
+            includes: {},
+            states: this._getViewStates()
         };
+
         let renderTarget;
         if (!config || !config.enable) {
             this._clearFramebuffers();
@@ -460,19 +502,19 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
         }
         if (this._renderMode !== 'noAa') {
-            this._shadowContext = this._prepareShadowContext(renderTarget && renderTarget.fbo);
+            this._shadowContext = this._prepareShadowContext(context);
         }
         if (this._shadowContext) {
             context.shadow = this._shadowContext;
             context.includes.shadow = 1;
         }
-        if (this._postProcessor) {
+        if (config && config.enable && this._postProcessor) {
             this._postProcessor.setContextIncludes(context);
         }
         const includeKeys = Object.keys(context.includes);
         const keyString = includeKeys.sort().join();
         if (keyString !== this._prevIncludeKeys) {
-            context.includesUpdated = true;
+            context.states.includesUpdated = true;
         }
         this._prevIncludeKeys = keyString;
         if (this._renderMode !== 'noAa') {
@@ -484,7 +526,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         return context;
     }
 
-    _prepareShadowContext(fbo) {
+    _prepareShadowContext(context) {
         const sceneConfig =  this.layer._getSceneConfig();
         if (!sceneConfig || !sceneConfig.shadow || !sceneConfig.shadow.enable) {
             if (this._shadowPass) {
@@ -501,14 +543,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             defines: this._shadowPass.getDefines(),
             uniformDeclares: ShadowPass.getUniformDeclares()
         };
-        shadow.renderUniforms = this._renderShadow(fbo);
+        shadow.renderUniforms = this._renderShadow(context);
         return shadow;
     }
 
-    _renderShadow(fbo) {
+    _renderShadow(context) {
+        const fbo = context.renderTarget && context.renderTarget.fbo
         const sceneConfig =  this.layer._getSceneConfig();
         const meshes = [];
-        let forceUpdate = false;
+        let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged;
         this.forEachRenderer(renderer => {
             if (!renderer.getShadowMeshes) {
                 return;

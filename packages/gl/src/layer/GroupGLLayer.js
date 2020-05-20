@@ -18,7 +18,8 @@ const options = {
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true,
-    jitterRatio: 0.02
+    jitterRatio: 0.04,
+    viewMoveThreshold: 100
 };
 
 
