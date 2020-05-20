@@ -33,14 +33,10 @@ class StandardPainter extends MeshPainter {
 
     paint(context) {
         const hasShadow = !!context.shadow;
-        if (this._hasShadow === undefined) {
-            this._hasShadow = hasShadow;
-        }
-        if (this._hasShadow !== hasShadow) {
+        if (context.states.includesChanged) {
             this.shader.dispose();
             this._createShader(context);
         }
-        this._hasShadow = hasShadow;
         const isSsr = !!context.ssr;
         this.shader = this.getShader();
         const shader = this.shader;
@@ -81,7 +77,7 @@ class StandardPainter extends MeshPainter {
 
     getShadowMeshes() {
         this._shadowCount = this.scene.getMeshes().length;
-        return this.scene.getMeshes();
+        return this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
     }
 
     updateSceneConfig(config) {
@@ -182,17 +178,9 @@ class StandardPainter extends MeshPainter {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
-        const uniformDeclares = [];
-        if (context.shadow && context.shadow.uniformDeclares) {
-            uniformDeclares.push(...context.shadow.uniformDeclares);
-        }
-        if (context.ssr && context.ssr.uniformDeclares) {
-            uniformDeclares.push(...context.ssr.uniformDeclares);
-        }
         const defines = {};
-        if (context.shadow && context.shadow.defines) {
-            extend(defines, context.shadow.defines);
-        }
+        const uniformDeclares = [];
+        this.fillIncludes(defines, uniformDeclares, context);
         const layer = this.layer;
         const extraCommandProps = {
             cull: {
@@ -247,20 +235,19 @@ class StandardPainter extends MeshPainter {
         delete config.defines['HAS_IBL_LIGHTING'];
         this._noIblShader = new reshader.pbr.StandardShader(config);
         if (reshader.SsrPass && !this._ssrShader) {
+            const defines1 = extend({}, defines);
             uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
-            const defines = this._getDefines(reshader.SsrPass.getDefines());
-            if (context.shadow && context.shadow.defines) {
-                extend(defines, context.shadow.defines);
-            }
+            extend(defines1, reshader.SsrPass.getDefines());
+            this._getDefines(defines1);
             this._ssrShader = new reshader.pbr.StandardShader({
                 uniforms: uniformDeclares,
-                defines,
+                defines: defines1,
                 extraCommandProps
             });
             delete defines['HAS_IBL_LIGHTING'];
             this._noIblSsrShader = new reshader.pbr.StandardShader({
                 uniforms: uniformDeclares,
-                defines,
+                defines: defines1,
                 extraCommandProps
             });
 
@@ -369,16 +356,13 @@ class StandardPainter extends MeshPainter {
         if (!this._iblTexes) {
             this._iblTexes = createIBLTextures(this.regl, map);
         }
-        return getPBRUniforms(map, this._iblTexes, this._dfgLUT, context);
+        const uniforms = getPBRUniforms(map, this._iblTexes, this._dfgLUT, context);
+        this.setIncludeUniformValues(uniforms, context);
+        return uniforms;
     }
 
-    _getDefines(shadowDefines) {
-        const defines = {};
+    _getDefines(defines) {
         defines['HAS_IBL_LIGHTING'] = 1;
-
-        if (shadowDefines) {
-            extend(defines, shadowDefines);
-        }
         return defines;
     }
 

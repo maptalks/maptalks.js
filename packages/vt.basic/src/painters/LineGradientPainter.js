@@ -102,8 +102,9 @@ class LineGradientPainter extends LinePainter {
 
     createShader(context) {
         this._context = context;
-        const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
-        const defines = context.shadow && context.shadow.defines || {};
+        const uniforms = [];
+        const defines = {};
+        this.fillIncludes(defines, uniforms, context);
         if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
             defines['HAS_TRAIL'] = 1;
         }

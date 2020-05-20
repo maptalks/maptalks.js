@@ -143,15 +143,10 @@ class LinePainter extends BasicPainter {
     }
 
     paint(context) {
-        const hasShadow = !!context.shadow;
-        if (this._hasShadow === undefined) {
-            this._hasShadow = hasShadow;
-        }
-        if (this._hasShadow !== hasShadow) {
+        if (context.states.includesChanged['shadow']) {
             this.shader.dispose();
             this.createShader(context);
         }
-        this._hasShadow = hasShadow;
         super.paint(context);
     }
 
@@ -252,8 +247,9 @@ class LinePainter extends BasicPainter {
 
     createShader(context) {
         this._context = context;
-        const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
-        const defines = context.shadow && context.shadow.defines || {};
+        const uniforms = [];
+        const defines = {};
+        this.fillIncludes(defines, uniforms, context);
         if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
             defines['HAS_TRAIL'] = 1;
         }
@@ -382,9 +378,7 @@ class LinePainter extends BasicPainter {
             mapRotationMatrix: mat2.fromRotation([], rotation),
         };
 
-        if (context && context.shadow && context.shadow.renderUniforms) {
-            extend(uniforms, context.shadow.renderUniforms);
-        }
+        this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
 }

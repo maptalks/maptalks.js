@@ -142,15 +142,10 @@ class FillPainter extends BasicPainter {
     }
 
     paint(context) {
-        const hasShadow = !!context.shadow;
-        if (this._hasShadow === undefined) {
-            this._hasShadow = hasShadow;
-        }
-        if (this._hasShadow !== hasShadow) {
+        if (context.states.includesChanged['shadow']) {
             this.shader.dispose();
             this._createShader(context);
         }
-        this._hasShadow = hasShadow;
         super.paint(context);
     }
 
@@ -191,9 +186,9 @@ class FillPainter extends BasicPainter {
     _createShader(context) {
         const canvas = this.canvas;
 
-        const uniforms = context.shadow && context.shadow.uniformDeclares.slice(0) || [];
-        const defines = context.shadow && context.shadow.defines || {};
-
+        const uniforms = [];
+        const defines = {};
+        this.fillIncludes(defines, uniforms, context);
         uniforms.push(
             'polygonFill', 'polygonOpacity',
             'polygonPatternFile', 'uvScale',
@@ -295,9 +290,7 @@ class FillPainter extends BasicPainter {
             projViewMatrix,
             resolution
         };
-        if (context && context.shadow && context.shadow.renderUniforms) {
-            extend(uniforms, context.shadow.renderUniforms);
-        }
+        this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
 }
