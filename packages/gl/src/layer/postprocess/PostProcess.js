@@ -14,7 +14,7 @@ export default class PostProcess {
         this._taaPass = new reshader.TaaPass(this._renderer, jitter);
     }
 
-    setContextIncludes(context) {
+    setContextIncludes(/*context*/) {
         // if (this._layer.getRenderer().isEnableSSAO() && this._ssaoPass && !context.ssao) {
         //     const ssao = {
         //         defines: reshader.SsrPass.getDefines(),
@@ -85,6 +85,9 @@ export default class PostProcess {
     }
 
     genSsrMipmap(tex) {
+        if (!this._ssrPass) {
+            return;
+        }
         this._ssrPass.genMipMap(tex);
         if (!this._ssrFBO._projViewMatrix) {
             this._ssrFBO._projViewMatrix = [];
@@ -92,14 +95,17 @@ export default class PostProcess {
         mat4.copy(this._ssrFBO._projViewMatrix, this._layer.getMap().projViewMatrix);
     }
 
-    ssr(currentTex, depthTex) {
-        //遍历开启了ssr的mesh重新绘制一遍，并只绘制有ssr的像素，discard掉其他像素
-        const ssrTex = this._drawSsr(currentTex, depthTex);
+    ssr(currentTex) {
+        if (!this._ssrFBO) {
+            return currentTex;
+        }
         //合并ssr和原fbo中的像素
+        const ssrTex = this._ssrFBO.color[0];
         return this._ssrPass.combine(currentTex, ssrTex);
     }
 
-    _drawSsr(currentTex, depthTex) {
+    drawSSR(depthTex) {
+        //遍历开启了ssr的mesh重新绘制一遍，并只绘制有ssr的像素，discard掉其他像素
         const regl = this._regl;
         const layerRenderer = this._layer.getRenderer();
         const timestamp = layerRenderer.getFrameTime();
@@ -108,14 +114,20 @@ export default class PostProcess {
         if (!this._ssrPass) {
             this._ssrPass = new reshader.SsrPass(regl);
         }
-        const ssrFBO = this._ssrFBO;
+        let ssrFBO = this._ssrFBO;
+        let ssrDepthTestFBO = this._ssrDepthTestFBO;
         if (!ssrFBO) {
             const info = this._createFBOInfo();
-            this._ssrFBO = regl.framebuffer(info);
+            ssrFBO = this._ssrFBO = regl.framebuffer(info);
+            const depthTestInfo = this._createFBOInfo(depthTex);
+            ssrDepthTestFBO = this._ssrDepthTestFBO = regl.framebuffer(depthTestInfo);
         } else {
             const { width, height } = layerRenderer.canvas;
             if (ssrFBO.width !== width || ssrFBO.height !== height) {
                 ssrFBO.resize(width, height);
+            }
+            if (ssrDepthTestFBO.width !== width || ssrDepthTestFBO.height !== height) {
+                ssrDepthTestFBO.resize(width, height);
             }
             regl.clear({
                 color: [0, 0, 0, 0],
@@ -124,38 +136,42 @@ export default class PostProcess {
             });
         }
 
-        context.ssr = this._prepareSSRContext(currentTex, depthTex);
+        context.ssr = this._prepareSSRContext(depthTex);
         const renderMode = context.renderMode;
         context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, ssrFBO);
+                layerRenderer.clearStencil(renderer, ssrDepthTestFBO);
                 renderer.drawOnInteracting(event, timestamp, context);
             });
         } else {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, ssrFBO);
+                layerRenderer.clearStencil(renderer, ssrDepthTestFBO);
                 renderer.draw(timestamp, context);
             });
         }
-        layerRenderer.drawGround();
+        const groundPainted = layerRenderer.drawGround();
         //以免和bloom冲突
         delete context.ssr;
         context.renderMode = renderMode;
-        return this._ssrFBO.color[0];
+        return groundPainted;
     }
 
-    _prepareSSRContext(currentTex, depthTex) {
+    _prepareSSRContext(depthTex) {
         const sceneConfig =  this._layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const map = this._layer.getMap();
         const texture = this._ssrPass.getMipmapTexture();
         const ssrFBO = this._ssrFBO;
+        const ssrDepthTestFBO = this._ssrDepthTestFBO;
         return {
             renderUniforms: {
+                'TextureDepthTest': this._ssrDepthTestFBO.color[0],
                 'TextureDepth': depthTex,
-                'TextureSource': currentTex,
+                // 'TextureSource': currentTex,
                 'TextureToBeRefracted': texture,
                 'uSsrFactor': config.ssr.factor || 1,
                 'uSsrQuality': config.ssr.quality || 2,
@@ -166,7 +182,8 @@ export default class PostProcess {
                 'prevProjViewMatrix': ssrFBO._projViewMatrix || map.projViewMatrix,
                 'cameraWorldMatrix': map.cameraWorldMatrix
             },
-            fbo: this._ssrFBO
+            fbo: ssrFBO,
+            depthTestFbo: ssrDepthTestFBO
         };
     }
 
@@ -235,6 +252,7 @@ export default class PostProcess {
         }
         if (this._ssrFBO) {
             this._ssrFBO.destroy();
+            this._ssrDepthTestFBO.destroy();
             delete this._ssrFBO;
         }
         if (this._taaPass) {

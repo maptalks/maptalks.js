@@ -2,7 +2,6 @@ import { mat4 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader.js';
 import vert from './glsl/depth.vert';
 import frag from './glsl/depth.frag';
-import { extend } from '../common/Util';
 
 class StandardDepthShader extends MeshShader {
     constructor(config = {}) {
@@ -29,8 +28,7 @@ class StandardDepthShader extends MeshShader {
                 }
             }
         ];
-        const extraCommandProps = config.extraCommandProp ? extend({}, config.extraCommandProp) : {};
-        extraCommandProps['colorMask'] = [false, false, false, false];
+        const extraCommandProps = config.extraCommandProp;
         super({
             vert,
             frag,

@@ -71,13 +71,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (hasRenderTarget) {
             this._renderMode = 'aa';
         }
-        let hasChild = false;
         let hasNoAA = false;
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
                 return;
             }
-            hasChild = true;
             if (renderer.needRetireFrames && renderer.needRetireFrames()) {
                 this.setRetireFrames();
             }
@@ -87,6 +85,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this.clearStencil(renderer, this._targetFBO);
             renderer[methodName].apply(renderer, args);
         });
+        let groundPainted = false;
+        if (this._postProcessor && this.isEnableSSR()) {
+            groundPainted = this._postProcessor.drawSSR(this._depthTex);
+        }
+        if (!groundPainted) {
+            this.drawGround();
+        }
         if (hasNoAA && hasRenderTarget) {
             delete this._contextFrameTime;
             this._renderMode = 'noAa';
@@ -99,12 +104,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     renderer[methodName].apply(renderer, args);
                 }
             });
-        }
-        if (!hasChild) {
-            if (!this._groundPainter) {
-                this._groundPainter = new GroundPainter(this._regl, this.layer);
-            }
-            this._groundPainter.paint(this._drawContext);
         }
     }
 
@@ -372,9 +371,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     drawGround() {
-        if (this._groundPainter) {
-            this._groundPainter.paint(this.getFrameContext());
+        if (!this._groundPainter) {
+            this._groundPainter = new GroundPainter(this._regl, this.layer);
         }
+        return this._groundPainter.paint(this.getFrameContext());
     }
 
     _buildDrawFn(drawMethod) {
@@ -515,13 +515,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         context.states.includesChanged = this._includesState;
         if (config && config.enable && this._postProcessor) {
             this._postProcessor.setContextIncludes(context);
-        }
-
-        if (this._renderMode !== 'noAa') {
-            if (!this._groundPainter) {
-                this._groundPainter = new GroundPainter(this._regl, this.layer);
-            }
-            this._groundPainter.paint(context);
         }
         return context;
     }
@@ -682,7 +675,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const enableSSR = this.isEnableSSR();
         if (enableSSR) {
-            tex = this._postProcessor.ssr(tex, this._depthTex);
+            tex = this._postProcessor.ssr(tex);
         }
 
         const enableSSAO = this.isEnableSSAO();

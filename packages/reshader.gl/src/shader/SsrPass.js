@@ -13,7 +13,6 @@ class SsrPass {
         const invProjMatrix = new Array(16);
         return [
             'TextureDepth',
-            'TextureSource',
             'uGlobalTexSize',
             'uSsrFactor',
             'uSsrQuality',

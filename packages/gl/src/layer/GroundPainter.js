@@ -35,7 +35,7 @@ class GroundPainter {
 
     paint(context) {
         if (!this.isEnable()) {
-            return;
+            return false;
         }
         const defines = this._getGroundDefines(context);
         this._ground.setDefines(defines);
@@ -51,22 +51,31 @@ class GroundPainter {
             //如果是drawSSR阶段不绘制fill ground，fuzhenn/maptalks-studio#461
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
             this._layer.getRenderer().setCanvasUpdated();
-            return;
+            return true;
         }
 
+        let updated = false;
         if (isSSR && defines && defines['HAS_SSR']) {
             if (context && context.ssr) {
+                this._regl.clear({
+                    color: [0, 0, 0, 0],
+                    framebuffer: context.ssr.depthTestFbo
+                });
+                //更新全局的深度缓冲，并清空depthTestFbo的颜色缓冲
+                this.renderer.render(this._depthShader, uniforms, this._groundScene, context.ssr.depthTestFbo);
                 const ssrFbo = context && context.ssr.fbo;
                 this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
-            } else {
-                //如果图层开启ssr且context没有ssr时，说明不是后处理阶段，只需绘制深度纹理即可
-                this.renderer.render(this._depthShader, uniforms, this._groundScene, fbo);
+                updated = true;
             }
         } else if (!context || !context.ssr) {
             //context中有ssr时，说明是drawSSR阶段，此时什么都不用绘制
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
+            updated = true;
         }
-        this._layer.getRenderer().setCanvasUpdated();
+        if (updated) {
+            this._layer.getRenderer().setCanvasUpdated();
+        }
+        return updated;
     }
 
     update() {
@@ -232,7 +241,6 @@ class GroundPainter {
             extraCommandProps
         });
 
-        extraCommandProps.colorMask = [false, false, false, false];
         this._depthShader = new reshader.pbr.StandardDepthShader({
             extraCommandProps
         });
@@ -262,10 +270,6 @@ class GroundPainter {
                     const ground = sceneConfig.ground;
                     return ground.depth || ground.depth === undefined;
                 },
-                // range: () => {
-                //     const ground = sceneConfig.ground;
-                //     return !!ground && !!ground.depth ? [0, 1] : [1, 1];
-                // },
                 //如果设成'<'，会有低级别下地面消失的问题，fuzhenn/maptalks-studio#460
                 func: '<='
             },
