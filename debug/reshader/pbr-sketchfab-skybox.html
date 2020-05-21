@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PBR-GLTF</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:1400px;height:1000px;background-color: #000}
+  </style>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
+    <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@maptalks/gl@0.7.0/dist/maptalksgl.js"></script> -->
+    <script src="js/gltf-loader.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/dat.gui.min.js"></script>
+  <body>
+    <canvas id="canvas" width=1400 height=1000 class="container"></canvas>
+    <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
+    <script type="module">
+        import sphereData from './common/sphere.js';
+        const PREFILTER_CUBE_SIZE = 512;
+        const { createREGL, mat4, reshader, vec2 } = maptalksgl;
+        const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
+
+        // const gl = canvas.getContext('webgl', {
+        //     alpha: true,
+        //     // antialias: false
+        // });
+
+        const regl = createREGL({
+            attributes: {
+                alpha: true,
+                stencil: true,
+                depth: true,
+                antialias: true,
+            },
+            canvas : canvas,
+            // gl,
+            extensions : [
+                'OES_texture_float',
+                'OES_texture_float_linear',
+                'OES_texture_half_float',
+                'OES_texture_half_float_linear',
+                'OES_element_index_uint',
+                'OES_standard_derivatives',
+                'EXT_shader_texture_lod',
+                'WEBGL_depth_texture'
+            ]
+        });
+        let iblMaps;
+        let mouseDown = false;
+        let roll = 3.1315926535897955;
+        let pitch = 1.35;
+        let translate = 4.0;
+        var wheelSpeed = 1.04;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        const renderer = new reshader.Renderer(regl);
+        let camPos = [-1, -2, 4];
+        let SCENE = null;
+        let SHADER;
+        window.UNIFORMS = null;
+        let blur = 0.125;
+        let brightness = 1.0;
+
+        initGUI();
+        function main() {
+
+            const loader = new reshader.ResourceLoader();
+            const hdr = new reshader.Texture2D(
+                {
+                    url: 'ibl/resources/industrial_room.hdr',
+                    arrayBuffer: true,
+                    hdr: true,
+                    type: 'uint8',
+                    format: 'rgba',
+                    flipY: true
+                },
+                loader
+            );
+
+            hdr.once('complete', () => {
+                iblMaps = createMaps(hdr.getREGLTexture(regl));
+                const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
+                render();
+            });
+        }
+        main();
+        function render() {
+            //绘制天空盒
+            drawSkyBox();
+        }
+        function drawSkyBox() {
+            const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
+            regl.clear({
+                color: [0, 0, 0, 0],
+                depth: 1
+            });
+            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.prefilterMap, viewMatrix, projMatrix, true, null, true, true, blur, PREFILTER_CUBE_SIZE, brightness, 1.0, false);
+            requestAnimationFrame(drawSkyBox);
+        }
+
+        function createMaps(hdr) {
+            const dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
+            const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
+                envTexture : hdr,
+                envCubeSize: 512,
+                prefilterCubeSize: PREFILTER_CUBE_SIZE,
+                ignoreSH: false
+            });
+            maps['dfgLUT'] = dfgLUT;
+            return maps;
+        }
+
+        function getViewProjection(cameraPos, aspect) {
+            const projMatrix = mat4.perspective([], 60 * Math.PI / 180, aspect, 0.1, 200);
+            updateCamera();
+            const viewMatrix = mat4.lookAt([], cameraPos, [0, 0, 0], [0, 1, 0]);
+            // console.log(cameraPos, viewMatrix);
+            // console.log(viewMatrix[2], viewMatrix[6], viewMatrix[10]);
+            return {
+                viewMatrix,
+                projMatrix
+            };
+        }
+
+        canvas.onmousedown = function(ev) { handleMouseDown(ev); };
+        canvas.onmouseup = function(ev) { handleMouseUp(ev); };
+        canvas.onmousemove = function(ev) { handleMouseMove(ev); };
+        canvas.onwheel = function(ev) { handleWheel(ev); };
+
+        function handleMouseDown(ev) {
+            mouseDown = true;
+            lastMouseX = ev.clientX;
+            lastMouseY = ev.clientY;
+        }
+
+        function handleMouseUp(ev) {
+            mouseDown = false;
+        }
+
+        function handleMouseMove(ev) {
+            if (!mouseDown) {
+                return;
+            }
+            var newX = ev.clientX;
+            var newY = ev.clientY;
+
+            var deltaX = newX - lastMouseX;
+            roll += (deltaX / 100.0);
+
+            var deltaY = newY - lastMouseY;
+            pitch += (deltaY / 100.0);
+
+            lastMouseX = newX;
+            lastMouseY = newY;
+            updateCamera();
+        }
+        function handleWheel(ev, redraw) {
+            ev.preventDefault();
+            if (ev.deltaY > 0) {
+                translate *= wheelSpeed;
+            }
+            else {
+                translate /= wheelSpeed;
+            }
+            updateCamera();
+        }
+
+        function updateCamera() {
+            camPos = [-translate * Math.sin(roll) * Math.cos(-pitch),
+            -translate * Math.sin(-pitch),
+            translate * Math.cos(roll) * Math.cos(-pitch)];
+        }
+
+        function request(url, cb) {
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0, image.width, image.height);
+                const imgData = ctx.getImageData(0, 0, image.width, image.height);
+                const result = { width : image.width, height : image.height, data : new Uint8Array(imgData.data) };
+                cb(null, result);
+            };
+            image.onerror = function (err) {
+                cb(err);
+            };
+            image.src = url;
+        };
+
+        function toTexture(texture) {
+            const image = texture.texture.image;
+            return new reshader.Texture2D(regl.texture({
+                data: image.array,
+                width: image.width,
+                height: image.height,
+                wrap: 'repeat',
+                mag: 'linear',
+                min: 'mipmap'
+            }));
+        }
+
+        function getNodeTransformation(node) {
+            if (node.matrix) {
+                return node.matrix;
+            }
+            const mat = mat4.identity([]);
+            const v = node.translation || [0, 0, 0];
+            const q = node.rotation || [0, 0, 0, 1];
+            const s = node.scale || [1, 1, 1];
+            return mat4.fromRotationTranslationScale([], q, v, s)
+        }
+
+        function initGUI() {
+            var gui = new dat.GUI( { width: 300 } );
+            const config = {
+                blur: 0.125,
+                brightness: 1.0
+            };
+
+            var blurController = gui.add(config, "blur", 0.01, 1.0);
+            blurController.onChange(function (value) {
+                blur = value;
+            });
+            var brightnessController = gui.add(config, "brightness", 0, 2.0);
+            brightnessController.onChange(function (value) {
+                brightness = value;
+            });
+        }
+    </script>
+  </body>
+</html>
