@@ -157,7 +157,14 @@ class Shader {
     }
 
     dispose() {
-        //TODO dispose the shader and regl commands
+        for (const p in this.commands) {
+            if (this.commands[p].destroy) {
+                this.commands[p].destroy();
+            }
+        }
+        this.commands = {};
+        delete this.vert;
+        delete this.frag;
     }
 
     _insertDefines(source, defines) {
