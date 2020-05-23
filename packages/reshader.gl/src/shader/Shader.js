@@ -104,12 +104,21 @@ class Shader {
         return this;
     }
 
+    getVersion(regl) {
+        const version = regl['__VERSION__'];
+        if (this.version === 300 && version >= this.version) {
+            return '#version 300 es\n';
+        } else {
+            return '#version 100\n';
+        }
+    }
+
     createREGLCommand(regl, materialDefines, attrProps, uniProps, elements, isInstanced) {
         uniProps = uniProps || [];
         attrProps = attrProps || [];
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
-        const vert = this._insertDefines(this.vert, defines);
-        const frag = this._insertDefines(this.frag, defines);
+        const vert = this.getVersion(regl) + this._insertDefines(this.vert, defines);
+        const frag = this.getVersion(regl) + this._insertDefines(this.frag, defines);
         const attributes = {};
         attrProps.forEach(p => {
             attributes[p] = regl.prop(p);

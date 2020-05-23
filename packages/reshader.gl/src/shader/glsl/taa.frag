@@ -2,7 +2,6 @@
 //https://www.gdcvault.com/play/1022970/Temporal-Reprojection-Anti-Aliasing-in
 //https://github.com/playdeadgames/temporal
 //https://github.com/Unity-Technologies/PostProcessing/blob/v2/PostProcessing/Shaders/Builtins/TemporalAntialiasing.shader
-#version 100
 precision highp float;
 uniform float uSSAARestart;
 uniform float uTaaEnabled;

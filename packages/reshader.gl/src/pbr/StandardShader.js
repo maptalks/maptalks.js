@@ -1,5 +1,5 @@
 import { mat3, mat4 } from 'gl-matrix';
-import vertSource from './glsl/standard.vert';
+import vert from './glsl/standard.vert';
 import frag from './glsl/standard.frag';
 import MeshShader from '../shader/MeshShader.js';
 import { extend } from '../common/Util';
@@ -176,12 +176,13 @@ class StandardShader extends MeshShader {
             uniforms.push(...extraUniforms);
         }
         super({
-            vert: vertSource,
+            vert,
             frag,
             uniforms,
             extraCommandProps,
             defines: config.defines
         });
+        this.version = 300;
     }
 
     getGeometryDefines(geometry) {

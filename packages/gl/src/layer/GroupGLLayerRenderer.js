@@ -5,6 +5,7 @@ import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
 import createREGL from '@maptalks/regl';
 import GroundPainter from './GroundPainter';
+import EnvironmentPainter from './EnvironmentPainter';
 import PostProcess from './postprocess/PostProcess.js';
 
 
@@ -71,6 +72,22 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (hasRenderTarget) {
             this._renderMode = 'aa';
         }
+
+        let timestamp = args[0];
+        if (!isNumber(timestamp)) {
+            timestamp = args[1];
+        }
+        if (timestamp !== this._contextFrameTime) {
+            this._drawContext = this._prepareDrawContext();
+            this._contextFrameTime = timestamp;
+            this._frameEvent = isNumber(args[0]) ? null : args[0];
+        }
+
+        if (!this._envPainter) {
+            this._envPainter = new EnvironmentPainter(this._regl, this.layer);
+        }
+        this._envPainter.paint(this._drawContext);
+
         let hasNoAA = false;
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
@@ -215,13 +232,20 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.glCtx = gl.wrap();
         this.canvas.gl = this.gl;
         this._reglGL = gl.wrap();
+        const overrideExtensions = {
+            'WEBGL_depth_texture': {
+                'UNSIGNED_INT_24_8_WEBGL': 0x84FA
+            }
+        };
         this._regl = createREGL({
             gl: this._reglGL,
             attributes,
             extensions: layer.options['extensions'],
-            optionalExtensions: layer.options['optionalExtensions']
+            optionalExtensions: layer.options['optionalExtensions'],
+            overrideExtensions: gl.version === 300 ? overrideExtensions : null
         });
         this.gl.regl = this._regl;
+        this._regl['__VERSION__'] = gl.version;
 
         this._jitter = [0, 0];
         this._jitGetter = new reshader.Jitter(this.layer.options['jitterRatio']);
@@ -298,12 +322,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _createGLContext(canvas, options) {
-        const names = ['webgl', 'experimental-webgl'];
+        const names = ['webgl2', 'webgl', 'experimental-webgl'];
         let gl = null;
         /* eslint-disable no-empty */
         for (let i = 0; i < names.length; ++i) {
             try {
                 gl = canvas.getContext(names[i], options);
+                if (names[i] === 'webgl2') {
+                    gl.version = 300;
+                } else {
+                    gl.version = 100;
+                }
             } catch (e) {}
             if (gl) {
                 break;
@@ -385,11 +414,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 context = timestamp;
                 timestamp = event;
                 event = null;
-            }
-            if (timestamp !== me._contextFrameTime) {
-                me._drawContext = me._prepareDrawContext();
-                me._contextFrameTime = timestamp;
-                me._frameEvent = event;
             }
             const hasRenderTarget = context && context.renderTarget;
             if (hasRenderTarget) {
@@ -633,7 +657,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // colorCount,
             colorFormat: 'rgba'
         };
-        const enableDepthTex = regl.hasExtension('WEBGL_depth_texture');
+        const enableDepthTex = regl['__VERSION__'] > 100 || regl.hasExtension('WEBGL_depth_texture');
         //depth(stencil) buffer 是可以共享的
         if (enableDepthTex) {
             const depthStencilTexture = depthTex || regl.texture({

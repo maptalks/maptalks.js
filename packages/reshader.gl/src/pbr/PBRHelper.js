@@ -51,7 +51,7 @@ export function createIBLMaps(regl, config = {}) {
         cube.destroy();
     }
 
-    const prefilterMap = createPrefilterCube(regl, envMap, config.rgbmRange, prefilterCubeSize, sampleSize, roughnessLevels);
+    const { prefilterMap, prefilterMipmap } = createPrefilterCube(regl, envMap, config.rgbmRange, prefilterCubeSize, sampleSize, roughnessLevels);
 
     // const dfgLUT = generateDFGLUT(regl, dfgSize, sampleSize, roughnessLevels);
 
@@ -94,7 +94,7 @@ export function createIBLMaps(regl, config = {}) {
         maps['prefilterMap'] = {
             width: prefilterMap.width,
             height: prefilterMap.height,
-            faces: getEnvmapPixels(regl, prefilterMap, prefilterCubeSize)
+            faces: prefilterMipmap
         };
         envMap.destroy();
         prefilterMap.destroy();
@@ -156,7 +156,10 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
         uniforms : {
             'projMatrix' : regl.context('projMatrix'),
             'viewMatrix' :  regl.context('viewMatrix'),
-            'cubeMap' : cubemap
+            'cubeMap' : cubemap,
+            'environmentExposure': 1,
+            'bias': 0,
+            'size': envCubeSize
         },
         elements : cubeData.indices
     });
@@ -344,14 +347,14 @@ function createPrefilterCube(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, rou
 
     const mipmap = createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, roughnessLevels);
     // debugger
-    const prefilterCube = regl.cube({
+    const prefilterMap = regl.cube({
         radius : SIZE,
         min : 'linear mipmap linear',
         mag : 'linear',
         faces : mipmap
     });
     // mipmapCube.destroy();
-    return prefilterCube;
+    return { prefilterMap, prefilterMipmap: mipmap };
 }
 
 const quadVertices = [

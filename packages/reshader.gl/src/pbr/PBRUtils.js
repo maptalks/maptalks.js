@@ -1,4 +1,4 @@
-import { extend, isNumber } from '../common/Util.js';
+import { extend, isNumber, isNil } from '../common/Util.js';
 
 export function getPBRUniforms(map, iblTexes, dfgLUT, context) {
     const viewMatrix = map.viewMatrix;
@@ -58,19 +58,23 @@ function getLightUniforms(map, iblTexes) {
 }
 
 export function createIBLTextures(regl, map) {
-    const resource = map.getLightManager().getAmbientResource();
+    const lightManager = map.getLightManager();
+    const resource = lightManager.getAmbientResource();
     if (!resource) {
         return null;
     }
+    const exposure = lightManager.getAmbientLight().exposure;
     return {
         'prefilterMap': regl.cube({
             width: resource.prefilterMap.width,
             height: resource.prefilterMap.height,
             faces: resource.prefilterMap.faces,
-            min: 'linear',
-            mag: 'linear',
+            min : 'linear mipmap linear',
+            mag : 'linear',
             format: 'rgba',
+            // mipmap: true
         }),
+        'exposure': isNumber(exposure) ? exposure : 1,
         'sh': resource.sh,
         'rgbmRange': resource.rgbmRange
     };
