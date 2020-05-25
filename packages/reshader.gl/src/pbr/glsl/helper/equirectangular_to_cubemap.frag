@@ -41,7 +41,7 @@ void main()
     // vec3 color = texture2D(equirectangularMap, uv).rgb;
 
     // gl_FragColor = vec4(color, 1.0);
-    #ifdef ENC_RGBM
+    #ifdef INPUT_RGBM
         gl_FragColor = color;
     #else
         gl_FragColor = vec4(decodeRGBM(color, 7.0), 1.0);

@@ -1,10 +1,22 @@
-#version 100
-#define SHADER_NAME SSAO_EXTRACT
-#define PI 3.14159265359
-#extension GL_OES_standard_derivatives : enable
-#define saturate(x)        clamp(x, 0.0, 1.0)
+#if __VERSION__ == 100
+    #if defined(GL_OES_standard_derivatives)
+        #extension GL_OES_standard_derivatives : enable
+    #endif
+#endif
 
 precision highp float;
+
+#if __VERSION__ == 300
+    #define texture2D(tex, uv) texture(tex, uv)
+    #define varying in
+    out vec4 glFragColor;
+#else
+    vec4 glFragColor;
+#endif
+
+#define saturate(x)        clamp(x, 0.0, 1.0)
+#define SHADER_NAME SSAO_EXTRACT
+#define PI 3.14159265359
 
 const float kEdgeDistance = 0.0625; // this shouldn't be hardcoded
 
@@ -205,6 +217,10 @@ void main() {
     vec2 coords = floor(gl_FragCoord.xy);
     ao += (1.0 - step(kEdgeDistance, abs(dFdx(origin.z)))) * dFdx(ao) * (0.5 - mod(coords.x, 2.0));
     ao += (1.0 - step(kEdgeDistance, abs(dFdy(origin.z)))) * dFdy(ao) * (0.5 - mod(coords.y, 2.0));
-    gl_FragColor = vec4(ao, pack(origin.z), 1.0);
+    glFragColor = vec4(ao, pack(origin.z), 1.0);
     // gl_FragColor = vec4(vec3(ao), 1.0);
+
+    #if __VERSION__ == 100
+        gl_FragColor = glFragColor;
+    #endif
 }

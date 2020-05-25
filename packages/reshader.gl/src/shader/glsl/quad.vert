@@ -1,3 +1,8 @@
+#if __VERSION__ == 300
+	#define attribute in
+	#define varying out
+#endif
+
 attribute vec2 aPosition;
 attribute vec2 aTexCoord;
 

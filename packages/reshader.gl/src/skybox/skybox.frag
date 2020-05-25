@@ -4,22 +4,21 @@
 #else
     #define textureCubeLod(tex, uv, lod) textureCube(tex, uv, lod)
 #endif
-#extension GL_OES_standard_derivatives : enable
 precision highp float;
 
 varying vec3 vWorldPos;
 
-uniform samplerCube cubeMap;
-
-#ifdef USE_MIPMAP
+#ifdef USE_AMBIENT
+    uniform vec3 diffuseSPH[9];
+#else
+    uniform samplerCube cubeMap;
     uniform float bias;
-    uniform float uSize;
-    uniform float uEnvironmentExposure;
-    uniform float uBackgroundExposure;
+    uniform float size;
+    uniform float environmentExposure;
 #endif
 
-#ifdef USE_AMBIENT
-    uniform vec3 uDiffuseSPH[9];
+#if defined(INPUT_RGBM) || defined(ENC_RGBM)
+    uniform float rgbmRange;
 #endif
 
 vec4 encodeRGBM(const in vec3 color, const in float range) {
@@ -48,22 +47,22 @@ vec4 textureCubeFixed(const in samplerCube tex, const in vec3 R, const in float 
     return textureCubeLod(tex, dir, bias);
 }
 
-vec3 computeDiffuseSPH(const in vec3 normal, const in vec3 uDiffuseSPH[9]) {
+vec3 computeDiffuseSPH(const in vec3 normal, const in vec3 diffuseSPH[9]) {
     float x = normal.x;
     float y = normal.y;
     float z = normal.z;
     vec3 result = (
-        uDiffuseSPH[0] +
+        diffuseSPH[0] +
 
-        uDiffuseSPH[1] * x +
-        uDiffuseSPH[2] * y +
-        uDiffuseSPH[3] * z +
+        diffuseSPH[1] * x +
+        diffuseSPH[2] * y +
+        diffuseSPH[3] * z +
 
-        uDiffuseSPH[4] * z * x +
-        uDiffuseSPH[5] * y * z +
-        uDiffuseSPH[6] * y * x +
-        uDiffuseSPH[7] * (3.0 * z * z - 1.0) +
-        uDiffuseSPH[8] * (x*x - y*y)
+        diffuseSPH[4] * z * x +
+        diffuseSPH[5] * y * z +
+        diffuseSPH[6] * y * x +
+        diffuseSPH[7] * (3.0 * z * z - 1.0) +
+        diffuseSPH[8] * (x*x - y*y)
         );
     return max(result, vec3(0.0));
 }
@@ -79,17 +78,18 @@ void main()
     vec4 envColor;
     #ifdef USE_AMBIENT
         vec3 normal = normalize(vWorldPos + mix(-0.5/255.0, 0.5/255.0, pseudoRandom(gl_FragCoord.xy))*2.0);
-        envColor = vec4(computeDiffuseSPH(normal, uDiffuseSPH), 1.0);
-    #elif defined(USE_MIPMAP)
-        envColor = textureCubeFixed(cubeMap, vWorldPos, uSize, bias);
-        envColor.rgb *= uEnvironmentExposure * uBackgroundExposure;
+        envColor = vec4(computeDiffuseSPH(normal, diffuseSPH), 1.0);
+        #ifdef ENC_RGBM
+            envColor = encodeRGBM(envColor.rgb, rgbmRange);
+        #endif
     #else
-        envColor = textureCube(cubeMap, vWorldPos);
+        envColor = textureCubeFixed(cubeMap, normalize(vWorldPos), size, bias);
+        envColor.rgb *= environmentExposure;
     #endif
     #ifdef ENC_RGBM
-    	gl_FragColor = encodeRGBM(envColor.rgb, 7.0);
-    #elif defined(DEC_RGBM)
-    	gl_FragColor = vec4(decodeRGBM(envColor, 7.0), 1.0);
+    	gl_FragColor = vec4(envColor.rgb, 1.0);
+    #elif !defined(USE_AMBIENT) && defined(INPUT_RGBM)
+    	gl_FragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
     #else
     	gl_FragColor = envColor;
     #endif

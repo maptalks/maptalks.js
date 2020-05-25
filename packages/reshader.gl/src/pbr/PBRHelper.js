@@ -216,7 +216,7 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
 function createEquirectangularMapCube(regl, texture, size, rgbm) {
     size = size || 512;
     const drawCube = regl({
-        frag : rgbm ? '#define ENC_RGBM 1\n' + equirectangularMapFS : equirectangularMapFS,
+        frag : rgbm ? '#define INPUT_RGBM 1\n' + equirectangularMapFS : equirectangularMapFS,
         vert : cubemapVS,
         attributes : {
             'aPosition' : cubeData.vertices

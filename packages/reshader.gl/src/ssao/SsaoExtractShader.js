@@ -57,6 +57,7 @@ class SsaoExtactShader extends QuadShader {
                 }
             }
         });
+        this.version = 300;
     }
 
     getMeshCommand(regl, mesh) {

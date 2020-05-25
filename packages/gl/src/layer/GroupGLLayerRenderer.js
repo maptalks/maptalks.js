@@ -7,6 +7,7 @@ import createREGL from '@maptalks/regl';
 import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
 import PostProcess from './postprocess/PostProcess.js';
+import regl2Adapter from './util/regl2Adapter.js';
 
 
 const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
@@ -232,20 +233,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.glCtx = gl.wrap();
         this.canvas.gl = this.gl;
         this._reglGL = gl.wrap();
-        const overrideExtensions = {
-            'WEBGL_depth_texture': {
-                'UNSIGNED_INT_24_8_WEBGL': 0x84FA
-            }
-        };
+        const isWebGL2 = gl.getParameter(gl.VERSION).indexOf('WebGL 2.0') === 0;
         this._regl = createREGL({
             gl: this._reglGL,
             attributes,
             extensions: layer.options['extensions'],
             optionalExtensions: layer.options['optionalExtensions'],
-            overrideExtensions: gl.version === 300 ? overrideExtensions : null
+            overrideExtensions: isWebGL2 ? regl2Adapter.overrideExtensions : null
         });
         this.gl.regl = this._regl;
-        this._regl['__VERSION__'] = gl.version;
 
         this._jitter = [0, 0];
         this._jitGetter = new reshader.Jitter(this.layer.options['jitterRatio']);
@@ -328,11 +324,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         for (let i = 0; i < names.length; ++i) {
             try {
                 gl = canvas.getContext(names[i], options);
-                if (names[i] === 'webgl2') {
-                    gl.version = 300;
-                } else {
-                    gl.version = 100;
-                }
             } catch (e) {}
             if (gl) {
                 break;
@@ -657,7 +648,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // colorCount,
             colorFormat: 'rgba'
         };
-        const enableDepthTex = regl['__VERSION__'] > 100 || regl.hasExtension('WEBGL_depth_texture');
+        const enableDepthTex = regl.hasExtension('WEBGL_depth_texture');
         //depth(stencil) buffer 是可以共享的
         if (enableDepthTex) {
             const depthStencilTexture = depthTex || regl.texture({

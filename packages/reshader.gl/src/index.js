@@ -39,14 +39,15 @@ export { default as OutlinePass } from './outline/OutlinePass.js';
 export { default as ViewshedPass } from './viewshed/ViewshedPass.js';
 export { default as QuadShader } from './shader/QuadShader.js';
 export { default as HeatmapShader } from './shader/HeatmapShader';
+export { default as SkyboxShader } from './skybox/SkyboxShader';
 export { default as HeatmapDisplayShader } from './shader/HeatmapDisplayShader';
 export { default as WaterShader } from './water/WaterShader.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };
 
-import * as SkyboxHelper from './skybox/SkyboxHelper.js';
-export { SkyboxHelper };
+/*import * as SkyboxHelper from './skybox/SkyboxHelper.js';
+export { SkyboxHelper };*/
 
 import * as PBRHelper from './pbr/PBRHelper.js';
 // import LitMaterial from './pbr/LitMaterial.js';

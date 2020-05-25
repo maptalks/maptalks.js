@@ -9,7 +9,7 @@ class Texture2D extends Texture {
     onLoad({ data }) {
         const config = this.config;
         if (config.hdr) {
-            data = parseRGBE(data.data);
+            data = parseRGBE(data.data, 0, config.maxRange);
             this.rgbmRange = data.rgbmRange;
             config.data = data.pixels;
         } else {

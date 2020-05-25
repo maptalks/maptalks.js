@@ -133,52 +133,52 @@ class BlurPass {
         }
         let w = tex.width, h = tex.height;
 
-        this._blur00Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur00Tex = this._createColorTex(tex, w, h);
         this._blur00FBO = this._createBlurFBO(this._blur00Tex);
         this._blur01Tex = this._createColorTex(tex);
         this._blur01FBO = this._createBlurFBO(this._blur01Tex);
 
         w = Math.ceil(w / 2);
         h = Math.ceil(h / 2);
-        this._blur10Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur10Tex = this._createColorTex(tex, w, h);
         this._blur10FBO = this._createBlurFBO(this._blur10Tex);
-        this._blur11Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur11Tex = this._createColorTex(tex, w, h);
         this._blur11FBO = this._createBlurFBO(this._blur11Tex);
 
         w = Math.ceil(w / 2);
         h = Math.ceil(h / 2);
-        this._blur20Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur20Tex = this._createColorTex(tex, w, h);
         this._blur20FBO = this._createBlurFBO(this._blur20Tex);
-        this._blur21Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur21Tex = this._createColorTex(tex, w, h);
         this._blur21FBO = this._createBlurFBO(this._blur21Tex);
 
         w = Math.ceil(w / 2);
         h = Math.ceil(h / 2);
-        this._blur30Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur30Tex = this._createColorTex(tex, w, h);
         this._blur30FBO = this._createBlurFBO(this._blur30Tex);
-        this._blur31Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur31Tex = this._createColorTex(tex, w, h);
         this._blur31FBO = this._createBlurFBO(this._blur31Tex);
 
         w = Math.ceil(w / 2);
         h = Math.ceil(h / 2);
-        this._blur40Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur40Tex = this._createColorTex(tex, w, h);
         this._blur40FBO = this._createBlurFBO(this._blur40Tex);
-        this._blur41Tex = this._createColorTex(tex, w, h, 'uint8');
+        this._blur41Tex = this._createColorTex(tex, w, h);
         this._blur41FBO = this._createBlurFBO(this._blur41Tex);
 
         if (this._level > 5) {
             w = Math.ceil(w / 2);
             h = Math.ceil(h / 2);
-            this._blur50Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur50Tex = this._createColorTex(tex, w, h);
             this._blur50FBO = this._createBlurFBO(this._blur50Tex);
-            this._blur51Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur51Tex = this._createColorTex(tex, w, h);
             this._blur51FBO = this._createBlurFBO(this._blur51Tex);
 
             w = Math.ceil(w / 2);
             h = Math.ceil(h / 2);
-            this._blur60Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur60Tex = this._createColorTex(tex, w, h);
             this._blur60FBO = this._createBlurFBO(this._blur60Tex);
-            this._blur61Tex = this._createColorTex(tex, w, h, 'uint8');
+            this._blur61Tex = this._createColorTex(tex, w, h);
             this._blur61FBO = this._createBlurFBO(this._blur61Tex);
         }
 
@@ -186,7 +186,8 @@ class BlurPass {
 
     _createColorTex(curTex, w, h, dataType) {
         const regl = this._regl;
-        const type = dataType || (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
+        // const type = dataType || (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
+        const type = 'uint8';
         const width = w || curTex.width, height = h || curTex.height;
         const color = regl.texture({
             min: 'linear',

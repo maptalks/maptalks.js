@@ -26,10 +26,10 @@ function encodeRGBM(buffer, offset, range) {
     let a = clamp(Math.max(Math.max(r, g), Math.max(b, 1E-6)), 0, 1);
     a = Math.ceil(a * 255) / 255;
 
-    buffer[offset] = r / a * 255;
-    buffer[offset + 1] = g / a * 255;
-    buffer[offset + 2] = b / a * 255;
-    buffer[offset + 3] = a * 255;
+    buffer[offset] = Math.min(255, r / a * 255);
+    buffer[offset + 1] = Math.min(255, g / a * 255);
+    buffer[offset + 2] = Math.min(255, b / a * 255);
+    buffer[offset + 3] = Math.min(255, a * 255);
 }
 
 function uint82string(array, offset, size) {
@@ -110,10 +110,7 @@ function readColors(scan, buffer, offset, xmax) {
 // http://www.graphics.cornell.edu/~bjw/rgbe.html
 // Blender source
 // http://radsite.lbl.gov/radiance/refer/Notes/picture_format.html
-function parseRGBE(arrayBuffer, exposure) {
-    if (exposure == null) {
-        exposure = 0;
-    }
+function parseRGBE(arrayBuffer, exposure = 0, maxRange = 9) {
     var data = new Uint8Array(arrayBuffer);
     var size = data.length;
     if (uint82string(data, 0, 2) !== '#?') {
@@ -170,7 +167,7 @@ function parseRGBE(arrayBuffer, exposure) {
             offset2 += 4;
         }
     }
-    // range = Math.ceil(range);
+    range = Math.min(range, maxRange);
 
     offset2 = 0;
     for (let y = 0; y < height; y++) {

@@ -12,8 +12,8 @@ const options = {
         'OES_element_index_uint',
         'OES_standard_derivatives',
         'OES_vertex_array_object',
-        'OES_texture_half_float', 'OES_texture_half_float_linear',
-        'OES_texture_float', 'OES_texture_float_linear',
+        // 'OES_texture_half_float', 'OES_texture_half_float_linear',
+        // 'OES_texture_float', 'OES_texture_float_linear',
         'WEBGL_depth_texture', 'EXT_shader_texture_lod'
     ],
     forceRenderOnZooming : true,

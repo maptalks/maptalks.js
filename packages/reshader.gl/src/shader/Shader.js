@@ -104,9 +104,13 @@ class Shader {
         return this;
     }
 
-    getVersion(regl) {
-        const version = regl['__VERSION__'];
-        if (this.version === 300 && version >= this.version) {
+    getVersion(regl, source) {
+        const versionDefined = source.substring(0, 8) === '#version';
+        if (versionDefined) {
+            return '';
+        }
+        const isWebGL2 = regl.limits['version'].indexOf('WebGL 2.0') === 0;
+        if (isWebGL2 && this.version === 300) {
             return '#version 300 es\n';
         } else {
             return '#version 100\n';
@@ -117,8 +121,10 @@ class Shader {
         uniProps = uniProps || [];
         attrProps = attrProps || [];
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
-        const vert = this.getVersion(regl) + this._insertDefines(this.vert, defines);
-        const frag = this.getVersion(regl) + this._insertDefines(this.frag, defines);
+        const vertSource = this._insertDefines(this.vert, defines);
+        const vert = this.getVersion(regl, vertSource) + vertSource;
+        const fragSource = this._insertDefines(this.frag, defines);
+        const frag = this.getVersion(regl, fragSource) + fragSource;
         const attributes = {};
         attrProps.forEach(p => {
             attributes[p] = regl.prop(p);
