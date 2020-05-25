@@ -354,6 +354,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._groundPainter.dispose();
             delete this._groundPainter;
         }
+        if (this._envPainter) {
+            this._envPainter.dispose();
+            delete this._envPainter;
+        }
         if (this._shadowPass) {
             this._shadowPass.dispose();
             delete this._shadowPass;
