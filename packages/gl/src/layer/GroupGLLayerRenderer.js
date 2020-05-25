@@ -7,8 +7,6 @@ import createREGL from '@maptalks/regl';
 import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
 import PostProcess from './postprocess/PostProcess.js';
-import regl2Adapter from './util/regl2Adapter.js';
-
 
 const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
@@ -233,13 +231,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.glCtx = gl.wrap();
         this.canvas.gl = this.gl;
         this._reglGL = gl.wrap();
-        const isWebGL2 = gl.getParameter(gl.VERSION).indexOf('WebGL 2.0') === 0;
         this._regl = createREGL({
             gl: this._reglGL,
             attributes,
             extensions: layer.options['extensions'],
-            optionalExtensions: layer.options['optionalExtensions'],
-            overrideExtensions: isWebGL2 ? regl2Adapter.overrideExtensions : null
+            optionalExtensions: layer.options['optionalExtensions']
         });
         this.gl.regl = this._regl;
 
