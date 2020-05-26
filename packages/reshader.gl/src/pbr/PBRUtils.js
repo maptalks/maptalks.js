@@ -1,4 +1,4 @@
-import { extend, isNumber, isNil } from '../common/Util.js';
+import { extend, isNumber } from '../common/Util.js';
 
 export function getPBRUniforms(map, iblTexes, dfgLUT, context) {
     const viewMatrix = map.viewMatrix;

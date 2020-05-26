@@ -184,7 +184,7 @@ class BlurPass {
 
     }
 
-    _createColorTex(curTex, w, h, dataType) {
+    _createColorTex(curTex, w, h) {
         const regl = this._regl;
         // const type = dataType || (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
         const type = 'uint8';
