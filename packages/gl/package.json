@@ -29,7 +29,7 @@
     "@maptalks/fusiongl": "^0.1.2",
     "@maptalks/reshader.gl": "^0.15.4",
     "gl-matrix": "^2.6.1",
-    "@maptalks/regl": "^2.1.0"
+    "@maptalks/regl": "^2.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
