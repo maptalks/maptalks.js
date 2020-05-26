@@ -6,13 +6,7 @@
 
 precision highp float;
 
-#if __VERSION__ == 300
-    #define texture2D(tex, uv) texture(tex, uv)
-    #define varying in
-    out vec4 glFragColor;
-#else
-    vec4 glFragColor;
-#endif
+#include <gl2_frag>
 
 #define saturate(x)        clamp(x, 0.0, 1.0)
 #define SHADER_NAME SSAO_EXTRACT
@@ -174,10 +168,10 @@ highp vec3 computeViewSpaceNormalNotNormalized(const highp vec3 position, const 
 
 float computeAmbientOcclusionSSAO(const highp vec3 origin, const vec3 normal, const vec3 noise, const vec3 sphereSample) {
     highp mat4 projection = getClipFromViewMatrix();
-    float radius = materialParams.radius;
-    float bias = materialParams.bias;
+    float radius0 = materialParams.radius;
+    float bias0 = materialParams.bias;
 
-    vec3 r = sphereSample * radius;
+    vec3 r = sphereSample * radius0;
     r = reflect(r, noise);
     r = sign(dot(r, normal)) * r;
     highp vec3 samplePos = origin + r;
@@ -188,10 +182,10 @@ float computeAmbientOcclusionSSAO(const highp vec3 origin, const vec3 normal, co
     highp float occlusionDepth = sampleDepthLinear(samplePosScreen.xy);
 
     // smoothstep() optimized for range 0 to 1
-    float t = saturate(radius / abs(origin.z - occlusionDepth));
+    float t = saturate(radius0 / abs(origin.z - occlusionDepth));
     float rangeCheck = t * t * (3.0 - 2.0 * t);
     float d = samplePos.z - occlusionDepth; // distance from depth to sample
-    return (d >= -bias ? 0.0 : rangeCheck);
+    return (d >= -bias0 ? 0.0 : rangeCheck);
 }
 
 void main() {

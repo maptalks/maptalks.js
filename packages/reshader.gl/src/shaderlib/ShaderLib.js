@@ -20,6 +20,7 @@ import fog_render_vert from './glsl/fog.vert';
 import fog_render_frag from './glsl/fog.frag';
 
 import line_extrusion_vert from './glsl/line_extrusion.vert';
+import gl2_frag from './glsl/gl2.frag';
 
 
 //webgl 2.0中的函数实现
@@ -112,7 +113,9 @@ const ShaderChunk = {
     line_extrusion_vert,
 
     fog_render_vert,
-    fog_render_frag
+    fog_render_frag,
+
+    gl2_frag
 };
 /* eslint-enable camelcase */
 

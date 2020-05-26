@@ -71,14 +71,14 @@ void main() {
     float depth = unpack(data.gb);
     float totalWeight = kGaussianSamples[0];
     float sum = data.r * totalWeight;
-
-    vec2 axis = materialParams.axis / materialParams.resolution;
-    vec2 offset = axis;
+    //axis0 是为了防止混淆glsl时，把materialParams.axis也错误的混淆
+    vec2 axis0 = materialParams.axis / materialParams.resolution;
+    vec2 offset = axis0;
     for (int i = 1; i < kGaussianCount; i++) {
         float weight = kGaussianSamples[i];
         tap(sum, totalWeight, weight, depth, uv + offset);
         tap(sum, totalWeight, weight, depth, uv - offset);
-        offset += axis;
+        offset += axis0;
     }
 
     float occlusion = sum * (1.0 / totalWeight);
