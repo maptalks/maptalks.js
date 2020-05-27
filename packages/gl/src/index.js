@@ -10,5 +10,8 @@ export { createREGL, reshader };
 export { default as GroupGLLayer } from './layer/GroupGLLayer';
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';
+export { default as ViewshedAnalysis } from './analysis/ViewshedAnalysis';
+export { default as FloodAnalysis } from './analysis/FloodAnalysis';
+export { default as SkylineAnalysis } from './analysis/SkylineAnalysis';
 import './light/MapLights.js';
 import './map/MapPostProcess.js';

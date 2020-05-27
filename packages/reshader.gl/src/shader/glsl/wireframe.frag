@@ -3,6 +3,8 @@
  * @License MIT
 */
 precision mediump float;
+#include <gl2_frag>
+
 varying vec3 vBarycentric;
 uniform float time;
 uniform float thickness;
@@ -80,7 +82,7 @@ vec4 getStyledWireframe (vec3 barycentric) {
     computedThickness *= 1.0 - aastep(dashLength, pattern);
   }
 
-  // compute the anti-aliased stroke edge  
+  // compute the anti-aliased stroke edge
   float edge = 1.0 - aastep(computedThickness, d);
 
   // now compute the final color of the mesh
@@ -111,16 +113,20 @@ vec4 getStyledWireframe (vec3 barycentric) {
 }
 
 void main () {
-  gl_FragColor = getStyledWireframe(vBarycentric) * opacity;
+  glFragColor = getStyledWireframe(vBarycentric) * opacity;
   #ifdef HAS_VIEWSHED
-      viewshed_draw();
+      glFragColor = viewshed_draw(glFragColor);
   #endif
 
   #ifdef HAS_FLOODANALYSE
-      draw_floodAnalyse();
+      glFragColor = draw_floodAnalyse(glFragColor);
   #endif
 
   #ifdef HAS_FOG
-      draw_fog();
+      glFragColor = draw_fog(glFragColor);
+  #endif
+
+  #if __VERSION__ == 100
+      gl_FragColor = glFragColor;
   #endif
 }

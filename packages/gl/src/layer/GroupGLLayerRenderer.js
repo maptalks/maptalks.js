@@ -516,6 +516,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 context.renderTarget = renderTarget;
             }
         }
+        this._renderAnalysis(context, renderTarget);
         if (this._renderMode !== 'noAa') {
             this._shadowContext = this._prepareShadowContext(context);
             if (this._shadowContext) {
@@ -532,6 +533,29 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor.setContextIncludes(context);
         }
         return context;
+    }
+
+    _renderAnalysis(context, renderTarget) {
+        let toAnalyseMeshes = [];
+        this.forEachRenderer(renderer => {
+            if (!renderer.getAnalysisMeshes) {
+                return;
+            }
+            const meshes = renderer.getAnalysisMeshes();
+            if (Array.isArray(meshes)) {
+                for (let i = 0; i < meshes.length; i++) {
+                    toAnalyseMeshes.push(meshes[i]);
+                }
+            }
+        });
+        const analysisTaskList = this.layer._analysisTaskList;
+        if (!analysisTaskList) {
+            return;
+        }
+        for (let i = 0; i < analysisTaskList.length; i++) {
+            const task = analysisTaskList[i];
+            task.renderAnalysis(context, toAnalyseMeshes, renderTarget && renderTarget.fbo);
+        }
     }
 
     _updateIncludesState(context) {

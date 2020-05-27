@@ -3,9 +3,10 @@
     uniform float flood_waterHeight;
     uniform vec3 flood_waterColor;
 
-    void draw_floodAnalyse() {
+    vec4 draw_floodAnalyse(vec4 color) {
         if (flood_height < flood_waterHeight) {
-           gl_FragColor = vec4(mix(flood_waterColor, gl_FragColor.rgb, 0.6), gl_FragColor.a);
+           color = vec4(mix(flood_waterColor, color.rgb, 0.6), color.a);
         }
+        return color;
     }
 #endif

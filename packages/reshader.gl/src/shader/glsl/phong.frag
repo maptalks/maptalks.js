@@ -1,4 +1,5 @@
 precision mediump float;
+#include <gl2_frag>
 
 uniform vec4 baseColorFactor;
 uniform float materialShininess;//反光度，即影响镜面高光的散射/半径
@@ -173,8 +174,8 @@ void main() {
         result += emit;
     #endif
 
-    gl_FragColor = vec4(result, opacity);
-    // gl_FragColor = linearTosRGB(gl_FragColor);
+    glFragColor = vec4(result, opacity);
+    // glFragColor = linearTosRGB(glFragColor);
     #if defined(HAS_COLOR)
         float colorAlpha = vColor.a;
     #elif defined(IS_LINE_EXTRUSION)
@@ -182,29 +183,32 @@ void main() {
     #else
         float colorAlpha = polygonFill.a;
     #endif
-        gl_FragColor *= colorAlpha;
+        glFragColor *= colorAlpha;
     #ifdef HAS_EXTRUSION_OPACITY
         float topAlpha = extrusionOpacityRange.x;
         float bottomAlpha = extrusionOpacityRange.y;
         float alpha = topAlpha + vExtrusionOpacity * (bottomAlpha - topAlpha);
         alpha = clamp(alpha, 0.0, 1.0);
-        gl_FragColor *= alpha;
+        glFragColor *= alpha;
     #endif
 
     #ifdef HAS_HEATMAP
-        gl_FragColor = heatmap_getColor(gl_FragColor);
+        glFragColor = heatmap_getColor(glFragColor);
     #endif
 
     #ifdef HAS_VIEWSHED
-        viewshed_draw();
+        glFragColor = viewshed_draw(glFragColor);
     #endif
 
     #ifdef HAS_FLOODANALYSE
-        draw_floodAnalyse();
+        glFragColor = draw_floodAnalyse(glFragColor);
     #endif
 
     #ifdef HAS_FOG
-        draw_fog();
+        glFragColor = draw_fog(glFragColor);
     #endif
-    // gl_FragColor.a = 0.7;
+
+    #if __VERSION__ == 100
+        gl_FragColor = glFragColor;
+    #endif
 }

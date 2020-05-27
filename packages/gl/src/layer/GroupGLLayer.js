@@ -247,6 +247,20 @@ export default class GroupGLLayer extends maptalks.Layer {
             }
         });
     }
+
+    addAnalysis(analysis) {
+        this._analysisTaskList = this._analysisTaskList || [];
+        this._analysisTaskList.push(analysis);
+    }
+
+    removeAnalysis(analysis) {
+        if (this._analysisTaskList) {
+            const index = this._analysisTaskList.indexOf(analysis);
+            if (index > -1) {
+                this._analysisTaskList.splice(index, 1);
+            }
+        }
+    }
 }
 
 GroupGLLayer.mergeOptions(options);

@@ -168,6 +168,9 @@ class StandardShader extends MeshShader {
             'viewshed_projViewMatrixFromViewpoint',
             'viewshed_visibleColor',
             'viewshed_invisibleColor',
+            //flood
+            'flood_waterHeight',
+            'flood_waterColor',
             //fog
             'fog_Dist',
             'fog_Color'

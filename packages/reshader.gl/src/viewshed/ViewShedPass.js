@@ -1,5 +1,6 @@
 import { mat4 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader';
+import Scene from '../Scene';
 import { isFunction } from '../common/Util';
 import depthVert from './glsl/depth.vert';
 import depthFrag from './glsl/depth.frag';
@@ -35,26 +36,30 @@ export default class ViewshedPass {
         });
     }
 
-    render(scene, { projViewMatrixFromViewpoint, visibleColor, invisibleColor }) {
+    render(meshes, config) {
         this._resize();
         this.renderer.clear({
             color : [1, 0, 0, 1],
             depth : 1,
             framebuffer : this._depthFBO
         });
-        this._renderDepth(scene, projViewMatrixFromViewpoint, visibleColor, invisibleColor);
+        const scene = new Scene(meshes);
+        const eyePos = config.eyePos;
+        const lookPoint = config.lookPoint;
+        const verticalAngle = config.verticalAngle;
+        const horizonAngle = config.horizonAngle;
+        const projViewMatrixFromViewpoint = this._createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizonAngle);
+        this._renderDepth(scene, projViewMatrixFromViewpoint);
         return {
-            depthMap: this._depthFBO,
-            projViewMatrixFromViewpoint
+            'depthMap': this._depthFBO,
+            'projViewMatrixFromViewpoint' : projViewMatrixFromViewpoint
         };
     }
 
     //渲染深度贴图
-    _renderDepth(scene, projViewMatrix, visibleColor, invisibleColor) {
+    _renderDepth(scene, projViewMatrix) {
         const uniforms = {
-            projViewMatrix,
-            visibleColor,
-            invisibleColor
+            projViewMatrix
         };
         this.renderer.render(
             this._depthShader,
