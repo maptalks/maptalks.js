@@ -297,6 +297,12 @@ class GLContext {
         return this._gl.drawElements(mode, count, type, offset);
     }
 
+    drawBuffers(buffers) {
+        this._checkAndRestore();
+        // this._saveDataStatus();
+        return this._gl.drawBuffers(buffers);
+    }
+
     _saveDataStatus() {
         const gl = this._gl;
         const program = gl.getParameter(gl.CURRENT_PROGRAM);

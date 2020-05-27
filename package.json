@@ -10,7 +10,7 @@
     "prepare": "npm run lint && npm run build",
     "lint": "eslint src/**/*.js"
   },
-  "author": "axmand",
+  "author": "axmand, fuzhenn",
   "contributors": [
     "fuzhenn"
   ],

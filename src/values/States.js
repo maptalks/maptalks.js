@@ -459,6 +459,20 @@ include(GLContext.prototype, {
     },
 
     /**
+     * https://developer.mozilla.org/zh-CN/docs/Web/API/WebGL2RenderingContext/bindVertexArray
+     * @param {WebGLVertexArrayObject} vao
+     */
+    bindVertexArray(vao) {
+        this._checkAndRestore();
+        const gl = this._gl;
+        const v = this.states;
+        if (v.vao !== vao) {
+            v.vao = vao;
+        }
+        gl.bindVertexArray(vao);
+    },
+
+    /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
      * @param {*} index
      * @param {*} size
@@ -480,7 +494,18 @@ include(GLContext.prototype, {
         attrib.args = args;
         return this._gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
     },
-    //VAO
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/vertexAttribDivisor
+     * @param {WebGLVertexArrayObject} vao
+     */
+    vertexAttribDivisor(index, divisor) {
+        this._checkAndRestore();
+        const attrib = this.states.attributes[index];
+        attrib.divisor = divisor;
+        return this._gl.vertexAttribDivisor(index, divisor);
+    },
+
 }, {
     _checkAndRestore() {
         const gl = this._gl;
@@ -573,6 +598,9 @@ include(GLContext.prototype, {
                 if (attrs[p].buffer) {
                     gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
                     gl.vertexAttribPointer(...attrs[p].args);
+                    if (attrs[p].divisor !== undefined) {
+                        gl.vertexAttribDivisor(+p, attrs[p].divisor);
+                    }
                     if (attrs[p].enable) {
                         gl.enableVertexAttribArray(attrs[p].args[0]);
                     } else {
@@ -585,6 +613,16 @@ include(GLContext.prototype, {
         //restore array buffer and element array buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, target.arrayBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
+
+        const vao = target.vao,
+            preVao = preStates.vao;
+        if (vao !== preVao) {
+            if (vao) {
+                gl.bindVertexArray(vao);
+            } else {
+                gl.bindVertexArray(null);
+            }
+        }
 
     }
 });
