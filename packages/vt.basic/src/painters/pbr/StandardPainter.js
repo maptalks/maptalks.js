@@ -71,8 +71,12 @@ class StandardPainter extends MeshPainter {
     }
 
     _renderSsrDepth(context) {
+        this.regl.clear({
+            color: [0, 0, 0, 0],
+            framebuffer: context.ssr.depthTestFbo
+        });
         this._depthShader.filter = context.sceneFilter;
-        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, this.getRenderFBO(context));
+        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, context.ssr.depthTestFbo);
     }
 
     getShadowMeshes() {
@@ -251,11 +255,6 @@ class StandardPainter extends MeshPainter {
                 extraCommandProps
             });
 
-            // extraCommandProps.depth = {
-            //     enable: true,
-            //     func: 'always',
-            //     range: [0, 1]
-            // };
             this._depthShader = new reshader.pbr.StandardDepthShader({
                 extraCommandProps
             });

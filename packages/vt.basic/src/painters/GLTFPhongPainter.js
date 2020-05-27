@@ -1,6 +1,8 @@
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
 import PhongPainter from './PhongPainter';
 
+const EMPTY_ARRAY = [];
+
 const pickingVert = `
     attribute vec3 aPosition;
     uniform mat4 projViewModelMatrix;
@@ -40,6 +42,10 @@ class GLTFPhongPainter extends PhongPainter {
             positionSize,
             features
         };
+    }
+
+    getFnTypeConfig() {
+        return EMPTY_ARRAY;
     }
 
     createMesh(geometry, transform, { tileTranslationMatrix, tileExtent }) {

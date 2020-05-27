@@ -114,6 +114,7 @@ class NativePointPainter extends Painter {
         };
 
         this.shader = new reshader.MeshShader(config);
+        this.shader.version = 300;
 
         if (this.pickingFBO) {
             this.picking = new reshader.FBORayPicking(
