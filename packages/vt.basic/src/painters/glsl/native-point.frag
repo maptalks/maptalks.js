@@ -1,3 +1,4 @@
+#define SHADER_NAME NATIVE_POINT
 precision mediump float;
 #include <gl2_frag>
 

@@ -1,3 +1,4 @@
+#define SHADER_NAME NATIVE_POINT
 #include <gl2_vert>
 
 attribute vec3 aPosition;
