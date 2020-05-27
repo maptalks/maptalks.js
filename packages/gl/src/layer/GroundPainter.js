@@ -57,11 +57,11 @@ class GroundPainter {
         let updated = false;
         if (isSSR && defines && defines['HAS_SSR']) {
             if (context && context.ssr) {
+                //清空depthTestFbo的颜色缓冲
                 this._regl.clear({
                     color: [0, 0, 0, 0],
                     framebuffer: context.ssr.depthTestFbo
                 });
-                //更新全局的深度缓冲，并清空depthTestFbo的颜色缓冲
                 this.renderer.render(this._depthShader, uniforms, this._groundScene, context.ssr.depthTestFbo);
                 const ssrFbo = context && context.ssr.fbo;
                 this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
