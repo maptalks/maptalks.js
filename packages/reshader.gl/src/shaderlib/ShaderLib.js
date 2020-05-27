@@ -20,6 +20,7 @@ import fog_render_vert from './glsl/fog.vert';
 import fog_render_frag from './glsl/fog.frag';
 
 import line_extrusion_vert from './glsl/line_extrusion.vert';
+import gl2_vert from './glsl/gl2.vert';
 import gl2_frag from './glsl/gl2.frag';
 
 
@@ -115,6 +116,7 @@ const ShaderChunk = {
     fog_render_vert,
     fog_render_frag,
 
+    gl2_vert,
     gl2_frag
 };
 /* eslint-enable camelcase */

@@ -1,7 +1,4 @@
-#if __VERSION__ == 300
-    #define varying out
-    #define attribute in
-#endif
+#include <gl2_vert>
 #define SHADER_NAME PBR
 precision highp float;
 
