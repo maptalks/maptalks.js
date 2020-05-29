@@ -75,6 +75,10 @@ export default class GLTFPack {
         }
     }
 
+    hasSkinAnimation() {
+        return !!this._isAnimation;
+    }
+
     _updateNodeMatrix(time, node, parentNodeMatrix) {
         const trs = node.trs;
         if (trs) {
@@ -129,6 +133,7 @@ export default class GLTFPack {
             }
         }
         if (node.skin) {
+            this._isAnimation = true;
             const skin = node.skin;
             node.trs = new TRS();
             node.skin = new Skin(this.regl, skin.joints, skin.inverseBindMatrices.array);
@@ -143,30 +148,32 @@ export default class GLTFPack {
             node.mesh.node = node;
             node.mesh.primitives.forEach(primitive => {
                 const geometry = createGeometry(primitive);
-                geometries.push({
+                const info = {
                     geometry,
                     nodeMatrix,
                     materialInfo : this._createMaterialInfo(primitive.material, node),
                     animationMatrix : node.trs.setMatrix()
-                });
+                };
+                if (node.skin) {
+                    info.skin = {
+                        jointTextureSize: [4, 6],
+                        numJoints: node.skin.joints.length,
+                        jointTexture: node.skin.jointTexture
+                    };
+                }
+                if (node.morphWeights) {
+                    info.morphWeights = node.morphWeights;
+                }
+                geometries.push(info);
             });
         }
         node.isParsed = true;
     }
 
-    _createMaterialInfo(material, node) {
+    _createMaterialInfo(material) {
         const materialUniforms = {
             baseColorFactor : [1, 1, 1, 1]
         };
-        if (node.skin) {
-            materialUniforms.skinAnimation = 1;
-            materialUniforms.jointTextureSize = [4, 6];
-            materialUniforms.numJoints = node.skin.joints.length;
-            materialUniforms.jointTexture = node.skin.jointTexture;
-        }
-        if (node.morphWeights) {
-            materialUniforms.morphWeights = node.morphWeights;
-        }
         if (material) {
             const pbrMetallicRoughness = material.pbrMetallicRoughness;
             if (pbrMetallicRoughness) {
