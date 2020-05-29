@@ -104,9 +104,9 @@ class Painter {
 
     render(context) {
         this.pluginIndex = context.pluginIndex;
-        if (this._preparedTime !== context.timestamp) {
+        if (this._currentTimestamp !== context.timestamp) {
             this.preparePaint(context);
-            this._preparedTime = context.timestamp;
+            this._currentTimestamp = context.timestamp;
         }
         return this.paint(context);
     }
@@ -261,8 +261,10 @@ class Painter {
             this.init(context);
             this._inited = true;
         }
-        this._redraw = false;
-        this._needRetire = false;
+        if (this._currentTimestamp !== context.timestamp) {
+            this._redraw = false;
+            this._needRetire = false;
+        }
         this.scene.clear();
     }
 

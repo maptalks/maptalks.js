@@ -18,6 +18,7 @@ import ClothPainter from './painters/pbr/ClothPainter';
 import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
 
 import GLTFPhongPainter from './painters/GLTFPhongPainter';
+import GLTFStandardPainter from './painters/GLTFStandardPainter';
 import HeatmapPainter from './painters/HeatmapPainter';
 
 const FillPlugin = createPainterPlugin('fill', FillPainter);
@@ -67,6 +68,9 @@ SubsurfacePlugin.registerAt(VectorTileLayer);
 const GLTFPhongPlugin = createPainterPlugin('gltf-phong', GLTFPhongPainter);
 GLTFPhongPlugin.registerAt(VectorTileLayer);
 
+const GLTFStandardPlugin = createPainterPlugin('gltf-lit', GLTFStandardPainter);
+GLTFStandardPlugin.registerAt(VectorTileLayer);
+
 const HeatmapPlugin = createPainterPlugin('heatmap', HeatmapPainter);
 HeatmapPlugin.registerAt(VectorTileLayer);
 
@@ -107,7 +111,7 @@ export {
     SubsurfacePlugin,
 
     //gltf plugins
-    GLTFPhongPlugin,
+    GLTFStandardPlugin,
 
     HeatmapPlugin
 };
