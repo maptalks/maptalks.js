@@ -92,9 +92,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (!layer.isVisible()) {
                 return;
             }
-            if (renderer.needRetireFrames && renderer.needRetireFrames()) {
-                this.setRetireFrames();
-            }
             if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
                 hasNoAA = true;
             }
@@ -489,6 +486,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             states: this._getViewStates()
         };
 
+
+
         let renderTarget;
         if (!config || !config.enable) {
             this._clearFramebuffers();
@@ -522,6 +521,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         this._renderAnalysis(context, renderTarget);
         if (this._renderMode !== 'noAa') {
+            this.forEachRenderer((renderer, layer) => {
+                if (!layer.isVisible()) {
+                    return;
+                }
+                if (renderer.needRetireFrames && renderer.needRetireFrames()) {
+                    this.setRetireFrames();
+                }
+            });
             this._shadowContext = this._prepareShadowContext(context);
             if (this._shadowContext) {
                 context.includes.shadow = 1;
@@ -606,7 +613,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const fbo = context.renderTarget && context.renderTarget.fbo;
         const sceneConfig =  this.layer._getSceneConfig();
         const meshes = [];
-        let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged;
+        let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged || this._needRetireFrames;
         this.forEachRenderer(renderer => {
             if (!renderer.getShadowMeshes) {
                 return;
