@@ -173,7 +173,13 @@ class StandardShader extends MeshShader {
             'flood_waterColor',
             //fog
             'fog_Dist',
-            'fog_Color'
+            'fog_Color',
+
+            //skin
+            'jointTexture',
+            'jointTextureSize',
+            'numJoints',
+            'skinAnimation',
         ];
         if (extraUniforms) {
             uniforms.push(...extraUniforms);

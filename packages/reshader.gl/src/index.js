@@ -57,7 +57,7 @@ import * as PBRHelper from './pbr/PBRHelper.js';
 // import SubsurfaceMaterial from './pbr/SubsurfaceMaterial.js';
 // import SubsurfaceShader from './pbr/SubsurfaceShader';
 import StandardMaterial from './pbr/StandardMaterial.js';
-import PBRSpecularGlossinessMaterial from './pbr/PBRSpecularGlossinessMaterial.js';
+import StandardSpecularGlossinessMaterial from './pbr/StandardSpecularGlossinessMaterial.js';
 import StandardShader from './pbr/StandardShader';
 import StandardDepthShader from './pbr/StandardDepthShader';
 import * as PBRUtils from './pbr/PBRUtils';
@@ -65,7 +65,7 @@ import * as PBRUtils from './pbr/PBRUtils';
 const pbr = {
     PBRHelper,
     StandardMaterial,
-    PBRSpecularGlossinessMaterial,
+    StandardSpecularGlossinessMaterial,
     StandardShader,
     StandardDepthShader,
     PBRUtils
