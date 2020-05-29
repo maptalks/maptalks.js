@@ -495,6 +495,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         } else {
             const hasJitter = config.antialias && config.antialias.enable;
             if (hasJitter) {
+                const map = this.getMap();
+                if (map.isInteracting()) {
+                    this._jitGetter.reset();
+                }
                 context['jitter'] = this._jitGetter.getJitter(this._jitter);
                 this._jitGetter.frame();
             } else {
