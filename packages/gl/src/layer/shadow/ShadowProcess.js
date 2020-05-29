@@ -64,7 +64,7 @@ class ShadowProcess {
     render(displayShadow, projMatrix, viewMatrix, color, opacity, lightDirection, scene, halton, framebuffer, forceRefresh) {
         this._transformGround();
         const map = this._layer.getMap();
-        const changed = forceRefresh || this._shadowChanged(map, scene, lightDirection);
+        const changed = forceRefresh || this._shadowChanged(map, scene);
         let matrix, smap;
         if (changed) {
             const cameraProjViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
@@ -94,7 +94,7 @@ class ShadowProcess {
             this._blurFBO = blurFBO;
             this._renderedShadows = scene.getMeshes().reduce((ids, m) => {
                 if (m.castShadow) {
-                    ids[m.properties.meshKey] = 1;
+                    ids[m.uuid] = 1;
                 }
                 return ids;
             }, {});
@@ -180,7 +180,7 @@ class ShadowProcess {
         const meshes = scene.getMeshes();
         let changed = false;
         for (let i = 0; i < meshes.length; i++) {
-            if (!this._renderedShadows[meshes[i].properties.meshKey]) {
+            if (!this._renderedShadows[meshes[i].uuid]) {
                 return true;
             }
         }

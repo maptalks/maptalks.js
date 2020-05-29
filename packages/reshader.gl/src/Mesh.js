@@ -3,6 +3,7 @@ import { vec4, mat4 } from 'gl-matrix';
 
 const MAT4 = [];
 
+let uuid = 0;
 /**
  * Config:
  *  transparent, castShadow
@@ -20,6 +21,12 @@ class Mesh {
         this.positionMatrix = mat4.identity(new Array(16));
         this.properties = {};
         this._dirtyUniforms = true;
+        Object.defineProperty(this, 'uuid', {
+            value: uuid++
+        });
+        if (uuid > Number.MAX_VALUE - 10) {
+            uuid = 0;
+        }
     }
 
     setMaterial(material) {

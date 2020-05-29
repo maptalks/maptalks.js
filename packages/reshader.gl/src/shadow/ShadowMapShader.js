@@ -10,6 +10,7 @@ class ShadowMapShader extends MeshShader {
             vert : vsmVert,
             frag : vsmFrag,
             uniforms : [
+                'positionMatrix',
                 {
                     name : 'lightProjViewModelMatrix',
                     type : 'function',
@@ -30,19 +31,6 @@ class ShadowMapShader extends MeshShader {
 
     filter(mesh) {
         return mesh.castShadow;
-    }
-
-    getMeshCommand(regl, mesh) {
-        if (!this.commands['shadowmap']) {
-            this.commands['shadowmap'] = this.createREGLCommand(
-                regl,
-                null,
-                ['aPosition'],
-                null,
-                mesh.getElements()
-            );
-        }
-        return this.commands['shadowmap'];
     }
 }
 

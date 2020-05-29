@@ -52,7 +52,7 @@ class ShadowPass {
             depth : 1,
             framebuffer : this.depthFBO
         });
-        renderer.render(this.vsmShader, { lightProjViewMatrix }, scene, this.depthFBO);
+        renderer.render(this.shadowMapShader, { lightProjViewMatrix }, scene, this.depthFBO);
         if (this.blurFBO) {
             if (!this.boxBlurShader) {
                 this.boxBlurShader = new BoxBlurShader({
@@ -90,8 +90,8 @@ class ShadowPass {
             mag: 'nearest',
         });
 
-        this.vsmShader = new ShadowMapShader(defines);
-        this.vsmShader.filter = m => m.castShadow;
+        this.shadowMapShader = new ShadowMapShader(defines);
+        this.shadowMapShader.filter = m => m.castShadow;
 
         this.depthFBO = regl.framebuffer({
             color : this.depthTex
@@ -128,9 +128,9 @@ class ShadowPass {
             delete this.blurTex;
             delete this.blurFBO;
         }
-        if (this.vsmShader) {
-            this.vsmShader.dispose();
-            delete this.vsmShader;
+        if (this.shadowMapShader) {
+            this.shadowMapShader.dispose();
+            delete this.shadowMapShader;
         }
         if (this.boxBlurShader) {
             this.boxBlurShader.dispose();
