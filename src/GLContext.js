@@ -27,6 +27,8 @@ class GLContext {
          * @type {WebGLRenderingContext}
          */
         this._gl = gl;
+
+        this._gl['_fusiongl_drawCalls'] = 0;
     }
 
     /**
@@ -286,6 +288,7 @@ class GLContext {
      */
     drawArrays(mode, first, count) {
         this._checkAndRestore();
+        this._addDrawCall();
         return this._gl.drawArrays(mode, first, count);
     }
     /**
@@ -294,13 +297,27 @@ class GLContext {
     drawElements(mode, count, type, offset) {
         this._checkAndRestore();
         // this._saveDataStatus();
+        this._addDrawCall();
         return this._gl.drawElements(mode, count, type, offset);
     }
 
     drawBuffers(buffers) {
         this._checkAndRestore();
         // this._saveDataStatus();
+        this._addDrawCall();
         return this._gl.drawBuffers(buffers);
+    }
+
+    _addDrawCall() {
+        this._gl['_fusiongl_drawCalls']++;
+    }
+
+    resetDrawCalls() {
+        this._gl['_fusiongl_drawCalls'] = 0;
+    }
+
+    getDrawCalls() {
+        return this._gl['_fusiongl_drawCalls'];
     }
 
     _saveDataStatus() {
