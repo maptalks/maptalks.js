@@ -5,9 +5,6 @@ uniform sampler2D TextureBlurInput;
 uniform sampler2D TextureInput;
 uniform vec2 uBlurDir;
 uniform vec2 uPixelRatio;
-uniform vec2 uTextureBlurInputRatio;
-uniform vec2 uTextureBlurInputSize;
-uniform vec2 uTextureOutputRatio;
 uniform vec2 uTextureOutputSize;
 uniform float inputRGBM;
 #define SHADER_NAME TextureBlurTemp0
@@ -58,12 +55,12 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
     return range * color.rgb * color.a;
 }
 vec4 gaussianBlur() {
-    vec3 pixel = 0.375 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, (min(gTexCoord.xy, 1.0 - 1e+0 / uTextureBlurInputSize.xy)) * uTextureBlurInputRatio), uRGBMRange), 1.0)).rgb;
+    vec3 pixel = 0.375 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy), uRGBMRange), 1.0)).rgb;
     vec2 offset;
     vec2 blurDir = uPixelRatio.xy * uBlurDir.xy / uTextureOutputSize.xy;
     offset = blurDir * 1.2;
-    pixel += 0.3125 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, (min(gTexCoord.xy + offset.xy, 1.0 - 1e+0 / uTextureBlurInputSize.xy)) * uTextureBlurInputRatio), uRGBMRange), 1.0)).rgb;
-    pixel += 0.3125 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, (min(gTexCoord.xy - offset.xy, 1.0 - 1e+0 / uTextureBlurInputSize.xy)) * uTextureBlurInputRatio), uRGBMRange), 1.0)).rgb;
+    pixel += 0.3125 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy + offset.xy), uRGBMRange), 1.0)).rgb;
+    pixel += 0.3125 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy - offset.xy), uRGBMRange), 1.0)).rgb;
     return vec4(pixel, 1.0);
 }
 void main(void) {

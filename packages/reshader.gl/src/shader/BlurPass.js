@@ -47,9 +47,6 @@ class BlurPass {
                 'uBlurDir': [0, 0],
                 'uGlobalTexSize': [0, 0],
                 'uPixelRatio': [1, 1],
-                'uTextureBlurInputRatio': [1, 1],
-                'uTextureBlurInputSize': [0, 0],
-                'uTextureOutputRatio': [1, 1],
                 'uTextureOutputSize': [0, 0],
             };
         }
@@ -81,14 +78,12 @@ class BlurPass {
         //第一次输入是否需要decode rgbm
         uniforms['inputRGBM'] = +this._inputRGBM;
         vec2.set(uniforms['uBlurDir'], 0, 1);
-        vec2.set(uniforms['uTextureBlurInputSize'], inputTex.width, inputTex.height);
         vec2.set(uniforms['uTextureOutputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output0);
 
         uniforms['inputRGBM'] = 1;
         vec2.set(uniforms['uBlurDir'], 1, 0);
         uniforms['TextureBlurInput'] = output0.color[0];
-        vec2.set(uniforms['uTextureBlurInputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output1);
     }
 
@@ -221,9 +216,6 @@ class BlurPass {
                     'uBlurDir',
                     'uGlobalTexSize',
                     'uPixelRatio',
-                    'uTextureBlurInputRatio',
-                    'uTextureBlurInputSize',
-                    'uTextureOutputRatio',
                     'uTextureOutputSize',
                 ],
                 extraCommandProps: {
