@@ -42,6 +42,9 @@ const DEFAULT_UNIFORMS = {
     'uEmissiveTexture': null,
 
     'uClearCoatTint': [0.0060, 0.0060, 0.0060], //0.0060, 0.0060, 0.0060
+
+    'uSpecularAntiAliasingVariance': 1,
+    'uSpecularAntiAliasingThreshold': 1
 };
 
 class StandardMaterial extends Material {
