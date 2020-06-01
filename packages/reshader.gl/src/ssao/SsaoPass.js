@@ -35,7 +35,7 @@ class SsaoPass {
             this._blurVFBO.resize(w, h);
         }
         const resolution = [w, h];
-        const axis = [2, 0];
+        const axis = [1, 0];
         this._renderer.render(this._ssaoBlurShader, {
             'TextureInput': sourceTexture,
             'materialParams_ssao': this._extractTex,
@@ -46,7 +46,7 @@ class SsaoPass {
             }
         }, null, this._blurHFBO);
         axis[0] = 0;
-        axis[1] = 2;
+        axis[1] = 1;
         this._renderer.render(this._ssaoBlurShader, {
             'TextureInput': sourceTexture,
             'materialParams_ssao': this._blurHTex,

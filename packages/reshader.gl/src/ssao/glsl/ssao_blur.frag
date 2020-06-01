@@ -15,18 +15,16 @@ uniform MaterialParams materialParams;
 varying vec2 vTexCoord;
 
 
-const int kGaussianCount = 4;
+const int kGaussianCount = 6;
 float kGaussianSamples[8];
 
 void initKernels() {
-    kGaussianSamples[0] = 0.199471;
-    kGaussianSamples[1] = 0.176033;
-    kGaussianSamples[2] = 0.120985;
-    kGaussianSamples[3] = 0.064759;
-    kGaussianSamples[4] = 0.026995;
-    kGaussianSamples[5] = 0.008764;
-    kGaussianSamples[6] = 0.002216;
-    kGaussianSamples[7] = 0.000436;
+    kGaussianSamples[0] = 0.099736;
+    kGaussianSamples[1] = 0.096667;
+    kGaussianSamples[2] = 0.088016;
+    kGaussianSamples[3] = 0.075284;
+    kGaussianSamples[4] = 0.060493;
+    kGaussianSamples[5] = 0.045662;
 }
 
 float unpack(vec2 depth) {
