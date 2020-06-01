@@ -62,7 +62,15 @@ class GroundPainter {
                     color: [0, 0, 0, 0],
                     framebuffer: context.ssr.depthTestFbo
                 });
-                this.renderer.render(this._depthShader, uniforms, this._groundScene, context.ssr.depthTestFbo);
+                const depthUniforms = {
+                    'uGlobalTexSize': uniforms['uGlobalTexSize'],
+                    'uHalton': uniforms['uHalton'],
+                    'lineWidth': uniforms['lineWidth'],
+                    'lineHeight': uniforms['lineHeight'],
+                    'linePixelScale': uniforms['linePixelScale'],
+                    'projMatrix': uniforms['projMatrix']
+                };
+                this.renderer.render(this._depthShader, depthUniforms, this._groundScene, context.ssr.depthTestFbo);
                 const ssrFbo = context && context.ssr.fbo;
                 this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
                 updated = true;
