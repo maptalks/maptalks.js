@@ -30,16 +30,20 @@ export default class PostProcess {
     }
 
     bloom(curTex, depthTex, threshold, bloomFactor, bloomRadius) {
+        const painted = this._drawBloom(depthTex);
+        if (!painted) {
+            return curTex;
+        }
         if (!this._bloomPass) {
             this._bloomPass = new reshader.BloomPass(this._regl);
         }
-        this._drawBloom(depthTex);
         const bloomTex = this._bloomFBO.color[0];
         return this._bloomPass.render(curTex, bloomTex, threshold, bloomFactor, bloomRadius);
     }
 
     _drawBloom(depthTex) {
         const layerRenderer = this._layer.getRenderer();
+
         const regl = this._regl;
         const bloomFBO = this._bloomFBO;
         if (!bloomFBO) {
@@ -68,6 +72,8 @@ export default class PostProcess {
             getFramebuffer,
             getDepthTexture
         };
+        const fGL = layerRenderer.glCtx;
+        fGL.resetDrawCalls();
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, bloomFBO);
@@ -82,10 +88,12 @@ export default class PostProcess {
         context.renderMode = renderMode;
         context.sceneFilter = sceneFilter;
         context.renderTarget = renderTarget;
+
+        return fGL.getDrawCalls();
     }
 
     genSsrMipmap(tex) {
-        if (!this._ssrPass) {
+        if (!this._ssrPass || !this._ssrPainted) {
             return;
         }
         this._ssrPass.genMipMap(tex);
@@ -96,7 +104,7 @@ export default class PostProcess {
     }
 
     ssr(currentTex) {
-        if (!this._ssrFBO) {
+        if (!this._ssrFBO || !this._ssrPainted) {
             return currentTex;
         }
         //合并ssr和原fbo中的像素
@@ -135,21 +143,30 @@ export default class PostProcess {
                 framebuffer: ssrFBO
             });
         }
-
         context.ssr = this._prepareSSRContext(depthTex);
         const renderMode = context.renderMode;
         context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
+        const fGL = layerRenderer.glCtx;
+        let cleared = false;
         if (event) {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, ssrFBO);
                 layerRenderer.clearStencil(renderer, ssrDepthTestFBO);
+                if (!cleared) {
+                    fGL.resetDrawCalls();
+                    cleared = true;
+                }
                 renderer.drawOnInteracting(event, timestamp, context);
             });
         } else {
             layerRenderer.forEachRenderer(renderer => {
                 layerRenderer.clearStencil(renderer, ssrFBO);
                 layerRenderer.clearStencil(renderer, ssrDepthTestFBO);
+                if (!cleared) {
+                    fGL.resetDrawCalls();
+                    cleared = true;
+                }
                 renderer.draw(timestamp, context);
             });
         }
@@ -157,6 +174,7 @@ export default class PostProcess {
         //以免和bloom冲突
         delete context.ssr;
         context.renderMode = renderMode;
+        this._ssrPainted = fGL.getDrawCalls() > 0;
         return groundPainted;
     }
 
