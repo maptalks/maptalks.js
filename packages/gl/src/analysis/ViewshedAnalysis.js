@@ -12,10 +12,11 @@ export default class ViewshedAnalysis extends Analysis {
         super.addTo(layer);
         const renderer = this.layer.getRenderer();
         const map = this.layer.getMap();
-        const opts = JSON.parse(JSON.stringify(this.options));
-        opts['eyePos'] = coordinateToWorld(map, opts.eyePos);
-        opts['lookPoint'] = coordinateToWorld(map, opts.lookPoint);
-        this._renderOptions = opts;
+        this._renderOptions = {};
+        this._renderOptions['eyePos'] = coordinateToWorld(map, this.options.eyePos);
+        this._renderOptions['lookPoint'] = coordinateToWorld(map, this.options.lookPoint);
+        this._renderOptions['verticalAngle'] = this.options.verticalAngle;
+        this._renderOptions['horizonAngle'] = this.options.horizonAngle;
         if (renderer) {
             this._setViewshedPass(renderer);
         } else {
@@ -24,6 +25,16 @@ export default class ViewshedAnalysis extends Analysis {
             }, this);
         }
         return this;
+    }
+
+    update(name, value) {
+        if (value.length > 0) {
+            const map = this.layer.getMap();
+            this._renderOptions[name] = coordinateToWorld(map, value);
+        } else {
+            this._renderOptions[name] = value;
+        }
+        super.update(name, value);
     }
 
     _setViewshedPass(renderer) {

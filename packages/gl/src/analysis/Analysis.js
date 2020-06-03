@@ -20,6 +20,14 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         }
     }
 
+    update(name, value) {
+        this.options[name] = value;
+        const renderer = this.layer.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
+
     getAnalysisType() {
         return this.type;
     }

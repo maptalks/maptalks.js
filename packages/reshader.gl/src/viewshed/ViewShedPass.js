@@ -71,9 +71,9 @@ export default class ViewshedPass {
 
     //根据视点位置，方向，垂直角，水平角构建矩阵
     _createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizonAngle) {
-        const aspect = horizonAngle / verticalAngle;
+        const aspect =  verticalAngle / horizonAngle;
         const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
-        const projMatrix = mat4.perspective([], verticalAngle * Math.PI / 180, aspect, 1.0, distance);
+        const projMatrix = mat4.perspective([], horizonAngle * Math.PI / 180, aspect, 1.0, distance);
         const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return projViewMatrix;

@@ -251,6 +251,10 @@ export default class GroupGLLayer extends maptalks.Layer {
     addAnalysis(analysis) {
         this._analysisTaskList = this._analysisTaskList || [];
         this._analysisTaskList.push(analysis);
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
     }
 
     removeAnalysis(analysis) {
@@ -259,6 +263,10 @@ export default class GroupGLLayer extends maptalks.Layer {
             if (index > -1) {
                 this._analysisTaskList.splice(index, 1);
             }
+        }
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
         }
     }
 }
