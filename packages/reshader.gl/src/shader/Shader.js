@@ -118,12 +118,35 @@ class Shader {
     }
 
     getActiveAttibs(regl, vert, frag) {
-        const command = {
-            vert, frag
-        };
-        const reglCommand = regl(command);
-        const activeAttributes = reglCommand.activeAttributes;
-        reglCommand.destroy();
+        const gl = regl._gl;
+        const program = gl.createProgram();
+
+        const vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, vert);
+        gl.compileShader(vertShader);
+
+        const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, frag);
+        gl.compileShader(fragShader);
+
+        gl.attachShader(program, fragShader);
+        gl.attachShader(program, vertShader);
+        gl.linkProgram(program);
+
+        const numAttributes = gl.getProgramParameter(program, 0x8B89);
+        const activeAttributes = [];
+        for (let i = 0; i < numAttributes; ++i) {
+            const info = gl.getActiveAttrib(program, i);
+            if (info) {
+                activeAttributes.push({
+                    name: info.name
+                });
+            }
+        }
+
+        gl.deleteProgram(program);
+        gl.deleteShader(vertShader);
+        gl.deleteShader(fragShader);
         return activeAttributes;
     }
 
@@ -187,7 +210,9 @@ class Shader {
             command.instances = regl.prop('instances');
         }
         extend(command, this.extraCommandProps);
-        return regl(command);
+        const reglCommand = regl(command);
+        reglCommand.activeAttributes = activeAttribs;
+        return reglCommand;
     }
 
     dispose() {
