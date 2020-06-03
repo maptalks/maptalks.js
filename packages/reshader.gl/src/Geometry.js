@@ -1,6 +1,6 @@
 import { vec3, vec4 } from 'gl-matrix';
 import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-packer';
-import { isNumber, extend, isArray } from './common/Util';
+import { isNumber, extend, isArray, isSupportVAO } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 
@@ -37,7 +37,7 @@ export default class Geometry {
         this.updateBoundingBox();
     }
 
-    getREGLData() {
+    getREGLData(regl, activeAttributes) {
         if (!this._reglData) {
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
@@ -61,6 +61,24 @@ export default class Geometry {
                 this._reglData['aTangent'] = data[tangentAttribute];
             }
         }
+        //support vao
+        if (isSupportVAO(regl)) {
+            if (!this._vao) {
+                const buffers = activeAttributes.map(p => {
+                    const attr = p.name;
+                    const buffer = this._reglData[attr].buffer;
+                    if (!buffer || !buffer.destroy) {
+                        return this._reglData[attr];
+                    } else {
+                        return buffer;
+                    }
+                });
+                this._vao = {
+                    vao: regl.vao(buffers)
+                };
+            }
+            return this._vao;
+        }
         return this._reglData;
     }
 
@@ -75,6 +93,8 @@ export default class Geometry {
             delete allocatedBuffers[p].data;
         }
         const data = this.data;
+        const { positionAttribute, positionSize } = this.desc;
+        const vertexCount = this.data[positionAttribute].length /  positionSize;
         const buffers = {};
         for (const key in data) {
             if (!data[key]) {
@@ -91,7 +111,10 @@ export default class Geometry {
                 }
             } else {
                 buffers[key] = {
-                    buffer : regl.buffer(data[key])
+                    buffer : regl.buffer({
+                        data: data[key],
+                        dimension: data[key].length / vertexCount
+                    })
                 };
             }
         }
@@ -117,6 +140,7 @@ export default class Geometry {
             data
         };
         delete this._reglData;
+        this._deleteVAO();
         return this;
     }
 
@@ -131,6 +155,7 @@ export default class Geometry {
             this._buffers[key].data = data;
         }
         delete this._reglData;
+        this._deleteVAO();
         return this;
     }
 
@@ -163,10 +188,6 @@ export default class Geometry {
 
     getPrimitive() {
         return this.desc.primitive;
-    }
-
-    getAttributes() {
-        return Object.keys(this.getREGLData());
     }
 
     getElements() {
@@ -207,6 +228,7 @@ export default class Geometry {
     }
 
     dispose() {
+        this._deleteVAO();
         this._forEachBuffer(buffer => {
             if (!buffer[KEY_DISPOSED]) {
                 buffer[KEY_DISPOSED] = true;
@@ -216,6 +238,7 @@ export default class Geometry {
         this.data = {};
         this._buffers = {};
         delete this._reglData;
+        delete this._attributes;
         this.count = 0;
         this.elements = [];
         this._disposed = true;
@@ -367,6 +390,13 @@ export default class Geometry {
             }
         }
         return size;
+    }
+
+    _deleteVAO() {
+        if (this._vao) {
+            this._vao.vao.destroy();
+            delete this._vao;
+        }
     }
 
     _forEachBuffer(fn) {

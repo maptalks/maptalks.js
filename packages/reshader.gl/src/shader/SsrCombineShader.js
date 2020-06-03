@@ -31,7 +31,6 @@ class SsrShaderShader extends QuadShader {
             this.commands['ssr_combine'] = this.createREGLCommand(
                 regl,
                 null,
-                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );

@@ -53,7 +53,6 @@ class QuadShader extends MeshShader {
             this.commands['quad'] = this.createREGLCommand(
                 regl,
                 null,
-                this._quadMesh[0].getAttributes(),
                 null,
                 this._quadMesh[0].getElements()
             );
@@ -70,6 +69,7 @@ class QuadShader extends MeshShader {
             null,
             quadVertices.length / 2,
             {
+                positionSize: 2,
                 primitive : 'triangles'
             }
         );

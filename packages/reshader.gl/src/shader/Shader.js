@@ -1,4 +1,4 @@
-import { extend, isString, isFunction, isNumber } from '../common/Util.js';
+import { extend, isString, isFunction, isNumber, isSupportVAO } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 
 const UNIFORM_TYPE = {
@@ -117,17 +117,33 @@ class Shader {
         }
     }
 
-    createREGLCommand(regl, materialDefines, attrProps, uniProps, elements, isInstanced) {
+    getActiveAttibs(regl, vert, frag) {
+        const command = {
+            vert, frag
+        };
+        const reglCommand = regl(command);
+        const activeAttributes = reglCommand.activeAttributes;
+        reglCommand.destroy();
+        return activeAttributes;
+    }
+
+    createREGLCommand(regl, materialDefines, uniProps, elements, isInstanced) {
+        const isVAO = isSupportVAO(regl);
         uniProps = uniProps || [];
-        attrProps = attrProps || [];
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
         const vertSource = this._insertDefines(this.vert, defines);
         const vert = this.getVersion(regl, vertSource) + vertSource;
         const fragSource = this._insertDefines(this.frag, defines);
         const frag = this.getVersion(regl, fragSource) + fragSource;
+        const activeAttribs = this.getActiveAttibs(regl, vert, frag);
         const attributes = {};
-        attrProps.forEach(p => {
-            attributes[p] = regl.prop(p);
+        activeAttribs.forEach((p, idx) => {
+            const name = p.name;
+            if (isVAO) {
+                attributes[name] = idx;
+            } else {
+                attributes[name] = regl.prop(name);
+            }
         });
 
         const uniforms = {};
@@ -157,6 +173,9 @@ class Shader {
         const command = {
             vert, frag, uniforms, attributes
         };
+        if (isVAO) {
+            command['vao'] = regl.prop('vao');
+        }
         if (elements && !isNumber(elements)) {
             command.elements = regl.prop('elements');
         }

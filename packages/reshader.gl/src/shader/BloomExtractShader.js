@@ -32,7 +32,6 @@ class BloomExtractShader extends QuadShader {
             this.commands['bloom_extract'] = this.createREGLCommand(
                 regl,
                 null,
-                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );

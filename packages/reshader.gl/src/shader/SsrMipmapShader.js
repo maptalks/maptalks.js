@@ -56,7 +56,6 @@ class SsrMipmapShader extends QuadShader {
             this.commands['ssr_mimap'] = this.createREGLCommand(
                 regl,
                 null,
-                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );

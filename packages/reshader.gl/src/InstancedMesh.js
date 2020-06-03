@@ -1,5 +1,5 @@
 import { mat4, vec4 } from 'gl-matrix';
-import { extend } from './common/Util.js';
+import { extend, isSupportVAO } from './common/Util.js';
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
 
@@ -22,18 +22,35 @@ export default class InstancedMesh extends Mesh {
         }
     }
 
-    getAttributes() {
-        const attributes = super.getAttributes();
-        for (const p in this.instancedData) {
-            attributes.push(p);
+    _getREGLAttrData(regl, activeAttributes) {
+        const geoBuffers = this.geometry.getREGLData();
+        if (isSupportVAO(regl)) {
+            if (!this._vao) {
+                const attributes = activeAttributes.map(attr => attr.name);
+                const buffers = [];
+                for (let i = 0; i < attributes.length; i++) {
+                    const data = geoBuffers[attributes[i]] || this.instancedData[attributes[i]];
+                    buffers.push(data);
+                }
+                this._vao = {
+                    vao: regl.vao(buffers)
+                };
+            }
+            return this._vao;
+        } else {
+            return geoBuffers;
         }
-        return attributes;
+
     }
 
     getDefines() {
         const defines = super.getDefines();
         defines['HAS_INSTANCE'] = 1;
         return defines;
+    }
+
+    getCommandKey(regl) {
+        return 'i_' + super.getCommandKey(regl);
     }
 
     //因为 updateBoundingBox 需要， 不再自动生成buffer，而是把原有的buffer销毁
@@ -80,7 +97,10 @@ export default class InstancedMesh extends Mesh {
                 };
             } else {
                 buffers[key] = {
-                    buffer : regl.buffer(data[key]),
+                    buffer : regl.buffer({
+                        data: data[key],
+                        dimension: data[key].length / this.instanceCount
+                    }),
                     divisor: 1
                 };
             }
@@ -89,9 +109,11 @@ export default class InstancedMesh extends Mesh {
         return this;
     }
 
-    getREGLProps(regl) {
-        const props = super.getREGLProps(regl);
-        extend(props, this.instancedData);
+    getREGLProps(regl, activeAttributes) {
+        const props = super.getREGLProps(regl, activeAttributes);
+        if (!isSupportVAO(regl)) {
+            extend(props, this.instancedData);
+        }
         props.instances = this.instanceCount;
         return props;
     }
@@ -107,6 +129,10 @@ export default class InstancedMesh extends Mesh {
             }
         }
         delete this.instancedData;
+        if (this._vao) {
+            this._vao.vao.destroy();
+            delete this._vao;
+        }
     }
 
     getBoundingBox() {

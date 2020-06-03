@@ -109,6 +109,9 @@ class Scene {
 
     sortMeshes(cameraPosition) {
         const meshes = this.meshes;
+        if (this.sortFunction) {
+            meshes.sort(this.sortFunction);
+        }
 
         //sort meshes by defines
         let transparents = this.sortedMeshes.transparents;

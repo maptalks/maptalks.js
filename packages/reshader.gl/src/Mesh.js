@@ -1,4 +1,4 @@
-import { extend, isNil } from './common/Util.js';
+import { extend, isNil, isNumber } from './common/Util.js';
 import { vec4, mat4 } from 'gl-matrix';
 
 const MAT4 = [];
@@ -82,14 +82,20 @@ class Mesh {
         return this;
     }
 
-    getDefinesKey() {
-        if (this._definesKey !== undefined && !this.dirtyDefines && (!this.material || !this.material.dirtyDefines)) {
-            return this._definesKey;
-        }
-        //refresh defines
-        this._definesKey = this._createDefinesKey(this.getDefines());
+    _getDefinesKey() {
         this.dirtyDefines = false;
-        return this._definesKey;
+        return this._createDefinesKey(this.getDefines());
+    }
+
+    getCommandKey() {
+        if (!this._commandKey || this.dirtyDefines || (this.material && this.material.dirtyDefines)) {
+            let dKey = this._getDefinesKey();
+            const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
+            dKey += '_' + elementType;
+            this._commandKey = dKey;
+        }
+
+        return this._commandKey;
     }
 
     // getUniforms(regl) {
@@ -146,17 +152,17 @@ class Mesh {
         return this.material;
     }
 
-    getAttributes() {
-        return this.geometry.getAttributes();
-    }
-
     getElements() {
         return this.geometry.getElements();
     }
 
-    getREGLProps(regl) {
+    _getREGLAttrData(regl, activeAttributes) {
+        return this.geometry.getREGLData(regl, activeAttributes);
+    }
+
+    getREGLProps(regl, activeAttributes) {
         const props = this.getUniforms(regl);
-        extend(props, this.geometry.getREGLData());
+        extend(props, this._getREGLAttrData(regl, activeAttributes));
         props.elements = this.geometry.getElements();
         props.count = this.geometry.getDrawCount();
         props.offset = this.geometry.getDrawOffset();

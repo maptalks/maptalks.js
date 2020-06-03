@@ -64,7 +64,6 @@ class ShadowDisplayShader extends MeshShader {
             this.commands['shadow_display'] = this.createREGLCommand(
                 regl,
                 null,
-                ['aPosition'],
                 null,
                 mesh.getElements()
             );

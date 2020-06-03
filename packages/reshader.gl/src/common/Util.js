@@ -174,3 +174,8 @@ export function getPosArrayType(max) {
 export function clamp(n, min, max) {
     return Math.min(max, Math.max(min, n));
 }
+
+export function isSupportVAO(regl) {
+    // return false;
+    return regl && regl.hasExtension('oes_vertex_array_object');
+}

@@ -19,7 +19,6 @@ class BoxColorBlurShader extends QuadShader {
             this.commands['box_color_blur'] = this.createREGLCommand(
                 regl,
                 null,
-                ['aPosition', 'aTexCoord'],
                 null,
                 mesh.getElements()
             );

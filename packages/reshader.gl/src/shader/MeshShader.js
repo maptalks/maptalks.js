@@ -1,5 +1,4 @@
 import Shader from './Shader.js';
-import { isNumber } from '../common/Util.js';
 import InstancedMesh from '../InstancedMesh.js';
 
 class MeshShader extends Shader {
@@ -37,7 +36,7 @@ class MeshShader extends Shader {
                 preCommand(props);
                 props.length = 0;
             }
-            const meshProps = meshes[i].getREGLProps(regl);
+            const meshProps = meshes[i].getREGLProps(regl, command.activeAttributes);
             this.appendRenderUniforms(meshProps);
             props.push(meshProps);
             if (i < l - 1) {
@@ -70,21 +69,15 @@ class MeshShader extends Shader {
     }
 
     getMeshCommand(regl, mesh) {
-        let dKey = mesh.getDefinesKey();
-        const defines = mesh.getDefines();
-        const elementType = isNumber(mesh.getElements()) ? 'count' : 'elements';
-        dKey += '_' + elementType;
-        if (mesh instanceof InstancedMesh) {
-            dKey += '_instanced';
-        }
+        const dKey = mesh.getCommandKey(regl);
         let command = this.commands[dKey];
         if (!command) {
+            const defines = mesh.getDefines();
             const uniforms = Object.keys(mesh.getUniforms(regl));
             command = this.commands[dKey] =
                 this.createREGLCommand(
                     regl,
                     defines,
-                    mesh.getAttributes(),
                     uniforms,
                     mesh.getElements(),
                     mesh instanceof InstancedMesh
