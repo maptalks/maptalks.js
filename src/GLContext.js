@@ -29,6 +29,8 @@ class GLContext {
         this._gl = gl;
 
         this._gl['_fusiongl_drawCalls'] = 0;
+
+        this._isWebGL2 = (typeof WebGL2RenderingContext) && (this._gl instanceof WebGL2RenderingContext);
     }
 
     /**
@@ -107,33 +109,6 @@ class GLContext {
     }
 
     /**
-     * needs ext 'OES_vertex_array_object' support
-     * only avaiable in webgl2
-     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLVertexArrayObject
-     * @returns {GL}
-    */
-    createVertexArray() {
-        if (!this._vertexArrayOES) {
-            this._vertexArrayOES = this._gl.getExtension('OES_vertex_array_object');
-        }
-        return this._vertexArrayOES.createVertexArrayOES();
-    }
-
-    deleteVertexArray(arrayObject) {
-        if (!this._vertexArrayOES) {
-            this._vertexArrayOES = this._gl.getExtension('OES_vertex_array_object');
-        }
-        return this._vertexArrayOES.deleteVertexArrayOES(arrayObject);
-    }
-
-    bindVertexArray(arrayObject) {
-        if (!this._vertexArrayOES) {
-            this._vertexArrayOES = this._gl.getExtension('OES_vertex_array_object');
-        }
-        return this._vertexArrayOES.bindVertexArrayOES(arrayObject);
-    }
-
-    /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/deleteProgram
      * @param {*} program
      */
@@ -172,7 +147,6 @@ class GLContext {
      * @param {GLProgram} program
      */
     linkProgram(program) {
-        this._checkAndRestore();
         return this._gl.linkProgram(program);
     }
 
@@ -346,7 +320,7 @@ class GLContext {
     finish() {
         // avoid as recommended by WebGL best practices
         // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices
-        // return this._gl.finish();
+        return this._gl.finish();
     }
 
     flush() {

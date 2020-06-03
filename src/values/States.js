@@ -445,14 +445,15 @@ include(GLContext.prototype, {
         const gl = this._gl;
         const v = this.states;
         if (target === gl.ELEMENT_ARRAY_BUFFER) {
-            if (v.elementArrayBuffer === buffer) {
-                return;
-            }
+            // 增加vao支持后，不能再直接返回
+            // if (v.elementArrayBuffer === buffer) {
+            //     return;
+            // }
             v.elementArrayBuffer = buffer;
         } else {
-            if (v.arrayBuffer === buffer) {
-                return;
-            }
+            // if (v.arrayBuffer === buffer) {
+            //     return;
+            // }
             v.arrayBuffer = buffer;
         }
         gl.bindBuffer(target, buffer);
@@ -468,8 +469,8 @@ include(GLContext.prototype, {
         const v = this.states;
         if (v.vao !== vao) {
             v.vao = vao;
+            gl.bindVertexArray(vao);
         }
-        gl.bindVertexArray(vao);
     },
 
     /**
@@ -546,7 +547,7 @@ include(GLContext.prototype, {
                 if (Array.isArray(preStates[p])) {
                     //execute methods
                     gl[p](...target[p]);
-                } else {
+                } else if (preStates[p]) {
                     //methods with multiple targets
                     //such as pixelStorei, stencilFuncSeparate, etc
                     for (const t in target[p]) {
@@ -614,6 +615,7 @@ include(GLContext.prototype, {
         gl.bindBuffer(gl.ARRAY_BUFFER, target.arrayBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
 
+        //TODO vao和buffer的顺序可能会有冲突
         const vao = target.vao,
             preVao = preStates.vao;
         if (vao !== preVao) {
@@ -623,6 +625,5 @@ include(GLContext.prototype, {
                 gl.bindVertexArray(null);
             }
         }
-
     }
 });
