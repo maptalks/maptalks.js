@@ -12,6 +12,7 @@ export default class InstancedMesh extends Mesh {
         this.instanceCount = instanceCount;
         this.instancedData = instancedData || {};
         this._checkInstancedProp();
+        this._vao = {};
     }
 
     _checkInstancedProp() {
@@ -25,18 +26,19 @@ export default class InstancedMesh extends Mesh {
     _getREGLAttrData(regl, activeAttributes) {
         const geoBuffers = this.geometry.getREGLData();
         if (isSupportVAO(regl)) {
-            if (!this._vao) {
+            const key = activeAttributes.key;
+            if (!this._vao[key]) {
                 const attributes = activeAttributes.map(attr => attr.name);
                 const buffers = [];
                 for (let i = 0; i < attributes.length; i++) {
                     const data = geoBuffers[attributes[i]] || this.instancedData[attributes[i]];
                     buffers.push(data);
                 }
-                this._vao = {
+                this._vao[key] = {
                     vao: regl.vao(buffers)
                 };
             }
-            return this._vao;
+            return this._vao[key];
         } else {
             return geoBuffers;
         }
@@ -128,11 +130,11 @@ export default class InstancedMesh extends Mesh {
                 }
             }
         }
-        delete this.instancedData;
-        if (this._vao) {
-            this._vao.vao.destroy();
-            delete this._vao;
+        this.instancedData = {};
+        for (const p in this._vao) {
+            this._vao[p].vao.destroy();
         }
+        this._vao = {};
     }
 
     getBoundingBox() {

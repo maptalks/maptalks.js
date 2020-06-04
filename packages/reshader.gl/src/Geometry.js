@@ -34,6 +34,7 @@ export default class Geometry {
         }
         this.properties = {};
         this._buffers = {};
+        this._vao = {};
         this.updateBoundingBox();
     }
 
@@ -63,7 +64,8 @@ export default class Geometry {
         }
         //support vao
         if (isSupportVAO(regl)) {
-            if (!this._vao) {
+            const key = activeAttributes.key;
+            if (!this._vao[key]) {
                 const buffers = activeAttributes.map(p => {
                     const attr = p.name;
                     const buffer = this._reglData[attr].buffer;
@@ -73,11 +75,11 @@ export default class Geometry {
                         return buffer;
                     }
                 });
-                this._vao = {
+                this._vao[key] = {
                     vao: regl.vao(buffers)
                 };
             }
-            return this._vao;
+            return this._vao[key];
         }
         return this._reglData;
     }
@@ -393,10 +395,10 @@ export default class Geometry {
     }
 
     _deleteVAO() {
-        if (this._vao) {
-            this._vao.vao.destroy();
-            delete this._vao;
+        for (const p in this._vao) {
+            this._vao[p].vao.destroy();
         }
+        this._vao = {};
     }
 
     _forEachBuffer(fn) {

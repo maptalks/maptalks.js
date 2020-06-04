@@ -229,6 +229,7 @@ class Shader {
         }
         extend(command, this.extraCommandProps);
         const reglCommand = regl(command);
+        activeAttributes.key = activeAttributes.map(attr => attr.name).join();
         reglCommand.activeAttributes = activeAttributes;
         return reglCommand;
     }
