@@ -6,13 +6,6 @@ import frag from './glsl/depth.frag';
 class StandardDepthShader extends MeshShader {
     constructor(config = {}) {
         const uniforms = [
-            'positionMatrix',
-            'uGlobalTexSize',
-            'uHalton',
-            'lineWidth',
-            'lineHeight',
-            'linePixelScale',
-            'projMatrix',
             {
                 name : 'uProjectionMatrix',
                 type : 'function',

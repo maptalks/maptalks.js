@@ -7,7 +7,6 @@ class BoxColorBlurShader extends QuadShader {
     constructor({ blurOffset }) {
         super({
             vert, frag,
-            uniforms : ['textureSource', 'resolution'],
             defines : {
                 'BOXBLUR_OFFSET' : blurOffset || 2
             }
@@ -18,7 +17,6 @@ class BoxColorBlurShader extends QuadShader {
         if (!this.commands['box_color_blur']) {
             this.commands['box_color_blur'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

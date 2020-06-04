@@ -19,7 +19,6 @@ export default class ViewshedPass {
         this._depthShader = new MeshShader({
             vert: depthVert,
             frag: depthFrag,
-            uniforms: ['projViewMatrix'],
             extraCommandProps: {
                 viewport: this._depthFBOViewport
             }

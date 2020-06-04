@@ -103,7 +103,7 @@ export default class FBORayPicking {
     }
 
     _init() {
-        const uniforms = ['fbo_picking_meshId'];
+        const uniforms = [];
         if (this._uniforms) {
             uniforms.push(...this._uniforms);
         }

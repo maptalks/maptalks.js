@@ -6,16 +6,6 @@ class PostProcessShader extends QuadShader {
     constructor() {
         super({
             vert, frag,
-            uniforms : [
-                //common uniforms
-                'textureSource', 'resolution',
-                //filmic grain uniforms
-                'enableGrain', 'timeGrain', 'grainFactor',
-                //vignette uniforms
-                'enableVignette', 'lensRadius', 'frameMod',
-                //color lut uniforms
-                'enableLut', 'lookupTable'
-            ],
             extraCommandProps: {
                 viewport: {
                     x: 0,
@@ -35,7 +25,6 @@ class PostProcessShader extends QuadShader {
         if (!this.commands['postprocess']) {
             this.commands['postprocess'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

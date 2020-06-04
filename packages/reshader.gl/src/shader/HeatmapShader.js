@@ -10,7 +10,6 @@ class HeatmapShader extends MeshShader {
         super({
             vert, frag,
             uniforms: [
-                'heatmapRadius', 'heatmapIntensity', 'heatmapWeight', 'extrudeScale',
                 {
                     name: 'extrudeScale',
                     type: 'function',

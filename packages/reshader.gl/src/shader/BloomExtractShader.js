@@ -7,11 +7,6 @@ class BloomExtractShader extends QuadShader {
     constructor() {
         super({
             vert, frag,
-            uniforms : [
-                'uRGBMRange', 'uBloomThreshold',
-                'TextureInput', 'uTextureInputRatio', 'uTextureInputSize',
-                'uTextureOutputSize'
-            ],
             extraCommandProps: {
                 viewport: {
                     x: 0,
@@ -31,7 +26,6 @@ class BloomExtractShader extends QuadShader {
         if (!this.commands['bloom_extract']) {
             this.commands['bloom_extract'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

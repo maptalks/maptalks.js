@@ -11,25 +11,6 @@ class TaaShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
-                'uProjectionMatrix',
-                'uTaaCurrentFramePVLeft',
-                'uTaaInvViewMatrixLeft',
-                'uTaaLastFramePVLeft',
-                'TextureDepth',
-                'TextureInput',
-                'TexturePrevious',
-                'uTextureDepthRatio',
-                'uTextureDepthSize',
-                'uTextureInputRatio',
-                'uTextureInputSize',
-                'uTextureOutputRatio',
-                'uTextureOutputSize',
-                'uTexturePreviousRatio',
-                'uTexturePreviousSize',
-                'uHalton',
-                'uSSAARestart',
-                'uTaaEnabled',
-                'uClipAABBEnabled',
                 {
                     name: 'uTaaCornersCSLeft',
                     type: 'array',
@@ -69,7 +50,6 @@ class TaaShader extends QuadShader {
         if (!this.commands['taa']) {
             this.commands['taa'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

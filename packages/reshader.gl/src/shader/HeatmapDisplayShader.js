@@ -28,9 +28,6 @@ export default class HeatmapDisplayShader extends MeshShader {
         super({
             vert, frag,
             uniforms: [
-                'heatmapOpacity',
-                'colorRamp',
-                'inputTexture',
                 {
                     name: 'projViewModelMatrix',
                     type: 'function',

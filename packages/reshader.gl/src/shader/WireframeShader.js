@@ -25,42 +25,13 @@ class WireframeShader extends MeshShader {
             vert: wireframeVert,
             frag: wireframeFrag,
             uniforms: [
-                'time',
-                'fill',
-                'stroke',
-                'dualStroke',
-                'seeThrough',
-                'insideAltColor',
-                'thickness',
-                'secondThickness',
-                'dashEnabled',
-                'dashRepeats',
-                'dashOverlap',
-                'dashLength',
-                'dashAnimate',
-                'squeeze',
-                'squeezeMin',
-                'squeezeMax',
-                'opacity',
-                'projViewMatrix',
                 {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: (context, props) => {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
-                },
-                //viewshed
-                'viewshed_depthMapFromViewpoint',
-                'viewshed_projViewMatrixFromViewpoint',
-                'viewshed_visibleColor',
-                'viewshed_invisibleColor',
-                //flood
-                'flood_waterHeight',
-                'flood_waterColor',
-                //fog
-                'fog_Dist',
-                'fog_Color'
+                }
             ],
             extraCommandProps
         });

@@ -12,14 +12,6 @@ class SsrPass {
         const corners = [[0, 0, 0, 0], [0, 0, 0, 0]];
         const invProjMatrix = new Array(16);
         return [
-            'TextureDepthTest',
-            'TextureDepth',
-            'uGlobalTexSize',
-            'uSsrFactor',
-            'uSsrQuality',
-            'uPreviousGlobalTexSize',
-            'TextureToBeRefracted',
-            'uTextureToBeRefractedSize',
             {
                 name: 'uInvProjMatrix',
                 type : 'function',

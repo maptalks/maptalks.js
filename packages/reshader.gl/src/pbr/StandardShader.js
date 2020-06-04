@@ -36,7 +36,6 @@ class StandardShader extends MeshShader {
         // console.log(mat3.fromMat4([], transposed));
 
         const uniforms = [
-            'uCameraPosition',
             //vert中的uniforms
             {
                 name: 'uModelMatrix',
@@ -89,102 +88,7 @@ class StandardShader extends MeshShader {
                     return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
                 }
             },
-            'uGlobalTexSize',
-            'uvScale', 'uvOffset',
-            'uEmitColor',
-            'uBaseColorFactor',
 
-            'uAlbedoPBRFactor', //1
-            'uAnisotropyDirection', //0
-            'uAnisotropyFactor', //1
-            'uClearCoatF0', //0.04
-            'uClearCoatFactor', //1
-            'uClearCoatIor', //1.4
-            'uClearCoatRoughnessFactor', //0.04
-            'uClearCoatThickness', //5
-            'uEmitColorFactor', //1
-            'uEnvironmentExposure', //2
-            'uFrameMod', //
-            'uRoughnessFactor', //0.4
-            'uMetallicFactor', //0
-            'uNormalMapFactor', //1
-            'uRGBMRange', //7
-            'uScatteringFactorPacker', //unused
-            // 'uShadowReceive3_bias',
-            'uSpecularF0Factor', //0.5862
-            'uStaticFrameNumShadow3', //14
-            'uSubsurfaceScatteringFactor', //1
-            'uSubsurfaceScatteringProfile', //unused
-            'uSubsurfaceTranslucencyFactor', //1
-            'uSubsurfaceTranslucencyThicknessFactor', //37.4193
-            'uAnisotropyFlipXY', //unused
-            'uDrawOpaque', //unused
-            'uEmitMultiplicative', //0
-            'uNormalMapFlipY', //1
-            'uOutputLinear', //1
-            'uEnvironmentTransform', //0.5063, -0.0000, 0.8624, 0.6889, 0.6016, -0.4044, -0.5188, 0.7988, 0.3046
-            'uBaseColorTexture',
-            'uNormalTexture',
-            'uOcclusionTexture',
-            'uMetallicRoughnessTexture',
-            'uEmissiveTexture',
-            'sIntegrateBRDF',
-            'sSpecularPBR',
-            'uNearFar', //unused
-            // 'uShadow_Texture3_depthRange',
-            // 'uShadow_Texture3_renderSize',
-            'uTextureEnvironmentSpecularPBRLodRange', //8, 5
-            'uTextureEnvironmentSpecularPBRTextureSize', //256,256
-            'uClearCoatTint', //0.0060, 0.0060, 0.0060
-            'uDiffuseSPH[9]',
-            // 'uShadow_Texture3_projection',
-            'uSketchfabLight0_viewDirection',
-            // 'uSketchfabLight1_viewDirection',
-            // 'uSketchfabLight2_viewDirection',
-            // 'uSketchfabLight3_viewDirection',
-            'uSubsurfaceTranslucencyColor', //1, 0.3700, 0.3000
-            'uHalton', //0.0450, -0.0082, 1, 5
-            // 'uShadow_Texture3_viewLook',
-            // 'uShadow_Texture3_viewRight',
-            // 'uShadow_Texture3_viewUp',
-            'uSketchfabLight0_diffuse',
-            // 'uSketchfabLight1_diffuse',
-            // 'uSketchfabLight2_diffuse',
-            // 'uSketchfabLight3_diffuse',
-            'uAmbientColor',
-
-            //KHR_materials_pbrSpecularGlossiness
-            'uDiffuseFactor',
-            'uSpecularFactor',
-            'uGlossinessFactor',
-            'uDiffuseTexture',
-            'uSpecularGlossinessTexture',
-
-            'lineColor',
-            'lineOpacity',
-            'polygonFill',
-            'polygonOpacity',
-
-            //viewshed
-            'viewshed_depthMapFromViewpoint',
-            'viewshed_projViewMatrixFromViewpoint',
-            'viewshed_visibleColor',
-            'viewshed_invisibleColor',
-            //flood
-            'flood_waterHeight',
-            'flood_waterColor',
-            //fog
-            'fog_Dist',
-            'fog_Color',
-
-            //skin
-            'jointTexture',
-            'jointTextureSize',
-            'numJoints',
-            'skinAnimation',
-
-            'uSpecularAntiAliasingVariance',
-            'uSpecularAntiAliasingThreshold'
         ];
         if (extraUniforms) {
             uniforms.push(...extraUniforms);

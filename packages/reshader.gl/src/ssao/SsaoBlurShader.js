@@ -6,13 +6,6 @@ class SsaoBlurShader extends QuadShader {
     constructor() {
         super({
             vert, frag,
-            uniforms : [
-                'materialParams_ssao',
-                'materialParams.farPlaneOverEdgeDistance',
-                'materialParams.axis',
-                'materialParams.resolution',
-                'TextureInput'
-            ],
             extraCommandProps: {
                 viewport: {
                     x: 0,
@@ -32,7 +25,6 @@ class SsaoBlurShader extends QuadShader {
         if (!this.commands['ssao_blur']) {
             this.commands['ssao_blur'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

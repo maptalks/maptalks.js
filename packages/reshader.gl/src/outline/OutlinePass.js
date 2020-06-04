@@ -32,10 +32,6 @@ export default class OutlinePass {
         this.extentShader = new MeshShader({
             vert: sceneVert,
             frag: extentFrag,
-            uniforms: [
-                'projViewMatrix',
-                'positionMatrix'
-            ],
             positionAttribute: 'POSITION',
             extraCommandProps: {
                 viewport: this._viewport,

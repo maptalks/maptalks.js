@@ -6,11 +6,6 @@ class SsrShaderShader extends QuadShader {
     constructor() {
         super({
             vert, frag,
-            uniforms : [
-                'uTextureOutputSize',
-                'TextureInput',
-                'TextureSSR'
-            ],
             extraCommandProps: {
                 viewport: {
                     x: 0,
@@ -30,7 +25,6 @@ class SsrShaderShader extends QuadShader {
         if (!this.commands['ssr_combine']) {
             this.commands['ssr_combine'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

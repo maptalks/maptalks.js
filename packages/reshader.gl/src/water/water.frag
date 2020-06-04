@@ -4,6 +4,7 @@ precision highp sampler2D;
 uniform sampler2D texWaveNormal;
 uniform sampler2D texWavePerturbation;
 uniform vec3 octaveTextureRepeat;
+// waveParams是一个长度为4的数组，分别代表[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
 uniform vec4 waveParams;
 uniform vec2 waveDirection;
 uniform vec4 waterColor;

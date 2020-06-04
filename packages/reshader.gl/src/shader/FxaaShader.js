@@ -6,10 +6,6 @@ class FxaaShader extends QuadShader {
     constructor() {
         super({
             vert, frag,
-            uniforms : [
-                'enableFXAA', 'enableSSAO', 'enableToneMapping', 'textureSource', 'noAaTextureSource', 'resolution',
-                'enableSharpen', 'pixelRatio', 'sharpFactor'
-            ],
             extraCommandProps: {
                 viewport: {
                     x: 0,
@@ -29,7 +25,6 @@ class FxaaShader extends QuadShader {
         if (!this.commands['fxaa']) {
             this.commands['fxaa'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

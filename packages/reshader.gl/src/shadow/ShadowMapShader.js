@@ -10,7 +10,6 @@ class ShadowMapShader extends MeshShader {
             vert : vsmVert,
             frag : vsmFrag,
             uniforms : [
-                'positionMatrix',
                 {
                     name : 'lightProjViewModelMatrix',
                     type : 'function',

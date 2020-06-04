@@ -117,15 +117,15 @@ class Shader {
         }
     }
 
-    getActiveAttibs(regl, vert, frag) {
+    getActiveVars(regl, vert, frag) {
         const gl = regl._gl;
         const program = gl.createProgram();
 
-        const vertShader = gl.createShader(gl.VERTEX_SHADER);
+        const vertShader = gl.createShader(35633);
         gl.shaderSource(vertShader, vert);
         gl.compileShader(vertShader);
 
-        const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        const fragShader = gl.createShader(35632);
         gl.shaderSource(fragShader, frag);
         gl.compileShader(fragShader);
 
@@ -133,6 +133,7 @@ class Shader {
         gl.attachShader(program, vertShader);
         gl.linkProgram(program);
 
+        // active attributes
         const numAttributes = gl.getProgramParameter(program, 0x8B89);
         const activeAttributes = [];
         for (let i = 0; i < numAttributes; ++i) {
@@ -144,23 +145,40 @@ class Shader {
             }
         }
 
+        // active uniforms
+        const numUniforms = gl.getProgramParameter(program, 0x8B86);
+        const activeUniforms = [];
+        for (let i = 0; i < numUniforms; ++i) {
+            const info = gl.getActiveUniform(program, i);
+            if (info.name.indexOf('[') > 0) {
+                // array
+                const { name, len } = parseArrayName(info.name.replace('[0]', `[${info.size}]`));
+                for (let ii = 0; ii < len; ii++) {
+                    activeUniforms.push(name + `[${ii}]`);
+                }
+            } else {
+                activeUniforms.push(info.name);
+            }
+        }
         gl.deleteProgram(program);
         gl.deleteShader(vertShader);
         gl.deleteShader(fragShader);
-        return activeAttributes;
+        return {
+            activeUniforms,
+            activeAttributes
+        };
     }
 
-    createREGLCommand(regl, materialDefines, uniProps, elements, isInstanced) {
+    createREGLCommand(regl, materialDefines, elements, isInstanced) {
         const isVAO = isSupportVAO(regl);
-        uniProps = uniProps || [];
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
         const vertSource = this._insertDefines(this.vert, defines);
         const vert = this.getVersion(regl, vertSource) + vertSource;
         const fragSource = this._insertDefines(this.frag, defines);
         const frag = this.getVersion(regl, fragSource) + fragSource;
-        const activeAttribs = this.getActiveAttibs(regl, vert, frag);
+        const { activeAttributes, activeUniforms } = this.getActiveVars(regl, vert, frag);
         const attributes = {};
-        activeAttribs.forEach((p, idx) => {
+        activeAttributes.forEach((p, idx) => {
             const name = p.name;
             if (isVAO) {
                 attributes[name] = idx;
@@ -170,7 +188,7 @@ class Shader {
         });
 
         const uniforms = {};
-        uniProps.forEach(p => {
+        activeUniforms.forEach(p => {
             uniforms[p] = regl.prop(p);
         });
 
@@ -211,7 +229,7 @@ class Shader {
         }
         extend(command, this.extraCommandProps);
         const reglCommand = regl(command);
-        reglCommand.activeAttributes = activeAttribs;
+        reglCommand.activeAttributes = activeAttributes;
         return reglCommand;
     }
 

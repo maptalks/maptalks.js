@@ -26,15 +26,6 @@ class SsaoExtactShader extends QuadShader {
         super({
             vert, frag,
             uniforms : [
-
-                'materialParams_depth',
-                'materialParams.projMatrix',
-                'materialParams.invProjMatrix',
-                'materialParams.resolution',
-                'materialParams.radius',
-                'materialParams.bias',
-                'materialParams.power',
-                'materialParams.invFarPlane',
                 {
                     name: 'kSphereSamples',
                     type: 'array',
@@ -64,7 +55,6 @@ class SsaoExtactShader extends QuadShader {
         if (!this.commands['ssao_extract']) {
             this.commands['ssao_extract'] = this.createREGLCommand(
                 regl,
-                null,
                 null,
                 mesh.getElements()
             );

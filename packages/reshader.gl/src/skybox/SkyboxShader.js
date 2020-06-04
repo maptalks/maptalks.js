@@ -10,16 +10,6 @@ class SkyboxShader extends MeshShader {
         const config = {
             vert,
             frag,
-            uniforms: [
-                'rgbmRange',
-                'cubeMap',
-                'bias',
-                'size',
-                'environmentExposure',
-                'diffuseSPH[9]',
-                'viewMatrix',
-                'projMatrix'
-            ],
             extraCommandProps: {
                 depth: {
                     enable : true,

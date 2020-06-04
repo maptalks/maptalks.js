@@ -6,19 +6,6 @@ class WaterShader extends MeshShader {
         super({
             vert: waterVert,
             frag: waterFrag,
-            uniforms: [
-                'projMatrix',
-                'viewMatrix',
-                'camPos',
-                'timeElapsed',
-                'waveParams', //waveParams是一个长度为4的数组，分别代表[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
-                'waveDirection',
-                'waterColor',
-                'lightingDirection',
-                'lightingIntensity',
-                'texWaveNormal',
-                'texWavePerturbation'
-            ],
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}
         });

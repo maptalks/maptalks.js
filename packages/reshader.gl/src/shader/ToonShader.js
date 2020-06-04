@@ -7,10 +7,6 @@ class ToonShader extends PhongShader {
         super({
             vert: phongVert,
             frag: phongFrag,
-            uniforms: [
-                'toons',
-                'specularToons',
-            ],
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}
         });
