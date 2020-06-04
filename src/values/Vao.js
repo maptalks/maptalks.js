@@ -6,13 +6,11 @@ include(GLContext.prototype, {
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/createVertexArray
      */
     createVertexArray() {
-        if (this._isWebGL2) {
+        if (this._is2) {
             return this._gl.createVertexArray();
         }
-        if (!this._vaoOES) {
-            this._vaoOES = this._gl.getExtension('OES_vertex_array_object');
-        }
-        return this._vaoOES.createVertexArrayOES();
+
+        return this.vaoOES.createVertexArrayOES();
     },
 
     /**
@@ -24,13 +22,11 @@ include(GLContext.prototype, {
         if (states.vao === vao) {
             states.vao = null;
         }
-        if (this._isWebGL2) {
+        if (this._is2) {
             return this._gl.deleteVertexArray(vao);
         }
-        if (!this._vaoOES) {
-            this._vaoOES = this._gl.getExtension('OES_vertex_array_object');
-        }
-        return this._vaoOES.deleteVertexArray(vao);
+
+        return this.vaoOES.deleteVertexArrayOES(vao);
     },
 
     /**
@@ -38,12 +34,10 @@ include(GLContext.prototype, {
      * @param {WebGLVertexArrayObject} vao
      */
     isVertexArray(vao) {
-        if (this._isWebGL2) {
+        if (this._is2) {
             return this._gl.isVertexArray(vao);
         }
-        if (!this._vaoOES) {
-            this._vaoOES = this._gl.getExtension('OES_vertex_array_object');
-        }
-        return this._vaoOES.isVertexArray(vao);
+
+        return this.vaoOES.isVertexArrayOES(vao);
     }
 });

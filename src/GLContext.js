@@ -5,6 +5,7 @@
  */
 import { include, createDefaultStates } from './Utils';
 import GLConstants from './GLConstants';
+import MockExtensions from './extensions/Mocks';
 
 let uid = 1;
 
@@ -30,7 +31,7 @@ class GLContext {
 
         this._gl['_fusiongl_drawCalls'] = 0;
 
-        this._isWebGL2 = (typeof WebGL2RenderingContext) && (this._gl instanceof WebGL2RenderingContext);
+        this._is2 = (typeof WebGL2RenderingContext) && (this._gl instanceof WebGL2RenderingContext);
     }
 
     /**
@@ -66,6 +67,28 @@ class GLContext {
      */
     get gl() {
         return this._gl;
+    }
+
+
+    get buffersOES() {
+        if (!this._buffersOES) {
+            this._buffersOES = this._gl.getExtension('WEBGL_draw_buffers');
+        }
+        return this._buffersOES;
+    }
+
+    get vaoOES() {
+        if (!this._vaoOES) {
+            this._vaoOES = this._gl.getExtension('OES_vertex_array_object');
+        }
+        return this._vaoOES;
+    }
+
+    get angleOES() {
+        if (!this._angleOES) {
+            this._angleOES = this._gl.getExtension('ANGLE_instanced_arrays');
+        }
+        return this._angleOES;
     }
 
     /**
@@ -217,6 +240,9 @@ class GLContext {
      * @param {String} name
      */
     getExtension(name) {
+        if (MockExtensions.has(this, name)) {
+            return MockExtensions.mock(this, name);
+        }
         return this._gl.getExtension(name);
     }
 
@@ -279,7 +305,10 @@ class GLContext {
         this._checkAndRestore();
         // this._saveDataStatus();
         this._addDrawCall();
-        return this._gl.drawBuffers(buffers);
+        if (this._is2) {
+            return this._gl.drawBuffers(buffers);
+        }
+        return this.buffersOES.drawBuffersWEBGL(buffers);
     }
 
     _addDrawCall() {

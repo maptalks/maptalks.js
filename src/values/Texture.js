@@ -1,5 +1,6 @@
 import GLContext from '../GLContext';
 import { include } from '../Utils';
+import MockExtensions from '../extensions/Mocks';
 
 include(GLContext.prototype, {
 
@@ -73,6 +74,19 @@ include(GLContext.prototype, {
         //     args[0] === this._gl.TEXTURE_CUBE_MAP && !this._gl.getParameter(this._gl.TEXTURE_BINDING_CUBE_MAP)) {
         //     debugger
         // }
+        if (this._is2) {
+            //webgl2的texImage2D，存在type不在倒数第二位的情况
+            const argType = args[args.length - 2];
+            const internalformat = MockExtensions.getInternalFormat(this._gl, args[2], argType);
+            if (internalformat !== args[2]) {
+                args[2] = internalformat;
+            }
+            const type = MockExtensions.getTextureType(this._gl, argType);
+            if (type !== argType) {
+                args[args.length - 2] = type;
+            }
+        }
+
         return this._gl.texImage2D(...args);
     },
     /**
@@ -80,6 +94,14 @@ include(GLContext.prototype, {
      */
     texSubImage2D(args) {
         this._checkAndRestore();
+        if (this._is2) {
+            //webgl2的texImage2D，存在type不在倒数第二位的情况
+            const argType = args[args.length - 2];
+            const type = MockExtensions.getTextureType(this._gl, argType);
+            if (type !== argType) {
+                args[args.length - 2] = type;
+            }
+        }
         return this._gl.texSubImage2D(...args);
     },
     /**

@@ -469,7 +469,11 @@ include(GLContext.prototype, {
         const v = this.states;
         if (v.vao !== vao) {
             v.vao = vao;
-            gl.bindVertexArray(vao);
+            if (this._is2) {
+                gl.bindVertexArray(vao);
+            } else {
+                this.vaoOES.bindVertexArrayOES(vao);
+            }
         }
     },
 
@@ -504,8 +508,12 @@ include(GLContext.prototype, {
         this._checkAndRestore();
         const attrib = this.states.attributes[index];
         attrib.divisor = divisor;
-        return this._gl.vertexAttribDivisor(index, divisor);
-    },
+
+        if (this._is2) {
+            return this._gl.vertexAttribDivisor(index, divisor);
+        }
+        return this.angleOES.vertexAttribDivisorANGLE(index, divisor);
+    }
 
 }, {
     _checkAndRestore() {
@@ -600,7 +608,11 @@ include(GLContext.prototype, {
                     gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
                     gl.vertexAttribPointer(...attrs[p].args);
                     if (attrs[p].divisor !== undefined) {
-                        gl.vertexAttribDivisor(+p, attrs[p].divisor);
+                        if (this._is2) {
+                            gl.vertexAttribDivisor(+p, attrs[p].divisor);
+                        } else {
+                            this.angleOES.vertexAttribDivisorANGLE(+p, attrs[p].divisor);
+                        }
                     }
                     if (attrs[p].enable) {
                         gl.enableVertexAttribArray(attrs[p].args[0]);
@@ -619,10 +631,10 @@ include(GLContext.prototype, {
         const vao = target.vao,
             preVao = preStates.vao;
         if (vao !== preVao) {
-            if (vao) {
-                gl.bindVertexArray(vao);
+            if (this._is2) {
+                gl.bindVertexArray(vao || null);
             } else {
-                gl.bindVertexArray(null);
+                this.vaoOES.bindVertexArrayOES(vao || null);
             }
         }
     }

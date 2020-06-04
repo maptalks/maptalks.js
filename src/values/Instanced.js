@@ -8,7 +8,10 @@ include(GLContext.prototype, {
     drawArraysInstanced(mode, first, count, instanceCount) {
         this._checkAndRestore();
         this._addDrawCall();
-        return this._gl.drawArraysInstanced(mode, first, count, instanceCount);
+        if (this._is2) {
+            return this._gl.drawArraysInstanced(mode, first, count, instanceCount);
+        }
+        return this.angleOES.drawArraysInstancedANGLE(mode, first, count, instanceCount);
     },
 
     /**
@@ -18,6 +21,9 @@ include(GLContext.prototype, {
     drawElementsInstanced(mode, count, type, offset, instanceCount) {
         this._checkAndRestore();
         this._addDrawCall();
-        return this._gl.drawElementsInstanced(mode, count, type, offset, instanceCount);
+        if (this._is2) {
+            return this._gl.drawElementsInstanced(mode, count, type, offset, instanceCount);
+        }
+        return this.angleOES.drawElementsInstancedANGLE(mode, count, type, offset, instanceCount);
     }
 });
