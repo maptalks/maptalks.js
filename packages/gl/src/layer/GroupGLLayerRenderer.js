@@ -438,19 +438,25 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _getViewStates() {
         const map = this.layer.getMap();
-        const lightDirection = map.getLightManager().getDirectionalLight().direction;
+
         const renderedView = this._renderedView;
         if (!renderedView) {
             this._renderedView = {
                 center: map.getCenter(),
                 bearing: map.getBearing(),
-                pitch: map.getPitch(),
-                lightDirection: vec3.copy([], lightDirection),
+                pitch: map.getPitch()
                 // count: scene.getMeshes().length - (displayShadow ? 1 : 0)
             };
+            let lightDirectionChanged = false;
+            if (map.options.lights) {
+                const lightManager = map.getLightManager();
+                const lightDirection = lightManager.getDirectionalLight().direction;
+                this._renderedView.lightDirection = vec3.copy([], lightDirection);
+                lightDirectionChanged = true;
+            }
             return {
                 viewChanged: true,
-                lightDirectionChanged: true
+                lightDirectionChanged
             };
         }
         // const maxPitch = map.options['cascadePitches'][2];
@@ -461,21 +467,28 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const viewChanged = (cp._sub(map.width / 2, map.height / 2).mag() > viewMoveThreshold);
         // Math.abs(renderedView.bearing - map.getBearing()) > 30 ||
         // (renderedView.pitch < maxPitch || pitch < maxPitch) && Math.abs(renderedView.pitch - pitch) > viewPitchThreshold;
-        const lightDirectionChanged = !vec3.equals(this._renderedView.lightDirection, lightDirection);
+        let lightDirectionChanged = false;
+        if (map.options.lights) {
+            const lightManager = map.getLightManager();
+            const lightDirection = lightManager.getDirectionalLight().direction;
+            lightDirectionChanged = !vec3.equals(this._renderedView.lightDirection, lightDirection);
+            if (lightDirectionChanged) {
+                this._renderedView.lightDirection = vec3.copy([], lightDirection);
+            }
+        }
         //update renderView
         if (viewChanged) {
             this._renderedView.center = map.getCenter();
             this._renderedView.bearing = map.getBearing();
             this._renderedView.pitch = map.getPitch();
         }
-        if (lightDirectionChanged) {
-            this._renderedView.lightDirection = vec3.copy([], lightDirection);
-        }
         return {
             viewChanged,
             lightDirectionChanged
         };
     }
+
+
 
     _prepareDrawContext() {
         const sceneConfig =  this.layer._getSceneConfig();
@@ -495,7 +508,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             const hasJitter = config.antialias && config.antialias.enable;
             if (hasJitter) {
                 const map = this.getMap();
-                if (map.isInteracting()) {
+                const enableTAA = config.antialias && config.antialias.enable && config.antialias.taa;
+                if (map.isInteracting() && !enableTAA) {
                     this._jitGetter.reset();
                 }
                 context['jitter'] = this._jitGetter.getJitter(this._jitter);

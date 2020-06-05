@@ -13,7 +13,7 @@ class EnvironmentPainter {
     }
 
     paint(context) {
-        if (!this.isEnable()) {
+        if (!this.isEnable() || !this._resource) {
             return;
         }
         const uniforms = this._getUniformValues(context);
@@ -23,11 +23,12 @@ class EnvironmentPainter {
 
     update() {
         const lightManager = this.getMap().getLightManager();
-        const resource = lightManager.getAmbientResource();
-        if (resource !== this._resouce) {
+        const resource = lightManager && lightManager.getAmbientResource();
+        if (resource !== this._resource && this._iblTexes) {
             disposeIBLTextures(this._iblTexes);
             delete this._iblTexes;
         }
+        this._resource = resource;
         this._updateMode();
     }
 
@@ -36,6 +37,7 @@ class EnvironmentPainter {
         disposeIBLTextures(this._iblTexes);
         delete this._shader;
         delete this._iblTexes;
+        delete this._resource;
     }
 
     getMap() {
@@ -43,6 +45,9 @@ class EnvironmentPainter {
     }
 
     _updateMode() {
+        if (!this._resource) {
+            return;
+        }
         const sceneConfig = this._layer._getSceneConfig();
         this._shader.setMode(1, 0, sceneConfig.environment && sceneConfig.environment.mode ? 1 : 0);
     }
@@ -54,7 +59,7 @@ class EnvironmentPainter {
 
     _hasIBL() {
         const lightManager = this.getMap().getLightManager();
-        const resource = lightManager.getAmbientResource();
+        const resource = lightManager && lightManager.getAmbientResource();
         return !!resource;
     }
 
@@ -92,11 +97,14 @@ class EnvironmentPainter {
     }
 
     _init() {
-        this.getMap().on('updatelights', this.update, this);
+        const map = this.getMap();
+        map.on('updatelights', this.update, this);
         this._shader = new reshader.SkyboxShader();
-        const lightManager = this.getMap().getLightManager();
-        const resource = lightManager.getAmbientResource();
-        this._resouce = resource;
+        if (map.options.lights) {
+            const lightManager = this.getMap().getLightManager();
+            const resource = lightManager.getAmbientResource();
+            this._resource = resource;
+        }
     }
 }
 

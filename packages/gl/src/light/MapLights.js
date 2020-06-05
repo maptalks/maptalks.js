@@ -22,7 +22,11 @@ Map.include({
 
     getLightManager() {
         if (!this._lightManager) {
-            throw new Error('map\'s light config is not set, use map.setLightConfig(config) to set lights.');
+            if (typeof console && !this._warned) {
+                this._warned = true;
+                console.warn('map\'s light config is not set, use map.setLightConfig(config) to set lights.');
+            }
+            return null;
         }
         return this._lightManager;
     }

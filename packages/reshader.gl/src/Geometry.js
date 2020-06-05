@@ -36,9 +36,11 @@ export default class Geometry {
         this._buffers = {};
         this._vao = {};
         this.updateBoundingBox();
+        this.getVertexCount();
     }
 
     getREGLData(regl, activeAttributes) {
+        let updated = false;
         if (!this._reglData) {
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
@@ -61,23 +63,39 @@ export default class Geometry {
                 delete this._reglData[tangentAttribute];
                 this._reglData['aTangent'] = data[tangentAttribute];
             }
+            updated = true;
         }
         //support vao
         if (isSupportVAO(regl)) {
             const key = activeAttributes.key;
-            if (!this._vao[key]) {
+            if (!this._vao[key] || updated) {
+                const vertexCount = this.getVertexCount();
                 const buffers = activeAttributes.map(p => {
                     const attr = p.name;
                     const buffer = this._reglData[attr].buffer;
                     if (!buffer || !buffer.destroy) {
-                        return this._reglData[attr];
+                        const data = this._reglData[attr];
+                        const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
+                        if (data.data) {
+                            data.dimension = dimension;
+                            return data;
+                        } else {
+                            return {
+                                data,
+                                dimension
+                            };
+                        }
                     } else {
                         return buffer;
                     }
                 });
-                this._vao[key] = {
-                    vao: regl.vao(buffers)
-                };
+                if (!this._vao[key]) {
+                    this._vao[key] = {
+                        vao: regl.vao(buffers)
+                    };
+                } else {
+                    this._vao[key].vao(buffers);
+                }
             }
             return this._vao[key];
         }
@@ -95,8 +113,7 @@ export default class Geometry {
             delete allocatedBuffers[p].data;
         }
         const data = this.data;
-        const { positionAttribute, positionSize } = this.desc;
-        const vertexCount = this.data[positionAttribute].length /  positionSize;
+        const vertexCount = this.getVertexCount();
         const buffers = {};
         for (const key in data) {
             if (!data[key]) {
@@ -112,11 +129,11 @@ export default class Geometry {
                     buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
                 }
             } else {
+                const dimension = data[key].data ? data[key].data.length / vertexCount : data[key].length / vertexCount;
+                const info = data[key].data ? data[key] : { data: data[key] };
+                info.dimension = dimension;
                 buffers[key] = {
-                    buffer : regl.buffer({
-                        data: data[key],
-                        dimension: data[key].length / vertexCount
-                    })
+                    buffer : regl.buffer(info)
                 };
             }
         }
@@ -130,6 +147,18 @@ export default class Geometry {
                 //type : 'uint16' // type is inferred from data
             });
         }
+    }
+
+    getVertexCount() {
+        if (this._vertexCount === undefined) {
+            const { positionAttribute, positionSize } = this.desc;
+            let data = this.data[positionAttribute];
+            if (data.data) {
+                data = data.data;
+            }
+            this._vertexCount = data.length /  positionSize;
+        }
+        return this._vertexCount;
     }
 
     /**
@@ -179,6 +208,8 @@ export default class Geometry {
         }
         if (name === this.desc.positionAttribute) {
             this.updateBoundingBox();
+            delete this._vertexCount;
+            this.getVertexCount();
         }
         if (buffer) {
             buffer.buffer.subdata(data);
@@ -316,13 +347,10 @@ export default class Geometry {
      * @param {String} name - attribute name for barycentric attribute
      */
     createBarycentric(name = 'aBarycentric') {
-        const position = this.data[this.desc.positionAttribute];
-        if (!isArray(position)) {
-            throw new Error('Position data must be an array to create bary centric data');
-        } else if (this.desc.primitive !== 'triangles') {
+        if (this.desc.primitive !== 'triangles') {
             throw new Error('Primitive must be triangles to create bary centric data');
         }
-        const bary = new Uint8Array(position.length / this.desc.positionSize * 3);
+        const bary = new Uint8Array(this.getVertexCount() * 3);
         for (let i = 0, l = this.elements.length; i < l;) {
             for (let j = 0; j < 3; j++) {
                 const ii = this.elements[i++];
@@ -349,7 +377,7 @@ export default class Geometry {
         if (!isArray(pos)) {
             throw new Error(this.desc.positionAttribute + ' must be array to build unique vertex.');
         }
-        const vertexCount = pos.length / this.desc.positionSize;
+        const vertexCount = this.getVertexCount();
 
         const l = indices.length;
         for (let i = 0; i < keys.length; i++) {

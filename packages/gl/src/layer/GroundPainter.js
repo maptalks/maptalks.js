@@ -340,6 +340,8 @@ class GroundPainter {
         uv[5] = uvStartY;
         uv[6] = uvStartX + w;
         uv[7] = uvStartY;
+
+        this._ground.geometry.updateData('aTexCoord', uv);
     }
 
     _getGroundDefines(context) {
