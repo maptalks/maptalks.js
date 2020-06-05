@@ -9,6 +9,7 @@ class StandardPainter extends MeshPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
         this._loader = new reshader.ResourceLoader();
+        this.scene.sortFunction = this.sortByCommandKey;
     }
 
     createGeometry(glData) {
@@ -33,7 +34,7 @@ class StandardPainter extends MeshPainter {
 
     paint(context) {
         const hasShadow = !!context.shadow;
-        if (context.states.includesChanged) {
+        if (context.states && context.states.includesChanged) {
             this.shader.dispose();
             this._createShader(context);
         }

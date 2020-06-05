@@ -41,6 +41,7 @@ class Painter {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
+        this.sortByCommandKey = sortByCommandKey.bind(this);
     }
 
     getMap() {
@@ -122,6 +123,7 @@ class Painter {
             };
         }
         this._renderContext = context;
+
         const uniforms = this.getUniformValues(map, context);
 
         this.callShader(uniforms, context);
@@ -532,3 +534,9 @@ class Painter {
 }
 
 export default Painter;
+
+function sortByCommandKey(a, b) {
+    const k1 = a && a.getCommandKey(this.regl) || '';
+    const k2 = b && b.getCommandKey(this.regl) || '';
+    return k1.localeCompare(k2);
+}

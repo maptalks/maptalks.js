@@ -94,6 +94,7 @@ describe('vector tile integration specs', () => {
     };
 
     const postProcessRunner = (p, style) => {
+        let finished = false;
         return done => {
             const options = style.view || DEFAULT_VIEW;
             options.centerCross = true;
@@ -137,7 +138,10 @@ describe('vector tile integration specs', () => {
                             writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         assert(result.diffCount === 0);
-                        done();
+                        if (!finished) {
+                            done();
+                            finished = true;
+                        }
                     });
                 }
             };

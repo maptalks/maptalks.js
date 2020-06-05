@@ -3,7 +3,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
-import { setUniformFromSymbol, createColorSetter, extend } from '../Util';
+import { setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
@@ -142,7 +142,7 @@ class FillPainter extends BasicPainter {
     }
 
     paint(context) {
-        if (context.states.includesChanged['shadow']) {
+        if (context.states && context.states.includesChanged['shadow']) {
             this.shader.dispose();
             this._createShader(context);
         }

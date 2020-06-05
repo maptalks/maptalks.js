@@ -34,6 +34,7 @@ const GLTFMixin = Base =>
         constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
             super(regl, layer, symbol, sceneConfig, pluginIndex);
             this._ready = false;
+            this.scene.sortFunction = this.sortByCommandKey;
         }
 
         createGeometry(glData, features) {
@@ -77,7 +78,10 @@ const GLTFMixin = Base =>
             //所有mesh共享一个instance buffer，以节省内存
             for (const p in instanceData) {
                 instanceBuffers[p] = {
-                    buffer: this.regl.buffer(instanceData[p]),
+                    buffer: this.regl.buffer({
+                        dimension: instanceData[p].length / count,
+                        data: instanceData[p]
+                    }),
                     divisor: 1
                 };
             }
