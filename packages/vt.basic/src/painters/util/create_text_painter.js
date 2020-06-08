@@ -7,7 +7,7 @@ import { getAnchor, getLabelBox } from './get_label_box';
 import { projectPoint } from './projection';
 import { getLabelContent } from './get_label_content';
 
-const GAMMA_SCALE = 0.79;
+const GAMMA_SCALE = 1;
 
 const DEFAULT_UNIFORMS = {
     'textFill': [0, 0, 0, 1],

@@ -28,9 +28,8 @@ export default function TinySDF(fontSize, buffer, radius, cutoff, fontFamily, fo
     this.gridOuter = new Float64Array(size * size);
     this.gridInner = new Float64Array(size * size);
     this.f = new Float64Array(size);
-    this.d = new Float64Array(size);
     this.z = new Float64Array(size + 1);
-    this.v = new Int16Array(size);
+    this.v = new Uint16Array(size);
 
     // hack around https://bugzilla.mozilla.org/show_bug.cgi?id=737852
     this.middle = Math.round((size / 2) * (navigator.userAgent.indexOf('Gecko/') >= 0 ? 1.2 : 1));
@@ -51,59 +50,47 @@ TinySDF.prototype.draw = function (char, width, height) {
         this.gridInner[i] = a === 1 ? INF : a === 0 ? 0 : Math.pow(Math.max(0, a - 0.5), 2);
     }
 
-    edt(this.gridOuter, width, height, this.f, this.d, this.v, this.z);
-    edt(this.gridInner, width, height, this.f, this.d, this.v, this.z);
+    edt(this.gridOuter, width, height, this.f, this.v, this.z);
+    edt(this.gridInner, width, height, this.f, this.v, this.z);
 
     for (i = 0; i < width * height; i++) {
-        var d = this.gridOuter[i] - this.gridInner[i];
-        alphaChannel[i] = Math.max(0, Math.min(255, Math.round(255 - 255 * (d / this.radius + this.cutoff))));
+        var d = Math.sqrt(this.gridOuter[i]) - Math.sqrt(this.gridInner[i]);
+        alphaChannel[i] = Math.round(255 - 255 * (d / this.radius + this.cutoff));
     }
 
     return alphaChannel;
 };
 
-// 2D Euclidean distance transform by Felzenszwalb & Huttenlocher https://cs.brown.edu/~pff/dt/
-function edt(data, width, height, f, d, v, z) {
-    for (var x = 0; x < width; x++) {
-        for (var y = 0; y < height; y++) {
-            f[y] = data[y * width + x];
-        }
-        edt1d(f, d, v, z, height);
-        for (y = 0; y < height; y++) {
-            data[y * width + x] = d[y];
-        }
-    }
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            f[x] = data[y * width + x];
-        }
-        edt1d(f, d, v, z, width);
-        for (x = 0; x < width; x++) {
-            data[y * width + x] = Math.sqrt(d[x]);
-        }
-    }
+// 2D Euclidean squared distance transform by Felzenszwalb & Huttenlocher https://cs.brown.edu/~pff/papers/dt-final.pdf
+function edt(data, width, height, f, v, z) {
+    for (var x = 0; x < width; x++) edt1d(data, x, width, height, f, v, z);
+    for (var y = 0; y < height; y++) edt1d(data, y * width, 1, width, f, v, z);
 }
 
 // 1D squared distance transform
-function edt1d(f, d, v, z, n) {
+function edt1d(grid, offset, stride, length, f, v, z) {
+    var q, k, s, r;
     v[0] = 0;
     z[0] = -INF;
-    z[1] = +INF;
+    z[1] = INF;
 
-    for (var q = 1, k = 0; q < n; q++) {
-        var s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
-        while (s <= z[k]) {
-            k--;
-            s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
-        }
+    for (q = 0; q < length; q++) f[q] = grid[offset + q * stride];
+
+    for (q = 1, k = 0, s = 0; q < length; q++) {
+        do {
+            r = v[k];
+            s = (f[q] - f[r] + q * q - r * r) / (q - r) / 2;
+        } while (s <= z[k] && --k > -1);
+
         k++;
         v[k] = q;
         z[k] = s;
-        z[k + 1] = +INF;
+        z[k + 1] = INF;
     }
 
-    for (q = 0, k = 0; q < n; q++) {
+    for (q = 0, k = 0; q < length; q++) {
         while (z[k + 1] < q) k++;
-        d[q] = (q - v[k]) * (q - v[k]) + f[v[k]];
+        r = v[k];
+        grid[offset + q * stride] = f[r] + (q - r) * (q - r);
     }
 }

@@ -3,6 +3,7 @@ import * as maptalks from 'maptalks';
 const defaultOptions = {
     picking: true,
     renderer: 'gl',
+    textGamma: 1,
     forceRenderOnZooming: true,
     forceRenderOnMoving: true,
     forceRenderOnRotating: true

@@ -37,6 +37,8 @@ const defaultOptions = {
     collisionFrameLimit: 1,
     //是否开启无style时的默认绘制功能
     defaultRendering: true,
+    //允许用户调整文字的gamma清晰度
+    textGamma: 1,
     //是否限制每帧的 tile mesh creation
     tileMeshCreationLimitPerFrame: 0,
     workarounds: {
