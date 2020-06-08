@@ -969,14 +969,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         };
     }
 
-    _isVisible(idx) {
-        const styles = this.layer.getCompiledStyle();
-        if (!styles[idx]) return true;
-        const symbol = styles[idx].symbol;
-        if (!symbol) return true;
-        const z = this.layer.getMap().getZoom();
-        const v = evaluate(symbol['visible'], null, z);
-        return v !== false;
+    _isVisible(/*idx*/) {
+        // const styles = this.layer.getCompiledStyle();
+        // if (!styles[idx]) return true;
+        // const symbol = styles[idx].symbol;
+        // if (!symbol) return true;
+        // // const z = this.layer.getMap().getZoom();
+        // // const v = evaluate(symbol['visible'], null, z);
+        // // return v !== false;
+        // return symbol.visible !== false;
+        return true;
     }
 
     isEnableWorkAround(key) {

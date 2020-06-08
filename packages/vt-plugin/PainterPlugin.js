@@ -58,7 +58,7 @@ function createPainterPlugin(type, Painter) {
 
         endFrame: function (context) {
             var painter = this.painter;
-            if (painter) {
+            if (painter && painter.isVisible()) {
                 return painter.render(context);
             }
             return null;

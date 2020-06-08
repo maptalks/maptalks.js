@@ -48,6 +48,11 @@ class Painter {
         return this.layer ? this.layer.getMap() : null;
     }
 
+    isVisible() {
+        const visible = this.getSymbol().visible;
+        return visible !== false && visible !== 0;
+    }
+
     needToRedraw() {
         return this._redraw;
     }
