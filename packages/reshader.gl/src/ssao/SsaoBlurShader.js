@@ -11,10 +11,10 @@ class SsaoBlurShader extends QuadShader {
                     x: 0,
                     y: 0,
                     width: (context, props) => {
-                        return props['materialParams']['resolution'][0];
+                        return props['outputSize'][0];
                     },
                     height: (context, props) => {
-                        return props['materialParams']['resolution'][1];
+                        return props['outputSize'][1];
                     }
                 }
             }

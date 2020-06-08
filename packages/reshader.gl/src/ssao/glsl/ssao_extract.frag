@@ -8,6 +8,8 @@ precision highp float;
 
 #include <gl2_frag>
 
+varying vec2 vTexCoord;
+
 #define saturate(x)        clamp(x, 0.0, 1.0)
 #define SHADER_NAME SSAO_EXTRACT
 #define PI 3.14159265359
@@ -190,7 +192,7 @@ float computeAmbientOcclusionSSAO(const highp vec3 origin, const vec3 normal, co
 
 void main() {
 
-    highp vec2 uv = gl_FragCoord.xy / materialParams.resolution.xy; // interpolated to pixel center
+    highp vec2 uv = vTexCoord; // interpolated to pixel center
 
     highp float depth = sampleDepthLinear(uv);
     highp vec3 origin = computeViewSpacePositionFromDepth(uv, depth);
