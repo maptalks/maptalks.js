@@ -129,42 +129,29 @@ class PhongPainter extends MeshPainter {
                         cmp: '<=',
                         ref: (context, props) => {
                             return props.level;
-                        },
-                        // mask: 0xff
+                        }
                     },
                     op: {
                         fail: 'keep',
                         zfail: 'keep',
                         zpass: 'replace'
-                    },
-                    // opBack: {
-                    //     fail: 'keep',
-                    //     zfail: 'keep',
-                    //     zpass: 'replace'
-                    // }
+                    }
                 },
-                sample: {
-                    alpha: true
+                depth: {
+                    enable: true,
+                    range: this.sceneConfig.depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
                     enable: true,
                     func: {
                         src: 'src alpha',
-                        // srcAlpha: 1,
                         dst: 'one minus src alpha',
-                        // dstAlpha: 1
                     },
-                    equation: 'add',
-                    // color: [0, 0, 0, 0]
+                    equation: 'add'
                 },
                 viewport,
-                polygonOffset: {
-                    enable: true,
-                    offset: {
-                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
-                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
-                    }
-                }
+                polygonOffset: this.getPolygonOffset()
             }
         };
     }

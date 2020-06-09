@@ -6,6 +6,7 @@ import { setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
+import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
@@ -62,6 +63,12 @@ class MeshPainter extends Painter {
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
+
+        //没有高度或level >= 3的瓦片mesh不产生阴影
+        if (geometry.properties.maxAltitude <= 0 || mesh.getUniform('level') >= 3) {
+            mesh.castShadow = false;
+        }
+        mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
         return mesh;
     }
 
@@ -201,6 +208,17 @@ class MeshPainter extends Painter {
             }
         ];
         return this._fnTypeConfig;
+    }
+
+    getPolygonOffset() {
+        const layer = this.layer;
+        return {
+            enable: (context, props) => props.maxAltitude === 0,
+            offset: {
+                factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
+                units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
+            }
+        };
     }
 
 }

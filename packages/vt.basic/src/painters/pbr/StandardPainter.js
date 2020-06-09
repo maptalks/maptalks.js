@@ -1,7 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { extend } from '../../Util';
 import MeshPainter from '../MeshPainter';
-import { OFFSET_FACTOR_SCALE } from '../Constant';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 
@@ -22,15 +21,6 @@ class StandardPainter extends MeshPainter {
         return geometry;
     }
 
-    createMesh(...args) {
-        const mesh = super.createMesh(...args);
-        //没有高度或level >= 2的瓦片mesh不产生阴影
-        if (mesh.geometry.properties.maxAltitude <= 0 || mesh.getUniform('level') >= 3) {
-            mesh.castShadow = false;
-        }
-        mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
-        return mesh;
-    }
 
     paint(context) {
         const hasShadow = !!context.shadow;
@@ -186,7 +176,6 @@ class StandardPainter extends MeshPainter {
         const defines = {};
         const uniformDeclares = [];
         this.fillIncludes(defines, uniformDeclares, context);
-        const layer = this.layer;
         const extraCommandProps = {
             cull: {
                 enable: () => {
@@ -222,13 +211,7 @@ class StandardPainter extends MeshPainter {
                 },
                 equation: 'add'
             },
-            polygonOffset: {
-                enable: (context, props) => props.maxAltitude === 0,
-                offset: {
-                    factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
-                    units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
-                }
-            }
+            polygonOffset: this.getPolygonOffset()
         };
         const config = {
             uniforms: uniformDeclares,
