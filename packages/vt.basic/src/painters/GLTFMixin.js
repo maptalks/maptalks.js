@@ -243,7 +243,7 @@ const GLTFMixin = Base =>
                         pack.dispose();
                     });
                     this._ready = true;
-                    this.setToRedraw();
+                    this.setToRedraw(true);
                 });
             }
         }

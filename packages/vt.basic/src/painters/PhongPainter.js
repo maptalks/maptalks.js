@@ -1,6 +1,5 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import { OFFSET_FACTOR_SCALE } from './Constant';
 import { extend } from '../Util';
 import MeshPainter from './MeshPainter';
 
@@ -107,7 +106,6 @@ class PhongPainter extends MeshPainter {
                 return canvas ? canvas.height : 1;
             }
         };
-        const layer = this.layer;
         return {
             extraCommandProps: {
                 //enable cullFace
