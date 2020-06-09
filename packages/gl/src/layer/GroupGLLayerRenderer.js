@@ -237,7 +237,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.gl.regl = this._regl;
 
         this._jitter = [0, 0];
-        this._jitGetter = new reshader.Jitter(this.layer.options['jitterRatio']);
     }
 
     _initGL() {
@@ -507,16 +506,24 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         } else {
             const hasJitter = config.antialias && config.antialias.enable;
             if (hasJitter) {
+                const ratio = config.antialias.jitterRatio || 0.3;
+                let jitGetter = this._jitGetter;
+                if (!jitGetter) {
+                    jitGetter = this._jitGetter = new reshader.Jitter(ratio);
+                } else {
+                    jitGetter.setRatio(ratio);
+                }
                 const map = this.getMap();
                 const enableTAA = config.antialias && config.antialias.enable && config.antialias.taa;
                 if (map.isInteracting() && !enableTAA) {
-                    this._jitGetter.reset();
+                    jitGetter.reset();
                 }
-                context['jitter'] = this._jitGetter.getJitter(this._jitter);
-                this._jitGetter.frame();
+                jitGetter.getJitter(this._jitter);
+                jitGetter.frame();
             } else {
                 vec2.set(this._jitter, 0, 0);
             }
+            context['jitter'] = this._jitter;
             const enableBloom = config.bloom && config.bloom.enable;
             const enableSsr = this.isEnableSSR();
             if (enableBloom && enableSsr) {

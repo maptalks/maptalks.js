@@ -27,6 +27,17 @@ class Jitter {
         this._ratio = ratio || 0.05;
     }
 
+    getRatio() {
+        return this._ratio;
+    }
+
+    setRatio(ratio) {
+        if (this._ratio !== ratio) {
+            this._ratio = ratio;
+            this.reset();
+        }
+    }
+
     reset() {
         this._frameNum = 0;
     }
