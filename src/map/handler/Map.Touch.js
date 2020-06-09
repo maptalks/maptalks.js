@@ -15,7 +15,7 @@ class MapTouchZoomHandler extends Handler {
 
     _onTouchStart(event) {
         const map = this.target;
-        if (!event.touches || event.touches.length !== 2 || map.isInteracting()) {
+        if (!event.touches || event.touches.length < 2) {
             return;
         }
         const container = map.getContainer();
@@ -30,6 +30,8 @@ class MapTouchZoomHandler extends Handler {
         this._startZoom = map.getZoom();
         this._startBearing = map.getBearing();
 
+        off(document, 'touchmove', this._onTouchMove, this);
+        off(document, 'touchend', this._onTouchEnd, this);
         addDomEvent(document, 'touchmove', this._onTouchMove, this);
         addDomEvent(document, 'touchend', this._onTouchEnd, this);
         preventDefault(event);
@@ -46,7 +48,7 @@ class MapTouchZoomHandler extends Handler {
 
     _onTouchMove(event) {
         const map = this.target;
-        if (!event.touches || event.touches.length !== 2) {
+        if (!event.touches || event.touches.length < 2) {
             return;
         }
         const container = map.getContainer(),
@@ -141,11 +143,11 @@ class MapTouchZoomHandler extends Handler {
 }
 
 Map.mergeOptions({
-    'touchGesture' : true,
+    'touchGesture': true,
     'touchZoom': true,
-    'touchPitch' : true,
-    'touchRotate' : true,
-    'touchZoomRotate' : false
+    'touchPitch': true,
+    'touchRotate': true,
+    'touchZoomRotate': false
 });
 
 Map.addOnLoadHook('addHandler', 'touchGesture', MapTouchZoomHandler);
