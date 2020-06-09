@@ -107,7 +107,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         if (hasNoAA && hasRenderTarget) {
             delete this._contextFrameTime;
-            this._renderMode = 'noAa';
+            this._renderMode = this._drawContext.renderMode = 'noAa';
             this.forEachRenderer((renderer, layer) => {
                 if (!layer.isVisible()) {
                     return;
