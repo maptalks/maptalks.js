@@ -68,7 +68,8 @@ class GroundPainter {
                     'lineWidth': uniforms['lineWidth'],
                     'lineHeight': uniforms['lineHeight'],
                     'linePixelScale': uniforms['linePixelScale'],
-                    'projMatrix': uniforms['projMatrix']
+                    'projMatrix': this.getMap().projMatrix,
+                    'viewMatrix': this.getMap().viewMatrix
                 };
                 this.renderer.render(this._depthShader, depthUniforms, this._groundScene, context.ssr.depthTestFbo);
                 const ssrFbo = context && context.ssr.fbo;
