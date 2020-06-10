@@ -140,7 +140,7 @@ function createSkybox(regl, cubemap, envCubeSize, encRgbm) {
         min : 'linear mipmap linear',
         mag : 'linear',
         faces: faces,
-        mipmap: true
+        // mipmap: true
     });
     tmpFBO.destroy();
     return color;

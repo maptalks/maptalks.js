@@ -1,10 +1,12 @@
-import { vec4, mat4 } from 'gl-matrix';
+import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
 import SsrMipmapShader from './SsrMipmapShader.js';
 import SsrCombineShader from './SsrCombineShader.js';
-import BlurPass from './BlurPass.js';
 import BoxColorBlurShader from './BoxColorBlurShader.js';
-import { vec2 } from 'gl-matrix';
+
+import quadVert from './glsl/quad.vert';
+import quadFrag from './glsl/quad.frag';
+import QuadShader from './QuadShader.js';
 
 class SsrPass {
 
@@ -53,6 +55,7 @@ class SsrPass {
     constructor(regl) {
         this._regl = regl;
         this._renderer = new Renderer(regl);
+        this._inputRGBM = 0;
     }
 
     _blur(tex) {
@@ -64,7 +67,8 @@ class SsrPass {
         }
         this._renderer.render(this._blurShader, {
             resolution: [tex.width, tex.height],
-            textureSource:tex
+            textureSource:tex,
+            uRGBMRange: 7
         }, null, this._blurFBO);
         return this._blurFBO.color[0];
     }
@@ -86,73 +90,39 @@ class SsrPass {
     }
 
     genMipMap(sourceTex) {
-        //blur
-        const blurTexes = this._blurPass.render(sourceTex);
-        const { blurTex0, blurTex1, blurTex2, blurTex3, blurTex4, blurTex5, blurTex6 } = blurTexes;
-        const uniforms = this._uniforms || {
-            'inputRGBM': 0,
-            'uRGBMRange': 7,
-            'TextureRefractionBlur0': null,
-            'TextureRefractionBlur1': null,
-            'TextureRefractionBlur2': null,
-            'TextureRefractionBlur3': null,
-            'TextureRefractionBlur4': null,
-            'TextureRefractionBlur5': null,
-            'TextureRefractionBlur6': null,
-            'TextureRefractionBlur7': null,
-            'uTextureOutputRatio': [1, 1],
-            'uTextureOutputSize': [0, 0],
-            'uTextureRefractionBlur0Ratio': [1, 1],
-            'uTextureRefractionBlur0Size': [0, 0],
-            'uTextureRefractionBlur1Ratio': [1, 1],
-            'uTextureRefractionBlur1Size': [0, 0],
-            'uTextureRefractionBlur2Ratio': [1, 1],
-            'uTextureRefractionBlur2Size': [0, 0],
-            'uTextureRefractionBlur3Ratio': [1, 1],
-            'uTextureRefractionBlur3Size': [0, 0],
-            'uTextureRefractionBlur4Ratio': [1, 1],
-            'uTextureRefractionBlur4Size': [0, 0],
-            'uTextureRefractionBlur5Ratio': [1, 1],
-            'uTextureRefractionBlur5Size': [0, 0],
-            'uTextureRefractionBlur6Ratio': [1, 1],
-            'uTextureRefractionBlur6Size': [0, 0],
-            'uTextureRefractionBlur7Ratio': [1, 1],
-            'uTextureRefractionBlur7Size': [0, 0]
-        };
-        uniforms['TextureRefractionBlur0'] = sourceTex;
-        uniforms['TextureRefractionBlur1'] = blurTex0;
-        uniforms['TextureRefractionBlur2'] = blurTex1;
-        uniforms['TextureRefractionBlur3'] = blurTex2;
-        uniforms['TextureRefractionBlur4'] = blurTex3;
-        uniforms['TextureRefractionBlur5'] = blurTex4;
-        uniforms['TextureRefractionBlur6'] = blurTex5;
-        uniforms['TextureRefractionBlur7'] = blurTex6;
-        vec2.set(uniforms['uTextureRefractionBlur0Size'], sourceTex.width, sourceTex.height);
-        vec2.set(uniforms['uTextureRefractionBlur1Size'], blurTex0.width, blurTex0.height);
-        vec2.set(uniforms['uTextureRefractionBlur2Size'], blurTex1.width, blurTex1.height);
-        vec2.set(uniforms['uTextureRefractionBlur3Size'], blurTex2.width, blurTex2.height);
-        vec2.set(uniforms['uTextureRefractionBlur4Size'], blurTex3.width, blurTex3.height);
-        vec2.set(uniforms['uTextureRefractionBlur5Size'], blurTex4.width, blurTex4.height);
-        vec2.set(uniforms['uTextureRefractionBlur6Size'], blurTex5.width, blurTex5.height);
-        vec2.set(uniforms['uTextureRefractionBlur7Size'], blurTex6.width, blurTex6.height);
+        this._ssrBlur(sourceTex);
+        return this._outputTex;
+    }
 
+    _ssrBlur(inputTex) {
         const output = this._targetFBO;
-        const h = Math.ceil(sourceTex.height * 2);
-        if (output.width !== sourceTex.width || output.height !== h) {
-            output.resize(sourceTex.width, h);
+
+        const sizeRatio = 0.5;
+        const w = Math.ceil(sizeRatio * inputTex.width);
+        const h = Math.ceil(sizeRatio * inputTex.height);
+        if (output.width !== w || output.height !== h) {
+            output.resize(w, h);
         }
+
+        let uniforms = this._blurUniforms;
+        if (!uniforms) {
+            uniforms = this._blurUniforms = {
+                'uRGBMRange': 7,
+                'uTextureOutputSize': [0, 0],
+            };
+        }
+
+        uniforms['TextureBlurInput'] = inputTex;
+        uniforms['inputRGBM'] = +this._inputRGBM;
         vec2.set(uniforms['uTextureOutputSize'], output.width, output.height);
 
-        this._renderer.render(this._mipmapShader, uniforms, null, output);
-
-        return this._outputTex;
+        uniforms['TextureBlurInput'] = inputTex;
+        this._renderer.render(this._ssrQuadShader, uniforms, null, output);
     }
 
     getMipmapTexture() {
         if (!this._outputTex) {
             this._outputTex = this._renderer.regl.texture({
-                min: 'linear',
-                mag: 'linear',
                 type: 'uint8',
                 width: 2,
                 height: 2
@@ -162,42 +132,64 @@ class SsrPass {
     }
 
     dispose() {
-        if (this._blurPass) {
-            this._blurPass.dispose();
-            delete this._blurPass;
+        if (this._combineShader) {
             this._mipmapShader.dispose();
             this._blurShader.dispose();
+            this._ssrQuadShader.dispose();
+
             this._targetFBO.destroy();
             this._combineFBO.destroy();
             this._blurFBO.destroy();
+
+            delete this._combineShader;
         }
     }
 
     _initShaders() {
-        if (!this._blurPass) {
-            this._blurPass = new BlurPass(this._regl, false, 7);
+        if (!this._combineShader) {
             this._mipmapShader = new SsrMipmapShader();
             this._combineShader = new SsrCombineShader();
             this._blurShader = new BoxColorBlurShader({ blurOffset: 2 });
+
+            const config = {
+                vert: quadVert,
+                frag: quadFrag,
+                extraCommandProps: {
+                    viewport: {
+                        x: 0,
+                        y: 0,
+                        width : (context, props) => {
+                            return props['uTextureOutputSize'][0];
+                        },
+                        height : (context, props) => {
+                            return props['uTextureOutputSize'][1];
+                        }
+                    }
+                }
+            };
+            this._ssrQuadShader = new QuadShader(config);
         }
     }
 
     _createTextures(sourceTex) {
         if (!this._targetFBO) {
             const regl = this._regl;
-            const h = Math.ceil(sourceTex.height * 2);
-            this._outputTex = this._outputTex || regl.texture({
+
+            if (this._outputTex) {
+                this._outputTex.destroy();
+            }
+
+            this._outputTex = regl.texture({
                 min: 'linear',
                 mag: 'linear',
                 type: 'uint8',
                 width: sourceTex.width,
-                height: h
+                height: sourceTex.height
             });
-            this._outputTex.resize(sourceTex.width, h);
 
             this._targetFBO = regl.framebuffer({
                 width: sourceTex.width,
-                height: h,
+                height: sourceTex.height,
                 colors: [this._outputTex],
                 depth: false,
                 stencil: false
