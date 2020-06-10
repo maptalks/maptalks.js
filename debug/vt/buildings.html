@@ -40,7 +40,7 @@
     var map = new maptalks.Map('map2', {
       center: [13.416935229170008, 52.529564137540376],
       zoom: 11,
-      pitch : 45,
+      // pitch : 45,
       fog: false,
       centerCross: true,
       // maxPitch: 60,
@@ -63,6 +63,8 @@
       "center":[13.411526530727542,52.527111139790435],"zoom":19.136793519083586,"pitch":71.20000000000005,"bearing":129.19999999999936,
 
       "center":[13.411526530727542,52.527111139790435],"zoom":19.136793519083586,"pitch":80,"bearing":-80.80000000000064,
+
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":62.00000000000039,"bearing":121.99999999999828,
       //纽约
       // "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
 
@@ -109,8 +111,8 @@
     var lights = {
       ambient: {
         resource: {
-          url: './resources/industrial_room.hdr',
-          sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
+          url: './resources/venice_sunset_2k.hdr',
+          // sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
           //echarts-gl上的例子
           // url: './resources/pisa.hdr',
           // sh: [
@@ -171,6 +173,7 @@
         dataConfig : {
           type : '3d-extrusion',
           altitudeProperty : 'height',
+          minHeightProperty: 'min_height',
           altitudeScale : 1,
           defaultAltitude : 20,
           top: true,
@@ -226,7 +229,7 @@
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       'uBaseColorFactor': [1, 1, 1, 1],
-      'uRoughnessFactor': 0.2,
+      'uRoughnessFactor': 0.4,
       'uMetalnessFactor': 0,
       'uOutputLinear': 1
     };
@@ -348,6 +351,11 @@
     //   alert(JSON.stringify(layer.identify(e.coordinate)));
     // });
     var sceneConfig = {
+      environment: {
+        enable: true,
+        mode: 1,
+        level: 2
+      },
       shadow : {
         type : 'esm',
         // type : 'stencil',
@@ -367,7 +375,7 @@
         symbol: {
           ssr: true,
           material: litMaterial,
-          polygonFill: [0.2, 0.2, 0.2, 1],
+          polygonFill: [1, 1, 1, 1],
           polygonOpacity: 1
         }
       },
@@ -383,7 +391,7 @@
         ssao: {
           enable: true,
           bias: 0.1,
-          radius: 0.05,
+          radius: 0.1,
           intensity: 1.5
         },
         sharpen: {
@@ -394,7 +402,7 @@
     };
     // layer1.addTo(map);
     // map.addLayer(layer);
-    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.02, antialias: false, sceneConfig }).addTo(map);
+    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.2, antialias: false, sceneConfig }).addTo(map);
 
     function updateCubeLight() {
       lights.ambient.resource.url = './resources/venice_sunset_2k.hdr';
@@ -454,8 +462,9 @@
 
     // changeView();
 
-    map.on('click', e => {
-      console.log(JSON.stringify(layer.identify(e.coordinate)));
+    map.on('mousemove', e => {
+      // console.log(JSON.stringify(layer.identify(e.coordinate)));
+
     });
 
     initGUI();
@@ -492,9 +501,9 @@
       var ssaoConfig = sceneConfig.postProcess.ssao;
       var ssao = gui.addFolder('ssao');
       ssao.open();
-      var biasCtrl = ssao.add(ssaoConfig, 'bias', 0.01, 1, 0.1);
-      var radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.1, 1, 0.1);
-      var intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.1, 5, 0.1);
+      var biasCtrl = ssao.add(ssaoConfig, 'bias', 0.0001, 0.001, 0.0001);
+      var radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.001, 0.01, 0.001);
+      var intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.01, 1, 0.01);
       function onChange() {
         groupLayer.setSceneConfig(sceneConfig);
       }
