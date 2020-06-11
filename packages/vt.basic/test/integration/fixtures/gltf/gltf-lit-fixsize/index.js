@@ -11,7 +11,7 @@ const scale = Math.pow(2, 5);
 const style = [
     {
         renderPlugin: {
-            type: 'gltf-phong',
+            type: 'gltf-lit',
             dataConfig: {
                 type: 'native-point'
             },
@@ -22,12 +22,13 @@ const style = [
             }
         },
         symbol: {
+            fixSizeOnZoom: true,
             url: 'file://' + path.resolve(__dirname, '../../../resources/gltf/box.glb'),
             scale: [scale, scale, scale],
             rotation: [90, 0, 0],
             translation: [0, 0, 0],
             polygonOpacity: 1,
-            polygonFill: '#fff'
+            polygonFill: '#f00'
         }
     }
 ];
@@ -37,8 +38,6 @@ module.exports = {
     data,
     view: {
         center: [13.411523913043766, 52.53168811873488],
-        zoom: 19,
-        pitch: 50,
-        bearing: 60
+        zoom: 10
     }
 };

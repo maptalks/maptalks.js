@@ -58,7 +58,8 @@ const GLTFMixin = Base =>
             return EMPTY_ARRAY;
         }
 
-        createMesh(geometry, transform, { tileTranslationMatrix, tileExtent }) {
+        createMesh(geometry, transform, { tileZoom, tileTranslationMatrix, tileExtent }) {
+            const map = this.getMap();
             const { positionSize, features } = geometry;
             const { aPosition } = geometry.data;
             const count = aPosition.length / positionSize;
@@ -75,7 +76,7 @@ const GLTFMixin = Base =>
             };
             this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, positionSize);
             const instanceBuffers = {};
-            //所有mesh共享一个instance buffer，以节省内存
+            //所有mesh共享一个 instance buffer，以节省内存
             for (const p in instanceData) {
                 instanceBuffers[p] = {
                     buffer: this.regl.buffer({
@@ -85,7 +86,10 @@ const GLTFMixin = Base =>
                     divisor: 1
                 };
             }
+
+            const tileScale = map.getGLScale(tileZoom);
             const { translation, rotation, scale } = this.getSymbol();
+            const tileScaleMat = mat4.fromScaling([], [tileScale, tileScale, tileScale]);
             const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
             const meshInfos = this._gltfMeshInfos;
             const symbol = this.getSymbol();
@@ -114,7 +118,24 @@ const GLTFMixin = Base =>
                 }
                 setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
                 setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
-                mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
+                // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
+                const positionMatrix = mat4.multiply([], gltfMatrix, nodeMatrix);
+                mat4.multiply(positionMatrix, tileScaleMat, positionMatrix);
+
+                const matrix = [];
+                mesh.setPositionMatrix(() => {
+                    if (this.getSymbol().fixSizeOnZoom) {
+                        let scale = map.getGLScale();
+                        const times = tileScale / scale;
+                        scale *= times;
+                        vec3.set(V3, scale / tileScale, scale / tileScale, scale / tileScale);
+                        // vec3.set(V3, scale, scale, scale);
+                        mat4.fromScaling(matrix, V3);
+                        return mat4.multiply(matrix, matrix, positionMatrix);
+                    } else {
+                        return positionMatrix;
+                    }
+                });
                 mesh.setLocalTransform(tileTranslationMatrix);
 
                 geometry.generateBuffers(this.regl);
