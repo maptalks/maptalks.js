@@ -145,6 +145,7 @@ export default class PostProcess {
         }
         context.ssr = this._prepareSSRContext(depthTex);
         const renderMode = context.renderMode;
+        const filter = context['sceneFilter'];
         context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
         const fGL = layerRenderer.glCtx;
@@ -174,6 +175,7 @@ export default class PostProcess {
         //以免和bloom冲突
         delete context.ssr;
         context.renderMode = renderMode;
+        context['sceneFilter'] = filter;
         this._ssrPainted = fGL.getDrawCalls() > 0;
         return groundPainted;
     }
