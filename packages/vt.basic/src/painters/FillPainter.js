@@ -261,7 +261,8 @@ class FillPainter extends BasicPainter {
                 depth: {
                     enable: true,
                     range: depthRange || [0, 1],
-                    // mask: false,
+                    // 如果mask设为true，fill会出现与轮廓线的深度冲突，出现奇怪的绘制
+                    mask: false,
                     func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
