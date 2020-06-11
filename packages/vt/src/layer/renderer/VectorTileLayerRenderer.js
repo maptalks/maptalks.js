@@ -546,16 +546,25 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let plugins = this._getFramePlugins();
         if (mode === 'aa') {
             plugins = plugins.filter((p, idx) => {
+                if (!p) {
+                    return false;
+                }
                 p.renderIndex = idx;
                 return p.needAA();
             });
         } else if (mode === 'noAa') {
             plugins = plugins.filter((p, idx) => {
+                if (!p) {
+                    return false;
+                }
                 p.renderIndex = idx;
                 return !p.needAA();
             });
         } else {
             plugins.forEach((p, idx) => {
+                if (!p) {
+                    return;
+                }
                 p.renderIndex = idx;
             });
         }
