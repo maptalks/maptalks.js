@@ -6,7 +6,7 @@ const data = {
         { type: 'Feature', geometry: { type: 'Point', coordinates: [13.411523913043766, 52.53168811873488] }, properties: { type: 1 } }
     ]
 };
-const scale = Math.pow(2, 5);
+const scale = Math.pow(2, -5);
 
 const style = [
     {
@@ -22,7 +22,7 @@ const style = [
             }
         },
         symbol: {
-            fixSizeOnZoom: true,
+            fixSizeOnZoom: 19,
             url: 'file://' + path.resolve(__dirname, '../../../resources/gltf/box.glb'),
             scale: [scale, scale, scale],
             rotation: [90, 0, 0],

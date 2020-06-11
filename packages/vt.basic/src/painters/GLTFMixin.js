@@ -1,5 +1,5 @@
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter, isNil } from '../Util';
+import { setUniformFromSymbol, createColorSetter, isNil, isNumber } from '../Util';
 
 const V3 = [];
 const Q4 = [];
@@ -58,7 +58,7 @@ const GLTFMixin = Base =>
             return EMPTY_ARRAY;
         }
 
-        createMesh(geometry, transform, { tileZoom, tileTranslationMatrix, tileExtent }) {
+        createMesh(geometry, transform, { tileTranslationMatrix, tileExtent }) {
             const map = this.getMap();
             const { positionSize, features } = geometry;
             const { aPosition } = geometry.data;
@@ -87,9 +87,7 @@ const GLTFMixin = Base =>
                 };
             }
 
-            const tileScale = map.getGLScale(tileZoom);
             const { translation, rotation, scale } = this.getSymbol();
-            const tileScaleMat = mat4.fromScaling([], [tileScale, tileScale, tileScale]);
             const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
             const meshInfos = this._gltfMeshInfos;
             const symbol = this.getSymbol();
@@ -120,15 +118,13 @@ const GLTFMixin = Base =>
                 setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
                 // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
                 const positionMatrix = mat4.multiply([], gltfMatrix, nodeMatrix);
-                mat4.multiply(positionMatrix, tileScaleMat, positionMatrix);
 
                 const matrix = [];
                 mesh.setPositionMatrix(() => {
-                    if (this.getSymbol().fixSizeOnZoom) {
-                        let scale = map.getGLScale();
-                        const times = tileScale / scale;
-                        scale *= times;
-                        vec3.set(V3, scale / tileScale, scale / tileScale, scale / tileScale);
+                    const fixZoom = this.getSymbol().fixSizeOnZoom;
+                    if (isNumber(fixZoom)) {
+                        const scale = map.getGLScale() / map.getGLScale(fixZoom);
+                        vec3.set(V3, scale, scale, scale);
                         // vec3.set(V3, scale, scale, scale);
                         mat4.fromScaling(matrix, V3);
                         return mat4.multiply(matrix, matrix, positionMatrix);
