@@ -1,4 +1,4 @@
-import { extend, isNil, isNumber } from './common/Util.js';
+import { extend, isNil, isNumber, isFunction } from './common/Util.js';
 import { vec4, mat4 } from 'gl-matrix';
 
 const MAT4 = [];
@@ -142,8 +142,8 @@ class Mesh {
             }
             this._dirtyUniforms = false;
         }
-        this._realUniforms['modelMatrix'] = this.localTransform;
-        this._realUniforms['positionMatrix'] = this.positionMatrix;
+        this._realUniforms['modelMatrix'] = isFunction(this.localTransform) ? this.localTransform() : this.localTransform;
+        this._realUniforms['positionMatrix'] = isFunction(this.positionMatrix) ? this.positionMatrix() : this.positionMatrix;
         return this._realUniforms;
     }
 
