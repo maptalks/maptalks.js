@@ -303,7 +303,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         } else {
             s = extendSymbol(this._getInternalSymbol(), props);
         }
-        return this.setSymbol(s);
+        this._symbol = this._prepareSymbol(s);
+        this.onSymbolChanged(props);
+        return this;
     }
 
     /**
@@ -1037,9 +1039,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._fireEvent('positionchange');
     }
 
-    onSymbolChanged() {
+    onSymbolChanged(props) {
         if (this._painter) {
             this._painter.refreshSymbol();
+        }
+        const e = {};
+        if (props) {
+            e.properties = props;
         }
         /**
          * symbolchange event.
@@ -1048,8 +1054,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
          * @type {Object}
          * @property {String} type - symbolchange
          * @property {Geometry} target - the geometry fires the event
+         * @property {Object} properties - symbol properties to update if has
          */
-        this._fireEvent('symbolchange');
+        this._fireEvent('symbolchange', e);
     }
 
     onConfig(conf) {
