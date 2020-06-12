@@ -1,6 +1,5 @@
 import Browser from '../core/Browser';
 import { isNil } from '../core/util';
-import { getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
@@ -48,94 +47,6 @@ class VectorLayer extends OverlayLayer {
      */
     constructor(id, geometries, options) {
         super(id, geometries, options);
-        const style = this.options['style'];
-        delete this.options['style'];
-        if (style) {
-            this.setStyle(style);
-        }
-    }
-
-    /**
-     * Gets layer's style.
-     * @return {Object|Object[]} layer's style
-     */
-    getStyle() {
-        if (!this._style) {
-            return null;
-        }
-        return this._style;
-    }
-
-    /**
-     * Sets style to the layer, styling the geometries satisfying the condition with style's symbol. <br>
-     * Based on filter type in [mapbox-gl-js's style specification]{https://www.mapbox.com/mapbox-gl-js/style-spec/#types-filter}.
-     * @param {Object|Object[]} style - layer's style
-     * @returns {VectorLayer} this
-     * @fires VectorLayer#setstyle
-     * @example
-     * layer.setStyle([
-        {
-          'filter': ['==', 'count', 100],
-          'symbol': {'markerFile' : 'foo1.png'}
-        },
-        {
-          'filter': ['==', 'count', 200],
-          'symbol': {'markerFile' : 'foo2.png'}
-        }
-      ]);
-     */
-    setStyle(style) {
-        this._style = style;
-        this._cookedStyles = compileStyle(style);
-        this.forEach(function (geometry) {
-            this._styleGeometry(geometry);
-        }, this);
-        /**
-         * setstyle event.
-         *
-         * @event VectorLayer#setstyle
-         * @type {Object}
-         * @property {String} type - setstyle
-         * @property {VectorLayer} target - layer
-         * @property {Object|Object[]}       style - style to set
-         */
-        this.fire('setstyle', {
-            'style': style
-        });
-        return this;
-    }
-
-    /**
-     * Removes layers' style
-     * @returns {VectorLayer} this
-     * @fires VectorLayer#removestyle
-     */
-    removeStyle() {
-        if (!this._style) {
-            return this;
-        }
-        delete this._style;
-        delete this._cookedStyles;
-        this.forEach(function (geometry) {
-            geometry._setExternSymbol(null);
-        }, this);
-        /**
-         * removestyle event.
-         *
-         * @event VectorLayer#removestyle
-         * @type {Object}
-         * @property {String} type - removestyle
-         * @property {VectorLayer} target - layer
-         */
-        this.fire('removestyle');
-        return this;
-    }
-
-    onAddGeometry(geo) {
-        const style = this.getStyle();
-        if (style) {
-            this._styleGeometry(geo);
-        }
     }
 
     onConfig(conf) {
@@ -148,19 +59,6 @@ class VectorLayer extends OverlayLayer {
         }
     }
 
-    _styleGeometry(geometry) {
-        if (!this._cookedStyles) {
-            return false;
-        }
-        const g = getFilterFeature(geometry);
-        for (let i = 0, len = this._cookedStyles.length; i < len; i++) {
-            if (this._cookedStyles[i]['filter'](g) === true) {
-                geometry._setExternSymbol(this._cookedStyles[i]['symbol']);
-                return true;
-            }
-        }
-        return false;
-    }
 
     identify(coordinate, options = {}) {
         const renderer = this.getRenderer();
