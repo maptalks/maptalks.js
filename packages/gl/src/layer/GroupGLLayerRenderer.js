@@ -426,13 +426,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     isEnableSSR() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        return config && config.ssr && config.ssr.enable;
+        return config && config.enable && config.ssr && config.ssr.enable;
     }
 
     isEnableSSAO() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        return config && config.ssao && config.ssao.enable;
+        return config && config.enable && config.ssao && config.ssao.enable;
     }
 
     _getViewStates() {
@@ -805,20 +805,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (enableSSR) {
             this._postProcessor.genSsrMipmap(tex);
         }
-    }
-
-    _isPostProcessEnabled() {
-        const sceneConfig =  this.layer._getSceneConfig();
-        const config = sceneConfig.postProcess;
-        if (!config.enable) {
-            return false;
-        }
-        for (const p in config) {
-            if (config[p] && config[p].enable) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 
