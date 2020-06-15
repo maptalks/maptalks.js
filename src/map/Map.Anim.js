@@ -79,8 +79,10 @@ Map.include(/** @lends Map.prototype */{
         }
         if (this._animPlayer) {
             if (this._isInternalAnimation) {
-                this._animPlayer.pause();
-                this._prevAnimPlayer = this._animPlayer;
+                if (this._animPlayer.playState === 'running') {
+                    this._animPlayer.pause();
+                    this._prevAnimPlayer = this._animPlayer;
+                }
             } else {
                 delete this._prevAnimPlayer;
                 this._stopAnim(this._animPlayer);
@@ -157,7 +159,7 @@ Map.include(/** @lends Map.prototype */{
             if (step) {
                 step(frame);
             }
-        });
+        }, this);
 
         this._startAnim(props, zoomOrigin);
 
@@ -247,10 +249,7 @@ Map.include(/** @lends Map.prototype */{
             //fix blank map when pitch changes to 0
             this.getRenderer().setToRedraw();
         }
-        if (this._prevAnimPlayer) {
-            this._animPlayer = this._prevAnimPlayer;
-            this._prevAnimPlayer.play();
-        }
+        this._resumePrev(player);
     },
 
     _startAnim(props, zoomOrigin) {
@@ -287,15 +286,26 @@ Map.include(/** @lends Map.prototype */{
             player._interupted = true;
             player.cancel();
         }
-        if (player === this._animPlayer && this._prevAnimPlayer) {
-            this._animPlayer = this._prevAnimPlayer;
-            this._prevAnimPlayer.play();
-        }
         if (player === this._animPlayer) {
             delete this._animPlayer;
         }
         if (player === this._mapAnimPlayer) {
             delete this._mapAnimPlayer;
+        }
+        // this._resumePrev(player);
+    },
+
+    _resumePrev(player) {
+        if (!this._prevAnimPlayer) {
+            return;
+        }
+        const prevPlayer = this._prevAnimPlayer;
+        if (prevPlayer.playState !== 'paused') {
+            delete this._prevAnimPlayer;
+        }
+        if (player !== prevPlayer) {
+            this._animPlayer = prevPlayer;
+            prevPlayer.play();
         }
     }
 });

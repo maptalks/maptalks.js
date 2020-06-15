@@ -9,6 +9,8 @@ import {
 import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 
+const KEY = '__anim_player';
+
 /**
  * @classdesc
  * Easing functions for anmation, from openlayers 3
@@ -101,13 +103,14 @@ class Player {
      * @param {Object} options     - animation options
      * @param {Function} onFrame  - callback function for animation steps
      */
-    constructor(animation, options, onFrame) {
+    constructor(animation, options, onFrame, target) {
         this._animation = animation;
         this.options = options;
         this._onFrame = onFrame;
         this.playState = 'idle';
         this.ready = true;
         this.finished = false;
+        this.target = target;
     }
 }
 
@@ -370,12 +373,13 @@ const Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {Player} player
      */
-    animate(styles, options, step) {
+    animate(styles, options, step, target) {
         if (!options) {
             options = {};
         }
         const animation = Animation.framing(styles, options);
-        return new Player(animation, options, step);
+        const player = new Player(animation, options, step, target);
+        return player;
     }
 };
 
@@ -403,9 +407,10 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
      * @return {Player} this
      */
     play() {
-        if (this.playState !== 'idle' && this.playState !== 'paused') {
+        if (this.playState !== 'idle' && this.playState !== 'paused' || this.target && this.target[KEY]) {
             return this;
         }
+        this.target[KEY] = 1;
         if (this.playState === 'idle') {
             this.currentTime = 0;
             this._prepare();
@@ -478,6 +483,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             elapsed = 0;
         }
         if (this.playState !== 'running') {
+            delete this.target[KEY];
             if (onFrame) {
                 if (this.playState === 'finished') {
                     elapsed = this.duration;
@@ -493,7 +499,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         //elapsed, duration
         const frame = this._animation(elapsed, this.duration);
         this.playState = frame.state['playState'];
-
+        if (this.playState !== 'running') {
+            delete this.target[KEY];
+        }
         if (this.playState === 'idle') {
             if (this.startTime > t) {
                 setTimeout(this._run.bind(this), this.startTime - t);
