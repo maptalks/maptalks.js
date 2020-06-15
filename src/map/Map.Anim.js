@@ -139,7 +139,7 @@ Map.include(/** @lends Map.prototype */{
                  * @property {Map} target - the map fires the event
                  */
                 this._fireEvent('animating');
-            } else if (player.playState === 'finished') {
+            } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
                 if (!player._interupted) {
                     if (props['center']) {
                         this._setPrjCenter(projection.project(props['center'][1]));
