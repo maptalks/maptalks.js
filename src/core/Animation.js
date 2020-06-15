@@ -410,7 +410,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         if (this.playState !== 'idle' && this.playState !== 'paused' || this.target && this.target[KEY]) {
             return this;
         }
-        this.target[KEY] = 1;
+        if (this.target) {
+            this.target[KEY] = 1;
+        }
         if (this.playState === 'idle') {
             this.currentTime = 0;
             this._prepare();
@@ -483,7 +485,9 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
             elapsed = 0;
         }
         if (this.playState !== 'running') {
-            delete this.target[KEY];
+            if (this.target) {
+                delete this.target[KEY];
+            }
             if (onFrame) {
                 if (this.playState === 'finished') {
                     elapsed = this.duration;
@@ -499,7 +503,7 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
         //elapsed, duration
         const frame = this._animation(elapsed, this.duration);
         this.playState = frame.state['playState'];
-        if (this.playState !== 'running') {
+        if (this.playState !== 'running' && this.target) {
             delete this.target[KEY];
         }
         if (this.playState === 'idle') {
