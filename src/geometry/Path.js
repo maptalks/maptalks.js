@@ -122,7 +122,7 @@ class Path extends Geometry {
             if (cb) {
                 cb(frame, currentCoord);
             }
-        });
+        }, this);
         player.play();
         return player;
     }

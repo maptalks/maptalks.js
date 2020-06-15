@@ -100,7 +100,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             if (step) {
                 step(frame);
             }
-        });
+        }, this);
         this._animPlayer = player;
         return this._animPlayer.play();
     },
