@@ -1496,7 +1496,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
-        if (!this._verifyExtent(this._getPrjCenter())) {
+        if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
         }
