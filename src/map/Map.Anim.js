@@ -55,7 +55,7 @@ Map.include(/** @lends Map.prototype */{
             props = {};
         let empty = true;
         for (const p in view) {
-            if (hasOwn(view, p) && (p === 'prjCenter' || !isNil(currView[p]))) {
+            if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
                     const from = new Coordinate(currView[p]).toFixed(7),
