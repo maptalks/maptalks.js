@@ -23,8 +23,8 @@ class FillPainter extends BasicPainter {
     }
 
     needAA() {
-        if (this.sceneConfig.antialias === undefined || this.sceneConfig.antialias) {
-            //turn on antialias by default
+        if (this.sceneConfig.antialias) {
+            //turn on antialias if set
             return true;
         } else {
             return false;
