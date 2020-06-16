@@ -206,6 +206,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this.setSpatialReference(opts['spatialReference'] || opts['view']);
 
+        this.setMaxExtent(opts['maxExtent']);
+
 
         this._mapViewPoint = new Point(0, 0);
 
