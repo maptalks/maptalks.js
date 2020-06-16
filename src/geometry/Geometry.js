@@ -1038,7 +1038,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._fireEvent('positionchange');
     }
 
-    onSymbolChanged(props) {
+    onSymbolChanged() {
         if (this._painter) {
             this._painter.refreshSymbol();
         }
