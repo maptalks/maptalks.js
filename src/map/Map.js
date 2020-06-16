@@ -1562,7 +1562,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Number}
      */
     getDevicePixelRatio() {
-        return this.options['devicePixelRatio'] || Math.ceil(Browser.devicePixelRatio) || 1;
+        return this.options['devicePixelRatio'] || Browser.devicePixelRatio || 1;
     }
 
     //-----------------------------------------------------------
