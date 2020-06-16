@@ -22,6 +22,8 @@ let hitTesting = false;
 
 let TEMP_CANVAS = null;
 
+const RADIAN = Math.PI / 180;
+
 const Canvas = {
     setHitTesting(testing) {
         hitTesting = testing;
@@ -749,7 +751,7 @@ const Canvas = {
             p1p2 = Math.PI - p1p2;
         }
         //angle between circle center and p2
-        const cp2 = 90 * Math.PI / 180 - a / 2,
+        const cp2 = 90 * RADIAN - a / 2,
             da = p1p2 - cp2;
 
         const dx = Math.cos(da) * r,
@@ -807,10 +809,11 @@ const Canvas = {
             ctx.arc(pt.x, pt.y, width, 0, 2 * Math.PI);
         } else if (ctx.ellipse) {
             if (heightTop !== heightBottom) {
-                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, Math.PI / 180 * 180, Math.PI / 180 * 360, false);
-                ctx.ellipse(pt.x, pt.y, width, heightBottom, 0, 0, Math.PI / 180 * 180, false);
+                // the order is clockwise
+                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, RADIAN * 180, RADIAN * 360, false);
+                ctx.ellipse(pt.x, pt.y, width, heightBottom, 0, 0, RADIAN * 180, false);
             } else {
-                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, 0, Math.PI / 180 * 360, false);
+                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, 0, RADIAN * 360, false);
             }
         } else {
             // IE
@@ -830,7 +833,7 @@ const Canvas = {
     },
 
     sector(ctx, pt, size, angles, lineOpacity, fillOpacity) {
-        const rad = Math.PI / 180;
+        const rad = RADIAN;
         const startAngle = angles[0],
             endAngle = angles[1];
 

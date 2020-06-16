@@ -56,7 +56,7 @@ const el = {
         const prjExtent = this._getPrjExtent();
         const pmin = map._prjToPoint(prjExtent.getMin(), z),
             pmax = map._prjToPoint(prjExtent.getMax(), z);
-        return [Math.abs(pmax.x - pmin.x) / 2, pmax.y - pt.y, pt.y - pmin.y];
+        return [Math.abs(pmax.x - pmin.x) / 2, Math.abs(pmax.y - pt.y), Math.abs(pt.y - pmin.y)];
     }
 };
 
@@ -85,7 +85,7 @@ Sector.include(el, {
         }
         const map = this.getMap();
         const pt = map._prjToPoint(this._getPrjCoordinates(), map.getGLZoom());
-        const size = this._getRenderSize();
+        const size = this._getRenderSize(pt);
         return [pt, size[0],
             [this.getStartAngle(), this.getEndAngle()]
         ];
