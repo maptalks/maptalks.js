@@ -789,29 +789,35 @@ const Canvas = {
 
 
     //各种图形的绘制方法
-    ellipse(ctx, pt, width, height, lineOpacity, fillOpacity) {
-        function bezierEllipse(x, y, a, b) {
+    ellipse(ctx, pt, width, heightTop, heightBottom, lineOpacity, fillOpacity) {
+        function bezierEllipse(x, y, a, b, b1) {
             const k = 0.5522848,
                 ox = a * k,
-                oy = b * k;
+                oy = b * k,
+                oy1 = b1 * k;
             ctx.moveTo(x - a, y);
             ctx.bezierCurveTo(x - a, y - oy, x - ox, y - b, x, y - b);
             ctx.bezierCurveTo(x + ox, y - b, x + a, y - oy, x + a, y);
-            ctx.bezierCurveTo(x + a, y + oy, x + ox, y + b, x, y + b);
-            ctx.bezierCurveTo(x - ox, y + b, x - a, y + oy, x - a, y);
+            ctx.bezierCurveTo(x + a, y + oy1, x + ox, y + b1, x, y + b1);
+            ctx.bezierCurveTo(x - ox, y + b1, x - a, y + oy1, x - a, y);
             ctx.closePath();
         }
         ctx.beginPath();
-        if (width === height) {
+        if (width === heightTop && width === heightBottom) {
             ctx.arc(pt.x, pt.y, width, 0, 2 * Math.PI);
         } else if (ctx.ellipse) {
-            ctx.ellipse(pt.x, pt.y, width, height, 0, 0, Math.PI / 180 * 360);
+            if (heightTop !== heightBottom) {
+                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, Math.PI / 180 * 180, Math.PI / 180 * 360, false);
+                ctx.ellipse(pt.x, pt.y, width, heightBottom, 0, 0, Math.PI / 180 * 180, false);
+            } else {
+                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, 0, Math.PI / 180 * 360, false);
+            }
         } else {
             // IE
-            bezierEllipse(pt.x, pt.y, width, height);
+            bezierEllipse(pt.x, pt.y, width, heightTop, heightBottom);
         }
-        Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
-        Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
+        Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - heightTop);
+        Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - heightTop);
     },
 
     rectangle(ctx, pt, size, lineOpacity, fillOpacity) {
