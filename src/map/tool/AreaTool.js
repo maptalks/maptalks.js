@@ -103,10 +103,11 @@ class AreaTool extends DistanceTool {
         const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const vertexMarker = new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
-        }).addTo(this._measureMarkerLayer);
+        });
         vertexMarker._setPrjCoordinates(prjCoord);
         this._measure(param['geometry']);
         this._lastVertex = vertexMarker;
+        this._addVertexMarker(vertexMarker);
     }
 
     _msOnDrawEnd(param) {
