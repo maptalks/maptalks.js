@@ -47,6 +47,17 @@ describe('DistanceTool and AreaTool', function () {
         if (tool.isEnabled()) {
             expect(tool.getLastMeasure()).to.be.above(measure);
             measure = tool.getLastMeasure();
+            tool.undo();
+            tool.undo();
+            tool.undo();
+            tool.undo();
+            tool.undo();
+            tool.redo();
+            tool.redo();
+            tool.redo();
+            tool.redo();
+            tool.redo();
+            expect(tool.getLastMeasure()).to.be.above(0);
         }
         for (i = 1; i < 5; i++) {
             happen.mousemove(eventContainer, {
