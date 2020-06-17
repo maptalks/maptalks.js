@@ -23,6 +23,7 @@ let hitTesting = false;
 let TEMP_CANVAS = null;
 
 const RADIAN = Math.PI / 180;
+const textOffsetY = 1;
 
 const Canvas = {
     setHitTesting(testing) {
@@ -339,7 +340,7 @@ const Canvas = {
             ctx.lineCap = 'round';
             ctx.lineWidth = textHaloRadius * 2;
             ctx.strokeStyle = textHaloFill;
-            ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
+            ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y + textOffsetY));
             ctx.miterLimit = 10; //default
 
             ctx.globalAlpha = alpha;
@@ -370,7 +371,7 @@ const Canvas = {
         if (rgba) {
             ctx.fillStyle = rgba;
         }
-        ctx.fillText(text, Math.round(pt.x), Math.round(pt.y));
+        ctx.fillText(text, Math.round(pt.x), Math.round(pt.y + textOffsetY));
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
