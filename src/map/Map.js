@@ -1265,8 +1265,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToViewPoint
      */
-    coordToViewPoint(coordinate, out) {
-        return this.coordinateToViewPoint(coordinate, out);
+    coordToViewPoint(coordinate, out, altitude) {
+        return this.coordinateToViewPoint(coordinate, out, altitude);
     }
 
     /**
@@ -2075,8 +2075,8 @@ Map.include(/** @lends Map.prototype */{
      */
     coordinateToViewPoint: function () {
         const COORD = new Coordinate(0, 0);
-        return function (coordinate, out) {
-            return this._prjToViewPoint(this.getProjection().project(coordinate, COORD), out);
+        return function (coordinate, out, altitude) {
+            return this._prjToViewPoint(this.getProjection().project(coordinate, COORD), out, altitude);
         };
     }(),
 
@@ -2184,12 +2184,12 @@ Map.include(/** @lends Map.prototype */{
      */
     distanceToPoint: function () {
         const POINT = new Point(0, 0);
-        return function (xDist, yDist, zoom) {
+        return function (xDist, yDist, zoom, paramCenter) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
-            const center = this.getCenter(),
+            const center = paramCenter || this.getCenter(),
                 target = projection.locate(center, xDist, yDist);
             const p0 = this.coordToPoint(center, zoom, POINT),
                 p1 = this.coordToPoint(target, zoom);
@@ -2368,8 +2368,8 @@ Map.include(/** @lends Map.prototype */{
      */
     _prjToContainerPoint: function () {
         const POINT = new Point(0, 0);
-        return function (pCoordinate, zoom, out) {
-            return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom, POINT), zoom, 0, out);
+        return function (pCoordinate, zoom, out, altitude) {
+            return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom, POINT), zoom, altitude || 0, out);
         };
     }(),
 
@@ -2382,8 +2382,8 @@ Map.include(/** @lends Map.prototype */{
      */
     _prjToViewPoint: function () {
         const POINT = new Point(0, 0);
-        return function (pCoordinate, out) {
-            const containerPoint = this._prjToContainerPoint(pCoordinate, undefined, POINT);
+        return function (pCoordinate, out, altitude) {
+            const containerPoint = this._prjToContainerPoint(pCoordinate, undefined, POINT, altitude);
             return this.containerPointToViewPoint(containerPoint, out);
         };
     }(),

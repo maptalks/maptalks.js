@@ -1,4 +1,4 @@
-import { extend, isFunction } from '../core/util';
+import { extend, isFunction, sign } from '../core/util';
 import { trim } from '../core/util/strings';
 import {
     on,
@@ -383,8 +383,18 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getViewPoint() {
-        return this.getMap().coordToViewPoint(this._coordinate)
+        let alt = 0;
+        if (this._owner && this._owner.getAltitude) {
+            const altitude = this._owner.getAltitude();
+            alt = this._meterToPoint(this._coordinate, altitude);
+        }
+        return this.getMap().coordToViewPoint(this._coordinate, undefined, alt)
             ._add(this.options['dx'], this.options['dy']);
+    }
+
+    _meterToPoint(center, altitude) {
+        const map = this.getMap();
+        return map.distanceToPoint(altitude, 0, undefined, center).x * sign(altitude);
     }
 
     _autoPan() {
