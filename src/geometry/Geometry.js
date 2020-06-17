@@ -1154,6 +1154,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return properties;
     }
 
+
+    //------------- altitude -------------
+    getAltitude() {
+        const layer = this.getLayer();
+        if (!layer) {
+            return 0;
+        }
+        const layerOpts = layer.options,
+            properties = this.getProperties();
+        const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
+        return altitude;
+    }
+
 }
 
 Geometry.mergeOptions(options);
