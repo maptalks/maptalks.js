@@ -1027,6 +1027,13 @@ class GeometryEditor extends Eventable(Class) {
             this._historyPointer = 0;
         }
 
+        if (this._history.length) {
+            const lastOperation = this._history[this._history.length - 1];
+            if (lastOperation[0] === method && JSON.stringify(lastOperation[1]) === JSON.stringify(args)) {
+                return;
+            }
+        }
+
         if (this._historyPointer < this._history.length - 1) {
             // remove old 'next views'
             this._history.splice(this._historyPointer + 1);
