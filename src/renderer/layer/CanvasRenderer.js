@@ -41,6 +41,10 @@ class CanvasRenderer extends Class {
             this.resources = new ResourceCache();
             /* eslint-enable no-use-before-define */
         }
+        this.checkAndDraw(this._tryToDraw, framestamp);
+    }
+
+    checkAndDraw(drawFn, ...args) {
         if (this.checkResources) {
             const resources = this.checkResources();
             if (resources.length > 0) {
@@ -61,10 +65,10 @@ class CanvasRenderer extends Class {
                     }
                 });
             } else {
-                this._tryToDraw(framestamp);
+                drawFn.call(this, ...args);
             }
         } else {
-            this._tryToDraw(framestamp);
+            drawFn.call(this, ...args);
         }
     }
 
@@ -149,7 +153,7 @@ class CanvasRenderer extends Class {
      * Whether must call render instead of drawOnInteracting when map is interacting
      */
     mustRenderOnInteracting() {
-        return !this._painted || (this.checkResources && this.checkResources().length > 0);
+        return !this._painted;
     }
 
     /**

@@ -303,9 +303,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         } else {
             s = extendSymbol(this._getInternalSymbol(), props);
         }
-        this._symbol = this._prepareSymbol(s);
-        this.onSymbolChanged(props);
-        return this;
+        this._eventSymbolProperties = props;
+        return this.setSymbol(s);
     }
 
     /**
@@ -1039,13 +1038,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._fireEvent('positionchange');
     }
 
-    onSymbolChanged(props) {
+    onSymbolChanged() {
         if (this._painter) {
             this._painter.refreshSymbol();
         }
         const e = {};
-        if (props) {
-            e.properties = props;
+        if (this._eventSymbolProperties) {
+            e.properties = this._eventSymbolProperties;
+            delete this._eventSymbolProperties;
         }
         /**
          * symbolchange event.
@@ -1152,6 +1152,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         return properties;
+    }
+
+
+    //------------- altitude -------------
+    getAltitude() {
+        const layer = this.getLayer();
+        if (!layer) {
+            return 0;
+        }
+        const layerOpts = layer.options,
+            properties = this.getProperties();
+        const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
+        return altitude;
     }
 
 }

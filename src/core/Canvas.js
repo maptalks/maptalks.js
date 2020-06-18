@@ -22,6 +22,9 @@ let hitTesting = false;
 
 let TEMP_CANVAS = null;
 
+const RADIAN = Math.PI / 180;
+const textOffsetY = 1;
+
 const Canvas = {
     setHitTesting(testing) {
         hitTesting = testing;
@@ -337,7 +340,7 @@ const Canvas = {
             ctx.lineCap = 'round';
             ctx.lineWidth = textHaloRadius * 2;
             ctx.strokeStyle = textHaloFill;
-            ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y));
+            ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y + textOffsetY));
             ctx.miterLimit = 10; //default
 
             ctx.globalAlpha = alpha;
@@ -368,7 +371,7 @@ const Canvas = {
         if (rgba) {
             ctx.fillStyle = rgba;
         }
-        ctx.fillText(text, Math.round(pt.x), Math.round(pt.y));
+        ctx.fillText(text, Math.round(pt.x), Math.round(pt.y + textOffsetY));
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
@@ -749,7 +752,7 @@ const Canvas = {
             p1p2 = Math.PI - p1p2;
         }
         //angle between circle center and p2
-        const cp2 = 90 * Math.PI / 180 - a / 2,
+        const cp2 = 90 * RADIAN - a / 2,
             da = p1p2 - cp2;
 
         const dx = Math.cos(da) * r,
@@ -789,29 +792,36 @@ const Canvas = {
 
 
     //各种图形的绘制方法
-    ellipse(ctx, pt, width, height, lineOpacity, fillOpacity) {
-        function bezierEllipse(x, y, a, b) {
+    ellipse(ctx, pt, width, heightTop, heightBottom, lineOpacity, fillOpacity) {
+        function bezierEllipse(x, y, a, b, b1) {
             const k = 0.5522848,
                 ox = a * k,
-                oy = b * k;
+                oy = b * k,
+                oy1 = b1 * k;
             ctx.moveTo(x - a, y);
             ctx.bezierCurveTo(x - a, y - oy, x - ox, y - b, x, y - b);
             ctx.bezierCurveTo(x + ox, y - b, x + a, y - oy, x + a, y);
-            ctx.bezierCurveTo(x + a, y + oy, x + ox, y + b, x, y + b);
-            ctx.bezierCurveTo(x - ox, y + b, x - a, y + oy, x - a, y);
+            ctx.bezierCurveTo(x + a, y + oy1, x + ox, y + b1, x, y + b1);
+            ctx.bezierCurveTo(x - ox, y + b1, x - a, y + oy1, x - a, y);
             ctx.closePath();
         }
         ctx.beginPath();
-        if (width === height) {
+        if (width === heightTop && width === heightBottom) {
             ctx.arc(pt.x, pt.y, width, 0, 2 * Math.PI);
         } else if (ctx.ellipse) {
-            ctx.ellipse(pt.x, pt.y, width, height, 0, 0, Math.PI / 180 * 360);
+            if (heightTop !== heightBottom) {
+                // the order is clockwise
+                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, RADIAN * 180, RADIAN * 360, false);
+                ctx.ellipse(pt.x, pt.y, width, heightBottom, 0, 0, RADIAN * 180, false);
+            } else {
+                ctx.ellipse(pt.x, pt.y, width, heightTop, 0, 0, RADIAN * 360, false);
+            }
         } else {
             // IE
-            bezierEllipse(pt.x, pt.y, width, height);
+            bezierEllipse(pt.x, pt.y, width, heightTop, heightBottom);
         }
-        Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - height);
-        Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - height);
+        Canvas.fillCanvas(ctx, fillOpacity, pt.x - width, pt.y - heightTop);
+        Canvas._stroke(ctx, lineOpacity, pt.x - width, pt.y - heightTop);
     },
 
     rectangle(ctx, pt, size, lineOpacity, fillOpacity) {
@@ -824,7 +834,7 @@ const Canvas = {
     },
 
     sector(ctx, pt, size, angles, lineOpacity, fillOpacity) {
-        const rad = Math.PI / 180;
+        const rad = RADIAN;
         const startAngle = angles[0],
             endAngle = angles[1];
 

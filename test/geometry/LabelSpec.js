@@ -191,6 +191,9 @@ describe('Geometry.Label', function () {
         });
 
         it('top', function () {
+            if (maptalks.Browser.ie) {
+                return;
+            }
             var vector = new maptalks.Label('■■■', center, {
                 textSymbol : {
                     'textFaceName': 'arial',

@@ -125,9 +125,12 @@ class Circle extends CenterMixin(Polygon) {
         }
         const pcenter = this._getPrjCoordinates();
         const pminmax = minmax.map(c => projection.project(c));
-        const dx = Math.min(Math.abs(pminmax[0].x - pcenter.x), Math.abs(pminmax[1].x - pcenter.x)),
-            dy = Math.min(Math.abs(pminmax[2].y - pcenter.y), Math.abs(pminmax[3].y - pcenter.y));
-        return new Extent(pcenter.sub(dx, dy), pcenter.add(dx, dy));
+        const leftx = pminmax[0].x - pcenter.x;
+        const rightx = pminmax[1].x - pcenter.x;
+        const topy = pminmax[2].y - pcenter.y;
+        const bottomy = pminmax[3].y - pcenter.y;
+
+        return new Extent(pcenter.add(leftx, topy), pcenter.add(rightx, bottomy));
     }
 
     _computeExtent(measurer) {

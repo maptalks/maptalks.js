@@ -140,7 +140,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).to.be.painted(0, -10);
-            expect(circle.getSize()._round().toArray()).to.be.eql([295, 170]);
+            expect(circle.getSize()._round().toArray()).to.be.eql([221, 429]);
         });
 
         it('paint at [-180, -85]', function () {
@@ -151,7 +151,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).to.be.painted(0, -10);
-            expect(circle.getSize()._round().toArray()).to.be.eql([295, 170]);
+            expect(circle.getSize()._round().toArray()).to.be.eql([221, 429]);
         });
     });
 
@@ -164,7 +164,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).to.be.painted(0, -10);
-            expect(ellipse.getSize()._round().toArray()).to.be.eql([295, 170]);
+            expect(ellipse.getSize()._round().toArray()).to.be.eql([221, 429]);
         });
 
         it('paint at [-180, -85]', function () {
@@ -175,7 +175,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).to.be.painted(0, -10);
-            expect(ellipse.getSize()._round().toArray()).to.be.eql([295, 170]);
+            expect(ellipse.getSize()._round().toArray()).to.be.eql([221, 429]);
         });
     });
 
@@ -189,7 +189,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).to.be.painted(0, -10);
-            expect(sector.getSize()._round().toArray()).to.be.eql([295, 170]);
+            expect(sector.getSize()._round().toArray()).to.be.eql([221, 429]);
         });
 
         it('paint at [-180, -85]', function () {
@@ -200,7 +200,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).to.be.painted(0, -10);
-            expect(sector.getSize()._round().toArray()).to.be.eql([295, 170]);
+            expect(sector.getSize()._round().toArray()).to.be.eql([221, 429]);
         });
     });
 
