@@ -145,6 +145,28 @@ describe('Geometry.Drag', function () {
             dragMap();
             expect(map.getCenter()).not.to.closeTo(center);
         });
+
+        it('can drag a GeometryCollection', function () {
+            var marker = new maptalks.Marker(center, {
+                draggable:true,
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : 20,
+                    markerHeight : 20
+                }
+            });
+            var marker2 = new maptalks.Marker(center.add(0.001, 0.001), {
+                draggable:true,
+                symbol : {
+                    markerType : 'ellipse',
+                    markerWidth : 20,
+                    markerHeight : 20
+                }
+            });
+            var geometryCollection = new maptalks.GeometryCollection([marker, marker2], { draggable: true });
+            dragGeometry(geometryCollection);
+            expect(marker.getCoordinates()).not.to.be.eql(center);
+        });
     });
 
     describe('drag can be disable', function () {
