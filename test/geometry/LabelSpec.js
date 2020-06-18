@@ -192,7 +192,6 @@ describe('Geometry.Label', function () {
 
         it('top', function () {
             if (maptalks.Browser.ie) {
-                done();
                 return;
             }
             var vector = new maptalks.Label('■■■', center, {
