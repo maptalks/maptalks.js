@@ -53,13 +53,26 @@ class GeometryDragHandler extends Handler  {
         }
 
         const shadow = this._shadow = target.copy();
-        this._shadow.setSymbol(target._getInternalSymbol());
+        if (shadow.getGeometries) {
+            const shadows = shadow.getGeometries();
+            const geos = target.getGeometries();
+            shadows.forEach((g, i) => {
+                this._updateShadowSymbol(g, geos[i]);
+            });
+        } else {
+            this._updateShadowSymbol(shadow, target);
+        }
+
+        shadow.setId(null);
+        this._prepareShadowConnectors();
+    }
+
+    _updateShadowSymbol(shadow, target) {
+        shadow.setSymbol(target._getInternalSymbol());
         if (target.options['dragShadow']) {
             const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
             shadow.setSymbol(symbol);
         }
-        shadow.setId(null);
-        this._prepareShadowConnectors();
     }
 
     _prepareShadowConnectors() {
@@ -282,7 +295,15 @@ class GeometryDragHandler extends Handler  {
         const shadow = this._shadow;
         if (shadow) {
             if (target.options['dragShadow']) {
-                target.setCoordinates(shadow.getCoordinates());
+                if (target.getGeometries) {
+                    const shadows = shadow.getGeometries();
+                    const geos = target.getGeometries();
+                    shadows.forEach((g, i) => {
+                        geos[i].setCoordinates(shadows[i].getCoordinates());
+                    });
+                } else {
+                    target.setCoordinates(shadow.getCoordinates());
+                }
             }
             shadow._fireEvent('dragend', eventParam);
             shadow.remove();
