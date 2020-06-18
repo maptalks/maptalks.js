@@ -291,7 +291,7 @@ class Painter extends Class {
                 altitude : altitude
             };
         }
-        const glExtent2D = map._get2DExtent(map.getGLZoom(), TEMP_CLIP_EXTENT0)._expand(lineWidth / map._glScale);
+        const glExtent2D = map._get2DExtent(map.getGLZoom(), TEMP_CLIP_EXTENT0)._expand(lineWidth * map._glScale);
         const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
         if (geometry.getShell && this.geometry.getHoles && !smoothness) {
