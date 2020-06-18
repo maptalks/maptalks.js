@@ -109,12 +109,15 @@ const GeoJSON = {
         const type = json['type'];
         if (type === 'Feature') {
             const g = json['geometry'];
-            const geometry = GeoJSON._convert(g, foreachFn);
+            const geometry = GeoJSON._convert(g);
             if (!geometry) {
                 return null;
             }
             geometry.setId(json['id']);
             geometry.setProperties(json['properties']);
+            if (foreachFn) {
+                foreachFn(geometry);
+            }
             return geometry;
         } else if (type === 'FeatureCollection') {
             const features = json['features'];
