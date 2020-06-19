@@ -1,5 +1,4 @@
 import { pushIn, isNumber } from '../../core/util';
-import Size from '../../geo/Size';
 import Point from '../../geo/Point';
 import Canvas from '../../core/Canvas';
 import Geometry from '../../geometry/Geometry';
