@@ -400,10 +400,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // removed
             return;
         }
-        tileImage.loadTime = now();
-        delete this.tilesLoading[id];
-        this._addTileToCache(tileInfo, tileImage);
-        this.setToRedraw();
+        const e = { tile : tileInfo, tileImage: tileImage };
         /**
          * tileload event, fired when tile is loaded.
          *
@@ -414,7 +411,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
          * @property {Object} tileInfo - tile info
          * @property {Image} tileImage - tile image
          */
-        this.layer.fire('tileload', { tile : tileInfo, tileImage: tileImage });
+        this.layer.fire('tileload', e);
+        // let user update tileImage in listener if needed
+        tileImage = e.tileImage;
+        tileImage.loadTime = now();
+        delete this.tilesLoading[id];
+        this._addTileToCache(tileInfo, tileImage);
+        this.setToRedraw();
     }
 
     onTileError(tileImage, tileInfo) {
