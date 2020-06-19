@@ -19,6 +19,7 @@ import UIComponent from './UIComponent';
  * @instance
  */
 const options = {
+    'containerClass': 'maptalks-msgBox',
     'autoPan': true,
     'autoCloseOn' : null,
     'autoOpenOn' : 'click',
@@ -145,7 +146,9 @@ class InfoWindow extends UIComponent {
             }
         }
         const dom = createEl('div');
-        dom.className = 'maptalks-msgBox';
+        if (this.options['containerClass']) {
+            dom.className = this.options['containerClass'];
+        }
         dom.style.width = this._getWindowWidth() + 'px';
         dom.style.bottom = '0px'; // fix #657
         let content = '<em class="maptalks-ico"></em>';
