@@ -62,12 +62,15 @@ export function buildExtrudeFaces(
                 buildFaceUV(start, offset, uvs, vertices, uvOrigin, glScale, uvSize[0], uvSize[1]);
             }
 
-            if (topThickness > 0) {
+            if (topThickness > 0 && !generateSide) {
                 offset = buildSide(vertices, top, holes, indices, start, offset, 0, topThickness, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
             }
         }
         // debugger
-        if (generateSide && height > 0 && topThickness < height) {
+        if (generateSide) {
+            if (generateTop) {
+                topThickness = 0;
+            }
             offset = buildSide(vertices, top, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
         }
         return offset;
