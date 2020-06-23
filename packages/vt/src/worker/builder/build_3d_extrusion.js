@@ -95,6 +95,15 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         buffers.push(faces.normals.buffer);
     }
     if (faces.uvs) {
+        const uvs = faces.uvs;
+        // for (let i = 0; i < uvs.length; i++) {
+        //     if (uvs[i]) {
+        //         uvs[i] = (uvs[i] % 1) * 512;
+        //     } else {
+        //         uvs[i] = 0;
+        //     }
+        // }
+        faces.uvs = new Float32Array(uvs);
         buffers.push(faces.uvs.buffer);
     }
     const fnTypes = buildFnTypes(features, symbol, zoom, faces.featureIndexes);

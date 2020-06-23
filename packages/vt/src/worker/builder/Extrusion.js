@@ -37,7 +37,6 @@ export function buildExtrudeFaces(
     // const clipEdges = [];
     function fillData(start, offset, holes, height) {
         const top = vertices.slice(start, offset);
-
         //just ignore bottom faces never appear in sight
         if (generateTop) {
             const triangles = earcut(top, holes, 3); //vertices, holes, dimension(2|3)
@@ -154,8 +153,10 @@ export function buildExtrudeFaces(
         featureIndexes: new feaCtor(featIndexes)   // vertex index of each feature
     };
     if (uvs) {
-        //可以改成int16
-        data.uvs = new Float32Array(uvs);
+        //因为vertices中最后一位不在indices中引用，uvs为保持位数与vertices一致，需补充2位
+        uvs.length = vertices.length / 3 * 2;
+        //改成int16
+        data.uvs = uvs;
     }
     return data;
 }
