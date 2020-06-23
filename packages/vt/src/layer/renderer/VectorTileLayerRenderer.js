@@ -1055,7 +1055,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     paintHighlight(picked, color) {
         const pluginIdx = picked.plugin;
         const plugins = this._getFramePlugins();
-        if (!plugins[pluginIdx]) {
+        if (!plugins[pluginIdx] || plugins[pluginIdx].painter && !plugins[pluginIdx].painter.isVisible()) {
             return;
         }
         plugins[pluginIdx].highlight(picked, color);
@@ -1063,7 +1063,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     paintBatchHighlight(idx, color) {
         const plugins = this._getFramePlugins();
-        if (!plugins[idx]) {
+        if (!plugins[idx] || plugins[idx].painter && !plugins[idx].painter.isVisible()) {
             return;
         }
         plugins[idx].highlightAll(color);
