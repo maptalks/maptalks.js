@@ -86,8 +86,7 @@ class FillPainter extends BasicPainter {
         if (!renderTarget) {
             return null;
         }
-        if (this.sceneConfig.antialias === undefined || this.sceneConfig.antialias) {
-            //turn on antialias by default
+        if (this.needAA()) {
             return renderTarget.fbo;
         } else {
             return renderTarget.noAaFbo;
