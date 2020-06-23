@@ -51,8 +51,8 @@ function getLightUniforms(map, iblTexes) {
     uniforms['uEnvironmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
 
     if (directionalLight) {
-        uniforms['uSketchfabLight0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];
-        uniforms['uSketchfabLight0_viewDirection'] = directionalLight.direction || [1, 1, -1];
+        uniforms['uLight0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];
+        uniforms['uLight0_viewDirection'] = directionalLight.direction || [1, 1, -1];
     }
     return uniforms;
 }

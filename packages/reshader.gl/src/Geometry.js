@@ -156,7 +156,7 @@ export default class Geometry {
             if (data.data) {
                 data = data.data;
             }
-            this._vertexCount = data.length /  positionSize;
+            this._vertexCount = Math.ceil(data.length /  positionSize);
         }
         return this._vertexCount;
     }
