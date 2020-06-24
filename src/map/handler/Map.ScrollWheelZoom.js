@@ -128,7 +128,7 @@ class MapScrollWheelZoomHandler extends Handler {
             return false;
         }
         this._requesting = 0;
-        let levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
+        let levelValue = (evt.deltaY ? evt.deltaY * -1 : evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             levelValue *= -1;
         }
