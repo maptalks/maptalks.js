@@ -28,6 +28,7 @@ Map.include(/** @lends Map.prototype */ {
      * @returns {Map} this
      */
     clearCollisionIndex() {
+        this.collisionFrameTime = 0;
         if (this._collisionIndex) {
             this._collisionIndex.clear();
         }
