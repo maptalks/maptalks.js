@@ -143,7 +143,12 @@ class MapCanvasRenderer extends MapRenderer {
                 if (renderer.prepareRender) {
                     renderer.prepareRender();
                 }
-                renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
+                if (renderer.checkAndDraw) {
+                    // for canvas renderers
+                    renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
+                } else {
+                    renderer.drawOnInteracting(this._eventParam, framestamp);
+                }
             } else {
                 // map is not interacting, call layer's render
                 renderer.render(framestamp);
@@ -221,7 +226,12 @@ class MapCanvasRenderer extends MapRenderer {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
             renderer.prepareCanvas();
-            renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
+            if (renderer.checkAndDraw) {
+                // for canvas renderers
+                renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
+            } else {
+                renderer.drawOnInteracting(this._eventParam, framestamp);
+            }
             return drawTime;
         } else if (map.isZooming() && !map.getPitch() && !map.isRotating()) {
             // when:
