@@ -175,7 +175,13 @@ export function addDomEvent(obj, typeArr, handler, context) {
         if (type === 'mousewheel' && Browser.gecko) {
             type = 'DOMMouseScroll';
         }
-        obj.addEventListener(type, eventHandler, false);
+        // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+        if (Browser.ie) {
+            // ie doesn't support options as the third parameter
+            obj.addEventListener(type, eventHandler, false);
+        } else {
+            obj.addEventListener(type, eventHandler, { capture: false, passive: false });
+        }
     }
     return this;
 }

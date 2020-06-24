@@ -26,11 +26,11 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     addHooks() {
-        addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
+        addDomEvent(this.target._containerDOM, 'wheel', this._onWheelScroll, this);
     }
 
     removeHooks() {
-        removeDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll);
+        removeDomEvent(this.target._containerDOM, 'wheel', this._onWheelScroll);
     }
 
     _onWheelScroll(evt) {
