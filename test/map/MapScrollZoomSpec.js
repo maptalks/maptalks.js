@@ -7,7 +7,7 @@ describe('Map.ScrollZoom', function () {
     var delay;
     function scrollMap(delta) {
         happen.once(container, {
-            type: (maptalks.Browser.gecko ? 'DOMMouseScroll' : 'mousewheel'),
+            type: 'wheel',
             detail: delta
         });
     }
