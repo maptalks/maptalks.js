@@ -154,7 +154,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
     };
     const types = typeArr.split(' ');
     for (let i = types.length - 1; i >= 0; i--) {
-        let type = types[i];
+        const type = types[i];
         if (!type) {
             continue;
         }
