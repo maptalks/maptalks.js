@@ -19,5 +19,6 @@ void main()
         weight += factor * 1.0;
         c += factor * fetchColor;
     }
-    gl_FragColor = c / max(weight, 1.0);
+    //当9个像素中，只有一个像素有值则舍弃它，以过滤ssr中可能的噪点
+    gl_FragColor = c / max(weight, 1.0) * clamp(sign(weight - 1.0), 0.0, 1.0);
 }

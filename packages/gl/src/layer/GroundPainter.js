@@ -250,6 +250,7 @@ class GroundPainter {
             extraCommandProps
         });
 
+        delete extraCommandProps.blend;
         this._depthShader = new reshader.pbr.StandardDepthShader({
             extraCommandProps
         });
