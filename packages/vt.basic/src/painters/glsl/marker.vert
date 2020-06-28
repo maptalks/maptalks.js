@@ -1,3 +1,4 @@
+#define SHADER_NAME MARKER
 #define RAD 0.0174532925
 
 attribute vec3 aPosition;

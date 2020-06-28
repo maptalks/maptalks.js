@@ -1,3 +1,4 @@
+#define SHADER_NAME FILL
 attribute vec3 aPosition;
 
 #ifdef HAS_COLOR

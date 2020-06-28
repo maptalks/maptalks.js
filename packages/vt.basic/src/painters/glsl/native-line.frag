@@ -1,3 +1,4 @@
+#define SHADER_NAME NATIVE_LINE
 precision mediump float;
 
 uniform float lineOpacity;

@@ -1,3 +1,5 @@
+#define SHADER_NAME FILL
+
 precision mediump float;
 
 #if defined(HAS_SHADOWING)

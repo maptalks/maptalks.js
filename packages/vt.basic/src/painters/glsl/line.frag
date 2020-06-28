@@ -1,3 +1,4 @@
+#define SHADER_NAME LINE
 #define DEVICE_PIXEL_RATIO 1.0
 
 precision highp float;

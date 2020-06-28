@@ -1,3 +1,4 @@
+#define SHADER_NAME LINE
 // the distance over which the line edge fades out.
 // Retina devices need a smaller distance to avoid aliasing.
 #define DEVICE_PIXEL_RATIO 1.0

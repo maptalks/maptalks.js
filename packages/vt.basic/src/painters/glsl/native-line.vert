@@ -1,3 +1,4 @@
+#define SHADER_NAME NATIVE_LINE
 attribute vec3 aPosition;
 uniform mat4 projViewModelMatrix;
 

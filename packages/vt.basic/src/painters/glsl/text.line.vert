@@ -1,3 +1,4 @@
+#define SHADER_NAME TEXT_LINE
 attribute vec3 aPosition;
 
 attribute vec2 aTexCoord;
