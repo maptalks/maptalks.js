@@ -584,7 +584,7 @@ function hasTexture(symbol) {
     }
     let t = 0;
     for (const p in symbol) {
-        if (p === 'normalTexture') {
+        if (p === 'normalTexture' || p === 'uNormalTexture') {
             return 2;
         } else if (p.indexOf('Texture') > 0) {
             t = 1;
