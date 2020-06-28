@@ -21,7 +21,7 @@ class StandardDepthShader extends MeshShader {
                 }
             }
         ];
-        const extraCommandProps = config.extraCommandProp;
+        const extraCommandProps = config.extraCommandProps;
         super({
             vert,
             frag,

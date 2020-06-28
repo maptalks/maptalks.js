@@ -112,7 +112,6 @@ vec3 getNoise(const vec2 uv) {
         float ix = mod(xy.x, 4.0);
         float iy = mod(xy.y, 4.0);
         return getNoiseSample(int(ix + iy * 4.0));
-        return getNoiseSample(15);
     #else
         return vec3(0.0);
     #endif
@@ -186,7 +185,7 @@ float computeAmbientOcclusionSSAO(const highp vec3 origin, const vec3 normal, co
     // smoothstep() optimized for range 0 to 1
     float t = saturate(radius0 / abs(origin.z - occlusionDepth));
     float rangeCheck = t * t * (3.0 - 2.0 * t);
-    float d = samplePos.z - occlusionDepth; // distance from depth to sample
+    float d = origin.z - occlusionDepth; // distance from depth to sample
     return (d >= -bias0 ? 0.0 : rangeCheck);
 }
 

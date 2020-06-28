@@ -311,7 +311,7 @@ class GroundPainter {
         planeGeo.generateBuffers(this.renderer.regl);
         planeGeo.data.aTexCoord = new Float32Array(8);
         //TODO 还需要构造 tangent
-        this._ground = new reshader.Mesh(planeGeo);
+        this._ground = new reshader.Mesh(planeGeo, null, { castShadow: false });
         this._groundScene = new reshader.Scene([this._ground]);
     }
 
