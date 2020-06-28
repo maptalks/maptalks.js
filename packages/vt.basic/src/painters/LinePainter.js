@@ -8,7 +8,6 @@ import pickingVert from './glsl/line.picking.vert';
 import { setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
-import { OFFSET_FACTOR_SCALE } from './Constant';
 
 class LinePainter extends BasicPainter {
     constructor(...args) {
@@ -310,7 +309,6 @@ class LinePainter extends BasicPainter {
             }
         };
         const depthRange = this.sceneConfig.depthRange;
-        const layer = this.layer;
         return {
             viewport,
             stencil: {
@@ -347,10 +345,7 @@ class LinePainter extends BasicPainter {
             },
             polygonOffset: {
                 enable: true,
-                offset: {
-                    factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
-                    units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
-                }
+                offset: this.getPolygonOffset()
             }
         };
     }

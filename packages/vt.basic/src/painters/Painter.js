@@ -3,6 +3,7 @@ import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes } from '@maptalks/function-type';
 import { extend } from '../Util';
 import hightlightFrag from './glsl/highlight.frag';
+import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const TEX_CACHE_KEY = '__gl_textures';
 
@@ -177,6 +178,15 @@ class Painter {
 
     getRenderFBO(context) {
         return context && context.renderTarget && context.renderTarget.fbo;
+    }
+
+    getPolygonOffset() {
+        const layer = this.layer;
+        return {
+            factor: () => { return Math.floor(-OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset()); },
+            // factor: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1) * 2; },
+            units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
+        };
     }
 
     pick(x, y, tolerance = 3) {

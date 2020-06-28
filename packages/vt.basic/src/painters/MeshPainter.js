@@ -6,7 +6,6 @@ import { setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
-import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
@@ -211,13 +210,9 @@ class MeshPainter extends Painter {
     }
 
     getPolygonOffset() {
-        const layer = this.layer;
         return {
             enable: (context, props) => props.maxAltitude === 0,
-            offset: {
-                factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
-                units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
-            }
+            offset: super.getPolygonOffset()
         };
     }
 
