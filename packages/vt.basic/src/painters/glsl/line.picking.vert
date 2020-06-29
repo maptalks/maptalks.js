@@ -1,5 +1,6 @@
 // the distance over which the line edge fades out.
 // Retina devices need a smaller distance to avoid aliasing.
+#define AA_CLIP_LIMIT 2.7
 #define DEVICE_PIXEL_RATIO 1.0
 #define ANTIALIASING 1.0 / DEVICE_PIXEL_RATIO / 2.0
 
@@ -34,7 +35,6 @@ uniform float lineDx;
 uniform float lineDy;
 uniform float lineOffset;
 uniform vec2 canvasSize;
-uniform mat2 mapRotationMatrix;
 
 varying vec2 vNormal;
 
@@ -70,6 +70,8 @@ void main() {
         vNormal.y = vNormal.y * 2.0 - 1.0;
     #endif
 
+    vec4 vertex = projViewModelMatrix * vec4(position, 1.0);
+
     float gapwidth = lineGapWidth / 2.0;
     #ifdef HAS_LINE_WIDTH
         float lineWidth = aLineWidth;
@@ -94,12 +96,23 @@ void main() {
     vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
     gl_Position = projViewModelMatrix * localVertex;
 
+    // #284 解决倾斜大时的锯齿问题
+    // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
+    float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
+    float d = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
+    if (d < 0.0) {
+        // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
+        float s = -d / limit;
+        float aaWidth = s * s * sqrt(s) * 24.0;
+        dist += aaWidth * extrude;
+        outset += aaWidth / 6.0;
+        // 用新的dist计算新的端点位置
+        localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+        gl_Position = projViewModelMatrix * localVertex;
+    }
+
     float distance = gl_Position.w;
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
-
-    //沿线的方向加粗1个像素，消除地图倾斜造成的锯齿
-    extrude = mapRotationMatrix * (EXTRUSION_DIRECTION * extrude);
-    gl_Position.xy += vec2(1.0) * extrude * 2.0 / canvasSize * distance;
 
     fbo_picking_setData(distance, true);
 }

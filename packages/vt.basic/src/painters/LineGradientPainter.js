@@ -109,11 +109,6 @@ class LineGradientPainter extends LinePainter {
             defines['HAS_TRAIL'] = 1;
         }
         uniforms.push(
-            'cameraToCenterDistance',
-            'lineWidth',
-            'lineGapWidth',
-            'lineBlur',
-            'lineOpacity',
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
@@ -122,19 +117,7 @@ class LineGradientPainter extends LinePainter {
                     mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }
-            },
-            'tileRatio',
-            'resolution',
-            'tileResolution',
-            'lineDx',
-            'lineDy',
-            'canvasSize',
-            'mapRotationMatrix',
-
-            'trailLength',
-            'trailSpeed',
-            'trailCircle',
-            'currentTime'
+            }
         );
 
         this.shader = new reshader.MeshShader({

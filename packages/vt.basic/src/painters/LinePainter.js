@@ -125,9 +125,6 @@ class LinePainter extends BasicPainter {
         // }
         if (geometry.data.aUp) {
             defines['HAS_UP'] = 1;
-            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, 1.0)';
-        } else {
-            defines['EXTRUSION_DIRECTION'] = 'vec2(1.0, -1.0)';
         }
     }
 
@@ -214,9 +211,6 @@ class LinePainter extends BasicPainter {
                 {
                     vert: pickingVert,
                     uniforms: [
-                        'cameraToCenterDistance',
-                        'lineWidth',
-                        'lineGapWidth',
                         {
                             name: 'projViewModelMatrix',
                             type: 'function',
@@ -225,15 +219,7 @@ class LinePainter extends BasicPainter {
                                 mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                                 return projViewModelMatrix;
                             }
-                        },
-                        'tileRatio',
-                        'resolution',
-                        'tileResolution',
-                        'lineDx',
-                        'lineDy',
-                        'lineOffset',
-                        'canvasSize',
-                        'mapRotationMatrix'
+                        }
                     ],
                     extraCommandProps: {
                         viewport: this.pickingViewport
@@ -253,13 +239,6 @@ class LinePainter extends BasicPainter {
             defines['HAS_TRAIL'] = 1;
         }
         uniforms.push(
-            'cameraToCenterDistance',
-            'lineWidth',
-            'lineGapWidth',
-            'lineBlur',
-            'lineOpacity',
-            'lineDasharray',
-            'lineDashColor',
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
@@ -268,21 +247,7 @@ class LinePainter extends BasicPainter {
                     mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }
-            },
-            'tileRatio',
-            'resolution',
-            'tileResolution',
-            'tileExtent',
-            'lineDx',
-            'lineDy',
-            // 'lineOffset',
-            'canvasSize',
-            'mapRotationMatrix',
-
-            'trailLength',
-            'trailSpeed',
-            'trailCircle',
-            'currentTime'
+            }
         );
 
 
@@ -362,15 +327,14 @@ class LinePainter extends BasicPainter {
         // const unit = [resolution * 100 * glScale, 0, 0];
         // const v = vec3.transformMat4([], vec3.add([], map.cameraLookAt, unit), projViewMatrix);
         // console.log(vec2.normalize([], [v[0] - c[0], v[1] - c[1]]));
-        const rotation = map.getBearing() * Math.PI / 180;
+
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
             projViewMatrix, viewMatrix, cameraToCenterDistance, resolution, canvasSize,
             trailSpeed: animation.speed || 1,
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
-            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
-            mapRotationMatrix: mat2.fromRotation([], rotation),
+            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0
         };
 
         this.setIncludeUniformValues(uniforms, context);

@@ -1,6 +1,7 @@
 #define SHADER_NAME LINE
 // the distance over which the line edge fades out.
 // Retina devices need a smaller distance to avoid aliasing.
+#define AA_CLIP_LIMIT 2.7
 #define DEVICE_PIXEL_RATIO 1.0
 #define ANTIALIASING 1.0 / DEVICE_PIXEL_RATIO / 2.0
 
@@ -35,7 +36,6 @@ uniform float lineDx;
 uniform float lineDy;
 // uniform float lineOffset;
 uniform vec2 canvasSize;
-uniform mat2 mapRotationMatrix;
 
 varying vec2 vNormal;
 varying vec2 vWidth;
@@ -118,7 +118,7 @@ void main() {
 
     // #284 解决倾斜大时的锯齿问题
     // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
-    float limit = min(3.2 / canvasSize.x, 3.2 / canvasSize.y);
+    float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
     float d = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
     if (d < 0.0) {
         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
