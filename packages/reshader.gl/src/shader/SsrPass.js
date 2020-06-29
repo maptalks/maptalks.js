@@ -2,7 +2,7 @@ import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
 import SsrMipmapShader from './SsrMipmapShader.js';
 import SsrCombineShader from './SsrCombineShader.js';
-import BoxColorBlurShader from './BoxColorBlurShader.js';
+// import BoxColorBlurShader from './BoxColorBlurShader.js';
 
 import quadVert from './glsl/quad.vert';
 import quadFrag from './glsl/quad.frag';
@@ -58,20 +58,20 @@ class SsrPass {
         this._inputRGBM = 0;
     }
 
-    _blur(tex) {
-        this._initShaders();
-        this._createTextures(tex);
-        if (this._blurFBO.width !== tex.width ||
-            this._blurFBO.height !== tex.height) {
-            this._blurFBO.resize(tex.width, tex.height);
-        }
-        this._renderer.render(this._blurShader, {
-            resolution: [tex.width, tex.height],
-            textureSource:tex,
-            uRGBMRange: 7
-        }, null, this._blurFBO);
-        return this._blurFBO.color[0];
-    }
+    // _blur(tex) {
+    //     this._initShaders();
+    //     this._createTextures(tex);
+    //     if (this._blurFBO.width !== tex.width ||
+    //         this._blurFBO.height !== tex.height) {
+    //         this._blurFBO.resize(tex.width, tex.height);
+    //     }
+    //     this._renderer.render(this._blurShader, {
+    //         resolution: [tex.width, tex.height],
+    //         textureSource:tex,
+    //         uRGBMRange: 7
+    //     }, null, this._blurFBO);
+    //     return this._blurFBO.color[0];
+    // }
 
     combine(sourceTex, ssrTex) {
         this._initShaders();
@@ -80,7 +80,7 @@ class SsrPass {
             this._combineFBO.height !== sourceTex.height) {
             this._combineFBO.resize(sourceTex.width, sourceTex.height);
         }
-        ssrTex = this._blur(ssrTex);
+        // ssrTex = this._blur(ssrTex);
         this._renderer.render(this._combineShader, {
             TextureInput: sourceTex,
             TextureSSR: ssrTex,
@@ -134,7 +134,7 @@ class SsrPass {
     dispose() {
         if (this._combineShader) {
             this._mipmapShader.dispose();
-            this._blurShader.dispose();
+            // this._blurShader.dispose();
             this._ssrQuadShader.dispose();
 
             this._targetFBO.destroy();
@@ -149,7 +149,7 @@ class SsrPass {
         if (!this._combineShader) {
             this._mipmapShader = new SsrMipmapShader();
             this._combineShader = new SsrCombineShader();
-            this._blurShader = new BoxColorBlurShader({ blurOffset: 2 });
+            // this._blurShader = new BoxColorBlurShader({ blurOffset: 2 });
 
             const config = {
                 vert: quadVert,
