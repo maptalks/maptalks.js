@@ -572,7 +572,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         plugins.forEach((plugin) => {
             const idx = plugin.renderIndex;
             const visible = this._isVisible(idx);
-            if (!plugin || !visible || !this._hasMesh(plugin.painter.scene.getMeshes())) {
+            const includesChanged = parentContext && parentContext.states && parentContext.states.includesChanged;
+            if (!plugin || !visible || !includesChanged && !this._hasMesh(plugin.painter.scene.getMeshes())) {
                 return;
             }
             this.regl.clear({

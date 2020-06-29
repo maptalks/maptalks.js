@@ -25,7 +25,9 @@ class StandardPainter extends MeshPainter {
     paint(context) {
         const hasShadow = !!context.shadow;
         if (context.states && context.states.includesChanged) {
-            this.shader.dispose();
+            this._iblShader.dispose();
+            this._noIblShader.dispose();
+            delete this.shader;
             this._createShader(context);
         }
         const isSsr = !!context.ssr;
