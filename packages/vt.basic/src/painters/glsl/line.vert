@@ -89,6 +89,7 @@ void main() {
         vNormal.y = vNormal.y * 2.0 - 1.0;
     #endif
 
+    vec4 vertex = projViewModelMatrix * vec4(position, 1.0);
 
     float gapwidth = lineGapWidth / 2.0;
     #ifdef HAS_LINE_WIDTH
@@ -115,22 +116,24 @@ void main() {
     vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
     gl_Position = projViewModelMatrix * localVertex;
 
+    // #284 解决倾斜大时的锯齿问题
+    // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
+    float limit = min(3.2 / canvasSize.x, 3.2 / canvasSize.y);
+    float d = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
+    if (d < 0.0) {
+        // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
+        float s = -d / limit;
+        float aaWidth = s * s * sqrt(s) * 24.0;
+        dist += aaWidth * extrude;
+        outset += aaWidth / 6.0;
+        // 用新的dist计算新的端点位置
+        localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+        gl_Position = projViewModelMatrix * localVertex;
+    }
+
+    //这里可能有z-fighting问题
     float distance = gl_Position.w;
     gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
-
-    //沿线的方向加粗1个像素，消除地图倾斜造成的锯齿
-    // float angleSin = sin(-mapRotation);
-    // float angleCos = cos(-mapRotation);
-    // mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
-    extrude = mapRotationMatrix * (EXTRUSION_DIRECTION * extrude);
-    gl_Position.xy += vec2(1.0) * extrude * 2.0 / canvasSize * distance;
-
-    // extrude = normalize((projViewMatrix * vec4(dist + cameraLookAt, 0.0, 1.0)).xy);
-    // gl_Position.xy += vec2(10.0) * extrude * 2.0 / canvasSize * distance;
-
-    // vec4 position2 = projViewModelMatrix * vec4(position, 1.0);
-    // vec2 tExtrude = length(extrude) * normalize(gl_Position.xy - position2.xy);
-    // gl_Position.xy += vec2(10.0) * tExtrude * 2.0 / canvasSize * distance;
 
     vWidth = vec2(outset, inset);
     vGammaScale = distance / cameraToCenterDistance;

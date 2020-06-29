@@ -7,7 +7,6 @@ import { setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
-import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const DEFAULT_UNIFORMS = {
     'polygonFill': [1, 1, 1, 1],
@@ -82,15 +81,15 @@ class FillPainter extends BasicPainter {
     }
 
     getRenderFBO(context) {
-        const renderTarget = context && context.renderTarget;
-        if (!renderTarget) {
-            return null;
+        if (context && context.renderTarget) {
+            if (this.needAA()) {
+                if (context.renderTarget.fbo) {
+                    return context.renderTarget.fbo;
+                }
+            }
+            return context.renderTarget.noAaFbo || context.renderTarget.fbo;
         }
-        if (this.needAA()) {
-            return renderTarget.fbo;
-        } else {
-            return renderTarget.noAaFbo;
-        }
+        return null;
     }
 
     _getFnTypeConfig() {
@@ -232,7 +231,6 @@ class FillPainter extends BasicPainter {
         const renderer = this.layer.getRenderer();
         const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
-        const layer = this.layer;
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms,
@@ -261,7 +259,9 @@ class FillPainter extends BasicPainter {
                     enable: true,
                     range: depthRange || [0, 1],
                     // 如果mask设为true，fill会出现与轮廓线的深度冲突，出现奇怪的绘制
-                    mask: false,
+                    // 如果mask设为false，会出现 antialias 打开时，会被Ground的ssr覆盖的问题 （绘制时ssr需要对比深度值）
+                    // 以上问题已经解决 #284
+                    // mask: false,
                     func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
@@ -274,10 +274,7 @@ class FillPainter extends BasicPainter {
                 },
                 polygonOffset: {
                     enable: true,
-                    offset: {
-                        factor: () => { return -OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset(); },
-                        units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
-                    }
+                    offset: this.getPolygonOffset()
                 }
             }
         });
