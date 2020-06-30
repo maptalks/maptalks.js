@@ -1,6 +1,8 @@
+#define AA_CLIP_LIMIT 2.0
+#define AA_LINE_WIDTH 16.0
+
 // the distance over which the line edge fades out.
 // Retina devices need a smaller distance to avoid aliasing.
-#define AA_CLIP_LIMIT 2.7
 #define DEVICE_PIXEL_RATIO 1.0
 #define ANTIALIASING 1.0 / DEVICE_PIXEL_RATIO / 2.0
 
@@ -103,7 +105,7 @@ void main() {
     if (d < 0.0) {
         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
         float s = -d / limit;
-        float aaWidth = s * s * sqrt(s) * 24.0;
+        float aaWidth = s * s * s * s * AA_LINE_WIDTH;
         dist += aaWidth * extrude;
         outset += aaWidth / 6.0;
         // 用新的dist计算新的端点位置
