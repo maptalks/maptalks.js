@@ -1,5 +1,6 @@
 import Renderer from '../Renderer.js';
 import QuadShader from './QuadShader.js';
+// import BoxBlurShader from './BoxBlurShader.js';
 import quadVert from './glsl/quad.vert';
 import blur0Frag from './glsl/blur0.frag';
 import blur1Frag from './glsl/blur1.frag';
@@ -52,11 +53,14 @@ class BlurPass {
         }
         vec2.set(uniforms['uGlobalTexSize'], curTex.width, curTex.height);
 
-        this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, this._level > 5 ? 0.5 : 1);
+        this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 0.5);
         this._blurOnce(this._blur1Shader, this._blur01FBO.color[0], this._blur10FBO, this._blur11FBO, 0.5);
         this._blurOnce(this._blur2Shader, this._blur11FBO.color[0], this._blur20FBO, this._blur21FBO, 0.5);
         this._blurOnce(this._blur3Shader, this._blur21FBO.color[0], this._blur30FBO, this._blur31FBO, 0.5);
         this._blurOnce(this._blur4Shader, this._blur31FBO.color[0], this._blur40FBO, this._blur41FBO, 0.5);
+        // this._boxOnce(this._blur11FBO.color[0], this._blur21FBO, 0.5);
+        // this._boxOnce(this._blur21FBO.color[0], this._blur31FBO, 0.5);
+        // this._boxOnce(this._blur31FBO.color[0], this._blur41FBO, 0.5);
         if (this._level > 5) {
             this._blurOnce(this._blur5Shader, this._blur41FBO.color[0], this._blur50FBO, this._blur51FBO, 0.5);
             this._blurOnce(this._blur6Shader, this._blur51FBO.color[0], this._blur60FBO, this._blur51FBO, 0.5);
@@ -87,6 +91,26 @@ class BlurPass {
         this._renderer.render(shader, uniforms, null, output1);
     }
 
+    // _boxOnce(inputTex, output, sizeRatio) {
+    //     const w = Math.ceil(sizeRatio * inputTex.width);
+    //     const h = Math.ceil(sizeRatio * inputTex.height);
+    //     if (output.width !== w || output.height !== h) {
+    //         output.resize(w, h);
+    //     }
+
+    //     if (!this._boxUniforms) {
+    //         this._boxUniforms = {
+    //             ignoreTransparent: 0,
+    //             resolution: [0, 0]
+    //         };
+    //     }
+
+    //     const uniforms = this._boxUniforms;
+    //     uniforms['textureSource'] = inputTex;
+    //     vec2.set(uniforms['resolution'], output.width, output.height);
+    //     this._renderer.render(this._boxShader, uniforms, null, output);
+    // }
+
     dispose() {
         if (this._blur0Shader) {
             this._blur0Shader.dispose();
@@ -100,6 +124,7 @@ class BlurPass {
                 this._blur6Shader.dispose();
                 delete this._blur5Shader;
             }
+            // this._boxShader.dispose();
         }
         if (this._blur00Tex) {
             delete this._blur00Tex;
@@ -250,6 +275,8 @@ class BlurPass {
                 config.frag = blur6Frag;
                 this._blur6Shader = new QuadShader(config);
             }
+
+            // this._boxShader = new BoxBlurShader({ blurOffset: 1 });
         }
     }
 }

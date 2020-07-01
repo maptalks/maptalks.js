@@ -9,19 +9,33 @@ class BoxBlurShader extends QuadShader {
             vert, frag,
             defines : {
                 'BOXBLUR_OFFSET' : blurOffset || 2
+            },
+            extraCommandProps: {
+                viewport: {
+                    x: 0,
+                    y: 0,
+                    width: (context, props) => {
+                        return props['resolution'][0];
+                    },
+                    height: (context, props) => {
+                        return props['resolution'][1];
+                    }
+                }
             }
         });
+        this._blurOffset = blurOffset || 2;
     }
 
     getMeshCommand(regl, mesh) {
-        if (!this.commands['box_blur']) {
-            this.commands['box_blur'] = this.createREGLCommand(
+        const key = 'box_blur_' + this._blurOffset;
+        if (!this.commands[key]) {
+            this.commands[key] = this.createREGLCommand(
                 regl,
                 null,
                 mesh.getElements()
             );
         }
-        return this.commands['box_blur'];
+        return this.commands[key];
     }
 }
 

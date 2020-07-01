@@ -2,7 +2,7 @@ import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
 import SsrMipmapShader from './SsrMipmapShader.js';
 import SsrCombineShader from './SsrCombineShader.js';
-// import BoxColorBlurShader from './BoxColorBlurShader.js';
+// import BoxBlurShader from './BoxBlurShader.js';
 
 import quadVert from './glsl/quad.vert';
 import quadFrag from './glsl/quad.frag';
@@ -68,7 +68,8 @@ class SsrPass {
     //     this._renderer.render(this._blurShader, {
     //         resolution: [tex.width, tex.height],
     //         textureSource:tex,
-    //         uRGBMRange: 7
+    //         uRGBMRange: 7,
+    //         ignoreTransparent: 1
     //     }, null, this._blurFBO);
     //     return this._blurFBO.color[0];
     // }
@@ -149,7 +150,7 @@ class SsrPass {
         if (!this._combineShader) {
             this._mipmapShader = new SsrMipmapShader();
             this._combineShader = new SsrCombineShader();
-            // this._blurShader = new BoxColorBlurShader({ blurOffset: 2 });
+            // this._blurShader = new BoxBlurShader({ blurOffset: 2 });
 
             const config = {
                 vert: quadVert,

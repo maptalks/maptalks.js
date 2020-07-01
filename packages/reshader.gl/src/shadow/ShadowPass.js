@@ -1,7 +1,7 @@
 import { isNil } from '../common/Util';
 import { mat4, vec4, vec3 } from 'gl-matrix';
 import ShadowMapShader from './ShadowMapShader';
-import BoxBlurShader from '../shader/BoxBlurShader';
+import BoxShadowBlurShader from '../shader/BoxShadowBlurShader';
 
 let getFrustumWorldSpace, getDirLightCameraProjView;
 
@@ -55,7 +55,7 @@ class ShadowPass {
         renderer.render(this.shadowMapShader, { lightProjViewMatrix }, scene, this.depthFBO);
         if (this.blurFBO) {
             if (!this.boxBlurShader) {
-                this.boxBlurShader = new BoxBlurShader({
+                this.boxBlurShader = new BoxShadowBlurShader({
                     blurOffset : this.blurOffset
                 });
             }

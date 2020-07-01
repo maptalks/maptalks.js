@@ -28,7 +28,7 @@ export { default as WireframeShader } from './shader/WireframeShader.js';
 export { default as PhongShader } from './shader/PhongShader.js';
 export { default as ToonShader } from './shader/ToonShader.js';
 export { default as FxaaShader } from './shader/FxaaShader.js';
-export { default as BoxColorBlurShader } from './shader/BoxColorBlurShader.js';
+export { default as BoxBlurShader } from './shader/BoxBlurShader.js';
 export { default as SsaoPass } from './ssao/SsaoPass.js';
 export { default as PostProcessShader } from './shader/PostProcessShader.js';
 export { default as TaaPass } from './shader/TaaPass.js';

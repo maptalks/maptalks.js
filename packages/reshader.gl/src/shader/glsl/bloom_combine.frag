@@ -11,19 +11,6 @@ uniform sampler2D TextureBloomBlur4;
 uniform sampler2D TextureBloomBlur5;
 uniform sampler2D TextureInput;
 uniform sampler2D TextureSource;
-uniform vec2 uTextureBloomBlur1Ratio;
-uniform vec2 uTextureBloomBlur1Size;
-uniform vec2 uTextureBloomBlur2Ratio;
-uniform vec2 uTextureBloomBlur2Size;
-uniform vec2 uTextureBloomBlur3Ratio;
-uniform vec2 uTextureBloomBlur3Size;
-uniform vec2 uTextureBloomBlur4Ratio;
-uniform vec2 uTextureBloomBlur4Size;
-uniform vec2 uTextureBloomBlur5Ratio;
-uniform vec2 uTextureBloomBlur5Size;
-uniform vec2 uTextureInputRatio;
-uniform vec2 uTextureInputSize;
-uniform vec2 uTextureOutputRatio;
 uniform vec2 uTextureOutputSize;
 #define SHADER_NAME bloomCombine
 
@@ -84,17 +71,17 @@ vec4 bloomCombine() {
     const float factor3 = 0.6;
     const float factor4 = 0.3;
     const float factor5 = 0.1;
-    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur1, (min(gTexCoord, 1.0 - 1e+0 / uTextureBloomBlur1Size.xy)) * uTextureBloomBlur1Ratio), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor1, midVal);
-    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur2, (min(gTexCoord, 1.0 - 1e+0 / uTextureBloomBlur2Size.xy)) * uTextureBloomBlur2Ratio), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor2, midVal);
-    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur3, (min(gTexCoord, 1.0 - 1e+0 / uTextureBloomBlur3Size.xy)) * uTextureBloomBlur3Ratio), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor3, midVal);
-    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur4, (min(gTexCoord, 1.0 - 1e+0 / uTextureBloomBlur4Size.xy)) * uTextureBloomBlur4Ratio), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor4, midVal);
-    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur5, (min(gTexCoord, 1.0 - 1e+0 / uTextureBloomBlur5Size.xy)) * uTextureBloomBlur5Ratio), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor5, midVal);
-    vec4 color = texture2D(TextureInput, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio);
+    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur1, gTexCoord), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor1, midVal);
+    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur2, gTexCoord), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor2, midVal);
+    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur3, gTexCoord), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor3, midVal);
+    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur4, gTexCoord), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor4, midVal);
+    bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur5, gTexCoord), uRGBMRange), 1.0)).rgb * getRadiusFactored(factor5, midVal);
+    vec4 color = texture2D(TextureInput, gTexCoord);
 
     color.rgb = mix(vec3(0.0), color.rgb, sign(color.a));
     float srcAlpha = mix(sqrt((bloom.r + bloom.g + bloom.b) / 3.0), color.a, sign(color.a));
 
-    vec4 srcColor = texture2D(TextureSource, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio);
+    vec4 srcColor = texture2D(TextureSource, gTexCoord);
     float dstAlpha = 1.0 - color.a;
     return vec4(srcColor.rgb * dstAlpha + color.rgb + linearTosRGB(bloom.rgb * uBloomFactor), srcAlpha + srcColor.a * dstAlpha);
 }
