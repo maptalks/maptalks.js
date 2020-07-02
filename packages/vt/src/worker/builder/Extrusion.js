@@ -168,6 +168,7 @@ function buildSide(generateTop, vertices, topVertices, holes, indices, start, of
     const count = offset - start;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
     if (generateTop) {
+        //不生成top时，复用vertices中已有的top端点，不再次拷贝。
         //top vertexes
         for (let i = 2, l = count; i < l; i += 3) {
             vertices[offset + i - 2] = topVertices[i - 2];
@@ -202,6 +203,7 @@ function buildSide(generateTop, vertices, topVertices, holes, indices, start, of
     holes.push(count / 3);
     const startIdx = generateTop ? (start + count) / 3 : start / 3;
     for (let r = 0; r < holes.length; r++) {
+        // #287, 遍历geometry中的每个ring，构造侧面三角形和uv坐标
         const ringStart = startIdx + (holes[r - 1] || 0);
         const ringEnd = startIdx + holes[r];
 
