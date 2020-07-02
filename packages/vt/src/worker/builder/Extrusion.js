@@ -63,7 +63,7 @@ export function buildExtrudeFaces(
             }
 
             if (topThickness > 0 && !generateSide) {
-                offset = buildSide(vertices, top, holes, indices, start, offset, 0, topThickness, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
+                offset = buildSide(true, vertices, top, holes, indices, start, offset, 0, topThickness, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
             }
         }
         // debugger
@@ -71,7 +71,7 @@ export function buildExtrudeFaces(
             if (generateTop) {
                 topThickness = 0;
             }
-            offset = buildSide(vertices, top, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
+            offset = buildSide(generateTop, vertices, top, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
         }
         return offset;
     }
@@ -164,57 +164,63 @@ export function buildExtrudeFaces(
     return data;
 }
 
-function buildSide(vertices, topVertices, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale) {
+function buildSide(generateTop, vertices, topVertices, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale) {
     const count = offset - start;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
-    //top vertexes
-    for (let i = 2, l = count; i < l; i += 3) {
-        vertices[offset + i - 2] = topVertices[i - 2];
-        vertices[offset + i - 1] = topVertices[i - 1];
-        vertices[offset + i - 0] = topVertices[i] - topThickness;
-    }
-    offset += count;
-    //bottom vertexes
-    for (let i = 2, l = count; i < l; i += 3) {
-        vertices[offset + i - 2] = topVertices[i - 2];
-        vertices[offset + i - 1] = topVertices[i - 1];
-        vertices[offset + i - 0] = topVertices[i] - height;
-    }
-    offset += count;
-    //top vertexes
-    for (let i = 2, l = count; i < l; i += 3) {
-        vertices[offset + i - 2] = topVertices[i - 2];
-        vertices[offset + i - 1] = topVertices[i - 1];
-        vertices[offset + i - 0] = topVertices[i] - topThickness;
-    }
-    offset += count;
-    //bottom vertexes
-    for (let i = 2, l = count; i < l; i += 3) {
-        vertices[offset + i - 2] = topVertices[i - 2];
-        vertices[offset + i - 1] = topVertices[i - 1];
-        vertices[offset + i - 0] = topVertices[i] - height;
-    }
-    offset += count;
-
-    //side face indices
-    const s = indices.length;
-    const startIdx = (start + count) / 3;
-    const vertexCount = count / 3;
-    let ringStartIdx = startIdx, current, next;
-    for (let i = startIdx, l = vertexCount + startIdx; i < l - 1; i++) {
-        current = i;
-        if (holes.indexOf(i - startIdx + 1) >= 0) {
-            next = ringStartIdx;
-            ringStartIdx = i + 1;
-        } else {
-
-
-            next = i + 1;
+    if (generateTop) {
+        //top vertexes
+        for (let i = 2, l = count; i < l; i += 3) {
+            vertices[offset + i - 2] = topVertices[i - 2];
+            vertices[offset + i - 1] = topVertices[i - 1];
+            vertices[offset + i - 0] = topVertices[i] - topThickness;
         }
+        offset += count;
+    }
+    //bottom vertexes
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - height;
+    }
+    offset += count;
+    //top vertexes
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - topThickness;
+    }
+    offset += count;
+    //bottom vertexes
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - height;
+    }
+    offset += count;
+
+    holes = holes || [];
+    holes.push(count / 3);
+    const startIdx = generateTop ? (start + count) / 3 : start / 3;
+    for (let r = 0; r < holes.length; r++) {
+        const ringStart = startIdx + (holes[r - 1] || 0);
+        const ringEnd = startIdx + holes[r];
+
+        buildRingSide(ringStart, ringEnd, vertices, count / 3, EXTENT, indices, generateUV, uvs, uvSize, glScale, vScale);
+    }
+    return offset;
+}
+
+function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices, generateUV, uvs, uvSize, glScale, vScale) {
+    const indiceStart = indices.length;
+    const ringCount = ringEnd - ringStart;
+    let current, next;
+    for (let i = ringStart, l = ringCount + ringStart; i < l - 1; i++) {
+        current = i;
+        next = i + 1;
         if (isClippedEdge(vertices, current, next, EXTENT)) {
             continue;
         }
-        if ((i - startIdx) % 2 === 1) {
+        if ((i - ringStart) % 2 === 1) {
             //加上 2 * vertexCount，使用与 i % 2 === 0 时，不同的另一组端点，以避免共端点
             current += 2 * vertexCount;
             next += 2 * vertexCount;
@@ -225,7 +231,6 @@ function buildSide(vertices, topVertices, holes, indices, start, offset, topThic
         indices.push(next, next + vertexCount, current + vertexCount);
     }
     if (generateUV) {
-        buildSideUV(uvs, vertices, indices.slice(s, indices.length), uvSize[0], uvSize[1], glScale, vScale); //convert uvSize[1] to meter
+        buildSideUV(uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], glScale, vScale); //convert uvSize[1] to meter
     }
-    return offset;
 }

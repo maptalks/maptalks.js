@@ -57,7 +57,6 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
     delete faces.indices;
     buffers.push(indices.buffer, faces.vertices.buffer, faces.featureIndexes.buffer);
 
-    // debugger
     const normals = buildNormals(faces.vertices, indices);
     let simpleNormal = true;
     //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
@@ -71,13 +70,6 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
 
     if (tangent) {
         let tangents = buildTangents(faces.vertices, faces.normals, faces.uvs, indices);
-        const len = tangents.length;
-        if (tangents[len - 1] === undefined) {
-            tangents[len - 4] = tangents[0];
-            tangents[len - 3] = tangents[1];
-            tangents[len - 2] = tangents[2];
-            tangents[len - 1] = tangents[3];
-        }
         tangents = createQuaternion(faces.normals, tangents);
         faces.tangents = tangents;
         buffers.push(tangents.buffer);
@@ -96,13 +88,6 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
     }
     if (faces.uvs) {
         const uvs = faces.uvs;
-        // for (let i = 0; i < uvs.length; i++) {
-        //     if (uvs[i]) {
-        //         uvs[i] = (uvs[i] % 1) * 512;
-        //     } else {
-        //         uvs[i] = 0;
-        //     }
-        // }
         faces.uvs = new Float32Array(uvs);
         buffers.push(faces.uvs.buffer);
     }
@@ -137,10 +122,11 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
 function createQuaternion(normals, tangents) {
     const aTangent = new Float32Array(tangents.length);
     const t = [], n = [], q = [];
+
     for (let i = 0; i < tangents.length; i += 4) {
         const ni = i / 4 * 3;
-        vec3.set(n, normals[ni], normals[ni + 1], normals[ni + 2]);
-        vec4.set(t, tangents[i], tangents[i + 1], tangents[i + 2], tangents[i + 3]);
+        vec3.set(n, normals[ni] || 0, normals[ni + 1] || 0, normals[ni + 2] || 0);
+        vec4.set(t, tangents[i] || 0, tangents[i + 1] || 0, tangents[i + 2] || 0, tangents[i + 3] || 0);
         packTangentFrame(q, n, t);
         vec4.copy(aTangent.subarray(i, i + 4), q);
     }
