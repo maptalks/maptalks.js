@@ -8,6 +8,8 @@ import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
 import PostProcess from './postprocess/PostProcess.js';
 
+const MIN_SSR_PITCH = 10;
+
 const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
 const noSsrFilter = m => !m.getUniform('ssr');
@@ -99,7 +101,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             renderer[methodName].apply(renderer, args);
         });
         let groundPainted = false;
-        if (this._postProcessor && this.isEnableSSR()) {
+        if (this._postProcessor && this.isSSROn()) {
             groundPainted = this._postProcessor.drawSSR(this._depthTex);
         }
         if (!groundPainted) {
@@ -429,6 +431,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         return config && config.enable && config.ssr && config.ssr.enable;
     }
 
+    isSSROn() {
+        const map = this.getMap();
+        if (map.getPitch() <= MIN_SSR_PITCH) {
+            return false;
+        }
+        return this.isEnableSSR();
+    }
+
     isEnableSSAO() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -525,7 +535,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             context['jitter'] = this._jitter;
             const enableBloom = config.bloom && config.bloom.enable;
-            const enableSsr = this.isEnableSSR();
+            const enableSsr = this.isSSROn();
             if (enableBloom && enableSsr) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noPostFilter;
@@ -744,9 +754,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         let tex = this._targetFBO.color[0];
 
-        const enableSSR = this.isEnableSSR();
+        const enableSSR = this.isSSROn();
         if (enableSSR) {
             tex = this._postProcessor.ssr(tex);
+        } else if (this.isEnableSSR()) {
+            this._postProcessor.setupSSR(tex);
         }
 
         const enableSSAO = this.isEnableSSAO();

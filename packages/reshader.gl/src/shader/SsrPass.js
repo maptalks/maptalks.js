@@ -58,6 +58,11 @@ class SsrPass {
         this._inputRGBM = 0;
     }
 
+    setup(sourceTex) {
+        this._initShaders();
+        this._createTextures(sourceTex);
+    }
+
     // _blur(tex) {
     //     this._initShaders();
     //     this._createTextures(tex);
@@ -75,8 +80,7 @@ class SsrPass {
     // }
 
     combine(sourceTex, ssrTex) {
-        this._initShaders();
-        this._createTextures(sourceTex);
+        this.setup(sourceTex);
         if (this._combineFBO.width !== sourceTex.width ||
             this._combineFBO.height !== sourceTex.height) {
             this._combineFBO.resize(sourceTex.width, sourceTex.height);
