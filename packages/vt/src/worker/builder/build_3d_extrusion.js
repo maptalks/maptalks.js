@@ -23,6 +23,8 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         defaultHeight,
         tangent,
         uv, uvScale,
+        topUVMode,
+        sideUVMode,
         top, side,
         topThickness,
     } = dataConfig;
@@ -43,6 +45,8 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             uv: uv || tangent, //tangent也需要计算uv
             uvSize: uvScale ? [textureSize * uvScale[0], textureSize  * uvScale[1]] : [textureSize, textureSize],
             uvOrigin,
+            topUVMode,
+            sideUVMode,
             //>> needed by uv computation
             glScale: glScale * localScale,
             //用于白模侧面的uv坐标v的计算

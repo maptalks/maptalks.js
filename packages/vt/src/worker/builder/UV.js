@@ -1,8 +1,16 @@
 import computeOMBB from './Ombb.js';
 import { vec2 } from 'gl-matrix';
 
+export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight) {
+    if (mode === 0) {
+        buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight);
+    } else if (mode === 1) {
+        buildOmbbUV(start, offset, uvs, vertices);
+    }
+}
+
 //inspired by https://stackoverflow.com/questions/20774648/three-js-generate-uv-coordinate
-export function buildOmbbUV(start, offset, uvs, vertices) {
+function buildOmbbUV(start, offset, uvs, vertices) {
     const obox = computeOMBB(vertices, start, offset);
     // console.log(obox);
     // debugger
@@ -34,7 +42,7 @@ function cacAnchor(x, y, v, k, len) {
     return vec2.distance(v, V2) / len;
 }
 
-export function buildFaceUV(start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight) {
+function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight) {
     //为了提升精度，计算uvOrigin的小数部分
     const uvStart = [(uvOrigin.x / texWidth) % 1, (uvOrigin.y / texHeight) % 1];
     for (let i = start; i < offset; i += 3) {
@@ -45,42 +53,64 @@ export function buildFaceUV(start, offset, uvs, vertices, uvOrigin, glScale, tex
     }
 }
 
-export function buildSideUV(uvs, vertices, indices, texWidth, texHeight, glScale, vScale) {
+export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, glScale, vScale) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
-    let prex, prey, seg = 0;
-    for (let i = 0; i < indices.length; i++) {
+    let seg = 0;
+    //因为是逆时针，需要倒序遍历
+    for (let i = indices.length - 1; i >= 0; i--) {
         const ix = indices[i] * 3, iy = indices[i] * 3 + 1, iz = indices[i] * 3 + 2;
         const x = vertices[ix], y = vertices[iy], z = vertices[iz];
         if (!maxz && !minz) {
-            maxz = Math.max(vertices[iz], vertices[indices[i + 3] * 3 + 2]);
-            minz = Math.min(vertices[iz], vertices[indices[i + 3] * 3 + 2]);
+            maxz = Math.max(vertices[iz], vertices[indices[i - 2] * 3 + 2]);
+            minz = Math.min(vertices[iz], vertices[indices[i - 2] * 3 + 2]);
             h = maxz - minz;
         }
         let len = lensofar;
-        if (i > 0) {
-            //每6个点构成一个矩形，其顺序如下：
-            //  0 -- 2(3)
-            //  |    |
-            // 1(5)- 4
-            const m = i % 6;
-            if (m === 2) {
-                seg = distanceTo(x, y, prex, prey);
+        const m = i % 6;
+        //每6个点构成一个矩形，其顺序如下：
+        //  1 -- 2(3)
+        //  |    |
+        // 0(5)- 4
+        if (mode === 0) {
+            //连续
+            if (m === 5) {
+                seg = getSegLength(vertices, indices, i, x, y);
             }
             if (m === 2 || m === 3 || m === 4) {
+                len = lensofar;
+            } else {
                 len = lensofar + seg;
+            }
+        } else if (mode === 1) {
+            if (m === 2 || m === 3 || m === 4) {
+                len = 0;
             } else if (m === 5) {
-                lensofar += seg;
-                len = lensofar - seg;
+                seg = getSegLength(vertices, indices, i, x, y);
+                len = seg;
+            } else {
+                len = seg;
             }
         }
-        const u = 1.0 - len * glScale / texWidth;
+
+
+        const u = len * glScale / texWidth; //0 ? 1.0 - len * glScale / texWidth :
         const v = (z === maxz ? 0 : h * vScale / texHeight);
         uvs[ix / 3 * 2] = u;
         uvs[ix / 3 * 2 + 1] = v;
-        prex = x;
-        prey = y;
+
+        if (m === 0) {
+            lensofar += seg;
+        }
+        // prex = x;
+        // prey = y;
     }
+}
+
+function getSegLength(vertices, indices, i, x, y) {
+    const ix = indices[i - 1] * 3, iy = indices[i - 1] * 3 + 1;
+    const nextx = vertices[ix], nexty = vertices[iy];
+    return distanceTo(x, y, nextx, nexty);
 }
 
 /**

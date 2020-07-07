@@ -17,6 +17,8 @@ export function buildExtrudeFaces(
         uvOrigin,
         uv,
         uvSize,
+        topUVMode,
+        sideUVMode,
         glScale,
         vScale //用于将meter转化为矢量瓦片内的坐标值
     }
@@ -59,11 +61,11 @@ export function buildExtrudeFaces(
             pushIn(indices, triangles);
             if (generateUV) {
                 // debugger
-                buildFaceUV(start, offset, uvs, vertices, uvOrigin, glScale, uvSize[0], uvSize[1]);
+                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, glScale, uvSize[0], uvSize[1]);
             }
 
             if (topThickness > 0 && !generateSide) {
-                offset = buildSide(true, vertices, top, holes, indices, start, offset, 0, topThickness, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
+                offset = buildSide(true, vertices, top, holes, indices, start, offset, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, uvs, uvSize, glScale, vScale);
             }
         }
         // debugger
@@ -71,7 +73,7 @@ export function buildExtrudeFaces(
             if (generateTop) {
                 topThickness = 0;
             }
-            offset = buildSide(generateTop, vertices, top, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale);
+            offset = buildSide(generateTop, vertices, top, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, sideUVMode || 0, uvs, uvSize, glScale, vScale);
         }
         return offset;
     }
@@ -164,7 +166,7 @@ export function buildExtrudeFaces(
     return data;
 }
 
-function buildSide(generateTop, vertices, topVertices, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, uvs, uvSize, glScale, vScale) {
+function buildSide(generateTop, vertices, topVertices, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, sideUVMode, uvs, uvSize, glScale, vScale) {
     const count = offset - start;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
     if (generateTop) {
@@ -207,12 +209,12 @@ function buildSide(generateTop, vertices, topVertices, holes, indices, start, of
         const ringStart = startIdx + (holes[r - 1] || 0);
         const ringEnd = startIdx + holes[r];
 
-        buildRingSide(ringStart, ringEnd, vertices, count / 3, EXTENT, indices, generateUV, uvs, uvSize, glScale, vScale);
+        buildRingSide(ringStart, ringEnd, vertices, count / 3, EXTENT, indices, generateUV, sideUVMode, uvs, uvSize, glScale, vScale);
     }
     return offset;
 }
 
-function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices, generateUV, uvs, uvSize, glScale, vScale) {
+function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices, generateUV, sideUVMode, uvs, uvSize, glScale, vScale) {
     const indiceStart = indices.length;
     const ringCount = ringEnd - ringStart;
     let current, next;
@@ -227,12 +229,12 @@ function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indice
             current += 2 * vertexCount;
             next += 2 * vertexCount;
         }
-        //top[i], bottom[i], top[i + 1]
+        //bottom[i], top[i], top[i + 1]
         indices.push(current + vertexCount, current, next);
-        //bottom[i + 1], top[i + 1], bottom[i]
+        //top[i + 1], bottom[i + 1],  bottom[i]
         indices.push(next, next + vertexCount, current + vertexCount);
     }
     if (generateUV) {
-        buildSideUV(uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], glScale, vScale); //convert uvSize[1] to meter
+        buildSideUV(sideUVMode, uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], glScale, vScale); //convert uvSize[1] to meter
     }
 }
