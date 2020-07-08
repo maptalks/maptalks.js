@@ -2,9 +2,9 @@ import computeOMBB from './Ombb.js';
 import { vec2 } from 'gl-matrix';
 
 export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight) {
-    if (mode === 0) {
+    if (mode === 1) {
         buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight);
-    } else if (mode === 1) {
+    } else if (mode === 0) {
         buildOmbbUV(start, offset, uvs, vertices);
     }
 }
