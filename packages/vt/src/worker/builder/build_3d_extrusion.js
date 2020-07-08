@@ -7,7 +7,7 @@ import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks
 import Color from 'color';
 import { PACK_TEX_SIZE } from '@maptalks/vector-packer';
 
-export default function (features, dataConfig, extent, uvOrigin, glScale, zScale, localScale, symbol, zoom) {
+export default function (features, dataConfig, extent, uvOrigin, glScale, zScale, localScale, symbol, zoom, debugIndex) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -54,7 +54,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             // localScale用于将gl point转为瓦片内坐标
             vScale: zScale
             //<<
-        });
+        }, debugIndex);
     const buffers = [];
     const ctor = getIndexArrayType(faces.vertices.length / 3);
     const indices = new ctor(faces.indices);

@@ -41,11 +41,14 @@ export default class BaseLayerWorker {
     loadTile(context, cb) {
         const loadings = this.loadings;
         const url = context.tileInfo.url;
-        // const { x, y, z } = context.tileInfo;
-        // if (z !== 13 || x !== 1206 || y !== 1538) {
-        //     cb();
-        //     return;
-        // }
+        const debugTile = this.options.debugTile;
+        if (debugTile) {
+            const { x, y, z } = context.tileInfo;
+            if (z !== debugTile.z || x !== debugTile.x || y !== debugTile.y) {
+                cb();
+                return;
+            }
+        }
         if (this._cache.has(url)) {
             const { features, layers } = this._cache.get(url);
             const waitings = loadings[url];
@@ -320,7 +323,8 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom));
+            const debugIndex = this.options.debugTile && this.options.debugTile.index;
+            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom, debugIndex));
         } else if (type === '3d-wireframe') {
             return Promise.resolve(buildWireframe(features, dataConfig, extent));
         } else if (type === 'point') {

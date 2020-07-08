@@ -21,7 +21,8 @@ export function buildExtrudeFaces(
         sideUVMode,
         glScale,
         vScale //用于将meter转化为矢量瓦片内的坐标值
-    }
+    },
+    debugIndex
 ) {
     // debugger
     const scale = EXTENT / features[0].extent;
@@ -77,12 +78,17 @@ export function buildExtrudeFaces(
         }
         return offset;
     }
-    // debugger
+
     let maxAltitude = 0;
     let offset = 0;
     const BOUNDS = [-1, -1, EXTENT + 1, EXTENT + 1];
 
-    for (let r = 0, n = features.length; r < n; r++) {
+    let r = 0, n = features.length;
+    if (debugIndex !== undefined) {
+        r = debugIndex;
+        n = debugIndex + 1;
+    }
+    for (; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
 
