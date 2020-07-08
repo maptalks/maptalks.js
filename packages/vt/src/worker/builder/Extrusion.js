@@ -184,6 +184,11 @@ function buildSide(generateTop, vertices, topVertices, holes, indices, start, of
             vertices[offset + i - 0] = topVertices[i] - topThickness;
         }
         offset += count;
+    } else if (topThickness) {
+        // 顶面端点的高度还是没有减去 topThickness 的值
+        for (let i = 2; i < topVertices.length; i += 3) {
+            vertices[start + i] -= topThickness;
+        }
     }
     //bottom vertexes
     for (let i = 2, l = count; i < l; i += 3) {
