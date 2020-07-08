@@ -89,6 +89,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         this._envPainter.paint(this._drawContext);
 
+        //如果放到图层后画，会出现透明图层下的ground消失的问题，#145
+        this.drawGround();
+
         let hasNoAA = false;
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
@@ -100,13 +103,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this.clearStencil(renderer, this._targetFBO);
             renderer[methodName].apply(renderer, args);
         });
-        let groundPainted = false;
+
         if (this._postProcessor && this.isSSROn()) {
-            groundPainted = this._postProcessor.drawSSR(this._depthTex);
+            this._postProcessor.drawSSR(this._depthTex);
         }
-        if (!groundPainted) {
-            this.drawGround();
-        }
+
         if (hasNoAA && hasRenderTarget) {
             delete this._contextFrameTime;
             this._renderMode = this._drawContext.renderMode = 'noAa';
@@ -432,11 +433,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     isSSROn() {
-        const map = this.getMap();
-        if (map.getPitch() <= MIN_SSR_PITCH) {
+        const enable = this.isEnableSSR();
+        if (!enable) {
             return false;
         }
-        return this.isEnableSSR();
+        if (!this._ssrpainted) {
+            this._ssrpainted = true;
+            return true;
+        }
+        const map = this.getMap();
+        return map.getPitch() > MIN_SSR_PITCH;
     }
 
     isEnableSSAO() {
