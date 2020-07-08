@@ -103,13 +103,6 @@ export default class PostProcess {
         mat4.copy(this._ssrFBO._projViewMatrix, this._layer.getMap().projViewMatrix);
     }
 
-    setupSSR(tex) {
-        if (!this._ssrPass) {
-            this._ssrPass = new reshader.SsrPass(this._regl);
-        }
-        this._ssrPass.setup(tex);
-    }
-
     ssr(currentTex) {
         if (!this._ssrFBO || !this._ssrPainted) {
             return currentTex;

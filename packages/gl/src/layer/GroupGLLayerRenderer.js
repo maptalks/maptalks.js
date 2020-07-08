@@ -757,8 +757,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const enableSSR = this.isSSROn();
         if (enableSSR) {
             tex = this._postProcessor.ssr(tex);
-        } else if (this.isEnableSSR()) {
-            this._postProcessor.setupSSR(tex);
         }
 
         const enableSSAO = this.isEnableSSAO();
