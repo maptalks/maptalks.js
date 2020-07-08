@@ -19,6 +19,22 @@ const data = {
             properties: {
                 levels: 3
             }
+        },
+        {
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: [
+                    [-0.0004, 0.0004],
+                    [0.0004, 0.0004],
+                    [0.0004, -0.0004],
+                    [-0.0004, -0.0004],
+                    [-0.0004, 0.0004]
+                ]
+            },
+            properties: {
+                levels: 3
+            }
         }
     ]
 };
@@ -47,7 +63,30 @@ const style = [
             polygonFill: '#f00',
             material
         },
-        filter: true,
+        filter: [
+            '=',
+            '$type',
+            'Polygon'
+        ]
+    },
+    {
+        renderPlugin: {
+            type: 'line',
+            dataConfig: {
+                type: 'line'
+            },
+            sceneConfig: {
+            }
+        },
+        symbol: {
+            lineWidth: 4,
+            lineColor: '#f00'
+        },
+        filter: [
+            '=',
+            '$type',
+            'LineString'
+        ]
     }
 ];
 module.exports = {
