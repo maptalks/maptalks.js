@@ -7,7 +7,18 @@ uniform vec2 uBlurDir;
 uniform vec2 uPixelRatio;
 uniform vec2 uTextureOutputSize;
 uniform float inputRGBM;
+uniform float uLuminThreshold;
 #define SHADER_NAME TextureBlurTemp0
+
+const vec3 colorBright = vec3(0.2126, 0.7152, 0.0722);
+
+float getLuminance(const in vec3 color) {
+    return dot(color, colorBright);
+}
+vec4 extractBright(vec4 color) {
+    float f = max(sign(getLuminance(color.rgb) - uLuminThreshold), 0.0);
+    return color * f;
+}
 
 vec2 gTexCoord;
 float linearTosRGB(const in float color) {
@@ -55,12 +66,12 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
     return range * color.rgb * color.a;
 }
 vec4 gaussianBlur() {
-    vec3 pixel = 0.375 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy), uRGBMRange), 1.0)).rgb;
+    vec3 pixel = 0.375 *  (extractBright(vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy), uRGBMRange), 1.0))).rgb;
     vec2 offset;
     vec2 blurDir = uPixelRatio.xy * uBlurDir.xy / uTextureOutputSize.xy;
     offset = blurDir * 1.2;
-    pixel += 0.3125 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy + offset.xy), uRGBMRange), 1.0)).rgb;
-    pixel += 0.3125 *  (vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy - offset.xy), uRGBMRange), 1.0)).rgb;
+    pixel += 0.3125 *  (extractBright(vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy + offset.xy), uRGBMRange), 1.0))).rgb;
+    pixel += 0.3125 *  (extractBright(vec4(decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy - offset.xy), uRGBMRange), 1.0))).rgb;
     return vec4(pixel, 1.0);
 }
 void main(void) {

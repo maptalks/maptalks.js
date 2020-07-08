@@ -19,12 +19,12 @@ class BlurPass {
         this._level = level;
     }
 
-    render(sourceTex) {
+    render(sourceTex, luminThreshold) {
         this._initShaders();
         this._createTextures(sourceTex);
 
         //blur
-        this._blur(sourceTex);
+        this._blur(sourceTex, luminThreshold || 0);
 
         const result = {
             blurTex0: this._blur01Tex,
@@ -40,7 +40,7 @@ class BlurPass {
         return result;
     }
 
-    _blur(curTex) {
+    _blur(curTex, luminThreshold) {
         let uniforms = this._blurUniforms;
         if (!uniforms) {
             uniforms = this._blurUniforms = {
@@ -53,7 +53,8 @@ class BlurPass {
         }
         vec2.set(uniforms['uGlobalTexSize'], curTex.width, curTex.height);
 
-        this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 0.5);
+        //只有第一次blur需要用 luminThreshold 过滤像素
+        this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 0.5, luminThreshold);
         this._blurOnce(this._blur1Shader, this._blur01FBO.color[0], this._blur10FBO, this._blur11FBO, 0.5);
         this._blurOnce(this._blur2Shader, this._blur11FBO.color[0], this._blur20FBO, this._blur21FBO, 0.5);
         this._blurOnce(this._blur3Shader, this._blur21FBO.color[0], this._blur30FBO, this._blur31FBO, 0.5);
@@ -67,7 +68,7 @@ class BlurPass {
         }
     }
 
-    _blurOnce(shader, inputTex, output0, output1, sizeRatio) {
+    _blurOnce(shader, inputTex, output0, output1, sizeRatio, luminThreshold) {
         const w = Math.ceil(sizeRatio * inputTex.width);
         const h = Math.ceil(sizeRatio * inputTex.height);
         if (output0.width !== w || output0.height !== h) {
@@ -78,6 +79,7 @@ class BlurPass {
         }
 
         const uniforms = this._blurUniforms;
+        uniforms['uLuminThreshold'] = luminThreshold;
         uniforms['TextureBlurInput'] = inputTex;
         //第一次输入是否需要decode rgbm
         uniforms['inputRGBM'] = +this._inputRGBM;
@@ -85,6 +87,7 @@ class BlurPass {
         vec2.set(uniforms['uTextureOutputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output0);
 
+        uniforms['uLuminThreshold'] = 0;
         uniforms['inputRGBM'] = 1;
         vec2.set(uniforms['uBlurDir'], 1, 0);
         uniforms['TextureBlurInput'] = output0.color[0];

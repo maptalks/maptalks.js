@@ -16,7 +16,7 @@ class BloomPass {
         this._createTextures(sourceTex);
 
         //blur
-        const blurTexes = this._blurPass.render(bloomTex);
+        const blurTexes = this._blurPass.render(bloomTex, bloomThreshold);
         //combine
         const output = this._combine(sourceTex, blurTexes, bloomTex, bloomFactor, bloomRadius, paintToScreen);
 
