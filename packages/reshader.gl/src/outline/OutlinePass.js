@@ -18,6 +18,9 @@ export default class OutlinePass {
     }
 
     render(meshes, targetFBO, { projViewMatrix, lineColor, lineWidth }) {
+        if (!meshes || !meshes.length) {
+            return;
+        }
         this._clear();
         this._resize();
         if (!meshes || !meshes.length) {
