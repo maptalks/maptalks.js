@@ -20,6 +20,9 @@ export default class OutlinePass {
     render(meshes, targetFBO, { projViewMatrix, lineColor, lineWidth }) {
         this._clear();
         this._resize();
+        if (!meshes || !meshes.length) {
+            return;
+        }
         const renderScene = new Scene(meshes);
         //绘制有outline的Meshes的范围
         this._drawExtentFBO(renderScene, projViewMatrix);
