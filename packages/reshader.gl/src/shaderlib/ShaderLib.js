@@ -23,6 +23,7 @@ import line_extrusion_vert from './glsl/line_extrusion.vert';
 import gl2_vert from './glsl/gl2.vert';
 import gl2_frag from './glsl/gl2.frag';
 
+import hsv_frag from './glsl/hsv.frag';
 
 //webgl 2.0中的函数实现
 // import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
@@ -117,7 +118,10 @@ const ShaderChunk = {
     fog_render_frag,
 
     gl2_vert,
-    gl2_frag
+    gl2_frag,
+
+    //颜色饱和度
+    hsv_frag
 };
 /* eslint-enable camelcase */
 
