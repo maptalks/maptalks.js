@@ -51,7 +51,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.layer._updatePolygonOffset();
         this._renderChildLayers('render', args);
         this['_toRedraw'] = false;
-        this._renderHighlights();
+        this._renderOutlines();
         this._postProcess();
     }
 
@@ -62,7 +62,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.layer._updatePolygonOffset();
         this._renderChildLayers('drawOnInteracting', args);
         this['_toRedraw'] = false;
-        this._renderHighlights();
+        this._renderOutlines();
         this._postProcess();
     }
 
@@ -123,7 +123,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
     }
 
-    _renderHighlights() {
+    _renderOutlines() {
+        if (!this.isEnableOutline()) {
+            return;
+        }
         const fbo = this._getOutlineFBO();
 
         const fGl = this.glCtx;
@@ -132,11 +135,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (!layer.isVisible()) {
                 return;
             }
-            if (renderer.drawHighlight) {
-                renderer.drawHighlight(fbo);
+            if (renderer.drawOutline) {
+                renderer.drawOutline(fbo);
             }
         });
-        this._highlightCounts = fGl.getDrawCalls();
+        this._outlineCounts = fGl.getDrawCalls();
     }
 
     _getOutlineFBO() {
@@ -486,6 +489,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         return config && config.enable && config.ssao && config.ssao.enable;
+    }
+
+    isEnableOutline() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        return config && config.enable && config.outline && config.outline.enable;
     }
 
     _getViewStates() {
@@ -868,7 +877,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             +!!(config.sharpen && config.sharpen.enable),
             map.getDevicePixelRatio(),
             sharpFactor,
-            enableOutline && +(this._highlightCounts > 0),
+            enableOutline && +(this._outlineCounts > 0),
             this._getOutlineFBO(),
             highlightFactor,
             outlineFactor,
