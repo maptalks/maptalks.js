@@ -23,6 +23,13 @@ uniform sampler2D noAaTextureSource;
 uniform float pixelRatio;
 uniform float sharpFactor;//0 - 5
 
+uniform sampler2D textureOutline;
+uniform float enableOutline;
+uniform float highlightFactor;
+uniform float outlineFactor;
+uniform float outlineWidth;
+uniform vec3 outlineColor;
+
 vec2 gTexCoord;
 vec2 uTextureInputSize;
 vec2 uTextureInputRatio;
@@ -274,6 +281,35 @@ vec3 tonemap(vec3 color) {
     return color = pow(color, vec3(1.0/2.2));
 }
 
+vec4 outline() {
+    float fac0 = 2.0;
+    float fac1 = 1.0;
+    float offsetx = pixelRatio / resolution[0] * outlineWidth;
+    float offsety = pixelRatio / resolution[1] * outlineWidth;
+    vec4 texel0 = (texture2D(textureOutline, gTexCoord + vec2(offsetx, offsety)));
+    vec4 texel1 = (texture2D(textureOutline, gTexCoord + vec2(offsetx, 0.0)));
+    vec4 texel2 = (texture2D(textureOutline, gTexCoord + vec2(offsetx, -offsety)));
+    vec4 texel3 = (texture2D(textureOutline, gTexCoord + vec2(0.0, -offsety)));
+    vec4 texel4 = (texture2D(textureOutline, gTexCoord + vec2(-offsetx, -offsety)));
+    vec4 texel5 = (texture2D(textureOutline, gTexCoord + vec2(-offsetx, 0.0)));
+    vec4 texel6 = (texture2D(textureOutline, gTexCoord + vec2(-offsetx, offsety)));
+    vec4 texel7 = (texture2D(textureOutline, gTexCoord + vec2(0.0, offsety)));
+    vec4 rowx = -fac0 * texel5 + fac0 * texel1 + -fac1 * texel6 + fac1 * texel0 + -fac1 * texel4 + fac1 * texel2;
+    vec4 rowy = -fac0 * texel3 + fac0 * texel7 + -fac1 * texel4 + fac1 * texel6 + -fac1 * texel2 + fac1 * texel0;
+    float magSqr = sqrt(dot(rowy, rowy) + dot(rowx, rowx));
+    bool infMag = magSqr < 1.0 / 65025.0;
+    vec3 texelCenter = (texture2D(textureOutline, gTexCoord)).r * outlineColor;
+    if (texelCenter == vec3(0.0) || (highlightFactor == 0.0 && infMag)) {
+        return vec4(0.0);
+    }
+    float finalFactor = infMag ? highlightFactor : min(1.0, sqrt(magSqr) * outlineFactor);
+    return finalFactor * vec4(texelCenter, 1.0);
+}
+
+vec4 composeOutline(const in vec4 color) {
+    vec4 outline = outline();
+    return outline + vec4(color) * (1.0 - outline.a);
+}
 
 void main() {
     uTextureInputSize = resolution;
@@ -295,10 +331,11 @@ void main() {
     vec4 color1 = texture2D(noAaTextureSource, vTexCoord);
     color = color1 * color1.a + color * (1.0 - color1.a);
 
-
-
     if (enableToneMapping == 1.0) {
         color.rgb = tonemap(color.rgb);
+    }
+    if (enableOutline == 1.0) {
+        color = composeOutline(color);
     }
     gl_FragColor = color;
 }

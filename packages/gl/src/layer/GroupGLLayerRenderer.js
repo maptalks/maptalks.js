@@ -51,8 +51,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.layer._updatePolygonOffset();
         this._renderChildLayers('render', args);
         this['_toRedraw'] = false;
-        this._postProcess();
         this._renderHighlights();
+        this._postProcess();
     }
 
     drawOnInteracting(...args) {
@@ -62,8 +62,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.layer._updatePolygonOffset();
         this._renderChildLayers('drawOnInteracting', args);
         this['_toRedraw'] = false;
-        this._postProcess();
         this._renderHighlights();
+        this._postProcess();
     }
 
     _renderChildLayers(methodName, args) {
@@ -124,14 +124,41 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _renderHighlights() {
+        const fbo = this._getOutlineFBO();
+
+        const fGl = this.glCtx;
+        fGl.resetDrawCalls();
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
                 return;
             }
             if (renderer.drawHighlight) {
-                renderer.drawHighlight();
+                renderer.drawHighlight(fbo);
             }
         });
+        this._highlightCounts = fGl.getDrawCalls();
+    }
+
+    _getOutlineFBO() {
+        const { width, height } = this.canvas;
+        let fbo = this._outlineFBO;
+        if (!fbo) {
+            const outlineTex = this._regl.texture({
+                width: width,
+                height: height,
+                format: 'rgba4'
+            });
+            fbo = this._outlineFBO = this._regl.framebuffer({
+                width: width,
+                height: height,
+                colors: [outlineTex],
+                depth: false,
+                stencil: false
+            });
+        } else if (width !== fbo.width || height !== fbo.height) {
+            fbo.resize(width, height);
+        }
+        return fbo;
     }
 
     hasRenderTarget() {
@@ -279,6 +306,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 framebuffer: this._noAaFBO
             });
         }
+        if (this._outlineFBO) {
+            this._regl.clear({
+                color: [0, 0, 0, 0],
+                framebuffer: this._outlineFBO
+            });
+        }
     }
 
     resizeCanvas() {
@@ -360,6 +393,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this._postProcessor) {
             this._postProcessor.dispose();
             delete this._postProcessor;
+        }
+        if (this._outlineFBO) {
+            this._outlineFBO.destroy();
+            delete this._outlineFBO;
         }
         super.onRemove();
     }
@@ -782,8 +819,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (enableBloom) {
             const bloomConfig = config.bloom;
             const threshold = +bloomConfig.threshold || 0;
-            const factor = isNil(bloomConfig.factor) ? 1 : +bloomConfig.factor;
-            const radius = isNil(bloomConfig.radius) ? 1 : +bloomConfig.radius;
+            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
+            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
             tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
         }
 
@@ -810,13 +847,33 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!sharpFactor && sharpFactor !== 0) {
             sharpFactor = 0.2;// 0 - 5
         }
+
+        let enableOutline = 0;
+        let highlightFactor = 0.2;
+        let outlineFactor = 0.3;
+        let outlineWidth = 1;
+        let outlineColor = [1, 1, 0];
+        if (config.outline) {
+            enableOutline = +!!config.outline.enable;
+            highlightFactor = getValueOrDefault(config.outline, 'highlightFactor', highlightFactor);
+            outlineFactor = getValueOrDefault(config, 'outlineFactor', outlineFactor);
+            outlineWidth = getValueOrDefault(config, 'outlineWidth', outlineWidth);
+            outlineColor = getValueOrDefault(config, 'outlineColor', outlineColor);
+        }
+
         this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
             // +!!(config.antialias && config.antialias.enable),
             1,
             +!!(config.toneMapping && config.toneMapping.enable),
             +!!(config.sharpen && config.sharpen.enable),
             map.getDevicePixelRatio(),
-            sharpFactor
+            sharpFactor,
+            enableOutline && +(this._highlightCounts > 0),
+            this._getOutlineFBO(),
+            highlightFactor,
+            outlineFactor,
+            outlineWidth,
+            outlineColor
         );
         if (enableSSR) {
             this._postProcessor.genSsrMipmap(tex);
@@ -844,3 +901,10 @@ function getDepthTexture(fbo) {
 
 export default Renderer;
 
+
+function getValueOrDefault(v, key, defaultValue) {
+    if (isNil(v[key])) {
+        return defaultValue;
+    }
+    return v[key];
+}
