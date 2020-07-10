@@ -468,7 +468,7 @@ class Painter {
         return b.level - a.level;
     }
 
-    highlight(picked, color) {
+    highlight(fbo, picked) {
         if (!this._highlightShader) {
             this._highlightScene = new reshader.Scene();
             this._initHighlightShader();
@@ -479,12 +479,11 @@ class Painter {
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = picked.pickingId;
-        uniforms.highlightColor = color || [0, 1, 0, 0.1];
         this._highlightScene.setMeshes(this.picking.getMeshAt(picked.meshId));
-        this.renderer.render(this._highlightShader, uniforms, this._highlightScene);
+        this.renderer.render(this._highlightShader, uniforms, this._highlightScene, fbo);
     }
 
-    highlightAll(color) {
+    highlightAll(fbo) {
         if (!this._highlightShader) {
             this._initHighlightShader();
             if (!this._highlightShader) {
@@ -494,8 +493,7 @@ class Painter {
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = -1;
-        uniforms.highlightColor = color || [0, 1, 0, 0.1];
-        this.renderer.render(this._highlightShader, uniforms, this.scene);
+        this.renderer.render(this._highlightShader, uniforms, this.scene, fbo);
     }
 
     _initHighlightShader() {

@@ -244,10 +244,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 );
             }
         }
-        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
-        if (!inGroup) {
-            this.drawHighlight();
-        }
+
         this.completeRender();
     }
 
@@ -259,9 +256,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.draw(timestamp, parentContext);
     }
 
-    drawHighlight() {
+    drawHighlight(fbo) {
         if (this._highlight) {
-            this[this._highlight[0]](...this._highlight[1]);
+            this[this._highlight[0]](fbo, ...this._highlight[1]);
         }
     }
 
@@ -1041,33 +1038,33 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return this._zScale;
     }
 
-    highlight(picked, color) {
-        this._highlight = ['paintHighlight', [picked, color]];
+    highlight(fbo, picked) {
+        this._highlight = ['paintHighlight', [fbo, picked]];
         this._needRetire = true;
         this.setToRedraw();
     }
 
-    highlightBatch(idx, color) {
-        this._highlight = ['paintBatchHighlight', [idx, color]];
+    highlightBatch(fbo, idx) {
+        this._highlight = ['paintBatchHighlight', [fbo, idx]];
         this._needRetire = true;
         this.setToRedraw();
     }
 
-    paintHighlight(picked, color) {
+    paintHighlight(fbo, picked) {
         const pluginIdx = picked.plugin;
         const plugins = this._getFramePlugins();
         if (!plugins[pluginIdx] || plugins[pluginIdx].painter && !plugins[pluginIdx].painter.isVisible()) {
             return;
         }
-        plugins[pluginIdx].highlight(picked, color);
+        plugins[pluginIdx].highlight(fbo, picked);
     }
 
-    paintBatchHighlight(idx, color) {
+    paintBatchHighlight(fbo, idx) {
         const plugins = this._getFramePlugins();
         if (!plugins[idx] || plugins[idx].painter && !plugins[idx].painter.isVisible()) {
             return;
         }
-        plugins[idx].highlightAll(color);
+        plugins[idx].highlightAll(fbo);
     }
 
     cancelHighlight() {
