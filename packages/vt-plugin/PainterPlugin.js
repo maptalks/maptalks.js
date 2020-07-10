@@ -421,17 +421,17 @@ function createPainterPlugin(type, Painter) {
             return keys.length > limit;
         },
 
-        highlight(fbo, picked) {
+        outline(fbo, picked) {
             var painter = this.painter;
             if (painter) {
-                painter.highlight(fbo, picked);
+                painter.outline(fbo, picked);
             }
         },
 
-        highlightAll(fbo) {
+        outlineAll(fbo) {
             var painter = this.painter;
             if (painter) {
-                painter.highlightAll(fbo);
+                painter.outlineAll(fbo);
             }
         }
     });

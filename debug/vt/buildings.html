@@ -231,7 +231,8 @@
       'uBaseColorFactor': [1, 1, 1, 1],
       'uRoughnessFactor': 0.4,
       'uMetalnessFactor': 0,
-      'uOutputLinear': 1
+      'uOutputLinear': 1,
+      'uHsv': [0, 0, 0]
     };
 
     var style =  {
@@ -397,6 +398,9 @@
         sharpen: {
           enable: false,
           factor: 0.2
+        },
+        outline: {
+          enable: true
         }
       }
     };
@@ -410,13 +414,13 @@
     }
 
     function highlight() {
-      layer.highlightBatch(0, [1, 1, 0, 0.1]);
+      layer.outlineBatch(0, [1, 1, 0, 0.1]);
     }
 
     map.on('click', e => {
       var result = layer.identify(e.coordinate);
       if (result.length) {
-        layer.highlight(result[0], [1, 1, 0, 0.1]);
+        layer.outline(result[0], [1, 1, 0, 0.1]);
       }
     });
 
@@ -516,6 +520,28 @@
       sharp.open();
       var sharpCtrl = sharp.add(sharpConfig, 'factor', 0, 1, 0.1);
       sharpCtrl.onChange(onChange);
+
+      var hsvValue = { 色相: litMaterial.uHsv[0], 饱和度: litMaterial.uHsv[1], 亮度: litMaterial.uHsv[2] };
+      var hsvOnChange = function () {
+        layer.updateSymbol(0, {
+          material: {
+            "uHsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
+          }
+        });
+        layer.updateSymbol(1, {
+          material: {
+            "uHsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
+          }
+        });
+      };
+      var hsv = gui.addFolder('色相/饱和度');
+      hsv.open();
+      var hCtrl = hsv.add(hsvValue, '色相', -1, 1, 0.1);
+      var sCtrl = hsv.add(hsvValue, '饱和度', -1, 1, 0.1);
+      var vCtrl = hsv.add(hsvValue, '亮度', -1, 1, 0.1);
+      hCtrl.onChange(hsvOnChange);
+      sCtrl.onChange(hsvOnChange);
+      vCtrl.onChange(hsvOnChange);
     }
 
     function updateMaterial(key, value) {

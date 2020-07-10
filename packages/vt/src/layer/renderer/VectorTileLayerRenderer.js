@@ -256,9 +256,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.draw(timestamp, parentContext);
     }
 
-    drawHighlight(fbo) {
-        if (this._highlight) {
-            this[this._highlight[0]](fbo, ...this._highlight[1]);
+    drawOutline(fbo) {
+        if (this._outline) {
+            this[this._outline[0]](fbo, ...this._outline[1]);
         }
     }
 
@@ -1038,37 +1038,37 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return this._zScale;
     }
 
-    highlight(fbo, picked) {
-        this._highlight = ['paintHighlight', [fbo, picked]];
+    outline(fbo, picked) {
+        this._outline = ['paintOutline', [fbo, picked]];
         this._needRetire = true;
         this.setToRedraw();
     }
 
-    highlightBatch(fbo, idx) {
-        this._highlight = ['paintBatchHighlight', [fbo, idx]];
+    outlineBatch(fbo, idx) {
+        this._outline = ['paintBatchOutline', [fbo, idx]];
         this._needRetire = true;
         this.setToRedraw();
     }
 
-    paintHighlight(fbo, picked) {
+    paintOutline(fbo, picked) {
         const pluginIdx = picked.plugin;
         const plugins = this._getFramePlugins();
         if (!plugins[pluginIdx] || plugins[pluginIdx].painter && !plugins[pluginIdx].painter.isVisible()) {
             return;
         }
-        plugins[pluginIdx].highlight(fbo, picked);
+        plugins[pluginIdx].outline(fbo, picked);
     }
 
-    paintBatchHighlight(fbo, idx) {
+    paintBatchOutline(fbo, idx) {
         const plugins = this._getFramePlugins();
         if (!plugins[idx] || plugins[idx].painter && !plugins[idx].painter.isVisible()) {
             return;
         }
-        plugins[idx].highlightAll(fbo);
+        plugins[idx].outlineAll(fbo);
     }
 
-    cancelHighlight() {
-        delete this._highlight;
+    cancelOutline() {
+        delete this._outline;
         this._needRetire = true;
         this.setToRedraw();
     }

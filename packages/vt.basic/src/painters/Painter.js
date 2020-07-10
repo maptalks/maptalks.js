@@ -2,7 +2,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes } from '@maptalks/function-type';
 import { extend } from '../Util';
-import hightlightFrag from './glsl/highlight.frag';
+import outlineFrag from './glsl/outline.frag';
 import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const TEX_CACHE_KEY = '__gl_textures';
@@ -295,8 +295,8 @@ class Painter {
         if (this.picking) {
             this.picking.dispose();
         }
-        if (this._highlightShader) {
-            this._highlightShader.dispose();
+        if (this._outlineShader) {
+            this._outlineShader.dispose();
         }
         this.logoutTextureCache();
     }
@@ -468,35 +468,35 @@ class Painter {
         return b.level - a.level;
     }
 
-    highlight(fbo, picked) {
-        if (!this._highlightShader) {
-            this._highlightScene = new reshader.Scene();
-            this._initHighlightShader();
-            if (!this._highlightShader) {
-                console.warn(`Plugin at ${this.pluginIndex} doesn't support highlight.`);
+    outline(fbo, picked) {
+        if (!this._outlineShader) {
+            this._outlineScene = new reshader.Scene();
+            this._initOutlineShader();
+            if (!this._outlineShader) {
+                console.warn(`Plugin at ${this.pluginIndex} doesn't support outline.`);
                 return;
             }
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = picked.pickingId;
-        this._highlightScene.setMeshes(this.picking.getMeshAt(picked.meshId));
-        this.renderer.render(this._highlightShader, uniforms, this._highlightScene, fbo);
+        this._outlineScene.setMeshes(this.picking.getMeshAt(picked.meshId));
+        this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
     }
 
-    highlightAll(fbo) {
-        if (!this._highlightShader) {
-            this._initHighlightShader();
-            if (!this._highlightShader) {
-                console.warn(`Plugin at ${this.pluginIndex} doesn't support highlight.`);
+    outlineAll(fbo) {
+        if (!this._outlineShader) {
+            this._initOutlineShader();
+            if (!this._outlineShader) {
+                console.warn(`Plugin at ${this.pluginIndex} doesn't support outline.`);
                 return;
             }
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = -1;
-        this.renderer.render(this._highlightShader, uniforms, this.scene, fbo);
+        this.renderer.render(this._outlineShader, uniforms, this.scene, fbo);
     }
 
-    _initHighlightShader() {
+    _initOutlineShader() {
 
         if (!this.picking) {
             return;
@@ -511,10 +511,9 @@ class Painter {
         if (uniforms['uPickingId'] !== undefined) {
             defines['HAS_PICKING_ID'] = 2;
         }
-        uniforms.push('highlightPickingId', 'highlightColor');
-        this._highlightShader = new reshader.MeshShader({
+        this._outlineShader = new reshader.MeshShader({
             vert: pickingVert,
-            frag: hightlightFrag,
+            frag: outlineFrag,
             uniforms,
             defines,
             extraCommandProps: {
