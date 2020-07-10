@@ -127,7 +127,8 @@ export default class PostProcess {
         if (!ssrFBO) {
             const info = this._createFBOInfo();
             ssrFBO = this._ssrFBO = regl.framebuffer(info);
-            const depthTestInfo = this._createFBOInfo(depthTex);
+            // 把 rgba4 改成 rgba 后，spector.js里的预览图才会正常显示
+            const depthTestInfo = this._createFBOInfo(depthTex, 'rgba4');
             ssrDepthTestFBO = this._ssrDepthTestFBO = regl.framebuffer(depthTestInfo);
         } else {
             const { width, height } = layerRenderer.canvas;
@@ -297,24 +298,20 @@ export default class PostProcess {
         }
     }
 
-    _createFBOInfo(depthTex) {
+    _createFBOInfo(depthTex, colorFormat) {
         const { width, height } = this._layer.getRenderer().canvas;
         const regl = this._regl;
-        const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const color = regl.texture({
             min: 'nearest',
             mag: 'nearest',
-            type,
+            format: colorFormat || 'rgba',
             width,
             height
         });
         const fboInfo = {
             width,
             height,
-            colors: [color],
-            // stencil: true,
-            // colorCount,
-            colorFormat: 'rgba'
+            colors: [color]
         };
         if (depthTex) {
             fboInfo.depthStencil = depthTex;
