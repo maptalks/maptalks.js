@@ -206,13 +206,17 @@ export default class Geometry {
         if (buf.buffer && buf.buffer.destroy) {
             buffer = buf;
         }
+        const oldVertexCount = this.getVertexCount();
         if (name === this.desc.positionAttribute) {
             this.updateBoundingBox();
-            delete this._vertexCount;
-            this.getVertexCount();
         }
+        const vertexCount = this.getVertexCount();
         if (buffer) {
-            buffer.buffer.subdata(data);
+            if (vertexCount <= oldVertexCount) {
+                buffer.buffer.subdata(data);
+            } else {
+                buffer.buffer(data);
+            }
             this.data[name] = buffer;
         }
         delete this._reglData;
