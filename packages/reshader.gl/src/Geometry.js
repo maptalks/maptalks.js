@@ -150,12 +150,14 @@ export default class Geometry {
     }
 
     getVertexCount() {
-        if (this._vertexCount === undefined) {
-            const { positionAttribute, positionSize } = this.desc;
-            let data = this.data[positionAttribute];
-            if (data.data) {
-                data = data.data;
-            }
+        const { positionAttribute, positionSize } = this.desc;
+        let data = this.data[positionAttribute];
+        if (data.data) {
+            data = data.data;
+        }
+        if (isArray(data)) {
+            // 因为data可能被转成regl buffer，需要保存到this._vertexCount
+            // 在 updateData时再更新
             this._vertexCount = Math.ceil(data.length /  positionSize);
         }
         return this._vertexCount;
