@@ -615,10 +615,9 @@ class GeometryEditor extends Eventable(Class) {
         this._createResizeHandles(null, handleViewPoint => {
             const center = circle.getCenter();
             const mouseCoordinate = map.viewPointToCoordinate(handleViewPoint);
-            let wline = new LineString([[center.x, center.y], [mouseCoordinate.x, center.y]]);
-            let hline = new LineString([[center.x, center.y], [center.x, mouseCoordinate.y]]);
+            const wline = new LineString([[center.x, center.y], [mouseCoordinate.x, center.y]]);
+            const hline = new LineString([[center.x, center.y], [center.x, mouseCoordinate.y]]);
             const r = Math.max(map.computeGeometryLength(wline), map.computeGeometryLength(hline));
-            wline = hline = null;
             // const viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
             // const wh = handleViewPoint.sub(viewCenter);
             // const w = Math.abs(wh.x),
@@ -678,12 +677,11 @@ class GeometryEditor extends Eventable(Class) {
                 const firstMirrorCoordinate = resizeHandles[0].getCoordinates();
                 const mouseCoordinate = map.viewPointToCoordinate(mouseViewPoint);
                 const mirrorCoordinate = mirror.getCoordinates();
-                let wline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mouseCoordinate.x, mirrorCoordinate.y]]);
-                let hline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mirrorCoordinate.x, mouseCoordinate.y]]);
+                const wline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mouseCoordinate.x, mirrorCoordinate.y]]);
+                const hline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mirrorCoordinate.x, mouseCoordinate.y]]);
                 //fix distance cal error
                 w = map.computeGeometryLength(wline);
                 h = map.computeGeometryLength(hline);
-                wline = hline = null;
                 if (ability === 0) {
                     // changing width
                     // -  -  -
@@ -749,11 +747,10 @@ class GeometryEditor extends Eventable(Class) {
                 // }
                 const center = geometryToEdit.getCenter();
                 const mouseCoordinate = map.viewPointToCoordinate(targetPoint);
-                let wline = new LineString([[center.x, center.y], [mouseCoordinate.x, center.y]]);
-                let hline = new LineString([[center.x, center.y], [center.x, mouseCoordinate.y]]);
+                const wline = new LineString([[center.x, center.y], [mouseCoordinate.x, center.y]]);
+                const hline = new LineString([[center.x, center.y], [center.x, mouseCoordinate.y]]);
                 w = map.computeGeometryLength(wline);
                 h = map.computeGeometryLength(hline);
-                wline = hline = null;
                 if (aspectRatio) {
                     w = Math.max(w, h * aspectRatio);
                     h = w / aspectRatio;
