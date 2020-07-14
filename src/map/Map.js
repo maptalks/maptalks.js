@@ -487,6 +487,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         // const pitch = this.getPitch();
         // const visualDistance = this.height / 2 * Math.tan(visualPitch * Math.PI / 180);
         // return this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+        visualPitch = visualPitch || 1E-2;
 
         const pitch = (90 - this.getPitch()) * Math.PI / 180;
         const fov = this.getFov() * Math.PI / 180;
@@ -1338,21 +1339,28 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         const center = this.getCenter();
-        this._updateMapSize(watched);
 
         if (!this.options['fixCenterOnResize']) {
-            const resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
-            this._offsetCenterByPixel(resizeOffset);
+            // fix northwest's geo coordinate
+            const vh = this._getVisualHeight(this.getPitch());
+            const nwCP = new Point(0, this.height - vh);
+            const nwCoord = this._containerPointToPrj(nwCP);
+            this._updateMapSize(watched);
+            const vhAfter = this._getVisualHeight(this.getPitch());
+            const nwCPAfter = new Point(0, this.height - vhAfter);
+            this._setPrjCoordAtContainerPoint(nwCoord, nwCPAfter);
             // when size changed, center is updated but panel's offset remains.
             this._mapViewCoord = this._getPrjCenter();
+        } else {
+            this._updateMapSize(watched);
         }
 
         const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
         if (justStart || hided) {
-            this._noEvent = true;
+            this._eventSilence = true;
             this.setCenter(center);
-            delete this._noEvent;
+            delete this._eventSilence;
         }
         /**
          * resize event when map container's size changes
@@ -1659,7 +1667,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
 
     _fireEvent(eventName, param) {
-        if (this._noEvent) {
+        if (this._eventSilence) {
             return;
         }
         //fire internal events at first
