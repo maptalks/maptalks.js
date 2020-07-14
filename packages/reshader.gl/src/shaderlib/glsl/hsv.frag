@@ -25,7 +25,14 @@ vec3 hsv_hsv2rgb(vec3 c) {
 
 vec4 hsv_apply(vec4 c, vec3 hsvOffset) {
     vec3 hsv = hsv_rgb2hsv(c.rgb);
-    hsv += hsvOffset;
+    hsv += hsv * hsvOffset;
     hsv = clamp(hsv, 0.0, 1.0);
     return vec4(hsv_hsv2rgb(hsv), c.a);
+}
+
+vec3 hsv_apply(vec3 c, vec3 hsvOffset) {
+    vec3 hsv = hsv_rgb2hsv(c.rgb);
+    hsv += hsv * hsvOffset;
+    hsv = clamp(hsv, 0.0, 1.0);
+    return hsv_hsv2rgb(hsv);
 }
