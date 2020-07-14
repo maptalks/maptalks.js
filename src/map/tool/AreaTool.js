@@ -63,6 +63,7 @@ class AreaTool extends DistanceTool {
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
+        this._lastDrawVertex = {};
     }
 
     _measure(toMeasure) {
@@ -108,10 +109,18 @@ class AreaTool extends DistanceTool {
         this._measure(param['geometry']);
         this._lastVertex = vertexMarker;
         this._addVertexMarker(vertexMarker);
+        this._lastDrawVertex = param;
     }
 
     _msOnDrawEnd(param) {
         this._clearTailMarker();
+        if(!param['point2d']){
+            param = this._lastDrawVertex
+            if(this._vertexes.length < 3){
+                console.error('It has to be greater than 3 points')
+                return
+            }
+        }
         const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const ms = this._measure(param['geometry']);
         const endLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
