@@ -674,6 +674,14 @@ class GeometryEditor extends Eventable(Class) {
                 w = map.pixelToDistance(absSub.x, 0);
                 h = map.pixelToDistance(0, absSub.y);
                 const size = geometryToEdit.getSize();
+                const firstMirrorCoordinate = resizeHandles[0].getCoordinates();
+                const mouseCoordinate = map.viewPointToCoordinate(mouseViewPoint);
+                const mirrorCoordinate = mirror.getCoordinates();
+                const wline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mouseCoordinate.x, mirrorCoordinate.y]]);
+                const hline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mirrorCoordinate.x, mouseCoordinate.y]]);
+                //fix distance cal error
+                w = map.computeGeometryLength(wline);
+                h = map.computeGeometryLength(hline);
                 if (ability === 0) {
                     // changing width
                     // -  -  -
@@ -687,6 +695,12 @@ class GeometryEditor extends Eventable(Class) {
                         h = w / aspectRatio;
                     }
                     targetPoint.y = mirrorViewPoint.y - size.height / 2;
+                    mouseCoordinate.y = firstMirrorCoordinate.y;
+                    if (i === 4) {
+                        mouseCoordinate.x = Math.min(mouseCoordinate.x, firstMirrorCoordinate.x);
+                    } else {
+                        mouseCoordinate.x = Math.min(mouseCoordinate.x, mirrorCoordinate.x);
+                    }
                 } else if (ability === 1) {
                     // changing height
                     // -  1  -
@@ -700,19 +714,25 @@ class GeometryEditor extends Eventable(Class) {
                         w = h * aspectRatio;
                     }
                     targetPoint.x = mirrorViewPoint.x - size.width / 2;
-                } else if (aspectRatio) {
+                    mouseCoordinate.x = firstMirrorCoordinate.x;
+                    mouseCoordinate.y = Math.max(mouseCoordinate.y, mirrorCoordinate.y);
+                } else {
                     // corner handles, relocate the target point according to aspect ratio.
-                    if (w > h * aspectRatio) {
-                        h = w / aspectRatio;
-                        targetPoint.y = mirrorViewPoint.y + absSub.x * sign(pointSub.y) / aspectRatio;
-                    } else {
-                        w = h * aspectRatio;
-                        targetPoint.x = mirrorViewPoint.x + absSub.y * sign(pointSub.x) * aspectRatio;
+                    if (aspectRatio) {
+                        if (w > h * aspectRatio) {
+                            h = w / aspectRatio;
+                            targetPoint.y = mirrorViewPoint.y + absSub.x * sign(pointSub.y) / aspectRatio;
+                        } else {
+                            w = h * aspectRatio;
+                            targetPoint.x = mirrorViewPoint.x + absSub.y * sign(pointSub.x) * aspectRatio;
+                        }
                     }
+                    mouseCoordinate.x = Math.min(mouseCoordinate.x, mirrorCoordinate.x);
+                    mouseCoordinate.y = Math.max(mouseCoordinate.y, mirrorCoordinate.y);
                 }
                 //change rectangle's coordinates
-                const newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
-                shadow.setCoordinates(newCoordinates);
+                // const newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
+                shadow.setCoordinates(mouseCoordinate);
                 this._updateCoordFromShadow(true);
                 // geometryToEdit.setCoordinates(newCoordinates);
 
