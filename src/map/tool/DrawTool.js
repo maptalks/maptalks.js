@@ -343,38 +343,46 @@ class DrawTool extends MapTool {
      * @private
      */
     _clickHandler(event) {
-        const registerMode = this._getRegisterMode();
-        // const coordinate = event['coordinate'];
-        if (!this._geometry) {
-            this._createGeometry(event);
-        } else {
-            const prjCoord = this.getMap()._pointToPrj(event['point2d']);
-            if (!isNil(this._historyPointer)) {
-                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+
+        //判断当前地图是否在移动中
+        // window.setTimeout(()=>{
+        //
+        //     if(this.getMap().isAnimating())
+        //         return
+            const registerMode = this._getRegisterMode();
+            // const coordinate = event['coordinate'];
+            if (!this._geometry) {
+                this._createGeometry(event);
+            } else {
+                const prjCoord = this.getMap()._pointToPrj(event['point2d']);
+                if (!isNil(this._historyPointer)) {
+                    this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+                }
+                this._clickCoords.push(prjCoord);
+                this._historyPointer = this._clickCoords.length;
+                event.drawTool = this;
+                registerMode['update'](this.getMap().getProjection(), this._clickCoords, this._geometry, event);
+                /**
+                 * drawvertex event.
+                 *
+                 * @event DrawTool#drawvertex
+                 * @type {Object}
+                 * @property {String} type - drawvertex
+                 * @property {DrawTool} target - draw tool
+                 * @property {Geometry} geometry - geometry drawn
+                 * @property {Coordinate} coordinate - coordinate of the event
+                 * @property {Point} containerPoint  - container point of the event
+                 * @property {Point} viewPoint       - view point of the event
+                 * @property {Event} domEvent                 - dom event
+                 */
+                this._fireEvent('drawvertex', event);
+                if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
+                    // registerMode['update']([coordinate], this._geometry, event);
+                    this.endDraw(event);
+                }
             }
-            this._clickCoords.push(prjCoord);
-            this._historyPointer = this._clickCoords.length;
-            event.drawTool = this;
-            registerMode['update'](this.getMap().getProjection(), this._clickCoords, this._geometry, event);
-            /**
-             * drawvertex event.
-             *
-             * @event DrawTool#drawvertex
-             * @type {Object}
-             * @property {String} type - drawvertex
-             * @property {DrawTool} target - draw tool
-             * @property {Geometry} geometry - geometry drawn
-             * @property {Coordinate} coordinate - coordinate of the event
-             * @property {Point} containerPoint  - container point of the event
-             * @property {Point} viewPoint       - view point of the event
-             * @property {Event} domEvent                 - dom event
-             */
-            this._fireEvent('drawvertex', event);
-            if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
-                // registerMode['update']([coordinate], this._geometry, event);
-                this.endDraw(event);
-            }
-        }
+        // }, 16)
+
     }
 
     /**
@@ -533,6 +541,8 @@ class DrawTool extends MapTool {
             this.disable();
         }
         delete this._ending;
+        //- 修复撤销+清除的bug
+        delete this._historyPointer;
         return this;
     }
 
