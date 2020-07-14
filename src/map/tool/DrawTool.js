@@ -533,6 +533,7 @@ class DrawTool extends MapTool {
             this.disable();
         }
         delete this._ending;
+        delete this._historyPointer;
         return this;
     }
 
