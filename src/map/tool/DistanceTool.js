@@ -109,6 +109,7 @@ class DistanceTool extends DrawTool {
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
+        this._isUndo = false;
     }
 
     /**
@@ -157,6 +158,7 @@ class DistanceTool extends DrawTool {
                 this._vertexes[i].marker.remove();
             }
         }
+        this._isUndo = true;
         return this;
     }
 
@@ -247,6 +249,7 @@ class DistanceTool extends DrawTool {
         startLabel._setPrjCoordinates(prjCoord);
         this._lastVertex = startLabel;
         this._addVertexMarker(marker, startLabel);
+        this._isUndo = false;
     }
 
     _msOnMouseMove(param) {
@@ -289,13 +292,21 @@ class DistanceTool extends DrawTool {
         vertexLabel._setPrjCoordinates(lastCoord);
         marker._setPrjCoordinates(lastCoord);
         this._lastVertex = vertexLabel;
+        this._isUndo = false;
     }
 
     _addVertexMarker(marker, vertexLabel) {
         if (!this._vertexes) {
             this._vertexes = [];
         }
-        this._vertexes.push({ label: vertexLabel, marker });
+        if(!this._isUndo){
+            this._vertexes.push({ label: vertexLabel, marker });
+        }else{
+            //截断_vertexes
+            this._vertexes.length = this._clickCoords.length
+            this._historyPointer = this._clickCoords.length
+            this._vertexes.splice( this._vertexes.length - 1 , 1, { label: vertexLabel, marker })
+        }
         if (this._historyPointer !== undefined) {
             this._vertexes.length = this._historyPointer;
         }
