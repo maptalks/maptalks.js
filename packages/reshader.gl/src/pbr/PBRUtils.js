@@ -41,6 +41,7 @@ function getLightUniforms(map, iblTexes) {
             'uDiffuseSPH': iblTexes.sh,
             'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
             'uTextureEnvironmentSpecularPBRTextureSize': [cubeSize, cubeSize],
+            'uHdrHsv': ambientLight.hsv || [0, 0, 0]
         };
     } else {
         uniforms = {

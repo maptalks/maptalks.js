@@ -6,6 +6,10 @@
 #endif
 precision highp float;
 
+#include <hsv_frag>
+
+uniform vec3 hsv;
+
 varying vec3 vWorldPos;
 
 #ifdef USE_AMBIENT
@@ -79,6 +83,9 @@ void main()
     #ifdef USE_AMBIENT
         vec3 normal = normalize(vWorldPos + mix(-0.5/255.0, 0.5/255.0, pseudoRandom(gl_FragCoord.xy))*2.0);
         envColor = vec4(computeDiffuseSPH(normal, diffuseSPH), 1.0);
+        if (length(hsv) > 0.0) {
+            envColor.rgb = hsv_apply(envColor.rgb, hsv);
+        }
         #ifdef ENC_RGBM
             envColor = encodeRGBM(envColor.rgb, rgbmRange);
         #endif
@@ -87,17 +94,31 @@ void main()
         envColor.rgb *= environmentExposure;
     #endif
     #ifdef ENC_RGBM
-    	gl_FragColor = vec4(envColor.rgb, 1.0);
+        #if !defined(USE_AMBIENT) && defined(INPUT_RGBM)
+            if (length(hsv) > 0.0) {
+                envColor.rgb = hsv_apply(decodeRGBM(envColor, rgbmRange).rgb, hsv);
+                envColor = encodeRGBM(envColor.rgb, rgbmRange);
+            }
+        #endif
+        gl_FragColor = vec4(envColor.rgb, 1.0);
     #elif !defined(USE_AMBIENT) && defined(INPUT_RGBM)
-    	gl_FragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
+        gl_FragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
+        if (length(hsv) > 0.0) {
+            gl_FragColor.rgb = hsv_apply(clamp(gl_FragColor.rgb, 0.0, 1.0), hsv);
+        }
     #else
-    	gl_FragColor = envColor;
+        if (length(hsv) > 0.0) {
+            envColor.rgb = hsv_apply(envColor.rgb, hsv);
+        }
+        gl_FragColor = envColor;
     #endif
 
-    #ifdef USE_HDR
-	    vec3 color = gl_FragColor.rgb;
-	    color = color / (color.rgb + vec3(1.0));
-	    color = pow(color, vec3(1.0/2.2));
-	    gl_FragColor.rgb = color;
-    #endif
+    // #ifdef USE_HDR
+    //     vec3 color = gl_FragColor.rgb;
+    //     color = color / (color.rgb + vec3(1.0));
+    //     color = pow(color, vec3(1.0/2.2));
+    //     gl_FragColor.rgb = color;
+    // #endif
+
+
 }

@@ -8,9 +8,11 @@ import prefilterFS from './glsl/helper/prefilter.frag';
 import dfgFS from './glsl/helper/dfg.frag';
 import dfgVS from './glsl/helper/dfg.vert';
 import coefficients from './SH.js';
-import skyboxFrag from '../skybox/skybox.frag';
+import skyboxRawFrag from '../skybox/skybox.frag';
+import ShaderLib from '../shaderlib/ShaderLib.js';
 
 
+const skyboxFrag = ShaderLib.compile(skyboxRawFrag);
 // import irradianceFS from './glsl/helper/irradiance_convolution.frag';
 /**
  * {
@@ -111,6 +113,7 @@ function createSkybox(regl, cubemap, envCubeSize, encRgbm) {
             'aPosition' : cubeData.vertices
         },
         uniforms : {
+            'hsv': [0, 0, 0],
             'projMatrix' : regl.context('projMatrix'),
             'viewMatrix' :  regl.context('viewMatrix'),
             'cubeMap' : cubemap
@@ -159,7 +162,8 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
             'cubeMap' : cubemap,
             'environmentExposure': 1,
             'bias': 0,
-            'size': envCubeSize
+            'size': envCubeSize,
+            'hsv': [0, 0, 0]
         },
         elements : cubeData.indices
     });

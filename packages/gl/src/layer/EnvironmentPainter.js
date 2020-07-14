@@ -65,6 +65,7 @@ class EnvironmentPainter {
 
     _getUniformValues() {
         const map = this.getMap();
+        const ambient = this.getMap().getLightManager().getAmbientLight();
         let iblTexes = this._iblTexes;
         if (!iblTexes) {
             iblTexes = this._iblTexes = createIBLTextures(this._regl, map);
@@ -92,7 +93,8 @@ class EnvironmentPainter {
             'diffuseSPH': iblTexes.sh,
             'viewMatrix': map.viewMatrix,
             'projMatrix': map.projMatrix,
-            'resolution': [canvas.width, canvas.height]
+            'resolution': [canvas.width, canvas.height],
+            'hsv': ambient && ambient.hsv || [0, 0, 0]
         };
     }
 
