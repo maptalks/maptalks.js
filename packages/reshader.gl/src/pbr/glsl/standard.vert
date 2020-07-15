@@ -38,6 +38,9 @@ uniform mat3 uModelNormalMatrix;
 #ifdef HAS_SSR
     uniform mat3 uModelViewNormalMatrix;
     varying vec3 vViewNormal;
+    #ifdef HAS_TANGENT
+        varying vec4 vViewTangent;
+    #endif
 #endif
 varying vec3 vModelNormal;
 varying vec4 vViewVertex;
