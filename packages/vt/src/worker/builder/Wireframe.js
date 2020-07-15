@@ -68,17 +68,9 @@ export function buildWireframe(
         const feature = features[r];
         const geometry = feature.geometry;
 
-        const altitudeValue = PackUtil.getHeightValue(feature.properties, altitudeProperty, defaultAltitude);
-        const altitude = altitudeValue * altitudeScale;
-        maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
-        let height = altitudeValue;
-        if (heightProperty) {
-            height = PackUtil.getHeightValue(feature.properties, heightProperty, defaultHeight);
-        } else if (minHeightProperty) {
-            height = altitudeValue - PackUtil.getHeightValue(feature.properties, minHeightProperty, altitudeValue - defaultHeight);
-        }
-        height *= altitudeScale;
+        const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
 
+        maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
         let start = offset;
         for (let i = 0, l = geometry.length; i < l; i++) {
             // const ring = geometry[i];

@@ -18,7 +18,9 @@ const style = [
         renderPlugin: {
             type: 'phong',
             dataConfig: {
-                type: 'line-extrusion'
+                type: 'line-extrusion',
+                altitudeScale: 1,
+                defaultAltitude: 2000
             },
             sceneConfig: {
             },
@@ -26,8 +28,7 @@ const style = [
         symbol: {
             material,
             lineColor: '#f00',
-            lineWidth: 16,
-            lineHeight: 2000
+            lineWidth: 16
         }
     }
 ];

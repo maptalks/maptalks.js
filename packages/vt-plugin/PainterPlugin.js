@@ -30,11 +30,12 @@ function createPainterPlugin(type, Painter) {
             var layer = context.layer,
                 regl = context.regl,
                 sceneConfig = context.sceneConfig,
+                dataConfig = context.dataConfig,
                 symbol = context.symbol;
             var painter = this.painter;
             if (!painter) {
                 var pluginIndex = context.pluginIndex;
-                painter = this.painter = new Painter(regl, layer, symbol, sceneConfig, pluginIndex);
+                painter = this.painter = new Painter(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
             }
             if (!this._meshCache) {
                 this._meshCache = {};

@@ -1,17 +1,16 @@
 import { default as LinePack, EXTRUDE_SCALE }  from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
-import { interpolated } from '@maptalks/function-type';
-import { isFnTypeSymbol } from '../style/Util';
 import { getPosArrayType } from './util/array';
+import { getFeaAltitudeAndHeight } from './util/util';
+
+const ALTITUDE_SCALE = 32767;
 
 export default class LineExtrusionPack extends LinePack {
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
-        if (isFnTypeSymbol('lineHeight', this.symbolDef)) {
-            this.heightFn = interpolated(this.symbolDef['lineHeight']);
-        }
+        this._hasALineHeight = options.altitudeProperty;
     }
 
     getFormat() {
@@ -60,7 +59,7 @@ export default class LineExtrusionPack extends LinePack {
                 }
             );
         }
-        if (this.heightFn) {
+        if (this._hasALineHeight) {
             format.push(
                 {
                     type: Array,
@@ -74,10 +73,13 @@ export default class LineExtrusionPack extends LinePack {
 
     placeVector(line) {
         const feature = line.feature;
-        if (this.heightFn) {
-            this.feaHeight = feature ? this.heightFn(this.options['zoom'], feature.properties) || 0 : 0;
-            if (this.feaHeight > this.maxHeight) {
-                this.maxHeight = this.feaHeight;
+        if (this._hasALineHeight) {
+            const { altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty } = this.options;
+            const { altitude, height } = getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
+            this.feaAltitude = altitude;
+            this.feaMinHeight = (altitude - height) / altitude * ALTITUDE_SCALE;
+            if (altitude > this.maxAltitude) {
+                this.maxAltitude = altitude;
             }
         }
         return super.placeVector(line);
@@ -113,7 +115,7 @@ export default class LineExtrusionPack extends LinePack {
         const extrudedPointX = lineWidth * extrudeX + x;
         const extrudedPointY = lineWidth * extrudeY + y;
         // const height = this.symbol['lineHeight'];
-        data.push(x, y, 1, linesofar, +up, extrudedPointX, extrudedPointY, 1, aExtrudeX, aExtrudeY);
+        data.push(x, y, ALTITUDE_SCALE, linesofar, +up, extrudedPointX, extrudedPointY, 1, aExtrudeX, aExtrudeY);
         if (this.colorFn) {
             data.push(...this.feaColor);
         }
@@ -121,10 +123,10 @@ export default class LineExtrusionPack extends LinePack {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineWidth * 2));
         }
-        if (this.heightFn) {
-            data.push(this.feaHeight);
+        if (this._hasALineHeight) {
+            data.push(this.feaAltitude);
         }
-        data.push(x, y, 0, linesofar, +up, extrudedPointX, extrudedPointY, 0, aExtrudeX, aExtrudeY);
+        data.push(x, y, this.feaMinHeight || 0, linesofar, +up, extrudedPointX, extrudedPointY, 0, aExtrudeX, aExtrudeY);
         if (this.colorFn) {
             data.push(...this.feaColor);
         }
@@ -132,8 +134,8 @@ export default class LineExtrusionPack extends LinePack {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineWidth * 2));
         }
-        if (this.heightFn) {
-            data.push(this.feaHeight);
+        if (this._hasALineHeight) {
+            data.push(this.feaAltitude);
         }
 
         this.maxPos = Math.max(this.maxPos, Math.abs(x), Math.abs(y));
@@ -215,7 +217,7 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     createDataPack(vectors, scale) {
-        this.maxHeight = 0;
+        this.maxAltitude = 0;
         const pack = super.createDataPack(vectors, scale);
         if (!pack) {
             return pack;
@@ -263,7 +265,7 @@ export default class LineExtrusionPack extends LinePack {
             arrays['aLineWidth'] = aLineWidth;
         }
         if (aLineHeight) {
-            const ArrType = getPosArrayType(this.maxHeight);
+            const ArrType = getPosArrayType(this.maxAltitude);
             arrays['aLineHeight'] = new ArrType(aLineHeight);
         }
         const buffers = [];

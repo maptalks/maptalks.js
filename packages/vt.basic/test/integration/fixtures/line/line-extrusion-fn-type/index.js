@@ -54,6 +54,8 @@ const style = [{
         type: 'lit',
         dataConfig: {
             type: 'line-extrusion',
+            altitudeScale: 1,
+            defaultAltitude: 20000
         },
         sceneConfig: {}
     },
@@ -73,14 +75,6 @@ const style = [{
             stops: [
                 [1, '#f00'],
                 [2, '#0f0'],
-            ]
-        },
-        lineHeight: {
-            property: 'type',
-            type: 'categorical',
-            stops: [
-                [1, 20000],
-                [2, 20000],
             ]
         },
         lineOpacity: 1

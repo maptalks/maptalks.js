@@ -28,7 +28,8 @@ const style = [
             type: 'lit',
             dataConfig: {
                 type: 'line-extrusion',
-
+                altitudeScale: 1,
+                altitudeProperty: 'height'
             },
             sceneConfig: {
             }
@@ -37,7 +38,6 @@ const style = [
             material,
             lineColor: '#f00',
             lineWidth: 16,
-            lineHeight: 20000,
             lineOpacity: 1
         }
     }

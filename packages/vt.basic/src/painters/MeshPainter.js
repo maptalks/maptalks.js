@@ -2,7 +2,7 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
 import { piecewiseConstant } from '@maptalks/function-type';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { setUniformFromSymbol, createColorSetter, isNumber } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
@@ -44,8 +44,14 @@ class MeshPainter extends Painter {
             });
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth', 4);
             setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-            setUniformFromSymbol(mesh.uniforms, 'lineHeight', symbol, 'lineHeight', 0);
             setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
+            Object.defineProperty(mesh.uniforms, 'lineHeight', {
+                enumerable: true,
+                get: () => {
+                    const alt = this.dataConfig['defaultAltitude'];
+                    return isNumber(alt) ? alt : 0;
+                }
+            });
         } else {
             setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
             setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
@@ -130,7 +136,6 @@ class MeshPainter extends Painter {
         this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
         this._opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
         this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        this._aLineHeightFn = interpolated(symbolDef['lineHeight']);
         super.updateSymbol(symbol);
     }
 
@@ -142,7 +147,6 @@ class MeshPainter extends Painter {
         this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
         this._opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
         this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        this._aLineHeightFn = interpolated(symbolDef['lineHeight']);
         const map = this.getMap();
         const u8 = new Uint8Array(1);
         const u16 = new Uint16Array(1);
@@ -190,18 +194,6 @@ class MeshPainter extends Painter {
                     const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineWidth * 2.0);
-                    return u16[0];
-                }
-            },
-            {
-                attrName: 'aLineHeight',
-                type: Float32Array,
-                width: 1,
-                symbolName: 'lineHeight',
-                define: 'HAS_LINE_HEIGHT',
-                evaluate: properties => {
-                    const lineHeight = this._aLineHeightFn(map.getZoom(), properties);
-                    u16[0] = lineHeight;
                     return u16[0];
                 }
             }

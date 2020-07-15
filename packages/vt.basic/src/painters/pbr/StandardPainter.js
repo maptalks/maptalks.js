@@ -5,8 +5,8 @@ import MeshPainter from '../MeshPainter';
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 
 class StandardPainter extends MeshPainter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex);
+    constructor(...args) {
+        super(...args);
         this._loader = new reshader.ResourceLoader();
         this.scene.sortFunction = this.sortByCommandKey;
     }

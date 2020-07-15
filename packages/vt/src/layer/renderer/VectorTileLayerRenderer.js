@@ -525,6 +525,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 symbol,
                 gl: this.gl,
                 sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
+                dataConfig: plugin.config ? plugin.config.dataConfig : null,
                 pluginIndex: idx,
                 timestamp
             };

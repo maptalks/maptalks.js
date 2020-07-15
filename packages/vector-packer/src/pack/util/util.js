@@ -51,6 +51,22 @@ export function getHeightValue(properties, heightProp, defaultValue) {
     return (height || 0) * 10;//乘以10是因为 tileTransform 中是以分米为单位，但这里是以米为单位
 }
 
+export function getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty) {
+    const altitudeValue = getHeightValue(feature.properties, altitudeProperty, defaultAltitude);
+    const altitude = altitudeValue * altitudeScale;
+
+    let height = altitudeValue;
+    if (heightProperty) {
+        height = getHeightValue(feature.properties, heightProperty, defaultHeight);
+    } else if (minHeightProperty) {
+        height = altitudeValue - getHeightValue(feature.properties, minHeightProperty, 0);
+    }
+    height *= altitudeScale;
+    return {
+        altitude, height
+    };
+}
+
 export function isOut(point, extent) {
     return extent < Infinity && (point.x < 0 || point.x > extent || point.y < 0 || point.y > extent);
 }

@@ -18,11 +18,12 @@ const levelNFilter = mesh => {
 };
 
 class Painter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         this.regl = regl;
         this.layer = layer;
         this.canvas = layer.getRenderer().canvas;
         this.sceneConfig = sceneConfig || {};
+        this.dataConfig = dataConfig || {};
         //插件的序号，也是style的序号
         this.pluginIndex = pluginIndex;
         this.scene = new reshader.Scene();
