@@ -542,6 +542,20 @@
       hCtrl.onChange(hsvOnChange);
       sCtrl.onChange(hsvOnChange);
       vCtrl.onChange(hsvOnChange);
+
+      var hdrHsvValue = { 环境光色相: 0, 环境光饱和度: 0, 环境光亮度: 0 };
+      var hdrHsvOnChange = function () {
+        lights.ambient["hsv"] = [hdrHsvValue['环境光色相'], hdrHsvValue['环境光饱和度'], hdrHsvValue['环境光亮度']];
+        map.setLightConfig(lights);
+      };
+      var hdrHsv = gui.addFolder('环境光色相/饱和度');
+      hdrHsv.open();
+      var hdrHCtrl = hdrHsv.add(hdrHsvValue, '环境光色相', -1, 1, 0.1);
+      var hdrSCtrl = hdrHsv.add(hdrHsvValue, '环境光饱和度', -1, 1, 0.1);
+      var hdrVCtrl = hdrHsv.add(hdrHsvValue, '环境光亮度', -1, 1, 0.1);
+      hdrHCtrl.onChange(hdrHsvOnChange);
+      hdrSCtrl.onChange(hdrHsvOnChange);
+      hdrVCtrl.onChange(hdrHsvOnChange);
     }
 
     function updateMaterial(key, value) {
